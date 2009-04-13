@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, openmetaverse.org
+ * Copyright (c) 2007-2009, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using OpenMetaverse.StructuredData;
+using OpenMetaverse.Interfaces;
 using OpenMetaverse.Http;
 
 namespace OpenMetaverse
@@ -38,7 +39,7 @@ namespace OpenMetaverse
     /// used to communicate non real-time transactions such as teleporting or
     /// group messaging
     /// </summary>
-    public class Caps
+    public partial class Caps
     {
         /// <summary>
         /// Triggered when an event is received via the EventQueueGet 
@@ -47,7 +48,10 @@ namespace OpenMetaverse
         /// <param name="message">Event name</param>
         /// <param name="body">Decoded event data</param>
         /// <param name="simulator">The simulator that generated the event</param>
-        public delegate void EventQueueCallback(string message, StructuredData.OSD body, Simulator simulator);
+        //public delegate void EventQueueCallback(string message, StructuredData.OSD body, Simulator simulator);
+
+
+        public delegate void EventQueueCallback(string capsKey, IMessage message, Simulator simulator);
 
         /// <summary>Reference to the simulator this system is connected to</summary>
         public Simulator Simulator;
@@ -195,10 +199,18 @@ namespace OpenMetaverse
 
         private void EventQueueEventHandler(string eventName, OSDMap body)
         {
-            if (Simulator.Client.Settings.SYNC_PACKETCALLBACKS)
-                Simulator.Client.Network.CapsEvents.RaiseEvent(eventName, body, Simulator);
+            IMessage message = DecodeEvent(eventName, body);
+            if (message != null)
+            {
+                if (Simulator.Client.Settings.SYNC_PACKETCALLBACKS)
+                    Simulator.Client.Network.CapsEvents.RaiseEvent(eventName, message, Simulator);
+                else
+                    Simulator.Client.Network.CapsEvents.BeginRaiseEvent(eventName, message, Simulator);
+            }
             else
-                Simulator.Client.Network.CapsEvents.BeginRaiseEvent(eventName, body, Simulator);
+            {
+                Logger.Log("No Message class exists for event " + eventName + ". Unable to decode", Helpers.LogLevel.Warning);
+            }
         }
     }
 }

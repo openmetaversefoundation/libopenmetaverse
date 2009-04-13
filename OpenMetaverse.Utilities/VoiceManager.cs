@@ -1,26 +1,26 @@
 /*
- * Copyright (c) 2007-2008, openmetaverse.org
+ * Copyright (c) 2007-2009, openmetaverse.org
  * All rights reserved.
  *
- * - Redistribution and use in source and binary forms, with or without
+ * - Redistribution and use in source and binary forms, with or without 
  *   modification, are permitted provided that the following conditions are met:
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the openmetaverse.org nor the names
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
@@ -34,6 +34,8 @@ using System.Threading;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Http;
+using OpenMetaverse.Interfaces;
+using OpenMetaverse.Messages.Linden;
 
 namespace OpenMetaverse.Utilities
 {
@@ -523,25 +525,20 @@ namespace OpenMetaverse.Utilities
 
         #region Callbacks
 
-        private void RequiredVoiceVersionEventHandler(string message, OSD osd, Simulator simulator)
+        private void RequiredVoiceVersionEventHandler(string capsKey, IMessage message, Simulator simulator)
         {
-            OSDMap body = (OSDMap)osd;
-
-            if (body.ContainsKey("major_version"))
-            {
-                int majorVersion = body["major_version"].AsInteger();
-
-                if (VOICE_MAJOR_VERSION != majorVersion)
+            RequiredVoiceVersionMessage msg = (RequiredVoiceVersionMessage)message;
+            
+                if (VOICE_MAJOR_VERSION != msg.MajorVersion)
                 {
                     Logger.Log(String.Format("Voice version mismatch! Got {0}, expecting {1}. Disabling the voice manager",
-                        majorVersion, VOICE_MAJOR_VERSION), Helpers.LogLevel.Error, Client);
+                        msg.MajorVersion, VOICE_MAJOR_VERSION), Helpers.LogLevel.Error, Client);
                     Enabled = false;
                 }
                 else
                 {
-                    Logger.DebugLog("Voice version " + majorVersion + " verified", Client);
+                    Logger.DebugLog("Voice version " + msg.MajorVersion + " verified", Client);
                 }
-            }
         }
 
         private void ProvisionCapsResponse(CapsClient client, OSD response, Exception error)

@@ -1,26 +1,26 @@
 /*
- * Copyright (c) 2007-2008, openmetaverse.org
+ * Copyright (c) 2007-2009, openmetaverse.org
  * All rights reserved.
  *
- * - Redistribution and use in source and binary forms, with or without
+ * - Redistribution and use in source and binary forms, with or without 
  *   modification, are permitted provided that the following conditions are met:
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the openmetaverse.org nor the names
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
@@ -29,6 +29,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using OpenMetaverse.Packets;
+using OpenMetaverse.Messages.Linden;
+using OpenMetaverse.Interfaces;
 
 namespace OpenMetaverse
 {
@@ -210,8 +212,8 @@ namespace OpenMetaverse
             public Caps.EventQueueCallback Callback;
             /// <summary>Name of the CAPS event</summary>
             public string CapsEvent;
-            /// <summary>Decoded body of the CAPS event</summary>
-            public StructuredData.OSD Body;
+            /// <summary>Strongly typed decoded data</summary>
+            public IMessage Message;
             /// <summary>Reference to the simulator that generated this event</summary>
             public Simulator Simulator;
         }
@@ -273,43 +275,43 @@ namespace OpenMetaverse
         /// <param name="body">Decoded event body</param>
         /// <param name="simulator">Reference to the simulator that 
         /// generated this event</param>
-        internal void RaiseEvent(string capsEvent, StructuredData.OSD body, Simulator simulator)
+        internal void RaiseEvent(string capsEvent, IMessage message, Simulator simulator)
         {
             bool specialHandler = false;
             Caps.EventQueueCallback callback;
-
+            
             // Default handler first, if one exists
             if (_EventTable.TryGetValue(capsEvent, out callback))
             {
                 if (callback != null)
                 {
-                    try { callback(capsEvent, body, simulator); }
+                    try { callback(capsEvent, message, simulator); }
                     catch (Exception ex) { Logger.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error, Client); }
                 }
             }
 
             // Generic parser next
-            if (body.Type == StructuredData.OSDType.Map)
-            {
-                StructuredData.OSDMap map = (StructuredData.OSDMap)body;
-                Packet packet = Packet.BuildPacket(capsEvent, map);
-                if (packet != null)
-                {
-                    NetworkManager.IncomingPacket incomingPacket;
-                    incomingPacket.Simulator = simulator;
-                    incomingPacket.Packet = packet;
+            //if (body.Type == StructuredData.OSDType.Map)
+            //{
+            //    StructuredData.OSDMap map = (StructuredData.OSDMap)body;
+            //    Packet packet = Packet.BuildPacket(capsEvent, map);
+            //    if (packet != null)
+            //    {
+            //        NetworkManager.IncomingPacket incomingPacket;
+            //        incomingPacket.Simulator = simulator;
+            //        incomingPacket.Packet = packet;
 
-                    Logger.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler", Client);
+            //        Logger.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler", Client);
 
-                    Client.Network.PacketInbox.Enqueue(incomingPacket);
-                    specialHandler = true;
-                }
-            }
+            //        Client.Network.PacketInbox.Enqueue(incomingPacket);
+            //        specialHandler = true;
+            //    }
+            //}
 
             // Explicit handler next
             if (_EventTable.TryGetValue(capsEvent, out callback) && callback != null)
             {
-                try { callback(capsEvent, body, simulator); }
+                try { callback(capsEvent, message, simulator); }
                 catch (Exception ex) { Logger.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error, Client); }
 
                 specialHandler = true;
@@ -326,7 +328,7 @@ namespace OpenMetaverse
         /// <param name="body">Decoded event body</param>
         /// <param name="simulator">Reference to the simulator that 
         /// generated this event</param>
-        internal void BeginRaiseEvent(string capsEvent, StructuredData.OSD body, Simulator simulator)
+        internal void BeginRaiseEvent(string capsEvent, IMessage message, Simulator simulator)
         {
             bool specialHandler = false;
             Caps.EventQueueCallback callback;
@@ -339,29 +341,30 @@ namespace OpenMetaverse
                     CapsCallbackWrapper wrapper;
                     wrapper.Callback = callback;
                     wrapper.CapsEvent = capsEvent;
-                    wrapper.Body = body;
+                    wrapper.Message = message;
                     wrapper.Simulator = simulator;
                     ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
                 }
             }
 
             // Generic parser next, don't generic parse events we've manually registered for
-            if (body.Type == StructuredData.OSDType.Map && !_EventTable.ContainsKey(capsEvent))
-            {
-                StructuredData.OSDMap map = (StructuredData.OSDMap)body;
-                Packet packet = Packet.BuildPacket(capsEvent, map);
-                if (packet != null)
-                {
-                    NetworkManager.IncomingPacket incomingPacket;
-                    incomingPacket.Simulator = simulator;
-                    incomingPacket.Packet = packet;
+            //if (body.Type == StructuredData.OSDType.Map && !_EventTable.ContainsKey(capsEvent))
+            //{
+            //    StructuredData.OSDMap map = (StructuredData.OSDMap)body;
+            //    Packet packet = Packet.BuildPacket(capsEvent, map);
+                
+            //    if (packet != null)
+            //    {
+            //        NetworkManager.IncomingPacket incomingPacket;
+            //        incomingPacket.Simulator = simulator;
+            //        incomingPacket.Packet = packet;
 
-                    Logger.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler", Client);
+            //        Logger.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler", Client);
 
-                    Client.Network.PacketInbox.Enqueue(incomingPacket);
-                    specialHandler = true;
-                }
-            }
+            //        Client.Network.PacketInbox.Enqueue(incomingPacket);
+            //        specialHandler = true;
+            //    }
+            //}
             
             // Explicit handler next
             if (_EventTable.TryGetValue(capsEvent, out callback) && callback != null)
@@ -369,7 +372,7 @@ namespace OpenMetaverse
                 CapsCallbackWrapper wrapper;
                 wrapper.Callback = callback;
                 wrapper.CapsEvent = capsEvent;
-                wrapper.Body = body;
+                wrapper.Message = message;
                 wrapper.Simulator = simulator;
                 ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
 
@@ -386,7 +389,7 @@ namespace OpenMetaverse
 
             try
             {
-                wrapper.Callback(wrapper.CapsEvent, wrapper.Body, wrapper.Simulator);
+                wrapper.Callback(wrapper.CapsEvent, wrapper.Message, wrapper.Simulator);
             }
             catch (Exception ex)
             {

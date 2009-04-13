@@ -1,26 +1,26 @@
 /*
- * Copyright (c) 2006-2008, openmetaverse.org
+ * Copyright (c) 2007-2009, openmetaverse.org
  * All rights reserved.
  *
- * - Redistribution and use in source and binary forms, with or without
+ * - Redistribution and use in source and binary forms, with or without 
  *   modification, are permitted provided that the following conditions are met:
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the openmetaverse.org nor the names
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
@@ -31,6 +31,7 @@ using System.Reflection;
 using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Messages.Linden;
+using OpenMetaverse.Interfaces;
 using OpenMetaverse.Http;
 
 namespace OpenMetaverse
@@ -604,47 +605,75 @@ namespace OpenMetaverse
 
             if (url != null)
             {
-                OSDMap body = new OSDMap();
-                body["auth_buyer_id"] =  OSD.FromUUID(this.AuthBuyerID);
-                body["auto_scale"] =  OSD.FromBoolean(this.Media.MediaAutoScale);
-                body["category"] = OSD.FromInteger((byte)this.Category);
-                body["description"] = OSD.FromString(this.Desc);
-                body["flags"] =  OSD.FromBinary(Utils.EmptyBytes);
-                body["group_id"] = OSD.FromUUID(this.GroupID);
-                body["landing_type"] = OSD.FromInteger((byte)this.Landing);
-                body["local_id"] = OSD.FromInteger(this.LocalID);
-                body["media_desc"] = OSD.FromString(this.Media.MediaDesc);
-                body["media_height"] = OSD.FromInteger(this.Media.MediaHeight);
-                body["media_id"] = OSD.FromUUID(this.Media.MediaID);
-                body["media_loop"] = OSD.FromInteger(this.Media.MediaLoop ? 1 : 0);
-                body["media_type"] = OSD.FromString(this.Media.MediaType);
-                body["media_url"] = OSD.FromString(this.Media.MediaURL);
-                body["media_width"] = OSD.FromInteger(this.Media.MediaWidth);
-                body["music_url"] = OSD.FromString(this.MusicURL);
-                body["name"] = OSD.FromString(this.Name);
-                body["obscure_media"]= OSD.FromInteger(this.ObscureMedia ? 1 : 0);
-                body["obscure_music"] = OSD.FromInteger(this.ObscureMusic ? 1 : 0);
+                ParcelPropertiesUpdateMessage req = new ParcelPropertiesUpdateMessage();
+                req.AuthBuyerID = this.AuthBuyerID;
+                req.Category = this.Category;
+                req.Desc = this.Desc;
+                req.GroupID = this.GroupID;
+                req.Landing = this.Landing;
+                req.LocalID = this.LocalID;
+                req.MediaAutoScale = this.Media.MediaAutoScale;
+                req.MediaDesc = this.Media.MediaDesc;
+                req.MediaHeight = this.Media.MediaHeight;
+                req.MediaID = this.Media.MediaID;
+                req.MediaLoop = this.Media.MediaLoop;
+                req.MediaType = this.Media.MediaType;
+                req.MediaURL = this.Media.MediaURL;
+                req.MediaWidth = this.Media.MediaWidth;
+                req.MusicURL = this.MusicURL;
+                req.Name = this.Name;
+                req.ObscureMedia = this.ObscureMedia;
+                req.ObscureMusic = this.ObscureMusic;
+                req.ParcelFlags = this.Flags;
+                req.PassHours = this.PassHours;
+                req.PassPrice = (uint)this.PassPrice;
+                req.SalePrice = (uint)this.SalePrice;
+                req.SnapshotID = this.SnapshotID;
+                req.UserLocation = this.UserLocation;
+                req.UserLookAt = this.UserLookAt;
 
-                byte[] flags = Utils.IntToBytes((int)this.Flags); ;
-                if (BitConverter.IsLittleEndian)
-                    Array.Reverse(flags);
-                body["parcel_flags"] = OSD.FromBinary(flags);
+                //OSDMap body = new OSDMap();
+                //body["auth_buyer_id"] =  OSD.FromUUID(this.AuthBuyerID);
+                //body["auto_scale"] =  OSD.FromBoolean(this.Media.MediaAutoScale);
+                //body["category"] = OSD.FromInteger((byte)this.Category);
+                //body["description"] = OSD.FromString(this.Desc);
+                //body["flags"] =  OSD.FromBinary(Utils.EmptyBytes);
+                //body["group_id"] = OSD.FromUUID(this.GroupID);
+                //body["landing_type"] = OSD.FromInteger((byte)this.Landing);
+                //body["local_id"] = OSD.FromInteger(this.LocalID);
+                //body["media_desc"] = OSD.FromString(this.Media.MediaDesc);
+                //body["media_height"] = OSD.FromInteger(this.Media.MediaHeight);
+                //body["media_id"] = OSD.FromUUID(this.Media.MediaID);
+                //body["media_loop"] = OSD.FromInteger(this.Media.MediaLoop ? 1 : 0);
+                //body["media_type"] = OSD.FromString(this.Media.MediaType);
+                //body["media_url"] = OSD.FromString(this.Media.MediaURL);
+                //body["media_width"] = OSD.FromInteger(this.Media.MediaWidth);
+                //body["music_url"] = OSD.FromString(this.MusicURL);
+                //body["name"] = OSD.FromString(this.Name);
+                //body["obscure_media"]= OSD.FromInteger(this.ObscureMedia ? 1 : 0);
+                //body["obscure_music"] = OSD.FromInteger(this.ObscureMusic ? 1 : 0);
 
-                body["pass_hours"] = OSD.FromReal(this.PassHours);
-                body["pass_price"] = OSD.FromInteger(this.PassPrice);
-                body["sale_price"] = OSD.FromInteger(this.SalePrice);
-                body["snapshot_id"] = OSD.FromUUID(this.SnapshotID);
-                OSDArray uloc = new OSDArray();
-                uloc.Add(OSD.FromReal(this.UserLocation.X));
-                uloc.Add(OSD.FromReal(this.UserLocation.Y));
-                uloc.Add(OSD.FromReal(this.UserLocation.Z));
-                body["user_location"] = uloc;
-                OSDArray ulat = new OSDArray();
-                ulat.Add(OSD.FromReal(this.UserLocation.X));
-                ulat.Add(OSD.FromReal(this.UserLocation.Y));
-                ulat.Add(OSD.FromReal(this.UserLocation.Z));
-                body["user_look_at"] = ulat;
+                //byte[] flags = Utils.IntToBytes((int)this.Flags); ;
+                //if (BitConverter.IsLittleEndian)
+                //    Array.Reverse(flags);
+                //body["parcel_flags"] = OSD.FromBinary(flags);
 
+                //body["pass_hours"] = OSD.FromReal(this.PassHours);
+                //body["pass_price"] = OSD.FromInteger(this.PassPrice);
+                //body["sale_price"] = OSD.FromInteger(this.SalePrice);
+                //body["snapshot_id"] = OSD.FromUUID(this.SnapshotID);
+                //OSDArray uloc = new OSDArray();
+                //uloc.Add(OSD.FromReal(this.UserLocation.X));
+                //uloc.Add(OSD.FromReal(this.UserLocation.Y));
+                //uloc.Add(OSD.FromReal(this.UserLocation.Z));
+                //body["user_location"] = uloc;
+                //OSDArray ulat = new OSDArray();
+                //ulat.Add(OSD.FromReal(this.UserLocation.X));
+                //ulat.Add(OSD.FromReal(this.UserLocation.Y));
+                //ulat.Add(OSD.FromReal(this.UserLocation.Z));
+                //body["user_look_at"] = ulat;
+
+                OSDMap body = req.Serialize();
                 byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(body);
 
                 CapsClient capsPost = new CapsClient(url);
@@ -741,8 +770,6 @@ namespace OpenMetaverse
             /// <summary>The date of the most recent prim left by OwnerID</summary>
             public DateTime NewestPrim;
         }
-
-        
 
         #endregion Structs
 
@@ -1486,69 +1513,68 @@ namespace OpenMetaverse
         /// <param name="capsKey">Not used (will always be ParcelProperties)</param>
         /// <param name="llsd">LLSD Structured data</param>
         /// <param name="simulator">Object representing simulator</param>
-        private void ParcelPropertiesReplyHandler(string capsKey, OSD llsd, Simulator simulator)
+        private void ParcelPropertiesReplyHandler(string capsKey, IMessage message, Simulator simulator)
         {
             if (OnParcelProperties != null || Client.Settings.PARCEL_TRACKING == true)
             {
-                ParcelPropertiesMessage message = new ParcelPropertiesMessage();
-                message.Deserialize((OSDMap)llsd);
+                ParcelPropertiesMessage msg = (ParcelPropertiesMessage)message;
+                
+                Parcel parcel = new Parcel(msg.LocalID);
 
-                Parcel parcel = new Parcel(message.LocalID);
-
-                parcel.AABBMax = message.AABBMax;
-                parcel.AABBMin = message.AABBMin;
-                parcel.Area = message.Area;
-                parcel.AuctionID = message.AuctionID;
-                parcel.AuthBuyerID = message.AuthBuyerID;
-                parcel.Bitmap = message.Bitmap;
-                parcel.Category = message.Category;
-                parcel.ClaimDate = message.ClaimDate;
-                parcel.ClaimPrice = message.ClaimPrice;
-                parcel.Desc = message.Desc;
-                parcel.Flags = message.ParcelFlags;
-                parcel.GroupID = message.GroupID;
-                parcel.GroupPrims = message.GroupPrims;
-                parcel.IsGroupOwned = message.IsGroupOwned;
-                parcel.Landing = message.LandingType;
-                parcel.MaxPrims = message.MaxPrims;
-                parcel.Media.MediaAutoScale = message.MediaAutoScale;
-                parcel.Media.MediaID = message.MediaID;
-                parcel.Media.MediaURL = message.MediaURL;
-                parcel.MusicURL = message.MusicURL;
-                parcel.Name = message.Name;
-                parcel.OtherCleanTime = message.OtherCleanTime;
-                parcel.OtherCount = message.OtherCount;
-                parcel.OtherPrims = message.OtherPrims;
-                parcel.OwnerID = message.OwnerID;
-                parcel.OwnerPrims = message.OwnerPrims;
-                parcel.ParcelPrimBonus = message.ParcelPrimBonus;
-                parcel.PassHours = message.PassHours;
-                parcel.PassPrice = message.PassPrice;
-                parcel.PublicCount = message.PublicCount;
-                parcel.RegionDenyAgeUnverified = message.RegionDenyAgeUnverified;
-                parcel.RegionDenyAnonymous = message.RegionDenyAnonymous;
-                parcel.RegionPushOverride = message.RegionPushOverride;
-                parcel.RentPrice = message.RentPrice;
-                ParcelResult result = message.RequestResult;
-                parcel.SalePrice = message.SalePrice;
-                int selectedPrims = message.SelectedPrims;
-                parcel.SelfCount = message.SelfCount;
-                int sequenceID = message.SequenceID;
-                parcel.SimWideMaxPrims = message.SimWideMaxPrims;
-                parcel.SimWideTotalPrims = message.SimWideTotalPrims;
-                bool snapSelection = message.SnapSelection;
-                parcel.SnapshotID = message.SnapshotID;
-                parcel.Status = message.Status;
-                parcel.TotalPrims = message.TotalPrims;
-                parcel.UserLocation = message.UserLocation;
-                parcel.UserLookAt = message.UserLookAt;
-                parcel.Media.MediaDesc = message.MediaDesc;
-                parcel.Media.MediaHeight = message.MediaHeight;
-                parcel.Media.MediaWidth = message.MediaWidth;
-                parcel.Media.MediaLoop = message.MediaLoop;
-                parcel.Media.MediaType = message.MediaType;
-                parcel.ObscureMedia = message.ObscureMedia;
-                parcel.ObscureMusic = message.ObscureMusic;
+                parcel.AABBMax = msg.AABBMax;
+                parcel.AABBMin = msg.AABBMin;
+                parcel.Area = msg.Area;
+                parcel.AuctionID = msg.AuctionID;
+                parcel.AuthBuyerID = msg.AuthBuyerID;
+                parcel.Bitmap = msg.Bitmap;
+                parcel.Category = msg.Category;
+                parcel.ClaimDate = msg.ClaimDate;
+                parcel.ClaimPrice = msg.ClaimPrice;
+                parcel.Desc = msg.Desc;
+                parcel.Flags = msg.ParcelFlags;
+                parcel.GroupID = msg.GroupID;
+                parcel.GroupPrims = msg.GroupPrims;
+                parcel.IsGroupOwned = msg.IsGroupOwned;
+                parcel.Landing = msg.LandingType;
+                parcel.MaxPrims = msg.MaxPrims;
+                parcel.Media.MediaAutoScale = msg.MediaAutoScale;
+                parcel.Media.MediaID = msg.MediaID;
+                parcel.Media.MediaURL = msg.MediaURL;
+                parcel.MusicURL = msg.MusicURL;
+                parcel.Name = msg.Name;
+                parcel.OtherCleanTime = msg.OtherCleanTime;
+                parcel.OtherCount = msg.OtherCount;
+                parcel.OtherPrims = msg.OtherPrims;
+                parcel.OwnerID = msg.OwnerID;
+                parcel.OwnerPrims = msg.OwnerPrims;
+                parcel.ParcelPrimBonus = msg.ParcelPrimBonus;
+                parcel.PassHours = msg.PassHours;
+                parcel.PassPrice = msg.PassPrice;
+                parcel.PublicCount = msg.PublicCount;
+                parcel.RegionDenyAgeUnverified = msg.RegionDenyAgeUnverified;
+                parcel.RegionDenyAnonymous = msg.RegionDenyAnonymous;
+                parcel.RegionPushOverride = msg.RegionPushOverride;
+                parcel.RentPrice = msg.RentPrice;
+                ParcelResult result = msg.RequestResult;
+                parcel.SalePrice = msg.SalePrice;
+                int selectedPrims = msg.SelectedPrims;
+                parcel.SelfCount = msg.SelfCount;
+                int sequenceID = msg.SequenceID;
+                parcel.SimWideMaxPrims = msg.SimWideMaxPrims;
+                parcel.SimWideTotalPrims = msg.SimWideTotalPrims;
+                bool snapSelection = msg.SnapSelection;
+                parcel.SnapshotID = msg.SnapshotID;
+                parcel.Status = msg.Status;
+                parcel.TotalPrims = msg.TotalPrims;
+                parcel.UserLocation = msg.UserLocation;
+                parcel.UserLookAt = msg.UserLookAt;
+                parcel.Media.MediaDesc = msg.MediaDesc;
+                parcel.Media.MediaHeight = msg.MediaHeight;
+                parcel.Media.MediaWidth = msg.MediaWidth;
+                parcel.Media.MediaLoop = msg.MediaLoop;
+                parcel.Media.MediaType = msg.MediaType;
+                parcel.ObscureMedia = msg.ObscureMedia;
+                parcel.ObscureMusic = msg.ObscureMusic;
 
                 if (Client.Settings.PARCEL_TRACKING)
                 {
@@ -1664,23 +1690,22 @@ namespace OpenMetaverse
         /// <param name="capsKey"></param>
         /// <param name="llsd"></param>
         /// <param name="simulator"></param>
-        private void ParcelObjectOwnersReplyHandler(string capsKey, OSD llsd, Simulator simulator)
+        private void ParcelObjectOwnersReplyHandler(string capsKey, IMessage message, Simulator simulator)
         {
             if (OnPrimOwnersListReply != null)
             {
                 List<ParcelPrimOwners> primOwners = new List<ParcelPrimOwners>();
 
-                ParcelObjectOwnersMessage message = new ParcelObjectOwnersMessage();
-                message.Deserialize((OSDMap)llsd);
-
-                for (int i = 0; i < message.DataBlocks.Length; i++)
+                ParcelObjectOwnersMessage msg = (ParcelObjectOwnersMessage)message;
+                
+                for (int i = 0; i < msg.DataBlocks.Length; i++)
                 {
                     ParcelPrimOwners primOwner = new ParcelPrimOwners();
-                    primOwner.OwnerID = message.DataBlocks[i].OwnerID;
-                    primOwner.Count = message.DataBlocks[i].Count;
-                    primOwner.IsGroupOwned = message.DataBlocks[i].IsGroupOwned;
-                    primOwner.OnlineStatus = message.DataBlocks[i].OnlineStatus;
-                    primOwner.NewestPrim = message.DataBlocks[i].TimeStamp;
+                    primOwner.OwnerID = msg.DataBlocks[i].OwnerID;
+                    primOwner.Count = msg.DataBlocks[i].Count;
+                    primOwner.IsGroupOwned = msg.DataBlocks[i].IsGroupOwned;
+                    primOwner.OnlineStatus = msg.DataBlocks[i].OnlineStatus;
+                    primOwner.NewestPrim = msg.DataBlocks[i].TimeStamp;
 
                     primOwners.Add(primOwner);
                 }

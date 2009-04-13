@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2008, openmetaverse.org
+ * Copyright (c) 2007-2009, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -34,6 +34,8 @@ using System.Globalization;
 using System.IO;
 using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
+using OpenMetaverse.Interfaces;
+using OpenMetaverse.Messages.Linden;
 
 namespace OpenMetaverse
 {
@@ -1108,43 +1110,69 @@ namespace OpenMetaverse
             simulator.ConnectedEvent.Set();
         }
 
+        private void EnableSimulatorHandler(string capsKey, IMessage message, Simulator simulator)
+        {
+            if (!Client.Settings.MULTIPLE_SIMS) return;
+
+            EnableSimulatorMessage msg = (EnableSimulatorMessage)message;
+
+            for (int i = 0; i < msg.Simulators.Length; i++)
+            {
+                IPAddress ip = msg.Simulators[i].IP;
+                ushort port = (ushort)msg.Simulators[i].Port;
+                ulong handle = msg.Simulators[i].RegionHandle;
+
+                IPEndPoint endPoint = new IPEndPoint(ip, port);
+
+                if (FindSimulator(endPoint) != null) return;
+
+                if (Connect(ip, port, handle, false, null) == null)
+                {
+                    Logger.Log("Unabled to connect to new sim " + ip + ":" + port,
+                        Helpers.LogLevel.Error, Client);
+                }
+            }
+            
+
+        }
+
         /// <summary>
         /// Handler for EnableSimulator packet
         /// </summary>
         /// <param name="capsKey">the Capabilities Key, "EnableSimulator"</param>
         /// <param name="osd">the LLSD Encoded packet</param>
         /// <param name="simulator">The simulator the packet was sent from</param>
-        private void EnableSimulatorHandler(string capsKey, OSD osd, Simulator simulator)
-        {
-            if (!Client.Settings.MULTIPLE_SIMS) return;
-            OSDMap map = (OSDMap)osd;
-            OSDArray connectInfo = (OSDArray)map["SimulatorInfo"];
+        //private void EnableSimulatorHandler(string capsKey, OSD osd, Simulator simulator)
+        //{
+        //    if (!Client.Settings.MULTIPLE_SIMS) return;
+        //    OSDMap map = (OSDMap)osd;
+        //    OSDArray connectInfo = (OSDArray)map["SimulatorInfo"];
 
-            for(int i = 0; i < connectInfo.Count; i++)
-            {
-                OSDMap data = (OSDMap)connectInfo[i];
+        //    for(int i = 0; i < connectInfo.Count; i++)
+        //    {
+        //        OSDMap data = (OSDMap)connectInfo[i];
 
-                IPAddress ip = new IPAddress(data["IP"].AsBinary());
-                ushort port = (ushort)data["Port"].AsInteger();
-                byte[] bytes = data["Handle"].AsBinary();
+        //        IPAddress ip = new IPAddress(data["IP"].AsBinary());
+        //        ushort port = (ushort)data["Port"].AsInteger();
+        //        byte[] bytes = data["Handle"].AsBinary();
 
-                if (BitConverter.IsLittleEndian)
-                    Array.Reverse(bytes);
+        //        if (BitConverter.IsLittleEndian)
+        //            Array.Reverse(bytes);
 
-                ulong rh = Utils.BytesToUInt64(bytes);
+        //        ulong rh = Utils.BytesToUInt64(bytes);
 
-                IPEndPoint endPoint = new IPEndPoint(ip, port);
+        //        IPEndPoint endPoint = new IPEndPoint(ip, port);
                 
-                // don't reconnect if we're already connected or attempting to connect
-                if (FindSimulator(endPoint) != null) return;
+        //        // don't reconnect if we're already connected or attempting to connect
+        //        if (FindSimulator(endPoint) != null) return;
 
-                if (Connect(ip, port, rh, false, null) == null)
-                {
-                    Logger.Log("Unabled to connect to new sim " + ip + ":" + port,
-                        Helpers.LogLevel.Error, Client);
-                }
-            }
-        }
+        //        if (Connect(ip, port, rh, false, null) == null)
+        //        {
+        //            Logger.Log("Unabled to connect to new sim " + ip + ":" + port,
+        //                Helpers.LogLevel.Error, Client);
+        //        }
+        //    }
+        //}
 
         private void DisableSimulatorHandler(Packet packet, Simulator simulator)
         {

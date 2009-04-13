@@ -1,32 +1,35 @@
 /*
- * Copyright (c) 2006-2008, openmetaverse.org
+ * Copyright (c) 2007-2009, openmetaverse.org
  * All rights reserved.
  *
- * - Redistribution and use in source and binary forms, with or without
+ * - Redistribution and use in source and binary forms, with or without 
  *   modification, are permitted provided that the following conditions are met:
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the openmetaverse.org nor the names
+ * - Neither the name of the openmetaverse.org nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
 using System;
 using System.Collections.Generic;
 using OpenMetaverse.Packets;
+using OpenMetaverse.StructuredData;
+using OpenMetaverse.Messages.Linden;
+using OpenMetaverse.Interfaces;
 
 namespace OpenMetaverse
 {
@@ -605,7 +608,7 @@ namespace OpenMetaverse
             GroupRolesMembersRequests = new List<UUID>();
             GroupName2KeyCache  = new InternalDictionary<UUID, string>();
 
-            Client.Network.RegisterCallback(PacketType.AgentGroupDataUpdate, new NetworkManager.PacketCallback(GroupDataHandler));
+            Client.Network.RegisterEventCallback("AgentGroupDataUpdate", new Caps.EventQueueCallback(AgentGroupDataUpdateHandler));
             Client.Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(AgentDropGroupHandler));
             Client.Network.RegisterCallback(PacketType.GroupTitlesReply, new NetworkManager.PacketCallback(GroupTitlesHandler));
             Client.Network.RegisterCallback(PacketType.GroupProfileReply, new NetworkManager.PacketCallback(GroupProfileHandler));
@@ -1126,31 +1129,31 @@ namespace OpenMetaverse
 
         #region Packet Handlers
 
-        private void GroupDataHandler(Packet packet, Simulator simulator)
+        private void AgentGroupDataUpdateHandler(string capsKey, IMessage message, Simulator simulator)
         {
             if (OnCurrentGroups != null)
             {
-                AgentGroupDataUpdatePacket update = (AgentGroupDataUpdatePacket)packet;
+                AgentGroupDataUpdateMessage msg = (AgentGroupDataUpdateMessage)message;
 
                 Dictionary<UUID, Group> currentGroups = new Dictionary<UUID, Group>();
-
-                foreach (AgentGroupDataUpdatePacket.GroupDataBlock block in update.GroupData)
+                for (int i = 0; i < msg.GroupDataBlock.Length; i++)
                 {
                     Group group = new Group();
+                    group.ID = msg.GroupDataBlock[i].GroupID;
+                    group.InsigniaID = msg.GroupDataBlock[i].GroupInsigniaID;
+                    group.Name = msg.GroupDataBlock[i].GroupName;
+                    group.Contribution = msg.GroupDataBlock[i].Contribution;
+                    group.AcceptNotices = msg.GroupDataBlock[i].AcceptNotices;
+                    group.Powers = msg.GroupDataBlock[i].GroupPowers;
+                    // verify this is correct - or add to struct if ListInProfile is a new field
+                    group.ShowInList = msg.GroupDataBlock[i].ListInProfile;
 
-                    group.ID = block.GroupID;
-                    group.InsigniaID = block.GroupInsigniaID;
-                    group.Name = Utils.BytesToString(block.GroupName);
-                    group.Powers = (GroupPowers)block.GroupPowers;
-                    group.Contribution = block.Contribution;
-                    group.AcceptNotices = block.AcceptNotices;
-
-                    currentGroups[block.GroupID] = group;
+                    currentGroups.Add(group.ID, group);
 
                     lock (GroupName2KeyCache.Dictionary)
                     {
-                        if (!GroupName2KeyCache.Dictionary.ContainsKey(block.GroupID))
-                            GroupName2KeyCache.Dictionary.Add(block.GroupID, Utils.BytesToString(block.GroupName));
+                        if (!GroupName2KeyCache.Dictionary.ContainsKey(group.ID))
+                            GroupName2KeyCache.Dictionary.Add(group.ID, group.Name);
                     }
                 }
 
@@ -1158,6 +1161,73 @@ namespace OpenMetaverse
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
+
+        //private void AgentGroupDataUpdateHandler(string capsKey, OSD osd, Simulator simulator)
+        //{
+        //    if (OnCurrentGroups != null)
+        //    {
+        //        AgentGroupUpdateMessage message = new AgentGroupUpdateMessage();
+        //        message.Deserialize((OSDMap)osd);
+
+        //        Dictionary<UUID, Group> currentGroups = new Dictionary<UUID, Group>();
+        //        for (int i = 0; i < message.GroupDataBlock.Length; i++)
+        //        {
+        //            Group group = new Group();
+        //            group.ID = message.GroupDataBlock[i].GroupID;
+        //            group.InsigniaID = message.GroupDataBlock[i].GroupInsigniaID;
+        //            group.Name = message.GroupDataBlock[i].GroupName;
+        //            group.Contribution = message.GroupDataBlock[i].Contribution;
+        //            group.AcceptNotices = message.GroupDataBlock[i].AcceptNotices;
+        //            group.Powers = message.GroupDataBlock[i].GroupPowers;
+        //            // verify this is correct - or add to struct if ListInProfile is a new field
+        //            group.ShowInList = message.GroupDataBlock[i].ListInProfile;
+
+        //            currentGroups.Add(group.ID, group);
+
+        //            lock (GroupName2KeyCache.Dictionary)
+        //            {
+        //                if (!GroupName2KeyCache.Dictionary.ContainsKey(group.ID))
+        //                    GroupName2KeyCache.Dictionary.Add(group.ID, group.Name);
+        //            }
+        //        }
+
+        //        try { OnCurrentGroups(currentGroups); }
+        //        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+        //    }
+        //}
+
+        //private void GroupDataHandler(Packet packet, Simulator simulator)
+        //{
+        //    if (OnCurrentGroups != null)
+        //    {
+        //        AgentGroupDataUpdatePacket update = (AgentGroupDataUpdatePacket)packet;
+
+        //        Dictionary<UUID, Group> currentGroups = new Dictionary<UUID, Group>();
+
+        //        foreach (AgentGroupDataUpdatePacket.GroupDataBlock block in update.GroupData)
+        //        {
+        //            Group group = new Group();
+
+        //            group.ID = block.GroupID;
+        //            group.InsigniaID = block.GroupInsigniaID;
+        //            group.Name = Utils.BytesToString(block.GroupName);
+        //            group.Powers = (GroupPowers)block.GroupPowers;
+        //            group.Contribution = block.Contribution;
+        //            group.AcceptNotices = block.AcceptNotices;
+
+        //            currentGroups[block.GroupID] = group;
+
+        //            lock (GroupName2KeyCache.Dictionary)
+        //            {
+        //                if (!GroupName2KeyCache.Dictionary.ContainsKey(block.GroupID))
+        //                    GroupName2KeyCache.Dictionary.Add(block.GroupID, Utils.BytesToString(block.GroupName));
+        //            }
+        //        }
+
+        //        try { OnCurrentGroups(currentGroups); }
+        //        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+        //    }
+        //}
 
         private void AgentDropGroupHandler(Packet packet, Simulator simulator)
         {
