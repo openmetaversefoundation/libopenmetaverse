@@ -3220,11 +3220,11 @@ namespace OpenMetaverse
                     return m.AvatarKey == msg.Updates[i].AgentID;
                 });
 
-                    update_member.MuteText = msg.Updates[i].Mute_Text;
-                    update_member.MuteVoice = msg.Updates[i].Mute_Voice;
+                    update_member.MuteText = msg.Updates[i].MuteText;
+                    update_member.MuteVoice = msg.Updates[i].MuteVoice;
 
-                    update_member.CanVoiceChat = msg.Updates[i].Can_Voice_Chat;
-                    update_member.IsModerator = msg.Updates[i].Is_Moderator;
+                    update_member.CanVoiceChat = msg.Updates[i].CanVoiceChat;
+                    update_member.IsModerator = msg.Updates[i].IsModerator;
 
                     // replace existing member record
                     lock (GroupChatSessions.Dictionary)

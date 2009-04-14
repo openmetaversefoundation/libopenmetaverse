@@ -398,7 +398,7 @@ namespace OpenMetaverse
         /// primitive will display the media</summary>
         public UUID MediaID;
         /// <summary>A URL which points to any Quicktime supported media type</summary>
-        public string MediaURL;
+        public Uri MediaURL;
         /// <summary>A description of the media</summary>
         public string MediaDesc;
         /// <summary>An Integer which represents the height of the media</summary>
@@ -483,7 +483,7 @@ namespace OpenMetaverse
         /// <summary>Parcel Description</summary>
         public string Desc;
         /// <summary>URL For Music Stream</summary>
-        public string MusicURL;
+        public Uri MusicURL;
         /// <summary></summary>
         public UUID GroupID;
         /// <summary>Price for a temporary pass</summary>
@@ -572,7 +572,7 @@ namespace OpenMetaverse
             SalePrice = 0;
             Name = String.Empty;
             Desc = String.Empty;
-            MusicURL = String.Empty;
+            MusicURL = new Uri("");
             GroupID = UUID.Zero;
             PassPrice = 0;
             PassHours = 0;
@@ -697,8 +697,8 @@ namespace OpenMetaverse
                 request.ParcelData.LandingType = (byte)this.Landing;
                 request.ParcelData.MediaAutoScale = (this.Media.MediaAutoScale) ? (byte)0x1 : (byte)0x0;
                 request.ParcelData.MediaID = this.Media.MediaID;
-                request.ParcelData.MediaURL = Utils.StringToBytes(this.Media.MediaURL);
-                request.ParcelData.MusicURL = Utils.StringToBytes(this.MusicURL);
+                request.ParcelData.MediaURL = Utils.StringToBytes(this.Media.MediaURL.ToString());
+                request.ParcelData.MusicURL = Utils.StringToBytes(this.MusicURL.ToString());
                 request.ParcelData.Name = Utils.StringToBytes(this.Name);
                 if (wantReply) request.ParcelData.Flags = 1;
                 request.ParcelData.ParcelFlags = (uint)this.Flags;
@@ -1750,7 +1750,7 @@ namespace OpenMetaverse
             media.MediaLoop = ((reply.DataBlockExtended.MediaLoop & 1) != 0) ? true : false;
             media.MediaType = Utils.BytesToString(reply.DataBlockExtended.MediaType);
             media.MediaWidth = reply.DataBlockExtended.MediaWidth;
-            media.MediaURL = Utils.BytesToString(reply.DataBlock.MediaURL);
+            media.MediaURL = new Uri(Utils.BytesToString(reply.DataBlock.MediaURL));
 
             if (OnParcelMediaUpdate != null)
             {

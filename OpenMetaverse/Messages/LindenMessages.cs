@@ -391,11 +391,11 @@ namespace OpenMetaverse.Messages.Linden
         /// primitive will display the media</summary>
         public UUID MediaID;
         /// <summary>A URL which points to any Quicktime supported media type</summary>
-        public string MediaURL;
+        public Uri MediaURL;
         /// <summary>A byte, if 0x1 viewer should auto scale media to fit object</summary>
         public bool MediaAutoScale;
         /// <summary>URL For Music Stream</summary>
-        public string MusicURL;
+        public Uri MusicURL;
         /// <summary>Parcel Name</summary>
         public string Name;
         /// <summary>Autoreturn value in minutes for others' objects</summary>
@@ -505,9 +505,9 @@ namespace OpenMetaverse.Messages.Linden
             parcelDataMap["LandingType"] = OSD.FromInteger((int)LandingType);
             parcelDataMap["MaxPrims"] = OSD.FromInteger(MaxPrims);
             parcelDataMap["MediaID"] = OSD.FromUUID(MediaID);
-            parcelDataMap["MediaURL"] = OSD.FromString(MediaURL);
+            parcelDataMap["MediaURL"] = OSD.FromUri(MediaURL);
             parcelDataMap["MediaAutoScale"] = OSD.FromBoolean(MediaAutoScale);
-            parcelDataMap["MusicURL"] = OSD.FromString(MusicURL);
+            parcelDataMap["MusicURL"] = OSD.FromUri(MusicURL);
             parcelDataMap["Name"] = OSD.FromString(Name);
             parcelDataMap["OtherCleanTime"] = OSD.FromInteger(OtherCleanTime);
             parcelDataMap["OtherCount"] = OSD.FromInteger(OtherCount);
@@ -591,9 +591,9 @@ namespace OpenMetaverse.Messages.Linden
             LandingType = (LandingType)parcelDataMap["LandingType"].AsInteger();
             MaxPrims = parcelDataMap["MaxPrims"].AsInteger();
             MediaID = parcelDataMap["MediaID"].AsUUID();
-            MediaURL = parcelDataMap["MediaURL"].AsString();
+            MediaURL = parcelDataMap["MediaURL"].AsUri();
             MediaAutoScale = parcelDataMap["MediaAutoScale"].AsBoolean(); // 0x1 = yes
-            MusicURL = parcelDataMap["MusicURL"].AsString();
+            MusicURL = parcelDataMap["MusicURL"].AsUri();
             Name = parcelDataMap["Name"].AsString();
             OtherCleanTime = parcelDataMap["OtherCleanTime"].AsInteger();
             OtherCount = parcelDataMap["OtherCount"].AsInteger();
@@ -649,9 +649,9 @@ namespace OpenMetaverse.Messages.Linden
         public bool MediaLoop;
         public UUID MediaID;
         public string MediaType;
-        public string MediaURL;
+        public Uri MediaURL;
         public int MediaWidth;
-        public string MusicURL;
+        public Uri MusicURL;
         public string Name;
         public bool ObscureMedia;
         public bool ObscureMusic;
@@ -677,9 +677,9 @@ namespace OpenMetaverse.Messages.Linden
             MediaLoop = map["media_loop"].AsBoolean();
             MediaID = map["media_id"].AsUUID();
             MediaType = map["media_type"].AsString();
-            MediaURL = map["media_url"].AsString();
+            MediaURL = map["media_url"].AsUri();
             MediaWidth = map["media_width"].AsInteger();
-            MusicURL = map["music_url"].AsString();
+            MusicURL = map["music_url"].AsUri();
             Name = map["name"].AsString();
             ObscureMedia = map["obscure_media"].AsBoolean();
             ObscureMusic = map["obscure_music"].AsBoolean();
@@ -708,9 +708,9 @@ namespace OpenMetaverse.Messages.Linden
             map["media_id"] = OSD.FromUUID(MediaID);
             map["media_loop"] = OSD.FromBoolean(MediaLoop);
             map["media_type"] = OSD.FromString(MediaType);
-            map["media_url"] = OSD.FromString(MediaURL);
+            map["media_url"] = OSD.FromUri(MediaURL);
             map["media_width"] = OSD.FromInteger(MediaWidth);
-            map["music_url"] = OSD.FromString(MusicURL);
+            map["music_url"] = OSD.FromUri(MusicURL);
             map["name"] = OSD.FromString(Name);
             map["obscure_media"] = OSD.FromBoolean(ObscureMedia);
             map["obscure_music"] = OSD.FromBoolean(ObscureMusic);
@@ -813,10 +813,10 @@ namespace OpenMetaverse.Messages.Linden
 
         public void Deserialize(OSDMap map)
         {
+            OSDMap agentData = (OSDMap)map["AgentData"];
 
-            OSDArray agentData = (OSDArray)map["AgentData"];
+            AgentID = agentData["AgentID"].AsUUID();
 
-            AgentID = agentData[0].AsUUID();
             OSDArray groupArray = (OSDArray)map["GroupData"];
 
             GroupDataBlock = new GroupData[groupArray.Count];
@@ -894,19 +894,18 @@ namespace OpenMetaverse.Messages.Linden
 
     public class ParcelVoiceInfoRequestMessage : IMessage
     {
-        public int parcel_local_id;
-        public string region_name;
-        // voice credentials map
-        public Uri channel_uri;
-        
+        public int ParcelID;
+        public string RegionName;
+        public Uri SipChannelUri;
+
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(3);
-            map["parcel_local_id"] = OSD.FromInteger(parcel_local_id);
-            map["region_name"] = OSD.FromString(region_name);
+            map["parcel_local_id"] = OSD.FromInteger(ParcelID);
+            map["region_name"] = OSD.FromString(RegionName);
 
             OSDMap vcMap = new OSDMap(1);
-            vcMap["channel_uri"] = OSD.FromUri(channel_uri);
+            vcMap["channel_uri"] = OSD.FromUri(SipChannelUri);
 
             map["voice_credentials"] = vcMap;
 
@@ -915,11 +914,11 @@ namespace OpenMetaverse.Messages.Linden
 
         public void Deserialize(OSDMap map)
         {
-            parcel_local_id = map["parcel_local_id"].AsInteger();
-            region_name = map["region_name"].AsString();
+            ParcelID = map["parcel_local_id"].AsInteger();
+            RegionName = map["region_name"].AsString();
 
             OSDMap vcMap = (OSDMap)map["voice_credentials"];
-            channel_uri = vcMap["channel_uri"].AsUri();
+            SipChannelUri = vcMap["channel_uri"].AsUri();
         }
     }
 
@@ -951,22 +950,22 @@ namespace OpenMetaverse.Messages.Linden
     // upload a script to a tasks inventory
     public class UploadScriptTaskMessage : IMessage
     {
-        public string state; // "upload"
-        public Uri uploader;
+        public string State; // "upload"
+        public Uri UploaderUrl;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(2);
-            map["state"] = OSD.FromString(state);
-            map["uploader"] = OSD.FromUri(uploader);
+            map["state"] = OSD.FromString(State);
+            map["uploader"] = OSD.FromUri(UploaderUrl);
 
             return map;
         }
 
         public void Deserialize(OSDMap map)
         {
-            state = map["state"].AsString();
-            uploader = map["uploader"].AsUri();
+            State = map["state"].AsString();
+            UploaderUrl = map["uploader"].AsUri();
         }
     }
 
@@ -1146,7 +1145,7 @@ namespace OpenMetaverse.Messages.Linden
                 layer.Right = layerMap["Right"].AsInteger();
                 layer.Left = layerMap["Left"].AsInteger();
                 layer.Bottom = layerMap["Bottom"].AsInteger();
-                
+
                 LayerDataBlocks[i] = layer;
             }
         }
@@ -1159,7 +1158,7 @@ namespace OpenMetaverse.Messages.Linden
 
     public class ChatSessionRequestMessage : IMessage
     {
-        
+
         /// <summary>
         /// The Session ID
         /// </summary>
@@ -1179,7 +1178,7 @@ namespace OpenMetaverse.Messages.Linden
         public string RequestKey;
         public bool RequestValue;
 
-        
+
 
         public OSDMap Serialize()
         {
@@ -1217,35 +1216,6 @@ namespace OpenMetaverse.Messages.Linden
             RequestValue = muteMap[RequestKey].AsBoolean();
         }
     }
-    /*
-     OSDMap req = new OSDMap();
-                req.Add("method", OSD.FromString("mute update"));
-                
-                OSDMap mute_info = new OSDMap();
-                mute_info.Add("text", OSD.FromBoolean(moderateText));
-                mute_info.Add("voice", OSD.FromBoolean(moderateVoice));
-
-                OSDMap parameters = new OSDMap();
-                parameters["agent_id"] = OSD.FromUUID(memberID);
-                parameters["mute_info"] = mute_info;
-
-                req["params"] = parameters;
-                
-                req.Add("session-id", OSD.FromUUID(sessionID)); 
-     
-     */
-    //public class ModerateChatSessionsMessage
-    //{
-    //    public OSDMap Serialize()
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //    public void Deserialize(OSDMap map)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-    //}
 
     public class ChatterboxSessionEventReplyMessage : IMessage
     {
@@ -1280,25 +1250,24 @@ namespace OpenMetaverse.Messages.Linden
         public bool VoiceEnabled;
         public bool ModeratedVoice;
 
+        /* Is Text moderation possible? */
+
         public OSDMap Serialize()
         {
-            OSDMap map = new OSDMap(4);
-            map.Add("session_id", OSD.FromUUID(SessionID));
-            map.Add("temp_session_id", OSD.FromUUID(TempSessionID));
-            map.Add("success", OSD.FromBoolean(Success));
+            OSDMap moderatedMap = new OSDMap(1);
+            moderatedMap["voice"] = OSD.FromBoolean(ModeratedVoice);
 
             OSDMap sessionMap = new OSDMap(4);
-            sessionMap.Add("type", OSD.FromInteger(Type));
-            sessionMap.Add("session_name", OSD.FromString(SessionName));
-            sessionMap.Add("voice_enabled", OSD.FromBoolean(VoiceEnabled));
+            sessionMap["type"] = OSD.FromInteger(Type);
+            sessionMap["session_name"] = OSD.FromString(SessionName);
+            sessionMap["voice_enabled"] = OSD.FromBoolean(VoiceEnabled);
+            sessionMap["moderated_mode"] = moderatedMap;
 
-
-            OSDMap moderatedMap = new OSDMap(1);
-            moderatedMap.Add("voice", OSD.FromBoolean(ModeratedVoice));
-
-            sessionMap.Add("moderated_mode", moderatedMap);
-
-            map.Add("session_info", sessionMap);
+            OSDMap map = new OSDMap(4);
+            map["session_id"] = OSD.FromUUID(SessionID);
+            map["temp_session_id"] = OSD.FromUUID(TempSessionID);
+            map["success"] = OSD.FromBoolean(Success);
+            map["session_info"] = sessionMap;
 
             return map;
         }
@@ -1311,11 +1280,12 @@ namespace OpenMetaverse.Messages.Linden
 
             if (Success)
             {
-                OSDMap sessionInfoMap = (OSDMap)map["session_info"];
-                SessionName = sessionInfoMap["session_name"].AsString();
-                Type = sessionInfoMap["type"].AsInteger();
+                OSDMap sessionMap = (OSDMap)map["session_info"];
+                SessionName = sessionMap["session_name"].AsString();
+                Type = sessionMap["type"].AsInteger();
+                VoiceEnabled = sessionMap["voice_enabled"].AsBoolean();
 
-                OSDMap moderatedModeMap = (OSDMap)sessionInfoMap["moderated_mode"];
+                OSDMap moderatedModeMap = (OSDMap)sessionMap["moderated_mode"];
                 ModeratedVoice = moderatedModeMap["voice"].AsBoolean();
             }
         }
@@ -1403,57 +1373,71 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    /// <summary>
+    /// Sent from the simulator to the viewer.
+    /// 
+    /// When an agent initially joins a session the AgentUpdatesBlock object will contain a list of session members including
+    /// a boolean indicating they can use voice chat in this session, a boolean indicating they are allowed to moderate 
+    /// this session, and lastly a string which indicates another agent is entering the session with the Transition set to "ENTER"
+    /// 
+    /// During the session lifetime updates on individuals are sent. During the update the booleans sent during the initial join are
+    /// excluded with the exception of the Transition field. This indicates a new user entering or exiting the session with
+    /// the string "ENTER" or "LEAVE" respectively.
+    /// </summary>
     public class ChatterBoxSessionAgentListUpdatesMessage : IMessage
     {
-        public UUID SessionID;
-        public string Message = "ChatterBoxSessionAgentListUpdates";
+        // initial when agent joins session
+        // <llsd><map><key>events</key><array><map><key>body</key><map><key>agent_updates</key><map><key>32939971-a520-4b52-8ca5-6085d0e39933</key><map><key>info</key><map><key>can_voice_chat</key><boolean>1</boolean><key>is_moderator</key><boolean>1</boolean></map><key>transition</key><string>ENTER</string></map><key>ca00e3e1-0fdb-4136-8ed4-0aab739b29e8</key><map><key>info</key><map><key>can_voice_chat</key><boolean>1</boolean><key>is_moderator</key><boolean>0</boolean></map><key>transition</key><string>ENTER</string></map></map><key>session_id</key><string>be7a1def-bd8a-5043-5d5b-49e3805adf6b</string><key>updates</key><map><key>32939971-a520-4b52-8ca5-6085d0e39933</key><string>ENTER</string><key>ca00e3e1-0fdb-4136-8ed4-0aab739b29e8</key><string>ENTER</string></map></map><key>message</key><string>ChatterBoxSessionAgentListUpdates</string></map><map><key>body</key><map><key>agent_updates</key><map><key>32939971-a520-4b52-8ca5-6085d0e39933</key><map><key>info</key><map><key>can_voice_chat</key><boolean>1</boolean><key>is_moderator</key><boolean>1</boolean></map></map></map><key>session_id</key><string>be7a1def-bd8a-5043-5d5b-49e3805adf6b</string><key>updates</key><map /></map><key>message</key><string>ChatterBoxSessionAgentListUpdates</string></map></array><key>id</key><integer>5</integer></map></llsd>
 
-        public class UpdatesBlock
+        // a message containing only moderator updates
+        // <llsd><map><key>events</key><array><map><key>body</key><map><key>agent_updates</key><map><key>ca00e3e1-0fdb-4136-8ed4-0aab739b29e8</key><map><key>info</key><map><key>mutes</key><map><key>text</key><boolean>1</boolean></map></map></map></map><key>session_id</key><string>be7a1def-bd8a-5043-5d5b-49e3805adf6b</string><key>updates</key><map /></map><key>message</key><string>ChatterBoxSessionAgentListUpdates</string></map></array><key>id</key><integer>7</integer></map></llsd>
+
+        public UUID SessionID;
+        public string Message = "ChatterBoxSessionAgentListUpdates"; // message
+
+        public class AgentUpdatesBlock 
         {
-            public UUID AgentID;
-            public bool Can_Voice_Chat;
-            // info block
-            public bool Is_Moderator;
-            public string Transition;   // TODO: switch to an enum "ENTER" or "LEAVE"
-            // mutes block
-            public bool Mute_Text;
-            public bool Mute_Voice;
+            public UUID AgentID; 
+
+            public bool CanVoiceChat; 
+            public bool IsModerator;  
+            // transition "transition" = "ENTER" or "LEAVE"
+            public string Transition;   //  TODO: switch to an enum "ENTER" or "LEAVE"
+
+            public bool MuteText; 
+            public bool MuteVoice;
         }
 
-        public UpdatesBlock[] Updates;
+        public AgentUpdatesBlock[] Updates;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
-            map["session_id"] = OSD.FromUUID(SessionID);
 
-            OSDMap agent_updatesMap = new OSDMap();
+            OSDMap agent_updatesMap = new OSDMap(1);
             for (int i = 0; i < Updates.Length; i++)
             {
-                OSDMap infoMap = new OSDMap(3);
-                infoMap["can_voice_chat"] = OSD.FromBoolean(Updates[i].Can_Voice_Chat);
-                infoMap["is_moderator"] = OSD.FromBoolean(Updates[i].Is_Moderator);
+                OSDMap mutesMap = new OSDMap(2);
+                mutesMap["text"] = OSD.FromBoolean(Updates[i].MuteText);
+                mutesMap["voice"] = OSD.FromBoolean(Updates[i].MuteVoice);
+                
+                OSDMap infoMap = new OSDMap(4);
+                infoMap["can_voice_chat"] = OSD.FromBoolean(Updates[i].CanVoiceChat);
+                infoMap["is_moderator"] = OSD.FromBoolean(Updates[i].IsModerator);
                 infoMap["transition"] = OSD.FromString(Updates[i].Transition);
-                agent_updatesMap.Add(Updates[i].AgentID.ToString(), infoMap);
+
+                OSDMap imap = new OSDMap(1);
+                imap["info"] = infoMap;
+                imap.Add("mutes", mutesMap);
+
+                agent_updatesMap.Add(Updates[i].AgentID.ToString(), imap);
             }
+
             map.Add("agent_updates", agent_updatesMap);
 
-            // updates & mutes
             OSDMap updates = new OSDMap();
 
-            OSDMap mutesMap = new OSDMap();
-            for (int i = 0; i < Updates.Length; i++)
-            {
-                updates.Add(Updates[i].AgentID.ToString(), OSD.FromString(Updates[i].Transition));
-
-                mutesMap.Add("text", OSD.FromBoolean(Updates[i].Mute_Text));
-                mutesMap.Add("voice", OSD.FromBoolean(Updates[i].Mute_Voice));
-            }
-
-            map["updates"] = updates;
-
-            map["mutes"] = mutesMap;
-
+            map["session_id"] = OSD.FromUUID(SessionID);
 
             map["message"] = OSD.FromString(Message);
 
@@ -1464,13 +1448,14 @@ namespace OpenMetaverse.Messages.Linden
         {
 
             OSDMap agent_updates = (OSDMap)map["agent_updates"];
-            SessionID = agent_updates["session_id"].AsUUID();
+            SessionID = map["session_id"].AsUUID();
+            Message = map["message"].AsString();
 
-            List<UpdatesBlock> updatesList = new List<UpdatesBlock>();
+            List<AgentUpdatesBlock> updatesList = new List<AgentUpdatesBlock>();
 
             foreach (KeyValuePair<string, OSD> kvp in agent_updates)
             {
-                UpdatesBlock block = new UpdatesBlock();
+
                 if (kvp.Key == "updates")
                 {
                     // This appears to be redundant and duplicated by the info block, more dumps will confirm this
@@ -1486,14 +1471,7 @@ namespace OpenMetaverse.Messages.Linden
                             <string>984f6a1e-4ceb-6366-8d5e-a18c6819c6f7</string> */
 
                 }
-                else if (kvp.Key == "mutes")
-                {
-                    // handle mute maps
-                    // key = text val = bool
-                    // key = voice val = bool
-
-                }
-                else
+                else  // key is an agent uuid (we hope!)
                 {
                     // should be the agents uuid as the key, and "info" as the datablock
                     /* <key>32939971-a520-4b52-8ca5-6085d0e39933</key>
@@ -1508,78 +1486,245 @@ namespace OpenMetaverse.Messages.Linden
                                 <key>transition</key>
                                     <string>ENTER</string>
                             </map>*/
-
+                    AgentUpdatesBlock block = new AgentUpdatesBlock();
                     block.AgentID = UUID.Parse(kvp.Key);
+                    //Console.WriteLine("AgentID: {0}", kvp.Key);
 
-                    OSDMap infoMap1 = (OSDMap)kvp.Value;
+                    OSDMap infoMap = (OSDMap)agent_updates[kvp.Key];
+                    //Console.WriteLine("InfoMap: {0}", infoMap.ToString());
 
-                    OSDMap infoMap2 = (OSDMap)infoMap1["info"];
-                    block.Can_Voice_Chat = infoMap2["can_voice_chat"].AsBoolean();
-                    block.Is_Moderator = infoMap2["is_moderator"].AsBoolean();
+                    OSDMap agentPermsMap = (OSDMap)infoMap["info"];
 
-                    block.Transition = infoMap1["transition"].AsString();
+                    block.CanVoiceChat = agentPermsMap["can_voice_chat"].AsBoolean();
+                    block.IsModerator = agentPermsMap["is_moderator"].AsBoolean();
+                    block.Transition = agentPermsMap["transition"].AsString();
+                    //Console.WriteLine("type: {0}", infoMap["mutes"].Type);
+                    OSDMap mutesMap = (OSDMap)infoMap["mutes"];
+                    //Console.WriteLine("\tmutesMap: {0}", mutesMap.ToString());
+                    block.MuteText = mutesMap["text"].AsBoolean();
+                    block.MuteVoice = mutesMap["voice"].AsBoolean();
 
+                    updatesList.Add(block);
                 }
-                updatesList.Add(block);
+
             }
 
-            Updates = new UpdatesBlock[updatesList.Count];
+            Updates = new AgentUpdatesBlock[updatesList.Count];
+
             for (int i = 0; i < updatesList.Count; i++)
             {
-                Updates[i] = updatesList[i];
+                AgentUpdatesBlock block = new AgentUpdatesBlock();
+                block.AgentID = updatesList[i].AgentID;
+                block.CanVoiceChat = updatesList[i].CanVoiceChat;
+                block.IsModerator = updatesList[i].IsModerator;
+                block.MuteText = updatesList[i].MuteText;
+                block.MuteVoice = updatesList[i].MuteVoice;
+                block.Transition = updatesList[i].Transition;
+                Updates[i] = block;
             }
         }
     }
 
     #endregion
 
-    #region Not Completed Messages
+    #region Stats Messages
 
     public class ViewerStatsMessage : IMessage
     {
-        //<llsd><map><key>agent</key><map><key>agents_in_view</key><integer>0</integer><key>fps</key><real>18.796893698526127</real><key>language</key><string>en</string><key>mem_use</key><real>239416</real><key>meters_traveled</key><real>195.69346060865948</real><key>ping</key><real>118.90310668945313</real><key>regions_visited</key><integer>1</integer><key>run_time</key><real>640.57415771484375</real><key>sim_fps</key><real>17.945145949633609</real><key>start_time</key><real>1239611446.4258423</real><key>version</key><string>Second Life Release 1.21.6.99587</string></map><key>downloads</key><map><key>object_kbytes</key><real>560.671875</real><key>texture_kbytes</key><real>126.8203125</real><key>world_kbytes</key><real>1173.3203125</real></map><key>misc</key><map><key>Version</key><real>0</real><key>Vertex Buffers Enabled</key><real>1</real></map><key>session_id</key><uuid>c2eba017-26da-4fdd-b293-90c79f3ca710</uuid><key>stats</key><map><key>failures</key><map><key>dropped</key><integer>16</integer><key>failed_resends</key><integer>0</integer><key>invalid</key><integer>0</integer><key>off_circuit</key><integer>0</integer><key>resent</key><integer>0</integer><key>send_packet</key><integer>0</integer></map><key>misc</key><map><key>int_1</key><integer>2</integer><key>int_2</key><integer>0</integer><key>string_1</key><string>1361</string></map><key>net</key><map><key>in</key><map><key>compressed_packets</key><integer>1132</integer><key>kbytes</key><real>1140.958984375</real><key>packets</key><integer>5791</integer><key>savings</key><real>212.3994140625</real></map><key>out</key><map><key>compressed_packets</key><integer>0</integer><key>kbytes</key><real>0</real><key>packets</key><integer>6928</integer><key>savings</key><real>0</real></map></map></map><key>system</key><map><key>cpu</key><string>Intel Core 2 Series Processor (2400 MHz)</string><key>gpu</key><string>NVIDIA Class 3 NVIDIA GeForce 8800</string><key>gpu_class</key><integer>3</integer><key>gpu_vendor</key><string>NVIDIA</string><key>gpu_version</key><string /><key>os</key><string>Microsoft Windows XP </string><key>ram</key><integer>3145948</integer></map></map></llsd>
-        // agent
         public int AgentsInView;
-        public float Fps;
-        public string Language;
+        public float AgentFPS;
+        public string AgentLanguage;
+        public float AgentMemoryUsed;
         public float MetersTraveled;
-        public float Ping;
+        public float AgentPing;
         public int RegionsVisited;
-        public float Runtime;
-        public float SimFps;
-        public float StartTime;
-        public string Version;
-        // downloads
-        public float ObjectKbytes;
-        public float TextureKbytes;
-        public float WorldKbytes;
-        // misc map
-
-        public float VertexBuffersEnabled;
-
+        public float AgentRuntime;
+        public float SimulatorFPS;
+        public DateTime AgentStartTime;
+        public string AgentVersion;
+      
+        public float object_kbytes;
+        public float texture_kbytes;
+        public float world_kbytes;
+     
+        public float MiscVersion;
+        public bool VertexBuffersEnabled;
+   
         public UUID SessionID;
-        // stats map;
-        // failures
-        public int dropped;
-        public int FailedResends;
-        public int Invalid;
-        public int OffCircuit;
-        public int Resent;
-        public int SendPacket;
-        // misc
-        public int int_1;
-        public int int_2;
-        public string string_1;
-        // net
 
+        public int StatsDropped;
+        public int StatsFailedResends;
+        public int FailuresInvalid;
+        public int FailuresOffCircuit;
+        public int FailuresResent;
+        public int FailuresSendPacket;
+
+        public int MiscInt1;
+        public int MiscInt2;
+        public string MiscString1;
+        
+        public int InCompressedPackets;
+        public float InKbytes;
+        public float InPackets;
+        public float InSavings;
+        
+        public int OutCompressedPackets;
+        public float OutKbytes;
+        public float OutPackets;
+        public float OutSavings;
+        
+        public string SystemCPU;
+        public string SystemGPU;
+        public int SystemGPUClass;
+        public string SystemGPUVendor;
+        public string SystemGPUVersion;
+        public string SystemOS;
+        public int SystemInstalledRam;
+       
         public OSDMap Serialize()
         {
-            throw new NotImplementedException();
+            OSDMap map = new OSDMap(5);
+            map["session_id"] = OSD.FromUUID(SessionID);
+
+            OSDMap agentMap = new OSDMap(11);
+            agentMap["agents_in_view"] = OSD.FromInteger(AgentsInView);
+            agentMap["fps"] = OSD.FromReal(AgentFPS);
+            agentMap["language"] = OSD.FromString(AgentLanguage);
+            agentMap["mem_use"] = OSD.FromReal(AgentMemoryUsed);
+            agentMap["meters_traveled"] = OSD.FromReal(MetersTraveled);
+            agentMap["ping"] = OSD.FromReal(AgentPing);
+            agentMap["regions_visited"] = OSD.FromInteger(RegionsVisited);
+            agentMap["run_time"] = OSD.FromReal(AgentRuntime);
+            agentMap["sim_fps"] = OSD.FromReal(SimulatorFPS);
+            agentMap["start_time"] = OSD.FromDate(AgentStartTime);
+            agentMap["version"] = OSD.FromString(AgentVersion);
+            map["agent"] = agentMap;
+
+
+            OSDMap downloadsMap = new OSDMap(3); // downloads
+            downloadsMap["object_kbytes"] = OSD.FromReal(object_kbytes);
+            downloadsMap["texture_kbytes"] = OSD.FromReal(texture_kbytes);
+            downloadsMap["world_kbytes"] = OSD.FromReal(world_kbytes);
+            map["downloads"] = downloadsMap;
+
+            OSDMap miscMap = new OSDMap(2);
+            miscMap["Version"] = OSD.FromReal(MiscVersion);
+            miscMap["Vertex Buffers Enabled"] = OSD.FromBoolean(VertexBuffersEnabled);
+            map["misc"] = miscMap;
+
+            OSDMap statsMap = new OSDMap(2);
+
+            OSDMap failuresMap = new OSDMap(6);
+            failuresMap["dropped"] = OSD.FromInteger(StatsDropped);
+            failuresMap["failed_resends"] = OSD.FromInteger(StatsFailedResends);
+            failuresMap["invalid"] = OSD.FromInteger(FailuresInvalid);
+            failuresMap["off_circuit"] = OSD.FromInteger(FailuresOffCircuit);
+            failuresMap["resent"] = OSD.FromInteger(FailuresResent);
+            failuresMap["send_packet"] = OSD.FromInteger(FailuresSendPacket);
+            statsMap["failures"] = failuresMap;
+
+            OSDMap statsMiscMap = new OSDMap(3);
+            statsMiscMap["int_1"] = OSD.FromInteger(MiscInt1);
+            statsMiscMap["int_2"] = OSD.FromInteger(MiscInt2);
+            statsMiscMap["string_1"] = OSD.FromString(MiscString1);
+            statsMap["misc"] = statsMiscMap;
+
+            OSDMap netMap = new OSDMap(3);
+
+            // in
+            OSDMap netInMap = new OSDMap(4);
+            netInMap["compressed_packets"] = OSD.FromInteger(InCompressedPackets);
+            netInMap["kbytes"] = OSD.FromReal(InKbytes);
+            netInMap["packets"] = OSD.FromReal(InPackets);
+            netInMap["savings"] = OSD.FromReal(InSavings);
+            netMap["in"] = netInMap;
+            // out
+            OSDMap netOutMap = new OSDMap(4);
+            netOutMap["compressed_packets"] = OSD.FromInteger(OutCompressedPackets);
+            netOutMap["kbytes"] = OSD.FromReal(OutKbytes);
+            netOutMap["packets"] = OSD.FromReal(OutPackets);
+            netOutMap["savings"] = OSD.FromReal(OutSavings);
+            netMap["out"] = netOutMap;
+
+            statsMap["net"] = netMap;
+
+            //system
+            OSDMap systemStatsMap = new OSDMap(7);
+            systemStatsMap["cpu"] = OSD.FromString(SystemCPU);
+            systemStatsMap["gpu"] = OSD.FromString(SystemGPU);
+            systemStatsMap["gpu_class"] = OSD.FromInteger(SystemGPUClass);
+            systemStatsMap["gpu_vendor"] = OSD.FromString(SystemGPUVendor);
+            systemStatsMap["gpu_version"] = OSD.FromString(SystemGPUVersion);
+            systemStatsMap["os"] = OSD.FromString(SystemOS);
+            systemStatsMap["ram"] = OSD.FromInteger(SystemInstalledRam);
+            map["system"] = systemStatsMap;
+
+            map["stats"] = statsMap;
+            return map;
         }
 
         public void Deserialize(OSDMap map)
         {
-            throw new NotImplementedException();
+            SessionID = map["session_id"].AsUUID();
+
+            OSDMap agentMap = (OSDMap)map["agent"];
+            AgentsInView = agentMap["agents_in_view"].AsInteger();
+            AgentFPS = (float)agentMap["fps"].AsReal();
+            AgentLanguage = agentMap["language"].AsString();
+            AgentMemoryUsed = (float)agentMap["mem_use"].AsReal();
+            MetersTraveled = agentMap["meters_traveled"].AsInteger();
+            AgentPing = (float)agentMap["ping"].AsReal();
+            RegionsVisited = agentMap["regions_visited"].AsInteger();
+            AgentRuntime = (float)agentMap["run_time"].AsReal();
+            SimulatorFPS = (float)agentMap["sim_fps"].AsReal();
+            AgentStartTime = agentMap["start_time"].AsDate();
+            AgentVersion = agentMap["version"].AsString();
+
+            OSDMap downloadsMap = (OSDMap)map["downloads"];
+            object_kbytes = (float)downloadsMap["object_kbytes"].AsReal();
+            texture_kbytes = (float)downloadsMap["texture_kbytes"].AsReal();
+            world_kbytes = (float)downloadsMap["world_kbytes"].AsReal();
+
+            OSDMap miscMap = (OSDMap)map["misc"];
+            MiscVersion = (float)miscMap["Version"].AsReal();
+            VertexBuffersEnabled = miscMap["Vertex Buffers Enabled"].AsBoolean();
+
+            OSDMap statsMap = (OSDMap)map["stats"];
+            OSDMap failuresMap = (OSDMap)statsMap["failures"];
+            StatsDropped = failuresMap["dropped"].AsInteger();
+            StatsFailedResends = failuresMap["failed_resends"].AsInteger();
+            FailuresInvalid = failuresMap["invalid"].AsInteger();
+            FailuresOffCircuit = failuresMap["off_circuit"].AsInteger();
+            FailuresResent = failuresMap["resent"].AsInteger();
+            FailuresSendPacket = failuresMap["send_packet"].AsInteger();
+
+            OSDMap statsMiscMap = (OSDMap)statsMap["misc"];
+            MiscInt1 = statsMiscMap["int_1"].AsInteger();
+            MiscInt2 = statsMiscMap["int_2"].AsInteger();
+            MiscString1 = statsMiscMap["string_1"].AsString();
+            OSDMap netMap = (OSDMap)statsMap["net"];
+            // in
+            OSDMap netInMap = (OSDMap)netMap["in"];
+            InCompressedPackets = netInMap["compressed_packets"].AsInteger();
+            InKbytes = netInMap["kbytes"].AsInteger();
+            InPackets = netInMap["packets"].AsInteger();
+            InSavings = netInMap["savings"].AsInteger();
+            // out
+            OSDMap netOutMap = (OSDMap)netMap["out"];
+            OutCompressedPackets = netOutMap["compressed_packets"].AsInteger();
+            OutKbytes = netOutMap["kbytes"].AsInteger();
+            OutPackets = netOutMap["packets"].AsInteger();
+            OutSavings = netOutMap["savings"].AsInteger();
+
+            //system
+            OSDMap systemStatsMap = (OSDMap)map["system"];
+            SystemCPU = systemStatsMap["cpu"].AsString();
+            SystemGPU = systemStatsMap["gpu"].AsString();
+            SystemGPUClass = systemStatsMap["gpu_class"].AsInteger();
+            SystemGPUVendor = systemStatsMap["gpu_vendor"].AsString();
+            SystemGPUVersion = systemStatsMap["gpu_version"].AsString();
+            SystemOS = systemStatsMap["os"].AsString();
+            SystemInstalledRam = systemStatsMap["ram"].AsInteger();
         }
     }
 
