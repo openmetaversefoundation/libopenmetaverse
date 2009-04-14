@@ -398,7 +398,7 @@ namespace OpenMetaverse
         /// primitive will display the media</summary>
         public UUID MediaID;
         /// <summary>A URL which points to any Quicktime supported media type</summary>
-        public Uri MediaURL;
+        public string MediaURL;
         /// <summary>A description of the media</summary>
         public string MediaDesc;
         /// <summary>An Integer which represents the height of the media</summary>
@@ -483,7 +483,7 @@ namespace OpenMetaverse
         /// <summary>Parcel Description</summary>
         public string Desc;
         /// <summary>URL For Music Stream</summary>
-        public Uri MusicURL;
+        public string MusicURL;
         /// <summary></summary>
         public UUID GroupID;
         /// <summary>Price for a temporary pass</summary>
@@ -572,7 +572,7 @@ namespace OpenMetaverse
             SalePrice = 0;
             Name = String.Empty;
             Desc = String.Empty;
-            MusicURL = new Uri("");
+            MusicURL = String.Empty;
             GroupID = UUID.Zero;
             PassPrice = 0;
             PassHours = 0;
@@ -1750,7 +1750,7 @@ namespace OpenMetaverse
             media.MediaLoop = ((reply.DataBlockExtended.MediaLoop & 1) != 0) ? true : false;
             media.MediaType = Utils.BytesToString(reply.DataBlockExtended.MediaType);
             media.MediaWidth = reply.DataBlockExtended.MediaWidth;
-            media.MediaURL = new Uri(Utils.BytesToString(reply.DataBlock.MediaURL));
+            media.MediaURL = Utils.BytesToString(reply.DataBlock.MediaURL);
 
             if (OnParcelMediaUpdate != null)
             {

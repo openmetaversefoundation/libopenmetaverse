@@ -51,6 +51,7 @@ namespace OpenMetaverse.Messages.Linden
 
         public OSDMap Serialize()
         {
+
             OSDMap map = new OSDMap(1);
 
             OSDArray infoArray = new OSDArray(1);
@@ -74,6 +75,7 @@ namespace OpenMetaverse.Messages.Linden
 
         public void Deserialize(OSDMap map)
         {
+            Console.WriteLine("Deserializing TeleportFinish Message");
             OSDArray array = (OSDArray)map["Info"];
             OSDMap blockMap = (OSDMap)array[0];
 
@@ -391,11 +393,11 @@ namespace OpenMetaverse.Messages.Linden
         /// primitive will display the media</summary>
         public UUID MediaID;
         /// <summary>A URL which points to any Quicktime supported media type</summary>
-        public Uri MediaURL;
+        public string MediaURL;
         /// <summary>A byte, if 0x1 viewer should auto scale media to fit object</summary>
         public bool MediaAutoScale;
         /// <summary>URL For Music Stream</summary>
-        public Uri MusicURL;
+        public string MusicURL;
         /// <summary>Parcel Name</summary>
         public string Name;
         /// <summary>Autoreturn value in minutes for others' objects</summary>
@@ -505,9 +507,9 @@ namespace OpenMetaverse.Messages.Linden
             parcelDataMap["LandingType"] = OSD.FromInteger((int)LandingType);
             parcelDataMap["MaxPrims"] = OSD.FromInteger(MaxPrims);
             parcelDataMap["MediaID"] = OSD.FromUUID(MediaID);
-            parcelDataMap["MediaURL"] = OSD.FromUri(MediaURL);
+            parcelDataMap["MediaURL"] = OSD.FromString(MediaURL);
             parcelDataMap["MediaAutoScale"] = OSD.FromBoolean(MediaAutoScale);
-            parcelDataMap["MusicURL"] = OSD.FromUri(MusicURL);
+            parcelDataMap["MusicURL"] = OSD.FromString(MusicURL);
             parcelDataMap["Name"] = OSD.FromString(Name);
             parcelDataMap["OtherCleanTime"] = OSD.FromInteger(OtherCleanTime);
             parcelDataMap["OtherCount"] = OSD.FromInteger(OtherCount);
@@ -591,9 +593,9 @@ namespace OpenMetaverse.Messages.Linden
             LandingType = (LandingType)parcelDataMap["LandingType"].AsInteger();
             MaxPrims = parcelDataMap["MaxPrims"].AsInteger();
             MediaID = parcelDataMap["MediaID"].AsUUID();
-            MediaURL = parcelDataMap["MediaURL"].AsUri();
+            MediaURL = parcelDataMap["MediaURL"].AsString();
             MediaAutoScale = parcelDataMap["MediaAutoScale"].AsBoolean(); // 0x1 = yes
-            MusicURL = parcelDataMap["MusicURL"].AsUri();
+            MusicURL = parcelDataMap["MusicURL"].AsString();
             Name = parcelDataMap["Name"].AsString();
             OtherCleanTime = parcelDataMap["OtherCleanTime"].AsInteger();
             OtherCount = parcelDataMap["OtherCount"].AsInteger();
@@ -649,9 +651,9 @@ namespace OpenMetaverse.Messages.Linden
         public bool MediaLoop;
         public UUID MediaID;
         public string MediaType;
-        public Uri MediaURL;
+        public string MediaURL;
         public int MediaWidth;
-        public Uri MusicURL;
+        public string MusicURL;
         public string Name;
         public bool ObscureMedia;
         public bool ObscureMusic;
@@ -677,9 +679,9 @@ namespace OpenMetaverse.Messages.Linden
             MediaLoop = map["media_loop"].AsBoolean();
             MediaID = map["media_id"].AsUUID();
             MediaType = map["media_type"].AsString();
-            MediaURL = map["media_url"].AsUri();
+            MediaURL = map["media_url"].AsString();
             MediaWidth = map["media_width"].AsInteger();
-            MusicURL = map["music_url"].AsUri();
+            MusicURL = map["music_url"].AsString();
             Name = map["name"].AsString();
             ObscureMedia = map["obscure_media"].AsBoolean();
             ObscureMusic = map["obscure_music"].AsBoolean();
@@ -708,9 +710,9 @@ namespace OpenMetaverse.Messages.Linden
             map["media_id"] = OSD.FromUUID(MediaID);
             map["media_loop"] = OSD.FromBoolean(MediaLoop);
             map["media_type"] = OSD.FromString(MediaType);
-            map["media_url"] = OSD.FromUri(MediaURL);
+            map["media_url"] = OSD.FromString(MediaURL);
             map["media_width"] = OSD.FromInteger(MediaWidth);
-            map["music_url"] = OSD.FromUri(MusicURL);
+            map["music_url"] = OSD.FromString(MusicURL);
             map["name"] = OSD.FromString(Name);
             map["obscure_media"] = OSD.FromBoolean(ObscureMedia);
             map["obscure_music"] = OSD.FromBoolean(ObscureMusic);
@@ -790,7 +792,10 @@ namespace OpenMetaverse.Messages.Linden
             OSDMap agent = new OSDMap(1);
             agent["AgentID"] = OSD.FromUUID(AgentID);
 
-            map["AgentData"] = agent;
+            OSDArray agentArray = new OSDArray();
+            agentArray.Add(agent);
+
+            map["AgentData"] = agentArray;
 
             OSDArray array = new OSDArray(GroupDataBlock.Length);
             for (int i = 0; i < GroupDataBlock.Length; i++)
@@ -813,9 +818,9 @@ namespace OpenMetaverse.Messages.Linden
 
         public void Deserialize(OSDMap map)
         {
-            OSDMap agentData = (OSDMap)map["AgentData"];
-
-            AgentID = agentData["AgentID"].AsUUID();
+            OSDArray agentArray = (OSDArray)map["AgentData"];
+            OSDMap agentMap = (OSDMap)agentArray[0];
+            AgentID = agentMap["AgentID"].AsUUID();
 
             OSDArray groupArray = (OSDArray)map["GroupData"];
 
@@ -1395,16 +1400,16 @@ namespace OpenMetaverse.Messages.Linden
         public UUID SessionID;
         public string Message = "ChatterBoxSessionAgentListUpdates"; // message
 
-        public class AgentUpdatesBlock 
+        public class AgentUpdatesBlock
         {
-            public UUID AgentID; 
+            public UUID AgentID;
 
-            public bool CanVoiceChat; 
-            public bool IsModerator;  
+            public bool CanVoiceChat;
+            public bool IsModerator;
             // transition "transition" = "ENTER" or "LEAVE"
             public string Transition;   //  TODO: switch to an enum "ENTER" or "LEAVE"
 
-            public bool MuteText; 
+            public bool MuteText;
             public bool MuteVoice;
         }
 
@@ -1420,7 +1425,7 @@ namespace OpenMetaverse.Messages.Linden
                 OSDMap mutesMap = new OSDMap(2);
                 mutesMap["text"] = OSD.FromBoolean(Updates[i].MuteText);
                 mutesMap["voice"] = OSD.FromBoolean(Updates[i].MuteVoice);
-                
+
                 OSDMap infoMap = new OSDMap(4);
                 infoMap["can_voice_chat"] = OSD.FromBoolean(Updates[i].CanVoiceChat);
                 infoMap["is_moderator"] = OSD.FromBoolean(Updates[i].IsModerator);
@@ -1542,14 +1547,14 @@ namespace OpenMetaverse.Messages.Linden
         public float SimulatorFPS;
         public DateTime AgentStartTime;
         public string AgentVersion;
-      
+
         public float object_kbytes;
         public float texture_kbytes;
         public float world_kbytes;
-     
+
         public float MiscVersion;
         public bool VertexBuffersEnabled;
-   
+
         public UUID SessionID;
 
         public int StatsDropped;
@@ -1562,17 +1567,17 @@ namespace OpenMetaverse.Messages.Linden
         public int MiscInt1;
         public int MiscInt2;
         public string MiscString1;
-        
+
         public int InCompressedPackets;
         public float InKbytes;
         public float InPackets;
         public float InSavings;
-        
+
         public int OutCompressedPackets;
         public float OutKbytes;
         public float OutPackets;
         public float OutSavings;
-        
+
         public string SystemCPU;
         public string SystemGPU;
         public int SystemGPUClass;
@@ -1580,7 +1585,7 @@ namespace OpenMetaverse.Messages.Linden
         public string SystemGPUVersion;
         public string SystemOS;
         public int SystemInstalledRam;
-       
+
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(5);

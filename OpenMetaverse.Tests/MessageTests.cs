@@ -634,9 +634,9 @@ namespace OpenMetaverse.Tests
             s.MediaID = UUID.Random();
             s.MediaLoop = false;
             s.MediaType = "text/html";
-            s.MediaURL = new Uri("http://www.openmetaverse.org"); 
+            s.MediaURL = "http://www.openmetaverse.org"; 
             s.MediaWidth = 640;
-            s.MusicURL = new Uri("http://scfire-ntc-aa04.stream.aol.com:80/stream/1075"); // Yee Haw
+            s.MusicURL = "http://scfire-ntc-aa04.stream.aol.com:80/stream/1075"; // Yee Haw
             s.Name = "Test Name";
             s.ObscureMedia = false;
             s.ObscureMusic = false;
@@ -746,9 +746,9 @@ namespace OpenMetaverse.Tests
             s.MediaID = UUID.Random();
             s.MediaLoop = false;
             s.MediaType = "image/jpeg";
-            s.MediaURL = new Uri("http://www.openmetaverse.org/test.jpeg");
+            s.MediaURL = "http://www.openmetaverse.org/test.jpeg";
             s.MediaWidth = 800;
-            s.MusicURL = new Uri("http://scfire-ntc-aa04.stream.aol.com:80/stream/1075");
+            s.MusicURL = "http://scfire-ntc-aa04.stream.aol.com:80/stream/1075";
             s.Name = "Example Parcel Description";
             s.ObscureMedia = true;
             s.ObscureMusic = true;
