@@ -1427,8 +1427,8 @@ namespace OpenMetaverse.Messages.Linden
                 mutesMap["voice"] = OSD.FromBoolean(Updates[i].MuteVoice);
 
                 OSDMap infoMap = new OSDMap(4);
-                infoMap["can_voice_chat"] = OSD.FromBoolean(Updates[i].CanVoiceChat);
-                infoMap["is_moderator"] = OSD.FromBoolean(Updates[i].IsModerator);
+                infoMap["can_voice_chat"] = OSD.FromBoolean((bool)Updates[i].CanVoiceChat);
+                infoMap["is_moderator"] = OSD.FromBoolean((bool)Updates[i].IsModerator);
                 infoMap["transition"] = OSD.FromString(Updates[i].Transition);
 
                 OSDMap imap = new OSDMap(1);
@@ -1493,22 +1493,21 @@ namespace OpenMetaverse.Messages.Linden
                             </map>*/
                     AgentUpdatesBlock block = new AgentUpdatesBlock();
                     block.AgentID = UUID.Parse(kvp.Key);
-                    //Console.WriteLine("AgentID: {0}", kvp.Key);
 
                     OSDMap infoMap = (OSDMap)agent_updates[kvp.Key];
-                    //Console.WriteLine("InfoMap: {0}", infoMap.ToString());
 
                     OSDMap agentPermsMap = (OSDMap)infoMap["info"];
 
                     block.CanVoiceChat = agentPermsMap["can_voice_chat"].AsBoolean();
                     block.IsModerator = agentPermsMap["is_moderator"].AsBoolean();
                     block.Transition = agentPermsMap["transition"].AsString();
-                    //Console.WriteLine("type: {0}", infoMap["mutes"].Type);
-                    OSDMap mutesMap = (OSDMap)infoMap["mutes"];
-                    //Console.WriteLine("\tmutesMap: {0}", mutesMap.ToString());
-                    block.MuteText = mutesMap["text"].AsBoolean();
-                    block.MuteVoice = mutesMap["voice"].AsBoolean();
 
+                    if (infoMap.ContainsKey("mutes"))
+                    {
+                        OSDMap mutesMap = (OSDMap)infoMap["mutes"];
+                        block.MuteText = mutesMap["text"].AsBoolean();
+                        block.MuteVoice = mutesMap["voice"].AsBoolean();
+                    }
                     updatesList.Add(block);
                 }
 

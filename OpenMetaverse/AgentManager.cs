@@ -3169,7 +3169,7 @@ namespace OpenMetaverse
                 ChatSessionMember fndMbr;
                 lock (GroupChatSessions.Dictionary)
                 {
-                    fndMbr = GroupChatSessions[sessionID].Find(delegate(ChatSessionMember member)
+                    fndMbr = GroupChatSessions[msg.SessionID].Find(delegate(ChatSessionMember member)
                     {
                         return member.AvatarKey == msg.Updates[i].AgentID;
                     });
@@ -3215,31 +3215,29 @@ namespace OpenMetaverse
                 }
 
                 // handle updates
-                ChatSessionMember update_member = GroupChatSessions.Dictionary[sessionID].Find(delegate(ChatSessionMember m)
+                ChatSessionMember update_member = GroupChatSessions.Dictionary[msg.SessionID].Find(delegate(ChatSessionMember m)
                 {
                     return m.AvatarKey == msg.Updates[i].AgentID;
                 });
 
-                    update_member.MuteText = msg.Updates[i].MuteText;
-                    update_member.MuteVoice = msg.Updates[i].MuteVoice;
+                
+                update_member.MuteText = msg.Updates[i].MuteText;
+                update_member.MuteVoice = msg.Updates[i].MuteVoice;
 
-                    update_member.CanVoiceChat = msg.Updates[i].CanVoiceChat;
-                    update_member.IsModerator = msg.Updates[i].IsModerator;
+                update_member.CanVoiceChat = msg.Updates[i].CanVoiceChat;
+                update_member.IsModerator = msg.Updates[i].IsModerator;
 
-                    // replace existing member record
-                    lock (GroupChatSessions.Dictionary)
+                // replace existing member record
+                lock (GroupChatSessions.Dictionary)
+                {
+                    int found = GroupChatSessions.Dictionary[msg.SessionID].FindIndex(delegate(ChatSessionMember m)
                     {
-                        int found = GroupChatSessions.Dictionary[sessionID].FindIndex(delegate(ChatSessionMember m)
-                        {
-                            return m.AvatarKey == msg.Updates[i].AgentID;
-                        });
+                        return m.AvatarKey == msg.Updates[i].AgentID;
+                    });
 
-                        if (found >= 0)
-                            GroupChatSessions.Dictionary[sessionID][found] = update_member;
-                    }
-
-             
-
+                    if (found >= 0)
+                        GroupChatSessions.Dictionary[msg.SessionID][found] = update_member;
+                }
             }
         }
 
