@@ -85,7 +85,7 @@ namespace OpenMetaverse.StructuredData
         public virtual string AsString() { return String.Empty; }
         public virtual UUID AsUUID() { return UUID.Zero; }
         public virtual DateTime AsDate() { return Utils.Epoch; }
-        public virtual Uri AsUri() { return new Uri("http://null/"); }
+        public virtual Uri AsUri() { return null; }
         public virtual byte[] AsBinary() { return Utils.EmptyBytes; }
         public virtual Vector2 AsVector2() { return Vector2.Zero; }
         public virtual Vector3 AsVector3() { return Vector3.Zero; }
@@ -111,7 +111,7 @@ namespace OpenMetaverse.StructuredData
         public static OSD FromString(string value) { return new OSDString(value); }
         public static OSD FromUUID(UUID value) { return new OSDUUID(value); }
         public static OSD FromDate(DateTime value) { return new OSDDate(value); }
-        public static OSD FromUri(Uri value) { return new OSDURI(value); }
+        public static OSD FromUri(Uri value) { return new OSDUri(value); }
         public static OSD FromBinary(byte[] value) { return new OSDBinary(value); }
         public static OSD FromBinary(long value) { return new OSDBinary(value); }
         public static OSD FromBinary(ulong value) { return new OSDBinary(value); }
@@ -187,7 +187,7 @@ namespace OpenMetaverse.StructuredData
             else if (value is string) { return new OSDString((string)value); }
             else if (value is UUID) { return new OSDUUID((UUID)value); }
             else if (value is DateTime) { return new OSDDate((DateTime)value); }
-            else if (value is Uri) { return new OSDURI((Uri)value); }
+            else if (value is Uri) { return new OSDUri((Uri)value); }
             else if (value is byte[]) { return new OSDBinary((byte[])value); }
             else if (value is long) { return new OSDBinary((long)value); }
             else if (value is ulong) { return new OSDBinary((ulong)value); }
@@ -555,7 +555,14 @@ namespace OpenMetaverse.StructuredData
             else
                 return Utils.Epoch;
         }
-        public override Uri AsUri() { return new Uri(value); }
+        public override Uri AsUri()
+        {
+            Uri uri;
+            if (Uri.TryCreate(value, UriKind.RelativeOrAbsolute, out uri))
+                return uri;
+            else
+                return null;
+        }
 
         public override string ToString() { return AsString(); }
     }
@@ -638,20 +645,20 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class OSDURI : OSD
+    public class OSDUri : OSD
     {
         private Uri value;
 
         public override OSDType Type { get { return OSDType.URI; } }
 
-        public OSDURI(Uri value)
+        public OSDUri(Uri value)
         {
             this.value = value;
         }
 
-        public override string AsString() { return value.ToString(); }
+        public override string AsString() { return value != null ? value.ToString() : String.Empty; }
         public override Uri AsUri() { return value; }
-        public override byte[] AsBinary() { return Encoding.UTF8.GetBytes(value.ToString()); }
+        public override byte[] AsBinary() { return Encoding.UTF8.GetBytes(AsString()); }
         public override string ToString() { return AsString(); }
     }
 
