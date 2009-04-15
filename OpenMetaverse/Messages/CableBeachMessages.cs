@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2007-2009, openmetaverse.org
+ * Copyright (c) 2009, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -25,31 +25,108 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Net;
 using OpenMetaverse.StructuredData;
+using OpenMetaverse.Interfaces;
 
-namespace OpenMetaverse.Messages.Simian
+namespace OpenMetaverse.Messages.CableBeach
 {
-    public class EnableClientMessage
+    #region Inventory Messages
+
+    public class CreateInventoryMessage : IMessage
     {
+        public Uri Identity;
+        public UUID AccessToken;
+        public string Name;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(3);
+            map["identity"] = OSD.FromUri(Identity);
+            map["access_token"] = OSD.FromUUID(AccessToken);
+            map["name"] = OSD.FromString(Name);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Identity = map["identity"].AsUri();
+            AccessToken = map["access_token"].AsUUID();
+            Name = map["name"].AsString();
+        }
+    }
+
+    public class CreateInventoryReplyMessage : IMessage
+    {
+        public UUID RootFolderID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(1);
+            map["root_folder_id"] = OSD.FromUUID(RootFolderID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            RootFolderID = map["root_folder_id"].AsUUID();
+        }
+    }
+
+    #endregion Inventory Messages
+
+    #region Region Messages
+
+    public class EnableClientMessage : IMessage
+    {
+        public class Service
+        {
+            public Uri Type;
+            public Uri Uri;
+            public UUID AccessToken;
+        }
+
         public UUID AgentID;
         public UUID SessionID;
         public UUID SecureSessionID;
         public int CircuitCode;
-        public string FirstName;
-        public string LastName;
         public ulong RegionHandle;
+        public bool ChildAgent;
+        public IPAddress IP;
+        public string ClientVersion;
+        public Dictionary<Uri, OSD> Attributes;
+        public Dictionary<Uri, Service> Services;
         public Uri CallbackUri;
 
         public OSDMap Serialize()
         {
-            OSDMap map = new OSDMap(7);
+            OSDMap map = new OSDMap();
             map["agent_id"] = OSD.FromUUID(AgentID);
             map["session_id"] = OSD.FromUUID(SessionID);
             map["secure_session_id"] = OSD.FromUUID(SecureSessionID);
             map["circuit_code"] = OSD.FromInteger(CircuitCode);
-            map["first_name"] = OSD.FromString(FirstName);
-            map["last_name"] = OSD.FromString(LastName);
             map["region_handle"] = OSD.FromULong(RegionHandle);
+            map["child_agent"] = OSD.FromBoolean(ChildAgent);
+            map["ip"] = OSD.FromBinary(IP.GetAddressBytes());
+            map["client_version"] = OSD.FromString(ClientVersion);
+
+            OSDMap attributes = new OSDMap(Attributes.Count);
+            foreach (KeyValuePair<Uri, OSD> entry in Attributes)
+                attributes.Add(entry.Key.ToString(), entry.Value);
+            map["attributes"] = attributes;
+
+            OSDMap services = new OSDMap(Services.Count);
+            foreach (KeyValuePair<Uri, Service> entry in Services)
+            {
+                OSDMap service = new OSDMap(3);
+                service["type"] = OSD.FromUri(entry.Value.Type);
+                service["uri"] = OSD.FromUri(entry.Value.Uri);
+                service["access_token"] = OSD.FromUUID(entry.Value.AccessToken);
+                services.Add(entry.Key.ToString(), service);
+            }
+            map["services"] = services;
+
             map["callback_uri"] = OSD.FromUri(CallbackUri);
             return map;
         }
@@ -60,23 +137,44 @@ namespace OpenMetaverse.Messages.Simian
             SessionID = map["session_id"].AsUUID();
             SecureSessionID = map["secure_session_id"].AsUUID();
             CircuitCode = map["circuit_code"].AsInteger();
-            FirstName = map["first_name"].AsString();
-            LastName = map["last_name"].AsString();
             RegionHandle = map["region_handle"].AsULong();
+            ChildAgent = map["child_agent"].AsBoolean();
+            IP = new IPAddress(map["ip"].AsBinary());
+            ClientVersion = map["client_version"].AsString();
+
+            OSDMap attributesMap = (OSDMap)map["attributes"];
+            Attributes = new Dictionary<Uri, OSD>(attributesMap.Count);
+            foreach (KeyValuePair<string, OSD> entry in attributesMap)
+                Attributes.Add(new Uri(entry.Key), entry.Value);
+
+            OSDMap servicesMap = (OSDMap)map["services"];
+            Services = new Dictionary<Uri, Service>(servicesMap.Count);
+            foreach (KeyValuePair<string, OSD> entry in servicesMap)
+            {
+                OSDMap serviceMap = (OSDMap)entry.Value;
+                Service service = new Service();
+                service.Type = serviceMap["type"].AsUri();
+                service.Uri = serviceMap["uri"].AsUri();
+                service.AccessToken = serviceMap["access_token"].AsUUID();
+                Services.Add(new Uri(entry.Key), service);
+            }
+
             CallbackUri = map["callback_uri"].AsUri();
         }
     }
 
-    public class EnableClientReplyMessage
+    public class EnableClientReplyMessage : IMessage
     {
         public bool Success;
         public string Message;
+        public Uri SeedCapability;
 
         public OSDMap Serialize()
         {
-            OSDMap map = new OSDMap(2);
+            OSDMap map = new OSDMap(5);
             map["success"] = OSD.FromBoolean(Success);
             map["message"] = OSD.FromString(Message);
+            map["seed_capability"] = OSD.FromUri(SeedCapability);
             return map;
         }
 
@@ -84,30 +182,28 @@ namespace OpenMetaverse.Messages.Simian
         {
             Success = map["success"].AsBoolean();
             Message = map["message"].AsString();
+            SeedCapability = map["seed_capability"].AsUri();
         }
     }
 
-    public class EnableClientCompleteMessage
+    public class EnableClientCompleteMessage : IMessage
     {
         public UUID AgentID;
-        public Uri SeedCapability;
 
         public OSDMap Serialize()
         {
-            OSDMap map = new OSDMap(2);
+            OSDMap map = new OSDMap(1);
             map["agent_id"] = OSD.FromUUID(AgentID);
-            map["seed_capability"] = OSD.FromUri(SeedCapability);
             return map;
         }
 
         public void Deserialize(OSDMap map)
         {
             AgentID = map["agent_id"].AsUUID();
-            SeedCapability = map["seed_capability"].AsUri();
         }
     }
 
-    public class ChildAgentUpdateMessage
+    public class ChildAgentUpdateMessage : IMessage
     {
         public UUID AgentID;
         public UUID SessionID;
@@ -148,7 +244,7 @@ namespace OpenMetaverse.Messages.Simian
         }
     }
 
-    public class PassObjectMessage
+    public class PassObjectMessage : IMessage
     {
         public UUID ID;
 
@@ -165,7 +261,7 @@ namespace OpenMetaverse.Messages.Simian
         }
     }
 
-    public class PassObjectReplyMessage
+    public class PassObjectReplyMessage : IMessage
     {
         public bool Success;
         public string Message;
@@ -185,7 +281,7 @@ namespace OpenMetaverse.Messages.Simian
         }
     }
 
-    public class FetchTerrainMessage
+    public class FetchTerrainMessage : IMessage
     {
         public class FetchTerrainBlock
         {
@@ -231,7 +327,7 @@ namespace OpenMetaverse.Messages.Simian
         }
     }
 
-    public class FetchTerrainReplyMessage
+    public class FetchTerrainReplyMessage : IMessage
     {
         public class FetchTerrainReplyBlock
         {
@@ -278,4 +374,6 @@ namespace OpenMetaverse.Messages.Simian
             }
         }
     }
+
+    #endregion Region Messages
 }

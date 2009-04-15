@@ -514,7 +514,7 @@ namespace OpenMetaverse.Tests
         {
             OSD theSD = null;
             OSDArray array = null;
-            OSDURI tempURI = null;
+            OSDUri tempURI = null;
 
             String testSD = @"<?xml version='1.0' encoding='UTF-8'?>
             <llsd>
@@ -531,12 +531,12 @@ namespace OpenMetaverse.Tests
             array = (OSDArray)theSD;
 
             Assert.AreEqual(OSDType.URI, array[0].Type);
-            tempURI = (OSDURI)array[0];
+            tempURI = (OSDUri)array[0];
             Uri testURI = new Uri(@"http://sim956.agni.lindenlab.com:12035/runtime/agents");
             Assert.AreEqual(testURI, tempURI.AsUri());
 
             Assert.AreEqual(OSDType.URI, array[1].Type);
-            tempURI = (OSDURI)array[1];
+            tempURI = (OSDUri)array[1];
             Assert.AreEqual("", tempURI.AsUri().ToString());
         }
 

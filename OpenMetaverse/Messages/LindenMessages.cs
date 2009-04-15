@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2007-2009, openmetaverse.org
+ * Copyright (c) 2009, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -25,14 +25,13 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Interfaces;
-using System.Collections.Generic;
 
 namespace OpenMetaverse.Messages.Linden
 {
-
     #region Teleport/Region/Movement Messages
 
     /// <summary>
@@ -62,7 +61,7 @@ namespace OpenMetaverse.Messages.Linden
             info.Add("RegionHandle", OSD.FromULong(RegionHandle));
             info.Add("SeedCapability", OSD.FromUri(SeedCapability));
             info.Add("SimAccess", OSD.FromInteger((byte)SimAccess));
-            info.Add("SimIP", OSD.FromBinary(IP.GetAddressBytes()));
+            info.Add("SimIP", MessageUtils.FromIP(IP));
             info.Add("SimPort", OSD.FromInteger(Port));
             info.Add("TeleportFlags", OSD.FromUInteger((uint)Flags));
 
@@ -84,7 +83,7 @@ namespace OpenMetaverse.Messages.Linden
             RegionHandle = blockMap["RegionHandle"].AsULong();
             SeedCapability = blockMap["SeedCapability"].AsUri();
             SimAccess = (SimAccess)blockMap["SimAccess"].AsInteger();
-            IP = new IPAddress(blockMap["SimIP"].AsBinary());
+            IP = MessageUtils.ToIP(blockMap["SimIP"]);
             Port = blockMap["SimPort"].AsInteger();
             Flags = (TeleportFlags)blockMap["TeleportFlags"].AsUInteger();
         }
@@ -151,7 +150,7 @@ namespace OpenMetaverse.Messages.Linden
             OSDMap regionDataMap = new OSDMap(4);
             regionDataMap["RegionHandle"] = OSD.FromULong(RegionHandle);
             regionDataMap["SeedCapability"] = OSD.FromUri(SeedCapability);
-            regionDataMap["SimIP"] = OSD.FromBinary(IP.GetAddressBytes());
+            regionDataMap["SimIP"] = MessageUtils.FromIP(IP);
             regionDataMap["SimPort"] = OSD.FromInteger(Port);
             regionDataArray.Add(regionDataMap);
             map["RegionData"] = regionDataArray;
@@ -172,7 +171,7 @@ namespace OpenMetaverse.Messages.Linden
             OSDMap regionDataMap = (OSDMap)((OSDArray)map["RegionData"])[0];
             RegionHandle = regionDataMap["RegionHandle"].AsULong();
             SeedCapability = regionDataMap["SeedCapability"].AsUri();
-            IP = new IPAddress(regionDataMap["SimIP"].AsBinary());
+            IP = MessageUtils.ToIP(regionDataMap["SimIP"]);
             Port = regionDataMap["SimPort"].AsInteger();
         }
     }
@@ -199,7 +198,7 @@ namespace OpenMetaverse.Messages.Linden
 
                 OSDMap blockMap = new OSDMap(3);
                 blockMap["Handle"] = OSD.FromULong(block.RegionHandle);
-                blockMap["IP"] = OSD.FromBinary(block.IP.GetAddressBytes());
+                blockMap["IP"] = MessageUtils.FromIP(block.IP);
                 blockMap["Port"] = OSD.FromInteger(block.Port);
                 array.Add(blockMap);
             }
@@ -219,7 +218,7 @@ namespace OpenMetaverse.Messages.Linden
 
                 SimulatorInfoBlock block = new SimulatorInfoBlock();
                 block.RegionHandle = blockMap["Handle"].AsULong();
-                block.IP = new IPAddress(blockMap["IP"].AsBinary());
+                block.IP = MessageUtils.ToIP(blockMap["IP"]);
                 block.Port = blockMap["Port"].AsInteger();
                 Simulators[i] = block;
             }
