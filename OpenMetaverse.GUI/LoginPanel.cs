@@ -263,6 +263,7 @@ namespace OpenMetaverse.GUI
 
                     if (MessageBox.Show(this, "Login failed. Try again?", "Login", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.Yes)
                     {
+                        btnLogin.Text = "Logout";
                         Client.Network.BeginLogin(_LoginParams);
                     }
                 });

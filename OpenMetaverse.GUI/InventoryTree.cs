@@ -24,6 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -37,6 +38,17 @@ namespace OpenMetaverse.GUI
     public class InventoryTree : TreeView
     {
         private GridClient _Client;
+        private ContextMenu _ContextMenu;
+        private UUID _SelectedItemID;
+
+        /// <summary>
+        /// Gets or sets the context menu associated with this control
+        /// </summary>
+        public ContextMenu Menu
+        {
+            get { return _ContextMenu; }
+            set { _ContextMenu = value; }
+        }
 
         /// <summary>
         /// Gets or sets the GridClient associated with this control
@@ -52,6 +64,12 @@ namespace OpenMetaverse.GUI
         /// </summary>
         public InventoryTree()
         {
+            EventHandler clickHandler = new EventHandler(defaultMenuItem_Click);
+            _ContextMenu = new ContextMenu();
+            _ContextMenu.MenuItems.Add("Wear", clickHandler);
+            _ContextMenu.MenuItems.Add("Detach", clickHandler);
+
+            this.NodeMouseClick += new TreeNodeMouseClickEventHandler(InventoryTree_NodeMouseClick);
             this.BeforeExpand += new TreeViewCancelEventHandler(InventoryTree_BeforeExpand);
         }
 
@@ -134,8 +152,8 @@ namespace OpenMetaverse.GUI
                     foreach (InventoryBase inv in contents)
                     {
                         string key = inv.UUID.ToString();
+
                         children.Add(key, inv.Name);
-                        children[key].Tag = inv;
                         if (inv is InventoryFolder)
                         {
                             children[key].Nodes.Add(null, "(loading...)").ForeColor = Color.FromKnownColor(KnownColor.GrayText);
@@ -152,6 +170,28 @@ namespace OpenMetaverse.GUI
             _Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
         }
 
+        private void defaultMenuItem_Click(object sender, EventArgs e)
+        {
+            MenuItem menuItem = (MenuItem)sender;
+
+            InventoryItem item = (InventoryItem)Client.Inventory.Store[_SelectedItemID];
+
+            switch(menuItem.Text)
+            {
+                case "Wear":
+                    {
+                        Client.Appearance.Attach(item, AttachmentPoint.Default);
+                        break;
+                    }
+                case "Detach":
+                    {
+                        Client.Appearance.Detach(item);
+                        break;
+                    }
+            }
+
+        }
+
         void Network_OnLogin(LoginStatus login, string message)
         {
             if (login == LoginStatus.Success)
@@ -166,9 +206,18 @@ namespace OpenMetaverse.GUI
             UpdateFolder(folderID);
         }
 
+        void InventoryTree_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                _SelectedItemID = new UUID(e.Node.Name);
+                _ContextMenu.Show(this, e.Location);
+            }
+        }
+
         private void InventoryTree_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
-            InventoryFolder folder = (InventoryFolder)e.Node.Tag;
+            InventoryFolder folder = (InventoryFolder)Client.Inventory.Store[new UUID(e.Node.Name)];
             Client.Inventory.RequestFolderContents(folder.UUID, _Client.Self.AgentID, true, true, InventorySortOrder.ByDate | InventorySortOrder.FoldersByName);
         }
 

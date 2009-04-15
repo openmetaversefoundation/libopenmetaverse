@@ -43,6 +43,7 @@ namespace Dashboard
             this.friendsList1 = new OpenMetaverse.GUI.FriendList();
             this.groupList1 = new OpenMetaverse.GUI.GroupList();
             this.inventoryTree1 = new OpenMetaverse.GUI.InventoryTree();
+            this.messageBar1 = new OpenMetaverse.GUI.MessageBar();
             this.miniMap1 = new OpenMetaverse.GUI.MiniMap();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -76,7 +77,7 @@ namespace Dashboard
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.splitContainer2);
-            this.splitContainer1.Size = new System.Drawing.Size(772, 514);
+            this.splitContainer1.Size = new System.Drawing.Size(772, 480);
             this.splitContainer1.SplitterDistance = 540;
             this.splitContainer1.TabIndex = 4;
             // 
@@ -94,8 +95,8 @@ namespace Dashboard
             // splitContainer3.Panel2
             // 
             this.splitContainer3.Panel2.Controls.Add(this.statusOutput1);
-            this.splitContainer3.Size = new System.Drawing.Size(540, 514);
-            this.splitContainer3.SplitterDistance = 388;
+            this.splitContainer3.Size = new System.Drawing.Size(540, 480);
+            this.splitContainer3.SplitterDistance = 362;
             this.splitContainer3.TabIndex = 0;
             // 
             // splitContainer2
@@ -112,8 +113,8 @@ namespace Dashboard
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.miniMap1);
-            this.splitContainer2.Size = new System.Drawing.Size(228, 514);
-            this.splitContainer2.SplitterDistance = 271;
+            this.splitContainer2.Size = new System.Drawing.Size(228, 480);
+            this.splitContainer2.SplitterDistance = 253;
             this.splitContainer2.TabIndex = 9;
             // 
             // tabControl1
@@ -126,7 +127,7 @@ namespace Dashboard
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(228, 271);
+            this.tabControl1.Size = new System.Drawing.Size(228, 253);
             this.tabControl1.TabIndex = 1;
             // 
             // tabPage1
@@ -135,7 +136,7 @@ namespace Dashboard
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(220, 245);
+            this.tabPage1.Size = new System.Drawing.Size(220, 227);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Nearby";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -146,7 +147,7 @@ namespace Dashboard
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(202, 178);
+            this.tabPage2.Size = new System.Drawing.Size(220, 227);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Friends";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -156,7 +157,7 @@ namespace Dashboard
             this.tabPage3.Controls.Add(this.groupList1);
             this.tabPage3.Location = new System.Drawing.Point(4, 22);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(202, 178);
+            this.tabPage3.Size = new System.Drawing.Size(220, 227);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Groups";
             this.tabPage3.UseVisualStyleBackColor = true;
@@ -166,13 +167,14 @@ namespace Dashboard
             this.tabPage4.Controls.Add(this.inventoryTree1);
             this.tabPage4.Location = new System.Drawing.Point(4, 22);
             this.tabPage4.Name = "tabPage4";
-            this.tabPage4.Size = new System.Drawing.Size(202, 178);
+            this.tabPage4.Size = new System.Drawing.Size(220, 227);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "Inventory";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
             // loginPanel1
             // 
+            this.loginPanel1.Client = null;
             this.loginPanel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.loginPanel1.Location = new System.Drawing.Point(0, 0);
             this.loginPanel1.Name = "loginPanel1";
@@ -185,7 +187,7 @@ namespace Dashboard
             this.localChat1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.localChat1.Location = new System.Drawing.Point(0, 0);
             this.localChat1.Name = "localChat1";
-            this.localChat1.Size = new System.Drawing.Size(540, 388);
+            this.localChat1.Size = new System.Drawing.Size(540, 362);
             this.localChat1.TabIndex = 4;
             // 
             // statusOutput1
@@ -196,7 +198,7 @@ namespace Dashboard
             this.statusOutput1.Location = new System.Drawing.Point(0, 0);
             this.statusOutput1.Name = "statusOutput1";
             this.statusOutput1.ReadOnly = true;
-            this.statusOutput1.Size = new System.Drawing.Size(540, 122);
+            this.statusOutput1.Size = new System.Drawing.Size(540, 114);
             this.statusOutput1.TabIndex = 0;
             this.statusOutput1.Text = "";
             // 
@@ -206,7 +208,7 @@ namespace Dashboard
             this.avatarList1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.avatarList1.Location = new System.Drawing.Point(3, 3);
             this.avatarList1.Name = "avatarList1";
-            this.avatarList1.Size = new System.Drawing.Size(214, 239);
+            this.avatarList1.Size = new System.Drawing.Size(214, 221);
             this.avatarList1.Sorting = System.Windows.Forms.SortOrder.Ascending;
             this.avatarList1.TabIndex = 2;
             this.avatarList1.UseCompatibleStateImageBehavior = false;
@@ -218,7 +220,7 @@ namespace Dashboard
             this.friendsList1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.friendsList1.Location = new System.Drawing.Point(3, 3);
             this.friendsList1.Name = "friendsList1";
-            this.friendsList1.Size = new System.Drawing.Size(196, 172);
+            this.friendsList1.Size = new System.Drawing.Size(214, 221);
             this.friendsList1.TabIndex = 5;
             this.friendsList1.UseCompatibleStateImageBehavior = false;
             this.friendsList1.View = System.Windows.Forms.View.Details;
@@ -229,7 +231,7 @@ namespace Dashboard
             this.groupList1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupList1.Location = new System.Drawing.Point(0, 0);
             this.groupList1.Name = "groupList1";
-            this.groupList1.Size = new System.Drawing.Size(202, 178);
+            this.groupList1.Size = new System.Drawing.Size(220, 227);
             this.groupList1.TabIndex = 7;
             this.groupList1.UseCompatibleStateImageBehavior = false;
             this.groupList1.View = System.Windows.Forms.View.Details;
@@ -240,7 +242,7 @@ namespace Dashboard
             this.inventoryTree1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.inventoryTree1.Location = new System.Drawing.Point(0, 0);
             this.inventoryTree1.Name = "inventoryTree1";
-            this.inventoryTree1.Size = new System.Drawing.Size(202, 178);
+            this.inventoryTree1.Size = new System.Drawing.Size(220, 227);
             this.inventoryTree1.TabIndex = 1;
             // 
             // miniMap1
@@ -251,7 +253,7 @@ namespace Dashboard
             this.miniMap1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.miniMap1.Location = new System.Drawing.Point(0, 0);
             this.miniMap1.Name = "miniMap1";
-            this.miniMap1.Size = new System.Drawing.Size(228, 239);
+            this.miniMap1.Size = new System.Drawing.Size(228, 223);
             this.miniMap1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.miniMap1.TabIndex = 11;
             this.miniMap1.TabStop = false;
@@ -261,6 +263,7 @@ namespace Dashboard
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(772, 548);
+            this.Controls.Add(this.messageBar1);
             this.Controls.Add(this.loginPanel1);
             this.Controls.Add(this.splitContainer1);
             this.Name = "Dashboard";
@@ -281,6 +284,7 @@ namespace Dashboard
             this.tabPage4.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.miniMap1)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -302,6 +306,7 @@ namespace Dashboard
         private OpenMetaverse.GUI.LocalChat localChat1;
         private OpenMetaverse.GUI.StatusOutput statusOutput1;
         private OpenMetaverse.GUI.LoginPanel loginPanel1;
+        private OpenMetaverse.GUI.MessageBar messageBar1;
 
     }
 }

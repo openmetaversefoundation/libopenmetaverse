@@ -37,6 +37,8 @@ namespace OpenMetaverse.GUI
     /// </summary>
     public class MiniMap : PictureBox
     {
+        private static Brush BG_COLOR = Brushes.Navy;
+
         private UUID _MapImageID;
         private GridClient _Client;
         private Image _MapLayer;
@@ -76,17 +78,25 @@ namespace OpenMetaverse.GUI
             this.MouseMove += new MouseEventHandler(MiniMap_MouseMove);
         }
 
-        void MiniMap_MouseHover(object sender, System.EventArgs e)
+        /// <summary>Sets the map layer to the specified bitmap image</summary>
+        /// <param name="mapImage"></param>
+        public void SetMapLayer(Bitmap mapImage)
         {
-            _ToolTip.SetToolTip(this, "test");
-            _ToolTip.Show("test", this);
-            //TODO: tooltip popup with closest avatar's name, if within range
-        }
+            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { SetMapLayer(mapImage); });
+            else
+            {
+                if (mapImage == null)
+                {
+                    Bitmap bmp = new Bitmap(256, 256);
+                    Graphics g = Graphics.FromImage(bmp);
+                    g.Clear(this.BackColor);
+                    g.FillRectangle(BG_COLOR, 0f, 0f, 256f, 256f);
+                    g.DrawImage(bmp, 0, 0);
 
-        void MiniMap_MouseMove(object sender, MouseEventArgs e)
-        {
-            _ToolTip.Hide(this);
-            _MousePosition = e.Location;
+                    _MapLayer = bmp;
+                }
+                else _MapLayer = mapImage;
+            }
         }
 
         private void InitializeClient(GridClient client)
@@ -97,25 +107,6 @@ namespace OpenMetaverse.GUI
             _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
         }
 
-        void Assets_OnImageReceived(ImageDownload image, AssetTexture asset)
-        {
-            if (asset.AssetID == _MapImageID)
-            {
-                ManagedImage nullImage;
-                OpenJPEG.DecodeToImage(asset.AssetData, out nullImage, out _MapLayer);
-            }
-        }
-
-        void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
-        {
-            GridRegion region;
-            if (Client.Grid.GetGridRegion(Client.Network.CurrentSim.Name, GridLayerType.Objects, out region))
-            {
-                _MapImageID = region.MapImageID;
-                Client.Assets.RequestImage(_MapImageID, ImageType.Baked);
-            }
-        }
-
         private void UpdateMiniMap(Simulator sim)
         {
             if (!this.IsHandleCreated) return;
@@ -123,14 +114,11 @@ namespace OpenMetaverse.GUI
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateMiniMap(sim); });
             else
             {
-                Bitmap bmp = _MapLayer == null ? new Bitmap(256, 256) : (Bitmap)_MapLayer.Clone();
-                Graphics g = Graphics.FromImage(bmp);
-
                 if (_MapLayer == null)
-                {
-                    g.Clear(this.BackColor);
-                    g.FillRectangle(Brushes.Navy, 0f, 0f, 256f, 256f);
-                }
+                    SetMapLayer(null);
+
+                Bitmap bmp = (Bitmap)_MapLayer.Clone();
+                Graphics g = Graphics.FromImage(bmp);
 
                 Vector3 myCoarsePos;
 
@@ -194,10 +182,44 @@ namespace OpenMetaverse.GUI
             }
         }
 
-        private void Grid_OnCoarseLocationUpdate(Simulator sim, List<UUID> newEntries, List<UUID> removedEntries)
+        void MiniMap_MouseHover(object sender, System.EventArgs e)
+        {
+            _ToolTip.SetToolTip(this, "test");
+            _ToolTip.Show("test", this);
+            //TODO: tooltip popup with closest avatar's name, if within range
+        }
+
+        void MiniMap_MouseMove(object sender, MouseEventArgs e)
+        {
+            _ToolTip.Hide(this);
+            _MousePosition = e.Location;
+        }
+
+        void Assets_OnImageReceived(ImageDownload image, AssetTexture asset)
+        {
+            if (asset.AssetID == _MapImageID)
+            {
+                ManagedImage nullImage;
+                OpenJPEG.DecodeToImage(asset.AssetData, out nullImage, out _MapLayer);
+            }
+        }
+
+        void Grid_OnCoarseLocationUpdate(Simulator sim, List<UUID> newEntries, List<UUID> removedEntries)
         {
             UpdateMiniMap(sim);
         }
+
+        void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
+        {
+            GridRegion region;
+            if (Client.Grid.GetGridRegion(Client.Network.CurrentSim.Name, GridLayerType.Objects, out region))
+            {
+                SetMapLayer(null);
+
+                _MapImageID = region.MapImageID;
+                Client.Assets.RequestImage(_MapImageID, ImageType.Baked);
+            }
+        }       
 
     }
 }

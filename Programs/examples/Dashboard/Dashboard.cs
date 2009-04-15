@@ -62,7 +62,9 @@ namespace Dashboard
             Client = new GridClient();
             Client.Settings.USE_TEXTURE_CACHE = true;
 
+            Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
             Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
+            Client.Self.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
 
             //define the client object for each GUI element
             avatarList1.Client = Client;
@@ -71,35 +73,54 @@ namespace Dashboard
             inventoryTree1.Client = Client;
             localChat1.Client = Client;
             loginPanel1.Client = Client;
+            messageBar1.Client = Client;
             miniMap1.Client = Client;
             statusOutput1.Client = Client;
         }
 
-        private void Dashboard_FormClosing(object sender, FormClosingEventArgs e)
+        void Dashboard_FormClosing(object sender, FormClosingEventArgs e)
         {
             ShuttingDown = true;
             InitializeClient(false);
             Environment.Exit(0);
         }
 
-        private void avatarList1_OnAvatarDoubleClick(TrackedAvatar trackedAvatar)
+        void avatarList1_OnAvatarDoubleClick(TrackedAvatar trackedAvatar)
         {
-            MessageBox.Show(trackedAvatar.Name + " = " + trackedAvatar.ID);
+            messageBar1.CreateSession(trackedAvatar.Name, trackedAvatar.ID, trackedAvatar.ID, true);
         }
 
-        private void friendsList1_OnFriendDoubleClick(FriendInfo friend)
+        void friendsList1_OnFriendDoubleClick(FriendInfo friend)
         {
-            MessageBox.Show(friend.Name + " = " + friend.UUID);
+            messageBar1.CreateSession(friend.Name, friend.UUID, friend.UUID, true);
         }
 
-        private void groupList1_OnGroupDoubleClick(Group group)
+        void groupList1_OnGroupDoubleClick(Group group)
         {
             MessageBox.Show(group.Name + " = " + group.ID);
         }
 
-        private void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
+        {
+            Client.Appearance.SetPreviousAppearance(false);
+        }
+
+        void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
         {
             InitializeClient(!ShuttingDown);
+        }
+
+        void Self_OnInstantMessage(InstantMessage im, Simulator simulator)
+        {
+            if (im.Dialog == InstantMessageDialog.RequestTeleport)
+            {
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    DialogResult result = MessageBox.Show(this, im.FromAgentName + " has offered you a teleport request:" + Environment.NewLine + im.Message, this.Text, MessageBoxButtons.YesNo);
+                    if (result == DialogResult.Yes)
+                        Client.Self.TeleportLureRespond(im.FromAgentID, true);
+                });
+            }
         }
 
     }
