@@ -730,7 +730,7 @@ namespace OpenMetaverse
             data.Append("textures "); data.Append(Textures.Count); data.Append(NL);
             foreach (KeyValuePair<AppearanceManager.TextureIndex, UUID> texture in Textures)
             {
-                data.Append(texture.Key); data.Append(" "); data.Append(texture.Value.ToString()); data.Append(NL);
+                data.Append((byte)texture.Key); data.Append(" "); data.Append(texture.Value.ToString()); data.Append(NL);
             }
 
             AssetData = Utils.StringToBytes(data.ToString());
