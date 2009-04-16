@@ -96,11 +96,7 @@ namespace OpenMetaverse.Tests
                 Assert.AreEqual(s.GroupDataBlock[i].GroupName, t.GroupDataBlock[i].GroupName);
                 Assert.AreEqual(s.GroupDataBlock[i].GroupPowers, t.GroupDataBlock[i].GroupPowers);
                 Assert.AreEqual(s.GroupDataBlock[i].ListInProfile, t.GroupDataBlock[i].ListInProfile);
-
-
-            }
-
-
+}
         }
 
         [Test]
@@ -821,6 +817,19 @@ namespace OpenMetaverse.Tests
                 Assert.AreEqual(s.Simulators[i].Port, t.Simulators[i].Port);
                 Assert.AreEqual(s.Simulators[i].RegionHandle, t.Simulators[i].RegionHandle);
             }
+        }
+
+        [Test]
+        public void RemoteParcelRequestMessage()
+        {
+            RemoteParcelRequestMessage s = new RemoteParcelRequestMessage();
+            s.ParcelID = UUID.Random();
+            OSDMap map = s.Serialize();
+
+            RemoteParcelRequestMessage t = new RemoteParcelRequestMessage();
+            t.Deserialize(map);
+
+            Assert.AreEqual(s.ParcelID, t.ParcelID);
         }
     }
 }

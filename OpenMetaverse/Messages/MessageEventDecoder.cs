@@ -67,6 +67,7 @@ namespace OpenMetaverse
                 case "ProvisionVoiceAccountRequest": message = new ProvisionVoiceAccountRequestMessage(); break;
                 case "Viewerstats": message = new ViewerStatsMessage(); break;
                 case "UpdateAgentLanguage": message = new UpdateAgentLanguageMessage(); break;
+                case "RemoteParcelRequest": message = new RemoteParcelRequestMessage(); break;
 
                 // Capabilities TODO:
                 // DispatchRegionInfo
@@ -76,7 +77,6 @@ namespace OpenMetaverse
                 // GroupProposalBallot
                 // MapLayerGod
                 // NewFileAgentInventory
-                // RemoteParcelRequest
                 // RequestTextureDownload
                 // SearchStatRequest
                 // SearchStatTracking

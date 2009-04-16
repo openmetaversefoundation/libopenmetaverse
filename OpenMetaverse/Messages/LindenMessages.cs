@@ -727,7 +727,23 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
     }
+    public class RemoteParcelRequestMessage : IMessage
+    {
+        public UUID ParcelID;
 
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(1);
+            map["parcel_id"] = OSD.FromUUID(ParcelID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            ParcelID = map["parcel_id"].AsUUID();
+        }
+
+    }
     #endregion
 
     #region Inventory Messages
