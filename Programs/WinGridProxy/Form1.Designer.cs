@@ -62,7 +62,7 @@
             this.tabPageInspectorRAW = new System.Windows.Forms.TabPage();
             this.richTextBoxRawLog = new System.Windows.Forms.RichTextBox();
             this.tabPageInspectorXML = new System.Windows.Forms.TabPage();
-            this.tabPageInspectorBytes = new System.Windows.Forms.TabPage();
+            this.treeView1 = new System.Windows.Forms.TreeView();
             this.tabPageInspectorJSON = new System.Windows.Forms.TabPage();
             this.tabPageInject = new System.Windows.Forms.TabPage();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
@@ -74,7 +74,6 @@
             this.loadSessionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.treeView1 = new System.Windows.Forms.TreeView();
             this.panelProxyConfig.SuspendLayout();
             this.panel2.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -406,7 +405,6 @@
             // 
             this.tabControl2.Controls.Add(this.tabPageInspectorRAW);
             this.tabControl2.Controls.Add(this.tabPageInspectorXML);
-            this.tabControl2.Controls.Add(this.tabPageInspectorBytes);
             this.tabControl2.Controls.Add(this.tabPageInspectorJSON);
             this.tabControl2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl2.Location = new System.Drawing.Point(0, 0);
@@ -424,12 +422,13 @@
             this.tabPageInspectorRAW.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageInspectorRAW.Size = new System.Drawing.Size(573, 330);
             this.tabPageInspectorRAW.TabIndex = 0;
-            this.tabPageInspectorRAW.Text = "RAW";
+            this.tabPageInspectorRAW.Text = "Raw";
             this.tabPageInspectorRAW.UseVisualStyleBackColor = true;
             // 
             // richTextBoxRawLog
             // 
             this.richTextBoxRawLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextBoxRawLog.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.richTextBoxRawLog.Location = new System.Drawing.Point(3, 3);
             this.richTextBoxRawLog.Name = "richTextBoxRawLog";
             this.richTextBoxRawLog.Size = new System.Drawing.Size(567, 324);
@@ -447,14 +446,13 @@
             this.tabPageInspectorXML.Text = "XML";
             this.tabPageInspectorXML.UseVisualStyleBackColor = true;
             // 
-            // tabPageInspectorBytes
+            // treeView1
             // 
-            this.tabPageInspectorBytes.Location = new System.Drawing.Point(4, 22);
-            this.tabPageInspectorBytes.Name = "tabPageInspectorBytes";
-            this.tabPageInspectorBytes.Size = new System.Drawing.Size(573, 330);
-            this.tabPageInspectorBytes.TabIndex = 2;
-            this.tabPageInspectorBytes.Text = "Binary";
-            this.tabPageInspectorBytes.UseVisualStyleBackColor = true;
+            this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeView1.Location = new System.Drawing.Point(3, 3);
+            this.treeView1.Name = "treeView1";
+            this.treeView1.Size = new System.Drawing.Size(567, 324);
+            this.treeView1.TabIndex = 0;
             // 
             // tabPageInspectorJSON
             // 
@@ -544,13 +542,6 @@
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             // 
-            // treeView1
-            // 
-            this.treeView1.Location = new System.Drawing.Point(6, 6);
-            this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(561, 318);
-            this.treeView1.TabIndex = 0;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -634,7 +625,6 @@
         private System.Windows.Forms.TabControl tabControl2;
         private System.Windows.Forms.TabPage tabPageInspectorRAW;
         private System.Windows.Forms.TabPage tabPageInspectorXML;
-        private System.Windows.Forms.TabPage tabPageInspectorBytes;
         private System.Windows.Forms.TabPage tabPageInspectorJSON;
         private System.Windows.Forms.RichTextBox richTextBoxRawLog;
         private System.Windows.Forms.Label label4;
