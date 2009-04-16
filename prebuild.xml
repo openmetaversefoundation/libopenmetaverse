@@ -602,6 +602,37 @@
       </Files>
     </Project>
 
+
+     <Project name="WinGridProxy" path="Programs/WinGridProxy" type="WinExe">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Xml"/>
+      <Reference name="System.Data"/>
+      <Reference name="System.Drawing"/>
+      <Reference name="System.Windows.Forms"/>
+      <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
+      <Reference name="OpenMetaverse.Http"/>
+      <Reference name="OpenMetaverse.StructuredData"/>
+      <Reference name="GridProxy"/>
+
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+        <Match pattern="*.resx" buildAction="EmbeddedResource" recurse="true"/>
+      </Files>
+    </Project>
+
     <Project name="VisualParamGenerator" path="Programs/VisualParamGenerator" type="Exe">
       <Configuration name="Debug">
         <Options>

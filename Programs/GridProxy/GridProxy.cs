@@ -31,7 +31,7 @@
  */
 
 // #define DEBUG_SEQUENCE
-#define DEBUG_CAPS
+// #define DEBUG_CAPS
 // #define DEBUG_THREADS
 
 using System;
