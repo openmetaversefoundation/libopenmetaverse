@@ -156,6 +156,22 @@ namespace OpenMetaverse
                 M13 * M21 * M32 * M44 - M11 * M23 * M32 * M44 - M12 * M21 * M33 * M44 + M11 * M22 * M33 * M44;
         }
 
+        public float Determinant3x3()
+        {
+            float det = 0f;
+
+            float diag1 = M11 * M22 * M33;
+            float diag2 = M12 * M32 * M31;
+            float diag3 = M13 * M21 * M32;
+            float diag4 = M31 * M22 * M13;
+            float diag5 = M32 * M23 * M11;
+            float diag6 = M33 * M21 * M12;
+
+            det = diag1 + diag2 + diag3 - (diag4 + diag5 + diag6);
+
+            return det;
+        }
+
         public float Trace()
         {
             return M11 + M22 + M33 + M44;
@@ -870,6 +886,71 @@ namespace OpenMetaverse
             return result;
         }
 
+        public static Matrix4 Inverse3x3(Matrix4 matrix)
+        {
+            if (matrix.Determinant3x3() == 0f)
+                throw new ArgumentException("Singular matrix inverse not possible");
+
+            return (Adjoint3x3(matrix) / matrix.Determinant3x3());
+        }
+
+        public static Matrix4 Adjoint3x3(Matrix4 matrix)
+        {
+            Matrix4 adjointMatrix = new Matrix4();
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                    adjointMatrix[i,j] = (float)(Math.Pow(-1, i + j) * (Minor(matrix, i, j).Determinant3x3()));
+            }
+
+            adjointMatrix = Transpose(adjointMatrix);
+            return adjointMatrix;
+        }
+
+        public static Matrix4 Inverse(Matrix4 matrix)
+        {
+            if (matrix.Determinant() == 0f)
+                throw new ArgumentException("Singular matrix inverse not possible");
+
+            return (Adjoint(matrix) / matrix.Determinant());
+        }
+
+        public static Matrix4 Adjoint(Matrix4 matrix)
+        {
+            Matrix4 adjointMatrix = new Matrix4();
+            for (int i = 0; i < 4; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                    adjointMatrix[i,j] = (float)(Math.Pow(-1, i + j) * ((Minor(matrix, i, j)).Determinant()));
+            }
+
+            adjointMatrix = Transpose(adjointMatrix);
+            return adjointMatrix;
+        }
+
+        public static Matrix4 Minor(Matrix4 matrix, int row, int col)
+        {
+            Matrix4 minor = new Matrix4();
+            int m = 0, n = 0;
+
+            for (int i = 0; i < 4; i++)
+            {
+                if (i == row)
+                    continue;
+                n = 0;
+                for (int j = 0; j < 4; j++)
+                {
+                    if (j == col)
+                        continue;
+                    minor[m,n] = matrix[i,j];
+                    n++;
+                }
+                m++;
+            }
+
+            return minor;
+        }
+        
         #endregion Static Methods
 
         #region Overrides
@@ -1064,6 +1145,70 @@ namespace OpenMetaverse
                                 return M43;
                             case 3:
                                 return M44;
+                            default:
+                                throw new IndexOutOfRangeException("Matrix4 row and column values must be from 0-3");
+                        }
+                    default:
+                        throw new IndexOutOfRangeException("Matrix4 row and column values must be from 0-3");
+                }
+            }
+            set
+            {
+                switch (row)
+                {
+                    case 0:
+                        switch (column)
+                        {
+                            case 0:
+                                M11 = value; return;
+                            case 1:
+                                M12 = value; return;
+                            case 2:
+                                M13 = value; return;
+                            case 3:
+                                M14 = value; return;
+                            default:
+                                throw new IndexOutOfRangeException("Matrix4 row and column values must be from 0-3");
+                        }
+                    case 1:
+                        switch (column)
+                        {
+                            case 0:
+                                M21 = value; return;
+                            case 1:
+                                M22 = value; return;
+                            case 2:
+                                M23 = value; return;
+                            case 3:
+                                M24 = value; return;
+                            default:
+                                throw new IndexOutOfRangeException("Matrix4 row and column values must be from 0-3");
+                        }
+                    case 2:
+                        switch (column)
+                        {
+                            case 0:
+                                M31 = value; return;
+                            case 1:
+                                M32 = value; return;
+                            case 2:
+                                M33 = value; return;
+                            case 3:
+                                M34 = value; return;
+                            default:
+                                throw new IndexOutOfRangeException("Matrix4 row and column values must be from 0-3");
+                        }
+                    case 3:
+                        switch (column)
+                        {
+                            case 0:
+                                M41 = value; return;
+                            case 1:
+                                M42 = value; return;
+                            case 2:
+                                M43 = value; return;
+                            case 3:
+                                M44 = value; return;
                             default:
                                 throw new IndexOutOfRangeException("Matrix4 row and column values must be from 0-3");
                         }
