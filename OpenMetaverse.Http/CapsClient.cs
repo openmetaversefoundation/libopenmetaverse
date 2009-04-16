@@ -27,6 +27,7 @@
 using System;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse.Http
@@ -66,23 +67,23 @@ namespace OpenMetaverse.Http
             _Client.DownloadStringCompleted += new CapsBase.DownloadStringCompletedEventHandler(Client_DownloadStringCompleted);
         }
 
-        public void StartRequest()
+        public void BeginGetResponse()
         {
-            StartRequest(null, null);
+            BeginGetResponse(null, null);
         }
 
-        public void StartRequest(OSD llsd)
+        public void BeginGetResponse(OSD data)
         {
-            byte[] postData = OSDParser.SerializeLLSDXmlBytes(llsd);
-            StartRequest(postData, null);
+            byte[] postData = OSDParser.SerializeLLSDXmlBytes(data);
+            BeginGetResponse(postData, null);
         }
 
-        public void StartRequest(byte[] postData)
+        public void BeginGetResponse(byte[] postData)
         {
-            StartRequest(postData, null);
+            BeginGetResponse(postData, null);
         }
 
-        public void StartRequest(byte[] postData, string contentType)
+        public void BeginGetResponse(byte[] postData, string contentType)
         {
             _PostData = postData;
             _ContentType = contentType;
@@ -106,6 +107,38 @@ namespace OpenMetaverse.Http
                 _Client.DownloadStringAsync(_Client.Location);
             else
                 _Client.UploadDataAsync(_Client.Location, postData);
+        }
+
+        public bool GetResponse(int millisecondsTimeout)
+        {
+            AutoResetEvent waitEvent = new AutoResetEvent(false);
+            OnComplete += delegate(CapsClient client, OSD result, Exception error) { waitEvent.Set(); };
+            BeginGetResponse();
+            return waitEvent.WaitOne(millisecondsTimeout, false);
+        }
+
+        public bool GetResponse(OSD data, int millisecondsTimeout)
+        {
+            AutoResetEvent waitEvent = new AutoResetEvent(false);
+            OnComplete += delegate(CapsClient client, OSD result, Exception error) { waitEvent.Set(); };
+            BeginGetResponse(data);
+            return waitEvent.WaitOne(millisecondsTimeout, false);
+        }
+
+        public bool GetResponse(byte[] postData, int millisecondsTimeout)
+        {
+            AutoResetEvent waitEvent = new AutoResetEvent(false);
+            OnComplete += delegate(CapsClient client, OSD result, Exception error) { waitEvent.Set(); };
+            BeginGetResponse(postData);
+            return waitEvent.WaitOne(millisecondsTimeout, false);
+        }
+
+        public bool GetResponse(byte[] postData, string contentType, int millisecondsTimeout)
+        {
+            AutoResetEvent waitEvent = new AutoResetEvent(false);
+            OnComplete += delegate(CapsClient client, OSD result, Exception error) { waitEvent.Set(); };
+            BeginGetResponse(postData, contentType);
+            return waitEvent.WaitOne(millisecondsTimeout, false);
         }
 
         public void Cancel()
@@ -159,7 +192,7 @@ namespace OpenMetaverse.Http
                         // cache which will time out periodically. The CAPS server
                         // interprets this as a generic error and returns a 502 to us
                         // that we ignore
-                        StartRequest(_PostData, _ContentType);
+                        BeginGetResponse(_PostData, _ContentType);
                     }
                     else if (code != HttpStatusCode.OK)
                     {
@@ -210,7 +243,7 @@ namespace OpenMetaverse.Http
                         // cache which will time out periodically. The CAPS server
                         // interprets this as a generic error and returns a 502 to us
                         // that we ignore
-                        StartRequest(_PostData, _ContentType);
+                        BeginGetResponse(_PostData, _ContentType);
                     }
                     else if (code != HttpStatusCode.OK)
                     {

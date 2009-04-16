@@ -191,6 +191,9 @@ namespace WinGridProxy
                 proxy.Start();
                 IsProxyRunning = true;
                 button1.Text = "Stop Proxy";
+
+                grpUDPFilters.Enabled = true;
+                grpCapsFilters.Enabled = true;
             }
             else if (button1.Text.StartsWith("Stop") && IsProxyRunning.Equals(true))
             {
@@ -200,6 +203,9 @@ namespace WinGridProxy
                 IsProxyRunning = false;
                 button1.Text = "Start Proxy";
                 textBoxProxyListenIP.Enabled = textBoxProxyPort.Enabled = textBoxLoginURL.Enabled = true;
+
+                grpUDPFilters.Enabled = false;
+                grpCapsFilters.Enabled = false;
             }
         }
 

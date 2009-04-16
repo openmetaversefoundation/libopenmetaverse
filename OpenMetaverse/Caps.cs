@@ -161,7 +161,7 @@ namespace OpenMetaverse
 
             _SeedRequest = new CapsClient(new Uri(_SeedCapsURI));
             _SeedRequest.OnComplete += new CapsClient.CompleteCallback(SeedRequestCompleteHandler);
-            _SeedRequest.StartRequest(req);
+            _SeedRequest.BeginGetResponse(req);
         }
 
         private void SeedRequestCompleteHandler(CapsClient client, OSD result, Exception error)

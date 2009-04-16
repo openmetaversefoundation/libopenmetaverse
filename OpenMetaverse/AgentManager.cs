@@ -1492,7 +1492,7 @@ namespace OpenMetaverse
                 byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(req);
 
                 CapsClient request = new CapsClient(url);
-                request.StartRequest(postData);
+                request.BeginGetResponse(postData);
             }
             else
             {
@@ -1527,7 +1527,7 @@ namespace OpenMetaverse
                 byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(req);
 
                 CapsClient request = new CapsClient(url);
-                request.StartRequest(postData);
+                request.BeginGetResponse(postData);
             }
             else
             {
@@ -3318,7 +3318,7 @@ namespace OpenMetaverse
                 byte[] postData = OSDParser.SerializeLLSDXmlBytes(map);
 
                 CapsClient request = new CapsClient(url);
-                request.StartRequest(postData);
+                request.BeginGetResponse(postData);
             }
             else
             {

@@ -50,10 +50,10 @@
             this.label4 = new System.Windows.Forms.Label();
             this.tabPageFilters = new System.Windows.Forms.TabPage();
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.grpUDPFilters = new System.Windows.Forms.GroupBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.grpCapsFilters = new System.Windows.Forms.GroupBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.button2 = new System.Windows.Forms.Button();
             this.checkedListBox2 = new System.Windows.Forms.CheckedListBox();
@@ -85,8 +85,8 @@
             this.splitContainer2.Panel1.SuspendLayout();
             this.splitContainer2.Panel2.SuspendLayout();
             this.splitContainer2.SuspendLayout();
-            this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
+            this.grpUDPFilters.SuspendLayout();
+            this.grpCapsFilters.SuspendLayout();
             this.tabPageInspect.SuspendLayout();
             this.tabControl2.SuspendLayout();
             this.tabPageInspectorRAW.SuspendLayout();
@@ -297,28 +297,29 @@
             // 
             // splitContainer2.Panel1
             // 
-            this.splitContainer2.Panel1.Controls.Add(this.groupBox1);
+            this.splitContainer2.Panel1.Controls.Add(this.grpUDPFilters);
             // 
             // splitContainer2.Panel2
             // 
-            this.splitContainer2.Panel2.Controls.Add(this.groupBox2);
+            this.splitContainer2.Panel2.Controls.Add(this.grpCapsFilters);
             this.splitContainer2.Size = new System.Drawing.Size(575, 350);
             this.splitContainer2.SplitterDistance = 289;
             this.splitContainer2.TabIndex = 0;
             // 
-            // groupBox1
+            // grpUDPFilters
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.grpUDPFilters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox1.Controls.Add(this.checkBox1);
-            this.groupBox1.Controls.Add(this.checkedListBox1);
-            this.groupBox1.Location = new System.Drawing.Point(3, 3);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(280, 334);
-            this.groupBox1.TabIndex = 0;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "UDP Packets";
+            this.grpUDPFilters.Controls.Add(this.checkBox1);
+            this.grpUDPFilters.Controls.Add(this.checkedListBox1);
+            this.grpUDPFilters.Enabled = false;
+            this.grpUDPFilters.Location = new System.Drawing.Point(3, 3);
+            this.grpUDPFilters.Name = "grpUDPFilters";
+            this.grpUDPFilters.Size = new System.Drawing.Size(280, 334);
+            this.grpUDPFilters.TabIndex = 0;
+            this.grpUDPFilters.TabStop = false;
+            this.grpUDPFilters.Text = "UDP Packets";
             // 
             // checkBox1
             // 
@@ -343,20 +344,21 @@
             this.checkedListBox1.TabIndex = 0;
             this.checkedListBox1.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedListBox1_ItemCheck);
             // 
-            // groupBox2
+            // grpCapsFilters
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.grpCapsFilters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox2.Controls.Add(this.checkBox2);
-            this.groupBox2.Controls.Add(this.button2);
-            this.groupBox2.Controls.Add(this.checkedListBox2);
-            this.groupBox2.Location = new System.Drawing.Point(3, 3);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(279, 334);
-            this.groupBox2.TabIndex = 1;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "Capabilities Messages";
+            this.grpCapsFilters.Controls.Add(this.checkBox2);
+            this.grpCapsFilters.Controls.Add(this.button2);
+            this.grpCapsFilters.Controls.Add(this.checkedListBox2);
+            this.grpCapsFilters.Enabled = false;
+            this.grpCapsFilters.Location = new System.Drawing.Point(3, 3);
+            this.grpCapsFilters.Name = "grpCapsFilters";
+            this.grpCapsFilters.Size = new System.Drawing.Size(279, 334);
+            this.grpCapsFilters.TabIndex = 1;
+            this.grpCapsFilters.TabStop = false;
+            this.grpCapsFilters.Text = "Capabilities Messages";
             // 
             // checkBox2
             // 
@@ -373,7 +375,7 @@
             // 
             this.button2.Location = new System.Drawing.Point(198, 311);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.Size = new System.Drawing.Size(75, 20);
             this.button2.TabIndex = 1;
             this.button2.Text = "Refresh";
             this.button2.UseVisualStyleBackColor = true;
@@ -511,35 +513,35 @@
             // captureTrafficToolStripMenuItem
             // 
             this.captureTrafficToolStripMenuItem.Name = "captureTrafficToolStripMenuItem";
-            this.captureTrafficToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.captureTrafficToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
             this.captureTrafficToolStripMenuItem.Text = "Capture Traffic";
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(155, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(144, 6);
             // 
             // saveSessionsToolStripMenuItem
             // 
             this.saveSessionsToolStripMenuItem.Name = "saveSessionsToolStripMenuItem";
-            this.saveSessionsToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.saveSessionsToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
             this.saveSessionsToolStripMenuItem.Text = "Save Sessions";
             // 
             // loadSessionsToolStripMenuItem
             // 
             this.loadSessionsToolStripMenuItem.Name = "loadSessionsToolStripMenuItem";
-            this.loadSessionsToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.loadSessionsToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
             this.loadSessionsToolStripMenuItem.Text = "Load Sessions";
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(155, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(144, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             // 
             // Form1
@@ -566,10 +568,10 @@
             this.splitContainer2.Panel1.ResumeLayout(false);
             this.splitContainer2.Panel2.ResumeLayout(false);
             this.splitContainer2.ResumeLayout(false);
-            this.groupBox1.ResumeLayout(false);
-            this.groupBox1.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
+            this.grpUDPFilters.ResumeLayout(false);
+            this.grpUDPFilters.PerformLayout();
+            this.grpCapsFilters.ResumeLayout(false);
+            this.grpCapsFilters.PerformLayout();
             this.tabPageInspect.ResumeLayout(false);
             this.tabControl2.ResumeLayout(false);
             this.tabPageInspectorRAW.ResumeLayout(false);
@@ -601,8 +603,8 @@
         private System.Windows.Forms.SplitContainer splitContainer2;
         private System.Windows.Forms.CheckedListBox checkedListBox1;
         private System.Windows.Forms.CheckedListBox checkedListBox2;
-        private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.GroupBox grpUDPFilters;
+        private System.Windows.Forms.GroupBox grpCapsFilters;
         private System.Windows.Forms.TabPage tabPageInject;
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.CheckBox checkBox1;

@@ -137,7 +137,7 @@ namespace OpenMetaverse
 
             CapsClient request = new CapsClient(RegistrationApiCaps);
             request.OnComplete += new CapsClient.CompleteCallback(GatherCapsResponse);
-            request.StartRequest(postData);
+            request.BeginGetResponse(postData);
         }
 
         private void GatherCapsResponse(CapsClient client, OSD response, Exception error)
@@ -168,7 +168,7 @@ namespace OpenMetaverse
 
             CapsClient request = new CapsClient(_caps.GetErrorCodes);
             request.OnComplete += new CapsClient.CompleteCallback(GatherErrorMessagesResponse);
-            request.StartRequest();
+            request.BeginGetResponse();
         }
 
         private void GatherErrorMessagesResponse(CapsClient client, OSD response, Exception error)
@@ -206,7 +206,7 @@ namespace OpenMetaverse
 
             CapsClient request = new CapsClient(_caps.GetLastNames);
             request.OnComplete += new CapsClient.CompleteCallback(GatherLastNamesResponse);
-            request.StartRequest();
+            request.BeginGetResponse();
 
             // FIXME: Block
         }
@@ -250,7 +250,7 @@ namespace OpenMetaverse
 
             CapsClient request = new CapsClient(_caps.CheckName);
             request.OnComplete += new CapsClient.CompleteCallback(CheckNameResponse);
-            request.StartRequest();
+            request.BeginGetResponse();
 
             // FIXME:
             return false;
@@ -316,7 +316,7 @@ namespace OpenMetaverse
             // Make the request
             CapsClient request = new CapsClient(_caps.CreateUser);
             request.OnComplete += new CapsClient.CompleteCallback(CreateUserResponse);
-            request.StartRequest();
+            request.BeginGetResponse();
 
             // FIXME: Block
             return UUID.Zero;

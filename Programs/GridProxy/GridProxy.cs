@@ -1100,7 +1100,7 @@ namespace GridProxy
                         remoteComplete.Set();
                     }
                     );
-                loginRequest.StartRequest(content, "application/xml+llsd"); //xml+llsd
+                loginRequest.BeginGetResponse(content, "application/xml+llsd"); //xml+llsd
                 remoteComplete.WaitOne(30000, false);
 
                 if (response == null) {

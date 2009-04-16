@@ -677,7 +677,7 @@ namespace OpenMetaverse
                 byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(body);
 
                 CapsClient capsPost = new CapsClient(url);
-                capsPost.StartRequest(postData);
+                capsPost.BeginGetResponse(postData);
 
             }
             else

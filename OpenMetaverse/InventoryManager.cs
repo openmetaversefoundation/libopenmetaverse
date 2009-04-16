@@ -1843,7 +1843,7 @@ namespace OpenMetaverse
                 request.OnComplete += new CapsClient.CompleteCallback(CreateItemFromAssetResponse);
                 request.UserData = new object[] { progCallback, callback, data };
 
-                request.StartRequest(query);
+                request.BeginGetResponse(query);
             }
             else
             {
@@ -2050,7 +2050,7 @@ namespace OpenMetaverse
                 CapsClient request = new CapsClient(url);
                 request.OnComplete += new CapsClient.CompleteCallback(UploadNotecardAssetResponse);
                 request.UserData = new object[2] { new KeyValuePair<NotecardUploadedAssetCallback, byte[]>(callback, data), notecardID };
-                request.StartRequest(postData);
+                request.BeginGetResponse(postData);
             }
             else
             {
@@ -3002,7 +3002,7 @@ namespace OpenMetaverse
                 upload.OnProgress += progCallback;
                 upload.OnComplete += new CapsClient.CompleteCallback(CreateItemFromAssetResponse);
                 upload.UserData = new object[] { null, callback, itemData };
-                upload.StartRequest(itemData, "application/octet-stream");
+                upload.BeginGetResponse(itemData, "application/octet-stream");
             }
             else if (status == "complete")
             {
@@ -3596,7 +3596,7 @@ namespace OpenMetaverse
                 CapsClient upload = new CapsClient(new Uri(uploadURL));
                 upload.OnComplete += new CapsClient.CompleteCallback(UploadNotecardAssetResponse);
                 upload.UserData = new object[2] { kvp, (UUID)(((object[])client.UserData)[1]) };
-                upload.StartRequest(itemData, "application/octet-stream");
+                upload.BeginGetResponse(itemData, "application/octet-stream");
             }
             else if (status == "complete")
             {
