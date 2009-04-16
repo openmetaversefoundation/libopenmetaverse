@@ -109,36 +109,44 @@ namespace OpenMetaverse.Http
                 _Client.UploadDataAsync(_Client.Location, postData);
         }
 
-        public bool GetResponse(int millisecondsTimeout)
+        public OSD GetResponse(int millisecondsTimeout)
         {
+            OSD response = null;
             AutoResetEvent waitEvent = new AutoResetEvent(false);
-            OnComplete += delegate(CapsClient client, OSD result, Exception error) { waitEvent.Set(); };
+            OnComplete += delegate(CapsClient client, OSD result, Exception error) { response = result; waitEvent.Set(); };
             BeginGetResponse();
-            return waitEvent.WaitOne(millisecondsTimeout, false);
+            waitEvent.WaitOne(millisecondsTimeout, false);
+            return response;
         }
 
-        public bool GetResponse(OSD data, int millisecondsTimeout)
+        public OSD GetResponse(OSD data, int millisecondsTimeout)
         {
+            OSD response = null;
             AutoResetEvent waitEvent = new AutoResetEvent(false);
-            OnComplete += delegate(CapsClient client, OSD result, Exception error) { waitEvent.Set(); };
+            OnComplete += delegate(CapsClient client, OSD result, Exception error) { response = result; waitEvent.Set(); };
             BeginGetResponse(data);
-            return waitEvent.WaitOne(millisecondsTimeout, false);
+            waitEvent.WaitOne(millisecondsTimeout, false);
+            return response;
         }
 
-        public bool GetResponse(byte[] postData, int millisecondsTimeout)
+        public OSD GetResponse(byte[] postData, int millisecondsTimeout)
         {
+            OSD response = null;
             AutoResetEvent waitEvent = new AutoResetEvent(false);
-            OnComplete += delegate(CapsClient client, OSD result, Exception error) { waitEvent.Set(); };
+            OnComplete += delegate(CapsClient client, OSD result, Exception error) { response = result; waitEvent.Set(); };
             BeginGetResponse(postData);
-            return waitEvent.WaitOne(millisecondsTimeout, false);
+            waitEvent.WaitOne(millisecondsTimeout, false);
+            return response;
         }
 
-        public bool GetResponse(byte[] postData, string contentType, int millisecondsTimeout)
+        public OSD GetResponse(byte[] postData, string contentType, int millisecondsTimeout)
         {
+            OSD response = null;
             AutoResetEvent waitEvent = new AutoResetEvent(false);
-            OnComplete += delegate(CapsClient client, OSD result, Exception error) { waitEvent.Set(); };
+            OnComplete += delegate(CapsClient client, OSD result, Exception error) { response = result; waitEvent.Set(); };
             BeginGetResponse(postData, contentType);
-            return waitEvent.WaitOne(millisecondsTimeout, false);
+            waitEvent.WaitOne(millisecondsTimeout, false);
+            return response;
         }
 
         public void Cancel()
