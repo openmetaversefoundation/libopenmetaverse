@@ -22,6 +22,8 @@ namespace WinGridProxy
 {
     public partial class Form1 : Form
     {
+        private static SettingsStore Store = new SettingsStore();
+
         private static bool IsProxyRunning = false;
 
         ProxyManager proxy;
@@ -49,15 +51,19 @@ namespace WinGridProxy
             openmvAssembly = Assembly.Load("OpenMetaverse");
             if (openmvAssembly == null) throw new Exception("Assembly load exception");
 
-            InitProxyFilters();
+            //Store.DeserializeFromFile("settings.osd");
 
+            //InitProxyFilters();
+            
         }
 
         private void InitProxyFilters()
         {
+            Store.DeserializeFromFile("settings.osd");
+
             Type packetTypeType = typeof(PacketType);
             System.Reflection.MemberInfo[] packetTypes = packetTypeType.GetMembers();
-            checkedListBox1.BeginUpdate();
+            checkedListBoxFiltersPackets.BeginUpdate();
             for (int i = 0; i < packetTypes.Length; i++)
             {
                 if (packetTypes[i].MemberType == System.Reflection.MemberTypes.Field
@@ -71,7 +77,7 @@ namespace WinGridProxy
                     try
                     {
                         pType = packetTypeFromName(name);
-                        checkedListBox1.Items.Add(name, false);
+                        checkedListBoxFiltersPackets.Items.Add(name, false);
                     }
                     catch (Exception)
                     {
@@ -79,8 +85,19 @@ namespace WinGridProxy
                     }
                 }
             }
-            checkedListBox1.Sorted = true;
-            checkedListBox1.EndUpdate();
+            checkedListBoxFiltersPackets.Sorted = true;
+
+
+            // load from previous stored settings
+            
+
+            checkedListBoxFiltersPackets.EndUpdate();
+
+            foreach (KeyValuePair<string, bool> kvp in Store.MessageSessions)
+            {
+                checkedListBoxFiltersMessages.Items.Add(kvp.Key, kvp.Value);
+            }
+
         }
 
         private static PacketType packetTypeFromName(string name)
@@ -222,15 +239,22 @@ namespace WinGridProxy
 
             if (button1.Text.StartsWith("Start") && IsProxyRunning.Equals(false))
             {
+                
+
                 proxy = new ProxyManager(textBoxProxyPort.Text, textBoxProxyListenIP.Text, textBoxLoginURL.Text);
                 // start the proxy
                 textBoxProxyListenIP.Enabled = textBoxProxyPort.Enabled = textBoxLoginURL.Enabled = false;
+
+                InitProxyFilters();
+
                 proxy.Start();
                 grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = true;
                 button1.Text = "Stop Proxy";
 
                 if (!timer1.Enabled)
                     timer1.Enabled = true;
+                proxy.AddCapsDelegate("ParcelProperties", true);
+                proxy.AddCapsDelegate("AgentGroupDataUpdate", true);
             }
             else if (button1.Text.StartsWith("Stop") && IsProxyRunning.Equals(true))
             {
@@ -247,40 +271,50 @@ namespace WinGridProxy
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-            for (int i = 0; i < checkedListBox1.Items.Count; i++)
+            for (int i = 0; i < checkedListBoxFiltersPackets.Items.Count; i++)
             {
-                checkedListBox1.SetItemChecked(i, checkBox1.Checked);
+                checkedListBoxFiltersPackets.SetItemChecked(i, checkBox1.Checked);
             }
         }
 
         private void checkedListBox1_ItemCheck(object sender, ItemCheckEventArgs e)
         {
-            //Console.WriteLine("Item {0} is now {1}", checkedListBox1.Items[e.Index], e.NewValue);
             if (e.CurrentValue != e.NewValue)
             {
-                proxy.AddUDPDelegate(packetTypeFromName(checkedListBox1.Items[e.Index].ToString()), (e.NewValue == CheckState.Checked));
+                proxy.AddUDPDelegate(packetTypeFromName(checkedListBoxFiltersPackets.Items[e.Index].ToString()), (e.NewValue == CheckState.Checked));
             }
         }
 
         private void buttonRefreshCapsList_Click(object sender, EventArgs e)
         {
+            OSDMap map = new OSDMap(1);
+
+            OSDArray capsArray = new OSDArray();
             foreach (KeyValuePair<string, CapInfo> kvp in proxy.GetCapabilities())
             {
-                checkedListBox2.BeginUpdate();
-                if (!checkedListBox2.Items.Contains(kvp.Value.CapType))
+                OSDMap cap = new OSDMap(1);
+                cap["capability"] = OSD.FromString(kvp.Value.CapType);
+                cap["Enabled"] = OSD.FromBoolean(true);
+                capsArray.Add(cap);
+                checkedListBoxFiltersMessages.BeginUpdate();
+                if (!checkedListBoxFiltersMessages.Items.Contains(kvp.Value.CapType))
                 {
-                    checkedListBox2.Items.Add(kvp.Value.CapType);
+                    checkedListBoxFiltersMessages.Items.Add(kvp.Value.CapType);
                 }
-                checkedListBox2.Sorted = true;
-                checkedListBox2.EndUpdate();
+                checkedListBoxFiltersMessages.Sorted = true;
+                checkedListBoxFiltersMessages.EndUpdate();
             }
+            map["Capabilities"] = capsArray;
+
+            System.IO.File.WriteAllText("capabilities.osd", map.ToString());
+
         }
 
         private void checkBoxCheckallCaps_CheckedChanged(object sender, EventArgs e)
         {
-            for (int i = 0; i < checkedListBox2.Items.Count; i++)
+            for (int i = 0; i < checkedListBoxFiltersMessages.Items.Count; i++)
             {
-                checkedListBox2.SetItemChecked(i, checkBox2.Checked);
+                checkedListBoxFiltersMessages.SetItemChecked(i, checkBox2.Checked);
             }
         }
 
@@ -288,7 +322,7 @@ namespace WinGridProxy
         {
             if (e.CurrentValue != e.NewValue)
             {
-                proxy.AddCapsDelegate(checkedListBox2.Items[e.Index].ToString(), (e.NewValue == CheckState.Checked));
+                proxy.AddCapsDelegate(checkedListBoxFiltersMessages.Items[e.Index].ToString(), (e.NewValue == CheckState.Checked));
             }
         }
 
@@ -376,79 +410,82 @@ namespace WinGridProxy
                 {
                     XmlRpcRequest requestData = (XmlRpcRequest)tag;
 
-                    richTextBoxRawLog.Text = requestData.ToString();
-                    updateTreeView(requestData.ToString());
+                    richTextBoxRawLogRequest.Text = requestData.ToString();
+                    updateTreeView(requestData.ToString(), treeViewRequestXml);
 
                     Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(requestData.ToString()));
-                    hexBox1.ByteProvider = data;
+                    hexBoxRequest.ByteProvider = data;
+
+                    hexBoxResponse.ByteProvider = null;
+                    richTextBoxRawLogResponse.Text = String.Empty;
+                    treeViewResponseXml.Nodes.Clear();
                 }
                 else if (tag is XmlRpcResponse)
                 {
                     XmlRpcResponse responseData = (XmlRpcResponse)tag;
 
-                    richTextBoxRawLog.Text = responseData.ToString();
-                    updateTreeView(responseData.ToString());
-
+                    richTextBoxRawLogResponse.Text = responseData.ToString();
+                    updateTreeView(responseData.ToString(), treeViewResponseXml);
+                    
                     Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(responseData.ToString()));
-                    hexBox1.ByteProvider = data;
+                    hexBoxResponse.ByteProvider = data;
+
+                    hexBoxRequest.ByteProvider = null;
+                    richTextBoxRawLogRequest.Text = "No Data";
+                    treeViewRequestXml.Nodes.Clear();
                 }
                 else if (tag is Packet)
                 {
                     Packet packet = (Packet)tag;
-                    richTextBoxRawLog.Text = PacketToString(packet);
+                    
+                    richTextBoxRawLogResponse.Text = PacketToString(packet);
                     
                     Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(packet.ToBytes());
-                    hexBox1.ByteProvider = data;
+                    hexBoxResponse.ByteProvider = data;
                 }
                 else if (tag is CapsRequest)
                 {
                     CapsRequest capsData = (CapsRequest)tag;
-                    Console.WriteLine(tag.ToString());
-                    if (capsData.Response != null)
-                    {
-                        richTextBoxRawLog.Text = capsData.Response.ToString();
-                        richTextBox1.Text = OSDParser.SerializeLLSDXmlString(capsData.Response);
-                        updateTreeView(OSDParser.SerializeLLSDXmlString(capsData.Response));
 
-                        Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(capsData.Response.ToString()));
-                        hexBox1.ByteProvider = data;
-                    }
-                    else if (capsData.Request != null)
+                    if (capsData.Request != null)
                     {
-                        richTextBoxRawLog.Text = capsData.Request.ToString();
-                        richTextBox1.Text = OSDParser.SerializeLLSDXmlString(capsData.Request);
-                        updateTreeView(OSDParser.SerializeLLSDXmlString(capsData.Request));
-
+                        richTextBoxRawLogRequest.Text = capsData.Request.ToString();
+                        updateTreeView(OSDParser.SerializeLLSDXmlString(capsData.Request), treeViewRequestXml);
                         Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(capsData.Request.ToString()));
-                        hexBox1.ByteProvider = data;
-                    } 
+                        hexBoxRequest.ByteProvider = data;
+                    }
                     else
                     {
-                        richTextBoxRawLog.Text = "No Message Data";
-                        treeView1.Nodes.Clear();
-                        hexBox1.ByteProvider = null;
+                        richTextBoxRawLogRequest.Text = "No Data";
+                        treeViewRequestXml.Nodes.Clear();
+                        hexBoxRequest.ByteProvider = null;
                     }
-                    
+
+                    if (capsData.Response != null)
+                    {
+                        richTextBoxRawLogResponse.Text = capsData.Response.ToString();
+                        updateTreeView(OSDParser.SerializeLLSDXmlString(capsData.Response), treeViewResponseXml);
+                        Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(capsData.Response.ToString()));
+                        hexBoxResponse.ByteProvider = data;
+                    } else {
+                        richTextBoxRawLogResponse.Text = "No Data";
+                        treeViewResponseXml.Nodes.Clear();
+                        hexBoxResponse.ByteProvider = null;
+                    }
                 }
-                else
-                {
-                    richTextBoxRawLog.Text = String.Format("Unknown packet/message: {0}:{1}" + System.Environment.NewLine, e.Item.Text, tag.GetType());
-                    hexBox1.ByteProvider = null;
-                }
-                
             }
         }
 
-        private void updateTreeView(string xml)
+        private void updateTreeView(string xml, TreeView treeView)
         {
             try
             {
-                treeView1.Nodes.Clear();
+                treeViewResponseXml.Nodes.Clear();
                 
                 XmlDocument tmpxmldoc = new XmlDocument();
                 tmpxmldoc.LoadXml(xml);
-                FillTree(tmpxmldoc.DocumentElement, treeView1.Nodes);
-                treeView1.ExpandAll();
+                FillTree(tmpxmldoc.DocumentElement, treeView.Nodes);
+                treeView.ExpandAll();
             }
             catch (Exception ex)
             {
@@ -506,12 +543,40 @@ namespace WinGridProxy
         {
             if (IsProxyRunning)
                 proxy.Stop();
+
+            SaveAllSettings("settings.osd");
+        }
+
+        private void SaveAllSettings(string fileName)
+        {
+            Store.MessageSessions.Clear();
+            Store.PacketSessions.Clear();
+
+            for (int i = 0; i < checkedListBoxFiltersMessages.Items.Count; i++)
+            {
+                bool cbchecked = false;
+                if (checkedListBoxFiltersMessages.CheckedItems.Contains(checkedListBoxFiltersMessages.Items[i]))
+                    cbchecked = true;
+
+                Store.MessageSessions.Add(checkedListBoxFiltersMessages.Items[i].ToString(), cbchecked);
+            }
+
+            for (int i = 0; i < checkedListBoxFiltersPackets.Items.Count; i++)
+            {
+                bool cbchecked = false;
+                if (checkedListBoxFiltersPackets.CheckedItems.Contains(checkedListBoxFiltersPackets.Items[i]))
+                    cbchecked = true;
+
+                Store.PacketSessions.Add(checkedListBoxFiltersPackets.Items[i].ToString(), cbchecked);
+            }
+
+            Store.SerializeToFile(fileName);
         }
 
         void Position_Changed(object sender, EventArgs e)
         {
-            toolStripStatusLabel1.Text = string.Format("Ln {0}    Col {1}    Bytes {2}",
-                hexBox1.CurrentLine, hexBox1.CurrentPositionInLine, hexBox1.ByteProvider.Length);
+            //toolStripStatusLabel1.Text = string.Format("Ln {0}    Col {1}    Bytes {2}",
+            //    hexBoxResponse.CurrentLine, hexBoxResponse.CurrentPositionInLine, hexBoxResponse.ByteProvider.Length);
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -534,6 +599,81 @@ namespace WinGridProxy
                 labelCapsTotal.Text = String.Format("{0} ({1} bytes)", CapsInCounter + CapsOutCounter, CapsOutBytes + CapsInBytes);
             }
         }
+
+        // select all items
+        private void allToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewSessions.Items)
+            {
+                item.Selected = true;
+            }
+        }
+
+        // unselect all items
+        private void noneToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewSessions.Items)
+            {
+                item.Selected = false;
+            }
+        }
+
+        // invert selection
+        private void invertSelectionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewSessions.Items)
+            {
+                item.Selected = !item.Selected;
+            }
+        }   
+
+        // remove all sessions
+        private void allToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            listViewSessions.Items.Clear();
+        }
+
+        // remove sessions that are currently selected
+        private void selectedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewSessions.Items)
+            {
+                if (item.Selected)
+                    listViewSessions.Items.Remove(item);
+            }
+        }
+
+        // remove sessions that are not currently selected
+        private void unselectedSessionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewSessions.Items)
+            {
+                if (!item.Selected)
+                    listViewSessions.Items.Remove(item);
+            }
+        }
+
+        private void MarkColorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem menu = (ToolStripMenuItem)sender;
+            
+            foreach (ListViewItem item in listViewSessions.Items)
+            {
+                if (item.Selected)
+                    item.BackColor = Color.FromName(menu.Text);
+            }
+            noneToolStripMenuItem_Click(sender, e);
+        }
+
+        private void removeToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            foreach (ListViewItem item in listViewSessions.Items)
+            {
+                if (item.Selected)
+                    item.BackColor = Color.White;
+            }
+            noneToolStripMenuItem_Click(sender, e);
+        }    
     }   
 
     public class ProxyManager
@@ -547,24 +687,31 @@ namespace WinGridProxy
         public delegate void LoginLogHandler(object request, Direction direction);
         public static event LoginLogHandler OnLoginResponse;
 
+        private string _Port;
+        private string _ListenIP;
+        private string _LoginURI;
+
         ProxyFrame Proxy;
         ProxyPlugin analyst;
+
         public ProxyManager(string port, string listenIP, string loginUri)
         {
 
-            port = string.Format("--proxy-login-port={0}", port);
+            _Port = string.Format("--proxy-login-port={0}", port);
 
             IPAddress remoteIP; // not used
             if (IPAddress.TryParse(listenIP, out remoteIP))
-                listenIP = String.Format("--proxy-client-facing-address={0}", listenIP);
+                _ListenIP = String.Format("--proxy-client-facing-address={0}", listenIP);
             else
-                listenIP = "--proxy-client-facing-address=127.0.0.1";
+                _ListenIP = "--proxy-client-facing-address=127.0.0.1";
 
             if (String.IsNullOrEmpty(loginUri))
-                loginUri = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
+                _LoginURI = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
+            else
+                _LoginURI = loginUri;
 
 
-            string[] args = { port, listenIP, loginUri };
+            string[] args = { _Port, _ListenIP, _LoginURI };
             /*
                 help
                 proxy-help

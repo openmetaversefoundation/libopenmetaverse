@@ -69,24 +69,35 @@
             this.splitContainer2 = new System.Windows.Forms.SplitContainer();
             this.grpUDPFilters = new System.Windows.Forms.GroupBox();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
+            this.checkedListBoxFiltersPackets = new System.Windows.Forms.CheckedListBox();
             this.grpCapsFilters = new System.Windows.Forms.GroupBox();
             this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.button2 = new System.Windows.Forms.Button();
-            this.checkedListBox2 = new System.Windows.Forms.CheckedListBox();
+            this.checkedListBoxFiltersMessages = new System.Windows.Forms.CheckedListBox();
             this.tabPageInspect = new System.Windows.Forms.TabPage();
-            this.tabControl2 = new System.Windows.Forms.TabControl();
+            this.splitContainer3 = new System.Windows.Forms.SplitContainer();
+            this.tabControlInspectorRequest = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.richTextBoxRawLogRequest = new System.Windows.Forms.RichTextBox();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.treeViewRequestXml = new System.Windows.Forms.TreeView();
+            this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.statusStrip2 = new System.Windows.Forms.StatusStrip();
+            this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.hexBoxRequest = new Be.Windows.Forms.HexBox();
+            this.tabControlInspectorResponse = new System.Windows.Forms.TabControl();
             this.tabPageInspectorRAW = new System.Windows.Forms.TabPage();
-            this.richTextBoxRawLog = new System.Windows.Forms.RichTextBox();
+            this.richTextBoxRawLogResponse = new System.Windows.Forms.RichTextBox();
             this.tabPageInspectorXML = new System.Windows.Forms.TabPage();
-            this.treeView1 = new System.Windows.Forms.TreeView();
+            this.treeViewResponseXml = new System.Windows.Forms.TreeView();
             this.tabPageHexView = new System.Windows.Forms.TabPage();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.hexBox1 = new Be.Windows.Forms.HexBox();
+            this.hexBoxResponse = new Be.Windows.Forms.HexBox();
             this.tabPageInject = new System.Windows.Forms.TabPage();
+            this.button3 = new System.Windows.Forms.Button();
             this.buttonInjectPacket = new System.Windows.Forms.Button();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.richTextBoxInject = new System.Windows.Forms.RichTextBox();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.captureTrafficToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -96,24 +107,30 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripDropDownButton2 = new System.Windows.Forms.ToolStripDropDownButton();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.selectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.allToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.selectedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.unselectedSessionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.selectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.allToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.noneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.invertSelectionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.markToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.redToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.goldToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.orangeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.purpleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.yellowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.removeToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.findSessionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripDropDownButton3 = new System.Windows.Forms.ToolStripDropDownButton();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.button3 = new System.Windows.Forms.Button();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.panelProxyConfig.SuspendLayout();
             this.panel2.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -131,7 +148,15 @@
             this.grpUDPFilters.SuspendLayout();
             this.grpCapsFilters.SuspendLayout();
             this.tabPageInspect.SuspendLayout();
-            this.tabControl2.SuspendLayout();
+            this.splitContainer3.Panel1.SuspendLayout();
+            this.splitContainer3.Panel2.SuspendLayout();
+            this.splitContainer3.SuspendLayout();
+            this.tabControlInspectorRequest.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
+            this.tabPage3.SuspendLayout();
+            this.statusStrip2.SuspendLayout();
+            this.tabControlInspectorResponse.SuspendLayout();
             this.tabPageInspectorRAW.SuspendLayout();
             this.tabPageInspectorXML.SuspendLayout();
             this.tabPageHexView.SuspendLayout();
@@ -151,12 +176,12 @@
             this.panelProxyConfig.Controls.Add(this.textBoxProxyListenIP);
             this.panelProxyConfig.Location = new System.Drawing.Point(12, 28);
             this.panelProxyConfig.Name = "panelProxyConfig";
-            this.panelProxyConfig.Size = new System.Drawing.Size(551, 45);
+            this.panelProxyConfig.Size = new System.Drawing.Size(1070, 32);
             this.panelProxyConfig.TabIndex = 0;
             // 
             // textBoxLoginURL
             // 
-            this.textBoxLoginURL.Location = new System.Drawing.Point(215, 22);
+            this.textBoxLoginURL.Location = new System.Drawing.Point(406, 6);
             this.textBoxLoginURL.Name = "textBoxLoginURL";
             this.textBoxLoginURL.Size = new System.Drawing.Size(252, 20);
             this.textBoxLoginURL.TabIndex = 6;
@@ -165,7 +190,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(212, 6);
+            this.label3.Location = new System.Drawing.Point(342, 9);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(58, 13);
             this.label3.TabIndex = 5;
@@ -174,7 +199,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(3, 6);
+            this.label2.Location = new System.Drawing.Point(3, 9);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(89, 13);
             this.label2.TabIndex = 4;
@@ -182,7 +207,7 @@
             // 
             // textBoxProxyPort
             // 
-            this.textBoxProxyPort.Location = new System.Drawing.Point(109, 22);
+            this.textBoxProxyPort.Location = new System.Drawing.Point(236, 6);
             this.textBoxProxyPort.Name = "textBoxProxyPort";
             this.textBoxProxyPort.Size = new System.Drawing.Size(100, 20);
             this.textBoxProxyPort.TabIndex = 3;
@@ -190,7 +215,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(473, 20);
+            this.button1.Location = new System.Drawing.Point(664, 4);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 2;
@@ -201,7 +226,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(106, 6);
+            this.label1.Location = new System.Drawing.Point(204, 9);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(26, 13);
             this.label1.TabIndex = 1;
@@ -209,7 +234,7 @@
             // 
             // textBoxProxyListenIP
             // 
-            this.textBoxProxyListenIP.Location = new System.Drawing.Point(3, 22);
+            this.textBoxProxyListenIP.Location = new System.Drawing.Point(98, 6);
             this.textBoxProxyListenIP.Name = "textBoxProxyListenIP";
             this.textBoxProxyListenIP.Size = new System.Drawing.Size(100, 20);
             this.textBoxProxyListenIP.TabIndex = 0;
@@ -221,9 +246,9 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.panel2.Controls.Add(this.splitContainer1);
-            this.panel2.Location = new System.Drawing.Point(12, 109);
+            this.panel2.Location = new System.Drawing.Point(12, 66);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(1070, 388);
+            this.panel2.Size = new System.Drawing.Size(1070, 431);
             this.panel2.TabIndex = 1;
             // 
             // splitContainer1
@@ -231,7 +256,7 @@
             this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.splitContainer1.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer1.Location = new System.Drawing.Point(0, 3);
             this.splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
@@ -241,7 +266,7 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
-            this.splitContainer1.Size = new System.Drawing.Size(1070, 388);
+            this.splitContainer1.Size = new System.Drawing.Size(1070, 428);
             this.splitContainer1.SplitterDistance = 464;
             this.splitContainer1.TabIndex = 0;
             // 
@@ -255,10 +280,11 @@
             this.columnHeaderUrl});
             this.listViewSessions.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listViewSessions.FullRowSelect = true;
+            this.listViewSessions.GridLines = true;
             this.listViewSessions.HideSelection = false;
             this.listViewSessions.Location = new System.Drawing.Point(0, 0);
             this.listViewSessions.Name = "listViewSessions";
-            this.listViewSessions.Size = new System.Drawing.Size(464, 388);
+            this.listViewSessions.Size = new System.Drawing.Size(464, 428);
             this.listViewSessions.SmallImageList = this.imageList1;
             this.listViewSessions.TabIndex = 0;
             this.listViewSessions.UseCompatibleStateImageBehavior = false;
@@ -308,7 +334,7 @@
             this.tabControl1.Location = new System.Drawing.Point(3, 3);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(601, 382);
+            this.tabControl1.Size = new System.Drawing.Size(601, 422);
             this.tabControl1.TabIndex = 0;
             // 
             // tabPageSummary
@@ -318,7 +344,7 @@
             this.tabPageSummary.Location = new System.Drawing.Point(4, 22);
             this.tabPageSummary.Name = "tabPageSummary";
             this.tabPageSummary.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageSummary.Size = new System.Drawing.Size(593, 356);
+            this.tabPageSummary.Size = new System.Drawing.Size(593, 396);
             this.tabPageSummary.TabIndex = 0;
             this.tabPageSummary.Text = "Summary";
             this.tabPageSummary.UseVisualStyleBackColor = true;
@@ -329,7 +355,7 @@
             this.panel1.Controls.Add(this.groupBox1);
             this.panel1.Location = new System.Drawing.Point(28, 39);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(227, 299);
+            this.panel1.Size = new System.Drawing.Size(227, 188);
             this.panel1.TabIndex = 2;
             // 
             // groupBox2
@@ -486,7 +512,7 @@
             this.tabPageFilters.Location = new System.Drawing.Point(4, 22);
             this.tabPageFilters.Name = "tabPageFilters";
             this.tabPageFilters.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageFilters.Size = new System.Drawing.Size(593, 356);
+            this.tabPageFilters.Size = new System.Drawing.Size(593, 396);
             this.tabPageFilters.TabIndex = 1;
             this.tabPageFilters.Text = "Filters";
             this.tabPageFilters.UseVisualStyleBackColor = true;
@@ -504,7 +530,7 @@
             // splitContainer2.Panel2
             // 
             this.splitContainer2.Panel2.Controls.Add(this.grpCapsFilters);
-            this.splitContainer2.Size = new System.Drawing.Size(587, 350);
+            this.splitContainer2.Size = new System.Drawing.Size(587, 390);
             this.splitContainer2.SplitterDistance = 294;
             this.splitContainer2.TabIndex = 0;
             // 
@@ -514,11 +540,11 @@
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.grpUDPFilters.Controls.Add(this.checkBox1);
-            this.grpUDPFilters.Controls.Add(this.checkedListBox1);
+            this.grpUDPFilters.Controls.Add(this.checkedListBoxFiltersPackets);
             this.grpUDPFilters.Enabled = false;
             this.grpUDPFilters.Location = new System.Drawing.Point(3, 3);
             this.grpUDPFilters.Name = "grpUDPFilters";
-            this.grpUDPFilters.Size = new System.Drawing.Size(285, 334);
+            this.grpUDPFilters.Size = new System.Drawing.Size(285, 374);
             this.grpUDPFilters.TabIndex = 0;
             this.grpUDPFilters.TabStop = false;
             this.grpUDPFilters.Text = "UDP Packets";
@@ -526,7 +552,7 @@
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(6, 311);
+            this.checkBox1.Location = new System.Drawing.Point(6, 351);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(120, 17);
             this.checkBox1.TabIndex = 1;
@@ -534,18 +560,18 @@
             this.checkBox1.UseVisualStyleBackColor = true;
             this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
-            // checkedListBox1
+            // checkedListBoxFiltersPackets
             // 
-            this.checkedListBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.checkedListBoxFiltersPackets.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkedListBox1.CheckOnClick = true;
-            this.checkedListBox1.FormattingEnabled = true;
-            this.checkedListBox1.Location = new System.Drawing.Point(6, 19);
-            this.checkedListBox1.Name = "checkedListBox1";
-            this.checkedListBox1.Size = new System.Drawing.Size(273, 289);
-            this.checkedListBox1.TabIndex = 0;
-            this.checkedListBox1.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedListBox1_ItemCheck);
+            this.checkedListBoxFiltersPackets.CheckOnClick = true;
+            this.checkedListBoxFiltersPackets.FormattingEnabled = true;
+            this.checkedListBoxFiltersPackets.Location = new System.Drawing.Point(6, 19);
+            this.checkedListBoxFiltersPackets.Name = "checkedListBoxFiltersPackets";
+            this.checkedListBoxFiltersPackets.Size = new System.Drawing.Size(273, 319);
+            this.checkedListBoxFiltersPackets.TabIndex = 0;
+            this.checkedListBoxFiltersPackets.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedListBox1_ItemCheck);
             // 
             // grpCapsFilters
             // 
@@ -554,11 +580,11 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.grpCapsFilters.Controls.Add(this.checkBox2);
             this.grpCapsFilters.Controls.Add(this.button2);
-            this.grpCapsFilters.Controls.Add(this.checkedListBox2);
+            this.grpCapsFilters.Controls.Add(this.checkedListBoxFiltersMessages);
             this.grpCapsFilters.Enabled = false;
             this.grpCapsFilters.Location = new System.Drawing.Point(3, 3);
             this.grpCapsFilters.Name = "grpCapsFilters";
-            this.grpCapsFilters.Size = new System.Drawing.Size(286, 334);
+            this.grpCapsFilters.Size = new System.Drawing.Size(286, 374);
             this.grpCapsFilters.TabIndex = 1;
             this.grpCapsFilters.TabStop = false;
             this.grpCapsFilters.Text = "Capabilities Messages";
@@ -566,7 +592,7 @@
             // checkBox2
             // 
             this.checkBox2.AutoSize = true;
-            this.checkBox2.Location = new System.Drawing.Point(6, 314);
+            this.checkBox2.Location = new System.Drawing.Point(6, 351);
             this.checkBox2.Name = "checkBox2";
             this.checkBox2.Size = new System.Drawing.Size(120, 17);
             this.checkBox2.TabIndex = 2;
@@ -576,7 +602,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(198, 311);
+            this.button2.Location = new System.Drawing.Point(205, 348);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 20);
             this.button2.TabIndex = 1;
@@ -584,91 +610,215 @@
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.buttonRefreshCapsList_Click);
             // 
-            // checkedListBox2
+            // checkedListBoxFiltersMessages
             // 
-            this.checkedListBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.checkedListBoxFiltersMessages.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.checkedListBox2.CheckOnClick = true;
-            this.checkedListBox2.FormattingEnabled = true;
-            this.checkedListBox2.Location = new System.Drawing.Point(6, 19);
-            this.checkedListBox2.Name = "checkedListBox2";
-            this.checkedListBox2.Size = new System.Drawing.Size(274, 289);
-            this.checkedListBox2.TabIndex = 0;
-            this.checkedListBox2.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedListBoxCaps_ItemCheck);
+            this.checkedListBoxFiltersMessages.CheckOnClick = true;
+            this.checkedListBoxFiltersMessages.FormattingEnabled = true;
+            this.checkedListBoxFiltersMessages.Location = new System.Drawing.Point(6, 19);
+            this.checkedListBoxFiltersMessages.Name = "checkedListBoxFiltersMessages";
+            this.checkedListBoxFiltersMessages.Size = new System.Drawing.Size(274, 319);
+            this.checkedListBoxFiltersMessages.TabIndex = 0;
+            this.checkedListBoxFiltersMessages.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.checkedListBoxCaps_ItemCheck);
             // 
             // tabPageInspect
             // 
-            this.tabPageInspect.Controls.Add(this.tabControl2);
+            this.tabPageInspect.Controls.Add(this.splitContainer3);
             this.tabPageInspect.Location = new System.Drawing.Point(4, 22);
             this.tabPageInspect.Name = "tabPageInspect";
-            this.tabPageInspect.Size = new System.Drawing.Size(593, 356);
+            this.tabPageInspect.Size = new System.Drawing.Size(593, 396);
             this.tabPageInspect.TabIndex = 3;
             this.tabPageInspect.Text = "Inspector";
             this.tabPageInspect.UseVisualStyleBackColor = true;
             // 
-            // tabControl2
+            // splitContainer3
             // 
-            this.tabControl2.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
-            this.tabControl2.Controls.Add(this.tabPageInspectorRAW);
-            this.tabControl2.Controls.Add(this.tabPageInspectorXML);
-            this.tabControl2.Controls.Add(this.tabPageHexView);
-            this.tabControl2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tabControl2.Location = new System.Drawing.Point(0, 0);
-            this.tabControl2.Multiline = true;
-            this.tabControl2.Name = "tabControl2";
-            this.tabControl2.SelectedIndex = 0;
-            this.tabControl2.Size = new System.Drawing.Size(593, 356);
-            this.tabControl2.TabIndex = 0;
+            this.splitContainer3.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitContainer3.Location = new System.Drawing.Point(0, 0);
+            this.splitContainer3.Name = "splitContainer3";
+            this.splitContainer3.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitContainer3.Panel1
+            // 
+            this.splitContainer3.Panel1.Controls.Add(this.tabControlInspectorRequest);
+            // 
+            // splitContainer3.Panel2
+            // 
+            this.splitContainer3.Panel2.Controls.Add(this.tabControlInspectorResponse);
+            this.splitContainer3.Size = new System.Drawing.Size(593, 396);
+            this.splitContainer3.SplitterDistance = 156;
+            this.splitContainer3.TabIndex = 1;
+            // 
+            // tabControlInspectorRequest
+            // 
+            this.tabControlInspectorRequest.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
+            this.tabControlInspectorRequest.Controls.Add(this.tabPage1);
+            this.tabControlInspectorRequest.Controls.Add(this.tabPage2);
+            this.tabControlInspectorRequest.Controls.Add(this.tabPage3);
+            this.tabControlInspectorRequest.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControlInspectorRequest.ImageList = this.imageList1;
+            this.tabControlInspectorRequest.Location = new System.Drawing.Point(0, 0);
+            this.tabControlInspectorRequest.Name = "tabControlInspectorRequest";
+            this.tabControlInspectorRequest.SelectedIndex = 0;
+            this.tabControlInspectorRequest.Size = new System.Drawing.Size(593, 156);
+            this.tabControlInspectorRequest.TabIndex = 0;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.richTextBoxRawLogRequest);
+            this.tabPage1.ImageIndex = 1;
+            this.tabPage1.Location = new System.Drawing.Point(4, 26);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(585, 126);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Raw";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // richTextBoxRawLogRequest
+            // 
+            this.richTextBoxRawLogRequest.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextBoxRawLogRequest.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.richTextBoxRawLogRequest.Location = new System.Drawing.Point(3, 3);
+            this.richTextBoxRawLogRequest.Name = "richTextBoxRawLogRequest";
+            this.richTextBoxRawLogRequest.Size = new System.Drawing.Size(579, 120);
+            this.richTextBoxRawLogRequest.TabIndex = 1;
+            this.richTextBoxRawLogRequest.Text = "";
+            this.richTextBoxRawLogRequest.WordWrap = false;
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.treeViewRequestXml);
+            this.tabPage2.ImageIndex = 1;
+            this.tabPage2.Location = new System.Drawing.Point(4, 26);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(585, 126);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "XML";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // treeViewRequestXml
+            // 
+            this.treeViewRequestXml.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeViewRequestXml.Location = new System.Drawing.Point(3, 3);
+            this.treeViewRequestXml.Name = "treeViewRequestXml";
+            this.treeViewRequestXml.Size = new System.Drawing.Size(579, 120);
+            this.treeViewRequestXml.TabIndex = 1;
+            // 
+            // tabPage3
+            // 
+            this.tabPage3.Controls.Add(this.statusStrip2);
+            this.tabPage3.Controls.Add(this.hexBoxRequest);
+            this.tabPage3.ImageIndex = 1;
+            this.tabPage3.Location = new System.Drawing.Point(4, 26);
+            this.tabPage3.Name = "tabPage3";
+            this.tabPage3.Size = new System.Drawing.Size(585, 126);
+            this.tabPage3.TabIndex = 2;
+            this.tabPage3.Text = "Hex";
+            this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // statusStrip2
+            // 
+            this.statusStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripStatusLabel2});
+            this.statusStrip2.Location = new System.Drawing.Point(0, 104);
+            this.statusStrip2.Name = "statusStrip2";
+            this.statusStrip2.Size = new System.Drawing.Size(585, 22);
+            this.statusStrip2.TabIndex = 3;
+            this.statusStrip2.Text = "statusStrip2";
+            this.statusStrip2.Visible = false;
+            // 
+            // toolStripStatusLabel2
+            // 
+            this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(0, 17);
+            // 
+            // hexBoxRequest
+            // 
+            this.hexBoxRequest.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.hexBoxRequest.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.hexBoxRequest.LineInfoForeColor = System.Drawing.Color.Empty;
+            this.hexBoxRequest.Location = new System.Drawing.Point(3, 3);
+            this.hexBoxRequest.Name = "hexBoxRequest";
+            this.hexBoxRequest.ShadowSelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(60)))), ((int)(((byte)(188)))), ((int)(((byte)(255)))));
+            this.hexBoxRequest.Size = new System.Drawing.Size(579, 97);
+            this.hexBoxRequest.StringViewVisible = true;
+            this.hexBoxRequest.TabIndex = 2;
+            this.hexBoxRequest.UseFixedBytesPerLine = true;
+            this.hexBoxRequest.VScrollBarVisible = true;
+            // 
+            // tabControlInspectorResponse
+            // 
+            this.tabControlInspectorResponse.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
+            this.tabControlInspectorResponse.Controls.Add(this.tabPageInspectorRAW);
+            this.tabControlInspectorResponse.Controls.Add(this.tabPageInspectorXML);
+            this.tabControlInspectorResponse.Controls.Add(this.tabPageHexView);
+            this.tabControlInspectorResponse.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControlInspectorResponse.ImageList = this.imageList1;
+            this.tabControlInspectorResponse.Location = new System.Drawing.Point(0, 0);
+            this.tabControlInspectorResponse.Multiline = true;
+            this.tabControlInspectorResponse.Name = "tabControlInspectorResponse";
+            this.tabControlInspectorResponse.SelectedIndex = 0;
+            this.tabControlInspectorResponse.Size = new System.Drawing.Size(593, 236);
+            this.tabControlInspectorResponse.TabIndex = 0;
             // 
             // tabPageInspectorRAW
             // 
-            this.tabPageInspectorRAW.Controls.Add(this.richTextBoxRawLog);
-            this.tabPageInspectorRAW.Location = new System.Drawing.Point(4, 25);
+            this.tabPageInspectorRAW.Controls.Add(this.richTextBoxRawLogResponse);
+            this.tabPageInspectorRAW.ImageIndex = 0;
+            this.tabPageInspectorRAW.Location = new System.Drawing.Point(4, 26);
             this.tabPageInspectorRAW.Name = "tabPageInspectorRAW";
             this.tabPageInspectorRAW.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageInspectorRAW.Size = new System.Drawing.Size(585, 327);
+            this.tabPageInspectorRAW.Size = new System.Drawing.Size(585, 206);
             this.tabPageInspectorRAW.TabIndex = 0;
             this.tabPageInspectorRAW.Text = "Raw";
             this.tabPageInspectorRAW.UseVisualStyleBackColor = true;
             // 
-            // richTextBoxRawLog
+            // richTextBoxRawLogResponse
             // 
-            this.richTextBoxRawLog.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.richTextBoxRawLog.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.richTextBoxRawLog.Location = new System.Drawing.Point(3, 3);
-            this.richTextBoxRawLog.Name = "richTextBoxRawLog";
-            this.richTextBoxRawLog.Size = new System.Drawing.Size(579, 321);
-            this.richTextBoxRawLog.TabIndex = 0;
-            this.richTextBoxRawLog.Text = "";
+            this.richTextBoxRawLogResponse.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextBoxRawLogResponse.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.richTextBoxRawLogResponse.Location = new System.Drawing.Point(3, 3);
+            this.richTextBoxRawLogResponse.Name = "richTextBoxRawLogResponse";
+            this.richTextBoxRawLogResponse.Size = new System.Drawing.Size(579, 200);
+            this.richTextBoxRawLogResponse.TabIndex = 0;
+            this.richTextBoxRawLogResponse.Text = "";
+            this.richTextBoxRawLogResponse.WordWrap = false;
             // 
             // tabPageInspectorXML
             // 
-            this.tabPageInspectorXML.Controls.Add(this.treeView1);
-            this.tabPageInspectorXML.Location = new System.Drawing.Point(4, 25);
+            this.tabPageInspectorXML.Controls.Add(this.treeViewResponseXml);
+            this.tabPageInspectorXML.ImageIndex = 0;
+            this.tabPageInspectorXML.Location = new System.Drawing.Point(4, 26);
             this.tabPageInspectorXML.Name = "tabPageInspectorXML";
             this.tabPageInspectorXML.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageInspectorXML.Size = new System.Drawing.Size(585, 327);
+            this.tabPageInspectorXML.Size = new System.Drawing.Size(585, 206);
             this.tabPageInspectorXML.TabIndex = 1;
             this.tabPageInspectorXML.Text = "XML";
             this.tabPageInspectorXML.UseVisualStyleBackColor = true;
             // 
-            // treeView1
+            // treeViewResponseXml
             // 
-            this.treeView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.treeView1.Location = new System.Drawing.Point(3, 3);
-            this.treeView1.Name = "treeView1";
-            this.treeView1.Size = new System.Drawing.Size(579, 321);
-            this.treeView1.TabIndex = 0;
+            this.treeViewResponseXml.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.treeViewResponseXml.Location = new System.Drawing.Point(3, 3);
+            this.treeViewResponseXml.Name = "treeViewResponseXml";
+            this.treeViewResponseXml.Size = new System.Drawing.Size(579, 200);
+            this.treeViewResponseXml.TabIndex = 0;
             // 
             // tabPageHexView
             // 
             this.tabPageHexView.Controls.Add(this.statusStrip1);
-            this.tabPageHexView.Controls.Add(this.hexBox1);
-            this.tabPageHexView.Location = new System.Drawing.Point(4, 25);
+            this.tabPageHexView.Controls.Add(this.hexBoxResponse);
+            this.tabPageHexView.ImageIndex = 0;
+            this.tabPageHexView.Location = new System.Drawing.Point(4, 26);
             this.tabPageHexView.Name = "tabPageHexView";
             this.tabPageHexView.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageHexView.Size = new System.Drawing.Size(585, 327);
+            this.tabPageHexView.Size = new System.Drawing.Size(585, 206);
             this.tabPageHexView.TabIndex = 4;
             this.tabPageHexView.Text = "Hex";
             this.tabPageHexView.UseVisualStyleBackColor = true;
@@ -677,7 +827,7 @@
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1});
-            this.statusStrip1.Location = new System.Drawing.Point(3, 302);
+            this.statusStrip1.Location = new System.Drawing.Point(3, 181);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(579, 22);
             this.statusStrip1.TabIndex = 0;
@@ -688,54 +838,64 @@
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 17);
             // 
-            // hexBox1
+            // hexBoxResponse
             // 
-            this.hexBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.hexBoxResponse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
-            this.hexBox1.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.hexBox1.LineInfoForeColor = System.Drawing.Color.Empty;
-            this.hexBox1.Location = new System.Drawing.Point(3, 3);
-            this.hexBox1.Name = "hexBox1";
-            this.hexBox1.ShadowSelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(60)))), ((int)(((byte)(188)))), ((int)(((byte)(255)))));
-            this.hexBox1.Size = new System.Drawing.Size(579, 297);
-            this.hexBox1.StringViewVisible = true;
-            this.hexBox1.TabIndex = 1;
-            this.hexBox1.UseFixedBytesPerLine = true;
-            this.hexBox1.VScrollBarVisible = true;
-            this.hexBox1.CurrentPositionInLineChanged += new System.EventHandler(this.Position_Changed);
-            this.hexBox1.CurrentLineChanged += new System.EventHandler(this.Position_Changed);
+            this.hexBoxResponse.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.hexBoxResponse.LineInfoForeColor = System.Drawing.Color.Empty;
+            this.hexBoxResponse.Location = new System.Drawing.Point(3, 3);
+            this.hexBoxResponse.Name = "hexBoxResponse";
+            this.hexBoxResponse.ShadowSelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(60)))), ((int)(((byte)(188)))), ((int)(((byte)(255)))));
+            this.hexBoxResponse.Size = new System.Drawing.Size(579, 176);
+            this.hexBoxResponse.StringViewVisible = true;
+            this.hexBoxResponse.TabIndex = 1;
+            this.hexBoxResponse.UseFixedBytesPerLine = true;
+            this.hexBoxResponse.VScrollBarVisible = true;
+            this.hexBoxResponse.CurrentPositionInLineChanged += new System.EventHandler(this.Position_Changed);
+            this.hexBoxResponse.CurrentLineChanged += new System.EventHandler(this.Position_Changed);
             // 
             // tabPageInject
             // 
             this.tabPageInject.Controls.Add(this.button3);
             this.tabPageInject.Controls.Add(this.buttonInjectPacket);
-            this.tabPageInject.Controls.Add(this.richTextBox1);
+            this.tabPageInject.Controls.Add(this.richTextBoxInject);
             this.tabPageInject.Location = new System.Drawing.Point(4, 22);
             this.tabPageInject.Name = "tabPageInject";
             this.tabPageInject.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageInject.Size = new System.Drawing.Size(593, 356);
+            this.tabPageInject.Size = new System.Drawing.Size(593, 396);
             this.tabPageInject.TabIndex = 2;
             this.tabPageInject.Text = "Inject";
             this.tabPageInject.UseVisualStyleBackColor = true;
             // 
+            // button3
+            // 
+            this.button3.Enabled = false;
+            this.button3.Location = new System.Drawing.Point(6, 367);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(105, 23);
+            this.button3.TabIndex = 2;
+            this.button3.Text = "Packet Builder";
+            this.button3.UseVisualStyleBackColor = true;
+            // 
             // buttonInjectPacket
             // 
             this.buttonInjectPacket.Enabled = false;
-            this.buttonInjectPacket.Location = new System.Drawing.Point(117, 327);
+            this.buttonInjectPacket.Location = new System.Drawing.Point(117, 367);
             this.buttonInjectPacket.Name = "buttonInjectPacket";
             this.buttonInjectPacket.Size = new System.Drawing.Size(75, 23);
             this.buttonInjectPacket.TabIndex = 1;
             this.buttonInjectPacket.Text = "Inject";
             this.buttonInjectPacket.UseVisualStyleBackColor = true;
             // 
-            // richTextBox1
+            // richTextBoxInject
             // 
-            this.richTextBox1.Location = new System.Drawing.Point(6, 6);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(569, 319);
-            this.richTextBox1.TabIndex = 0;
-            this.richTextBox1.Text = "";
+            this.richTextBoxInject.Location = new System.Drawing.Point(6, 6);
+            this.richTextBoxInject.Name = "richTextBoxInject";
+            this.richTextBoxInject.Size = new System.Drawing.Size(569, 355);
+            this.richTextBoxInject.TabIndex = 0;
+            this.richTextBoxInject.Text = "";
             // 
             // toolStrip1
             // 
@@ -767,36 +927,40 @@
             // 
             // captureTrafficToolStripMenuItem
             // 
+            this.captureTrafficToolStripMenuItem.Checked = true;
+            this.captureTrafficToolStripMenuItem.CheckOnClick = true;
+            this.captureTrafficToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.captureTrafficToolStripMenuItem.Name = "captureTrafficToolStripMenuItem";
-            this.captureTrafficToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.captureTrafficToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F12;
+            this.captureTrafficToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
             this.captureTrafficToolStripMenuItem.Text = "Capture Traffic";
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(155, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(180, 6);
             // 
             // saveSessionsToolStripMenuItem
             // 
             this.saveSessionsToolStripMenuItem.Name = "saveSessionsToolStripMenuItem";
-            this.saveSessionsToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.saveSessionsToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
             this.saveSessionsToolStripMenuItem.Text = "Save Sessions";
             // 
             // loadSessionsToolStripMenuItem
             // 
             this.loadSessionsToolStripMenuItem.Name = "loadSessionsToolStripMenuItem";
-            this.loadSessionsToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.loadSessionsToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
             this.loadSessionsToolStripMenuItem.Text = "Load Sessions";
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(155, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(180, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             // 
             // toolStripDropDownButton2
@@ -816,14 +980,10 @@
             this.toolStripDropDownButton2.Size = new System.Drawing.Size(38, 22);
             this.toolStripDropDownButton2.Text = "Edit";
             // 
-            // timer1
-            // 
-            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
-            // 
             // copyToolStripMenuItem
             // 
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
             this.copyToolStripMenuItem.Text = "Copy";
             // 
             // removeToolStripMenuItem
@@ -833,8 +993,29 @@
             this.selectedToolStripMenuItem,
             this.unselectedSessionsToolStripMenuItem});
             this.removeToolStripMenuItem.Name = "removeToolStripMenuItem";
-            this.removeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.removeToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
             this.removeToolStripMenuItem.Text = "Remove";
+            // 
+            // allToolStripMenuItem
+            // 
+            this.allToolStripMenuItem.Name = "allToolStripMenuItem";
+            this.allToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
+            this.allToolStripMenuItem.Text = "All";
+            this.allToolStripMenuItem.Click += new System.EventHandler(this.allToolStripMenuItem_Click);
+            // 
+            // selectedToolStripMenuItem
+            // 
+            this.selectedToolStripMenuItem.Name = "selectedToolStripMenuItem";
+            this.selectedToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
+            this.selectedToolStripMenuItem.Text = "Selected Sessions";
+            this.selectedToolStripMenuItem.Click += new System.EventHandler(this.selectedToolStripMenuItem_Click);
+            // 
+            // unselectedSessionsToolStripMenuItem
+            // 
+            this.unselectedSessionsToolStripMenuItem.Name = "unselectedSessionsToolStripMenuItem";
+            this.unselectedSessionsToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
+            this.unselectedSessionsToolStripMenuItem.Text = "Unselected Sessions";
+            this.unselectedSessionsToolStripMenuItem.Click += new System.EventHandler(this.unselectedSessionsToolStripMenuItem_Click);
             // 
             // selectToolStripMenuItem
             // 
@@ -843,55 +1024,96 @@
             this.noneToolStripMenuItem,
             this.invertSelectionsToolStripMenuItem});
             this.selectToolStripMenuItem.Name = "selectToolStripMenuItem";
-            this.selectToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.selectToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
             this.selectToolStripMenuItem.Text = "Select";
-            // 
-            // allToolStripMenuItem
-            // 
-            this.allToolStripMenuItem.Name = "allToolStripMenuItem";
-            this.allToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
-            this.allToolStripMenuItem.Text = "All";
-            // 
-            // selectedToolStripMenuItem
-            // 
-            this.selectedToolStripMenuItem.Name = "selectedToolStripMenuItem";
-            this.selectedToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
-            this.selectedToolStripMenuItem.Text = "Selected Sessions";
-            // 
-            // unselectedSessionsToolStripMenuItem
-            // 
-            this.unselectedSessionsToolStripMenuItem.Name = "unselectedSessionsToolStripMenuItem";
-            this.unselectedSessionsToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
-            this.unselectedSessionsToolStripMenuItem.Text = "Unselected Sessions";
             // 
             // allToolStripMenuItem1
             // 
             this.allToolStripMenuItem1.Name = "allToolStripMenuItem1";
+            this.allToolStripMenuItem1.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
             this.allToolStripMenuItem1.Size = new System.Drawing.Size(166, 22);
             this.allToolStripMenuItem1.Text = "All";
+            this.allToolStripMenuItem1.Click += new System.EventHandler(this.allToolStripMenuItem1_Click);
             // 
             // noneToolStripMenuItem
             // 
             this.noneToolStripMenuItem.Name = "noneToolStripMenuItem";
             this.noneToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
             this.noneToolStripMenuItem.Text = "None";
+            this.noneToolStripMenuItem.Click += new System.EventHandler(this.noneToolStripMenuItem_Click);
             // 
             // invertSelectionsToolStripMenuItem
             // 
             this.invertSelectionsToolStripMenuItem.Name = "invertSelectionsToolStripMenuItem";
             this.invertSelectionsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
             this.invertSelectionsToolStripMenuItem.Text = "Invert Selections";
+            this.invertSelectionsToolStripMenuItem.Click += new System.EventHandler(this.invertSelectionsToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(179, 6);
             // 
             // markToolStripMenuItem
             // 
+            this.markToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.redToolStripMenuItem,
+            this.goldToolStripMenuItem,
+            this.orangeToolStripMenuItem,
+            this.purpleToolStripMenuItem,
+            this.yellowToolStripMenuItem,
+            this.toolStripSeparator5,
+            this.removeToolStripMenuItem1});
             this.markToolStripMenuItem.Name = "markToolStripMenuItem";
             this.markToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
             this.markToolStripMenuItem.Text = "Mark";
+            // 
+            // redToolStripMenuItem
+            // 
+            this.redToolStripMenuItem.Name = "redToolStripMenuItem";
+            this.redToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.redToolStripMenuItem.Text = "Red";
+            this.redToolStripMenuItem.Click += new System.EventHandler(this.MarkColorToolStripMenuItem_Click);
+            // 
+            // goldToolStripMenuItem
+            // 
+            this.goldToolStripMenuItem.Name = "goldToolStripMenuItem";
+            this.goldToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.goldToolStripMenuItem.Text = "Gold";
+            this.goldToolStripMenuItem.Click += new System.EventHandler(this.MarkColorToolStripMenuItem_Click);
+            // 
+            // orangeToolStripMenuItem
+            // 
+            this.orangeToolStripMenuItem.Name = "orangeToolStripMenuItem";
+            this.orangeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.orangeToolStripMenuItem.Text = "Orange";
+            this.orangeToolStripMenuItem.Click += new System.EventHandler(this.MarkColorToolStripMenuItem_Click);
+            // 
+            // purpleToolStripMenuItem
+            // 
+            this.purpleToolStripMenuItem.Name = "purpleToolStripMenuItem";
+            this.purpleToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.purpleToolStripMenuItem.Text = "Purple";
+            this.purpleToolStripMenuItem.Click += new System.EventHandler(this.MarkColorToolStripMenuItem_Click);
+            // 
+            // yellowToolStripMenuItem
+            // 
+            this.yellowToolStripMenuItem.Name = "yellowToolStripMenuItem";
+            this.yellowToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.yellowToolStripMenuItem.Text = "Yellow";
+            this.yellowToolStripMenuItem.Click += new System.EventHandler(this.MarkColorToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(149, 6);
+            // 
+            // removeToolStripMenuItem1
+            // 
+            this.removeToolStripMenuItem1.Name = "removeToolStripMenuItem1";
+            this.removeToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
+            this.removeToolStripMenuItem1.Text = "Remove";
+            this.removeToolStripMenuItem1.Click += new System.EventHandler(this.removeToolStripMenuItem1_Click);
             // 
             // toolStripSeparator4
             // 
@@ -929,15 +1151,9 @@
             this.loadToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
             this.loadToolStripMenuItem.Text = "Load Selections";
             // 
-            // button3
+            // timer1
             // 
-            this.button3.Enabled = false;
-            this.button3.Location = new System.Drawing.Point(6, 327);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(105, 23);
-            this.button3.TabIndex = 2;
-            this.button3.Text = "Packet Builder";
-            this.button3.UseVisualStyleBackColor = true;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // Form1
             // 
@@ -973,7 +1189,17 @@
             this.grpCapsFilters.ResumeLayout(false);
             this.grpCapsFilters.PerformLayout();
             this.tabPageInspect.ResumeLayout(false);
-            this.tabControl2.ResumeLayout(false);
+            this.splitContainer3.Panel1.ResumeLayout(false);
+            this.splitContainer3.Panel2.ResumeLayout(false);
+            this.splitContainer3.ResumeLayout(false);
+            this.tabControlInspectorRequest.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage2.ResumeLayout(false);
+            this.tabPage3.ResumeLayout(false);
+            this.tabPage3.PerformLayout();
+            this.statusStrip2.ResumeLayout(false);
+            this.statusStrip2.PerformLayout();
+            this.tabControlInspectorResponse.ResumeLayout(false);
             this.tabPageInspectorRAW.ResumeLayout(false);
             this.tabPageInspectorXML.ResumeLayout(false);
             this.tabPageHexView.ResumeLayout(false);
@@ -1005,12 +1231,12 @@
         private System.Windows.Forms.TabPage tabPageSummary;
         private System.Windows.Forms.TabPage tabPageFilters;
         private System.Windows.Forms.SplitContainer splitContainer2;
-        private System.Windows.Forms.CheckedListBox checkedListBox1;
-        private System.Windows.Forms.CheckedListBox checkedListBox2;
+        private System.Windows.Forms.CheckedListBox checkedListBoxFiltersPackets;
+        private System.Windows.Forms.CheckedListBox checkedListBoxFiltersMessages;
         private System.Windows.Forms.GroupBox grpUDPFilters;
         private System.Windows.Forms.GroupBox grpCapsFilters;
         private System.Windows.Forms.TabPage tabPageInject;
-        private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.RichTextBox richTextBoxInject;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.CheckBox checkBox2;
@@ -1028,15 +1254,15 @@
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.TabPage tabPageInspect;
         private System.Windows.Forms.ColumnHeader columnHeaderSize;
-        private System.Windows.Forms.TabControl tabControl2;
+        private System.Windows.Forms.TabControl tabControlInspectorResponse;
         private System.Windows.Forms.TabPage tabPageInspectorRAW;
         private System.Windows.Forms.TabPage tabPageInspectorXML;
-        private System.Windows.Forms.RichTextBox richTextBoxRawLog;
+        private System.Windows.Forms.RichTextBox richTextBoxRawLogResponse;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.TreeView treeView1;
+        private System.Windows.Forms.TreeView treeViewResponseXml;
         private System.Windows.Forms.TabPage tabPageHexView;
         private System.Windows.Forms.StatusStrip statusStrip1;
-        private Be.Windows.Forms.HexBox hexBox1;
+        private Be.Windows.Forms.HexBox hexBoxResponse;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.Button buttonInjectPacket;
         private System.Windows.Forms.Label label10;
@@ -1074,6 +1300,23 @@
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
         private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.SplitContainer splitContainer3;
+        private System.Windows.Forms.TabControl tabControlInspectorRequest;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.RichTextBox richTextBoxRawLogRequest;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.Windows.Forms.TreeView treeViewRequestXml;
+        private System.Windows.Forms.TabPage tabPage3;
+        private System.Windows.Forms.StatusStrip statusStrip2;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
+        private Be.Windows.Forms.HexBox hexBoxRequest;
+        private System.Windows.Forms.ToolStripMenuItem redToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem goldToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem orangeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem purpleToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem yellowToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+        private System.Windows.Forms.ToolStripMenuItem removeToolStripMenuItem1;
     }
 }
 
