@@ -28,6 +28,16 @@ namespace WinGridProxy
         private Assembly openmvAssembly;
 
         private int PacketCounter = 0;
+        
+        private int CapsInCounter = 0;
+        private int CapsInBytes = 0;
+        private int CapsOutCounter = 0;
+        private int CapsOutBytes = 0;
+
+        private int PacketsInCounter = 0;
+        private int PacketsInBytes;
+        private int PacketsOutCounter = 0;
+        private int PacketsOutBytes;
 
         public Form1()
         {
@@ -100,12 +110,13 @@ namespace WinGridProxy
             else
             {
                 PacketCounter++;
-                string dir = (request is XmlRpcRequest) ? ">>" : "<<";
-                string t = (request is XmlRpcRequest) ? "Request" : "Response";
 
-                string[] s = { PacketCounter.ToString() + " " + dir, "HTTPS", t, textBoxLoginURL.Text };
+                string t = (request is XmlRpcRequest) ? "Login Request" : "Login Response";
+                string l = request.ToString().Length.ToString();
+                string[] s = { PacketCounter.ToString(), "HTTPS", t, l, textBoxLoginURL.Text };
                 ListViewItem session = new ListViewItem(s);
                 session.Tag = request;
+                session.ImageIndex = (request is XmlRpcRequest) ? 1 : 0;
 
                 listViewSessions.Items.Add(session);
 
@@ -128,11 +139,6 @@ namespace WinGridProxy
                             }
 
                         }
-
-                        foreach (DictionaryEntry kvp in ht)
-                        {
-                            //Console.WriteLine("hash: {0} -> {1}", kvp.Key, kvp.Value);
-                        }
                     }
                 }
             }
@@ -151,10 +157,24 @@ namespace WinGridProxy
             else
             {
                 PacketCounter++;
-                string dir = (direction == Direction.Incoming) ? "<<" : ">>";
-                string[] s = { PacketCounter.ToString() + " " + dir, "UDP", packet.Type.ToString(), endpoint.ToString(), packet.Length.ToString() };
+                
+                string[] s = { PacketCounter.ToString(), "UDP", packet.Type.ToString(), packet.Length.ToString(), endpoint.ToString() };
                 ListViewItem session = new ListViewItem(s);
+                
                 session.Tag = packet;
+
+                if (direction == Direction.Incoming)
+                {
+                    session.ImageIndex = 0; 
+                    PacketsInCounter++;
+                    PacketsInBytes += packet.Length;
+                }
+                else
+                {
+                    session.ImageIndex = 1;
+                    PacketsOutCounter++;
+                    PacketsOutBytes += packet.Length;
+                }
 
                 listViewSessions.Items.Add(session);
             }
@@ -172,10 +192,25 @@ namespace WinGridProxy
             else
             {
                 PacketCounter++;
-                string dir = (stage == CapsStage.Request) ? ">>" : "<<";
-                string[] s = { PacketCounter.ToString() + " " + dir, "CAPS", req.Info.CapType, req.Info.URI, "" };
+
+                string size = (stage == CapsStage.Request) ? req.Request.ToString().Length.ToString() : req.Response.ToString().Length.ToString();
+                string[] s = { PacketCounter.ToString(), "CAPS", req.Info.CapType, size, req.Info.URI };
                 ListViewItem session = new ListViewItem(s);
+                
                 session.Tag = req;
+
+                if (stage == CapsStage.Request)
+                {
+                    CapsOutCounter++;
+                    CapsOutBytes += req.Request.ToString().Length;
+                    session.ImageIndex = 0;
+                }
+                else
+                {
+                    CapsInCounter++;
+                    CapsInBytes += req.Response.ToString().Length;
+                    session.ImageIndex = 1;
+                }
 
                 listViewSessions.Items.Add(session);
             }
@@ -183,29 +218,30 @@ namespace WinGridProxy
 
         private void button1_Click(object sender, EventArgs e)
         {
+            
+
             if (button1.Text.StartsWith("Start") && IsProxyRunning.Equals(false))
             {
                 proxy = new ProxyManager(textBoxProxyPort.Text, textBoxProxyListenIP.Text, textBoxLoginURL.Text);
                 // start the proxy
                 textBoxProxyListenIP.Enabled = textBoxProxyPort.Enabled = textBoxLoginURL.Enabled = false;
                 proxy.Start();
-                IsProxyRunning = true;
+                grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = true;
                 button1.Text = "Stop Proxy";
 
-                grpUDPFilters.Enabled = true;
-                grpCapsFilters.Enabled = true;
+                if (!timer1.Enabled)
+                    timer1.Enabled = true;
             }
             else if (button1.Text.StartsWith("Stop") && IsProxyRunning.Equals(true))
             {
                 // stop the proxy
-                
                 proxy.Stop();
-                IsProxyRunning = false;
+                grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = false;
                 button1.Text = "Start Proxy";
                 textBoxProxyListenIP.Enabled = textBoxProxyPort.Enabled = textBoxLoginURL.Enabled = true;
 
-                grpUDPFilters.Enabled = false;
-                grpCapsFilters.Enabled = false;
+                if (timer1.Enabled)
+                    timer1.Enabled = false;
             }
         }
 
@@ -261,15 +297,16 @@ namespace WinGridProxy
         {
             StringBuilder result = new StringBuilder();
 
+            //result.AppendFormat("{0}" + System.Environment.NewLine, packet.Type);
+
             foreach (FieldInfo packetField in packet.GetType().GetFields())
             {
                 object packetDataObject = packetField.GetValue(packet);
 
-                result.AppendFormat("-- {0} --" + System.Environment.NewLine, packetField.Name);
-                result.AppendFormat("-- {0} --" + System.Environment.NewLine, packet.Type);
+                result.AppendFormat("-- {0,30} --" + System.Environment.NewLine, packetField.Name);
                 foreach (FieldInfo packetValueField in packetField.GetValue(packet).GetType().GetFields())
                 {
-                    result.AppendFormat("a){0,30}: {1}" + System.Environment.NewLine,
+                    result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
                         packetValueField.Name, packetValueField.GetValue(packetDataObject));
                 }
 
@@ -316,8 +353,11 @@ namespace WinGridProxy
                         else
                         {
                             // this seems to be limited to the length property, since all others have been previously handled
-                            //result.AppendFormat("e){0,20}: {1}" + System.Environment.NewLine,
-                            //    packetPropertyField.Name, packetPropertyField.GetValue(packetDataObject, null));
+                            if (packetPropertyField.Name != "Length")
+                            {
+                                result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
+                                    packetPropertyField.Name, packetPropertyField.GetValue(packetDataObject, null));
+                            }
                         }
                     }
                 }
@@ -330,66 +370,72 @@ namespace WinGridProxy
             if (e.IsSelected)
             {
                 tabControl1.SelectTab("tabPageInspect");
-                object t = e.Item.Tag;
+                object tag = e.Item.Tag;
+           
+                if (tag is XmlRpcRequest)
+                {
+                    XmlRpcRequest requestData = (XmlRpcRequest)tag;
 
-                if (t is XmlRpcRequest)
-                {
-                    Console.WriteLine("XmlRpcRequest");
-                    XmlRpcRequest r = (XmlRpcRequest)t;
+                    richTextBoxRawLog.Text = requestData.ToString();
+                    updateTreeView(requestData.ToString());
 
-                    richTextBoxRawLog.Text = r.ToString();
-                    updateTreeView(r.ToString());
+                    Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(requestData.ToString()));
+                    hexBox1.ByteProvider = data;
                 }
-                else if (t is XmlRpcResponse)
+                else if (tag is XmlRpcResponse)
                 {
-                    Console.WriteLine("XmlRpcResponse");
-                    XmlRpcResponse r = (XmlRpcResponse)t;
-                    Hashtable tbl = (Hashtable)r.Value;
-                    richTextBoxRawLog.Text = "";
-                    foreach (DictionaryEntry kvp in tbl)
+                    XmlRpcResponse responseData = (XmlRpcResponse)tag;
+
+                    richTextBoxRawLog.Text = responseData.ToString();
+                    updateTreeView(responseData.ToString());
+
+                    Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(responseData.ToString()));
+                    hexBox1.ByteProvider = data;
+                }
+                else if (tag is Packet)
+                {
+                    Packet packet = (Packet)tag;
+                    richTextBoxRawLog.Text = PacketToString(packet);
+                    
+                    Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(packet.ToBytes());
+                    hexBox1.ByteProvider = data;
+                }
+                else if (tag is CapsRequest)
+                {
+                    CapsRequest capsData = (CapsRequest)tag;
+                    Console.WriteLine(tag.ToString());
+                    if (capsData.Response != null)
                     {
-                        StringBuilder sb = new StringBuilder("Hash Table Not Decoded");
-                        if(kvp.Value.GetType() == typeof(ArrayList))
-                        {
-                            // iterate the hash table and append the values
-                            //foreach (var item in kvp.Value as ArrayList)
-                            //{
-                            //    sb.Append(item + System.Environment.NewLine);
-                            //}
-                            richTextBoxRawLog.AppendText(String.Format("{0,15}: {1}" + System.Environment.NewLine, kvp.Key, sb.ToString()));
-                        } else {
-                            richTextBoxRawLog.AppendText(String.Format("{0,15}: {1}" + System.Environment.NewLine, kvp.Key, kvp.Value));
-                        }
+                        richTextBoxRawLog.Text = capsData.Response.ToString();
+                        richTextBox1.Text = OSDParser.SerializeLLSDXmlString(capsData.Response);
+                        updateTreeView(OSDParser.SerializeLLSDXmlString(capsData.Response));
+
+                        Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(capsData.Response.ToString()));
+                        hexBox1.ByteProvider = data;
                     }
-                }
-                else if (t is Packet)
-                {
-                    Console.WriteLine("Packet");
-                    richTextBoxRawLog.Text = PacketToString((Packet)t);
-                }
-                else if (t is CapsRequest)
-                {
-                    Console.WriteLine("CAPS");
-                    CapsRequest obj = (CapsRequest)t;
-                    Console.WriteLine(t.ToString());
-                    if (obj.Response != null)
+                    else if (capsData.Request != null)
                     {
-                        richTextBoxRawLog.Text = obj.Response.ToString();
-                        richTextBox1.Text = OSDParser.SerializeLLSDXmlString(obj.Response);
-                        updateTreeView(OSDParser.SerializeLLSDXmlString(obj.Response));
-                    }
+                        richTextBoxRawLog.Text = capsData.Request.ToString();
+                        richTextBox1.Text = OSDParser.SerializeLLSDXmlString(capsData.Request);
+                        updateTreeView(OSDParser.SerializeLLSDXmlString(capsData.Request));
+
+                        Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(capsData.Request.ToString()));
+                        hexBox1.ByteProvider = data;
+                    } 
                     else
                     {
                         richTextBoxRawLog.Text = "No Message Data";
                         treeView1.Nodes.Clear();
+                        hexBox1.ByteProvider = null;
                     }
                     
                 }
                 else
                 {
-                    richTextBoxRawLog.Text = String.Format("Unknown packet/message: {0}:{1}" + System.Environment.NewLine, e.Item.Text, t.GetType());
-                    
+                    richTextBoxRawLog.Text = String.Format("Unknown packet/message: {0}:{1}" + System.Environment.NewLine, e.Item.Text, tag.GetType());
+                    hexBox1.ByteProvider = null;
                 }
+                
             }
         }
 
@@ -461,7 +507,34 @@ namespace WinGridProxy
             if (IsProxyRunning)
                 proxy.Stop();
         }
-    }
+
+        void Position_Changed(object sender, EventArgs e)
+        {
+            toolStripStatusLabel1.Text = string.Format("Ln {0}    Col {1}    Bytes {2}",
+                hexBox1.CurrentLine, hexBox1.CurrentPositionInLine, hexBox1.ByteProvider.Length);
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new MethodInvoker(delegate()
+                {
+                    timer1_Tick(sender, e);
+                }));
+            }
+            else
+            {
+                label1PacketsOut.Text = String.Format("{0} ({1} bytes)", PacketsOutCounter, PacketsOutBytes);
+                labelPacketsIn.Text = String.Format("{0} ({1} bytes)", PacketsInCounter, PacketsInBytes);
+                labelPacketsTotal.Text = String.Format("{0} ({1} bytes)", PacketsOutCounter + PacketsInCounter, PacketsOutBytes + PacketsInBytes);
+
+                labelCapsIn.Text = String.Format("{0} ({1} bytes)", CapsInCounter, CapsInBytes);
+                labelCapsOut.Text = String.Format("{0} ({1} bytes)", CapsOutCounter, CapsOutBytes);
+                labelCapsTotal.Text = String.Format("{0} ({1} bytes)", CapsInCounter + CapsOutCounter, CapsOutBytes + CapsInBytes);
+            }
+        }
+    }   
 
     public class ProxyManager
     {
@@ -493,14 +566,14 @@ namespace WinGridProxy
 
             string[] args = { port, listenIP, loginUri };
             /*
-             help"] = new ArgumentParser(ParseHelp);
-argumentParsers["proxy-help"] = new ArgumentParser(ParseHelp);
-argumentParsers["proxy-login-port"] = new ArgumentParser(ParseLoginPort);
-argumentParsers["proxy-client-facing-address"] = new ArgumentParser(ParseClientFacingAddress);
-argumentParsers["proxy-remote-facing-address"] = new ArgumentParser(ParseRemoteFacingAddress);
-argumentParsers["proxy-remote-login-uri"] = new ArgumentParser(ParseRemoteLoginUri);
-argumentParsers["verbose"] = new ArgumentParser(ParseVerbose);
-argumentParsers["quiet"] = new ArgumentPar
+                help
+                proxy-help
+                proxy-login-port
+                proxy-client-facing-address
+                proxy-remote-facing-address
+                proxy-remote-login-uri
+                verbose
+                quiet
              */
 
             Proxy = new ProxyFrame(args);
@@ -564,20 +637,28 @@ argumentParsers["quiet"] = new ArgumentPar
         {
             if (add)
             {
-                Proxy.proxy.AddDelegate(packetType, Direction.Incoming, new PacketDelegate(PacketHandler));
-                Proxy.proxy.AddDelegate(packetType, Direction.Outgoing, new PacketDelegate(PacketHandler));
+                Proxy.proxy.AddDelegate(packetType, Direction.Incoming, new PacketDelegate(PacketInHandler));
+                Proxy.proxy.AddDelegate(packetType, Direction.Outgoing, new PacketDelegate(PacketOutHandler));
             }
             else
             {
-                Proxy.proxy.RemoveDelegate(packetType, Direction.Incoming, new PacketDelegate(PacketHandler));
-                Proxy.proxy.RemoveDelegate(packetType, Direction.Outgoing, new PacketDelegate(PacketHandler));
+                Proxy.proxy.RemoveDelegate(packetType, Direction.Incoming, new PacketDelegate(PacketInHandler));
+                Proxy.proxy.RemoveDelegate(packetType, Direction.Outgoing, new PacketDelegate(PacketOutHandler));
             }
         }
 
-        private Packet PacketHandler(Packet packet, IPEndPoint endPoint)
+        private Packet PacketInHandler(Packet packet, IPEndPoint endPoint)
         {
             if (OnPacketLog != null)
                 OnPacketLog(packet, Direction.Incoming, endPoint);
+
+            return packet;
+        }
+
+        private Packet PacketOutHandler(Packet packet, IPEndPoint endPoint)
+        {
+            if (OnPacketLog != null)
+                OnPacketLog(packet, Direction.Outgoing, endPoint);
 
             return packet;
         }

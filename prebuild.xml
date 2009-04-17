@@ -626,6 +626,7 @@
       <Reference name="OpenMetaverse.Http"/>
       <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="GridProxy"/>
+      <Reference name="Be.Windows.Forms.HexBox"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
