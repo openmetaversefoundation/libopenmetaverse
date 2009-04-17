@@ -125,7 +125,8 @@ namespace GridProxy
             Console.WriteLine("  --proxy-remote-facing-address=<IP>  communicate with server via <IP>");
             Console.WriteLine("  --proxy-remote-login-uri=<URI>      use SL login server at <URI>");
             Console.WriteLine("  --log-all                           log all packets by default in Analyst");
-            Console.WriteLine("  --log-whitelist=<file>              log packets listed in a file, one name per line");
+            Console.WriteLine("  --log-whitelist=<file>              log packets listed in file, one name per line");
+            Console.WriteLine("  --no-log-blacklist=<file>           don't log packets in file, one name per line");
             Console.WriteLine("  --output=<logfile>                  log Analyst output to a file");
             Console.WriteLine("  --verbose                           display proxy notifications");
             Console.WriteLine("  --quiet                             suppress proxy notifications");

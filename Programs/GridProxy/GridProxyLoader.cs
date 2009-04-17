@@ -53,10 +53,23 @@ namespace GridProxy
 
         public ProxyFrame(string[] args)
         {
+            Init(args, null);
+        }
+
+        public ProxyFrame(string[] args, ProxyConfig proxyConfig)
+        {
+            Init(args, proxyConfig);
+        }
+
+        private void Init(string[] args, ProxyConfig proxyConfig)
+        {
             //bool externalPlugin = false;
             this.args = args;
 
-            ProxyConfig proxyConfig = new ProxyConfig("GridProxy", "Austin Jennings / Andrew Ortman", args);
+            if (proxyConfig == null)
+            {
+                proxyConfig = new ProxyConfig("GridProxy", "Austin Jennings / Andrew Ortman", args);
+            }
             proxy = new Proxy(proxyConfig);
 
             // add delegates for login

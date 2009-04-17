@@ -79,6 +79,8 @@ public class Analyst : ProxyPlugin
                 LogAll();
             else if (arg.Contains("--log-whitelist="))
                 LogWhitelist(arg.Substring(arg.IndexOf('=') + 1));
+            else if (arg.Contains("--no-log-blacklist="))
+                NoLogBlacklist(arg.Substring(arg.IndexOf('=') + 1));
             else if (arg.Contains("--output="))
                 SetOutput(arg.Substring(arg.IndexOf('=') + 1));
 
@@ -743,6 +745,42 @@ public class Analyst : ProxyPlugin
         }
     }
 
+    private void NoLogBlacklist(string blacklistFile)
+    {
+        try
+        {
+            string[] lines = File.ReadAllLines(blacklistFile);
+            int count = 0;
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i].Trim();
+                if (line.Length == 0)
+                    continue;
+
+                PacketType pType;
+
+                try
+                {
+                    pType = packetTypeFromName(line);
+                    string[] noLogStr = new string[] {"/-log", line};
+                    CmdNoLog(noLogStr);
+                    ++count;
+                }
+                catch (ArgumentException)
+                {
+                    Console.WriteLine("Bad packet name: " + line);
+                }
+            }
+
+            Console.WriteLine(String.Format("Not logging {0} packet types loaded from blacklist", count));
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("Failed to load packet blacklist from " + blacklistFile);
+        }
+    }
+
     private void SetOutput(string outputFile)
     {
         try
@@ -793,7 +831,8 @@ public class Analyst : ProxyPlugin
 
         if (logGrep == null || (logGrep != null && Regex.IsMatch(packetText, logGrep)))
         {
-            string line = String.Format("{0} {1,21} {2,5} {3}{4}{5}"
+            string line = String.Format("{0}\n{1} {2,21} {3,5} {4}{5}{6}"
+                , packet.Type
                 , direction == Direction.Incoming ? "<--" : "-->"
                 , endPoint
                 , packet.Header.Sequence
