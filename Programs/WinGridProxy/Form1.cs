@@ -673,6 +673,12 @@ namespace WinGridProxy
                     item.BackColor = Color.White;
             }
             noneToolStripMenuItem_Click(sender, e);
+        }
+
+        private void aboutWinGridProxyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AboutBox1 about = new AboutBox1();
+            about.ShowDialog();
         }    
     }   
 

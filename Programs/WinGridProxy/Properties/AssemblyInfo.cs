@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("WinGridProxy")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Proxy and Packet Analyzer")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("OpenMetaverse")]
 [assembly: AssemblyProduct("WinGridProxy")]
-[assembly: AssemblyCopyright("Copyright ©  2009")]
+[assembly: AssemblyCopyright("Copyright ©  2009 OpenMetaverse Ninjas")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
