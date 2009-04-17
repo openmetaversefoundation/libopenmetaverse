@@ -32,6 +32,62 @@ using OpenMetaverse.Interfaces;
 
 namespace OpenMetaverse.Messages.CableBeach
 {
+    #region Identity Messages
+
+    public class RequestCapabilitiesMessage : IMessage
+    {
+        public Uri Identity;
+        public Uri[] Capabilities;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(1);
+            map["identity"] = OSD.FromUri(Identity);
+
+            OSDArray array = new OSDArray(Capabilities.Length);
+            for (int i = 0; i < Capabilities.Length; i++)
+                array.Add(OSD.FromUri(Capabilities[i]));
+            map["capabilities"] = array;
+
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Identity = map["identity"].AsUri();
+
+            OSDArray array = (OSDArray)map["capabilities"];
+            Capabilities = new Uri[array.Count];
+            for (int i = 0; i < array.Count; i++)
+                Capabilities[i] = array[i].AsUri();
+        }
+    }
+
+    public class RequestCapabilitiesReplyMessage : IMessage
+    {
+        public Dictionary<Uri, Uri> Capabilities;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(1);
+            OSDMap caps = new OSDMap(Capabilities.Count);
+            foreach (KeyValuePair<Uri, Uri> entry in Capabilities)
+                caps.Add(entry.Key.ToString(), OSD.FromUri(entry.Value));
+            map["capabilities"] = caps;
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDMap caps = (OSDMap)map["capabilities"];
+            Capabilities = new Dictionary<Uri, Uri>(caps.Count);
+            foreach (KeyValuePair<string, OSD> entry in caps)
+                Capabilities.Add(new Uri(entry.Key), entry.Value.AsUri());
+        }
+    }
+
+    #endregion Identity Messages
+
     #region Inventory Messages
 
     public class CreateInventoryMessage : IMessage
