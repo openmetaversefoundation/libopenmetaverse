@@ -337,7 +337,7 @@ namespace WinGridProxy
             {
                 object packetDataObject = packetField.GetValue(packet);
 
-                result.AppendFormat("-- {0,30} --" + System.Environment.NewLine, packetField.Name);
+                result.AppendFormat("-- {0,20} --" + System.Environment.NewLine, packetField.Name);
                 foreach (FieldInfo packetValueField in packetField.GetValue(packet).GetType().GetFields())
                 {
                     result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
@@ -373,9 +373,9 @@ namespace WinGridProxy
                         if (packetPropertyField.PropertyType.Equals(typeof(System.Byte[]))
                             && packetPropertyField.Name.Equals("Data"))
                         {
-                            result.AppendFormat("{0,5}: {1}" + System.Environment.NewLine,
-                                packetPropertyField.Name,
-                                Utils.BytesToHexString((byte[])packetPropertyField.GetValue(packetDataObject, null), packetPropertyField.Name));
+                            result.AppendFormat("{0}" + System.Environment.NewLine,
+                                Utils.BytesToHexString((byte[])packetPropertyField.GetValue(packetDataObject, null),
+                                packetPropertyField.Name));
                         }
                         // decode bytes into strings
                         else if (packetPropertyField.PropertyType.Equals(typeof(System.Byte[])))
@@ -442,6 +442,10 @@ namespace WinGridProxy
                     
                     Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(packet.ToBytes());
                     hexBoxResponse.ByteProvider = data;
+
+                    hexBoxRequest.ByteProvider = null;
+                    richTextBoxRawLogRequest.Text = String.Empty;
+                    treeViewRequestXml.Nodes.Clear();
                 }
                 else if (tag is CapsRequest)
                 {
@@ -475,6 +479,8 @@ namespace WinGridProxy
                 }
             }
         }
+
+        #region XML Tree
 
         private void updateTreeView(string xml, TreeView treeView)
         {
@@ -539,6 +545,8 @@ namespace WinGridProxy
             return tmptreenode;
         }
 
+        #endregion
+
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (IsProxyRunning)
@@ -573,10 +581,13 @@ namespace WinGridProxy
             Store.SerializeToFile(fileName);
         }
 
-        void Position_Changed(object sender, EventArgs e)
+        void ReplyPosition_Changed(object sender, EventArgs e)
         {
-            //toolStripStatusLabel1.Text = string.Format("Ln {0}    Col {1}    Bytes {2}",
-            //    hexBoxResponse.CurrentLine, hexBoxResponse.CurrentPositionInLine, hexBoxResponse.ByteProvider.Length);
+            if (hexBoxResponse.ByteProvider != null)
+            {
+                labelResponseHex.Text = string.Format("Ln {0}    Col {1}    bytes {2}",
+                    hexBoxResponse.CurrentLine, hexBoxResponse.CurrentPositionInLine, hexBoxResponse.ByteProvider.Length);
+            }
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -628,13 +639,13 @@ namespace WinGridProxy
         }   
 
         // remove all sessions
-        private void allToolStripMenuItem_Click(object sender, EventArgs e)
+        private void removeAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
             listViewSessions.Items.Clear();
         }
 
         // remove sessions that are currently selected
-        private void selectedToolStripMenuItem_Click(object sender, EventArgs e)
+        private void removeSelectedToolStripMenuItem_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewSessions.Items)
             {
@@ -644,7 +655,7 @@ namespace WinGridProxy
         }
 
         // remove sessions that are not currently selected
-        private void unselectedSessionsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void removeUnselectedSessionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewSessions.Items)
             {
@@ -665,7 +676,8 @@ namespace WinGridProxy
             noneToolStripMenuItem_Click(sender, e);
         }
 
-        private void removeToolStripMenuItem1_Click(object sender, EventArgs e)
+        // Unmark selected sessions
+        private void removeMarkToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             foreach (ListViewItem item in listViewSessions.Items)
             {
@@ -679,7 +691,17 @@ namespace WinGridProxy
         {
             AboutBox1 about = new AboutBox1();
             about.ShowDialog();
-        }    
+        }
+
+        private void RequestPosition_Changed(object sender, EventArgs e)
+        {
+            if (hexBoxRequest.ByteProvider != null)
+            {
+                labelRequestHex.Text = string.Format("Ln {0}    Col {1}    bytes {2}",
+                    hexBoxRequest.CurrentLine, hexBoxRequest.CurrentPositionInLine, hexBoxRequest.ByteProvider.Length);
+            }
+        }
+ 
     }   
 
     public class ProxyManager
