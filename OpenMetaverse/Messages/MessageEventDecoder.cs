@@ -68,6 +68,8 @@ namespace OpenMetaverse
                 case "Viewerstats": message = new ViewerStatsMessage(); break;
                 case "UpdateAgentLanguage": message = new UpdateAgentLanguageMessage(); break;
                 case "RemoteParcelRequest": message = new RemoteParcelRequestMessage(); break;
+                case "UpdateScriptTask": message = new UpdateScriptTaskMessage(); break;
+                case "UpdateScriptAgent": message = new UpdateScriptAgentMessage(); break;
 
                 // Capabilities TODO:
                 // DispatchRegionInfo
@@ -87,7 +89,6 @@ namespace OpenMetaverse
                 // StartGroupProposal
                 // UpdateGestureAgentInventory
                 // UpdateNotecardAgentInventory
-                // UpdateScriptAgent
                 // UpdateGestureTaskInventory
                 // UpdateNotecardTaskInventory
                 // ViewerStartAuction

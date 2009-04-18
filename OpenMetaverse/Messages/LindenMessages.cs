@@ -825,7 +825,7 @@ namespace OpenMetaverse.Messages.Linden
                 group["GroupInsigniaID"] = OSD.FromUUID(GroupDataBlock[i].GroupInsigniaID);
                 group["GroupName"] = OSD.FromString(GroupDataBlock[i].GroupName);
                 group["GroupPowers"] = OSD.FromBinary((ulong)GroupDataBlock[i].GroupPowers);
-                
+
                 groupDataArray.Add(group);
 
                 OSDMap newDataMap = new OSDMap(1);
@@ -862,7 +862,7 @@ namespace OpenMetaverse.Messages.Linden
                 groupData.GroupInsigniaID = groupMap["GroupInsigniaID"].AsUUID();
                 groupData.GroupName = groupMap["GroupName"].AsString();
                 groupData.GroupPowers = (GroupPowers)groupMap["GroupPowers"].AsLong();
-                
+
                 groupData.AcceptNotices = groupMap["AcceptNotices"].AsBoolean();
 
                 OSDMap newGroupDataMap = (OSDMap)newGroupDataArray[i];
@@ -1130,6 +1130,56 @@ namespace OpenMetaverse.Messages.Linden
             NotecardID = map["notecard-id"].AsUUID();
             ObjectID = map["object-id"].AsUUID();
         }
+    }
+
+    /// <summary>
+    /// Request sent by client to update a script inside a tasks inventory
+    /// </summary>
+    public class UpdateScriptTaskMessage : IMessage
+    {
+        public bool ScriptRunning;
+        public UUID ItemID;
+        public string Target; // mono or lsl2
+        public UUID TaskID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(4);
+            map["is_script_running"] = OSD.FromBoolean(ScriptRunning);
+            map["item_id"] = OSD.FromUUID(ItemID);
+            map["target"] = OSD.FromString(Target);
+            map["task_id"] = OSD.FromUUID(TaskID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            ScriptRunning = map["is_script_running"].AsBoolean();
+            ItemID = map["item_id"].AsUUID();
+            Target = map["target"].AsString();
+            TaskID = map["task_id"].AsUUID();
+        }
+    }
+
+    public class UpdateScriptAgentMessage : IMessage
+    {
+        public UUID ItemID;
+        public string Target;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(2);
+            map["item_id"] = OSD.FromUUID(ItemID);
+            map["target"] = OSD.FromString(Target);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            ItemID = map["item_id"].AsUUID();
+            Target = map["target"].AsString();
+        }
+
     }
 
     #endregion

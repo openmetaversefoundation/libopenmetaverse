@@ -831,6 +831,41 @@ namespace OpenMetaverse.Tests
 
             Assert.AreEqual(s.ParcelID, t.ParcelID);
         }
+
+        [Test]
+        public void UpdateScriptTaskMessage()
+        {
+            UpdateScriptTaskMessage s = new UpdateScriptTaskMessage();
+            s.TaskID = UUID.Random();
+            s.Target = "mono";
+            s.ScriptRunning = true;
+            s.ItemID = UUID.Random();
+
+            OSDMap map = s.Serialize();
+            UpdateScriptTaskMessage t = new UpdateScriptTaskMessage();
+            t.Deserialize(map);
+
+            Assert.AreEqual(s.ItemID, t.ItemID);
+            Assert.AreEqual(s.ScriptRunning, t.ScriptRunning);
+            Assert.AreEqual(s.Target, t.Target);
+            Assert.AreEqual(s.TaskID, t.TaskID);
+        }
+
+        [Test]
+        public void UpdateScriptAgentMessage()
+        {
+            UpdateScriptAgentMessage s = new UpdateScriptAgentMessage();
+            s.ItemID = UUID.Random();
+            s.Target = "lsl2";
+
+            OSDMap map = s.Serialize();
+
+            UpdateScriptAgentMessage t = new UpdateScriptAgentMessage();
+            t.Deserialize(map);
+
+            Assert.AreEqual(s.ItemID, t.ItemID);
+            Assert.AreEqual(s.Target, t.Target);
+        }
     }
 }
 
