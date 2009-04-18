@@ -866,6 +866,30 @@ namespace OpenMetaverse.Tests
             Assert.AreEqual(s.ItemID, t.ItemID);
             Assert.AreEqual(s.Target, t.Target);
         }
+
+        [Test]
+        public void SendPostcardMessage()
+        {
+            SendPostcardMessage s = new SendPostcardMessage();
+            s.FromEmail = "contact@openmetaverse.org";
+            s.FromName = "Jim Radford";
+            s.GlobalPosition = Vector3.One;
+            s.Message = "Hello, How are you today?";
+            s.Subject = "Postcard from the edge";
+            s.ToEmail = "test1@example.com";
+
+            OSDMap map = s.Serialize();
+
+            SendPostcardMessage t = new SendPostcardMessage();
+            t.Deserialize(map);
+
+            Assert.AreEqual(s.FromEmail, t.FromEmail);
+            Assert.AreEqual(s.FromName, t.FromName);
+            Assert.AreEqual(s.GlobalPosition, t.GlobalPosition);
+            Assert.AreEqual(s.Message, t.Message);
+            Assert.AreEqual(s.Subject, t.Subject);
+            Assert.AreEqual(s.ToEmail, t.ToEmail);
+        }
     }
 }
 

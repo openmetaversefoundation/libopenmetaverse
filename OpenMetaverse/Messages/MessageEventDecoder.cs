@@ -70,6 +70,7 @@ namespace OpenMetaverse
                 case "RemoteParcelRequest": message = new RemoteParcelRequestMessage(); break;
                 case "UpdateScriptTask": message = new UpdateScriptTaskMessage(); break;
                 case "UpdateScriptAgent": message = new UpdateScriptAgentMessage(); break;
+                case "SendPostcard": message = new SendPostcardMessage(); break;
 
                 // Capabilities TODO:
                 // DispatchRegionInfo

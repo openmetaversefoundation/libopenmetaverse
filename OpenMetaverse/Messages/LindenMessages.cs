@@ -1182,6 +1182,38 @@ namespace OpenMetaverse.Messages.Linden
 
     }
 
+    public class SendPostcardMessage : IMessage
+    {
+        public string FromEmail;
+        public string Message;
+        public string FromName;
+        public Vector3 GlobalPosition;
+        public string Subject;
+        public string ToEmail;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(6);
+            map["from"] = OSD.FromString(FromEmail);
+            map["msg"] = OSD.FromString(Message);
+            map["name"] = OSD.FromString(FromName);
+            map["pos-global"] = OSD.FromVector3(GlobalPosition);
+            map["subject"] = OSD.FromString(Subject);
+            map["to"] = OSD.FromString(ToEmail);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            FromEmail = map["from"].AsString();
+            Message = map["msg"].AsString();
+            FromName = map["name"].AsString();
+            GlobalPosition = map["pos-global"].AsVector3();
+            Subject = map["subject"].AsString();
+            ToEmail = map["to"].AsString();
+        }
+    }
+
     #endregion
 
     #region Grid/Maps
