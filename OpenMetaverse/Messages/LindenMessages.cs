@@ -1084,7 +1084,8 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
-    public class UpdateNotecardAgentInventoryMessage
+    // TODO: Add Test
+    public class UpdateNotecardAgentInventoryMessage : IMessage
     {
         public UUID ItemID;
 

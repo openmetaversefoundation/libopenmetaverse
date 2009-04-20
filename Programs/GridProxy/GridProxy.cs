@@ -592,7 +592,7 @@ namespace GridProxy
 
         }
 
-        public Dictionary<string, CapInfo> KnownCaps;
+        public ObservableDictionary<string, CapInfo> KnownCaps = new ObservableDictionary<string,CapInfo>();
         //private Dictionary<string, bool> SubHack = new Dictionary<string, bool>();
 
         private void ProxyCaps(NetworkStream netStream, string meth, string uri, Dictionary<string, string> headers, byte[] content, int reqNo)
@@ -997,7 +997,6 @@ namespace GridProxy
 #endif
                 }
             }
-
             return false;
         }
 
@@ -1184,7 +1183,7 @@ namespace GridProxy
         {
             foreach (SimProxy simProxy in simProxies.Values)
                 simProxy.Reset();
-            KnownCaps = new Dictionary<string, CapInfo>();
+            KnownCaps.Clear(); //= new ObservableDictionary<string,CapInfo>();
         }
 
         private byte[] receiveBuffer = new byte[8192];

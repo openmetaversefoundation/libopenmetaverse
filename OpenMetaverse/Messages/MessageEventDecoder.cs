@@ -71,6 +71,8 @@ namespace OpenMetaverse
                 case "UpdateScriptTask": message = new UpdateScriptTaskMessage(); break;
                 case "UpdateScriptAgent": message = new UpdateScriptAgentMessage(); break;
                 case "SendPostcard": message = new SendPostcardMessage(); break;
+                case "UpdateNotecardAgentInventory": message = new UpdateNotecardAgentInventoryMessage(); break;
+
 
                 // Capabilities TODO:
                 // DispatchRegionInfo
@@ -83,13 +85,11 @@ namespace OpenMetaverse
                 // RequestTextureDownload
                 // SearchStatRequest
                 // SearchStatTracking
-                // SendPostcard
                 // SendUserReport
                 // SendUserReportWithScreenshot
                 // ServerReleaseNotes
                 // StartGroupProposal
                 // UpdateGestureAgentInventory
-                // UpdateNotecardAgentInventory
                 // UpdateGestureTaskInventory
                 // UpdateNotecardTaskInventory
                 // ViewerStartAuction
