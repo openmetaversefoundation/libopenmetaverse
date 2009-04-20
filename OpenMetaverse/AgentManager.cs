@@ -2848,8 +2848,8 @@ namespace OpenMetaverse
         /// <summary>
         /// Process TeleportFinish from Event Queue and pass it onto our TeleportHandler
         /// </summary>
-        /// <param name="message"></param>
-        /// <param name="osd"></param>
+        /// <param name="capsKey">The message system key for this event</param>
+        /// <param name="message">IMessage object containing decoded data from OSD</param>
         /// <param name="simulator"></param>
         private void TeleportFinishEventHandler(string capsKey, IMessage message, Simulator simulator)
         {
@@ -3120,7 +3120,7 @@ namespace OpenMetaverse
         /// Group Chat event handler
         /// </summary>
         /// <param name="capsKey">The capability Key</param>
-        /// <param name="osd"></param>
+        /// <param name="message">IMessage object containing decoded data from OSD</param>
         /// <param name="simulator"></param>
         private void ChatterBoxSessionEventReplyHandler(string capsKey, IMessage message, Simulator simulator)
         {
@@ -3137,7 +3137,7 @@ namespace OpenMetaverse
         /// Response from request to join a group chat
         /// </summary>
         /// <param name="capsKey"></param>
-        /// <param name="osd"></param>
+        /// <param name="message">IMessage object containing decoded data from OSD</param>
         /// <param name="simulator"></param>
         private void ChatterBoxSessionStartReplyHandler(string capsKey, IMessage message, Simulator simulator)
         {
@@ -3154,7 +3154,7 @@ namespace OpenMetaverse
         /// Someone joined or left group chat
         /// </summary>
         /// <param name="capsKey"></param>
-        /// <param name="osd"></param>
+        /// <param name="message">IMessage object containing decoded data from OSD</param>
         /// <param name="simulator"></param>
         private void ChatterBoxSessionAgentListUpdatesHandler(string capsKey, IMessage message, Simulator simulator)
         {
@@ -3245,7 +3245,7 @@ namespace OpenMetaverse
         /// Group Chat Request
         /// </summary>
         /// <param name="capsKey">Caps Key</param>
-        /// <param name="osd">SD Map containing invitation</param>
+        /// <param name="message">IMessage object containing decoded data from OSD</param>
         /// <param name="simulator">Originating Simulator</param>
         private void ChatterBoxInvitationHandler(string capsKey, IMessage message, Simulator simulator)
         {
@@ -3280,7 +3280,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="sessionID">the <see cref="UUID"/> of the session to moderate, for group chats this will be the groups UUID</param>
         /// <param name="memberID">the <see cref="UUID"/> of the avatar to moderate</param>
-        /// <param name="Key">Either "voice" to moderate users voice, or "text" to moderate users text session</param>
+        /// <param name="key">Either "voice" to moderate users voice, or "text" to moderate users text session</param>
         /// <param name="moderate">true to moderate (silence user), false to allow avatar to speak</param>
         public void ModerateChatSessions(UUID sessionID, UUID memberID, string key, bool moderate)
         {

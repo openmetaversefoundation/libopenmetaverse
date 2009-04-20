@@ -1511,7 +1511,7 @@ namespace OpenMetaverse
         /// ParcelProperties replies sent over CAPS
         /// </summary>
         /// <param name="capsKey">Not used (will always be ParcelProperties)</param>
-        /// <param name="llsd">LLSD Structured data</param>
+        /// <param name="message">IMessage object containing decoded data from OSD</param>
         /// <param name="simulator">Object representing simulator</param>
         private void ParcelPropertiesReplyHandler(string capsKey, IMessage message, Simulator simulator)
         {
@@ -1688,7 +1688,7 @@ namespace OpenMetaverse
         /// Decode the prim owner information, send the decoded object to any event subscribers
         /// </summary>
         /// <param name="capsKey"></param>
-        /// <param name="llsd"></param>
+        /// <param name="message">IMessage object containing decoded data from OSD</param>
         /// <param name="simulator"></param>
         private void ParcelObjectOwnersReplyHandler(string capsKey, IMessage message, Simulator simulator)
         {

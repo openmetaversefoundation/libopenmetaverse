@@ -1132,47 +1132,7 @@ namespace OpenMetaverse
                         Helpers.LogLevel.Error, Client);
                 }
             }
-            
-
         }
-
-        /// <summary>
-        /// Handler for EnableSimulator packet
-        /// </summary>
-        /// <param name="capsKey">the Capabilities Key, "EnableSimulator"</param>
-        /// <param name="osd">the LLSD Encoded packet</param>
-        /// <param name="simulator">The simulator the packet was sent from</param>
-        //private void EnableSimulatorHandler(string capsKey, OSD osd, Simulator simulator)
-        //{
-        //    if (!Client.Settings.MULTIPLE_SIMS) return;
-        //    OSDMap map = (OSDMap)osd;
-        //    OSDArray connectInfo = (OSDArray)map["SimulatorInfo"];
-
-        //    for(int i = 0; i < connectInfo.Count; i++)
-        //    {
-        //        OSDMap data = (OSDMap)connectInfo[i];
-
-        //        IPAddress ip = new IPAddress(data["IP"].AsBinary());
-        //        ushort port = (ushort)data["Port"].AsInteger();
-        //        byte[] bytes = data["Handle"].AsBinary();
-
-        //        if (BitConverter.IsLittleEndian)
-        //            Array.Reverse(bytes);
-
-        //        ulong rh = Utils.BytesToUInt64(bytes);
-
-        //        IPEndPoint endPoint = new IPEndPoint(ip, port);
-                
-        //        // don't reconnect if we're already connected or attempting to connect
-        //        if (FindSimulator(endPoint) != null) return;
-
-        //        if (Connect(ip, port, rh, false, null) == null)
-        //        {
-        //            Logger.Log("Unabled to connect to new sim " + ip + ":" + port,
-        //                Helpers.LogLevel.Error, Client);
-        //        }
-        //    }
-        //}
 
         private void DisableSimulatorHandler(Packet packet, Simulator simulator)
         {

@@ -45,8 +45,8 @@ namespace OpenMetaverse
         /// Triggered when an event is received via the EventQueueGet 
         /// capability
         /// </summary>
-        /// <param name="message">Event name</param>
-        /// <param name="body">Decoded event data</param>
+        /// <param name="capsKey">Event name</param>
+        /// <param name="message">Decoded event data</param>
         /// <param name="simulator">The simulator that generated the event</param>
         //public delegate void EventQueueCallback(string message, StructuredData.OSD body, Simulator simulator);
 

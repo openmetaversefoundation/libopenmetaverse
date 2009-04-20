@@ -272,7 +272,7 @@ namespace OpenMetaverse
         /// Fire the events registered for this event type synchronously
         /// </summary>
         /// <param name="capsEvent">Capability name</param>
-        /// <param name="body">Decoded event body</param>
+        /// <param name="message">Decoded event body</param>
         /// <param name="simulator">Reference to the simulator that 
         /// generated this event</param>
         internal void RaiseEvent(string capsEvent, IMessage message, Simulator simulator)
@@ -325,7 +325,7 @@ namespace OpenMetaverse
         /// Fire the events registered for this event type asynchronously
         /// </summary>
         /// <param name="capsEvent">Capability name</param>
-        /// <param name="body">Decoded event body</param>
+        /// <param name="message">Decoded event body</param>
         /// <param name="simulator">Reference to the simulator that 
         /// generated this event</param>
         internal void BeginRaiseEvent(string capsEvent, IMessage message, Simulator simulator)
