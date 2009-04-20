@@ -27,6 +27,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Text;
 
@@ -1090,5 +1091,50 @@ namespace OpenMetaverse.StructuredData
         }
 
         #endregion IList Implementation
+    }
+
+    public partial class OSDParser
+    {
+        const string LLSD_BINARY_HEADER = "<?LLSD/Binary?>";
+        const string LLSD_XML_HEADER = "<?LLSD/XML?>";
+        const string LLSD_XML_ALT_HEADER = "<llsd>";
+
+        public static OSD Deserialize(byte[] data)
+        {
+            string header = Encoding.ASCII.GetString(data, 0, data.Length >= 14 ? 14 : data.Length);
+
+            if (header.StartsWith(LLSD_BINARY_HEADER))
+                return DeserializeLLSDBinary(data);
+            else if (header.StartsWith(LLSD_XML_HEADER))
+                return DeserializeLLSDXml(data);
+            else if (header.StartsWith(LLSD_XML_ALT_HEADER))
+                return DeserializeLLSDXml(data);
+            else
+                return DeserializeJson(Encoding.UTF8.GetString(data));
+        }
+
+        public static OSD Deserialize(Stream stream)
+        {
+            if (stream.CanSeek)
+            {
+                byte[] headerData = new byte[14];
+                stream.Read(headerData, 0, 14);
+                stream.Seek(0, SeekOrigin.Begin);
+                string header = Encoding.ASCII.GetString(headerData);
+
+                if (header.StartsWith(LLSD_BINARY_HEADER))
+                    return DeserializeLLSDBinary(stream);
+                else if (header.StartsWith(LLSD_XML_HEADER))
+                    return DeserializeLLSDXml(stream);
+                else if (header.StartsWith(LLSD_XML_ALT_HEADER))
+                    return DeserializeLLSDXml(stream);
+                else
+                    return DeserializeJson(stream);
+            }
+            else
+            {
+                throw new OSDException("Cannot deserialize structured data from unseekable streams");
+            }
+        }
     }
 }
