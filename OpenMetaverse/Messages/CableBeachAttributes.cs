@@ -28,6 +28,11 @@ using System;
 
 namespace OpenMetaverse.Messages.CableBeach
 {
+    public static class AvatarServices
+    {
+        public static readonly Uri INVENTORY_SERVER = new Uri("http://openmetaverse.org/services/inventoryServer");
+    }
+
     public static class AvatarAttributes
     {
         public static readonly Uri EMAIL = new Uri("http://axschema.org/contact/email");
@@ -40,9 +45,6 @@ namespace OpenMetaverse.Messages.CableBeach
         public static readonly Uri WEBSITE = new Uri("http://axschema.org/contact/web/default");
         public static readonly Uri IMAGE = new Uri("http://axschema.org/media/image/default");
         public static readonly Uri BIOGRAPHY = new Uri("http://axschema.org/media/biography");
-
-        // Service attributes
-        public static readonly Uri INVENTORY_SERVER = new Uri("http://openmetaverse.org/attributes/inventoryServer");
 
         // OpenSim attributes
         public static readonly Uri DEFAULT_INVENTORY = new Uri("http://opensimulator.org/attributes/defaultInventory");

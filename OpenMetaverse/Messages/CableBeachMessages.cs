@@ -32,12 +32,75 @@ using OpenMetaverse.Interfaces;
 
 namespace OpenMetaverse.Messages.CableBeach
 {
+    /// <summary>
+    /// Holds information about a grid region
+    /// </summary>
+    public struct RegionInfo
+    {
+        public string Name;
+        public UUID ID;
+        public ulong Handle;
+        public bool Online;
+        public IPEndPoint IPAndPort;
+        public Uri HttpServer;
+        public UUID MapTextureID;
+        public Uri Owner;
+        public RegionFlags Flags;
+        public int AgentCount;
+        public Dictionary<string, Uri> Capabilities;
+        public float WaterHeight;
+        public Vector3 DefaultPosition;
+        public Vector3 DefaultLookAt;
+
+        public uint X
+        {
+            get
+            {
+                uint x, y;
+                OpenMetaverse.Utils.LongToUInts(Handle, out x, out y);
+                return x / 256;
+            }
+
+            set
+            {
+                uint x, y;
+                OpenMetaverse.Utils.LongToUInts(Handle, out x, out y);
+                Handle = OpenMetaverse.Utils.UIntsToLong(value, y);
+            }
+        }
+
+        public uint Y
+        {
+            get
+            {
+                uint x, y;
+                OpenMetaverse.Utils.LongToUInts(Handle, out x, out y);
+                return y / 256;
+            }
+
+            set
+            {
+                uint x, y;
+                OpenMetaverse.Utils.LongToUInts(Handle, out x, out y);
+                Handle = OpenMetaverse.Utils.UIntsToLong(x, value);
+            }
+        }
+
+        public override string ToString()
+        {
+            if (Online)
+                return Name + " [Online]";
+            else
+                return "[Offline]";
+        }
+    }
+
     #region Identity Messages
 
     public class RequestCapabilitiesMessage : IMessage
     {
         public Uri Identity;
-        public Uri[] Capabilities;
+        public string[] Capabilities;
 
         public OSDMap Serialize()
         {
@@ -46,7 +109,7 @@ namespace OpenMetaverse.Messages.CableBeach
 
             OSDArray array = new OSDArray(Capabilities.Length);
             for (int i = 0; i < Capabilities.Length; i++)
-                array.Add(OSD.FromUri(Capabilities[i]));
+                array.Add(OSD.FromString(Capabilities[i]));
             map["capabilities"] = array;
 
             return map;
@@ -57,22 +120,22 @@ namespace OpenMetaverse.Messages.CableBeach
             Identity = map["identity"].AsUri();
 
             OSDArray array = (OSDArray)map["capabilities"];
-            Capabilities = new Uri[array.Count];
+            Capabilities = new string[array.Count];
             for (int i = 0; i < array.Count; i++)
-                Capabilities[i] = array[i].AsUri();
+                Capabilities[i] = array[i].AsString();
         }
     }
 
     public class RequestCapabilitiesReplyMessage : IMessage
     {
-        public Dictionary<Uri, Uri> Capabilities;
+        public Dictionary<string, Uri> Capabilities;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
             OSDMap caps = new OSDMap(Capabilities.Count);
-            foreach (KeyValuePair<Uri, Uri> entry in Capabilities)
-                caps.Add(entry.Key.ToString(), OSD.FromUri(entry.Value));
+            foreach (KeyValuePair<string, Uri> entry in Capabilities)
+                caps.Add(entry.Key, OSD.FromUri(entry.Value));
             map["capabilities"] = caps;
             return map;
         }
@@ -80,9 +143,9 @@ namespace OpenMetaverse.Messages.CableBeach
         public void Deserialize(OSDMap map)
         {
             OSDMap caps = (OSDMap)map["capabilities"];
-            Capabilities = new Dictionary<Uri, Uri>(caps.Count);
+            Capabilities = new Dictionary<string, Uri>(caps.Count);
             foreach (KeyValuePair<string, OSD> entry in caps)
-                Capabilities.Add(new Uri(entry.Key), entry.Value.AsUri());
+                Capabilities.Add(entry.Key, entry.Value.AsUri());
         }
     }
 
@@ -93,14 +156,12 @@ namespace OpenMetaverse.Messages.CableBeach
     public class CreateInventoryMessage : IMessage
     {
         public Uri Identity;
-        public UUID AccessToken;
         public string Name;
 
         public OSDMap Serialize()
         {
-            OSDMap map = new OSDMap(3);
+            OSDMap map = new OSDMap();
             map["identity"] = OSD.FromUri(Identity);
-            map["access_token"] = OSD.FromUUID(AccessToken);
             map["name"] = OSD.FromString(Name);
             return map;
         }
@@ -108,7 +169,6 @@ namespace OpenMetaverse.Messages.CableBeach
         public void Deserialize(OSDMap map)
         {
             Identity = map["identity"].AsUri();
-            AccessToken = map["access_token"].AsUUID();
             Name = map["name"].AsString();
         }
     }
@@ -130,19 +190,145 @@ namespace OpenMetaverse.Messages.CableBeach
         }
     }
 
+    public class GetInventorySkeletonMessage : IMessage
+    {
+        public Uri Identity;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["identity"] = OSD.FromUri(Identity);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Identity = map["identity"].AsUri();
+        }
+    }
+
+    public class GetInventorySkeletonReplyMessage : IMessage
+    {
+        public class Folder
+        {
+            public string Name;
+            public UUID ParentID;
+            public int Version;
+            public string PreferredContentType;
+            public UUID FolderID;
+        }
+
+        public Folder[] Folders;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+
+            OSDArray folders = new OSDArray(Folders.Length);
+            for (int i = 0; i < Folders.Length; i++)
+            {
+                Folder folder = Folders[i];
+
+                OSDMap folderMap = new OSDMap();
+                folderMap["name"] = OSD.FromString(folder.Name);
+                folderMap["parent_id"] = OSD.FromUUID(folder.ParentID);
+                folderMap["version"] = OSD.FromInteger(folder.Version);
+                folderMap["preferred_content_type"] = OSD.FromString(folder.PreferredContentType);
+                folderMap["folder_id"] = OSD.FromUUID(folder.FolderID);
+
+                folders.Add(folderMap);
+            }
+
+            map["folders"] = folders;
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDArray folders = (OSDArray)map["folders"];
+            Folders = new Folder[folders.Count];
+            for (int i = 0; i < folders.Count; i++)
+            {
+                OSDMap folderMap = (OSDMap)folders[i];
+
+                Folder folder = new Folder();
+                folder.Name = folderMap["name"].AsString();
+                folder.ParentID = folderMap["parent_id"].AsUUID();
+                folder.Version = folderMap["version"].AsInteger();
+                folder.PreferredContentType = folderMap["preferred_content_type"].AsString();
+                folder.FolderID = folderMap["folder_id"].AsUUID();
+
+                Folders[i] = folder;
+            }
+        }
+    }
+
+    public class GetActiveGesturesMessage : IMessage
+    {
+        public Uri Identity;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["identity"] = OSD.FromUri(Identity);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Identity = map["identity"].AsUri();
+        }
+    }
+
+    public class GetActiveGesturesReplyMessage : IMessage
+    {
+        public class Gesture
+        {
+            public UUID ItemID;
+            public UUID AssetID;
+        }
+
+        public Gesture[] Gestures;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+
+            OSDArray gestures = new OSDArray();
+            for (int i = 0; i < Gestures.Length; i++)
+            {
+                Gesture gesture = Gestures[i];
+                OSDMap gestureMap = new OSDMap();
+                gestureMap["item_id"] = OSD.FromUUID(gesture.ItemID);
+                gestureMap["asset_id"] = OSD.FromUUID(gesture.AssetID);
+                gestures.Add(gestureMap);
+            }
+
+            map["gestures"] = gestures;
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDArray gestures = (OSDArray)map["gestures"];
+            Gestures = new Gesture[gestures.Count];
+            for (int i = 0; i < gestures.Count; i++)
+            {
+                OSDMap gestureMap = (OSDMap)gestures[i];
+                Gesture gesture = new Gesture();
+                gesture.ItemID = gestureMap["item_id"].AsUUID();
+                gesture.AssetID = gestureMap["asset_id"].AsUUID();
+                Gestures[i] = gesture;
+            }
+        }
+    }
+
     #endregion Inventory Messages
 
     #region Region Messages
 
     public class EnableClientMessage : IMessage
     {
-        public class Service
-        {
-            public Uri Type;
-            public Uri Uri;
-            public UUID AccessToken;
-        }
-
         public UUID AgentID;
         public UUID SessionID;
         public UUID SecureSessionID;
@@ -152,7 +338,7 @@ namespace OpenMetaverse.Messages.CableBeach
         public IPAddress IP;
         public string ClientVersion;
         public Dictionary<Uri, OSD> Attributes;
-        public Dictionary<Uri, Service> Services;
+        public Dictionary<Uri, Dictionary<string, Uri>> Services;
         public Uri CallbackUri;
 
         public OSDMap Serialize()
@@ -173,13 +359,12 @@ namespace OpenMetaverse.Messages.CableBeach
             map["attributes"] = attributes;
 
             OSDMap services = new OSDMap(Services.Count);
-            foreach (KeyValuePair<Uri, Service> entry in Services)
+            foreach (KeyValuePair<Uri, Dictionary<string, Uri>> serviceEntry in Services)
             {
-                OSDMap service = new OSDMap(3);
-                service["type"] = OSD.FromUri(entry.Value.Type);
-                service["uri"] = OSD.FromUri(entry.Value.Uri);
-                service["access_token"] = OSD.FromUUID(entry.Value.AccessToken);
-                services.Add(entry.Key.ToString(), service);
+                OSDMap service = new OSDMap();
+                foreach (KeyValuePair<string, Uri> entry in serviceEntry.Value)
+                    service.Add(entry.Key, OSD.FromUri(entry.Value));
+                services.Add(serviceEntry.Key.ToString(), service);
             }
             map["services"] = services;
 
@@ -204,15 +389,14 @@ namespace OpenMetaverse.Messages.CableBeach
                 Attributes.Add(new Uri(entry.Key), entry.Value);
 
             OSDMap servicesMap = (OSDMap)map["services"];
-            Services = new Dictionary<Uri, Service>(servicesMap.Count);
-            foreach (KeyValuePair<string, OSD> entry in servicesMap)
+            Services = new Dictionary<Uri, Dictionary<string, Uri>>(servicesMap.Count);
+            foreach (KeyValuePair<string, OSD> serviceEntry in servicesMap)
             {
-                OSDMap serviceMap = (OSDMap)entry.Value;
-                Service service = new Service();
-                service.Type = serviceMap["type"].AsUri();
-                service.Uri = serviceMap["uri"].AsUri();
-                service.AccessToken = serviceMap["access_token"].AsUUID();
-                Services.Add(new Uri(entry.Key), service);
+                OSDMap serviceMap = (OSDMap)serviceEntry.Value;
+                Dictionary<string, Uri> service = new Dictionary<string, Uri>(serviceMap.Count);
+                foreach (KeyValuePair<string, OSD> entry in serviceMap)
+                    service.Add(entry.Key, entry.Value.AsUri());
+                Services.Add(new Uri(serviceEntry.Key), service);
             }
 
             CallbackUri = map["callback_uri"].AsUri();
