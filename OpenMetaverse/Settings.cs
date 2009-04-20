@@ -237,6 +237,11 @@ namespace OpenMetaverse
         /// each time an object update packet is received</summary>
         public bool OBJECT_TRACKING = true;
 
+        /// <summary>
+        /// A very primitive rate limiter for outgoing packets to prevent flooding the simulator
+        /// </summary>
+        public bool ENABLE_OUTBOUND_PACKET_RATELIMIT = true;
+
         #endregion
         #region Parcel Tracking
 
