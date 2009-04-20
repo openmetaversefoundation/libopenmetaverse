@@ -78,6 +78,19 @@ namespace OpenMetaverse.Http
             BeginGetResponse(postData, null);
         }
 
+        public void BeginGetResponse(OSD data, bool json)
+        {
+            if (json)
+            {
+                byte[] postData = System.Text.Encoding.UTF8.GetBytes(OSDParser.SerializeJsonString(data));
+                BeginGetResponse(postData, "application/json");
+            }
+            else
+            {
+                BeginGetResponse(data);
+            }
+        }
+
         public void BeginGetResponse(byte[] postData)
         {
             BeginGetResponse(postData, null);
@@ -125,6 +138,16 @@ namespace OpenMetaverse.Http
             AutoResetEvent waitEvent = new AutoResetEvent(false);
             OnComplete += delegate(CapsClient client, OSD result, Exception error) { response = result; waitEvent.Set(); };
             BeginGetResponse(data);
+            waitEvent.WaitOne(millisecondsTimeout, false);
+            return response;
+        }
+
+        public OSD GetResponse(OSD data, bool json, int millisecondsTimeout)
+        {
+            OSD response = null;
+            AutoResetEvent waitEvent = new AutoResetEvent(false);
+            OnComplete += delegate(CapsClient client, OSD result, Exception error) { response = result; waitEvent.Set(); };
+            BeginGetResponse(data, json);
             waitEvent.WaitOne(millisecondsTimeout, false);
             return response;
         }
@@ -181,7 +204,7 @@ namespace OpenMetaverse.Http
             {
                 if (e.Error == null)
                 {
-                    OSD result = OSDParser.DeserializeLLSDXml(e.Result);
+                    OSD result = OSDParser.Deserialize(e.Result);
 
                     try { OnComplete(this, result, e.Error); }
                     catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
