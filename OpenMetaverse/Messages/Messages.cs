@@ -25,6 +25,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using OpenMetaverse.StructuredData;
 
@@ -47,6 +48,60 @@ namespace OpenMetaverse.Messages
                 return OSD.FromBinary(address.GetAddressBytes());
             else
                 return new OSD();
+        }
+
+        public static Dictionary<string, string> ToDictionaryString(OSD osd)
+        {
+            if (osd.Type == OSDType.Map)
+            {
+                OSDMap map = (OSDMap)osd;
+                Dictionary<string, string> dict = new Dictionary<string, string>(map.Count);
+                foreach (KeyValuePair<string, OSD> entry in map)
+                    dict.Add(entry.Key, entry.Value.AsString());
+                return dict;
+            }
+
+            return new Dictionary<string, string>(0);
+        }
+
+        public static Dictionary<string, Uri> ToDictionaryUri(OSD osd)
+        {
+            if (osd.Type == OSDType.Map)
+            {
+                OSDMap map = (OSDMap)osd;
+                Dictionary<string, Uri> dict = new Dictionary<string, Uri>(map.Count);
+                foreach (KeyValuePair<string, OSD> entry in map)
+                    dict.Add(entry.Key, entry.Value.AsUri());
+                return dict;
+            }
+
+            return new Dictionary<string, Uri>(0);
+        }
+
+        public static OSDMap FromDictionaryString(Dictionary<string, string> dict)
+        {
+            if (dict != null)
+            {
+                OSDMap map = new OSDMap(dict.Count);
+                foreach (KeyValuePair<string, string> entry in dict)
+                    map.Add(entry.Key, OSD.FromString(entry.Value));
+                return map;
+            }
+
+            return new OSDMap(0);
+        }
+
+        public static OSDMap FromDictionaryUri(Dictionary<string, Uri> dict)
+        {
+            if (dict != null)
+            {
+                OSDMap map = new OSDMap(dict.Count);
+                foreach (KeyValuePair<string, Uri> entry in dict)
+                    map.Add(entry.Key, OSD.FromUri(entry.Value));
+                return map;
+            }
+
+            return new OSDMap(0);
         }
     }
 }

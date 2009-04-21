@@ -41,8 +41,9 @@ namespace OpenMetaverse.Messages.CableBeach
         public UUID ID;
         public ulong Handle;
         public bool Online;
-        public IPEndPoint IPAndPort;
-        public Uri HttpServer;
+        public IPAddress IP;
+        public int Port;
+        public Uri Address;
         public UUID MapTextureID;
         public Uri Owner;
         public RegionFlags Flags;
@@ -86,14 +87,308 @@ namespace OpenMetaverse.Messages.CableBeach
             }
         }
 
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["name"] = OSD.FromString(Name);
+            map["id"] = OSD.FromUUID(ID);
+            map["handle"] = OSD.FromULong(Handle);
+            map["online"] = OSD.FromBoolean(Online);
+            map["ip"] = MessageUtils.FromIP(IP);
+            map["port"] = OSD.FromInteger(Port);
+            map["address"] = OSD.FromUri(Address);
+            map["map_texture_id"] = OSD.FromUUID(MapTextureID);
+            map["owner"] = OSD.FromUri(Owner);
+            map["region_flags"] = OSD.FromInteger((int)Flags);
+            map["agent_count"] = OSD.FromInteger(AgentCount);
+            map["capabilities"] = MessageUtils.FromDictionaryUri(Capabilities);
+            map["water_height"] = OSD.FromReal(WaterHeight);
+            map["default_position"] = OSD.FromVector3(DefaultPosition);
+            map["default_look_at"] = OSD.FromVector3(DefaultLookAt);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Name = map["name"].AsString();
+            ID = map["id"].AsUUID();
+            Handle = map["handle"].AsULong();
+            Online = map["online"].AsBoolean();
+            IP = MessageUtils.ToIP(map["ip"]);
+            Port = map["port"].AsInteger();
+            Address = map["address"].AsUri();
+            MapTextureID = map["map_texture_id"].AsUUID();
+            Owner = map["owner"].AsUri();
+            Flags = (RegionFlags)map["region_flags"].AsInteger();
+            AgentCount = map["agent_count"].AsInteger();
+            Capabilities = MessageUtils.ToDictionaryUri(map["capabilities"]);
+            WaterHeight = (float)map["water_height"].AsReal();
+            DefaultPosition = map["default_position"].AsVector3();
+            DefaultLookAt = map["default_look_at"].AsVector3();
+        }
+
         public override string ToString()
         {
-            if (Online)
-                return Name + " [Online]";
-            else
-                return "[Offline]";
+            string ret = String.Empty;
+            if (!String.IsNullOrEmpty(Name))
+                ret += Name + " ";
+
+            ret += Online ? "[Online]" : "[Offline]";
+            return ret;
         }
     }
+
+    #region World Messages
+
+    public class CreateRegionMessage : IMessage
+    {
+        public RegionInfo Region;
+
+        public OSDMap Serialize()
+        {
+            return Region.Serialize();
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Region = new RegionInfo();
+            Region.Deserialize(map);
+        }
+    }
+
+    public class CreateRegionReplyMessage : IMessage
+    {
+        public bool Success;
+        public string Message;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["success"] = OSD.FromBoolean(Success);
+            map["message"] = OSD.FromString(Message);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Success = map["success"].AsBoolean();
+            Message = map["message"].AsString();
+        }
+    }
+
+    public class DeleteRegionMessage : IMessage
+    {
+        public UUID ID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["id"] = OSD.FromUUID(ID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            ID = map["id"].AsUUID();
+        }
+    }
+
+    public class DeleteRegionReplyMessage : IMessage
+    {
+        public bool Success;
+        public string Message;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["success"] = OSD.FromBoolean(Success);
+            map["message"] = OSD.FromString(Message);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Success = map["success"].AsBoolean();
+            Message = map["message"].AsString();
+        }
+    }
+
+    public interface FetchRegionQuery
+    {
+        OSDMap Serialize();
+        void Deserialize(OSDMap map);
+    }
+
+    public class FetchRegionQueryID : FetchRegionQuery
+    {
+        public UUID ID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["id"] = OSD.FromUUID(ID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            ID = map["id"].AsUUID();
+        }
+    }
+
+    public class FetchRegionQueryCoords : FetchRegionQuery
+    {
+        public int X;
+        public int Y;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["x"] = OSD.FromInteger(X);
+            map["y"] = OSD.FromInteger(Y);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            X = map["x"].AsInteger();
+            Y = map["y"].AsInteger();
+        }
+    }
+
+    public class FetchRegionQueryName : FetchRegionQuery
+    {
+        public string Name;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["name"] = OSD.FromString(Name);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Name = map["name"].AsString();
+        }
+    }
+
+    public class FetchRegionMessage : IMessage
+    {
+        public FetchRegionQuery Query;
+
+        public OSDMap Serialize()
+        {
+            return Query.Serialize();
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("id"))
+                Query = new FetchRegionQueryID();
+            else if (map.ContainsKey("name"))
+                Query = new FetchRegionQueryName();
+            else
+                Query = new FetchRegionQueryCoords();
+
+            Query.Deserialize(map);
+        }
+    }
+
+    public class FetchRegionReplyMessage : IMessage
+    {
+        RegionInfo Region;
+
+        public OSDMap Serialize()
+        {
+            return Region.Serialize();
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Region = new RegionInfo();
+            Region.Deserialize(map);
+        }
+    }
+
+    public class FetchDefaultRegionReplyMessage : IMessage
+    {
+        public RegionInfo Region;
+
+        public OSDMap Serialize()
+        {
+            return Region.Serialize();
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Region = new RegionInfo();
+            Region.Deserialize(map);
+        }
+    }
+
+    public class RegionSearchMessage : IMessage
+    {
+        public string Query;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["query"] = OSD.FromString(Query);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Query = map["query"].AsString();
+        }
+    }
+
+    public class RegionSearchReplyMessage : IMessage
+    {
+        public RegionInfo[] Regions;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            OSDArray array = new OSDArray(Regions.Length);
+            for (int i = 0; i < Regions.Length; i++)
+                array.Add(Regions[i].Serialize());
+            map["regions"] = array;
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDArray array = (OSDArray)map["regions"];
+            Regions = new RegionInfo[array.Count];
+            for (int i = 0; i < array.Count; i++)
+            {
+                RegionInfo region = new RegionInfo();
+                region.Deserialize((OSDMap)array[i]);
+                Regions[i] = region;
+            }
+        }
+    }
+
+    public class GetRegionCountReplyMessage : IMessage
+    {
+        public int Count;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["count"] = OSD.FromInteger(Count);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Count = map["count"].AsInteger();
+        }
+    }
+
+    #endregion World Messages
 
     #region Identity Messages
 
@@ -411,7 +706,7 @@ namespace OpenMetaverse.Messages.CableBeach
 
         public OSDMap Serialize()
         {
-            OSDMap map = new OSDMap(5);
+            OSDMap map = new OSDMap();
             map["success"] = OSD.FromBoolean(Success);
             map["message"] = OSD.FromString(Message);
             map["seed_capability"] = OSD.FromUri(SeedCapability);
