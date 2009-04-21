@@ -708,8 +708,7 @@ namespace OpenMetaverse
                     if (stopwatch.ElapsedMilliseconds < 10)
                     {
                         //Logger.DebugLog(String.Format("Rate limiting, last packet was {0}ms ago", ms));
-                        if (Client.Settings.ENABLE_OUTBOUND_PACKET_RATELIMIT)
-                            Thread.Sleep(10 - (int)stopwatch.ElapsedMilliseconds);
+                        Thread.Sleep(10 - (int)stopwatch.ElapsedMilliseconds);
                     }
 
                     simulator.SendPacketUnqueued(outgoingPacket);
