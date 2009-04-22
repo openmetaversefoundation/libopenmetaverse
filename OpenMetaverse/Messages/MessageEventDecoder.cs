@@ -43,7 +43,7 @@ namespace OpenMetaverse
         /// <param name="map">An <see cref="OSDMap"/> to decode</param>
         /// <returns>A strongly typed object containing the decoded information from the capabilities message, or null
         /// if no existing Message object exists for the specified event</returns>
-        internal static IMessage DecodeEvent(string eventName, OSDMap map)
+        public static IMessage DecodeEvent(string eventName, OSDMap map)
         {
             IMessage message = null;
 
@@ -72,7 +72,9 @@ namespace OpenMetaverse
                 case "UpdateScriptAgent": message = new UpdateScriptAgentMessage(); break;
                 case "SendPostcard": message = new SendPostcardMessage(); break;
                 case "UpdateNotecardAgentInventory": message = new UpdateNotecardAgentInventoryMessage(); break;
-
+                case "LandStatReply": message = new LandStatReplyMessage(); break;
+                case "ParcelVoiceInfoRequest": message = new ParcelVoiceInfoRequestMessage(); break;
+                case "ViewerStats": message = new ViewerStatsMessage(); break;
 
                 // Capabilities TODO:
                 // DispatchRegionInfo

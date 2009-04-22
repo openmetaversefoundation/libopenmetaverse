@@ -349,9 +349,16 @@ namespace GridProxy
         // InitializeLoginProxy: initialize the login proxy
         private void InitializeLoginProxy()
         {
-            loginServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            loginServer.Bind(new IPEndPoint(proxyConfig.clientFacingAddress, proxyConfig.loginPort));
-            loginServer.Listen(1);
+            try
+            {
+                loginServer = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                loginServer.Bind(new IPEndPoint(proxyConfig.clientFacingAddress, proxyConfig.loginPort));
+                loginServer.Listen(1);
+            }
+            catch (SocketException e)
+            {
+                Log(e.Message + " " + e.StackTrace, true);
+            }
         }
 
         // RunLoginProxy: process login requests from clients
@@ -630,6 +637,8 @@ namespace GridProxy
                     capReq.Request = OSDParser.DeserializeLLSDXml(content);
                 }
 
+                capReq.RawRequest = content;
+
                 foreach (CapsDelegate d in cap.GetDelegates())
                 {
                     if (d(capReq, CapsStage.Request)) { shortCircuit = true; break; }
@@ -657,6 +666,7 @@ namespace GridProxy
             {
                 HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(uri);
                 req.KeepAlive = false;
+                capReq.RequestHeaders = headers;
                 foreach (string header in headers.Keys)
                 {
                     if (header == "accept" || header == "connection" ||
@@ -739,6 +749,7 @@ namespace GridProxy
                         {
                             capReq.Response = OSDParser.DeserializeLLSDXml(respBuf);
                         }
+                        capReq.RawResponse = respBuf;
 
                     }
 
@@ -749,6 +760,7 @@ namespace GridProxy
                         netStream.Write(wr, 0, wr.Length);
                     }
 
+                    capReq.ResponseHeaders = resp.Headers;
                     for (int i = 0; i < resp.Headers.Count; i++)
                     {
                         string key = resp.Headers.Keys[i];
@@ -2134,6 +2146,13 @@ namespace GridProxy
 
         // The corresponding response
         public OSD Response = null;
+
+        public byte[] RawRequest = null;
+        public byte[] RawResponse = null;
+
+        public Dictionary<string, string> RequestHeaders;
+        public WebHeaderCollection ResponseHeaders;
+        
     }
 
     // XmlRpcRequestDelegate: specifies a delegate to be called for XML-RPC requests

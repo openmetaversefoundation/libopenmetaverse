@@ -35,19 +35,27 @@ using OpenMetaverse.StructuredData;
 
 namespace WinGridProxy
 {
-    public class ProxyManager
+     public class ProxyManager
     {
+        // fired when a new packet arrives
         public delegate void PacketLogHandler(Packet packet, Direction direction, IPEndPoint endpoint);
         public static event PacketLogHandler OnPacketLog;
 
+        // fired when a message arrives over a known capability
         public delegate void MessageLogHandler(CapsRequest req, CapsStage stage);
         public static event MessageLogHandler OnMessageLog;
 
+        // handle login request/response data
         public delegate void LoginLogHandler(object request, Direction direction);
         public static event LoginLogHandler OnLoginResponse;
 
+        // fired when a new Capability is added to the KnownCaps Dictionary
         public delegate void CapsAddedHandler(CapInfo cap);
         public static event CapsAddedHandler OnCapabilityAdded;
+
+        // Handle messages sent via the EventQueue
+        public delegate void EventQueueMessageHandler(CapsRequest req, CapsStage stage);
+        public static event EventQueueMessageHandler OnEventMessageLog;
 
         private string _Port;
         private string _ListenIP;
@@ -67,9 +75,9 @@ namespace WinGridProxy
                 _ListenIP = "--proxy-client-facing-address=127.0.0.1";
 
             if (String.IsNullOrEmpty(loginUri))
-                _LoginURI = "https://login.agni.lindenlab.com/cgi-bin/login.cgi";
+                _LoginURI = "--proxy-remote-login-uri=https://login.agni.lindenlab.com/cgi-bin/login.cgi";
             else
-                _LoginURI = loginUri;
+                _LoginURI = "--proxy-remote-login-uri=" + loginUri;
 
 
             string[] args = { _Port, _ListenIP, _LoginURI };
@@ -94,6 +102,7 @@ namespace WinGridProxy
 
             Proxy.proxy.AddCapsDelegate("EventQueueGet", new CapsDelegate(EventQueueGetHandler));
 
+            // this is so we are informed of any new capabilities that are added to the KnownCaps dictionary
             Proxy.proxy.KnownCaps.AddDelegate(OpenMetaverse.DictionaryEventAction.Add, new OpenMetaverse.DictionaryChangeCallback(KnownCapsAddedHandler));
         }
 
@@ -147,6 +156,13 @@ namespace WinGridProxy
             return false;
         }
 
+         /// <summary>
+         /// Process individual messages that arrive via the EventQueue and convert each indvidual event into a format
+         /// suitable for processing by the IMessage system
+         /// </summary>
+         /// <param name="req"></param>
+         /// <param name="stage"></param>
+         /// <returns></returns>
         private bool EventQueueGetHandler(CapsRequest req, CapsStage stage)
         {
             if (stage == CapsStage.Response)
@@ -157,17 +173,19 @@ namespace WinGridProxy
                 for (int i = 0; i < eventsArray.Count; i++)
                 {
                     OSDMap bodyMap = (OSDMap)eventsArray[i];
-                    if (OnMessageLog != null)
+                    if (OnEventMessageLog != null)
                     {
                         CapInfo capInfo = new CapInfo(req.Info.URI, req.Info.Sim, bodyMap["message"].AsString());
                         CapsRequest capReq = new CapsRequest(capInfo);
-                        capReq.Request = req.Request;
+                        capReq.RequestHeaders = req.RequestHeaders;
+                        capReq.ResponseHeaders = req.ResponseHeaders;
+                        capReq.Request = null;// req.Request;
+                        capReq.RawRequest = null;// req.RawRequest;
+                        capReq.RawResponse = OSDParser.SerializeLLSDXmlBytes(bodyMap);
                         capReq.Response = bodyMap;
 
-                        OnMessageLog(capReq, CapsStage.Response);
+                        OnEventMessageLog(capReq, CapsStage.Response);
                     }
-
-                    //Console.WriteLine("[" + i + "] " + bodyMap["message"].AsString());
                 }
             }
             return false;

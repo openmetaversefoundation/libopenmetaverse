@@ -32,10 +32,16 @@ using System.IO;
 
 namespace WinGridProxy
 {
+    public class FilterEntry
+    {
+        public bool Checked;
+        public string pType;
+    }
+
     class SettingsStore
     {
-        public Dictionary<string, bool> MessageSessions;
-        public Dictionary<string, bool> PacketSessions;
+        public Dictionary<string, FilterEntry> MessageSessions;
+        public Dictionary<string, FilterEntry> PacketSessions;
         public bool AutoScrollEnabled;
         public bool StatisticsEnabled;
         public bool SaveSessionOnExit;
@@ -43,8 +49,8 @@ namespace WinGridProxy
 
         public SettingsStore()
         {
-            MessageSessions = new Dictionary<string, bool>();
-            PacketSessions = new Dictionary<string, bool>();
+            MessageSessions = new Dictionary<string, FilterEntry>();
+            PacketSessions = new Dictionary<string, FilterEntry>();
         }
 
         public OSDMap Serialize()
@@ -53,11 +59,12 @@ namespace WinGridProxy
             if (MessageSessions.Count > 0)
             {
                 OSDArray messageArray = new OSDArray(MessageSessions.Count);
-                foreach (KeyValuePair<string, bool> kvp in MessageSessions)
+                foreach (KeyValuePair<string, FilterEntry> kvp in MessageSessions)
                 {
-                    OSDMap sessionMap = new OSDMap(2);
+                    OSDMap sessionMap = new OSDMap(3);
                     sessionMap["Capability"] = OSD.FromString(kvp.Key);
-                    sessionMap["Capture"] = OSD.FromBoolean(kvp.Value);
+                    sessionMap["Capture"] = OSD.FromBoolean(kvp.Value.Checked);
+                    sessionMap["Type"] = OSD.FromString(kvp.Value.pType);
                     messageArray.Add(sessionMap);
                 }
                 map.Add("message_sessions", messageArray);
@@ -66,11 +73,12 @@ namespace WinGridProxy
             if (PacketSessions.Count > 0)
             {
                 OSDArray packetArray = new OSDArray(PacketSessions.Count);
-                foreach (KeyValuePair<string, bool> kvp in PacketSessions)
+                foreach (KeyValuePair<string, FilterEntry> kvp in PacketSessions)
                 {
-                    OSDMap sessionMap = new OSDMap(2);
+                    OSDMap sessionMap = new OSDMap(3);
                     sessionMap["PacketName"] = OSD.FromString(kvp.Key);
-                    sessionMap["Capture"] = OSD.FromBoolean(kvp.Value);
+                    sessionMap["Capture"] = OSD.FromBoolean(kvp.Value.Checked);
+                    sessionMap["Type"] = OSD.FromString(kvp.Value.pType);
                     packetArray.Add(sessionMap);
                 }
                 map.Add("packet_sessions", packetArray);
@@ -97,12 +105,15 @@ namespace WinGridProxy
 
                 OSDArray messageArray = (OSDArray)map["message_sessions"];
 
-                MessageSessions = new Dictionary<string, bool>(messageArray.Count);
+                MessageSessions = new Dictionary<string, FilterEntry>(messageArray.Count);
 
                 for (int i = 0; i < messageArray.Count; i++)
                 {
                     OSDMap m = (OSDMap)messageArray[i];
-                    MessageSessions.Add(m["Capability"].AsString(), m["Capture"].AsBoolean());
+                    FilterEntry entry = new FilterEntry();
+                    entry.Checked = m["Capture"].AsBoolean();
+                    entry.pType = m["Type"].AsString();
+                    MessageSessions.Add(m["Capability"].AsString(), entry);
                     
                 }
             }
@@ -116,13 +127,15 @@ namespace WinGridProxy
             {
                 OSDArray packetArray = (OSDArray)map["packet_sessions"];
 
-                PacketSessions = new Dictionary<string, bool>(packetArray.Count);
+                PacketSessions = new Dictionary<string, FilterEntry>(packetArray.Count);
 
                 for (int i = 0; i < packetArray.Count; i++)
                 {
                     OSDMap packetMap = (OSDMap)packetArray[i];
-                    
-                    PacketSessions.Add(packetMap["PacketName"].AsString(), packetMap["Capture"].AsBoolean());
+                    FilterEntry entry = new FilterEntry();
+                    entry.Checked = packetMap["Capture"].AsBoolean();
+                    entry.pType = packetMap["Type"].AsString();
+                    PacketSessions.Add(packetMap["PacketName"].AsString(), entry);
                 }
             }
             else

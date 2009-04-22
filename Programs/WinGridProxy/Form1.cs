@@ -78,8 +78,49 @@ namespace WinGridProxy
             ProxyManager.OnMessageLog += new ProxyManager.MessageLogHandler(ProxyManager_OnMessageLog);
             ProxyManager.OnLoginResponse += new ProxyManager.LoginLogHandler(ProxyManager_OnLoginResponse);
             ProxyManager.OnCapabilityAdded += new ProxyManager.CapsAddedHandler(ProxyManager_OnCapabilityAdded);
+            ProxyManager.OnEventMessageLog += new ProxyManager.EventQueueMessageHandler(ProxyManager_OnEventMessageLog);
         }
 
+        #region Event Handlers for Messages/Packets
+
+        /// <summary>
+        /// Adds a new EventQueue message to the Message Filters listview.
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="stage"></param>
+        void ProxyManager_OnEventMessageLog(CapsRequest req, CapsStage stage)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new MethodInvoker(delegate()
+                {
+                    ProxyManager_OnEventMessageLog(req, stage);
+                }));
+            }
+            else
+            {
+                ListViewItem foundCap = listViewMessageFilters.FindItemWithText(req.Info.CapType);
+                if (foundCap == null)
+                {
+                    ListViewItem addedItem = listViewMessageFilters.Items.Add(new ListViewItem(req.Info.CapType, new ListViewGroup("EventQueue Messages")));
+                    addedItem.SubItems.Add("EventMessage");
+                    addedItem.BackColor = Color.AliceBlue;
+
+                    if (autoAddNewDiscoveredMessagesToolStripMenuItem.Checked)
+                        addedItem.Checked = true;
+                }
+                else
+                {
+                    // add to sessions if checked = true
+                    ProxyManager_OnMessageLog(req, CapsStage.Response);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds a new Capability message to the message filters listview
+        /// </summary>
+        /// <param name="cap"></param>
         void ProxyManager_OnCapabilityAdded(CapInfo cap)
         {
             if (this.InvokeRequired)
@@ -94,16 +135,15 @@ namespace WinGridProxy
                 ListViewItem foundCap = listViewMessageFilters.FindItemWithText(cap.CapType);
                 if (foundCap == null)
                 {
-                    ListViewItem addedItem = listViewMessageFilters.Items.Add(new ListViewItem(cap.CapType));
+                    ListViewItem addedItem = listViewMessageFilters.Items.Add(new ListViewItem(cap.CapType, new ListViewGroup("Capabilities Messages")));
+                    addedItem.SubItems.Add("CapMessage");
+                    addedItem.BackColor = Color.Honeydew;
+
                     if (autoAddNewDiscoveredMessagesToolStripMenuItem.Checked)
                         addedItem.Checked = true;
                 }
             }
         }
-
-        
-
-        #region Event Handlers
 
         void ProxyManager_OnPacketLog(Packet packet, Direction direction, IPEndPoint endpoint)
         {
@@ -125,7 +165,7 @@ namespace WinGridProxy
 
                 string t = (request is XmlRpcRequest) ? "Login Request" : "Login Response";
                 string l = request.ToString().Length.ToString();
-                string[] s = { PacketCounter.ToString(), "HTTPS", t, l, textBoxLoginURL.Text };
+                string[] s = { PacketCounter.ToString(), "HTTPS", t, l, comboBoxLoginURL.Text };
                 ListViewItem session = new ListViewItem(s);
                 session.Tag = request;
                 session.ImageIndex = (request is XmlRpcRequest) ? 1 : 0;
@@ -193,21 +233,6 @@ namespace WinGridProxy
             }
         }
 
-        //void ProxyManager_OnEventQueueRunning()
-        //{
-        //    if (this.InvokeRequired)
-        //    {
-        //        this.BeginInvoke(new MethodInvoker(delegate()
-        //            {
-        //                ProxyManager_OnEventQueueRunning();
-        //            }));
-        //    }
-        //    else
-        //    {
-        //        buttonRefreshCapsList_Click(null, null);
-        //    }
-        //}
-
         void ProxyManager_OnMessageLog(CapsRequest req, CapsStage stage)
         {
             if (this.InvokeRequired)
@@ -223,13 +248,13 @@ namespace WinGridProxy
 
                 if (found != null && found.Checked)
                 {
-
                     PacketCounter++;
 
                     // TODO: the sizes should be combined
                     string size = (stage == CapsStage.Request) ? req.Request.ToString().Length.ToString() : req.Response.ToString().Length.ToString();
-                    string[] s = { PacketCounter.ToString(), "CAPS", req.Info.CapType, size, req.Info.URI };
+                    string[] s = { PacketCounter.ToString(), found.SubItems[1].Text, req.Info.CapType, size, req.Info.URI };
                     ListViewItem session = new ListViewItem(s);
+                    session.BackColor = found.BackColor;
 
                     session.Tag = req;
 
@@ -272,8 +297,8 @@ namespace WinGridProxy
             
             if (button1.Text.StartsWith("Start") && IsProxyRunning.Equals(false))
             {
-                proxy = new ProxyManager(textBoxProxyPort.Text, textBoxProxyListenIP.Text, textBoxLoginURL.Text);
-                textBoxProxyListenIP.Enabled = textBoxProxyPort.Enabled = textBoxLoginURL.Enabled = false;
+                proxy = new ProxyManager(textBoxProxyPort.Text, textBoxProxyListenIP.Text, comboBoxLoginURL.Text);
+                textBoxProxyListenIP.Enabled = textBoxProxyPort.Enabled = comboBoxLoginURL.Enabled = false;
 
                 InitProxyFilters();
 
@@ -290,7 +315,7 @@ namespace WinGridProxy
                 proxy.Stop();
                 grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = false;
                 button1.Text = "Start Proxy";
-                textBoxProxyListenIP.Enabled = textBoxProxyPort.Enabled = textBoxLoginURL.Enabled = true;
+                textBoxProxyListenIP.Enabled = textBoxProxyPort.Enabled = comboBoxLoginURL.Enabled = true;
 
                 if (!enableStatisticsToolStripMenuItem.Checked && timer1.Enabled)
                     timer1.Enabled = false;
@@ -305,33 +330,6 @@ namespace WinGridProxy
             }
         }
 
-        private void buttonRefreshCapsList_Click(object sender, EventArgs e)
-        {
-            OSDMap map = new OSDMap(1);
-
-            OSDArray capsArray = new OSDArray();
-            foreach (KeyValuePair<string, CapInfo> kvp in proxy.GetCapabilities())
-            {
-                OSDMap cap = new OSDMap(1);
-                cap["capability"] = OSD.FromString(kvp.Value.CapType);
-                cap["Enabled"] = OSD.FromBoolean(true);
-                capsArray.Add(cap);
-
-                listViewMessageFilters.BeginUpdate();
-                ListViewItem found = listViewMessageFilters.FindItemWithText(kvp.Value.CapType);
-                if(found == null)
-                {
-                    listViewMessageFilters.Items.Add(kvp.Value.CapType);
-                }
-                listViewMessageFilters.Sort();
-                listViewMessageFilters.EndUpdate();
-            }
-            map["Capabilities"] = capsArray;
-
-            System.IO.File.WriteAllText("capabilities.osd", map.ToString());
-
-        }
-
         private void listViewSessions_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
         {
             
@@ -344,56 +342,70 @@ namespace WinGridProxy
                 {
                     XmlRpcRequest requestData = (XmlRpcRequest)tag;
 
-                    richTextBoxRawLogRequest.Text = requestData.ToString();
-                    updateTreeView(requestData.ToString(), treeViewRequestXml);
-
+                    richTextBoxDecodedRequest.Text = requestData.ToString();
+                    richTextBoxRawRequest.Text = requestData.ToString();
+                    richTextBoxNotationRequest.Text = "Notation Not Available for XML Request";
+                    updateTreeView(requestData.ToString(), treeViewXMLRequest);
                     Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(requestData.ToString()));
                     hexBoxRequest.ByteProvider = data;
 
+                    richTextBoxDecodedResponse.Text = String.Empty;
+                    richTextBoxRawResponse.Text = String.Empty;
+                    richTextBoxNotationResponse.Text = String.Empty;
+                    treeViewXmlResponse.Nodes.Clear();
                     hexBoxResponse.ByteProvider = null;
-                    richTextBoxRawLogResponse.Text = String.Empty;
-                    treeViewResponseXml.Nodes.Clear();
                 }
                 else if (tag is XmlRpcResponse)
                 {
                     XmlRpcResponse responseData = (XmlRpcResponse)tag;
 
-                    richTextBoxRawLogResponse.Text = responseData.ToString();
-                    updateTreeView(responseData.ToString(), treeViewResponseXml);
-
+                    richTextBoxDecodedResponse.Text = responseData.ToString(); 
+                    richTextBoxRawResponse.Text = responseData.ToString();
+                    richTextBoxNotationResponse.Text = "Notation Not Available for XML Request";
+                    updateTreeView(responseData.ToString(), treeViewXmlResponse);
                     Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(responseData.ToString()));
                     hexBoxResponse.ByteProvider = data;
 
+                    richTextBoxDecodedRequest.Text = String.Empty;
+                    richTextBoxRawRequest.Text = String.Empty;
+                    richTextBoxNotationRequest.Text = String.Empty;
+                    treeViewXMLRequest.Nodes.Clear();
                     hexBoxRequest.ByteProvider = null;
-                    richTextBoxRawLogRequest.Text = "No Data";
-                    treeViewRequestXml.Nodes.Clear();
+                    
                 }
                 else if (tag is Packet)
                 {
                     Packet packet = (Packet)tag;
 
                     Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(packet.ToBytes());
+                    // we have no conversion from Packet to xml or notation
+                    richTextBoxNotationRequest.Text = String.Empty;
+                    richTextBoxNotationResponse.Text = String.Empty;
+                    treeViewXmlResponse.Nodes.Clear();
+                    treeViewXMLRequest.Nodes.Clear();
 
                     // 0 = incoming, 1 = outgoing
                     if (e.Item.ImageIndex == 1)
                     {
-                        richTextBoxRawLogRequest.Text = TagToString(tag);
+                        richTextBoxDecodedRequest.Text = String.Empty;
+                        richTextBoxRawRequest.Text = String.Empty;
+                        richTextBoxNotationRequest.Text = "Notation Not Available for Packet Types";
                         hexBoxRequest.ByteProvider = data;
-                        treeViewRequestXml.Nodes.Clear();
 
-                        richTextBoxRawLogResponse.Text = String.Empty;
+                        richTextBoxDecodedResponse.Text = String.Empty;
+                        richTextBoxRawResponse.Text = String.Empty;
                         hexBoxResponse.ByteProvider = null;
-                        treeViewResponseXml.Nodes.Clear();
                     }
                     else
                     {
-                        richTextBoxRawLogRequest.Text = String.Empty;
-                        hexBoxRequest.ByteProvider = null;
-                        treeViewRequestXml.Nodes.Clear();
-
-                        richTextBoxRawLogResponse.Text = TagToString(tag);
+                        richTextBoxDecodedResponse.Text = TagToString(tag, listViewSessions.FocusedItem.SubItems[2].Text);
+                        richTextBoxRawResponse.Text = TagToString(tag, listViewSessions.FocusedItem.SubItems[2].Text);
+                        richTextBoxNotationResponse.Text = "Notation Not Available for Packet Types";
                         hexBoxResponse.ByteProvider = data;
-                        treeViewResponseXml.Nodes.Clear();
+
+                        richTextBoxDecodedRequest.Text = String.Empty;
+                        richTextBoxRawRequest.Text = String.Empty;
+                        hexBoxRequest.ByteProvider = null;
                     }
                 }
                 else if (tag is CapsRequest)
@@ -402,29 +414,66 @@ namespace WinGridProxy
 
                     if (capsData.Request != null)
                     {
-                        richTextBoxRawLogRequest.Text = capsData.Request.ToString();
-                        updateTreeView(OSDParser.SerializeLLSDXmlString(capsData.Request), treeViewRequestXml);
-                        Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(capsData.Request.ToString()));
+                        StringBuilder rawRequest = new StringBuilder();
+
+                        if(capsData.RequestHeaders != null)
+                        {
+                        foreach (KeyValuePair<string, string> kvp in capsData.RequestHeaders)
+                        {
+                            rawRequest.AppendFormat("{0}: {1}" + System.Environment.NewLine, kvp.Key, kvp.Value);
+                        }
+                        rawRequest.AppendLine();
+                        }
+                        rawRequest.AppendLine(Utils.BytesToString(capsData.RawRequest));
+
+                        OSD requestOSD = OSDParser.DeserializeLLSDXml(capsData.RawRequest);
+
+                        richTextBoxDecodedRequest.Text = TagToString(requestOSD, listViewSessions.FocusedItem.SubItems[2].Text);//.ToString();
+                        richTextBoxRawRequest.Text = rawRequest.ToString();
+                        richTextBoxNotationRequest.Text = requestOSD.ToString();
+                        updateTreeView(Utils.BytesToString(capsData.RawRequest), treeViewXMLRequest);
+                        Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(capsData.RawRequest);
                         hexBoxRequest.ByteProvider = data;
                     }
                     else
                     {
-                        richTextBoxRawLogRequest.Text = "No Data";
-                        treeViewRequestXml.Nodes.Clear();
+                        richTextBoxDecodedRequest.Text = "No Data";
+                        richTextBoxRawRequest.Text = "No Data";
+                        richTextBoxNotationRequest.Text = "No Data";
+                        treeViewXMLRequest.Nodes.Clear();
                         hexBoxRequest.ByteProvider = null;
+
                     }
 
                     if (capsData.Response != null)
                     {
-                        richTextBoxRawLogResponse.Text = capsData.Response.ToString();
-                        updateTreeView(OSDParser.SerializeLLSDXmlString(capsData.Response), treeViewResponseXml);
-                        Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(capsData.Response.ToString()));
+                        StringBuilder rawResponse = new StringBuilder();
+
+                        if (capsData.ResponseHeaders != null)
+                        {
+                            foreach (string key in capsData.ResponseHeaders.Keys)
+                            {
+                                rawResponse.AppendFormat("{0}: {1}" + System.Environment.NewLine, key, capsData.ResponseHeaders[key]);
+                            }
+                            rawResponse.AppendLine();
+                        }
+                        rawResponse.AppendLine(Utils.BytesToString(capsData.RawResponse));
+
+                        OSD responseOSD = OSDParser.DeserializeLLSDXml(capsData.RawResponse);
+
+                        richTextBoxDecodedResponse.Text = TagToString(responseOSD, listViewSessions.FocusedItem.SubItems[2].Text);//.ToString();
+                        richTextBoxRawResponse.Text = rawResponse.ToString();
+                        richTextBoxNotationResponse.Text = responseOSD.ToString();
+                        updateTreeView(Utils.BytesToString(capsData.RawResponse), treeViewXmlResponse);
+                        Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(capsData.RawResponse);
                         hexBoxResponse.ByteProvider = data;
                     }
                     else
                     {
-                        richTextBoxRawLogResponse.Text = "No Data";
-                        treeViewResponseXml.Nodes.Clear();
+                        richTextBoxDecodedResponse.Text = "No Data";
+                        richTextBoxRawResponse.Text = "No Data";
+                        richTextBoxNotationResponse.Text = "No Data";
+                        treeViewXmlResponse.Nodes.Clear();
                         hexBoxResponse.ByteProvider = null;
                     }
                 }
@@ -590,11 +639,6 @@ namespace WinGridProxy
                         listViewPacketFilters.Items[found.Index].Checked = enableDisableFilterByNameToolStripMenuItem.Checked;
                 }
             }
-        }
-
-        private void filterDisableByProtocolName_CheckedChanged(object sender, EventArgs e)
-        {
-
         }
 
         /// <summary>
@@ -807,12 +851,57 @@ namespace WinGridProxy
 
         #region Helpers
 
-        // This is from omv Utils, once we get it prettied up put it back there
+        /// <summary>
+        /// Decode an IMessage object into a string of key/value pairs
+        /// </summary>
+        /// <param name="message">The IMessage object</param>
+        /// <returns>A formatted string containing the names and values of the source object</returns>
+        public static string IMessageToString(IMessage message)
+        {
+            StringBuilder result = new StringBuilder();
+            // common/custom types
+            result.AppendFormat("Message Type {0}" + System.Environment.NewLine, message.GetType().Name);
+
+            foreach (FieldInfo messageField in message.GetType().GetFields())
+            {
+                // a byte array
+                if (messageField.GetValue(message).GetType() == typeof(Byte[]))
+                {
+                    result.AppendFormat("{0, 30}: {1} ({2})" + System.Environment.NewLine,
+                    messageField.Name, Utils.BytesToHexString((byte[])messageField.GetValue(message), ""), messageField.FieldType.Name);
+                }
+
+                // an array of class objects
+                else if (messageField.FieldType.IsArray)
+                {
+                    object messageObjectData = messageField.GetValue(message);
+                    result.AppendFormat("-- {0} --" + System.Environment.NewLine, messageField.FieldType.Name);
+                    foreach (object nestedArrayObject in messageObjectData as Array)
+                    {
+                        result.AppendFormat("     [{0}]" + System.Environment.NewLine, nestedArrayObject.GetType().Name);
+
+                        foreach (FieldInfo nestedField in nestedArrayObject.GetType().GetFields())
+                        {
+                            result.AppendFormat("{0, 30}: {1} ({2})" + System.Environment.NewLine,
+                                nestedField.Name, nestedField.GetValue(nestedArrayObject), nestedField.Name.GetType().Name);
+                        }
+                    }
+                }
+                else
+                {
+                    result.AppendFormat("{0, 30}: {1} ({2})" + System.Environment.NewLine,
+                    messageField.Name, messageField.GetValue(message), messageField.FieldType.Name);
+                }
+            }
+
+            return result.ToString();
+        }
+
         public static string PacketToString(Packet packet)
         {
             StringBuilder result = new StringBuilder();
 
-            //result.AppendFormat("{0}" + System.Environment.NewLine, packet.Type);
+            result.AppendFormat("Packet Type: {0}" + System.Environment.NewLine, packet.Type);
 
             foreach (FieldInfo packetField in packet.GetType().GetFields())
             {
@@ -901,12 +990,18 @@ namespace WinGridProxy
 
             foreach (ListViewItem item in listViewPacketFilters.Items)
             {
-                Store.PacketSessions.Add(item.Text, item.Checked);
+                FilterEntry entry = new FilterEntry();
+                entry.Checked = item.Checked;
+                entry.pType = item.SubItems[1].Text;
+                Store.PacketSessions.Add(item.Text, entry);
             }
 
             foreach (ListViewItem item in listViewMessageFilters.Items)
             {
-                Store.MessageSessions.Add(item.Text, item.Checked);
+                FilterEntry entry = new FilterEntry();
+                entry.Checked = item.Checked;
+                entry.pType = item.SubItems[1].Text;
+                Store.MessageSessions.Add(item.Text, entry);
             }
             
             Store.StatisticsEnabled = enableStatisticsToolStripMenuItem.Checked;
@@ -930,34 +1025,37 @@ namespace WinGridProxy
 
                 // Update message filter listview
                 listViewMessageFilters.BeginUpdate();
-                foreach (KeyValuePair<string, bool> kvp in Store.MessageSessions)
+                foreach (KeyValuePair<string, FilterEntry> kvp in Store.MessageSessions)
                 {
                     ListViewItem foundMessage = listViewPacketFilters.FindItemWithText(kvp.Key);
                     if (foundMessage == null)
                     {
                         ListViewItem addedItem = listViewMessageFilters.Items.Add(kvp.Key);
-                        addedItem.Checked = kvp.Value;
+                        addedItem.Checked = kvp.Value.Checked;
+                        addedItem.SubItems.Add(kvp.Value.pType);
+                        addedItem.BackColor = (kvp.Value.pType.Equals("CapMessage")) ? Color.Honeydew : Color.AliceBlue;
                     }
                     else
                     {
-                        foundMessage.Checked = kvp.Value;
+                        foundMessage.Checked = kvp.Value.Checked;
                     }
                 }
                 listViewMessageFilters.EndUpdate();
 
                 // updateTreeView packet filter listview
                 listViewPacketFilters.BeginUpdate();
-                foreach (KeyValuePair<string, bool> kvp in Store.PacketSessions)
+                foreach (KeyValuePair<string, FilterEntry> kvp in Store.PacketSessions)
                 {
                     ListViewItem foundPacket = listViewPacketFilters.FindItemWithText(kvp.Key);
                     if (foundPacket == null)
                     {
                         ListViewItem addedItem = listViewPacketFilters.Items.Add(new ListViewItem(kvp.Key));
-                        addedItem.Checked = kvp.Value;
+                        addedItem.Checked = kvp.Value.Checked;
+                        addedItem.SubItems.Add(kvp.Value.pType);
                     }
                     else
                     {
-                        foundPacket.Checked = kvp.Value;
+                        foundPacket.Checked = kvp.Value.Checked;
                     }
                 }
                 listViewPacketFilters.EndUpdate();
@@ -989,6 +1087,7 @@ namespace WinGridProxy
                         if (!String.IsNullOrEmpty(name) && found == null)
                         {
                             ListViewItem addedItem = listViewPacketFilters.Items.Add(new ListViewItem(name));
+                            addedItem.SubItems.Add("UDP");
                         }
                     }
                     catch (Exception)
@@ -998,9 +1097,8 @@ namespace WinGridProxy
                 }
             }
 
-            listViewPacketFilters.Sort();
+            //listViewPacketFilters.Sort();
             
-            // load from previous stored settings
             listViewPacketFilters.EndUpdate();
         }
 
@@ -1026,7 +1124,7 @@ namespace WinGridProxy
 
             foreach (ListViewItem item in listViewSessions.Items)
             {
-                    if (item.Text.Contains(opts.SearchText) || TagToString(item.Tag).Contains(opts.SearchText))
+                if (item.Text.Contains(opts.SearchText) || TagToString(item.Tag, item.SubItems[2].Text).Contains(opts.SearchText))
                     {
                         if (opts.UnMarkPrevious)
                             item.BackColor = Color.White;
@@ -1038,8 +1136,6 @@ namespace WinGridProxy
                         else
                             item.Selected = false;
                     }               
-                    
-
                 }
                 if (opts.SearchWhat.Equals("Both") || opts.SearchWhat.Equals("Messages"))
                 {
@@ -1047,7 +1143,7 @@ namespace WinGridProxy
                 }
             }
 
-        private string TagToString(object tag)
+        private string TagToString(object tag, string key)
         {
             if (tag is XmlRpcRequest)
             {
@@ -1077,10 +1173,37 @@ namespace WinGridProxy
 
                 if (capsData.Response != null)
                 {
-                    return capsData.Response.ToString();
+                        return capsData.Response.ToString();
+                }
+                return "Unable to decode CapsRequest";
+            }
+            else if (tag is OSD)
+            {
+                OSD osd = (OSD)tag;
+                if (osd.Type == OSDType.Map)
+                {
+                    OSDMap data = (OSDMap)osd;
+                    IMessage message;
+                    if (data.ContainsKey("body"))
+                        message = Caps.DecodeEvent(key, (OSDMap)data["body"]);
+                    else
+                        message = Caps.DecodeEvent(key, data);
+
+                    if (message != null)
+                        return IMessageToString(message);
+                    else
+                        return "No Decoder for " + key + System.Environment.NewLine
+                            + osd.ToString();
+                }
+                else
+                {
+                    return osd.ToString();
                 }
             }
-            return string.Empty;
+            else
+            {
+                return "Could not decode object type: " + tag.GetType().ToString();
+            }
         }
 
         #endregion
@@ -1091,7 +1214,7 @@ namespace WinGridProxy
         {
             try
             {
-                treeViewResponseXml.Nodes.Clear();
+                treeView.Nodes.Clear();
                 
                 XmlDocument tmpxmldoc = new XmlDocument();
                 tmpxmldoc.LoadXml(xml);

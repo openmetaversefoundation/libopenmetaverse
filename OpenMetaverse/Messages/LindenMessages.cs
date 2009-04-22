@@ -225,6 +225,141 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    public class LandStatReplyMessage : IMessage
+    {
+
+        /* Single map
+         'RequestData':
+        [        
+            {
+            'ReportType':b64"AAAAAA=="
+            ,
+            'RequestFlags':b64"AAAABA=="
+            ,
+            'TotalObjectCount':b64"AAABbw=="
+            }
+        ]
+         */
+        public int ReporType;
+        public int RequestFlags;
+        public int TotalObjectCount;
+
+        /*
+          'DataExtended':
+            [        
+                {
+                'MonoScore':r0.0053327744826674461
+                ,
+                'TimeStamp':b64"Seo9lw=="
+                }
+            ]
+            ,
+         'ReportData':
+            [        
+                {
+                'LocationX':r34.764884948730469
+                ,
+                'LocationY':r86.75262451171875
+                ,
+                'LocationZ':r26.555828094482422
+                ,
+                'OwnerName':'Preostan Scribe'
+                ,
+                'Score':r0.0023237180430442095
+                ,
+                'TaskID':u1623b11b-127f-a170-da37-21523b9967a1
+                ,
+                'TaskLocalID':b64"BhZW4g=="
+                ,
+                'TaskName':'Dutch Door Upper Half'
+                }
+            ]
+      ,*/
+        public class ReportDataBlock
+        {
+            public Vector3 Location;
+            public string OwnerName;
+            public float Score;
+            public UUID TaskID;
+            public uint TaskLocalID;
+            public string TaskName;
+            public float MonoScore;
+            public DateTime TimeStamp;
+        }
+
+        public ReportDataBlock[] ReportDataBlocks;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(3);
+
+            OSDMap requestDataMap = new OSDMap(3);
+            requestDataMap["ReportType"] = OSD.FromInteger(this.ReporType);
+            requestDataMap["RequestFlags"] = OSD.FromInteger(this.RequestFlags);
+            requestDataMap["TotalObjectCount"] = OSD.FromInteger(this.TotalObjectCount);
+            map["RequestData"] = requestDataMap;
+
+            OSDArray reportDataArray = new OSDArray();
+            OSDArray dataExtendedArray = new OSDArray();
+            for (int i = 0; i < ReportDataBlocks.Length; i++)
+            {
+                OSDMap reportMap = new OSDMap(8);
+                reportMap["LocationX"] = OSD.FromReal(ReportDataBlocks[i].Location.X);
+                reportMap["LocationY"] = OSD.FromReal(ReportDataBlocks[i].Location.Y);
+                reportMap["LocationZ"] = OSD.FromReal(ReportDataBlocks[i].Location.Z);
+                reportMap["OwnerName"] = OSD.FromString(ReportDataBlocks[i].OwnerName);
+                reportMap["Score"] = OSD.FromReal(ReportDataBlocks[i].Score);
+                reportMap["TaskID"] = OSD.FromUUID(ReportDataBlocks[i].TaskID);
+                reportMap["TaskLocalID"] = OSD.FromReal(ReportDataBlocks[i].TaskLocalID);
+                reportMap["TaskName"] = OSD.FromString(ReportDataBlocks[i].TaskName);
+                reportDataArray.Add(reportMap);
+
+                OSDMap extendedMap = new OSDMap(2);
+                extendedMap["MonoScore"] = OSD.FromReal(ReportDataBlocks[i].MonoScore);
+                extendedMap["TimeStamp"] = OSD.FromDate(ReportDataBlocks[i].TimeStamp);
+                dataExtendedArray.Add(extendedMap);
+            }
+
+            map["ReportData"] = reportDataArray;
+            map["ExtendedData"] = dataExtendedArray;
+
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            
+            OSDMap requestDataMap = (OSDMap)map["RequestData"];
+            this.ReporType = requestDataMap["ReportType"].AsInteger();
+            this.RequestFlags = requestDataMap["RequestFlags"].AsInteger();
+            this.TotalObjectCount = requestDataMap["TotalObjectCount"].AsInteger();
+
+            OSDArray dataArray = (OSDArray)map["ReportData"];
+            OSDArray dataExtendedArray = (OSDArray)map["ExtendedData"];
+
+            ReportDataBlocks = new ReportDataBlock[dataArray.Count];
+            for (int i = 0; i < dataArray.Count; i++)
+            {
+                OSDMap blockMap = (OSDMap)dataArray[i];
+                OSDMap extMap = (OSDMap)dataExtendedArray[i];
+                ReportDataBlock block = new ReportDataBlock();
+                block.Location = new Vector3(
+                    (float)blockMap["LocationX"].AsReal(),
+                    (float)blockMap["LocationY"].AsReal(),
+                    (float)blockMap["LocationZ"].AsReal());
+                block.OwnerName = blockMap["OwnerName"].AsString();
+                block.Score = (float)blockMap["Score"].AsReal();
+                block.TaskID = blockMap["TaskID"].AsUUID();
+                block.TaskLocalID = blockMap["TaskLocalID"].AsUInteger();
+                block.TaskName = blockMap["TaskName"].AsString();
+                block.MonoScore = (float)extMap["MonoScore"].AsReal();
+                block.TimeStamp = extMap["TimeStamp"].AsDate();
+
+                ReportDataBlocks[i] = block;
+            }
+        }
+    }
+
     #endregion
 
     #region Parcel Messages

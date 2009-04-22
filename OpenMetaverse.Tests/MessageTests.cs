@@ -890,6 +890,75 @@ namespace OpenMetaverse.Tests
             Assert.AreEqual(s.Subject, t.Subject);
             Assert.AreEqual(s.ToEmail, t.ToEmail);
         }
+
+        [Test]
+        public void UpdateNotecardAgentInventoryMessage()
+        {
+            UpdateNotecardAgentInventoryMessage s = new UpdateNotecardAgentInventoryMessage();
+            s.ItemID = UUID.Random();
+
+            OSDMap map = s.Serialize();
+
+            UpdateNotecardAgentInventoryMessage t = new UpdateNotecardAgentInventoryMessage();
+            t.Deserialize(map);
+
+            Assert.AreEqual(s.ItemID, t.ItemID);
+        }
+
+        [Test]
+        public void LandStatReplyMessage()
+        {
+            LandStatReplyMessage s = new LandStatReplyMessage();
+            s.ReporType = 22;
+            s.RequestFlags = 44;
+            s.TotalObjectCount = 2;
+            s.ReportDataBlocks = new LandStatReplyMessage.ReportDataBlock[2];
+
+            LandStatReplyMessage.ReportDataBlock block1 = new LandStatReplyMessage.ReportDataBlock();
+            block1.Location = Vector3.One;
+            block1.MonoScore = 99;
+            block1.OwnerName = "Profoky Neva";
+            block1.Score = 10;
+            block1.TaskID = UUID.Random();
+            block1.TaskLocalID = 987341;
+            block1.TaskName = "Verbal Flogging";
+            block1.TimeStamp = new DateTime(2009, 5, 23, 4, 30, 0);
+            s.ReportDataBlocks[0] = block1;
+
+            LandStatReplyMessage.ReportDataBlock block2 = new LandStatReplyMessage.ReportDataBlock();
+            block2.Location = Vector3.One;
+            block2.MonoScore = 1;
+            block2.OwnerName = "Philip Linden";
+            block2.Score = 5;
+            block2.TaskID = UUID.Random();
+            block2.TaskLocalID = 987342;
+            block2.TaskName = "Happy Ant";
+            block2.TimeStamp = new DateTime(2008, 4, 22, 3, 29, 55);
+            s.ReportDataBlocks[1] = block2;
+
+            OSDMap map = s.Serialize();
+
+            LandStatReplyMessage t = new LandStatReplyMessage();
+            t.Deserialize(map);
+
+            Assert.AreEqual(s.ReporType, t.ReporType);
+            Assert.AreEqual(s.RequestFlags, t.RequestFlags);
+            Assert.AreEqual(s.TotalObjectCount, t.TotalObjectCount);
+
+            for (int i = 0; i < t.ReportDataBlocks.Length; i++)
+            {
+                Assert.AreEqual(s.ReportDataBlocks[i].Location, t.ReportDataBlocks[i].Location);
+                Assert.AreEqual(s.ReportDataBlocks[i].MonoScore, t.ReportDataBlocks[i].MonoScore);
+                Assert.AreEqual(s.ReportDataBlocks[i].OwnerName, t.ReportDataBlocks[i].OwnerName);
+                Assert.AreEqual(s.ReportDataBlocks[i].Score, t.ReportDataBlocks[i].Score);
+                Assert.AreEqual(s.ReportDataBlocks[i].TaskID, t.ReportDataBlocks[i].TaskID);
+                Assert.AreEqual(s.ReportDataBlocks[i].TaskLocalID, t.ReportDataBlocks[i].TaskLocalID);
+                Assert.AreEqual(s.ReportDataBlocks[i].TaskName, t.ReportDataBlocks[i].TaskName);
+                Assert.AreEqual(s.ReportDataBlocks[i].TimeStamp, t.ReportDataBlocks[i].TimeStamp);
+            }
+
+
+        }
     }
 }
 
