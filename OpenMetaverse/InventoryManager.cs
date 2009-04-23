@@ -900,6 +900,13 @@ namespace OpenMetaverse
         /// <param name="assetID"></param>
         public delegate void NotecardUploadedAssetCallback(bool success, string status, UUID itemID, UUID assetID);
 
+        /// <summary>
+        /// Fired when local inventory store needs to be updated. Generally at logout to update a local cache
+        /// </summary>
+        /// <param name="itemID">the assets UUID</param>
+        /// <param name="newAssetID">The new AssetID of the item, or UUID.Zero</param>
+        public delegate void SaveAssetToInventoryCallback(UUID itemID, UUID newAssetID);
+
         #endregion Delegates
 
         #region Events
@@ -942,6 +949,11 @@ namespace OpenMetaverse
         /// <seealso cref="InventoryManager.GetTaskInventory"/>
         /// <seealso cref="InventoryManager.RequestTaskInventory"/>
         public event TaskInventoryReplyCallback OnTaskInventoryReply;
+
+        /// <summary>
+        /// Fired when a SaveAssetToInventory packet is received, generally after the logout reply handler
+        /// </summary>
+        public event SaveAssetToInventoryCallback OnSaveAssetToInventory;
 
         #endregion Events
 
@@ -3029,11 +3041,12 @@ namespace OpenMetaverse
 
         private void SaveAssetIntoInventoryHandler(Packet packet, Simulator simulator)
         {
-            //SaveAssetIntoInventoryPacket save = (SaveAssetIntoInventoryPacket)packet;
-
-            // FIXME: Find this item in the inventory structure and mark the parent as needing an update
-            //save.InventoryData.ItemID;
-            Logger.Log("SaveAssetIntoInventory packet received, someone write this function!", Helpers.LogLevel.Error, _Client);
+            if (OnSaveAssetToInventory != null)
+            {
+                SaveAssetIntoInventoryPacket save = (SaveAssetIntoInventoryPacket)packet;
+                try { OnSaveAssetToInventory(save.InventoryData.ItemID, save.InventoryData.NewAssetID); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+            }
         }
 
         private void InventoryDescendentsHandler(Packet packet, Simulator simulator)
