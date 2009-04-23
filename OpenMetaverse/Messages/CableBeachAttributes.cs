@@ -30,7 +30,8 @@ namespace OpenMetaverse.Messages.CableBeach
 {
     public static class AvatarServices
     {
-        public static readonly Uri INVENTORY_SERVER = new Uri("http://openmetaverse.org/services/inventoryServer");
+        public static readonly Uri INVENTORY = new Uri("http://openmetaverse.org/services/inventory");
+        public static readonly Uri MAP = new Uri("http://openmetaverse.org/services/map");
     }
 
     public static class AvatarAttributes

@@ -165,6 +165,24 @@ namespace OpenMetaverse
             }
         }
 
+        public void ForEach(Action<KeyValuePair<TKey1, TValue>> action)
+        {
+            lock (syncObject)
+            {
+                foreach (KeyValuePair<TKey1, TValue> entry in Dictionary1)
+                    action(entry);
+            }
+        }
+
+        public void ForEach(Action<KeyValuePair<TKey2, TValue>> action)
+        {
+            lock (syncObject)
+            {
+                foreach (KeyValuePair<TKey2, TValue> entry in Dictionary2)
+                    action(entry);
+            }
+        }
+
         public TValue FindValue(Predicate<TValue> predicate)
         {
             lock (syncObject)

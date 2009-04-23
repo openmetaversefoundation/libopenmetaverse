@@ -920,6 +920,24 @@ namespace OpenMetaverse.StructuredData
             return binary;
         }
 
+        public override long AsLong()
+        {
+            OSDBinary binary = new OSDBinary(AsBinary());
+            return binary.AsLong();
+        }
+
+        public override ulong AsULong()
+        {
+            OSDBinary binary = new OSDBinary(AsBinary());
+            return binary.AsULong();
+        }
+
+        public override uint AsUInteger()
+        {
+            OSDBinary binary = new OSDBinary(AsBinary());
+            return binary.AsUInteger();
+        }
+
         public override Vector2 AsVector2()
         {
             Vector2 vector = Vector2.Zero;
