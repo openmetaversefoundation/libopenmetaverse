@@ -719,8 +719,9 @@ namespace OpenMetaverse.Messages.Linden
             }
             else
             {
-                ParcelFlags = (ParcelFlags)parcelDataMap["ParcelFlags"].AsInteger(); // verify this!
+                ParcelFlags = (ParcelFlags)parcelDataMap["ParcelFlags"].AsUInteger(); // verify this!
             }
+
             GroupID = parcelDataMap["GroupID"].AsUUID();
             GroupPrims = parcelDataMap["GroupPrims"].AsInteger();
             IsGroupOwned = parcelDataMap["IsGroupOwned"].AsBoolean();
@@ -929,7 +930,7 @@ namespace OpenMetaverse.Messages.Linden
             public UUID GroupID;
             public UUID GroupInsigniaID;
             public string GroupName;
-            public GroupPowers GroupPowers; // binary
+            public GroupPowers GroupPowers;
             public bool ListInProfile;
         }
 
@@ -949,8 +950,6 @@ namespace OpenMetaverse.Messages.Linden
 
             OSDArray groupDataArray = new OSDArray(GroupDataBlock.Length);
 
-            //OSDArray newGroupDataArray = new OSDArray(GroupDataBlock.Length);
-
             for (int i = 0; i < GroupDataBlock.Length; i++)
             {
                 OSDMap group = new OSDMap(7);
@@ -959,17 +958,13 @@ namespace OpenMetaverse.Messages.Linden
                 group["GroupID"] = OSD.FromUUID(GroupDataBlock[i].GroupID);
                 group["GroupInsigniaID"] = OSD.FromUUID(GroupDataBlock[i].GroupInsigniaID);
                 group["GroupName"] = OSD.FromString(GroupDataBlock[i].GroupName);
-                group["GroupPowers"] = OSD.FromBinary((ulong)GroupDataBlock[i].GroupPowers);
+                group["GroupPowers"] = OSD.FromLong((long)GroupDataBlock[i].GroupPowers);
                 group["ListInProfile"] = OSD.FromBoolean(GroupDataBlock[i].ListInProfile);
                 groupDataArray.Add(group);
-
-                //OSDMap newDataMap = new OSDMap(1);
-                //newDataMap["ListInProfile"] = OSD.FromBoolean(GroupDataBlock[i].ListInProfile);
-                //newGroupDataArray.Add(newDataMap);
             }
 
             map["GroupData"] = groupDataArray;
-            //map["NewGroupData"] = newGroupDataArray;
+
             return map;
         }
 
@@ -999,29 +994,6 @@ namespace OpenMetaverse.Messages.Linden
                 groupData.GroupPowers = (GroupPowers)groupMap["GroupPowers"].AsLong();
                 groupData.ListInProfile = groupMap["ListInProfile"].AsBoolean();
                 groupData.AcceptNotices = groupMap["AcceptNotices"].AsBoolean();
-
-                //OSDMap newGroupDataMap = (OSDMap)newGroupDataArray[i];
-
-                //groupData.ListInProfile = newGroupDataMap["ListInProfile"].AsBoolean();
-
-                /*
-                 * 'NewGroupData':
-          [            
-            {
-              'ListInProfile':t
-            },            
-            {
-              'ListInProfile':t
-            },            
-            {
-              'ListInProfile':t
-            },            
-            {
-              'ListInProfile':f
-            }
-          ]
-*/
-
                 GroupDataBlock[i] = groupData;
             }
         }
@@ -1946,7 +1918,7 @@ namespace OpenMetaverse.Messages.Linden
             RegionsVisited = agentMap["regions_visited"].AsInteger();
             AgentRuntime = (float)agentMap["run_time"].AsReal();
             SimulatorFPS = (float)agentMap["sim_fps"].AsReal();
-            AgentStartTime = agentMap["start_time"].AsDate();
+            AgentStartTime = Utils.UnixTimeToDateTime((uint)agentMap["start_time"].AsReal());
             AgentVersion = agentMap["version"].AsString();
 
             OSDMap downloadsMap = (OSDMap)map["downloads"];

@@ -205,6 +205,7 @@ namespace GridProxy
                 RunSimProxy();
                 Thread runLoginProxy = new Thread(new ThreadStart(RunLoginProxy));
                 runLoginProxy.IsBackground = true;
+                runLoginProxy.Name = "LoginProxy";
                 runLoginProxy.Start();
 
                 IPEndPoint endPoint = (IPEndPoint)loginServer.LocalEndPoint;
@@ -235,6 +236,18 @@ namespace GridProxy
 		Console.WriteLine(">T> KeepAlive");
 #endif
             lock (keepAliveLock) { };
+
+            if (loginServer.Connected)
+            {
+                loginServer.Disconnect(false);
+                loginServer.Shutdown(SocketShutdown.Both);
+            }
+
+            loginServer.Close();
+            
+
+
+          
 #if DEBUG_THREADS
 		Console.WriteLine("<T< KeepAlive");
 #endif
@@ -357,7 +370,11 @@ namespace GridProxy
             }
             catch (SocketException e)
             {
-                Log(e.Message + " " + e.StackTrace, true);
+                Log("Socket Exception: " + e.Message + " " + e.StackTrace, true);
+            }
+            catch (ObjectDisposedException e)
+            {
+                Log("Socket Object is disposed Exception: " + e.Message + " " + e.StackTrace, true);
             }
         }
 
@@ -371,8 +388,8 @@ namespace GridProxy
             {
                 for (; ; )
                 {
+                   
                     Socket client = loginServer.Accept();
-                    //IPEndPoint clientEndPoint = (IPEndPoint)client.RemoteEndPoint;
 
                     try
                     {
@@ -387,6 +404,7 @@ namespace GridProxy
 #endif
                         });
                         connThread.IsBackground = true;
+                        connThread.Name = "ProxyHTTP";
                         connThread.Start();
                     }
                     catch (Exception e)
@@ -666,7 +684,7 @@ namespace GridProxy
             {
                 HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(uri);
                 req.KeepAlive = false;
-                capReq.RequestHeaders = headers;
+               
                 foreach (string header in headers.Keys)
                 {
                     if (header == "accept" || header == "connection" ||
@@ -686,6 +704,8 @@ namespace GridProxy
                         req.Headers[header] = headers[header];
                     }
                 }
+
+                capReq.RequestHeaders = req.Headers;
 
                 req.Method = meth;
                 req.ContentLength = content.Length;
@@ -1216,6 +1236,7 @@ namespace GridProxy
         {
             lock (this) try
                 {
+                    //if (!simFacingSocket.Connected) return;
                     // pause listening and fetch the packet
                     bool needsZero = false;
                     bool needsCopy = true;
@@ -2150,8 +2171,8 @@ namespace GridProxy
         public byte[] RawRequest = null;
         public byte[] RawResponse = null;
 
-        public Dictionary<string, string> RequestHeaders;
-        public WebHeaderCollection ResponseHeaders;
+        public WebHeaderCollection RequestHeaders = new WebHeaderCollection();
+        public WebHeaderCollection ResponseHeaders = new WebHeaderCollection();
         
     }
 

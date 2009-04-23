@@ -59,13 +59,13 @@ namespace WinGridProxy
 
         private void buttonFind_Click(object sender, EventArgs e)
         {
-            FilterOpts.HighlightMatches = panelColor.BackColor;
+            FilterOpts.HighlightMatchColor = panelColor.BackColor;
             FilterOpts.MatchCase = checkBoxMatchCase.Checked;
             FilterOpts.SearchSelected = checkBoxSearchSelected.Checked;
             FilterOpts.SearchText = textBoxFind.Text;
-            FilterOpts.SearchWhat = comboBoxPacketsOrMessages.SelectedItem.ToString();
             FilterOpts.SelectResults = checkBoxSelectMatches.Checked;
             FilterOpts.UnMarkPrevious = checkBoxUnmark.Checked;
+            FilterOpts.MarkMatches = checkBoxMarkResults.Checked;
             this.Close();
 
         }
@@ -84,12 +84,12 @@ namespace WinGridProxy
         public bool HasSelection; // set to true if SessionList has sessions selected already;
 
         public string SearchText;
-        public string SearchWhat; // Both, Messages, Packets
         public bool MatchCase;
         public bool SearchSelected;
         public bool SelectResults;
         public bool UnMarkPrevious;
-        public Color HighlightMatches;
+        public bool MarkMatches;
+        public Color HighlightMatchColor;
 
         public FilterOptions(bool hasSelection)
         {
