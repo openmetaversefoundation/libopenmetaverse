@@ -972,6 +972,13 @@ namespace OpenMetaverse
         /// <param name="assetID"></param>
         public delegate void NotecardUploadedAssetCallback(bool success, string status, UUID itemID, UUID assetID);
 
+        /// <summary>
+        /// Fired when local inventory store needs to be updated. Generally at logout to update a local cache
+        /// </summary>
+        /// <param name="itemID">the assets UUID</param>
+        /// <param name="newAssetID">The new AssetID of the item, or UUID.Zero</param>
+        public delegate void SaveAssetToInventoryCallback(UUID itemID, UUID newAssetID);
+
         #endregion Delegates
 
         #region Events
@@ -1014,6 +1021,11 @@ namespace OpenMetaverse
         /// <seealso cref="InventoryManager.GetTaskInventory"/>
         /// <seealso cref="InventoryManager.RequestTaskInventory"/>
         public event TaskInventoryReplyCallback OnTaskInventoryReply;
+
+        /// <summary>
+        /// Fired when a SaveAssetToInventory packet is received, generally after the logout reply handler
+        /// </summary>
+        public event SaveAssetToInventoryCallback OnSaveAssetToInventory;
 
         #endregion Events
 
@@ -2597,6 +2609,60 @@ namespace OpenMetaverse
             _Client.Network.SendPacket(remove, simulator);
         }
 
+        /// <summary>
+        /// Copy an InventoryScript item from the Agents Inventory into a primitives task inventory
+        /// </summary>
+        /// <param name="objectLocalID">An unsigned integer representing a primitive being simulated</param>
+        /// <param name="item">An <seealso cref="InventoryItem"/> which represents a script object from the agents inventory</param>
+        /// <returns>A Unique Transaction ID</returns>
+        /// <remarks>
+        /// <code>
+        ///    uint Prim = 95899503; // Fake prim ID
+        ///    UUID Script = UUID.Parse("92a7fe8a-e949-dd39-a8d8-1681d8673232"); // Fake Script UUID in Inventory
+        ///
+        ///    Client.Inventory.FolderContents(Client.Inventory.FindFolderForType(AssetType.LSLText), Client.Self.AgentID, 
+        ///        false, true, InventorySortOrder.ByName, 10000);
+        ///
+        ///    UUID Transaction = Client.Inventory.RezScript(Prim, (InventoryItem)Client.Inventory.Store[Script]);
+        /// </code>
+        /// </remarks>
+        public UUID CopyScriptToTask(uint objectLocalID, InventoryItem item)
+        {
+            UUID transactionID = UUID.Random();
+
+            RezScriptPacket ScriptPacket = new RezScriptPacket();
+            ScriptPacket.AgentData.AgentID = _Client.Self.AgentID;
+            ScriptPacket.AgentData.SessionID = _Client.Self.SessionID;
+
+            ScriptPacket.UpdateBlock.ObjectLocalID = objectLocalID;
+
+            ScriptPacket.InventoryBlock.ItemID = item.UUID;
+            ScriptPacket.InventoryBlock.FolderID = item.ParentUUID;
+            ScriptPacket.InventoryBlock.CreatorID = item.CreatorID;
+            ScriptPacket.InventoryBlock.OwnerID = item.OwnerID;
+            ScriptPacket.InventoryBlock.GroupID = item.GroupID;
+            ScriptPacket.InventoryBlock.BaseMask = (uint)item.Permissions.BaseMask;
+            ScriptPacket.InventoryBlock.OwnerMask = (uint)item.Permissions.OwnerMask;
+            ScriptPacket.InventoryBlock.GroupMask = (uint)item.Permissions.GroupMask;
+            ScriptPacket.InventoryBlock.EveryoneMask = (uint)item.Permissions.EveryoneMask;
+            ScriptPacket.InventoryBlock.NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
+            ScriptPacket.InventoryBlock.GroupOwned = item.GroupOwned;
+            ScriptPacket.InventoryBlock.TransactionID = transactionID;
+            ScriptPacket.InventoryBlock.Type = (sbyte)item.AssetType;
+            ScriptPacket.InventoryBlock.InvType = (sbyte)item.InventoryType;
+            ScriptPacket.InventoryBlock.Flags = (uint)item.Flags;
+            ScriptPacket.InventoryBlock.SaleType = (byte)item.SaleType;
+            ScriptPacket.InventoryBlock.SalePrice = item.SalePrice;
+            ScriptPacket.InventoryBlock.Name = Utils.StringToBytes(item.Name);
+            ScriptPacket.InventoryBlock.Description = Utils.StringToBytes(item.Description);
+            ScriptPacket.InventoryBlock.CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
+            ScriptPacket.InventoryBlock.CRC = ItemCRC(item);
+
+            _Client.Network.SendPacket(ScriptPacket);
+
+            return transactionID;
+        }
+
         #endregion Task
 
         #region Helper Functions
@@ -3175,11 +3241,12 @@ namespace OpenMetaverse
 
         private void SaveAssetIntoInventoryHandler(Packet packet, Simulator simulator)
         {
-            //SaveAssetIntoInventoryPacket save = (SaveAssetIntoInventoryPacket)packet;
-
-            // FIXME: Find this item in the inventory structure and mark the parent as needing an update
-            //save.InventoryData.ItemID;
-            Logger.Log("SaveAssetIntoInventory packet received, someone write this function!", Helpers.LogLevel.Error, _Client);
+            if (OnSaveAssetToInventory != null)
+            {
+                SaveAssetIntoInventoryPacket save = (SaveAssetIntoInventoryPacket)packet;
+                try { OnSaveAssetToInventory(save.InventoryData.ItemID, save.InventoryData.NewAssetID); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+            }
         }
 
         private void InventoryDescendentsHandler(Packet packet, Simulator simulator)

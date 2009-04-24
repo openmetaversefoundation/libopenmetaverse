@@ -1,4 +1,4 @@
-OpenMetaverse Library Quick Start (Formerly known as libsecondlife) for Release 0.6.0
+OpenMetaverse Library Quick Start (Formerly known as libsecondlife) for Release 0.6.2
 
 
 Finding Help
@@ -14,15 +14,20 @@ or at our HQ and testing area in Hooper (SLURL: http://xrl.us/bi233).
 
 Get The Source:
 -------------
-   To checkout a copy of libopenmv trunk using Subversion
-   svn co http://openmv.org/svn/libsl/trunk libopenmv
+   Development
 
-   Download the source as a tar archive
-   http://openmetaverse.org/viewvc/index.cgi/omf/libopenmetaverse/tags/0.6.0/libsecondlife-0.6.0.tar.gz?view=tar&parent=1   
+The latest development version is in SVN:
+
+    svn co http://openmetaverse.org/svn/omf/libopenmetaverse/trunk 
+
+If you are using TortoiseSVN for windows the URL would be:
+
+    http://openmetaverse.org/svn/omf/libopenmetaverse/trunk   
 
 For more details see: 
-   http://www.libsecondlife.org/wiki/SVN
-   http://www.libsecondlife.org/wiki/Getting_Started
+   http://lib.openmetaverse.org/wiki/SVN
+   http://lib.openmetaverse.org/wiki/Getting_Started
+   http://lib.openmetaverse.org/wiki/Download
 
 
 Getting started on Windows
@@ -56,7 +61,7 @@ Without an IDE:
 3. Double click the compile.bat file, this will compile all the assemblies and place them in the "\bin" directory
 
 
-For more details http://www.libsecondlife.org/wiki/Getting_Started
+For more details http://lib.openmetaverse.org/wiki/Getting_Started
 
 
 Getting started on Linux
@@ -82,7 +87,7 @@ Compiling
 
 The library, example applications and tools will be in the bin directory
 
-For more details http://www.libsecondlife.org/wiki/Getting_Started
+For more details http://lib.openmetaverse.org/wiki/Getting_Started
 
 
 Happy fiddling,

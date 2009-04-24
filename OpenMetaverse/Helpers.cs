@@ -568,7 +568,7 @@ namespace OpenMetaverse
                 object packetDataObject = packetField.GetValue(packet);
 
                 result.AppendFormat("-- {0} --" + System.Environment.NewLine, packetField.Name);
-
+                result.AppendFormat("-- {0} --" + System.Environment.NewLine, packet.Type);
                 foreach(FieldInfo packetValueField in packetField.GetValue(packet).GetType().GetFields())
                 {
                     result.AppendFormat("{0}: {1}" + System.Environment.NewLine, 

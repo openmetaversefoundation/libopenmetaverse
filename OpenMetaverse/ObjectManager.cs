@@ -430,7 +430,8 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
-        public void SelectObject(Simulator simulator, uint localID)
+        /// <param name="automaticDeselect">Should objects be deselected immediately after selection</param>
+        public void SelectObject(Simulator simulator, uint localID, bool automaticDeselect)
         {
             ObjectSelectPacket select = new ObjectSelectPacket();
 
@@ -442,6 +443,22 @@ namespace OpenMetaverse
             select.ObjectData[0].ObjectLocalID = localID;
 
             Client.Network.SendPacket(select, simulator);
+            if (automaticDeselect)
+            {
+                DeselectObject(simulator, localID);
+            }
+        }
+
+        /// <summary>
+        /// Select a single object. This will trigger the simulator to send us back 
+        /// an ObjectProperties packet so we can get the full information for
+        /// this object
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        public void SelectObject(Simulator simulator, uint localID)
+        {
+            SelectObject(simulator, localID, true);
         }
 
         /// <summary>
@@ -450,7 +467,8 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>
         /// <param name="localIDs">An array which contains the IDs of the objects to select</param>
-        public void SelectObjects(Simulator simulator, uint[] localIDs)
+        /// <param name="automaticDeselect">Should objects be deselected immediately after selection</param>
+        public void SelectObjects(Simulator simulator, uint[] localIDs, bool automaticDeselect)
         {
             ObjectSelectPacket select = new ObjectSelectPacket();
 
@@ -466,7 +484,23 @@ namespace OpenMetaverse
             }
 
             Client.Network.SendPacket(select, simulator);
+            if (automaticDeselect)
+            {
+                DeselectObjects(simulator, localIDs);
+            }
         }
+
+        /// <summary>
+        /// Select multiple objects. This will trigger the simulator to send us
+        /// back ObjectProperties for each object
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>
+        /// <param name="localIDs">An array which contains the IDs of the objects to select</param>
+        public void SelectObjects(Simulator simulator, uint[] localIDs)
+        {
+            SelectObjects(simulator, localIDs, true);
+        }
+
 
         /// <summary>
         /// Sets and object's flags (physical, temporary, phantom, casts shadow)

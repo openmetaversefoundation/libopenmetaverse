@@ -37,8 +37,8 @@ namespace OpenMetaverse.GUI
     public class LocalChat : Panel
     {
         private GridClient _Client;
-        private RichTextBox _rtfOutput = new RichTextBox();
-        private TextBox _txtInput = new TextBox();
+        private RichTextBox rtfOutput = new RichTextBox();
+        private TextBox txtInput = new TextBox();
 
         /// <summary>
         /// Gets or sets the GridClient associated with this control
@@ -54,18 +54,18 @@ namespace OpenMetaverse.GUI
         /// </summary>
         public LocalChat()
         {
-            _rtfOutput.Anchor = AnchorStyles.Bottom | AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            _rtfOutput.BackColor = Color.FromKnownColor(KnownColor.Window);
-            _rtfOutput.Width = this.Width;
-            _rtfOutput.Height = this.Height - _txtInput.Height;
-            _rtfOutput.ReadOnly = true;
-            _rtfOutput.Top = 0;
-            _rtfOutput.Left = 0;           
+            rtfOutput.Anchor = AnchorStyles.Bottom | AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            rtfOutput.BackColor = Color.FromKnownColor(KnownColor.Window);
+            rtfOutput.Width = this.Width;
+            rtfOutput.Height = this.Height - txtInput.Height;
+            rtfOutput.ReadOnly = true;
+            rtfOutput.Top = 0;
+            rtfOutput.Left = 0;           
 
-            _txtInput.Dock = DockStyle.Bottom;
-            _txtInput.KeyDown += new KeyEventHandler(_txtInput_KeyDown);
+            txtInput.Dock = DockStyle.Bottom;
+            txtInput.KeyDown += new KeyEventHandler(txtInput_KeyDown);
 
-            this.Controls.AddRange(new Control[] { _txtInput, _rtfOutput });
+            this.Controls.AddRange(new Control[] { txtInput, rtfOutput });
         }
 
         /// <summary>
@@ -76,32 +76,40 @@ namespace OpenMetaverse.GUI
             _Client = client;
         }
 
-        private void InitializeClient(GridClient client)
-        {
-            _Client = client;
-            _Client.Self.OnChat += new AgentManager.ChatCallback(Self_OnChat);
-        }
-
+        /// <summary>
+        /// Adds text of a specified color to the display output
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="type"></param>
+        /// <param name="text"></param>
+        /// <param name="color"></param>
         public void LogChat(string name, ChatType type, string text, Color color)
         {
+            if (!this.IsHandleCreated) return;
+
             if (this.InvokeRequired)
             {
                 this.BeginInvoke((MethodInvoker)delegate { LogChat(name, type, text, color); });
             }
             else
             {
-                _rtfOutput.SelectionStart = _rtfOutput.Text.Length;
-                _rtfOutput.SelectionColor = color;
+                rtfOutput.SelectionStart = rtfOutput.Text.Length;
+                rtfOutput.SelectionColor = color;
                 DateTime now = DateTime.Now;
                 string volume;
                 if (type == ChatType.Shout) volume = " shouts";
                 else if (type == ChatType.Whisper) volume = " whispers";
                 else volume = string.Empty;
-                _rtfOutput.SelectedText = string.Format("{0}[{1}:{2}] {3}{4}: {5}", Environment.NewLine, now.Hour.ToString().PadLeft(2, '0'), now.Minute.ToString().PadLeft(2, '0'), name, volume, text);
-                _rtfOutput.ScrollToCaret();
+                rtfOutput.SelectedText = string.Format("{0}[{1}:{2}] {3}{4}: {5}", Environment.NewLine, now.Hour.ToString().PadLeft(2, '0'), now.Minute.ToString().PadLeft(2, '0'), name, volume, text);
+                rtfOutput.ScrollToCaret();
             }
         }
 
+        /// <summary>
+        /// Thread-safe method for adding text of a specified color to the display output
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="color"></param>
         public void LogText(string text, Color color)
         {
             if (this.InvokeRequired)
@@ -110,12 +118,18 @@ namespace OpenMetaverse.GUI
             }
             else
             {
-                _rtfOutput.SelectionStart = _rtfOutput.Text.Length;
-                _rtfOutput.SelectionColor = color;
+                rtfOutput.SelectionStart = rtfOutput.Text.Length;
+                rtfOutput.SelectionColor = color;
                 DateTime now = DateTime.Now;
-                _rtfOutput.SelectedText = string.Format("{0}[{1}:{2}] {3}", Environment.NewLine, now.Hour.ToString().PadLeft(2, '0'), now.Minute.ToString().PadLeft(2, '0'), text);
-                _rtfOutput.ScrollToCaret();
+                rtfOutput.SelectedText = string.Format("{0}[{1}:{2}] {3}", Environment.NewLine, now.Hour.ToString().PadLeft(2, '0'), now.Minute.ToString().PadLeft(2, '0'), text);
+                rtfOutput.ScrollToCaret();
             }
+        }
+
+        private void InitializeClient(GridClient client)
+        {
+            _Client = client;
+            _Client.Self.OnChat += new AgentManager.ChatCallback(Self_OnChat);
         }
 
         void Self_OnChat(string message, ChatAudibleLevel audible, ChatType type, ChatSourceType sourceType, string fromName, UUID id, UUID ownerid, Vector3 position)
@@ -129,13 +143,13 @@ namespace OpenMetaverse.GUI
             }
         }
 
-        void _txtInput_KeyDown(object sender, KeyEventArgs e)
+        void txtInput_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter && _txtInput.Text != string.Empty)
+            if (e.KeyCode == Keys.Enter && txtInput.Text != string.Empty)
             {
                 e.SuppressKeyPress = true;
-                _Client.Self.Chat(_txtInput.Text, 0, e.Control ? ChatType.Shout : ChatType.Normal);
-                _txtInput.Clear();
+                _Client.Self.Chat(txtInput.Text, 0, e.Control ? ChatType.Shout : ChatType.Normal);
+                txtInput.Clear();
             }
         }
     }

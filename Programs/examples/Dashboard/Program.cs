@@ -11,8 +11,12 @@ namespace Dashboard
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            if (args.Length > 2) Application.Run(new Dashboard(args[0], args[1], args[2]));
-            else MessageBox.Show("Usage: dashboard.exe <firstName> <lastName> <password>", "Dashboard", MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+
+            string firstName = args.Length > 0 ? args[0] : String.Empty;
+            string lastName = args.Length > 2 ? args[1] : String.Empty;
+            string password = args.Length > 2 ? args[2] : String.Empty;
+
+            Application.Run(new Dashboard(firstName, lastName, password));
         }
     }
 }

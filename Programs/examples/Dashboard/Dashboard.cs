@@ -13,6 +13,7 @@ namespace Dashboard
 
         GridClient Client;
         LoginParams ClientLogin;
+        bool ShuttingDown = false;
 
         /// <summary>
         /// Provides a full representation of OpenMetaverse.GUI
@@ -37,8 +38,12 @@ namespace Dashboard
 
             //login
             ClientLogin = Client.Network.DefaultLoginParams(firstName, lastName, password, "OpenMetaverse Dashboard", Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            loginPanel1.LoginParams = ClientLogin;
+
             ClientLogin.Start = "last";
-            Client.Network.BeginLogin(ClientLogin);
+            
+            if (firstName != String.Empty && lastName != String.Empty && password != String.Empty)
+                Client.Network.BeginLogin(ClientLogin);
         }
 
         private void InitializeClient(bool initialize)
@@ -55,8 +60,11 @@ namespace Dashboard
 
             //initialize client object
             Client = new GridClient();
-            Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
             Client.Settings.USE_TEXTURE_CACHE = true;
+
+            Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
+            Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
+            Client.Self.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
 
             //define the client object for each GUI element
             avatarList1.Client = Client;
@@ -64,42 +72,53 @@ namespace Dashboard
             groupList1.Client = Client;
             inventoryTree1.Client = Client;
             localChat1.Client = Client;
+            loginPanel1.Client = Client;
+            messageBar1.Client = Client;
             miniMap1.Client = Client;
             statusOutput1.Client = Client;
         }
 
-        private void Dashboard_FormClosing(object sender, FormClosingEventArgs e)
+        void Dashboard_FormClosing(object sender, FormClosingEventArgs e)
         {
+            ShuttingDown = true;
             InitializeClient(false);
             Environment.Exit(0);
         }
 
-        private void avatarList1_OnAvatarDoubleClick(TrackedAvatar trackedAvatar)
+        void avatarList1_OnAvatarDoubleClick(TrackedAvatar trackedAvatar)
         {
-            MessageBox.Show(trackedAvatar.Name + " = " + trackedAvatar.ID);
+            messageBar1.CreateSession(trackedAvatar.Name, trackedAvatar.ID, trackedAvatar.ID, true);
         }
 
-        private void friendsList1_OnFriendDoubleClick(FriendInfo friend)
+        void friendsList1_OnFriendDoubleClick(FriendInfo friend)
         {
-            MessageBox.Show(friend.Name + " = " + friend.UUID);
+            messageBar1.CreateSession(friend.Name, friend.UUID, friend.UUID, true);
         }
 
-        private void groupList1_OnGroupDoubleClick(Group group)
+        void groupList1_OnGroupDoubleClick(Group group)
         {
             MessageBox.Show(group.Name + " = " + group.ID);
         }
 
-        private void Network_OnLogin(LoginStatus login, string message)
+        void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
         {
-            if (login == LoginStatus.Failed)
+            Client.Appearance.SetPreviousAppearance(false);
+        }
+
+        void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        {
+            InitializeClient(!ShuttingDown);
+        }
+
+        void Self_OnInstantMessage(InstantMessage im, Simulator simulator)
+        {
+            if (im.Dialog == InstantMessageDialog.RequestTeleport)
             {
                 this.BeginInvoke((MethodInvoker)delegate
                 {
-                    if (MessageBox.Show(this, "Login failed. Try again?", this.Text, MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.Yes)
-                    {
-                        InitializeClient(true);
-                        Client.Network.BeginLogin(ClientLogin);
-                    }
+                    DialogResult result = MessageBox.Show(this, im.FromAgentName + " has offered you a teleport request:" + Environment.NewLine + im.Message, this.Text, MessageBoxButtons.YesNo);
+                    if (result == DialogResult.Yes)
+                        Client.Self.TeleportLureRespond(im.FromAgentID, true);
                 });
             }
         }

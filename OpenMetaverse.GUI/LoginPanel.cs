@@ -230,6 +230,8 @@ namespace OpenMetaverse.GUI
 
         private void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
         {
+            if (!this.IsHandleCreated) return;
+
             this.BeginInvoke((MethodInvoker)delegate
             {
                 btnLogin.Text = "Login";
@@ -261,6 +263,7 @@ namespace OpenMetaverse.GUI
 
                     if (MessageBox.Show(this, "Login failed. Try again?", "Login", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.Yes)
                     {
+                        btnLogin.Text = "Logout";
                         Client.Network.BeginLogin(_LoginParams);
                     }
                 });

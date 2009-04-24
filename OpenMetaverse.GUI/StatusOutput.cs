@@ -54,14 +54,14 @@ namespace OpenMetaverse.GUI
 
         public void LogText(string text, Color color)
         {
+            if (!this.IsHandleCreated) return;
+
             if (this.InvokeRequired)
             {
                 this.BeginInvoke((MethodInvoker)delegate { LogText(text, color); });
             }
             else
             {
-                if (!this.IsHandleCreated) return;
-
                 this.SelectionStart = this.Text.Length;
                 this.SelectionColor = color;
                 DateTime now = DateTime.Now;

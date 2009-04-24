@@ -1365,6 +1365,7 @@ namespace GridProxy
 
             for (int i = 0; i < packet.Header.AckList.Length; ++i)
             {
+                seperate.Packets[i] = new PacketAckPacket.PacketsBlock();
                 seperate.Packets[i].ID = packet.Header.AckList[i];
             }
 
