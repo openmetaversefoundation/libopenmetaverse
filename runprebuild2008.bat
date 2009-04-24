@@ -49,7 +49,7 @@ if(.%2)==(.runtests) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 if(.%3)==(.dist) echo echo ==== GENERATE DISTRIBUTION BEGIN ==== >> compile.bat
 if(.%3)==(.dist) echo makensis.exe /DPlatform=test docs\OpenMetaverse-installer.nsi >> compile.bat
 if(.%3)==(.dist) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
-if(.%3)==(.dist) echo 7za.exe a -tzip dist\openmetaverse-dist.zip @docs\distfiles.lst >> compile.bat
+if(.%3)==(.dist) echo 7z.exe a -tzip dist\openmetaverse-dist.zip @docs\distfiles.lst >> compile.bat
 if(.%3)==(.dist) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 
 echo :SUCCESS >> compile.bat
