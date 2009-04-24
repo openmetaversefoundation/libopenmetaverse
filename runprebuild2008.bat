@@ -37,7 +37,7 @@ if(.%1)==(.nant) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 if(.%3)==(.docs) echo echo ==== GENERATE DOCUMENTATION BEGIN ==== >> compile.bat
 if(.%2)==(.docs) echo SandCastleBuilderConsole.exe docs\OpenMetaverse-docs.shfb >> compile.bat
 if(.%2)==(.docs) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
-if(.%2)==(.docs) echo 7za.exe a -tzip docs\documentation.zip docs\trunk >> compile.bat
+if(.%2)==(.docs) echo 7z.exe a -tzip docs\documentation.zip docs\trunk >> compile.bat
 if(.%2)==(.docs) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 
 if(.%2)==(.runtests) echo echo ==== UNIT TESTS BEGIN ==== >> compile.bat
