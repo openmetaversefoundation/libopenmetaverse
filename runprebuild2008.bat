@@ -41,7 +41,7 @@ if(.%2)==(.docs) echo 7za.exe a -tzip docs\documentation.zip docs\trunk >> compi
 if(.%2)==(.docs) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 
 if(.%2)==(.runtests) echo echo ==== UNIT TESTS BEGIN ==== >> compile.bat
-if(.%2)==(.runtests) echo nunit-console bin\OpenMetaverse.Tests.dll /exclude:Network /nodots /labels >> compile.bat
+if(.%2)==(.runtests) echo nunit-console bin\OpenMetaverse.Tests.dll /exclude:Network /nodots /labels /xml:testresults.xml >> compile.bat
 
 if(.%2)==(.runtests) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 
