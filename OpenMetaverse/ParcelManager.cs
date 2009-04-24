@@ -1696,7 +1696,7 @@ namespace OpenMetaverse
             {
                 List<ParcelPrimOwners> primOwners = new List<ParcelPrimOwners>();
 
-                ParcelObjectOwnersMessage msg = (ParcelObjectOwnersMessage)message;
+                ParcelObjectOwnersReplyMessage msg = (ParcelObjectOwnersReplyMessage)message;
                 
                 for (int i = 0; i < msg.DataBlocks.Length; i++)
                 {

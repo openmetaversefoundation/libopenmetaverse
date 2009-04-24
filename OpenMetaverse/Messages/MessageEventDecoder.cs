@@ -51,7 +51,7 @@ namespace OpenMetaverse
             {
                 case "AgentGroupDataUpdate": message = new AgentGroupDataUpdateMessage(); break;
                 case "ParcelProperties": message = new ParcelPropertiesMessage(); break;
-                case "ParcelObjectOwnersReply": message = new ParcelObjectOwnersMessage(); break;
+                case "ParcelObjectOwnersReply": message = new ParcelObjectOwnersReplyMessage(); break;
                 case "TeleportFinish": message = new TeleportFinishMessage(); break;
                 case "EnableSimulator": message = new EnableSimulatorMessage(); break;
                 case "ParcelPropertiesUpdate": message = new ParcelPropertiesUpdateMessage(); break;

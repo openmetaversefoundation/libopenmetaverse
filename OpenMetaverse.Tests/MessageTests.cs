@@ -150,28 +150,28 @@ namespace OpenMetaverse.Tests
         [Test]
         public void ParcelObjectOwnersMessage()
         {
-            ParcelObjectOwnersMessage s = new ParcelObjectOwnersMessage();
-            s.DataBlocks = new ParcelObjectOwnersMessage.PrimOwners[2];
+            ParcelObjectOwnersReplyMessage s = new ParcelObjectOwnersReplyMessage();
+            s.DataBlocks = new ParcelObjectOwnersReplyMessage.PrimOwners[2];
 
-            ParcelObjectOwnersMessage.PrimOwners obj = new ParcelObjectOwnersMessage.PrimOwners();
+            ParcelObjectOwnersReplyMessage.PrimOwners obj = new ParcelObjectOwnersReplyMessage.PrimOwners();
             obj.OwnerID = UUID.Random();
             obj.Count = 10;
             obj.IsGroupOwned = true;
             obj.OnlineStatus = false;
-            obj.TimeStamp = DateTime.UtcNow;
+            obj.TimeStamp = new DateTime(2010, 4, 13, 7, 19, 43);
             s.DataBlocks[0] = obj;
 
-            ParcelObjectOwnersMessage.PrimOwners obj1 = new ParcelObjectOwnersMessage.PrimOwners();
+            ParcelObjectOwnersReplyMessage.PrimOwners obj1 = new ParcelObjectOwnersReplyMessage.PrimOwners();
             obj1.OwnerID = UUID.Random();
             obj1.Count = 0;
             obj1.IsGroupOwned = false;
             obj1.OnlineStatus = false;
-            obj1.TimeStamp = DateTime.UtcNow;
+            obj1.TimeStamp = new DateTime(1991, 1, 31, 3, 13, 31);
             s.DataBlocks[1] = obj1;
 
             OSDMap map = s.Serialize();
 
-            ParcelObjectOwnersMessage t = new ParcelObjectOwnersMessage();
+            ParcelObjectOwnersReplyMessage t = new ParcelObjectOwnersReplyMessage();
             t.Deserialize(map);
 
             for (int i = 0; i < t.DataBlocks.Length; i++)

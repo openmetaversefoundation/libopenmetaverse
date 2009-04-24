@@ -373,7 +373,7 @@ namespace OpenMetaverse.Messages.Linden
     /// If agent does not have proper permission OR there are no primitives on parcel
     /// the DataBlocksExtended map will not be sent from the simulator
     /// </remarks>
-    public class ParcelObjectOwnersMessage : IMessage
+    public class ParcelObjectOwnersReplyMessage : IMessage
     {
         /// <summary>
         /// Prim ownership information for a specified owner on a single parcel
@@ -472,7 +472,7 @@ namespace OpenMetaverse.Messages.Linden
                 if (dataExtendedArray.Count == dataArray.Count)
                 {
                     OSDMap dataExtendedMap = (OSDMap)dataExtendedArray[i];
-                    block.TimeStamp = dataExtendedMap["TimeStamp"].AsDate();
+                    block.TimeStamp = Utils.UnixTimeToDateTime(dataExtendedMap["TimeStamp"].AsUInteger());
                 }
 
                 DataBlocks[i] = block;
@@ -634,7 +634,8 @@ namespace OpenMetaverse.Messages.Linden
             parcelDataMap["ClaimDate"] = OSD.FromDate(ClaimDate);
             parcelDataMap["ClaimPrice"] = OSD.FromInteger(ClaimPrice);
             parcelDataMap["Desc"] = OSD.FromString(Desc);
-            parcelDataMap["ParcelFlags"] = OSD.FromLong((long)ParcelFlags); // verify this!
+            //parcelDataMap["ParcelFlags"] = OSD.FromLong((long)ParcelFlags); // verify this!
+            parcelDataMap["ParcelFlags"] = OSD.FromUInteger((uint)ParcelFlags);
             parcelDataMap["GroupID"] = OSD.FromUUID(GroupID);
             parcelDataMap["GroupPrims"] = OSD.FromInteger(GroupPrims);
             parcelDataMap["IsGroupOwned"] = OSD.FromBoolean(IsGroupOwned);
@@ -719,9 +720,8 @@ namespace OpenMetaverse.Messages.Linden
             }
             else
             {
-                ParcelFlags = (ParcelFlags)parcelDataMap["ParcelFlags"].AsUInteger(); // verify this!
+                ParcelFlags = (ParcelFlags)parcelDataMap["ParcelFlags"].AsUInteger();
             }
-
             GroupID = parcelDataMap["GroupID"].AsUUID();
             GroupPrims = parcelDataMap["GroupPrims"].AsInteger();
             IsGroupOwned = parcelDataMap["IsGroupOwned"].AsBoolean();
@@ -820,7 +820,7 @@ namespace OpenMetaverse.Messages.Linden
             Name = map["name"].AsString();
             ObscureMedia = map["obscure_media"].AsBoolean();
             ObscureMusic = map["obscure_music"].AsBoolean();
-            ParcelFlags = (ParcelFlags)map["parcel_flags"].AsInteger();
+            ParcelFlags = (ParcelFlags)map["parcel_flags"].AsUInteger();
             PassHours = (float)map["pass_hours"].AsReal();
             PassPrice = map["pass_price"].AsUInteger();
             SalePrice = map["sale_price"].AsUInteger();
@@ -851,8 +851,7 @@ namespace OpenMetaverse.Messages.Linden
             map["name"] = OSD.FromString(Name);
             map["obscure_media"] = OSD.FromBoolean(ObscureMedia);
             map["obscure_music"] = OSD.FromBoolean(ObscureMusic);
-            // is this endian correct?
-            map["parcel_flags"] = OSD.FromInteger((int)ParcelFlags);
+            map["parcel_flags"] = OSD.FromUInteger((uint)ParcelFlags);
             map["pass_hours"] = OSD.FromReal(PassHours);
             map["pass_price"] = OSD.FromInteger(PassPrice);
             map["sale_price"] = OSD.FromInteger(SalePrice);
@@ -1837,7 +1836,7 @@ namespace OpenMetaverse.Messages.Linden
             agentMap["regions_visited"] = OSD.FromInteger(RegionsVisited);
             agentMap["run_time"] = OSD.FromReal(AgentRuntime);
             agentMap["sim_fps"] = OSD.FromReal(SimulatorFPS);
-            agentMap["start_time"] = OSD.FromDate(AgentStartTime);
+            agentMap["start_time"] = OSD.FromUInteger(Utils.DateTimeToUnixTime(AgentStartTime));
             agentMap["version"] = OSD.FromString(AgentVersion);
             map["agent"] = agentMap;
 
@@ -1918,7 +1917,7 @@ namespace OpenMetaverse.Messages.Linden
             RegionsVisited = agentMap["regions_visited"].AsInteger();
             AgentRuntime = (float)agentMap["run_time"].AsReal();
             SimulatorFPS = (float)agentMap["sim_fps"].AsReal();
-            AgentStartTime = Utils.UnixTimeToDateTime((uint)agentMap["start_time"].AsReal());
+            AgentStartTime = Utils.UnixTimeToDateTime(agentMap["start_time"].AsUInteger());
             AgentVersion = agentMap["version"].AsString();
 
             OSDMap downloadsMap = (OSDMap)map["downloads"];
