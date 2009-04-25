@@ -40,6 +40,13 @@
             this.textBoxProxyListenIP = new System.Windows.Forms.TextBox();
             this.panelMainWindow = new System.Windows.Forms.Panel();
             this.splitContainerSessionsTabs = new System.Windows.Forms.SplitContainer();
+            this.listViewSessions = new WinGridProxy.ListViewNoFlicker();
+            this.columnHeaderCounter = new System.Windows.Forms.ColumnHeader();
+            this.columnHeaderProtocol = new System.Windows.Forms.ColumnHeader();
+            this.columnHeaderType = new System.Windows.Forms.ColumnHeader();
+            this.columnHeaderSize = new System.Windows.Forms.ColumnHeader();
+            this.columnHeaderUrl = new System.Windows.Forms.ColumnHeader();
+            this.columnHeaderContentType = new System.Windows.Forms.ColumnHeader();
             this.contextMenuStripSessions = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItemAutoScroll = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
@@ -93,8 +100,14 @@
             this.splitContainerFilters = new System.Windows.Forms.SplitContainer();
             this.checkBoxCheckAllPackets = new System.Windows.Forms.CheckBox();
             this.grpUDPFilters = new System.Windows.Forms.GroupBox();
+            this.listViewPacketFilters = new WinGridProxy.ListViewNoFlicker();
+            this.columnHeaderPacketName = new System.Windows.Forms.ColumnHeader();
+            this.columnHeaderPacketType = new System.Windows.Forms.ColumnHeader();
             this.checkBoxCheckAllMessages = new System.Windows.Forms.CheckBox();
             this.grpCapsFilters = new System.Windows.Forms.GroupBox();
+            this.listViewMessageFilters = new WinGridProxy.ListViewNoFlicker();
+            this.columnHeaderName = new System.Windows.Forms.ColumnHeader();
+            this.columnHeaderMessageType = new System.Windows.Forms.ColumnHeader();
             this.tabPageInspect = new System.Windows.Forms.TabPage();
             this.splitContainerInspectorTab = new System.Windows.Forms.SplitContainer();
             this.tabControlInspectorRequest = new System.Windows.Forms.TabControl();
@@ -210,19 +223,6 @@
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.autoColorizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
-            this.listViewSessions = new WinGridProxy.ListViewNoFlicker();
-            this.columnHeaderCounter = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderProtocol = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderType = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderSize = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderUrl = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderContentType = new System.Windows.Forms.ColumnHeader();
-            this.listViewPacketFilters = new WinGridProxy.ListViewNoFlicker();
-            this.columnHeaderPacketName = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderPacketType = new System.Windows.Forms.ColumnHeader();
-            this.listViewMessageFilters = new WinGridProxy.ListViewNoFlicker();
-            this.columnHeaderName = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderMessageType = new System.Windows.Forms.ColumnHeader();
             this.panelProxyConfig.SuspendLayout();
             this.panelMainWindow.SuspendLayout();
             this.splitContainerSessionsTabs.Panel1.SuspendLayout();
@@ -375,9 +375,62 @@
             // 
             this.splitContainerSessionsTabs.Panel2.Controls.Add(this.tabControl1);
             this.splitContainerSessionsTabs.Size = new System.Drawing.Size(1087, 428);
-            this.splitContainerSessionsTabs.SplitterDistance = 470;
+            this.splitContainerSessionsTabs.SplitterDistance = 469;
             this.splitContainerSessionsTabs.SplitterWidth = 5;
             this.splitContainerSessionsTabs.TabIndex = 0;
+            // 
+            // listViewSessions
+            // 
+            this.listViewSessions.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeaderCounter,
+            this.columnHeaderProtocol,
+            this.columnHeaderType,
+            this.columnHeaderSize,
+            this.columnHeaderUrl,
+            this.columnHeaderContentType});
+            this.listViewSessions.ContextMenuStrip = this.contextMenuStripSessions;
+            this.listViewSessions.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listViewSessions.FullRowSelect = true;
+            this.listViewSessions.GridLines = true;
+            this.listViewSessions.HideSelection = false;
+            this.listViewSessions.Location = new System.Drawing.Point(0, 0);
+            this.listViewSessions.Name = "listViewSessions";
+            this.listViewSessions.Size = new System.Drawing.Size(469, 428);
+            this.listViewSessions.SmallImageList = this.imageList1;
+            this.listViewSessions.TabIndex = 0;
+            this.listViewSessions.UseCompatibleStateImageBehavior = false;
+            this.listViewSessions.View = System.Windows.Forms.View.Details;
+            this.listViewSessions.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewSessions_ItemSelectionChanged);
+            // 
+            // columnHeaderCounter
+            // 
+            this.columnHeaderCounter.Text = "#";
+            this.columnHeaderCounter.Width = 54;
+            // 
+            // columnHeaderProtocol
+            // 
+            this.columnHeaderProtocol.Text = "Protocol";
+            this.columnHeaderProtocol.Width = 59;
+            // 
+            // columnHeaderType
+            // 
+            this.columnHeaderType.Text = "Packet Type";
+            this.columnHeaderType.Width = 151;
+            // 
+            // columnHeaderSize
+            // 
+            this.columnHeaderSize.Text = "Bytes";
+            this.columnHeaderSize.Width = 64;
+            // 
+            // columnHeaderUrl
+            // 
+            this.columnHeaderUrl.Text = "Host/Address";
+            this.columnHeaderUrl.Width = 312;
+            // 
+            // columnHeaderContentType
+            // 
+            this.columnHeaderContentType.Text = "Content Type";
+            this.columnHeaderContentType.Width = 250;
             // 
             // contextMenuStripSessions
             // 
@@ -393,7 +446,7 @@
             this.toolStripSeparator16,
             this.findToolStripMenuItem1});
             this.contextMenuStripSessions.Name = "contextMenuStripSessions";
-            this.contextMenuStripSessions.Size = new System.Drawing.Size(180, 160);
+            this.contextMenuStripSessions.Size = new System.Drawing.Size(180, 182);
             this.contextMenuStripSessions.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStripSessions_Opening);
             // 
             // toolStripMenuItemAutoScroll
@@ -634,7 +687,7 @@
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.Padding = new System.Drawing.Point(10, 6);
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(612, 428);
+            this.tabControl1.Size = new System.Drawing.Size(613, 428);
             this.tabControl1.TabIndex = 0;
             // 
             // tabPageSummary
@@ -643,14 +696,16 @@
             this.tabPageSummary.Location = new System.Drawing.Point(4, 28);
             this.tabPageSummary.Name = "tabPageSummary";
             this.tabPageSummary.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageSummary.Size = new System.Drawing.Size(604, 396);
+            this.tabPageSummary.Size = new System.Drawing.Size(605, 396);
             this.tabPageSummary.TabIndex = 0;
             this.tabPageSummary.Text = "Summary";
             this.tabPageSummary.UseVisualStyleBackColor = true;
             // 
             // panelStats
             // 
-            this.panelStats.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelStats.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
             this.panelStats.Controls.Add(this.groupBox2);
             this.panelStats.Controls.Add(this.groupBox1);
             this.panelStats.Location = new System.Drawing.Point(6, 6);
@@ -660,7 +715,6 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.groupBox2.Controls.Add(this.labelPacketsTotal);
             this.groupBox2.Controls.Add(this.label1PacketsOut);
             this.groupBox2.Controls.Add(this.labelPacketsIn);
@@ -730,7 +784,7 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.labelCapsTotal);
             this.groupBox1.Controls.Add(this.labelCapsOut);
             this.groupBox1.Controls.Add(this.labelCapsIn);
@@ -804,7 +858,7 @@
             this.tabPageFilters.Location = new System.Drawing.Point(4, 28);
             this.tabPageFilters.Name = "tabPageFilters";
             this.tabPageFilters.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageFilters.Size = new System.Drawing.Size(604, 396);
+            this.tabPageFilters.Size = new System.Drawing.Size(605, 396);
             this.tabPageFilters.TabIndex = 1;
             this.tabPageFilters.Text = "Filters";
             this.tabPageFilters.UseVisualStyleBackColor = true;
@@ -824,7 +878,7 @@
             // 
             this.splitContainerFilters.Panel2.Controls.Add(this.checkBoxCheckAllMessages);
             this.splitContainerFilters.Panel2.Controls.Add(this.grpCapsFilters);
-            this.splitContainerFilters.Size = new System.Drawing.Size(598, 390);
+            this.splitContainerFilters.Size = new System.Drawing.Size(599, 390);
             this.splitContainerFilters.SplitterDistance = 299;
             this.splitContainerFilters.SplitterWidth = 5;
             this.splitContainerFilters.TabIndex = 0;
@@ -857,6 +911,35 @@
             this.grpUDPFilters.TabStop = false;
             this.grpUDPFilters.Text = "UDP Packets";
             // 
+            // listViewPacketFilters
+            // 
+            this.listViewPacketFilters.CheckBoxes = true;
+            this.listViewPacketFilters.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeaderPacketName,
+            this.columnHeaderPacketType});
+            this.listViewPacketFilters.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listViewPacketFilters.FullRowSelect = true;
+            this.listViewPacketFilters.GridLines = true;
+            this.listViewPacketFilters.Location = new System.Drawing.Point(3, 16);
+            this.listViewPacketFilters.MultiSelect = false;
+            this.listViewPacketFilters.Name = "listViewPacketFilters";
+            this.listViewPacketFilters.Size = new System.Drawing.Size(287, 338);
+            this.listViewPacketFilters.Sorting = System.Windows.Forms.SortOrder.Ascending;
+            this.listViewPacketFilters.TabIndex = 0;
+            this.listViewPacketFilters.UseCompatibleStateImageBehavior = false;
+            this.listViewPacketFilters.View = System.Windows.Forms.View.Details;
+            this.listViewPacketFilters.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listViewPacketFilters_ItemChecked);
+            this.listViewPacketFilters.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewFilterSorter_ColumnClick);
+            // 
+            // columnHeaderPacketName
+            // 
+            this.columnHeaderPacketName.Text = "Packet Name";
+            this.columnHeaderPacketName.Width = 215;
+            // 
+            // columnHeaderPacketType
+            // 
+            this.columnHeaderPacketType.Text = "Type";
+            // 
             // checkBoxCheckAllMessages
             // 
             this.checkBoxCheckAllMessages.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
@@ -880,17 +963,47 @@
             this.grpCapsFilters.Enabled = false;
             this.grpCapsFilters.Location = new System.Drawing.Point(3, 3);
             this.grpCapsFilters.Name = "grpCapsFilters";
-            this.grpCapsFilters.Size = new System.Drawing.Size(288, 357);
+            this.grpCapsFilters.Size = new System.Drawing.Size(289, 357);
             this.grpCapsFilters.TabIndex = 1;
             this.grpCapsFilters.TabStop = false;
             this.grpCapsFilters.Text = "Capabilities Messages";
+            // 
+            // listViewMessageFilters
+            // 
+            this.listViewMessageFilters.CheckBoxes = true;
+            this.listViewMessageFilters.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeaderName,
+            this.columnHeaderMessageType});
+            this.listViewMessageFilters.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listViewMessageFilters.FullRowSelect = true;
+            this.listViewMessageFilters.GridLines = true;
+            this.listViewMessageFilters.Location = new System.Drawing.Point(3, 16);
+            this.listViewMessageFilters.MultiSelect = false;
+            this.listViewMessageFilters.Name = "listViewMessageFilters";
+            this.listViewMessageFilters.Size = new System.Drawing.Size(283, 338);
+            this.listViewMessageFilters.Sorting = System.Windows.Forms.SortOrder.Ascending;
+            this.listViewMessageFilters.TabIndex = 1;
+            this.listViewMessageFilters.UseCompatibleStateImageBehavior = false;
+            this.listViewMessageFilters.View = System.Windows.Forms.View.Details;
+            this.listViewMessageFilters.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listViewMessageFilters_ItemChecked);
+            this.listViewMessageFilters.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewFilterSorter_ColumnClick);
+            // 
+            // columnHeaderName
+            // 
+            this.columnHeaderName.Text = "Message Name";
+            this.columnHeaderName.Width = 181;
+            // 
+            // columnHeaderMessageType
+            // 
+            this.columnHeaderMessageType.Text = "Type";
+            this.columnHeaderMessageType.Width = 92;
             // 
             // tabPageInspect
             // 
             this.tabPageInspect.Controls.Add(this.splitContainerInspectorTab);
             this.tabPageInspect.Location = new System.Drawing.Point(4, 28);
             this.tabPageInspect.Name = "tabPageInspect";
-            this.tabPageInspect.Size = new System.Drawing.Size(604, 396);
+            this.tabPageInspect.Size = new System.Drawing.Size(605, 396);
             this.tabPageInspect.TabIndex = 3;
             this.tabPageInspect.Text = "Inspector";
             this.tabPageInspect.UseVisualStyleBackColor = true;
@@ -912,7 +1025,7 @@
             // splitContainerInspectorTab.Panel2
             // 
             this.splitContainerInspectorTab.Panel2.Controls.Add(this.tabControlInspectorResponse);
-            this.splitContainerInspectorTab.Size = new System.Drawing.Size(604, 396);
+            this.splitContainerInspectorTab.Size = new System.Drawing.Size(605, 396);
             this.splitContainerInspectorTab.SplitterDistance = 179;
             this.splitContainerInspectorTab.SplitterWidth = 5;
             this.splitContainerInspectorTab.TabIndex = 1;
@@ -930,7 +1043,7 @@
             this.tabControlInspectorRequest.Location = new System.Drawing.Point(0, 0);
             this.tabControlInspectorRequest.Name = "tabControlInspectorRequest";
             this.tabControlInspectorRequest.SelectedIndex = 0;
-            this.tabControlInspectorRequest.Size = new System.Drawing.Size(604, 179);
+            this.tabControlInspectorRequest.Size = new System.Drawing.Size(605, 179);
             this.tabControlInspectorRequest.TabIndex = 0;
             // 
             // tabPageDecodedRequest
@@ -940,7 +1053,7 @@
             this.tabPageDecodedRequest.Location = new System.Drawing.Point(4, 26);
             this.tabPageDecodedRequest.Name = "tabPageDecodedRequest";
             this.tabPageDecodedRequest.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageDecodedRequest.Size = new System.Drawing.Size(596, 149);
+            this.tabPageDecodedRequest.Size = new System.Drawing.Size(597, 149);
             this.tabPageDecodedRequest.TabIndex = 4;
             this.tabPageDecodedRequest.Text = "Request";
             this.tabPageDecodedRequest.UseVisualStyleBackColor = true;
@@ -952,7 +1065,7 @@
             this.richTextBoxDecodedRequest.Location = new System.Drawing.Point(3, 3);
             this.richTextBoxDecodedRequest.Name = "richTextBoxDecodedRequest";
             this.richTextBoxDecodedRequest.ShowSelectionMargin = true;
-            this.richTextBoxDecodedRequest.Size = new System.Drawing.Size(590, 143);
+            this.richTextBoxDecodedRequest.Size = new System.Drawing.Size(591, 143);
             this.richTextBoxDecodedRequest.TabIndex = 0;
             this.richTextBoxDecodedRequest.Text = "";
             // 
@@ -1082,7 +1195,7 @@
             this.tabControlInspectorResponse.Multiline = true;
             this.tabControlInspectorResponse.Name = "tabControlInspectorResponse";
             this.tabControlInspectorResponse.SelectedIndex = 0;
-            this.tabControlInspectorResponse.Size = new System.Drawing.Size(604, 212);
+            this.tabControlInspectorResponse.Size = new System.Drawing.Size(605, 212);
             this.tabControlInspectorResponse.TabIndex = 0;
             // 
             // tabPageDecodeResponse
@@ -1092,7 +1205,7 @@
             this.tabPageDecodeResponse.Location = new System.Drawing.Point(4, 26);
             this.tabPageDecodeResponse.Name = "tabPageDecodeResponse";
             this.tabPageDecodeResponse.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageDecodeResponse.Size = new System.Drawing.Size(596, 182);
+            this.tabPageDecodeResponse.Size = new System.Drawing.Size(597, 182);
             this.tabPageDecodeResponse.TabIndex = 6;
             this.tabPageDecodeResponse.Text = "Response";
             this.tabPageDecodeResponse.UseVisualStyleBackColor = true;
@@ -1104,7 +1217,7 @@
             this.richTextBoxDecodedResponse.Location = new System.Drawing.Point(3, 3);
             this.richTextBoxDecodedResponse.Name = "richTextBoxDecodedResponse";
             this.richTextBoxDecodedResponse.ShowSelectionMargin = true;
-            this.richTextBoxDecodedResponse.Size = new System.Drawing.Size(590, 176);
+            this.richTextBoxDecodedResponse.Size = new System.Drawing.Size(591, 176);
             this.richTextBoxDecodedResponse.TabIndex = 0;
             this.richTextBoxDecodedResponse.Text = "";
             // 
@@ -1230,7 +1343,7 @@
             this.tabPageInject.Location = new System.Drawing.Point(4, 28);
             this.tabPageInject.Name = "tabPageInject";
             this.tabPageInject.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageInject.Size = new System.Drawing.Size(604, 396);
+            this.tabPageInject.Size = new System.Drawing.Size(605, 396);
             this.tabPageInject.TabIndex = 2;
             this.tabPageInject.Text = "Inject";
             this.tabPageInject.UseVisualStyleBackColor = true;
@@ -1916,118 +2029,6 @@
             this.autoColorizeToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
             this.autoColorizeToolStripMenuItem.Text = "Auto Colorize";
             this.autoColorizeToolStripMenuItem.Click += new System.EventHandler(this.autoColorizeToolStripMenuItem_Click);
-            // 
-            // listViewSessions
-            // 
-            this.listViewSessions.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeaderCounter,
-            this.columnHeaderProtocol,
-            this.columnHeaderType,
-            this.columnHeaderSize,
-            this.columnHeaderUrl,
-            this.columnHeaderContentType});
-            this.listViewSessions.ContextMenuStrip = this.contextMenuStripSessions;
-            this.listViewSessions.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listViewSessions.FullRowSelect = true;
-            this.listViewSessions.GridLines = true;
-            this.listViewSessions.HideSelection = false;
-            this.listViewSessions.Location = new System.Drawing.Point(0, 0);
-            this.listViewSessions.Name = "listViewSessions";
-            this.listViewSessions.Size = new System.Drawing.Size(470, 428);
-            this.listViewSessions.SmallImageList = this.imageList1;
-            this.listViewSessions.TabIndex = 0;
-            this.listViewSessions.UseCompatibleStateImageBehavior = false;
-            this.listViewSessions.View = System.Windows.Forms.View.Details;
-            this.listViewSessions.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewSessions_ItemSelectionChanged);
-            // 
-            // columnHeaderCounter
-            // 
-            this.columnHeaderCounter.Text = "#";
-            this.columnHeaderCounter.Width = 54;
-            // 
-            // columnHeaderProtocol
-            // 
-            this.columnHeaderProtocol.Text = "Protocol";
-            this.columnHeaderProtocol.Width = 59;
-            // 
-            // columnHeaderType
-            // 
-            this.columnHeaderType.Text = "Packet Type";
-            this.columnHeaderType.Width = 151;
-            // 
-            // columnHeaderSize
-            // 
-            this.columnHeaderSize.Text = "Bytes";
-            this.columnHeaderSize.Width = 64;
-            // 
-            // columnHeaderUrl
-            // 
-            this.columnHeaderUrl.Text = "Host/Address";
-            this.columnHeaderUrl.Width = 312;
-            // 
-            // columnHeaderContentType
-            // 
-            this.columnHeaderContentType.Text = "Content Type";
-            this.columnHeaderContentType.Width = 250;
-            // 
-            // listViewPacketFilters
-            // 
-            this.listViewPacketFilters.CheckBoxes = true;
-            this.listViewPacketFilters.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeaderPacketName,
-            this.columnHeaderPacketType});
-            this.listViewPacketFilters.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listViewPacketFilters.FullRowSelect = true;
-            this.listViewPacketFilters.GridLines = true;
-            this.listViewPacketFilters.Location = new System.Drawing.Point(3, 16);
-            this.listViewPacketFilters.MultiSelect = false;
-            this.listViewPacketFilters.Name = "listViewPacketFilters";
-            this.listViewPacketFilters.Size = new System.Drawing.Size(287, 338);
-            this.listViewPacketFilters.Sorting = System.Windows.Forms.SortOrder.Ascending;
-            this.listViewPacketFilters.TabIndex = 0;
-            this.listViewPacketFilters.UseCompatibleStateImageBehavior = false;
-            this.listViewPacketFilters.View = System.Windows.Forms.View.Details;
-            this.listViewPacketFilters.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listViewPacketFilters_ItemChecked);
-            this.listViewPacketFilters.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewFilterSorter_ColumnClick);
-            // 
-            // columnHeaderPacketName
-            // 
-            this.columnHeaderPacketName.Text = "Packet Name";
-            this.columnHeaderPacketName.Width = 215;
-            // 
-            // columnHeaderPacketType
-            // 
-            this.columnHeaderPacketType.Text = "Type";
-            // 
-            // listViewMessageFilters
-            // 
-            this.listViewMessageFilters.CheckBoxes = true;
-            this.listViewMessageFilters.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeaderName,
-            this.columnHeaderMessageType});
-            this.listViewMessageFilters.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listViewMessageFilters.FullRowSelect = true;
-            this.listViewMessageFilters.GridLines = true;
-            this.listViewMessageFilters.Location = new System.Drawing.Point(3, 16);
-            this.listViewMessageFilters.MultiSelect = false;
-            this.listViewMessageFilters.Name = "listViewMessageFilters";
-            this.listViewMessageFilters.Size = new System.Drawing.Size(282, 338);
-            this.listViewMessageFilters.Sorting = System.Windows.Forms.SortOrder.Ascending;
-            this.listViewMessageFilters.TabIndex = 1;
-            this.listViewMessageFilters.UseCompatibleStateImageBehavior = false;
-            this.listViewMessageFilters.View = System.Windows.Forms.View.Details;
-            this.listViewMessageFilters.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listViewMessageFilters_ItemChecked);
-            this.listViewMessageFilters.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewFilterSorter_ColumnClick);
-            // 
-            // columnHeaderName
-            // 
-            this.columnHeaderName.Text = "Message Name";
-            this.columnHeaderName.Width = 181;
-            // 
-            // columnHeaderMessageType
-            // 
-            this.columnHeaderMessageType.Text = "Type";
-            this.columnHeaderMessageType.Width = 92;
             // 
             // FormWinGridProxy
             // 

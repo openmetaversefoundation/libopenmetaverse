@@ -26,9 +26,12 @@
         <namespaceSummaryItem name="OpenJPEGNet" isDocumented="True">Image Encoding/Decoding</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse" isDocumented="True">The OpenMetaverse library primary namespace</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.Capabilities" isDocumented="True">Capabilities is a method of transferring data between the client and Simulator, The Caps Client and EventQueue classes are contained within this namespace.</namespaceSummaryItem>
-        <namespaceSummaryItem name="OpenMetaverse.GUI" isDocumented="True">GUI Abstraction Layer for using the library in a winforms based application</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.GUI" isDocumented="True">Common GUI Components for WinForms applications</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.Http" isDocumented="True">Contains capabilities client/server related classes</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.Imaging" isDocumented="True">Classes for dealing with images (Textures), including encoding/decoding and our wrapper class for OpenJpeg</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Interfaces" isDocumented="True">Common Interfaces used throughout the library</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Messages" isDocumented="True">Message System classes and Utilities. Allows conversion to and from Strongly typed objects to OSD</namespaceSummaryItem>
+        <namespaceSummaryItem name="OpenMetaverse.Messages.CableBeach" isDocumented="True" />
         <namespaceSummaryItem name="OpenMetaverse.Messages.Linden" isDocumented="True">The OpenMetaverse Messaging system containing a set of classes specifc to Linden simulators for converting to/from OSD into/from strongly typed classes.</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.Messages.Simian" isDocumented="True">The OpenMetaverse Messaging system containing a set of classes specifc to Simian simulators for converting to/from OSD into/from strongly typed classes</namespaceSummaryItem>
         <namespaceSummaryItem name="OpenMetaverse.Packets" isDocumented="True">Packet information classes for UDP</namespaceSummaryItem>
@@ -60,7 +63,7 @@ The OpenMetaverse project is an effort directed at understanding how Second Life
     &lt;li&gt; This research and documentation is protected under the exceptions granted in the Second Life Terms of Service section 4.1 and DMCA section 1201(f), and is formally endorsed by Linden Labs. &lt;/li&gt;
 &lt;/ul&gt;</ProjectSummary>
     <MissingTags>Summary, Parameter, Returns, AutoDocumentCtors, Namespace, TypeParameter</MissingTags>
-    <VisibleItems>InheritedMembers, InheritedFrameworkMembers, Protected, SealedProtected</VisibleItems>
+    <VisibleItems>Protected, SealedProtected</VisibleItems>
     <HtmlHelp1xCompilerPath path="" />
     <HtmlHelp2xCompilerPath path="" />
     <OutputPath>.\trunk\</OutputPath>
@@ -72,8 +75,8 @@ The OpenMetaverse project is an effort directed at understanding how Second Life
     <HelpFileFormat>Help1xAndWebsite</HelpFileFormat>
     <CppCommentsFixup>False</CppCommentsFixup>
     <FrameworkVersion>2.0.50727</FrameworkVersion>
-    <IndentHtml>True</IndentHtml>
-    <Preliminary>False</Preliminary>
+    <IndentHtml>False</IndentHtml>
+    <Preliminary>True</Preliminary>
     <RootNamespaceContainer>False</RootNamespaceContainer>
     <RootNamespaceTitle />
     <HelpTitle>OpenMetaverse Library API Documentation</HelpTitle>
@@ -88,7 +91,7 @@ The OpenMetaverse project is an effort directed at understanding how Second Life
     <ProjectLinkType>Local</ProjectLinkType>
     <SdkLinkType>Msdn</SdkLinkType>
     <SdkLinkTarget>Blank</SdkLinkTarget>
-    <PresentationStyle>Prototype</PresentationStyle>
+    <PresentationStyle>hana</PresentationStyle>
     <NamingMethod>MemberName</NamingMethod>
     <SyntaxFilters>Standard</SyntaxFilters>
     <ShowFeedbackControl>False</ShowFeedbackControl>

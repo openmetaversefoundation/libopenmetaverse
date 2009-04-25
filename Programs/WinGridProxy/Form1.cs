@@ -179,6 +179,7 @@ namespace WinGridProxy
                 ListViewItem session = new ListViewItem(new string[] { PacketCounter.ToString(), "HTTPS", loginType, request.ToString().Length.ToString(), comboBoxLoginURL.Text, "xml-rpc"});
                 session.Tag = request;
                 session.ImageIndex = (request is XmlRpcRequest) ? 1 : 0;
+
                 listViewSessions.Items.Add(session);
             }
         }
@@ -661,11 +662,9 @@ namespace WinGridProxy
                 enableDisableFilterByNameToolStripMenuItem.Text = String.Format("Capture {0} {1}", listViewSessions.FocusedItem.SubItems[2].Text, strPacketOrMessage);
                 toolStripMenuItemSelectPacketName.Tag = enableDisableFilterByNameToolStripMenuItem.Tag = listViewSessions.FocusedItem.SubItems[2].Text;
 
+
                 toolStripMenuItemSelectPacketName.Text = String.Format("All {0} {1}", listViewSessions.FocusedItem.SubItems[2].Text, strPacketOrMessage);
 
-                //                toolStripMenuItemSelectProtocol.Text = String.Format("All {0} {1}", listViewSessions.FocusedItem.SubItems[1].Text, strPacketOrMessage);
-
-                //              toolStripMenuItemSelectProtocol.Visible = 
                 enableDisableFilterByNameToolStripMenuItem.Visible =
                 toolStripSeparatorSelectPacketProto.Visible =
                 toolStripSeparatorFilterPacketByName.Visible =
@@ -813,7 +812,19 @@ namespace WinGridProxy
                         session["packet"] = OSD.FromString(item.SubItems[2].Text);
                         session["size"] = OSD.FromString(item.SubItems[3].Text);
                         session["host"] = OSD.FromString(item.SubItems[4].Text);
-                        session["tag"] = OSD.FromObject(item.Tag);
+
+
+
+                        try
+                        {
+                            session["tag"] = OSD.FromBinary((byte[])item.Tag);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message + ": " + ex.StackTrace);
+                            session["tag"] = OSD.FromBinary(Utils.EmptyBytes);
+                        }
+
                         sessionArray.Add(session);
                     }
 
@@ -848,7 +859,7 @@ namespace WinGridProxy
                         session["host"].AsString()}));
 
                     addedItem.ImageIndex = session["image_index"].AsInteger();
-                    addedItem.Tag = session["tag"].ToString();
+                    addedItem.Tag = LitJson.JsonMapper.ToObject(Utils.BytesToString(session["tag"].AsBinary(), 0, session["tag"].AsBinary().Length));
                 }
 
                 listViewSessions.EndUpdate();
@@ -884,7 +895,7 @@ namespace WinGridProxy
         /// </summary>
         /// <param name="message">The IMessage object</param>
         /// <returns>A formatted string containing the names and values of the source object</returns>
-        public static string IMessageToString(IMessage message)
+        public static string IMessageToString(object message)
         {
             StringBuilder result = new StringBuilder();
             // common/custom types
@@ -892,6 +903,7 @@ namespace WinGridProxy
 
             foreach (FieldInfo messageField in message.GetType().GetFields())
             {
+
                 // a byte array
                 if (messageField.GetValue(message).GetType() == typeof(Byte[]))
                 {
@@ -920,7 +932,11 @@ namespace WinGridProxy
                                     nestedField.GetValue(nestedArrayObject), "D"),
                                     nestedField.GetValue(nestedArrayObject),
                                     nestedField.GetValue(nestedArrayObject).GetType().Name);
-                            }
+                            } 
+                            else if(nestedField.FieldType.IsInterface)
+                {
+                        result.AppendLine(IMessageToString(nestedField.GetValue(nestedArrayObject)));
+                }
                             else
                             {
                                 result.AppendFormat("{0, 30}: {1} ({2})" + System.Environment.NewLine,
@@ -941,6 +957,10 @@ namespace WinGridProxy
                             messageField.GetValue(message), "D"),
                             messageField.GetValue(message), messageField.FieldType.Name);
                     }
+                    else if (messageField.FieldType.IsInterface)
+                    {
+                        result.AppendLine(IMessageToString(messageField.GetValue(message)));
+                    }
                     else
                     {
                         result.AppendFormat("{0, 30}: {1} ({2})" + System.Environment.NewLine,
@@ -950,6 +970,20 @@ namespace WinGridProxy
             }
 
             return result.ToString();
+        }
+
+        private static string InterpretOptions(byte options)
+        {
+            return "["
+                 + ((options & Helpers.MSG_APPENDED_ACKS) != 0 ? "Ack" : "   ")
+                 + " "
+                 + ((options & Helpers.MSG_RESENT) != 0 ? "Res" : "   ")
+                 + " "
+                 + ((options & Helpers.MSG_RELIABLE) != 0 ? "Rel" : "   ")
+                 + " "
+                 + ((options & Helpers.MSG_ZEROCODED) != 0 ? "Zer" : "   ")
+                 + "]"
+                 ;
         }
 
         /// <summary>
@@ -962,7 +996,13 @@ namespace WinGridProxy
             StringBuilder result = new StringBuilder();
 
             result.AppendFormat("Packet Type: {0}" + System.Environment.NewLine, packet.Type);
+            result.AppendLine("[Packet Header]");
+            // payload
+            result.AppendFormat("Sequence: {0}" + System.Environment.NewLine, packet.Header.Sequence);
+            result.AppendFormat(" Options: {0}" + System.Environment.NewLine, InterpretOptions(packet.Header.Flags));
+            result.AppendLine();
 
+            result.AppendLine("[Packet Payload]");
             foreach (FieldInfo packetField in packet.GetType().GetFields())
             {
                 object packetDataObject = packetField.GetValue(packet);
@@ -1021,10 +1061,34 @@ namespace WinGridProxy
                             }
                             else
                             {
-                                result.AppendFormat("{0,30}: {1} [{2}]" + System.Environment.NewLine,
-                                    packetPropertyField.Name,
-                                    Utils.BytesToString((byte[])packetPropertyField.GetValue(packetDataObject, null)),
-                                    packetDataObject.GetType());
+                                // Decode the BinaryBucket
+                                if (packetPropertyField.Name.Equals("BinaryBucket"))
+                                {
+                                    byte[] bytes = (byte[])packetPropertyField.GetValue(packetDataObject, null);
+                                    string bbDecoded = String.Empty;
+                                    if (bytes.Length == 1)
+                                    {
+                                        bbDecoded = String.Format("{0}", bytes[0]);
+                                    } 
+                                    else if (bytes.Length == 17)
+                                    {
+                                        bbDecoded = String.Format("{0} {1} ({2})", new UUID(bytes, 1).ToString(), bytes[0], (AssetType)bytes[0]);
+                                    }
+                                    else
+                                    {
+                                        bbDecoded = Utils.BytesToString(bytes);
+                                    }
+
+                                    result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
+                                        packetPropertyField.Name,
+                                        bbDecoded);
+                                }
+                                else
+                                {
+                                    result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
+                                        packetPropertyField.Name,
+                                        Utils.BytesToString((byte[])packetPropertyField.GetValue(packetDataObject, null)));
+                                }
                             }
                         }
                         else

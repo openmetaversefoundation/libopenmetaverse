@@ -75,6 +75,7 @@ namespace OpenMetaverse
                 case "LandStatReply": message = new LandStatReplyMessage(); break;
                 case "ParcelVoiceInfoRequest": message = new ParcelVoiceInfoRequestMessage(); break;
                 case "ViewerStats": message = new ViewerStatsMessage(); break;
+                case "EventQueueGet": message = new EventQueueGetMessage(); break;
 
                 // Capabilities TODO:
                 // DispatchRegionInfo

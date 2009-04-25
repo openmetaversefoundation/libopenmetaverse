@@ -1911,6 +1911,110 @@ namespace OpenMetaverse.Messages.Linden
 
     #endregion
 
+    #region EventQueue
+
+    public interface IEventMessage
+    {
+        OSDMap Serialize();
+        void Deserialize(OSDMap map);
+    }
+
+    public class EventQueueAck : IEventMessage
+    {
+        public int AckID;
+        public bool Done;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["ack"] = OSD.FromInteger(AckID);
+            map["done"] = OSD.FromBoolean(Done);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            AckID = map["ack"].AsInteger();
+            Done = map["done"].AsBoolean();
+        }
+    }
+
+    public class EventQueueEvent : IEventMessage
+    {
+        public int Sequence;
+
+        public class QueueEvent
+        {
+            public IMessage EventMessage;
+            public string MessageKey;
+        }
+        public QueueEvent[] MessageEvents;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(1);
+
+            OSDArray eventsArray = new OSDArray();
+
+            for (int i = 0; i < MessageEvents.Length; i++)
+            {
+                OSDMap eventMap = new OSDMap(2);
+                eventMap["body"] = MessageEvents[i].EventMessage.Serialize();
+                eventMap["message"] = OSD.FromString(MessageEvents[i].MessageKey);
+                eventsArray.Add(eventMap);
+            }
+
+            map["events"] = eventsArray;
+            map["id"] = OSD.FromInteger(Sequence);
+
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Sequence = map["id"].AsInteger();
+            OSDArray arrayEvents = (OSDArray)map["events"];
+
+            MessageEvents = new QueueEvent[arrayEvents.Count];
+
+            for (int i = 0; i < arrayEvents.Count; i++)
+            {
+                OSDMap eventMap = (OSDMap)arrayEvents[i];
+                QueueEvent ev = new QueueEvent();
+
+                ev.MessageKey = eventMap["message"].AsString();
+                ev.EventMessage = Caps.DecodeEvent(ev.MessageKey, (OSDMap)eventMap["body"]);
+                MessageEvents[i] = ev;
+            }
+        }
+    }
+
+        public class EventQueueGetMessage : IMessage
+        {
+            public IEventMessage Messages;
+
+            public OSDMap Serialize()
+            {
+                return Messages.Serialize();
+            }
+
+            public void Deserialize(OSDMap map)
+            {
+                if (map.ContainsKey("ack"))
+                    Messages = new EventQueueAck();
+                else if (map.ContainsKey("events"))
+                    Messages = new EventQueueEvent();
+                else
+                    Logger.Log("Unable to deserialize EventQueueGetMessage: No message handler exists for event", Helpers.LogLevel.Warning);
+
+                Messages.Deserialize(map);
+            }
+        }
+    
+
+    #endregion
+
+
     #region Stats Messages
 
     public class ViewerStatsMessage : IMessage
