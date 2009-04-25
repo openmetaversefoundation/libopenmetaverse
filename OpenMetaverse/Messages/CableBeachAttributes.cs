@@ -49,6 +49,7 @@ namespace OpenMetaverse.Messages.CableBeach
 
         // OpenSim attributes
         public static readonly Uri DEFAULT_INVENTORY = new Uri("http://opensimulator.org/attributes/defaultInventory");
+        public static readonly Uri LIBRARY_INVENTORY = new Uri("http://opensimulator.org/attributes/libraryInventory");
         public static readonly Uri IMAGE_ID = new Uri("http://opensimulator.org/attributes/imageID");
         public static readonly Uri FIRST_LIFE_IMAGE_ID = new Uri("http://opensimulator.org/attributes/firstLifeImageID");
         public static readonly Uri FIRST_LIFE_BIOGRAPHY = new Uri("http://opensimulator.org/attributes/firstLifeBiography");

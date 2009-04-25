@@ -532,6 +532,385 @@ namespace OpenMetaverse.Messages.CableBeach
         }
     }
 
+    public class CreateFolderMessage : IMessage
+    {
+        public Uri Identity;
+        public UUID FolderID;
+        public UUID ParentID;
+        public string Name;
+        public string PreferredContentType;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["identity"] = OSD.FromUri(Identity);
+            map["folder_id"] = OSD.FromUUID(FolderID);
+            map["parent_id"] = OSD.FromUUID(ParentID);
+            map["name"] = OSD.FromString(Name);
+            map["preferred_content_type"] = OSD.FromString(PreferredContentType);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Identity = map["identity"].AsUri();
+            FolderID = map["folder_id"].AsUUID();
+            ParentID = map["parent_id"].AsUUID();
+            Name = map["name"].AsString();
+            PreferredContentType = map["preferred_content_type"].AsString();
+        }
+    }
+
+    public class CreateFolderReplyMessage : IMessage
+    {
+        public UUID FolderID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["folder_id"] = OSD.FromUUID(FolderID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            FolderID = map["folder_id"].AsUUID();
+        }
+    }
+
+    public class CreateItemMessage : IMessage
+    {
+        public Uri Identity;
+        public UUID ItemID;
+        public string Name;
+        public string Description;
+        public string ContentType;
+        public UUID AssetID;
+        public UUID ParentID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["identity"] = OSD.FromUri(Identity);
+            map["item_id"] = OSD.FromUUID(ItemID);
+            map["name"] = OSD.FromString(Name);
+            map["description"] = OSD.FromString(Description);
+            map["content_type"] = OSD.FromString(ContentType);
+            map["asset_id"] = OSD.FromUUID(AssetID);
+            map["parent_id"] = OSD.FromUUID(ParentID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Identity = map["identity"].AsUri();
+            ItemID = map["item_id"].AsUUID();
+            Name = map["name"].AsString();
+            Description = map["description"].AsString();
+            ContentType = map["content_type"].AsString();
+            AssetID = map["asset_id"].AsUUID();
+            ParentID = map["parent_id"].AsUUID();
+        }
+    }
+
+    public class CreateItemReplyMessage : IMessage
+    {
+        public UUID ItemID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["item_id"] = OSD.FromUUID(ItemID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            ItemID = map["item_id"].AsUUID();
+        }
+    }
+
+    public class MoveItemMessage : IMessage
+    {
+        public Uri Identity;
+        public UUID ItemID;
+        public string Name;
+        public string Description;
+        public string ContentType;
+        public UUID AssetID;
+        public UUID ParentID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["identity"] = OSD.FromUri(Identity);
+            map["item_id"] = OSD.FromUUID(ItemID);
+            map["name"] = OSD.FromString(Name);
+            map["description"] = OSD.FromString(Description);
+            map["content_type"] = OSD.FromString(ContentType);
+            map["asset_id"] = OSD.FromUUID(AssetID);
+            map["parent_id"] = OSD.FromUUID(ParentID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Identity = map["identity"].AsUri();
+            ItemID = map["item_id"].AsUUID();
+            Name = map["name"].AsString();
+            Description = map["description"].AsString();
+            ContentType = map["content_type"].AsString();
+            AssetID = map["asset_id"].AsUUID();
+            ParentID = map["parent_id"].AsUUID();
+        }
+    }
+
+    public class MoveItemReplyMessage : IMessage
+    {
+        public UUID ItemID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["item_id"] = OSD.FromUUID(ItemID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            ItemID = map["item_id"].AsUUID();
+        }
+    }
+
+    public class UpdateItemMessage : IMessage
+    {
+        public Uri Identity;
+        public string Name;
+        public string Description;
+        public string ContentType;
+        public UUID AssetID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["identity"] = OSD.FromUri(Identity);
+            map["name"] = OSD.FromString(Name);
+            map["description"] = OSD.FromString(Description);
+            map["content_type"] = OSD.FromString(ContentType);
+            map["asset_id"] = OSD.FromUUID(AssetID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Identity = map["identity"].AsUri();
+            Name = map["name"].AsString();
+            Description = map["description"].AsString();
+            ContentType = map["content_type"].AsString();
+            AssetID = map["asset_id"].AsUUID();
+        }
+    }
+
+    public class UpdateItemReplyMessage : IMessage
+    {
+        public bool Success;
+        public string Message;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["success"] = OSD.FromBoolean(Success);
+            map["message"] = OSD.FromString(Message);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Success = map["success"].AsBoolean();
+            Message = map["message"].AsString();
+        }
+    }
+
+    public class FetchObjectMessage : IMessage
+    {
+        public Uri Identity;
+        public UUID ObjectID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["identity"] = OSD.FromUri(Identity);
+            map["object_id"] = OSD.FromUUID(ObjectID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Identity = map["identity"].AsUri();
+            ObjectID = map["object_id"].AsUUID();
+        }
+    }
+
+    public interface InventoryObject
+    {
+        OSDMap Serialize();
+        void Deserialize(OSDMap map);
+    }
+
+    public class InventoryObjectItem : InventoryObject
+    {
+        public UUID ID;
+        public UUID ParentID;
+        public string Name;
+        public UUID OwnerID;
+        public UUID AssetID;
+        public string ContentType;
+        public UUID CreatorID;
+        public UUID GroupID;
+        public string Description;
+        public bool GroupOwned;
+        public uint PermsBase;
+        public uint PermsEveryone;
+        public uint PermsGroup;
+        public uint PermsNext;
+        public uint PermsOwner;
+        public int SalePrice;
+        public SaleType SaleType;
+        public uint Flags;
+        public DateTime CreationDate;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["id"] = OSD.FromUUID(ID);
+            map["parent_id"] = OSD.FromUUID(ParentID);
+            map["name"] = OSD.FromString(Name);
+            map["owner_id"] = OSD.FromUUID(OwnerID);
+            map["asset_id"] = OSD.FromUUID(AssetID);
+            map["content_type"] = OSD.FromString(ContentType);
+            map["creator_id"] = OSD.FromUUID(CreatorID);
+            map["group_id"] = OSD.FromUUID(GroupID);
+            map["description"] = OSD.FromString(Description);
+            map["group_owned"] = OSD.FromBoolean(GroupOwned);
+            map["perms_base"] = OSD.FromUInteger(PermsBase);
+            map["perms_everyone"] = OSD.FromUInteger(PermsEveryone);
+            map["perms_group"] = OSD.FromUInteger(PermsGroup);
+            map["perms_next"] = OSD.FromUInteger(PermsNext);
+            map["perms_owner"] = OSD.FromUInteger(PermsOwner);
+            map["sale_price"] = OSD.FromInteger(SalePrice);
+            map["sale_type"] = OSD.FromInteger((byte)SaleType);
+            map["flags"] = OSD.FromInteger((int)Flags);
+            map["creation_date"] = OSD.FromInteger((int)Utils.DateTimeToUnixTime(CreationDate));
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            ID = map["id"].AsUUID();
+            ParentID = map["parent_id"].AsUUID();
+            Name = map["name"].AsString();
+            OwnerID = map["owner_id"].AsUUID();
+            AssetID = map["asset_id"].AsUUID();
+            ContentType = map["content_type"].AsString();
+            CreatorID = map["creator_id"].AsUUID();
+            GroupID = map["group_id"].AsUUID();
+            Description = map["description"].AsString();
+            GroupOwned = map["group_owned"].AsBoolean();
+            PermsBase = map["perms_base"].AsUInteger();
+            PermsEveryone = map["perms_everyone"].AsUInteger();
+            PermsGroup = map["perms_group"].AsUInteger();
+            PermsNext = map["perms_next"].AsUInteger();
+            PermsOwner = map["perms_owner"].AsUInteger();
+        }
+    }
+
+    public class InventoryObjectFolder : InventoryObject
+    {
+        public UUID ID;
+        public UUID ParentID;
+        public string Name;
+        public UUID OwnerID;
+        public string PreferredContentType;
+        public int Version;
+        public InventoryObject[] Children;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["id"] = OSD.FromUUID(ID);
+            map["parent_id"] = OSD.FromUUID(ParentID);
+            map["name"] = OSD.FromString(Name);
+            map["owner_id"] = OSD.FromUUID(OwnerID);
+            map["preferred_content_type"] = OSD.FromString(PreferredContentType);
+            map["version"] = OSD.FromInteger(Version);
+            OSDArray array = new OSDArray(Children.Length);
+            for (int i = 0; i < Children.Length; i++)
+                array.Add(Children[i].Serialize());
+            map["children"] = array;
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            ID = map["id"].AsUUID();
+            ParentID = map["parent_id"].AsUUID();
+            Name = map["name"].AsString();
+            OwnerID = map["owner_id"].AsUUID();
+            PreferredContentType = map["preferred_content_type"].AsString();
+            Version = map["version"].AsInteger();
+            OSDArray array = (OSDArray)map["children"];
+            Children = new InventoryObject[array.Count];
+            for (int i = 0; i < array.Count; i++)
+            {
+                OSDMap childMap = (OSDMap)array[i];
+                InventoryObject obj;
+                if (childMap.ContainsKey("asset_id"))
+                    obj = new InventoryObjectItem();
+                else
+                    obj = new InventoryObjectFolder();
+                obj.Deserialize(childMap);
+                Children[i] = obj;
+            }
+        }
+    }
+
+    public class FetchObjectReplyMessage : IMessage
+    {
+        public bool Success;
+        public string Message;
+        public InventoryObject Object;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["success"] = OSD.FromBoolean(Success);
+            map["message"] = OSD.FromString(Message);
+            if (Object != null)
+                map["object"] = Object.Serialize();
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Success = map["success"].AsBoolean();
+            Message = map["message"].AsString();
+            OSDMap objMap = map["object"] as OSDMap;
+            if (objMap != null)
+            {
+                if (objMap.ContainsKey("asset_id"))
+                    Object = new InventoryObjectItem();
+                else
+                    Object = new InventoryObjectFolder();
+
+                Object.Deserialize(objMap);
+            }
+            else
+            {
+                Object = null;
+            }
+        }
+    }
+
     public class GetInventorySkeletonMessage : IMessage
     {
         public Uri Identity;
@@ -671,6 +1050,7 @@ namespace OpenMetaverse.Messages.CableBeach
 
     public class EnableClientMessage : IMessage
     {
+        public Uri Identity;
         public UUID AgentID;
         public UUID SessionID;
         public UUID SecureSessionID;
@@ -686,6 +1066,7 @@ namespace OpenMetaverse.Messages.CableBeach
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
+            map["identity"] = OSD.FromUri(Identity);
             map["agent_id"] = OSD.FromUUID(AgentID);
             map["session_id"] = OSD.FromUUID(SessionID);
             map["secure_session_id"] = OSD.FromUUID(SecureSessionID);
@@ -716,6 +1097,7 @@ namespace OpenMetaverse.Messages.CableBeach
 
         public void Deserialize(OSDMap map)
         {
+            Identity = map["identity"].AsUri();
             AgentID = map["agent_id"].AsUUID();
             SessionID = map["session_id"].AsUUID();
             SecureSessionID = map["secure_session_id"].AsUUID();

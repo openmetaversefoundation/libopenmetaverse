@@ -199,11 +199,8 @@
     preferred_content_type: string
 }
 
-%%purge_folder
-
-->
+<-
 {
-    identity: uri,
     folder_id: uuid
 }
 
@@ -212,6 +209,7 @@
 ->
 {
     identity: uri,
+    item_id: uuid,
     name: string,
     description: string,
     content_type: string,
@@ -248,6 +246,75 @@
     description: string,
     content_type: string,
     asset_id: uuid
+}
+
+<-
+{
+	success: boolean,
+	message: string
+}
+
+%%fetch_object
+
+->
+{
+	identity: uri,
+	object_id: uuid
+}
+
+&inventory_object =
+{
+	id: uuid,
+	parent_id: uuid,
+	name: string,
+	owner_id: uuid,
+	asset_id: uuid,
+	content_type: string,
+	creator_id: uuid,
+	group_id: uuid,
+	description: string,
+	group_owned: boolean,
+	perms_base: binary,
+	perms_everyone: binary,
+	perms_group: binary,
+	perms_next: binary,
+	perms_owner: binary,
+	sale_price: integer,
+	sale_type: integer,
+	flags: integer,
+	creation_date: integer
+}
+
+&inventory_object =
+{
+	id: uuid,
+	parent_id: uuid,
+	name: string,
+	owner_id: uuid,
+	preferred_content_type: string,
+	version: integer,
+	children: [ inventory_object, ... ]
+}
+
+<-
+{
+	success: boolean,
+	message: string,
+	object: inventory_object
+}
+
+%%purge_folder
+
+->
+{
+    identity: uri,
+    folder_id: uuid
+}
+
+<-
+{
+	success: boolean,
+	message: string
 }
 
 %%get_inventory_skeleton
@@ -299,6 +366,7 @@
 
 ->
 {
+	identity: uri,
     agent_id: uuid,
     session_id: uuid,
     secure_session_id: uuid,

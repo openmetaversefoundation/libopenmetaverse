@@ -1,4 +1,5 @@
 ﻿using System;
+using OpenMetaverse;
 
 namespace OpenMetaverse.Messages.CableBeach
 {
@@ -87,6 +88,41 @@ namespace OpenMetaverse.Messages.CableBeach
                     return 22;
                 default:
                     return -1;
+            }
+        }
+
+        public static int ContentTypeToSLInvType(string contentType)
+        {
+            switch (contentType)
+            {
+                case "image/jp2":
+                case "image/tga":
+                case "image/jpeg":
+                    return (int)InventoryType.Texture;
+                case "application/ogg":
+                case "audio/x-wav":
+                    return (int)InventoryType.Sound;
+                case "application/x-metaverse-callingcard":
+                    return (int)InventoryType.CallingCard;
+                case "application/x-metaverse-landmark":
+                    return (int)InventoryType.Landmark;
+                case "application/x-metaverse-clothing":
+                case "application/x-metaverse-bodypart":
+                    return (int)InventoryType.Wearable;
+                case "application/x-metaverse-primitive":
+                    return (int)InventoryType.Object;
+                case "application/x-metaverse-notecard":
+                    return (int)InventoryType.Notecard;
+                case "application/x-metaverse-lsl":
+                case "application/x-metaverse-lso":
+                    return (int)InventoryType.LSL;
+                case "application/x-metaverse-animation":
+                    return (int)InventoryType.Animation;
+                case "application/x-metaverse-gesture":
+                    return (int)InventoryType.Gesture;
+                case "application/x-metaverse-simstate":
+                default:
+                    return (int)InventoryType.Unknown;
             }
         }
 
@@ -181,5 +217,10 @@ namespace OpenMetaverse.Messages.CableBeach
         }
 
         #endregion SL / file extension / content-type conversions
+
+        public static UUID IdentityToUUID(Uri identity)
+        {
+            return new UUID((OpenMetaverse.Utils.MD5(System.Text.Encoding.UTF8.GetBytes(identity.ToString()))), 0);
+        }
     }
 }
