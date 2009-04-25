@@ -151,36 +151,36 @@ namespace OpenMetaverse.Tests
         public void ParcelObjectOwnersMessage()
         {
             ParcelObjectOwnersReplyMessage s = new ParcelObjectOwnersReplyMessage();
-            s.DataBlocks = new ParcelObjectOwnersReplyMessage.PrimOwners[2];
+            s.PrimOwnersBlock = new ParcelObjectOwnersReplyMessage.PrimOwner[2];
 
-            ParcelObjectOwnersReplyMessage.PrimOwners obj = new ParcelObjectOwnersReplyMessage.PrimOwners();
+            ParcelObjectOwnersReplyMessage.PrimOwner obj = new ParcelObjectOwnersReplyMessage.PrimOwner();
             obj.OwnerID = UUID.Random();
             obj.Count = 10;
             obj.IsGroupOwned = true;
             obj.OnlineStatus = false;
             obj.TimeStamp = new DateTime(2010, 4, 13, 7, 19, 43);
-            s.DataBlocks[0] = obj;
+            s.PrimOwnersBlock[0] = obj;
 
-            ParcelObjectOwnersReplyMessage.PrimOwners obj1 = new ParcelObjectOwnersReplyMessage.PrimOwners();
+            ParcelObjectOwnersReplyMessage.PrimOwner obj1 = new ParcelObjectOwnersReplyMessage.PrimOwner();
             obj1.OwnerID = UUID.Random();
             obj1.Count = 0;
             obj1.IsGroupOwned = false;
             obj1.OnlineStatus = false;
             obj1.TimeStamp = new DateTime(1991, 1, 31, 3, 13, 31);
-            s.DataBlocks[1] = obj1;
+            s.PrimOwnersBlock[1] = obj1;
 
             OSDMap map = s.Serialize();
 
             ParcelObjectOwnersReplyMessage t = new ParcelObjectOwnersReplyMessage();
             t.Deserialize(map);
 
-            for (int i = 0; i < t.DataBlocks.Length; i++)
+            for (int i = 0; i < t.PrimOwnersBlock.Length; i++)
             {
-                Assert.AreEqual(s.DataBlocks[i].Count, t.DataBlocks[i].Count);
-                Assert.AreEqual(s.DataBlocks[i].IsGroupOwned, t.DataBlocks[i].IsGroupOwned);
-                Assert.AreEqual(s.DataBlocks[i].OnlineStatus, t.DataBlocks[i].OnlineStatus);
-                Assert.AreEqual(s.DataBlocks[i].OwnerID, t.DataBlocks[i].OwnerID);
-                Assert.AreEqual(s.DataBlocks[i].TimeStamp, t.DataBlocks[i].TimeStamp);
+                Assert.AreEqual(s.PrimOwnersBlock[i].Count, t.PrimOwnersBlock[i].Count);
+                Assert.AreEqual(s.PrimOwnersBlock[i].IsGroupOwned, t.PrimOwnersBlock[i].IsGroupOwned);
+                Assert.AreEqual(s.PrimOwnersBlock[i].OnlineStatus, t.PrimOwnersBlock[i].OnlineStatus);
+                Assert.AreEqual(s.PrimOwnersBlock[i].OwnerID, t.PrimOwnersBlock[i].OwnerID);
+                Assert.AreEqual(s.PrimOwnersBlock[i].TimeStamp, t.PrimOwnersBlock[i].TimeStamp);
             }
         }
 
@@ -494,19 +494,40 @@ namespace OpenMetaverse.Tests
             }
         }
 
-        [Test]
-        public void ChatSessionRequestMessage()
+        [Test] // VARIANT A
+        public void ChatSessionRequestStartConference()
         {
-            ChatSessionRequestMessage s = new ChatSessionRequestMessage();
-            s.Method = "mute update";
-            s.RequestKey = "voice";
-            s.RequestValue = false;
+            ChatSessionRequestStartConference s = new ChatSessionRequestStartConference();
             s.SessionID = UUID.Random();
-            s.AgentID = UUID.Random();
+            s.AgentsBlock = new UUID[2];
+            s.AgentsBlock[0] = UUID.Random();
+            s.AgentsBlock[0] = UUID.Random();
 
             OSDMap map = s.Serialize();
 
-            ChatSessionRequestMessage t = new ChatSessionRequestMessage();
+            ChatSessionRequestStartConference t = new ChatSessionRequestStartConference();
+            t.Deserialize(map);
+
+            Assert.AreEqual(s.SessionID, t.SessionID);
+            Assert.AreEqual(s.Method, t.Method);
+            for (int i = 0; i < t.AgentsBlock.Length; i++)
+            {
+                Assert.AreEqual(s.AgentsBlock[i], t.AgentsBlock[i]);
+            }
+        }
+
+        [Test]
+        public void ChatSessionRequestMuteUpdate()
+        {
+            ChatSessionRequestMuteUpdate s = new ChatSessionRequestMuteUpdate();
+            s.AgentID = UUID.Random();
+            s.RequestKey = "text";
+            s.RequestValue = true;
+            s.SessionID = UUID.Random();
+
+            OSDMap map = s.Serialize();
+
+            ChatSessionRequestMuteUpdate t = new ChatSessionRequestMuteUpdate();
             t.Deserialize(map);
 
             Assert.AreEqual(s.AgentID, t.AgentID);
@@ -514,19 +535,20 @@ namespace OpenMetaverse.Tests
             Assert.AreEqual(s.RequestKey, t.RequestKey);
             Assert.AreEqual(s.RequestValue, t.RequestValue);
             Assert.AreEqual(s.SessionID, t.SessionID);
+        }
 
-            s.RequestKey = "text";
-            s.RequestValue = true;
+        [Test]
+        public void ChatSessionAcceptInvitation()
+        {
+            ChatSessionAcceptInvitation s = new ChatSessionAcceptInvitation();
             s.SessionID = UUID.Random();
-            s.AgentID = UUID.Random();
 
-            map = s.Serialize();
+            OSDMap map = s.Serialize();
+
+            ChatSessionAcceptInvitation t = new ChatSessionAcceptInvitation();
             t.Deserialize(map);
 
-            Assert.AreEqual(s.AgentID, t.AgentID);
             Assert.AreEqual(s.Method, t.Method);
-            Assert.AreEqual(s.RequestKey, t.RequestKey);
-            Assert.AreEqual(s.RequestValue, t.RequestValue);
             Assert.AreEqual(s.SessionID, t.SessionID);
         }
 

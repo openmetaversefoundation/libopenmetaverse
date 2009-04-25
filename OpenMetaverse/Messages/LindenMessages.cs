@@ -378,52 +378,52 @@ namespace OpenMetaverse.Messages.Linden
         /// <summary>
         /// Prim ownership information for a specified owner on a single parcel
         /// </summary>
-        public class PrimOwners
+        public class PrimOwner
         {
             /// <summary>The <see cref="UUID"/> of the prim owner, 
-            /// UUID.Zero if agent has no permission</summary>
+            /// UUID.Zero if agent has no permission to view prim owner information</summary>
             public UUID OwnerID;
-            /// <summary>The total number of prims on parcel owned</summary>
+            /// <summary>The total number of prims</summary>
             public int Count;
-            /// <summary>True if the Owner is a group</summary>
+            /// <summary>True if the OwnerID is a <see cref="Group"/></summary>
             public bool IsGroupOwned;
             /// <summary>True if the owner is online 
             /// <remarks>This is no longer used by the LL Simulators</remarks></summary>
             public bool OnlineStatus;
-            /// <summary>The date of the newest prim</summary>
+            /// <summary>The date the most recent prim was rezzed</summary>
             public DateTime TimeStamp;
         }
 
         /// <summary>
-        /// An Array of Datablocks containing prim owner information
+        /// An Array of <see cref="PrimOwner"/> objects
         /// </summary>
-        public PrimOwners[] DataBlocks;
+        public PrimOwner[] PrimOwnersBlock;
 
         /// <summary>
-        /// Create an OSDMap from the strongly typed message
+        /// Create an <see cref="OSDMap"/> from an array of <see cref="PrimOwners"/> objects
         /// </summary>
         /// <returns></returns>
         public OSDMap Serialize()
         {
-            OSDArray dataArray = new OSDArray(DataBlocks.Length);
+            OSDArray dataArray = new OSDArray(PrimOwnersBlock.Length);
             OSDArray dataExtendedArray = new OSDArray();
 
-            for (int i = 0; i < DataBlocks.Length; i++)
+            for (int i = 0; i < PrimOwnersBlock.Length; i++)
             {
                 OSDMap dataMap = new OSDMap(4);
-                dataMap["OwnerID"] = OSD.FromUUID(DataBlocks[i].OwnerID);
-                dataMap["Count"] = OSD.FromInteger(DataBlocks[i].Count);
-                dataMap["IsGroupOwned"] = OSD.FromBoolean(DataBlocks[i].IsGroupOwned);
-                dataMap["OnlineStatus"] = OSD.FromBoolean(DataBlocks[i].OnlineStatus);
+                dataMap["OwnerID"] = OSD.FromUUID(PrimOwnersBlock[i].OwnerID);
+                dataMap["Count"] = OSD.FromInteger(PrimOwnersBlock[i].Count);
+                dataMap["IsGroupOwned"] = OSD.FromBoolean(PrimOwnersBlock[i].IsGroupOwned);
+                dataMap["OnlineStatus"] = OSD.FromBoolean(PrimOwnersBlock[i].OnlineStatus);
                 dataArray.Add(dataMap);
 
                 /* If the tmestamp is null, don't create the DataExtended map, this 
                  * is usually when the parcel contains no primitives, or the agent does not have
                  * permissions to see ownership information */
-                if (DataBlocks[i].TimeStamp != null)
+                if (PrimOwnersBlock[i].TimeStamp != null)
                 {
                     OSDMap dataExtendedMap = new OSDMap(1);
-                    dataExtendedMap["TimeStamp"] = OSD.FromDate(DataBlocks[i].TimeStamp);
+                    dataExtendedMap["TimeStamp"] = OSD.FromDate(PrimOwnersBlock[i].TimeStamp);
                     dataExtendedArray.Add(dataExtendedMap);
                 }
             }
@@ -456,12 +456,12 @@ namespace OpenMetaverse.Messages.Linden
                 dataExtendedArray = new OSDArray();
             }
 
-            DataBlocks = new PrimOwners[dataArray.Count];
+            PrimOwnersBlock = new PrimOwner[dataArray.Count];
 
             for (int i = 0; i < dataArray.Count; i++)
             {
                 OSDMap dataMap = (OSDMap)dataArray[i];
-                PrimOwners block = new PrimOwners();
+                PrimOwner block = new PrimOwner();
                 block.OwnerID = dataMap["OwnerID"].AsUUID();
                 block.Count = dataMap["Count"].AsInteger();
                 block.IsGroupOwned = dataMap["IsGroupOwned"].AsBoolean();
@@ -475,7 +475,7 @@ namespace OpenMetaverse.Messages.Linden
                     block.TimeStamp = Utils.UnixTimeToDateTime(dataExtendedMap["TimeStamp"].AsUInteger());
                 }
 
-                DataBlocks[i] = block;
+                PrimOwnersBlock[i] = block;
             }
         }
     }
@@ -1396,19 +1396,106 @@ namespace OpenMetaverse.Messages.Linden
 
     #region Session/Communication
 
+    #region ChatSessionRequestMessage
 
-    public class ChatSessionRequestMessage : IMessage
+    public interface IChatSessionRequest
     {
+        /// <summary>Serialize the implementing classes fields</summary>
+        /// <returns>An <see cref="OSDMap"/> of the implementing classes data</returns>
+        OSDMap Serialize();
+        /// <summary></summary>
+        /// <param name="map"></param>
+        void Deserialize(OSDMap map);
+    }
 
+    /// <summary>
+    /// A request sent from an agent to the Simulator to begin a new conference.
+    /// Contains a list of Agents to be in the conference
+    /// </summary>
+    /* VARIANT A:
+    {
+        'method':'start conference'
+        ,
+        'params':
+        [
+            u69d068f3-824f-43ca-8b9a-1542065669b9,
+            ua11dccfb-a55f-406a-bad2-f851af5979be
+        ]
+        ,
+        'session-id':u30dcb931-c2f8-469e-662d-f7c2daacffee
+    } */
+    public class ChatSessionRequestStartConference : IChatSessionRequest
+    {
+        /// <summary>A string containing the method used, for a new session (non group) this will be "start conference"</summary>
+        public string Method = "start conference";
+        /// <summary>An array containing the <see cref="UUID"/> of the agents invited to this conference</summary>
+        public UUID[] AgentsBlock;
+        /// <summary>The conferences Session ID</summary>
+        public UUID SessionID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(3);
+            map["method"] = OSD.FromString(Method);
+            OSDArray agentsArray = new OSDArray();
+            for (int i = 0; i < AgentsBlock.Length; i++)
+            {
+                agentsArray.Add(OSD.FromUUID(AgentsBlock[i]));
+            }
+            map["params"] = agentsArray;
+            map["session-id"] = OSD.FromUUID(SessionID);
+
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Method = map["method"].AsString();
+            OSDArray agentsArray = (OSDArray)map["params"];
+
+            AgentsBlock = new UUID[agentsArray.Count];
+
+            for (int i = 0; i < agentsArray.Count; i++)
+            {
+                AgentsBlock[i] = agentsArray[i].AsUUID();
+            }
+
+            SessionID = map["session-id"].AsUUID();
+        }
+    }
+
+    /// <summary>
+    /// A moderation request sent from a conference moderator
+    /// Contains an agent and an optional action to take
+    /// </summary>
+    /* VARIANT B:
+    {
+            'method':'mute update'
+            ,
+            'params':
+            {
+            'agent_id':u69d068f3-824f-43ca-8b9a-1542065669b9
+            ,
+            'mute_info':
+            {
+                'text':t
+            }
+        }
+        ,
+        'session-id':ufdf0ac75-73b7-0320-96a8-ddd295ba7d8c
+    } */
+    public class ChatSessionRequestMuteUpdate : IChatSessionRequest
+    {
         /// <summary>
         /// The Session ID
         /// </summary>
         public UUID SessionID;
+
         /// <summary>
         /// The method used to update session, currently known valid values:
         ///  mute update
         /// </summary>
-        public string Method;
+        public string Method = "mute update";
 
         public UUID AgentID;
         /// <summary>
@@ -1416,10 +1503,8 @@ namespace OpenMetaverse.Messages.Linden
         /// key: text value: true/false - allow/disallow specified agents ability to use text in session
         /// key: voice value: true/false - allow/disallow specified agents ability to use voice in session
         /// </summary>
-        public string RequestKey;
+        public string RequestKey; // "text" or "voice"
         public bool RequestValue;
-
-
 
         public OSDMap Serialize()
         {
@@ -1457,6 +1542,65 @@ namespace OpenMetaverse.Messages.Linden
             RequestValue = muteMap[RequestKey].AsBoolean();
         }
     }
+
+
+   /*
+    * VARIANT C
+  {
+    'method':'accept invitation'
+    ,
+    'session-id':u30867cec-7906-2ca1-400f-742ad88e4928
+  }*/
+    /// <summary>
+    /// A message sent from the agent to the simulator which tells the 
+    /// simulator we've accepted a conference invitation
+    /// </summary>
+    public class ChatSessionAcceptInvitation : IChatSessionRequest
+    {
+        public string Method = "accept invitation";
+        /// <summary>The conference SessionID</summary>
+        public UUID SessionID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(2);
+            map["method"] = OSD.FromString(Method);
+            map["session-id"] = OSD.FromUUID(SessionID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Method = map["method"].AsString();
+            SessionID = map["session-id"].AsUUID();
+        }
+    }
+
+    public class ChatSessionRequestMessage : IMessage
+    {
+        public IChatSessionRequest Request;
+
+        public OSDMap Serialize()
+        {
+            return Request.Serialize();
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("method") && map["method"].AsString().Equals("start conference"))
+                Request = new ChatSessionRequestStartConference();
+            else if (map.ContainsKey("method") && map["method"].AsString().Equals("mute update"))
+                Request = new ChatSessionRequestMuteUpdate();
+            else if (map.ContainsKey("method") && map["method"].AsString().Equals("accept invitation"))
+                Request = new ChatSessionAcceptInvitation();
+            else
+                Logger.Log("Unable to deserialize ChatSessionRequest: No message handler exists for method " + map["method"].AsString(), Helpers.LogLevel.Warning); 
+
+            Request.Deserialize(map);
+        }
+    }
+
+    #endregion
 
     public class ChatterboxSessionEventReplyMessage : IMessage
     {

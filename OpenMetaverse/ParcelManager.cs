@@ -1698,14 +1698,14 @@ namespace OpenMetaverse
 
                 ParcelObjectOwnersReplyMessage msg = (ParcelObjectOwnersReplyMessage)message;
                 
-                for (int i = 0; i < msg.DataBlocks.Length; i++)
+                for (int i = 0; i < msg.PrimOwnersBlock.Length; i++)
                 {
                     ParcelPrimOwners primOwner = new ParcelPrimOwners();
-                    primOwner.OwnerID = msg.DataBlocks[i].OwnerID;
-                    primOwner.Count = msg.DataBlocks[i].Count;
-                    primOwner.IsGroupOwned = msg.DataBlocks[i].IsGroupOwned;
-                    primOwner.OnlineStatus = msg.DataBlocks[i].OnlineStatus;
-                    primOwner.NewestPrim = msg.DataBlocks[i].TimeStamp;
+                    primOwner.OwnerID = msg.PrimOwnersBlock[i].OwnerID;
+                    primOwner.Count = msg.PrimOwnersBlock[i].Count;
+                    primOwner.IsGroupOwned = msg.PrimOwnersBlock[i].IsGroupOwned;
+                    primOwner.OnlineStatus = msg.PrimOwnersBlock[i].OnlineStatus;
+                    primOwner.NewestPrim = msg.PrimOwnersBlock[i].TimeStamp;
 
                     primOwners.Add(primOwner);
                 }

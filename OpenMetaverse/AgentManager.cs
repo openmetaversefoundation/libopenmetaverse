@@ -3291,29 +3291,14 @@ namespace OpenMetaverse
 
             if (url != null)
             {
-                ChatSessionRequestMessage req = new ChatSessionRequestMessage();
-                req.Method = "mute update";
+                ChatSessionRequestMuteUpdate req = new ChatSessionRequestMuteUpdate();
+
                 req.RequestKey = key;
                 req.RequestValue = moderate;
                 req.SessionID = sessionID;
                 req.AgentID = memberID;
 
                 OSDMap map = req.Serialize();
-
-                //OSDMap req = new OSDMap();
-                //req.Add("method", OSD.FromString("mute update"));
-                
-                //OSDMap mute_info = new OSDMap();
-                //mute_info.Add("text", OSD.FromBoolean(moderateText));
-                //mute_info.Add("voice", OSD.FromBoolean(moderateVoice));
-
-                //OSDMap parameters = new OSDMap();
-                //parameters["agent_id"] = OSD.FromUUID(memberID);
-                //parameters["mute_info"] = mute_info;
-
-                //req["params"] = parameters;
-                
-                //req.Add("session-id", OSD.FromUUID(sessionID));
                 
                 byte[] postData = OSDParser.SerializeLLSDXmlBytes(map);
 
