@@ -117,7 +117,7 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
-    public class CrossedRegionMessage
+    public class CrossedRegionMessage : IMessage
     {
         public Vector3 LookAt;
         public Vector3 Position;

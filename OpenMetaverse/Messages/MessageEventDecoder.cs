@@ -76,6 +76,7 @@ namespace OpenMetaverse
                 case "ParcelVoiceInfoRequest": message = new ParcelVoiceInfoRequestMessage(); break;
                 case "ViewerStats": message = new ViewerStatsMessage(); break;
                 case "EventQueueGet": message = new EventQueueGetMessage(); break;
+                case "CrossedRegion": message = new CrossedRegionMessage(); break;
 
                 // Capabilities TODO:
                 // DispatchRegionInfo
