@@ -8,6 +8,10 @@ if [ x$1 == xnant ]; then
     nant -buildfile:OpenMetaverse.build
     RES=$?
     echo Build Exit Code: $RES
+    if [ x$2 == xruntests ]; then
+        nunit-console2 bin/OpenMetaverse.Tests.dll /exclude=Network /labels /xml=testresults.xml
+    fi
+    
     exit $RES
 fi
 
