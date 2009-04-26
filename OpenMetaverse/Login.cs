@@ -1466,6 +1466,7 @@ namespace OpenMetaverse
             catch (Exception e)
             {
                 UpdateLoginStatus(LoginStatus.Failed, "Error retrieving the login response from the server " + e.Message );
+                Logger.Log("Login response failure: " + e.Message + " " + e.StackTrace, Helpers.LogLevel.Debug);
                 return;
             }
 
