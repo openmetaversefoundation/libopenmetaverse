@@ -1455,7 +1455,12 @@ namespace OpenMetaverse
                 if (context.GetHashCode() != CurrentContext.Value.GetHashCode())
                 {
                     Logger.Log("Login Response does not match login request", Helpers.LogLevel.Warning);
-                    return;
+                    // TODO: Although the hash codes to not match the login appears to work correctly if
+                    // we don't exit the process here. Need to look into why the hashcodes do not match with Mono.
+                    // See LIBOMV-485 for additional information
+                    //
+                    // Temporarily disabling this to allow mono based clients to login with XML-RPC
+                    //return;
                 }
             }
             catch (Exception e)
