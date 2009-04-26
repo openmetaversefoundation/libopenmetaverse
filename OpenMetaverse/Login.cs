@@ -71,23 +71,52 @@ namespace OpenMetaverse
     /// </summary>
     public struct LoginParams
     {
+        /// <summary>The URL of the Login Server</summary>
         public string URI;
+        /// <summary>The number of milliseconds to wait before a login is considered
+        /// failed due to timeout</summary>
         public int Timeout;
+        /// <summary>The request method</summary>
+        /// <remarks>login_to_server is currently the only supported method</remarks>
         public string MethodName;
+        /// <summary>The Agents First name</summary>
         public string FirstName;
+        /// <summary>The Agents Last name</summary>
         public string LastName;
+        /// <summary>A md5 hashed password</summary>
+        /// <remarks>plaintext password will be automatically hashed</remarks>
         public string Password;
+        /// <summary>The agents starting location once logged in</summary>
+        /// <remarks>Either "last", "home", or a string encoded URI 
+        /// containing the simulator name and x/y/z coordinates e.g: uri:hooper&128&152&17</remarks>
+        /// <seealso cref="M:StartLocation"/>
         public string Start;
+        /// <summary>A string containing the client software channel information</summary>
+        /// <example>Second Life Release</example>
         public string Channel;
+        /// <summary>The client software version information</summary>
+        /// <remarks>The official viewer uses: Second Life Release n.n.n.n 
+        /// where n is replaced with the current version of the viewer</remarks>
         public string Version;
+        /// <summary>A string containing the platform information the agent is running on</summary>
         public string Platform;
+        /// <summary>A string hash of the network cards Mac Address</summary>
         public string MAC;
+        /// <summary>Unknown or deprecated</summary>
         public string ViewerDigest;
+        /// <summary>A string hash of the first disk drives ID used to identify this clients uniqueness</summary>
         public string ID0;
+        /// <summary>A string containing the viewers Software, this is not directly sent to the login server but 
+        /// instead is used to generate the Version string</summary>
         public string UserAgent;
+        /// <summary>A string representing the software creator. This is not directly sent to the login server but
+        /// is used by the library to generate the Version information</summary>
         public string Author;
+        /// <summary>If true, this agent agrees to the Terms of Service of the grid its connecting to</summary>
         public string AgreeToTos;
+        /// <summary>Unknown</summary>
         public string ReadCritical;
+        /// <summary>An array of string sent to the login server to enable various options</summary>
         public string[] Options;
     }
 
@@ -99,7 +128,7 @@ namespace OpenMetaverse
     }
 
     /// <summary>
-    /// 
+    /// The decoded data returned from the login server after a successful login
     /// </summary>
     public struct LoginResponseData
     {
@@ -130,6 +159,7 @@ namespace OpenMetaverse
         public string SeedCapability;
         public BuddyListEntry[] BuddyList;
         public int SecondsSinceEpoch;
+        public string UDPBlacklist;
 
         #region Inventory
         
@@ -155,7 +185,6 @@ namespace OpenMetaverse
         public string AgentRegionAccess;
         public int AOTransition;
         public string InventoryHost;
-        public string UDPBlacklist;
 
         /// <summary>
         /// Parse LLSD Login Reply Data
@@ -1044,7 +1073,7 @@ namespace OpenMetaverse
         private string InternalRawLoginReply = String.Empty;
         private Dictionary<LoginResponseCallback, string[]> CallbackOptions = new Dictionary<LoginResponseCallback, string[]>();
         /// <summary>A list of packets obtained during the login process which networkmanager will log but not process</summary>
-        private List<string> UDPBlacklist = new List<string>();
+        private readonly List<string> UDPBlacklist = new List<string>();
         #endregion
 
         #region Public Methods
@@ -1062,22 +1091,26 @@ namespace OpenMetaverse
         public LoginParams DefaultLoginParams(string firstName, string lastName, string password,
             string userAgent, string userVersion)
         {
-            List<string> options = new List<string>();
+            List<string> options = new List<string>(15);
             options.Add("inventory-root");
             options.Add("inventory-skeleton");
             options.Add("inventory-lib-root");
             options.Add("inventory-lib-owner");
             options.Add("inventory-skel-lib");
+            options.Add("initial-outfit");
             options.Add("gestures");
             options.Add("event_categories");
             options.Add("event_notifications");
             options.Add("classified_categories");
             options.Add("buddy-list");
             options.Add("ui-config");
+            options.Add("tutorial_settings");
             options.Add("login-flags");
             options.Add("global-textures");
 
             LoginParams loginParams = new LoginParams();
+            if (Client == null)
+                throw new NullReferenceException("GridClient must be instantiated before calling DefaultLoginParams()");
 
             loginParams.URI = Client.Settings.LOGIN_SERVER;
             loginParams.Timeout = Client.Settings.LOGIN_TIMEOUT;
@@ -1337,6 +1370,7 @@ namespace OpenMetaverse
                 loginXmlRpc["read_critical"] = true;
                 loginXmlRpc["viewer_digest"] = loginParams.ViewerDigest;
                 loginXmlRpc["id0"] = loginParams.ID0;
+                loginXmlRpc["last_exec_event"] = 0;
 
                 // Create the options array
                 ArrayList options = new ArrayList();

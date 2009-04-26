@@ -30,7 +30,7 @@ using System.Net;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
+
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
@@ -41,7 +41,6 @@ using OpenMetaverse;
 using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Interfaces;
-using OpenMetaverse.Messages.Linden;
 using System.Xml;
 using Nwc.XmlRpc;
 
@@ -51,34 +50,40 @@ namespace WinGridProxy
     {
         private static SettingsStore Store = new SettingsStore();
 
-        private static bool IsProxyRunning = false;
+        private static bool IsProxyRunning;
 
-        private bool AutoScrollSessions = false;
+        private bool AutoScrollSessions;
 
         ProxyManager proxy;
 
 
-        private int PacketCounter = 0;
+        private int PacketCounter;
 
-        private int CapsInCounter = 0;
-        private int CapsInBytes = 0;
-        private int CapsOutCounter = 0;
-        private int CapsOutBytes = 0;
+        private int CapsInCounter;
+        private int CapsInBytes;
+        private int CapsOutCounter;
+        private int CapsOutBytes;
 
-        private int PacketsInCounter = 0;
+        private int PacketsInCounter;
         private int PacketsInBytes;
-        private int PacketsOutCounter = 0;
+        private int PacketsOutCounter;
         private int PacketsOutBytes;
 
         public FormWinGridProxy()
         {
             InitializeComponent();
 
-            ProxyManager.OnPacketLog += new ProxyManager.PacketLogHandler(ProxyManager_OnPacketLog);
-            ProxyManager.OnMessageLog += new ProxyManager.MessageLogHandler(ProxyManager_OnMessageLog);
-            ProxyManager.OnLoginResponse += new ProxyManager.LoginLogHandler(ProxyManager_OnLoginResponse);
-            ProxyManager.OnCapabilityAdded += new ProxyManager.CapsAddedHandler(ProxyManager_OnCapabilityAdded);
-            ProxyManager.OnEventMessageLog += new ProxyManager.EventQueueMessageHandler(ProxyManager_OnEventMessageLog);
+            // populate the listen box with IPs
+            IPHostEntry iphostentry = Dns.GetHostByName(Dns.GetHostName());
+            foreach(IPAddress address in iphostentry.AddressList)
+                comboBoxListenAddress.Items.Add(address.ToString());
+
+
+            ProxyManager.OnPacketLog += ProxyManager_OnPacketLog;
+            ProxyManager.OnMessageLog += ProxyManager_OnMessageLog;
+            ProxyManager.OnLoginResponse += ProxyManager_OnLoginResponse;
+            ProxyManager.OnCapabilityAdded += ProxyManager_OnCapabilityAdded;
+            ProxyManager.OnEventMessageLog += ProxyManager_OnEventMessageLog;
         }
 
         #region Event Handlers for Messages/Packets
@@ -296,9 +301,9 @@ namespace WinGridProxy
 
             if (button1.Text.StartsWith("Start") && IsProxyRunning.Equals(false))
             {
-                proxy = new ProxyManager(textBoxProxyPort.Text, textBoxProxyListenIP.Text, comboBoxLoginURL.Text);
+                proxy = new ProxyManager(textBoxProxyPort.Text, comboBoxListenAddress.Text, comboBoxLoginURL.Text);
                 // disable any gui elements
-                textBoxProxyListenIP.Enabled = textBoxProxyPort.Enabled = comboBoxLoginURL.Enabled = false;
+                comboBoxListenAddress.Enabled = textBoxProxyPort.Enabled = comboBoxLoginURL.Enabled = false;
 
                 InitProxyFilters();
 
@@ -318,7 +323,7 @@ namespace WinGridProxy
                 proxy.Stop();
                 grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = false;
                 button1.Text = "Start Proxy";
-                textBoxProxyListenIP.Enabled = textBoxProxyPort.Enabled = comboBoxLoginURL.Enabled = true;
+                comboBoxListenAddress.Enabled = textBoxProxyPort.Enabled = comboBoxLoginURL.Enabled = true;
 
                 if (!enableStatisticsToolStripMenuItem.Checked && timer1.Enabled)
                     timer1.Enabled = false;
@@ -915,7 +920,7 @@ namespace WinGridProxy
                 // an array of class objects
                 else if (messageField.FieldType.IsArray)
                 {
-                    object messageObjectData = messageField.GetValue(message);
+                    var messageObjectData = messageField.GetValue(message);
                     result.AppendFormat("-- {0} --" + System.Environment.NewLine, messageField.FieldType.Name);
                     foreach (object nestedArrayObject in messageObjectData as Array)
                     {

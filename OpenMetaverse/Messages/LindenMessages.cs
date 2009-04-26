@@ -74,7 +74,6 @@ namespace OpenMetaverse.Messages.Linden
 
         public void Deserialize(OSDMap map)
         {
-            Console.WriteLine("Deserializing TeleportFinish Message");
             OSDArray array = (OSDArray)map["Info"];
             OSDMap blockMap = (OSDMap)array[0];
 
