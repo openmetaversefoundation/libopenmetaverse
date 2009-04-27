@@ -236,7 +236,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Register an event handler
+        /// Register an new event handler for a capabilities event sent via the EventQueue
         /// </summary>
         /// <remarks>Use String.Empty to fire this event on every CAPS event</remarks>
         /// <param name="capsEvent">Capability event name to register the 
@@ -254,7 +254,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// 
+        /// Unregister a previously registered capabilities handler 
         /// </summary>
         /// <param name="capsEvent">Capability event name unregister the 
         /// handler for</param>
@@ -289,24 +289,6 @@ namespace OpenMetaverse
                     catch (Exception ex) { Logger.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error, Client); }
                 }
             }
-
-            // Generic parser next
-            //if (body.Type == StructuredData.OSDType.Map)
-            //{
-            //    StructuredData.OSDMap map = (StructuredData.OSDMap)body;
-            //    Packet packet = Packet.BuildPacket(capsEvent, map);
-            //    if (packet != null)
-            //    {
-            //        NetworkManager.IncomingPacket incomingPacket;
-            //        incomingPacket.Simulator = simulator;
-            //        incomingPacket.Packet = packet;
-
-            //        Logger.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler", Client);
-
-            //        Client.Network.PacketInbox.Enqueue(incomingPacket);
-            //        specialHandler = true;
-            //    }
-            //}
 
             // Explicit handler next
             if (_EventTable.TryGetValue(capsEvent, out callback) && callback != null)
@@ -346,25 +328,6 @@ namespace OpenMetaverse
                     ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
                 }
             }
-
-            // Generic parser next, don't generic parse events we've manually registered for
-            //if (body.Type == StructuredData.OSDType.Map && !_EventTable.ContainsKey(capsEvent))
-            //{
-            //    StructuredData.OSDMap map = (StructuredData.OSDMap)body;
-            //    Packet packet = Packet.BuildPacket(capsEvent, map);
-                
-            //    if (packet != null)
-            //    {
-            //        NetworkManager.IncomingPacket incomingPacket;
-            //        incomingPacket.Simulator = simulator;
-            //        incomingPacket.Packet = packet;
-
-            //        Logger.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler", Client);
-
-            //        Client.Network.PacketInbox.Enqueue(incomingPacket);
-            //        specialHandler = true;
-            //    }
-            //}
             
             // Explicit handler next
             if (_EventTable.TryGetValue(capsEvent, out callback) && callback != null)

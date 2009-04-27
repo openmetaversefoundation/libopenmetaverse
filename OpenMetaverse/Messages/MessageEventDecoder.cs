@@ -77,6 +77,8 @@ namespace OpenMetaverse
                 case "ViewerStats": message = new ViewerStatsMessage(); break;
                 case "EventQueueGet": message = new EventQueueGetMessage(); break;
                 case "CrossedRegion": message = new CrossedRegionMessage(); break;
+                case "TelportFailed": message = new TeleportFailedMessage(); break;
+
 
                 // Capabilities TODO:
                 // DispatchRegionInfo

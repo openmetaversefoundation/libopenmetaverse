@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Interfaces;
 using OpenMetaverse.Http;
@@ -127,13 +128,19 @@ namespace OpenMetaverse
 
             // Create a request list
             OSDArray req = new OSDArray();
+            // This list can be updated by using the following command to obtain a current list of capabilities the official linden viewer supports:
+            // wget -q -O - http://svn.secondlife.com/svn/linden/trunk/indra/newview/llviewerregion.cpp | grep 'capabilityNames.append'  | sed 's/^[ \t]*//;s/capabilityNames.append("/req.Add("/'
             req.Add("ChatSessionRequest");
             req.Add("CopyInventoryFromNotecard");
             req.Add("DispatchRegionInfo");
             req.Add("EstateChangeInfo");
             req.Add("EventQueueGet");
-            req.Add("FetchInventoryDescendents");
+            req.Add("FetchInventory");
+            req.Add("WebFetchInventoryDescendents");
+            req.Add("FetchLib");
+            req.Add("FetchLibDescendents");
             req.Add("GroupProposalBallot");
+            req.Add("HomeLocation");
             req.Add("MapLayer");
             req.Add("MapLayerGod");
             req.Add("NewFileAgentInventory");
@@ -149,14 +156,17 @@ namespace OpenMetaverse
             req.Add("SendUserReportWithScreenshot");
             req.Add("ServerReleaseNotes");
             req.Add("StartGroupProposal");
+            req.Add("UntrustedSimulatorMessage");
+            req.Add("UpdateAgentInformation");
+            req.Add("UpdateAgentLanguage");
             req.Add("UpdateGestureAgentInventory");
             req.Add("UpdateNotecardAgentInventory");
             req.Add("UpdateScriptAgent");
             req.Add("UpdateGestureTaskInventory");
             req.Add("UpdateNotecardTaskInventory");
             req.Add("UpdateScriptTask");
+            req.Add("UploadBakedTexture");
             req.Add("ViewerStartAuction");
-            req.Add("UntrustedSimulatorMessage");
             req.Add("ViewerStats");
 
             _SeedRequest = new CapsClient(new Uri(_SeedCapsURI));
@@ -197,6 +207,11 @@ namespace OpenMetaverse
             Simulator.Client.Network.RaiseConnectedEvent(Simulator);
         }
 
+        /// <summary>
+        /// Process any incoming events, check to see if we have a message created for the event, 
+        /// </summary>
+        /// <param name="eventName"></param>
+        /// <param name="body"></param>
         private void EventQueueEventHandler(string eventName, OSDMap body)
         {
             IMessage message = DecodeEvent(eventName, body);
@@ -209,7 +224,29 @@ namespace OpenMetaverse
             }
             else
             {
-                Logger.Log("No Message class exists for event " + eventName + ". Unable to decode", Helpers.LogLevel.Warning);
+                Logger.Log("No Message handler exists for event " + eventName + ". Unable to decode. Will try Generic Handler next", Helpers.LogLevel.Warning);
+                Logger.Log("Please report this information to http://jira.openmv.org/: \n" + body, Helpers.LogLevel.Debug);
+
+                // try generic decoder next which takes a caps event and tries to match it to an existing packet
+                if (body.Type == OSDType.Map)
+                {
+                    OSDMap map = (OSDMap)body;
+                    Packet packet = Packet.BuildPacket(eventName, map);
+                    if (packet != null)
+                    {
+                        NetworkManager.IncomingPacket incomingPacket;
+                        incomingPacket.Simulator = Simulator;
+                        incomingPacket.Packet = packet;
+
+                        Logger.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler", Simulator.Client);
+
+                        Simulator.Client.Network.PacketInbox.Enqueue(incomingPacket);
+                    }
+                    else
+                    {
+                        Logger.Log("No Packet or Message handler exists for " + eventName, Helpers.LogLevel.Warning);
+                    }
+                }
             }
         }
     }

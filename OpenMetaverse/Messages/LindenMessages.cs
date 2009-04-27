@@ -224,6 +224,61 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    /// <summary>
+    /// A message sent to the client which indicates a teleport request has failed
+    /// and contains some information on why it failed
+    /// </summary>
+    public class TeleportFailedMessage : IMessage
+    {
+        /// <summary></summary>
+        public string ExtraParams;
+        /// <summary>A string key of the reason the teleport failed e.g. CouldntTPCloser
+        /// Which could be used to look up a value in a dictionary or enum</summary>
+        public string MessageKey;
+        /// <summary>The <see cref="UUID"/> of the Agent</summary>
+        public UUID AgentID;
+        /// <summary>A string human readable message containing the reason </summary>
+        /// <remarks>An example: Could not teleport closer to destination</remarks>
+        public string Reason;
+
+        /// <summary>
+        /// Serialize the message object into an OSD map
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the serialized message object</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(2);
+            
+            OSDMap alertInfoMap = new OSDMap(2);
+            alertInfoMap["ExtraParams"] = OSD.FromString(ExtraParams);
+            alertInfoMap["Message"] = OSD.FromString(MessageKey);
+            map["AlertInfo"] = alertInfoMap;
+
+            OSDMap infoMap = new OSDMap(2);
+            infoMap["AgentID"] = OSD.FromUUID(AgentID);
+            infoMap["Reason"] = OSD.FromString(Reason);
+            map["Info"] = infoMap;
+
+            return map;
+
+        }
+
+        /// <summary>
+        /// Deserialize an OSDMap into a message object
+        /// </summary>
+        /// <param name="map"></param>
+        public void Deserialize(OSDMap map)
+        {
+            OSDMap alertInfoMap = (OSDMap)map["AlertInfo"];
+            ExtraParams = alertInfoMap["ExtraParams"].AsString();
+            MessageKey = alertInfoMap["Message"].AsString();
+
+            OSDMap infoMap = (OSDMap) map["Info"];
+            AgentID = infoMap["AgentID"].AsUUID();
+            Reason = infoMap["Reason"].AsString();
+        }
+    }
+
     public class LandStatReplyMessage : IMessage
     {
 
