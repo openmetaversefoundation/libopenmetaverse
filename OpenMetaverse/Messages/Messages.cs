@@ -31,7 +31,7 @@ using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse.Messages
 {
-    public static class MessageUtils
+    public static partial class MessageUtils
     {
         public static IPAddress ToIP(OSD osd)
         {

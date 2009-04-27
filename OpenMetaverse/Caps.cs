@@ -214,7 +214,7 @@ namespace OpenMetaverse
         /// <param name="body"></param>
         private void EventQueueEventHandler(string eventName, OSDMap body)
         {
-            IMessage message = DecodeEvent(eventName, body);
+            IMessage message = Messages.MessageUtils.DecodeEvent(eventName, body);
             if (message != null)
             {
                 if (Simulator.Client.Settings.SYNC_PACKETCALLBACKS)

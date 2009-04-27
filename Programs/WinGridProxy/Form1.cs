@@ -902,6 +902,9 @@ namespace WinGridProxy
         /// <returns>A formatted string containing the names and values of the source object</returns>
         public static string IMessageToString(object message)
         {
+            if (message == null)
+                return String.Empty;
+
             StringBuilder result = new StringBuilder();
             // common/custom types
             result.AppendFormat("Message Type {0}" + System.Environment.NewLine, message.GetType().Name);
@@ -928,7 +931,7 @@ namespace WinGridProxy
 
                         foreach (FieldInfo nestedField in nestedArrayObject.GetType().GetFields())
                         {
-                            var nt = nestedField.GetValue(nestedArrayObject).GetType().Name;
+                            //var nt = nestedField.GetValue(nestedArrayObject).GetType().Name;
                             if (nestedField.FieldType.IsEnum)
                             {
                                 result.AppendFormat("{0, 30}: {1} {2} ({3})" + System.Environment.NewLine,
@@ -937,11 +940,11 @@ namespace WinGridProxy
                                     nestedField.GetValue(nestedArrayObject), "D"),
                                     nestedField.GetValue(nestedArrayObject),
                                     nestedField.GetValue(nestedArrayObject).GetType().Name);
-                            } 
-                            else if(nestedField.FieldType.IsInterface)
-                {
-                        result.AppendLine(IMessageToString(nestedField.GetValue(nestedArrayObject)));
-                }
+                            }
+                            else if (nestedField.FieldType.IsInterface)
+                            {
+                                result.AppendLine(IMessageToString(nestedField.GetValue(nestedArrayObject)));
+                            }
                             else
                             {
                                 result.AppendFormat("{0, 30}: {1} ({2})" + System.Environment.NewLine,
@@ -1331,9 +1334,9 @@ namespace WinGridProxy
                     OSDMap data = (OSDMap)osd;
                     IMessage message;
                     if (data.ContainsKey("body"))
-                        message = Caps.DecodeEvent(key, (OSDMap)data["body"]);
+                        message = OpenMetaverse.Messages.MessageUtils.DecodeEvent(key, (OSDMap)data["body"]);
                     else
-                        message = Caps.DecodeEvent(key, data);
+                        message = OpenMetaverse.Messages.MessageUtils.DecodeEvent(key, data);
 
                     if (message != null)
                         return IMessageToString(message);

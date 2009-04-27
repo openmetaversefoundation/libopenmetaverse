@@ -31,10 +31,10 @@ using OpenMetaverse.StructuredData;
 using OpenMetaverse.Interfaces;
 using OpenMetaverse.Messages.Linden;
 
-namespace OpenMetaverse
+namespace OpenMetaverse.Messages
 {
-    
-    public partial class Caps
+
+    public static partial class MessageUtils
     {
         /// <summary>
         /// Return a decoded capabilities message as a strongly typed object
@@ -77,7 +77,7 @@ namespace OpenMetaverse
                 case "ViewerStats": message = new ViewerStatsMessage(); break;
                 case "EventQueueGet": message = new EventQueueGetMessage(); break;
                 case "CrossedRegion": message = new CrossedRegionMessage(); break;
-                case "TelportFailed": message = new TeleportFailedMessage(); break;
+                case "TeleportFailed": message = new TeleportFailedMessage(); break;
 
 
                 // Capabilities TODO:

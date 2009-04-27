@@ -250,14 +250,20 @@ namespace OpenMetaverse.Messages.Linden
             OSDMap map = new OSDMap(2);
             
             OSDMap alertInfoMap = new OSDMap(2);
+
+
             alertInfoMap["ExtraParams"] = OSD.FromString(ExtraParams);
             alertInfoMap["Message"] = OSD.FromString(MessageKey);
-            map["AlertInfo"] = alertInfoMap;
+            OSDArray alertArray = new OSDArray();
+            alertArray.Add(alertInfoMap);
+            map["AlertInfo"] = alertArray;
 
             OSDMap infoMap = new OSDMap(2);
             infoMap["AgentID"] = OSD.FromUUID(AgentID);
             infoMap["Reason"] = OSD.FromString(Reason);
-            map["Info"] = infoMap;
+            OSDArray infoArray = new OSDArray();
+            infoArray.Add(infoMap);
+            map["Info"] = infoArray;
 
             return map;
 
@@ -269,11 +275,15 @@ namespace OpenMetaverse.Messages.Linden
         /// <param name="map"></param>
         public void Deserialize(OSDMap map)
         {
-            OSDMap alertInfoMap = (OSDMap)map["AlertInfo"];
+
+            OSDArray alertInfoArray = (OSDArray) map["AlertInfo"];
+
+            OSDMap alertInfoMap = (OSDMap) alertInfoArray[0];
             ExtraParams = alertInfoMap["ExtraParams"].AsString();
             MessageKey = alertInfoMap["Message"].AsString();
 
-            OSDMap infoMap = (OSDMap) map["Info"];
+            OSDArray infoArray = (OSDArray) map["Info"];
+            OSDMap infoMap = (OSDMap) infoArray[0];
             AgentID = infoMap["AgentID"].AsUUID();
             Reason = infoMap["Reason"].AsString();
         }
@@ -2037,7 +2047,7 @@ namespace OpenMetaverse.Messages.Linden
                 QueueEvent ev = new QueueEvent();
 
                 ev.MessageKey = eventMap["message"].AsString();
-                ev.EventMessage = Caps.DecodeEvent(ev.MessageKey, (OSDMap)eventMap["body"]);
+                ev.EventMessage = MessageUtils.DecodeEvent(ev.MessageKey, (OSDMap)eventMap["body"]);
                 MessageEvents[i] = ev;
             }
         }
