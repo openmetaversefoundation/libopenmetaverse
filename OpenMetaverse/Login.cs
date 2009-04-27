@@ -310,6 +310,8 @@ namespace OpenMetaverse
             {
                 Logger.Log("Login server returned (some) invalid data: " + e.Message, Helpers.LogLevel.Warning);
             }
+            if (!Success)
+                return;
 
             // Home
             OSDMap home = null;
@@ -1502,7 +1504,8 @@ namespace OpenMetaverse
                 
                 /* Add any blacklisted UDP packets to the blacklist
                  * for exclusion from packet processing */
-                UDPBlacklist.AddRange(reply.UDPBlacklist.Split(','));
+                if(reply.UDPBlacklist != null)
+                    UDPBlacklist.AddRange(reply.UDPBlacklist.Split(','));
                 
                 // Misc:
                 //uint timestamp = (uint)reply.seconds_since_epoch;
