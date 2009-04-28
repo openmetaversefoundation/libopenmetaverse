@@ -978,7 +978,26 @@ namespace OpenMetaverse.Tests
                 Assert.AreEqual(s.ReportDataBlocks[i].TaskName, t.ReportDataBlocks[i].TaskName);
                 Assert.AreEqual(s.ReportDataBlocks[i].TimeStamp, t.ReportDataBlocks[i].TimeStamp);
             }
+        }
 
+        [Test]
+        public void TelportFailedMessage()
+        {
+            TeleportFailedMessage s = new TeleportFailedMessage();
+            s.AgentID = UUID.Random();
+            s.MessageKey = "Key";
+            s.Reason = "Unable To Teleport for some unspecified reason";
+            s.ExtraParams = String.Empty;
+
+            OSDMap map = s.Serialize();
+
+            TeleportFailedMessage t = new TeleportFailedMessage();
+            t.Deserialize(map);
+
+            Assert.AreEqual(s.AgentID, t.AgentID);
+            Assert.AreEqual(s.ExtraParams, t.ExtraParams);
+            Assert.AreEqual(s.MessageKey, t.MessageKey);
+            Assert.AreEqual(s.Reason, t.Reason);
 
         }
     }
