@@ -965,7 +965,7 @@ namespace OpenMetaverse
 
         #endregion Events
 
-        /// <summary>Reference to the GridClient object</summary>
+        /// <summary>Reference to the GridClient instance</summary>
         public readonly GridClient Client;
         /// <summary>Used for movement and camera tracking</summary>
         public readonly AgentMovement Movement;
@@ -973,9 +973,7 @@ namespace OpenMetaverse
         /// check the current movement status such as walking, hovering, aiming,
         /// etc. by checking for system animations in the Animations class</summary>
         public InternalDictionary<UUID, int> SignaledAnimations = new InternalDictionary<UUID, int>();
-        /// <summary>
-        /// Dictionary containing current Group Chat sessions and members
-        /// </summary>
+        /// <summary>Dictionary containing current Group Chat sessions and members</summary>
         public InternalDictionary<UUID, List<ChatSessionMember>> GroupChatSessions = new InternalDictionary<UUID, List<ChatSessionMember>>();
 
         #region Properties
@@ -1167,10 +1165,11 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.TeleportStart, callback);
             Client.Network.RegisterCallback(PacketType.TeleportProgress, callback);
             Client.Network.RegisterCallback(PacketType.TeleportFailed, callback);
-            Client.Network.RegisterEventCallback("TeleportFailed", TeleportFailedEventHandler);
-            Client.Network.RegisterEventCallback("TeleportFinish", new Caps.EventQueueCallback(TeleportFinishEventHandler));
             Client.Network.RegisterCallback(PacketType.TeleportCancel, callback);
             Client.Network.RegisterCallback(PacketType.TeleportLocal, callback);
+            // these come in via the EventQueue
+            Client.Network.RegisterEventCallback("TeleportFailed", new Caps.EventQueueCallback(TeleportFailedEventHandler));
+            Client.Network.RegisterEventCallback("TeleportFinish", new Caps.EventQueueCallback(TeleportFinishEventHandler));
 
             // Instant message callback
             Client.Network.RegisterCallback(PacketType.ImprovedInstantMessage, new NetworkManager.PacketCallback(InstantMessageHandler));
@@ -1196,15 +1195,15 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.MeanCollisionAlert, new NetworkManager.PacketCallback(MeanCollisionAlertHandler));
             // Region Crossing
             Client.Network.RegisterCallback(PacketType.CrossedRegion, new NetworkManager.PacketCallback(CrossedRegionHandler));
-            Client.Network.RegisterEventCallback("CrossedRegion", new Caps.EventQueueCallback(CrossedRegionCapsHandler));
+            Client.Network.RegisterEventCallback("CrossedRegion", new Caps.EventQueueCallback(CrossedRegionEventHandler));
             // CAPS callbacks
             Client.Network.RegisterEventCallback("EstablishAgentCommunication", new Caps.EventQueueCallback(EstablishAgentCommunicationEventHandler));
             // Incoming Group Chat
-            Client.Network.RegisterEventCallback("ChatterBoxInvitation", new Caps.EventQueueCallback(ChatterBoxInvitationHandler));
+            Client.Network.RegisterEventCallback("ChatterBoxInvitation", new Caps.EventQueueCallback(ChatterBoxInvitationEventHandler));
             // Outgoing Group Chat Reply
-            Client.Network.RegisterEventCallback("ChatterBoxSessionEventReply", new Caps.EventQueueCallback(ChatterBoxSessionEventReplyHandler));
-            Client.Network.RegisterEventCallback("ChatterBoxSessionStartReply", new Caps.EventQueueCallback(ChatterBoxSessionStartReplyHandler));
-            Client.Network.RegisterEventCallback("ChatterBoxSessionAgentListUpdates", new Caps.EventQueueCallback(ChatterBoxSessionAgentListUpdatesHandler));
+            Client.Network.RegisterEventCallback("ChatterBoxSessionEventReply", new Caps.EventQueueCallback(ChatterBoxSessionEventReplyEventHandler));
+            Client.Network.RegisterEventCallback("ChatterBoxSessionStartReply", new Caps.EventQueueCallback(ChatterBoxSessionStartReplyEventHandler));
+            Client.Network.RegisterEventCallback("ChatterBoxSessionAgentListUpdates", new Caps.EventQueueCallback(ChatterBoxSessionAgentListUpdatesEventHandler));
             // Login
             Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse));
             // Alert Messages
@@ -1215,18 +1214,17 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.CameraConstraint, new NetworkManager.PacketCallback(CameraConstraintHandler));
             Client.Network.RegisterCallback(PacketType.ScriptSensorReply, new NetworkManager.PacketCallback(ScriptSensorReplyHandler));
             Client.Network.RegisterCallback(PacketType.AvatarSitResponse, new NetworkManager.PacketCallback(AvatarSitResponseHandler));
-
         }
 
         #region Chat and instant messages
 
         /// <summary>
-        /// Send a chat message
+        /// Send a text message from the Agent to the Simulator
         /// </summary>
-        /// <param name="message">The Message you're sending out.</param>
-        /// <param name="channel">Channel number (0 would be default 'Say' message, other numbers 
-        /// denote the equivalent of /# in normal client).</param>
-        /// <param name="type">Chat Type, see above.</param>
+        /// <param name="message">A <see cref="string"/> containing the message</param>
+        /// <param name="channel">The channel to send the message on, 0 is the public channel. Channels above 0
+        /// can be used however only scripts listening on the specified channel will see the message</param>
+        /// <param name="type">Denotes the type of message being sent, shout, whisper, etc.</param>
         public void Chat(string message, int channel, ChatType type)
         {
             ChatFromViewerPacket chat = new ChatFromViewerPacket();
@@ -1239,7 +1237,9 @@ namespace OpenMetaverse
             Client.Network.SendPacket(chat);
         }
 
-        /// <summary>Requests missed/offline messages</summary>
+        /// <summary>
+        /// Request any instant messages sent while the client was offline to be resent.
+        /// </summary>
         public void RetrieveInstantMessages()
         {
             RetrieveInstantMessagesPacket p = new RetrieveInstantMessagesPacket();
@@ -1249,10 +1249,10 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Send an Instant Message
+        /// Send an Instant Message to another Avatar
         /// </summary>
-        /// <param name="target">Target of the Instant Message</param>
-        /// <param name="message">Text message being sent</param>
+        /// <param name="target">The recipients <see cref="UUID"/></param>
+        /// <param name="message">A <see cref="string"/> containing the message to send</param>
         public void InstantMessage(UUID target, string message)
         {
             InstantMessage(Name, target, message, AgentID.Equals(target) ? AgentID : target ^ AgentID,
@@ -1261,10 +1261,10 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Send an Instant Message
+        /// Send an Instant Message to an existing group chat or conference chat
         /// </summary>
-        /// <param name="target">Target of the Instant Message</param>
-        /// <param name="message">Text message being sent</param>
+        /// <param name="target">The recipients <see cref="UUID"/></param>
+        /// <param name="message">A <see cref="string"/> containing the message to send</param>
         /// <param name="imSessionID">IM session ID (to differentiate between IM windows)</param>
         public void InstantMessage(UUID target, string message, UUID imSessionID)
         {
@@ -1367,12 +1367,11 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Send an Instant Message to a group
+        /// Send an Instant Message to a group the agent is a member of
         /// </summary>
         /// <param name="fromName">The name this IM will show up as being from</param>
         /// <param name="groupID"><seealso cref="UUID"/> of the group to send message to</param>
         /// <param name="message">Text message being sent</param>
-        /// <remarks>This does not appear to function with groups the agent is not in</remarks>
         public void InstantMessageGroup(string fromName, UUID groupID, string message)
         {
             lock (GroupChatSessions.Dictionary)
@@ -1426,11 +1425,12 @@ namespace OpenMetaverse
 
             Client.Network.SendPacket(im);
         }
+
         /// <summary>
-        /// Request self terminates group chat. This will stop Group IM's from showing up
-        /// until session is rejoined or expires.
+        /// Exit a group chat session. This will stop further Group chat messages
+        /// from being sent until session is rejoined.
         /// </summary>
-        /// <param name="groupID"><seealso cref="UUID"/> of Group to leave</param>
+        /// <param name="groupID"><seealso cref="UUID"/> of Group chat session to leave</param>
         public void RequestLeaveGroupChat(UUID groupID)
         {
             ImprovedInstantMessagePacket im = new ImprovedInstantMessagePacket();
@@ -1487,11 +1487,10 @@ namespace OpenMetaverse
 
             if (url != null)
             {
-                OSDMap req = new OSDMap();
-                req.Add("method", OSD.FromString("accept invitation"));
-                req.Add("session-id", OSD.FromUUID(session_id));
+                ChatSessionAcceptInvitation acceptInvite = new ChatSessionAcceptInvitation();
+                acceptInvite.SessionID = session_id;
 
-                byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(req);
+                byte[] postData = OSDParser.SerializeLLSDXmlBytes(acceptInvite.Serialize());
 
                 CapsClient request = new CapsClient(url);
                 request.BeginGetResponse(postData);
@@ -1504,11 +1503,11 @@ namespace OpenMetaverse
        }
 
        /// <summary>
-       /// Start a friends confrence
+       /// Start a friends conference
        /// </summary>
-       /// <param name="participants"><seealso cref="UUID"/> List of UUIDs to start a confrence with</param>
-       /// <param name="tmp_session_id"><seealso cref="UUID"/>a Unique UUID that will be returned in the OnJoinedGroupChat callback></param>
-       public void StartIMConfrence(List <UUID> participants,UUID tmp_session_id)
+       /// <param name="participants"><seealso cref="UUID"/> List of UUIDs to start a conference with</param>
+       /// <param name="tmp_session_id">the temportary session ID returned in the <see cref="OnJoinedGroupChat"/> callback></param>
+       public void StartIMConference(List <UUID> participants,UUID tmp_session_id)
        {
            if (Client.Network.CurrentSim == null || Client.Network.CurrentSim.Caps == null)
                throw new Exception("ChatSessionRequest capability is not currently available");
@@ -1517,16 +1516,15 @@ namespace OpenMetaverse
 
             if (url != null)
             {
-                OSDMap req = new OSDMap();
-                req.Add("method", OSD.FromString("start conference"));
-                OSDArray members = new OSDArray();
-                foreach(UUID participant in participants)
-                    members.Add(OSD.FromUUID(participant));
+                ChatSessionRequestStartConference startConference = new ChatSessionRequestStartConference();
 
-                req.Add("params",members);
-                req.Add("session-id", OSD.FromUUID(tmp_session_id));
+                startConference.AgentsBlock = new UUID[participants.Count];
+                for (int i = 0; i < participants.Count; i++)
+                    startConference.AgentsBlock[i] = participants[i];
 
-                byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(req);
+                startConference.SessionID = tmp_session_id;
+
+                byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(startConference.Serialize());
 
                 CapsClient request = new CapsClient(url);
                 request.BeginGetResponse(postData);
@@ -2852,7 +2850,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="messageKey">The Message Key</param>
         /// <param name="message">An IMessage object Deserialized from the recieved message event</param>
-        /// <param name="simulator">The simulator originating the event</param>
+        /// <param name="simulator">The simulator originating the event message</param>
         public void TeleportFailedEventHandler(string messageKey, IMessage message, Simulator simulator)
         {
             TeleportFailedMessage msg = (TeleportFailedMessage) message;
@@ -2869,7 +2867,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="capsKey">The message system key for this event</param>
         /// <param name="message">IMessage object containing decoded data from OSD</param>
-        /// <param name="simulator"></param>
+        /// <param name="simulator">The simulator originating the event message</param>
         private void TeleportFinishEventHandler(string capsKey, IMessage message, Simulator simulator)
         {
             TeleportFinishMessage msg = (TeleportFinishMessage)message;
@@ -2886,8 +2884,6 @@ namespace OpenMetaverse
 
             // pass the packet onto the teleport handler
             TeleportHandler(p, simulator);
-
-            
         }
 
         /// <summary>
@@ -3109,8 +3105,8 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="capsKey">The message key</param>
         /// <param name="message">the IMessage object containing the deserialized data sent from the simulator</param>
-        /// <param name="sim">The <see cref="Simulator"/> which originated the packet</param>
-        private void CrossedRegionCapsHandler(string capsKey, IMessage message, Simulator sim)
+        /// <param name="simulator">The <see cref="Simulator"/> which originated the packet</param>
+        private void CrossedRegionEventHandler(string capsKey, IMessage message, Simulator simulator)
         {
             CrossedRegionMessage crossed = (CrossedRegionMessage) message;
 
@@ -3144,6 +3140,7 @@ namespace OpenMetaverse
         /// Allows agent to cross over (walk, fly, vehicle) in to neighboring
         /// simulators
         /// </summary>
+        /// <remarks>This packet is now being sent via the EventQueue</remarks>
         private void CrossedRegionHandler(Packet packet, Simulator sim)
         {
             CrossedRegionPacket crossing = (CrossedRegionPacket)packet;
@@ -3180,7 +3177,7 @@ namespace OpenMetaverse
         /// <param name="capsKey">The capability Key</param>
         /// <param name="message">IMessage object containing decoded data from OSD</param>
         /// <param name="simulator"></param>
-        private void ChatterBoxSessionEventReplyHandler(string capsKey, IMessage message, Simulator simulator)
+        private void ChatterBoxSessionEventReplyEventHandler(string capsKey, IMessage message, Simulator simulator)
         {
             ChatterboxSessionEventReplyMessage msg = (ChatterboxSessionEventReplyMessage)message;
             
@@ -3197,7 +3194,7 @@ namespace OpenMetaverse
         /// <param name="capsKey"></param>
         /// <param name="message">IMessage object containing decoded data from OSD</param>
         /// <param name="simulator"></param>
-        private void ChatterBoxSessionStartReplyHandler(string capsKey, IMessage message, Simulator simulator)
+        private void ChatterBoxSessionStartReplyEventHandler(string capsKey, IMessage message, Simulator simulator)
         {
             if (OnGroupChatJoin != null)
             {
@@ -3214,7 +3211,7 @@ namespace OpenMetaverse
         /// <param name="capsKey"></param>
         /// <param name="message">IMessage object containing decoded data from OSD</param>
         /// <param name="simulator"></param>
-        private void ChatterBoxSessionAgentListUpdatesHandler(string capsKey, IMessage message, Simulator simulator)
+        private void ChatterBoxSessionAgentListUpdatesEventHandler(string capsKey, IMessage message, Simulator simulator)
         {
             ChatterBoxSessionAgentListUpdatesMessage msg = (ChatterBoxSessionAgentListUpdatesMessage)message;
 
@@ -3300,12 +3297,12 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Group Chat Request
+        /// Handle a group chat Invitation
         /// </summary>
         /// <param name="capsKey">Caps Key</param>
         /// <param name="message">IMessage object containing decoded data from OSD</param>
         /// <param name="simulator">Originating Simulator</param>
-        private void ChatterBoxInvitationHandler(string capsKey, IMessage message, Simulator simulator)
+        private void ChatterBoxInvitationEventHandler(string capsKey, IMessage message, Simulator simulator)
         {
             if (OnInstantMessage != null)
             {
