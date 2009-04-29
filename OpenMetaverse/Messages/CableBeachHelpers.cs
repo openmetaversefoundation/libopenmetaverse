@@ -5,6 +5,8 @@ namespace OpenMetaverse.Messages.CableBeach
 {
     public static class CableBeachUtils
     {
+        // The following section is based on the table at https://wiki.secondlife.com/wiki/Asset_System
+
         #region SL / file extension / content-type conversions
 
         public static string SLAssetTypeToContentType(int assetType)
@@ -12,39 +14,29 @@ namespace OpenMetaverse.Messages.CableBeach
             switch (assetType)
             {
                 case 0:
-                    return "image/jp2";
+                    return "image/x-j2c";
                 case 1:
                     return "application/ogg";
                 case 2:
-                    return "application/x-metaverse-callingcard";
+                    return "application/vnd.ll.callingcard";
                 case 3:
-                    return "application/x-metaverse-landmark";
+                    return "application/vnd.ll.landmark";
                 case 5:
-                    return "application/x-metaverse-clothing";
+                    return "application/vnd.ll.clothing";
                 case 6:
-                    return "application/x-metaverse-primitive";
+                    return "application/vnd.ll.primitive";
                 case 7:
-                    return "application/x-metaverse-notecard";
-                case 8:
-                    return "application/x-metaverse-folder";
+                    return "application/vnd.ll.notecard";
                 case 10:
-                    return "application/x-metaverse-lsl";
+                    return "application/vnd.ll.lsltext";
                 case 11:
-                    return "application/x-metaverse-lso";
-                case 12:
-                    return "image/tga";
+                    return "application/vnd.ll.lslbyte";
                 case 13:
-                    return "application/x-metaverse-bodypart";
-                case 17:
-                    return "audio/x-wav";
-                case 19:
-                    return "image/jpeg";
+                    return "application/vnd.ll.bodypart";
                 case 20:
-                    return "application/x-metaverse-animation";
+                    return "application/vnd.ll.animation";
                 case 21:
-                    return "application/x-metaverse-gesture";
-                case 22:
-                    return "application/x-metaverse-simstate";
+                    return "application/vnd.ll.gesture";
                 default:
                     return "application/octet-stream";
             }
@@ -54,38 +46,30 @@ namespace OpenMetaverse.Messages.CableBeach
         {
             switch (contentType)
             {
-                case "image/jp2":
+                case "image/x-j2c":
                     return 0;
                 case "application/ogg":
                     return 1;
-                case "application/x-metaverse-callingcard":
+                case "application/vnd.ll.callingcard":
                     return 2;
-                case "application/x-metaverse-landmark":
+                case "application/vnd.ll.landmark":
                     return 3;
-                case "application/x-metaverse-clothing":
+                case "application/vnd.ll.clothing":
                     return 5;
-                case "application/x-metaverse-primitive":
+                case "application/vnd.ll.primitive":
                     return 6;
-                case "application/x-metaverse-notecard":
+                case "application/vnd.ll.notecard":
                     return 7;
-                case "application/x-metaverse-lsl":
+                case "application/vnd.ll.lsltext":
                     return 10;
-                case "application/x-metaverse-lso":
+                case "application/vnd.ll.lslbyte":
                     return 11;
-                case "image/tga":
-                    return 12;
-                case "application/x-metaverse-bodypart":
+                case "application/vnd.ll.bodypart":
                     return 13;
-                case "audio/x-wav":
-                    return 17;
-                case "image/jpeg":
-                    return 19;
-                case "application/x-metaverse-animation":
+                case "application/vnd.ll.animation":
                     return 20;
-                case "application/x-metaverse-gesture":
+                case "application/vnd.ll.gesture":
                     return 21;
-                case "application/x-metaverse-simstate":
-                    return 22;
                 default:
                     return -1;
             }
@@ -95,32 +79,28 @@ namespace OpenMetaverse.Messages.CableBeach
         {
             switch (contentType)
             {
-                case "image/jp2":
-                case "image/tga":
-                case "image/jpeg":
+                case "image/x-j2c":
                     return (int)InventoryType.Texture;
                 case "application/ogg":
-                case "audio/x-wav":
                     return (int)InventoryType.Sound;
-                case "application/x-metaverse-callingcard":
+                case "application/vnd.ll.callingcard":
                     return (int)InventoryType.CallingCard;
-                case "application/x-metaverse-landmark":
+                case "application/vnd.ll.landmark":
                     return (int)InventoryType.Landmark;
-                case "application/x-metaverse-clothing":
-                case "application/x-metaverse-bodypart":
+                case "application/vnd.ll.clothing":
+                case "application/vnd.ll.bodypart":
                     return (int)InventoryType.Wearable;
-                case "application/x-metaverse-primitive":
+                case "application/vnd.ll.primitive":
                     return (int)InventoryType.Object;
-                case "application/x-metaverse-notecard":
+                case "application/vnd.ll.notecard":
                     return (int)InventoryType.Notecard;
-                case "application/x-metaverse-lsl":
-                case "application/x-metaverse-lso":
+                case "application/vnd.ll.lsltext":
+                case "application/vnd.ll.lslbyte":
                     return (int)InventoryType.LSL;
-                case "application/x-metaverse-animation":
+                case "application/vnd.ll.animation":
                     return (int)InventoryType.Animation;
-                case "application/x-metaverse-gesture":
+                case "application/vnd.ll.gesture":
                     return (int)InventoryType.Gesture;
-                case "application/x-metaverse-simstate":
                 default:
                     return (int)InventoryType.Unknown;
             }
@@ -130,40 +110,32 @@ namespace OpenMetaverse.Messages.CableBeach
         {
             switch (contentType)
             {
-                case "image/jp2":
+                case "image/x-j2c":
                     return "texture";
                 case "application/ogg":
                     return "ogg";
-                case "application/x-metaverse-callingcard":
+                case "application/vnd.ll.callingcard":
                     return "callingcard";
-                case "application/x-metaverse-landmark":
+                case "application/vnd.ll.landmark":
                     return "landmark";
-                case "application/x-metaverse-clothing":
+                case "application/vnd.ll.clothing":
                     return "clothing";
-                case "application/x-metaverse-primitive":
+                case "application/vnd.ll.primitive":
                     return "primitive";
-                case "application/x-metaverse-notecard":
+                case "application/vnd.ll.notecard":
                     return "notecard";
-                case "application/x-metaverse-lsl":
-                    return "lsl";
-                case "application/x-metaverse-lso":
-                    return "lso";
-                case "image/tga":
-                    return "tga";
-                case "application/x-metaverse-bodypart":
+                case "application/vnd.ll.lsltext":
+                    return "lsltext";
+                case "application/vnd.ll.lslbyte":
+                    return "lslbyte";
+                case "application/vnd.ll.bodypart":
                     return "bodypart";
-                case "audio/x-wav":
-                    return "wav";
-                case "image/jpeg":
-                    return "jpg";
-                case "application/x-metaverse-animation":
-                    return "animation";
-                case "application/x-metaverse-gesture":
+                case "application/vnd.ll.animation":
+                    return "animatn";
+                case "application/vnd.ll.gesture":
                     return "gesture";
-                case "application/x-metaverse-simstate":
-                    return "simstate";
                 default:
-                    return "bin";
+                    return "binary";
             }
         }
 
@@ -174,43 +146,30 @@ namespace OpenMetaverse.Messages.CableBeach
                 case "texture":
                 case "jp2":
                 case "j2c":
-                    return "image/jp2";
+                    return "image/x-j2c";
                 case "sound":
                 case "ogg":
                     return "application/ogg";
                 case "callingcard":
-                    return "application/x-metaverse-callingcard";
+                    return "application/vnd.ll.callingcard";
                 case "landmark":
-                    return "application/x-metaverse-landmark";
+                    return "application/vnd.ll.landmark";
                 case "clothing":
-                    return "application/x-metaverse-clothing";
+                    return "application/vnd.ll.clothing";
                 case "primitive":
-                    return "application/x-metaverse-primitive";
+                    return "application/vnd.ll.primitive";
                 case "notecard":
-                    return "application/x-metaverse-notecard";
+                    return "application/vnd.ll.notecard";
                 case "lsl":
-                    return "application/x-metaverse-lsl";
+                    return "application/vnd.ll.lsltext";
                 case "lso":
-                    return "application/x-metaverse-lso";
-                case "tga":
-                    return "image/tga";
+                    return "application/vnd.ll.lslbyte";
                 case "bodypart":
-                    return "application/x-metaverse-bodypart";
-                case "wav":
-                    return "audio/x-wav";
-                case "jpg":
-                case "jpeg":
-                    return "image/jpeg";
-                case "animation":
-                    return "application/x-metaverse-animation";
+                    return "application/vnd.ll.bodypart";
+                case "animatn":
+                    return "application/vnd.ll.animation";
                 case "gesture":
-                    return "application/x-metaverse-gesture";
-                case "simstate":
-                    return "application/x-metaverse-simstate";
-                case "txt":
-                    return "text/plain";
-                case "xml":
-                    return "application/xml";
+                    return "application/vnd.ll.gesture";
                 default:
                     return "application/octet-stream";
             }

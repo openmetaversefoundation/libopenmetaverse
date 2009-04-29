@@ -1114,8 +1114,9 @@ namespace OpenMetaverse.StructuredData
     public partial class OSDParser
     {
         const string LLSD_BINARY_HEADER = "<?LLSD/Binary?>";
-        const string LLSD_XML_HEADER = "<?LLSD/XML?>";
-        const string LLSD_XML_ALT_HEADER = "<llsd>";
+        const string LLSD_XML_HEADER = "<llsd>";
+        const string LLSD_XML_ALT_HEADER = "<?xml";
+        const string LLSD_XML_ALT2_HEADER = "<?LLSD/XML?>";
 
         public static OSD Deserialize(byte[] data)
         {
@@ -1123,9 +1124,7 @@ namespace OpenMetaverse.StructuredData
 
             if (header.StartsWith(LLSD_BINARY_HEADER))
                 return DeserializeLLSDBinary(data);
-            else if (header.StartsWith(LLSD_XML_HEADER))
-                return DeserializeLLSDXml(data);
-            else if (header.StartsWith(LLSD_XML_ALT_HEADER))
+            else if (header.StartsWith(LLSD_XML_HEADER) || header.StartsWith(LLSD_XML_ALT_HEADER) || header.StartsWith(LLSD_XML_ALT2_HEADER))
                 return DeserializeLLSDXml(data);
             else
                 return DeserializeJson(Encoding.UTF8.GetString(data));
@@ -1142,9 +1141,7 @@ namespace OpenMetaverse.StructuredData
 
                 if (header.StartsWith(LLSD_BINARY_HEADER))
                     return DeserializeLLSDBinary(stream);
-                else if (header.StartsWith(LLSD_XML_HEADER))
-                    return DeserializeLLSDXml(stream);
-                else if (header.StartsWith(LLSD_XML_ALT_HEADER))
+                else if (header.StartsWith(LLSD_XML_HEADER) || header.StartsWith(LLSD_XML_ALT_HEADER) || header.StartsWith(LLSD_XML_ALT2_HEADER))
                     return DeserializeLLSDXml(stream);
                 else
                     return DeserializeJson(stream);

@@ -117,6 +117,124 @@
 // Assets
 ////////////////////////////////////////////////////////////////////////////////
 
+&primitive =
+{
+	attachment_position: [ real, real, real ],
+	attachment_rotation: [ real, real, real, real ],
+	before_attachment_rotation:  [ real, real, real, real ],
+	name: string,
+	perms_base: integer,
+	perms_owner: integer,
+	perms_group: integer,
+	perms_everyone: integer,
+	perms_next_owner: integer,
+	creator_id: uuid,
+	owner_id: uuid,
+	last_attachment_point: integer,
+	last_owner_id: uuid,
+	link_number: integer,
+	group_id: uuid,
+	local_id: integer,
+	position: [ real, real, real ],
+	rotation: [ real, real, real, real ],
+	velocity: [ real, real, real ],
+	angular_velocity: [ real, real, real ],
+	scale: [ real, real, real ],
+	sit_offset: [ real, real, real ],
+	sit_rotation: [ real, real, real, real ],
+	camera_eye_offset: [ real, real, real ],
+	camera_at_offset: [ real, real, real ],
+	state: integer,
+	material: integer,
+	sound_id: uuid,
+	sound_gain: real,
+	sound_radius: real,
+	sound_flags: integer,
+	text_color: [ real, real, real, real ],
+	selected: boolean,
+	selector_id: uuid,
+	use_physics: boolean,
+	phantom: boolean,
+	remote_script_access_pin: integer,
+	volume_detect: boolean,
+	die_at_edge: boolean,
+	return_at_edge: boolean,
+	temporary: boolean,
+	sandbox: boolean,
+	rez_time: date,
+	sale_price: integer,
+	sale_type: integer,
+	shape:
+	{
+		path_curve: integer,
+		path_begin: real,
+		path_end: real,
+		path_scale_x: real,
+		path_scale_y: real,
+		path_shear_x: real,
+		path_shear_y: real,
+		path_twist: real,
+		path_twist_begin: real,
+		path_radius_offset: real,
+		path_taper_x: real,
+		path_taper_y: real,
+		path_revolutions: real,
+		path_skew: real,
+		profile_curve: integer,
+		profile_begin: real,
+		profile_end: real,
+		profile_hollow: real
+	}
+	faces:
+	[
+		{
+			face_index: integer,
+			image_id: uuid,
+			color: [ real, real, real, real ],
+			scale_s: real,
+			scale_t: real,
+			offset_s: real,
+			offset_t: real,
+			imagerot: real,
+			bump: integer,
+			fullbright: boolean,
+			media_flags: integer
+		},
+		...
+	],
+	inventory:
+	{
+		serial: integer,
+		items:
+		[
+			{
+				id: uuid,
+				parent_id: uuid,
+				name: string,
+				owner_id: uuid,
+				asset_id: uuid,
+				content_type: string,
+				creator_id: uuid,
+				group_id: uuid,
+				description: string,
+				group_owned: boolean,
+				perms_base: binary,
+				perms_everyone: binary,
+				perms_group: binary,
+				perms_next: binary,
+				perms_owner: binary,
+				sale_price: integer,
+				sale_type: integer,
+				flags: integer,
+				creation_date: integer,
+				permission_granter: uuid,
+				granted_permissions: integer
+			},
+			...
+		]
+	}
+}
+
 %%get_asset_metadata
 
 &metadata = 
@@ -175,93 +293,6 @@
 // Inventory
 ////////////////////////////////////////////////////////////////////////////////
 
-%%create_inventory
-
-->
-{
-    identity: uri,
-    name: string
-}
-
-<-
-{
-    root_folder_id: uuid
-}
-
-%%create_folder
-
-->
-{
-    identity: uri,
-    folder_id: uuid,
-    parent_id: uuid,
-    name: string,
-    preferred_content_type: string
-}
-
-<-
-{
-    folder_id: uuid
-}
-
-%%create_item
-
-->
-{
-    identity: uri,
-    item_id: uuid,
-    name: string,
-    description: string,
-    content_type: string,
-    asset_id: uuid,
-    parent_id: uuid
-}
-
-<-
-{
-    item_id: uuid
-}
-
-%%move_item
-
-->
-{
-    identity: uri,
-    item_id: uuid,
-    new_parent_id: uuid,
-    new_name: string
-}
-
-<-
-{
-    item_id: uuid
-}
-
-%%update_item
-
-->
-{
-    identity: uri,
-    name: string,
-    description: string,
-    content_type: string,
-    asset_id: uuid
-}
-
-<-
-{
-	success: boolean,
-	message: string
-}
-
-%%fetch_object
-
-->
-{
-	identity: uri,
-	object_id: uuid
-}
-
 &inventory_object =
 {
 	id: uuid,
@@ -294,6 +325,41 @@
 	preferred_content_type: string,
 	version: integer,
 	children: [ inventory_object, ... ]
+}
+
+%%create_inventory
+
+->
+{
+    identity: uri,
+    name: string
+}
+
+<-
+{
+    root_folder_id: uuid
+}
+
+%%create_object
+
+->
+{
+    identity: uri,
+    object: inventory_object
+}
+
+<-
+{
+	success: boolean,
+	message: string
+}
+
+%%fetch_object
+
+->
+{
+	identity: uri,
+	object_id: uuid
 }
 
 <-
