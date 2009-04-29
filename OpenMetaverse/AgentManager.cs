@@ -1167,6 +1167,7 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.TeleportStart, callback);
             Client.Network.RegisterCallback(PacketType.TeleportProgress, callback);
             Client.Network.RegisterCallback(PacketType.TeleportFailed, callback);
+            Client.Network.RegisterEventCallback("TeleportFailed", TeleportFailedEventHandler);
             Client.Network.RegisterEventCallback("TeleportFinish", new Caps.EventQueueCallback(TeleportFinishEventHandler));
             Client.Network.RegisterCallback(PacketType.TeleportCancel, callback);
             Client.Network.RegisterCallback(PacketType.TeleportLocal, callback);
@@ -1195,6 +1196,7 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.MeanCollisionAlert, new NetworkManager.PacketCallback(MeanCollisionAlertHandler));
             // Region Crossing
             Client.Network.RegisterCallback(PacketType.CrossedRegion, new NetworkManager.PacketCallback(CrossedRegionHandler));
+            Client.Network.RegisterEventCallback("CrossedRegion", new Caps.EventQueueCallback(CrossedRegionCapsHandler));
             // CAPS callbacks
             Client.Network.RegisterEventCallback("EstablishAgentCommunication", new Caps.EventQueueCallback(EstablishAgentCommunicationEventHandler));
             // Incoming Group Chat
@@ -2846,6 +2848,23 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Process TeleportFailed message sent via EventQueue, informs agent its last teleport has failed and why.
+        /// </summary>
+        /// <param name="messageKey">The Message Key</param>
+        /// <param name="message">An IMessage object Deserialized from the recieved message event</param>
+        /// <param name="simulator">The simulator originating the event</param>
+        public void TeleportFailedEventHandler(string messageKey, IMessage message, Simulator simulator)
+        {
+            TeleportFailedMessage msg = (TeleportFailedMessage) message;
+
+            TeleportFailedPacket failedPacket = new TeleportFailedPacket();
+            failedPacket.Info.AgentID = msg.AgentID;
+            failedPacket.Info.Reason = Utils.StringToBytes(msg.Reason);
+            
+            TeleportHandler(failedPacket, simulator);
+        }
+
+        /// <summary>
         /// Process TeleportFinish from Event Queue and pass it onto our TeleportHandler
         /// </summary>
         /// <param name="capsKey">The message system key for this event</param>
@@ -3080,6 +3099,45 @@ namespace OpenMetaverse
             // in again (with a different account name or different login
             // server but using the same GridClient object
             fullName = null;
+        }
+
+
+
+        /// <summary>
+        /// Crossed region handler for message that comes across the EventQueue. Sent to an agent
+        /// when the agent crosses a sim border into a new region.
+        /// </summary>
+        /// <param name="capsKey">The message key</param>
+        /// <param name="message">the IMessage object containing the deserialized data sent from the simulator</param>
+        /// <param name="sim">The <see cref="Simulator"/> which originated the packet</param>
+        private void CrossedRegionCapsHandler(string capsKey, IMessage message, Simulator sim)
+        {
+            CrossedRegionMessage crossed = (CrossedRegionMessage) message;
+
+            IPEndPoint endPoint = new IPEndPoint(crossed.IP, crossed.Port);
+
+            Logger.DebugLog("Crossed in to new region area, attempting to connect to " + endPoint.ToString(), Client);
+
+            Simulator oldSim = Client.Network.CurrentSim;
+            Simulator newSim = Client.Network.Connect(endPoint, crossed.RegionHandle, true, crossed.SeedCapability.ToString());
+
+            if (newSim != null)
+            {
+                Logger.Log("Finished crossing over in to region " + newSim.ToString(), Helpers.LogLevel.Info, Client);
+
+                if (OnRegionCrossed != null)
+                {
+                    try { OnRegionCrossed(oldSim, newSim); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                }
+            }
+            else
+            {
+                // The old simulator will (poorly) handle our movement still, so the connection isn't
+                // completely shot yet
+                Logger.Log("Failed to connect to new region " + endPoint.ToString() + " after crossing over",
+                    Helpers.LogLevel.Warning, Client);
+            }
         }
 
         /// <summary>
