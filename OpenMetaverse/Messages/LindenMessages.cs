@@ -1784,7 +1784,7 @@ namespace OpenMetaverse.Messages.Linden
             paramsMap["region_id"] = OSD.FromUUID(RegionID);
             paramsMap["position"] = OSD.FromVector3(Position);
             paramsMap["from_group"] = OSD.FromBoolean(GroupIM);
-            paramsMap["session_id"] = OSD.FromUUID(IMSessionID);
+            paramsMap["id"] = OSD.FromUUID(IMSessionID);
             paramsMap["message"] = OSD.FromString(Message);
             paramsMap["offline"] = OSD.FromInteger((uint)Offline);
 
@@ -1813,7 +1813,7 @@ namespace OpenMetaverse.Messages.Linden
             RegionID = msg["region_id"].AsUUID();
             Position = msg["position"].AsVector3();
             GroupIM = msg["from_group"].AsBoolean();
-            IMSessionID = msg["session_id"].AsUUID();
+            IMSessionID = msg["id"].AsUUID();
             Message = msg["message"].AsString();
             Offline = (InstantMessageOnline)msg["offline"].AsInteger();
             Dialog = (InstantMessageDialog)msgdata["type"].AsInteger();
