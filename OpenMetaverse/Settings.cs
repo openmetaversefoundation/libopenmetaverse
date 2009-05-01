@@ -85,10 +85,9 @@ namespace OpenMetaverse
         /// time out</summary>
         public int LOGOUT_TIMEOUT = 5 * 1000;
 
-        /// <summary>Number of milliseconds before a CAPS call will time out 
-        /// and try again</summary>
-        /// <remarks>Setting this too low will cause web requests to repeatedly
-        /// time out and retry</remarks>
+        /// <summary>Number of milliseconds before a CAPS call will time out</summary>
+        /// <remarks>Setting this too low will cause web requests time out and
+        /// possibly retry repeatedly</remarks>
         public int CAPS_TIMEOUT = 60 * 1000;
 
         /// <summary>Number of milliseconds for xml-rpc to timeout</summary>

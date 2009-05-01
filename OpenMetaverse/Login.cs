@@ -1350,7 +1350,7 @@ namespace OpenMetaverse
                 loginRequest.OnComplete += new CapsClient.CompleteCallback(LoginReplyLLSDHandler);
                 loginRequest.UserData = CurrentContext;
                 UpdateLoginStatus(LoginStatus.ConnectingToLogin, String.Format("Logging in as {0} {1}...", loginParams.FirstName, loginParams.LastName));
-                loginRequest.BeginGetResponse(OSDParser.SerializeLLSDXmlBytes(loginLLSD), "application/xml+llsd");
+                loginRequest.BeginGetResponse(loginLLSD, OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
 
                 #endregion
             }

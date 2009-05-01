@@ -51,7 +51,6 @@ namespace OpenMetaverse
         /// <param name="simulator">The simulator that generated the event</param>
         //public delegate void EventQueueCallback(string message, StructuredData.OSD body, Simulator simulator);
 
-
         public delegate void EventQueueCallback(string capsKey, IMessage message, Simulator simulator);
 
         /// <summary>Reference to the simulator this system is connected to</summary>
@@ -78,7 +77,6 @@ namespace OpenMetaverse
                     return false;
             }
         }
-
 
         /// <summary>
         /// Default constructor
@@ -171,7 +169,7 @@ namespace OpenMetaverse
 
             _SeedRequest = new CapsClient(new Uri(_SeedCapsURI));
             _SeedRequest.OnComplete += new CapsClient.CompleteCallback(SeedRequestCompleteHandler);
-            _SeedRequest.BeginGetResponse(req);
+            _SeedRequest.BeginGetResponse(req, OSDFormat.Xml, Simulator.Client.Settings.CAPS_TIMEOUT);
         }
 
         private void SeedRequestCompleteHandler(CapsClient client, OSD result, Exception error)

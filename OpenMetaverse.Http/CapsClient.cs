@@ -34,272 +34,154 @@ namespace OpenMetaverse.Http
 {
     public class CapsClient
     {
-        public delegate void ProgressCallback(CapsClient client, long bytesReceived, long bytesSent, 
-            long totalBytesToReceive, long totalBytesToSend);
+        public delegate void DownloadProgressCallback(CapsClient client, int bytesReceived, int totalBytesToReceive);
         public delegate void CompleteCallback(CapsClient client, OSD result, Exception error);
 
-        public event ProgressCallback OnProgress;
+        public event DownloadProgressCallback OnDownloadProgress;
         public event CompleteCallback OnComplete;
 
-        public IWebProxy Proxy;
         public object UserData;
 
-        protected CapsBase _Client;
+        protected Uri _Address;
         protected byte[] _PostData;
+        protected X509Certificate2 _ClientCert;
         protected string _ContentType;
+        protected HttpWebRequest _Request;
+        protected OSD _Response;
+        protected AutoResetEvent _ResponseEvent = new AutoResetEvent(false);
 
         public CapsClient(Uri capability)
+            : this(capability, null)
         {
-            Init(capability, null);
         }
 
         public CapsClient(Uri capability, X509Certificate2 clientCert)
         {
-            Init(capability, clientCert);
+            _Address = capability;
+            _ClientCert = clientCert;
         }
 
-        void Init(Uri capability, X509Certificate2 clientCert)
+        public void BeginGetResponse(int millisecondsTimeout)
         {
-            _Client = new CapsBase(capability, clientCert);
-            _Client.DownloadProgressChanged += new CapsBase.DownloadProgressChangedEventHandler(Client_DownloadProgressChanged);
-            _Client.UploadProgressChanged += new CapsBase.UploadProgressChangedEventHandler(Client_UploadProgressChanged);
-            _Client.UploadDataCompleted += new CapsBase.UploadDataCompletedEventHandler(Client_UploadDataCompleted);
-            _Client.DownloadStringCompleted += new CapsBase.DownloadStringCompletedEventHandler(Client_DownloadStringCompleted);
+            BeginGetResponse(null, null, millisecondsTimeout);
         }
 
-        public void BeginGetResponse()
+        public void BeginGetResponse(OSD data, OSDFormat format, int millisecondsTimeout)
         {
-            BeginGetResponse(null, null);
-        }
+            byte[] postData;
+            string contentType;
 
-        public void BeginGetResponse(OSD data)
-        {
-            byte[] postData = OSDParser.SerializeLLSDXmlBytes(data);
-            BeginGetResponse(postData, null);
-        }
-
-        public void BeginGetResponse(OSD data, bool json)
-        {
-            if (json)
+            switch (format)
             {
-                byte[] postData = System.Text.Encoding.UTF8.GetBytes(OSDParser.SerializeJsonString(data));
-                BeginGetResponse(postData, "application/json");
+                case OSDFormat.Xml:
+                    postData = OSDParser.SerializeLLSDXmlBytes(data);
+                    contentType = "application/llsd+xml";
+                    break;
+                case OSDFormat.Binary:
+                    postData = OSDParser.SerializeLLSDBinary(data);
+                    contentType = "application/llsd+binary";
+                    break;
+                case OSDFormat.Json:
+                default:
+                    postData = System.Text.Encoding.UTF8.GetBytes(OSDParser.SerializeJsonString(data));
+                    contentType = "application/llsd+json";
+                    break;
             }
-            else
-            {
-                BeginGetResponse(data);
-            }
+
+            BeginGetResponse(postData, contentType, millisecondsTimeout);
         }
 
-        public void BeginGetResponse(byte[] postData)
-        {
-            BeginGetResponse(postData, null);
-        }
-
-        public void BeginGetResponse(byte[] postData, string contentType)
+        public void BeginGetResponse(byte[] postData, string contentType, int millisecondsTimeout)
         {
             _PostData = postData;
             _ContentType = contentType;
 
-            if (_Client.IsBusy)
-                _Client.CancelAsync();
-
-            _Client.Headers.Clear();
-
-            // Proxy
-            if (Proxy != null)
-                _Client.Proxy = Proxy;
-
-            // Content-Type
-            if (!String.IsNullOrEmpty(contentType))
-                _Client.Headers.Add(HttpRequestHeader.ContentType, contentType);
-            else
-                _Client.Headers.Add(HttpRequestHeader.ContentType, "application/xml");
+            if (_Request != null)
+            {
+                _Request.Abort();
+                _Request = null;
+            }
 
             if (postData == null)
-                _Client.DownloadStringAsync(_Client.Location);
+            {
+                // GET
+                Logger.Log.Debug("[CapsClient] GET " + _Address);
+                _Request = CapsBase.DownloadStringAsync(_Address, _ClientCert, millisecondsTimeout, DownloadProgressHandler,
+                    RequestCompletedHandler);
+            }
             else
-                _Client.UploadDataAsync(_Client.Location, postData);
+            {
+                // POST
+                Logger.Log.Debug("[CapsClient] POST (" + postData.Length + " bytes) " + _Address);
+                _Request = CapsBase.UploadDataAsync(_Address, _ClientCert, contentType, postData, millisecondsTimeout, null,
+                    DownloadProgressHandler, RequestCompletedHandler);
+            }
         }
 
         public OSD GetResponse(int millisecondsTimeout)
         {
-            OSD response = null;
-            AutoResetEvent waitEvent = new AutoResetEvent(false);
-            OnComplete += delegate(CapsClient client, OSD result, Exception error) { response = result; waitEvent.Set(); };
-            BeginGetResponse();
-            waitEvent.WaitOne(millisecondsTimeout, false);
-            return response;
+            BeginGetResponse(millisecondsTimeout);
+            _ResponseEvent.WaitOne(millisecondsTimeout, false);
+            return _Response;
         }
 
-        public OSD GetResponse(OSD data, int millisecondsTimeout)
+        public OSD GetResponse(OSD data, OSDFormat format, int millisecondsTimeout)
         {
-            OSD response = null;
-            AutoResetEvent waitEvent = new AutoResetEvent(false);
-            OnComplete += delegate(CapsClient client, OSD result, Exception error) { response = result; waitEvent.Set(); };
-            BeginGetResponse(data);
-            waitEvent.WaitOne(millisecondsTimeout, false);
-            return response;
-        }
-
-        public OSD GetResponse(OSD data, bool json, int millisecondsTimeout)
-        {
-            OSD response = null;
-            AutoResetEvent waitEvent = new AutoResetEvent(false);
-            OnComplete += delegate(CapsClient client, OSD result, Exception error) { response = result; waitEvent.Set(); };
-            BeginGetResponse(data, json);
-            waitEvent.WaitOne(millisecondsTimeout, false);
-            return response;
-        }
-
-        public OSD GetResponse(byte[] postData, int millisecondsTimeout)
-        {
-            OSD response = null;
-            AutoResetEvent waitEvent = new AutoResetEvent(false);
-            OnComplete += delegate(CapsClient client, OSD result, Exception error) { response = result; waitEvent.Set(); };
-            BeginGetResponse(postData);
-            waitEvent.WaitOne(millisecondsTimeout, false);
-            return response;
+            BeginGetResponse(data, format, millisecondsTimeout);
+            _ResponseEvent.WaitOne(millisecondsTimeout, false);
+            return _Response;
         }
 
         public OSD GetResponse(byte[] postData, string contentType, int millisecondsTimeout)
         {
-            OSD response = null;
-            AutoResetEvent waitEvent = new AutoResetEvent(false);
-            OnComplete += delegate(CapsClient client, OSD result, Exception error) { response = result; waitEvent.Set(); };
-            BeginGetResponse(postData, contentType);
-            waitEvent.WaitOne(millisecondsTimeout, false);
-            return response;
+            BeginGetResponse(postData, contentType, millisecondsTimeout);
+            _ResponseEvent.WaitOne(millisecondsTimeout, false);
+            return _Response;
         }
 
         public void Cancel()
         {
-            if (_Client.IsBusy)
-                _Client.CancelAsync();
+            if (_Request != null)
+                _Request.Abort();
         }
 
-        #region Callback Handlers
-
-        private void Client_DownloadProgressChanged(object sender, CapsBase.DownloadProgressChangedEventArgs e)
+        void DownloadProgressHandler(HttpWebRequest request, HttpWebResponse response, int bytesReceived, int totalBytesToReceive)
         {
-            if (OnProgress != null)
+            _Request = request;
+
+            if (OnDownloadProgress != null)
             {
-                try { OnProgress(this, e.BytesReceived, 0, e.TotalBytesToReceive, 0); }
+                try { OnDownloadProgress(this, bytesReceived, totalBytesToReceive); }
                 catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
             }
         }
 
-        private void Client_UploadProgressChanged(object sender, CapsBase.UploadProgressChangedEventArgs e)
+        void RequestCompletedHandler(HttpWebRequest request, HttpWebResponse response, byte[] responseData, Exception error)
         {
-            if (OnProgress != null)
+            _Request = request;
+
+            OSD result = null;
+
+            if (responseData != null)
             {
-                try { OnProgress(this, e.BytesReceived, e.BytesSent, e.TotalBytesToReceive, e.TotalBytesToSend); }
+                try { result = OSDParser.Deserialize(responseData); }
+                catch (Exception ex) { error = ex; }
+            }
+
+            FireCompleteCallback(result, error);
+        }
+
+        private void FireCompleteCallback(OSD result, Exception error)
+        {
+            CompleteCallback callback = OnComplete;
+            if (callback != null)
+            {
+                try { callback(this, result, error); }
                 catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
             }
+
+            _Response = result;
+            _ResponseEvent.Set();
         }
-
-        private void Client_UploadDataCompleted(object sender, CapsBase.UploadDataCompletedEventArgs e)
-        {
-            if (OnComplete != null && !e.Cancelled)
-            {
-                if (e.Error == null)
-                {
-                    OSD result = OSDParser.Deserialize(e.Result);
-
-                    try { OnComplete(this, result, e.Error); }
-                    catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
-                }
-                else
-                {
-                    // Some error occurred, try to figure out what happened
-                    HttpStatusCode code = HttpStatusCode.OK;
-                    if (e.Error is WebException && ((WebException)e.Error).Response != null)
-                        code = ((HttpWebResponse)((WebException)e.Error).Response).StatusCode;
-
-                    if (code == HttpStatusCode.BadGateway)
-                    {
-                        // This is not good (server) protocol design, but it's normal.
-                        // The CAPS server is a proxy that connects to a Squid
-                        // cache which will time out periodically. The CAPS server
-                        // interprets this as a generic error and returns a 502 to us
-                        // that we ignore
-                        BeginGetResponse(_PostData, _ContentType);
-                    }
-                    else if (code != HttpStatusCode.OK)
-                    {
-                        // Status code was set to something unknown, this is a failure
-                        Logger.Log.DebugFormat("Caps error at {0}: {1}", _Client.Location, code);
-
-                        try { OnComplete(this, null, e.Error); }
-                        catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
-                    }
-                    else
-                    {
-                        // Status code was not set, some other error occurred. This is a failure
-                        Logger.Log.DebugFormat("Caps error at {0}: {1}", _Client.Location, e.Error.Message);
-
-                        try { OnComplete(this, null, e.Error); }
-                        catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
-                    }
-                }
-            }
-            else if (e.Cancelled)
-            {
-                Logger.Log.Debug("Capability action at " + _Client.Location + " cancelled");
-            }
-        }
-
-        private void Client_DownloadStringCompleted(object sender, CapsBase.DownloadStringCompletedEventArgs e)
-        {
-            if (OnComplete != null && !e.Cancelled)
-            {
-                if (e.Error == null)
-                {
-                    OSD result = OSDParser.DeserializeLLSDXml(e.Result);
-
-                    try { OnComplete(this, result, e.Error); }
-                    catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
-                }
-                else
-                {
-                    // Some error occurred, try to figure out what happened
-                    HttpStatusCode code = HttpStatusCode.OK;
-                    if (e.Error is WebException && ((WebException)e.Error).Response != null)
-                        code = ((HttpWebResponse)((WebException)e.Error).Response).StatusCode;
-
-                    if (code == HttpStatusCode.BadGateway)
-                    {
-                        // This is not good (server) protocol design, but it's normal.
-                        // The CAPS server is a proxy that connects to a Squid
-                        // cache which will time out periodically. The CAPS server
-                        // interprets this as a generic error and returns a 502 to us
-                        // that we ignore
-                        BeginGetResponse(_PostData, _ContentType);
-                    }
-                    else if (code != HttpStatusCode.OK)
-                    {
-                        // Status code was set to something unknown, this is a failure
-                        Logger.Log.DebugFormat("Caps error at {0}: {1}", _Client.Location, code);
-
-                        try { OnComplete(this, null, e.Error); }
-                        catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
-                    }
-                    else
-                    {
-                        // Status code was not set, some other error occurred. This is a failure
-                        Logger.Log.DebugFormat("Caps error at {0}: {1}", _Client.Location, e.Error.Message);
-
-                        try { OnComplete(this, null, e.Error); }
-                        catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
-                    }
-                }
-            }
-            else if (e.Cancelled)
-            {
-                Logger.Log.Debug("Capability action at " + _Client.Location + " cancelled");
-            }
-        }
-
-        #endregion Callback Handlers
     }
 }

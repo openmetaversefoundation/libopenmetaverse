@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, openmetaverse.org
+ * Copyright (c) 2009, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -27,529 +27,202 @@
 using System;
 using System.Net;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Security.Cryptography.X509Certificates;
 
 namespace OpenMetaverse.Http
 {
-    public class CapsBase
+    public static class CapsBase
     {
-        #region Callback Data Classes
+        public delegate void OpenWriteEventHandler(HttpWebRequest request);
+        public delegate void DownloadProgressEventHandler(HttpWebRequest request, HttpWebResponse response, int bytesReceived, int totalBytesToReceive);
+        public delegate void RequestCompletedEventHandler(HttpWebRequest request, HttpWebResponse response, byte[] responseData, Exception error);
 
-        public class OpenWriteCompletedEventArgs
+        private class RequestState
         {
-            public Stream Result;
-            public Exception Error;
-            public bool Cancelled;
-            public object UserState;
+            public HttpWebRequest Request;
+            public byte[] UploadData;
+            public int MillisecondsTimeout;
+            public OpenWriteEventHandler OpenWriteCallback;
+            public DownloadProgressEventHandler DownloadProgressCallback;
+            public RequestCompletedEventHandler CompletedCallback;
 
-            public OpenWriteCompletedEventArgs(Stream result, Exception error, bool cancelled, object userState)
+            public RequestState(HttpWebRequest request, byte[] uploadData, int millisecondsTimeout, OpenWriteEventHandler openWriteCallback,
+                DownloadProgressEventHandler downloadProgressCallback, RequestCompletedEventHandler completedCallback)
             {
-                Result = result;
-                Error = error;
-                Cancelled = cancelled;
-                UserState = userState;
+                Request = request;
+                UploadData = uploadData;
+                MillisecondsTimeout = millisecondsTimeout;
+                OpenWriteCallback = openWriteCallback;
+                DownloadProgressCallback = downloadProgressCallback;
+                CompletedCallback = completedCallback;
             }
         }
 
-        public class UploadDataCompletedEventArgs
+        public static HttpWebRequest UploadDataAsync(Uri address, X509Certificate2 clientCert, string contentType, byte[] data,
+            int millisecondsTimeout, OpenWriteEventHandler openWriteCallback, DownloadProgressEventHandler downloadProgressCallback,
+            RequestCompletedEventHandler completedCallback)
         {
-            public byte[] Result;
-            public Exception Error;
-            public bool Cancelled;
-            public object UserState;
-
-            public UploadDataCompletedEventArgs(byte[] result, Exception error, bool cancelled, object userState)
-            {
-                Result = result;
-                Error = error;
-                Cancelled = cancelled;
-                UserState = userState;
-            }
-        }
-
-        public class DownloadDataCompletedEventArgs
-        {
-            public byte[] Result;
-            public Exception Error;
-            public bool Cancelled;
-            public object UserState;
-        }
-
-        public class DownloadStringCompletedEventArgs
-        {
-            public Uri Address;
-            public string Result;
-            public Exception Error;
-            public bool Cancelled;
-            public object UserState;
-
-            public DownloadStringCompletedEventArgs(Uri address, string result, Exception error, bool cancelled, object userState)
-            {
-                Address = address;
-                Result = result;
-                Error = error;
-                Cancelled = cancelled;
-                UserState = userState;
-            }
-        }
-
-        public class DownloadProgressChangedEventArgs
-        {
-            public long BytesReceived;
-            public int ProgressPercentage;
-            public long TotalBytesToReceive;
-            public object UserState;
-
-            public DownloadProgressChangedEventArgs(long bytesReceived, long totalBytesToReceive, object userToken)
-            {
-                BytesReceived = bytesReceived;
-                ProgressPercentage = (int)(((float)bytesReceived / (float)totalBytesToReceive) * 100f);
-                TotalBytesToReceive = totalBytesToReceive;
-                UserState = userToken;
-            }
-        }
-
-        public class UploadProgressChangedEventArgs
-        {
-            public long BytesReceived;
-            public long BytesSent;
-            public int ProgressPercentage;
-            public long TotalBytesToReceive;
-            public long TotalBytesToSend;
-            public object UserState;
-
-            public UploadProgressChangedEventArgs(long bytesReceived, long totalBytesToReceive, long bytesSent, long totalBytesToSend, object userState)
-            {
-                BytesReceived = bytesReceived;
-                TotalBytesToReceive = totalBytesToReceive;
-                ProgressPercentage = (int)(((float)bytesSent / (float)totalBytesToSend) * 100f);
-                BytesSent = bytesSent;
-                TotalBytesToSend = totalBytesToSend;
-                UserState = userState;
-            }
-        }
-
-        #endregion Callback Data Classes
-
-        public delegate void OpenWriteCompletedEventHandler(object sender, OpenWriteCompletedEventArgs e);
-        public delegate void UploadDataCompletedEventHandler(object sender, UploadDataCompletedEventArgs e);
-        public delegate void DownloadStringCompletedEventHandler(object sender, DownloadStringCompletedEventArgs e);
-        public delegate void DownloadProgressChangedEventHandler(object sender, DownloadProgressChangedEventArgs e);
-        public delegate void UploadProgressChangedEventHandler(object sender, UploadProgressChangedEventArgs e);
-
-        public event OpenWriteCompletedEventHandler OpenWriteCompleted;
-        public event UploadDataCompletedEventHandler UploadDataCompleted;
-        public event DownloadStringCompletedEventHandler DownloadStringCompleted;
-        public event DownloadProgressChangedEventHandler DownloadProgressChanged;
-        public event UploadProgressChangedEventHandler UploadProgressChanged;
-
-        public WebHeaderCollection Headers = new WebHeaderCollection();
-        public IWebProxy Proxy;
-        public X509Certificate2 ClientCertificate;
-
-        public Uri Location { get { return location; } }
-        public bool IsBusy { get { return isBusy; } }
-        public WebHeaderCollection ResponseHeaders { get { return responseHeaders; } }
-
-        protected WebHeaderCollection responseHeaders;
-        protected Uri location;
-        protected bool isBusy;
-        protected Thread asyncThread;
-        protected System.Text.Encoding encoding = System.Text.Encoding.Default;
-
-        public CapsBase(Uri location, X509Certificate2 clientCert)
-        {
-            this.location = location;
-            ClientCertificate = clientCert;
-        }
-
-        public void OpenWriteAsync(Uri address)
-        {
-            OpenWriteAsync(address, null, null);
-        }
-
-        public void OpenWriteAsync(Uri address, string method)
-        {
-            OpenWriteAsync(address, method, null);
-        }
-
-        public void OpenWriteAsync(Uri address, string method, object userToken)
-        {
-            if (address == null)
-                throw new ArgumentNullException("address");
-
-            SetBusy();
-
-            asyncThread = new Thread(
-                delegate()
-                {
-                    WebRequest request = null;
-
-                    try
-                    {
-                        request = SetupRequest(address);
-                        Stream stream = request.GetRequestStream();
-
-                        OnOpenWriteCompleted(new OpenWriteCompletedEventArgs(
-                            stream, null, false, userToken));
-                    }
-                    catch (ThreadInterruptedException)
-                    {
-                        if (request != null)
-                            request.Abort();
-
-                        OnOpenWriteCompleted(new OpenWriteCompletedEventArgs(
-                            null, null, true, userToken));
-                    }
-                    catch (Exception e)
-                    {
-                        OnOpenWriteCompleted(new OpenWriteCompletedEventArgs(
-                            null, e, false, userToken));
-                    }
-                }
-            );
-            asyncThread.IsBackground = true;
-            asyncThread.Start();
-        }
-
-        public void UploadDataAsync(Uri address, byte[] data)
-        {
-            UploadDataAsync(address, null, data, null);
-        }
-
-        public void UploadDataAsync(Uri address, string method, byte[] data)
-        {
-            UploadDataAsync(address, method, data, null);
-        }
-
-        public void UploadDataAsync(Uri address, string method, byte[] data, object userToken)
-        {
-            if (address == null)
-                throw new ArgumentNullException("address");
-            if (data == null)
-                throw new ArgumentNullException("data");
-
-            SetBusy();
-
-            asyncThread = new Thread(delegate(object state)
-            {
-                object[] args = (object[])state;
-                byte[] data2;
-
-                try
-                {
-                    data2 = UploadDataCore((Uri)args[0], (string)args[1], (byte[])args[2], args[3]);
-
-                    OnUploadDataCompleted(
-                        new UploadDataCompletedEventArgs(data2, null, false, args[3]));
-                }
-                catch (ThreadInterruptedException)
-                {
-                    OnUploadDataCompleted(
-                        new UploadDataCompletedEventArgs(null, null, true, args[3]));
-                }
-                catch (Exception e)
-                {
-                    OnUploadDataCompleted(
-                        new UploadDataCompletedEventArgs(null, e, false, args[3]));
-                }
-            });
-
-            object[] cbArgs = new object[] { address, method, data, userToken };
-            asyncThread.IsBackground = true;
-            asyncThread.Start(cbArgs);
-        }
-
-        public void DownloadStringAsync(Uri address)
-		{
-			DownloadStringAsync(address, null);
-		}
-
-        public void DownloadStringAsync(Uri address, object userToken)
-        {
-            if (address == null)
-                throw new ArgumentNullException("address");
-
-            SetBusy();
-
-            asyncThread = new Thread(
-                delegate()
-                {
-                    try
-                    {
-                        string data = encoding.GetString(DownloadDataCore(address, userToken));
-                        OnDownloadStringCompleted(
-                            new DownloadStringCompletedEventArgs(location, data, null, false, userToken));
-                    }
-                    catch (ThreadInterruptedException)
-                    {
-                        OnDownloadStringCompleted(
-                            new DownloadStringCompletedEventArgs(location, null, null, true, userToken));
-                    }
-                    catch (Exception e)
-                    {
-                        OnDownloadStringCompleted(
-                            new DownloadStringCompletedEventArgs(location, null, e, false, userToken));
-                    }
-                }
-            );
-            asyncThread.Start();
-        }
-
-        public void CancelAsync()
-        {
-            if (asyncThread == null)
-                return;
-
-            Thread t = asyncThread;
-            CompleteAsync();
-            t.Interrupt();
-        }
-
-        protected void CompleteAsync()
-        {
-            isBusy = false;
-            asyncThread = null;
-        }
-
-        protected void SetBusy()
-        {
-            CheckBusy();
-            isBusy = true;
-        }
-
-        protected void CheckBusy()
-        {
-            if (isBusy)
-                throw new NotSupportedException("CapsBase does not support concurrent I/O operations.");
-        }
-
-        protected Stream ProcessResponse(WebResponse response)
-        {
-            responseHeaders = response.Headers;
-            return response.GetResponseStream();
-        }
-
-        protected byte[] ReadAll(Stream stream, int length, object userToken, bool uploading)
-        {
-            MemoryStream ms = null;
-
-            bool nolength = (length == -1);
-            int size = ((nolength) ? 8192 : length);
-            if (nolength)
-                ms = new MemoryStream();
-
-            long total = 0;
-            int nread = 0;
-            int offset = 0;
-            byte[] buffer = new byte[size];
-
-            while ((nread = stream.Read(buffer, offset, size)) != 0)
-            {
-                if (nolength)
-                {
-                    ms.Write(buffer, 0, nread);
-                }
-                else
-                {
-                    offset += nread;
-                    size -= nread;
-                }
-
-                if (uploading)
-                {
-                    if (UploadProgressChanged != null)
-                    {
-                        total += nread;
-                        UploadProgressChanged(this, new UploadProgressChangedEventArgs(nread, length, 0, 0, userToken));
-                    }
-                }
-                else
-                {
-                    if (DownloadProgressChanged != null)
-                    {
-                        total += nread;
-                        DownloadProgressChanged(this, new DownloadProgressChangedEventArgs(nread, length, userToken));
-                    }
-                }
-            }
-
-            if (nolength)
-                return ms.ToArray();
-
-            return buffer;
-        }
-
-        protected WebRequest SetupRequest(Uri uri)
-        {
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(uri);
-
-            if (request == null)
-                throw new ArgumentException("Could not create an HttpWebRequest from the given Uri", "address");
-
-            location = uri;
-
-            if (Proxy != null)
-                request.Proxy = Proxy;
-
-            if (ClientCertificate != null)
-                request.ClientCertificates.Add(ClientCertificate);
-
+            // Create the request
+            HttpWebRequest request = SetupRequest(address, clientCert);
+            request.ContentLength = data.Length;
+            if (!String.IsNullOrEmpty(contentType))
+                request.ContentType = contentType;
             request.Method = "POST";
 
-            if (Headers != null && Headers.Count != 0)
-            {
-                string expect = Headers["Expect"];
-                string contentType = Headers["Content-Type"];
-                string accept = Headers["Accept"];
-                string connection = Headers["Connection"];
-                string userAgent = Headers["User-Agent"];
-                string referer = Headers["Referer"];
+            // Create an object to hold all of the state for this request
+            RequestState state = new RequestState(request, data, millisecondsTimeout, openWriteCallback,
+                downloadProgressCallback, completedCallback);
 
-                if (!String.IsNullOrEmpty(expect))
-                    request.Expect = expect;
+            // Start the request for a stream to upload to
+            IAsyncResult result = request.BeginGetRequestStream(OpenWrite, state);
+            // Register a timeout for the request
+            ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, TimeoutCallback, state, millisecondsTimeout, true);
 
-                if (!String.IsNullOrEmpty(accept))
-                    request.Accept = accept;
+            return request;
+        }
 
-                if (!String.IsNullOrEmpty(contentType))
-                    request.ContentType = contentType;
+        public static HttpWebRequest DownloadStringAsync(Uri address, X509Certificate2 clientCert, int millisecondsTimeout,
+            DownloadProgressEventHandler downloadProgressCallback, RequestCompletedEventHandler completedCallback)
+		{
+            // Create the request
+            HttpWebRequest request = SetupRequest(address, clientCert);
+            request.Method = "GET";
 
-                if (!String.IsNullOrEmpty(connection))
-                    request.Connection = connection;
+            // Create an object to hold all of the state for this request
+            RequestState state = new RequestState(request, null, millisecondsTimeout, null, downloadProgressCallback,
+                completedCallback);
 
-                if (!String.IsNullOrEmpty(userAgent))
-                    request.UserAgent = userAgent;
+            // Start the request for the remote server response
+            IAsyncResult result = request.BeginGetResponse(GetResponse, state);
+            // Register a timeout for the request
+            ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, TimeoutCallback, state, millisecondsTimeout, true);
 
-                if (!String.IsNullOrEmpty(referer))
-                    request.Referer = referer;
-            }
+            return request;
+		}
 
-            // Disable keep-alive by default
-            request.KeepAlive = false;
-            // Set the closed connection (idle) time to one second
-            request.ServicePoint.MaxIdleTime = 1000;
+        static HttpWebRequest SetupRequest(Uri address, X509Certificate2 clientCert)
+        {
+            if (address == null)
+                throw new ArgumentNullException("address");
+
+            // Create the request
+            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(address);
+
+            // Add the client certificate to the request if one was given
+            if (clientCert != null)
+                request.ClientCertificates.Add(clientCert);
+
+            // Leave idle connections to this endpoint open for up to 60 seconds
+            request.ServicePoint.MaxIdleTime = 1000 * 60;
             // Disable stupid Expect-100: Continue header
             request.ServicePoint.Expect100Continue = false;
-            // Crank up the max number of connections (default is 2!)
-            request.ServicePoint.ConnectionLimit = Int32.MaxValue;
+            // Crank up the max number of connections per endpoint (default is 2!)
+            request.ServicePoint.ConnectionLimit = 20;
+            // Caps requests are never sent as trickles of data, so Nagle's
+            // coalescing algorithm won't help us
+            request.ServicePoint.UseNagleAlgorithm = false;
 
             return request;
         }
 
-        protected WebRequest SetupRequest(Uri uri, string method)
+        static void OpenWrite(IAsyncResult ar)
         {
-            WebRequest request = SetupRequest(uri);
-            request.Method = method;
-            return request;
-        }
-
-        protected byte[] UploadDataCore(Uri address, string method, byte[] data, object userToken)
-        {
-            HttpWebRequest request = (HttpWebRequest)SetupRequest(address);
-
-            // Mono insists that if you have Content-Length set, Keep-Alive must be true.
-            // Otherwise the unhelpful exception of "Content-Length not set" will be thrown.
-            // The Linden Lab event queue server breaks HTTP 1.1 by always replying with a
-            // Connection: Close header, which will confuse the Windows .NET runtime and throw
-            // a "Connection unexpectedly closed" exception. This is our cross-platform hack
-            if (Utils.GetRunningRuntime() == Utils.Runtime.Mono)
-                request.KeepAlive = true;
+            RequestState state = (RequestState)ar.AsyncState;
 
             try
             {
-                // Content-Length
-                int contentLength = data.Length;
-                request.ContentLength = contentLength;
+                // Get the stream to write our upload to
+                Stream uploadStream = state.Request.EndGetRequestStream(ar);
 
-                using (Stream stream = request.GetRequestStream())
-                {
-                    // Most uploads are very small chunks of data, use an optimized path for these
-                    if (contentLength < 4096)
-                    {
-                        stream.Write(data, 0, contentLength);
-                    }
-                    else
-                    {
-                        // Upload chunks directly instead of buffering to memory
-                        request.AllowWriteStreamBuffering = false;
+                // Fire the callback for successfully opening the stream
+                if (state.OpenWriteCallback != null)
+                    state.OpenWriteCallback(state.Request);
 
-                        MemoryStream ms = new MemoryStream(data);
+                // Write our data to the upload stream
+                uploadStream.Write(state.UploadData, 0, state.UploadData.Length);
 
-                        byte[] buffer = new byte[checked((uint)Math.Min(4096, (int)contentLength))];
-                        int bytesRead = 0;
-
-                        while ((bytesRead = ms.Read(buffer, 0, buffer.Length)) != 0)
-                        {
-                            stream.Write(buffer, 0, bytesRead);
-
-                            if (UploadProgressChanged != null)
-                            {
-                                UploadProgressChanged(this, new UploadProgressChangedEventArgs(0, 0, bytesRead, contentLength, userToken));
-                            }
-                        }
-
-                        ms.Close();
-                    }
-                }
-
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                Stream st = ProcessResponse(response);
-
-                contentLength = (int)response.ContentLength;
-                return ReadAll(st, contentLength, userToken, true);
-            }
-            catch (ThreadInterruptedException)
-            {
-                if (request != null)
-                    request.Abort();
-                throw;
-            }
-        }
-
-        protected byte[] DownloadDataCore(Uri address, object userToken)
-        {
-            WebRequest request = null;
-
-            try
-            {
-                request = SetupRequest(address, "GET");
-                WebResponse response = request.GetResponse();
-                Stream st = ProcessResponse(response);
-                return ReadAll(st, (int)response.ContentLength, userToken, false);
-            }
-            catch (ThreadInterruptedException)
-            {
-                if (request != null)
-                    request.Abort();
-                throw;
+                // Start the request for the remote server response
+                IAsyncResult result = state.Request.BeginGetResponse(GetResponse, state);
+                // Register a timeout for the request
+                ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, TimeoutCallback, state,
+                    state.MillisecondsTimeout, true);
             }
             catch (Exception ex)
             {
-                throw new WebException("An error occurred performing a WebClient request.", ex);
+                if (state.CompletedCallback != null)
+                    state.CompletedCallback(state.Request, null, null, ex);
             }
         }
 
-        protected virtual void OnOpenWriteCompleted(OpenWriteCompletedEventArgs args)
+        static void GetResponse(IAsyncResult ar)
         {
-            CompleteAsync();
-            if (OpenWriteCompleted != null)
-                OpenWriteCompleted(this, args);
+            RequestState state = (RequestState)ar.AsyncState;
+            HttpWebResponse response = null;
+            byte[] responseData = null;
+            Exception error = null;
+
+            try
+            {
+                response = (HttpWebResponse)state.Request.EndGetResponse(ar);
+
+                // Get the stream for downloading the response
+                Stream responseStream = response.GetResponseStream();
+
+                #region Read the response
+
+                // If Content-Length is set we create a buffer of the exact size, otherwise
+                // a MemoryStream is used to receive the response
+                bool nolength = (response.ContentLength <= 0);
+                int size = (nolength) ? 8192 : (int)response.ContentLength;
+                MemoryStream ms = (nolength) ? new MemoryStream() : null;
+                byte[] buffer = new byte[size];
+
+                int bytesRead = 0;
+                int offset = 0;
+
+                while ((bytesRead = responseStream.Read(buffer, offset, size)) != 0)
+                {
+                    if (nolength)
+                    {
+                        ms.Write(buffer, 0, bytesRead);
+                    }
+                    else
+                    {
+                        offset += bytesRead;
+                        size -= bytesRead;
+                    }
+
+                    // Fire the download progress callback for each chunk of received data
+                    if (state.DownloadProgressCallback != null)
+                        state.DownloadProgressCallback(state.Request, response, bytesRead, size);
+                }
+
+                if (nolength)
+                    responseData = ms.ToArray();
+                else
+                    responseData = buffer;
+
+                #endregion Read the response
+            }
+            catch (Exception ex)
+            {
+                error = ex;
+            }
+
+            if (state.CompletedCallback != null)
+                state.CompletedCallback(state.Request, response, responseData, error);
         }
 
-        protected virtual void OnUploadDataCompleted(UploadDataCompletedEventArgs args)
+        static void TimeoutCallback(object state, bool timedOut)
         {
-            CompleteAsync();
-            if (UploadDataCompleted != null)
-                UploadDataCompleted(this, args);
-        }
-
-        protected virtual void OnDownloadStringCompleted(DownloadStringCompletedEventArgs args)
-        {
-            CompleteAsync();
-            if (DownloadStringCompleted != null)
-                DownloadStringCompleted(this, args);
+            if (timedOut)
+            {
+                RequestState requestState = state as RequestState;
+                if (requestState != null && requestState.Request != null)
+                    requestState.Request.Abort();
+            }
         }
     }
 }

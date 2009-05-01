@@ -9,100 +9,149 @@ namespace OpenMetaverse.Messages.CableBeach
 
         #region SL / file extension / content-type conversions
 
-        public static string SLAssetTypeToContentType(int assetType)
+        public static string SLAssetTypeToContentType(AssetType assetType)
         {
             switch (assetType)
             {
-                case 0:
+                case AssetType.Texture:
                     return "image/x-j2c";
-                case 1:
+                case AssetType.Sound:
                     return "application/ogg";
-                case 2:
+                case AssetType.CallingCard:
                     return "application/vnd.ll.callingcard";
-                case 3:
+                case AssetType.Landmark:
                     return "application/vnd.ll.landmark";
-                case 5:
+                case AssetType.Clothing:
                     return "application/vnd.ll.clothing";
-                case 6:
+                case AssetType.Object:
                     return "application/vnd.ll.primitive";
-                case 7:
+                case AssetType.Notecard:
                     return "application/vnd.ll.notecard";
-                case 10:
+                case AssetType.Folder:
+                    return "application/vnd.ll.folder";
+                case AssetType.RootFolder:
+                    return "application/vnd.ll.rootfolder";
+                case AssetType.LSLText:
                     return "application/vnd.ll.lsltext";
-                case 11:
+                case AssetType.LSLBytecode:
                     return "application/vnd.ll.lslbyte";
-                case 13:
+                case AssetType.TextureTGA:
+                case AssetType.ImageTGA:
+                    return "image/tga";
+                case AssetType.Bodypart:
                     return "application/vnd.ll.bodypart";
-                case 20:
+                case AssetType.TrashFolder:
+                    return "application/vnd.ll.trashfolder";
+                case AssetType.SnapshotFolder:
+                    return "application/vnd.ll.snapshotfolder";
+                case AssetType.LostAndFoundFolder:
+                    return "application/vnd.ll.lostandfoundfolder";
+                case AssetType.SoundWAV:
+                    return "audio/x-wav";
+                case AssetType.ImageJPEG:
+                    return "image/jpeg";
+                case AssetType.Animation:
                     return "application/vnd.ll.animation";
-                case 21:
+                case AssetType.Gesture:
                     return "application/vnd.ll.gesture";
+                case AssetType.Simstate:
+                case AssetType.Unknown:
                 default:
                     return "application/octet-stream";
             }
         }
 
-        public static int ContentTypeToSLAssetType(string contentType)
+        public static AssetType ContentTypeToSLAssetType(string contentType)
         {
             switch (contentType)
             {
                 case "image/x-j2c":
-                    return 0;
+                    return AssetType.Texture;
                 case "application/ogg":
-                    return 1;
+                    return AssetType.Sound;
                 case "application/vnd.ll.callingcard":
-                    return 2;
+                    return AssetType.CallingCard;
                 case "application/vnd.ll.landmark":
-                    return 3;
+                    return AssetType.Landmark;
                 case "application/vnd.ll.clothing":
-                    return 5;
+                    return AssetType.Clothing;
                 case "application/vnd.ll.primitive":
-                    return 6;
+                    return AssetType.Object;
                 case "application/vnd.ll.notecard":
-                    return 7;
+                    return AssetType.Notecard;
+                case "application/vnd.ll.folder":
+                    return AssetType.Folder;
+                case "application/vnd.ll.rootfolder":
+                    return AssetType.RootFolder;
                 case "application/vnd.ll.lsltext":
-                    return 10;
+                    return AssetType.LSLText;
                 case "application/vnd.ll.lslbyte":
-                    return 11;
+                    return AssetType.LSLBytecode;
+                case "image/tga":
+                    // Note that AssetType.TextureTGA will be converted to AssetType.ImageTGA
+                    return AssetType.ImageTGA;
                 case "application/vnd.ll.bodypart":
-                    return 13;
+                    return AssetType.Bodypart;
+                case "application/vnd.ll.trashfolder":
+                    return AssetType.TrashFolder;
+                case "application/vnd.ll.snapshotfolder":
+                    return AssetType.SnapshotFolder;
+                case "application/vnd.ll.lostandfoundfolder":
+                    return AssetType.LostAndFoundFolder;
+                case "audio/x-wav":
+                    return AssetType.SoundWAV;
+                case "image/jpeg":
+                    return AssetType.ImageJPEG;
                 case "application/vnd.ll.animation":
-                    return 20;
+                    return AssetType.Animation;
                 case "application/vnd.ll.gesture":
-                    return 21;
+                    return AssetType.Gesture;
+                case "application/octet-stream":
                 default:
-                    return -1;
+                    return AssetType.Unknown;
             }
         }
 
-        public static int ContentTypeToSLInvType(string contentType)
+        public static InventoryType ContentTypeToSLInvType(string contentType)
         {
             switch (contentType)
             {
                 case "image/x-j2c":
-                    return (int)InventoryType.Texture;
+                case "image/tga":
+                case "image/jpeg":
+                    return InventoryType.Texture;
                 case "application/ogg":
-                    return (int)InventoryType.Sound;
+                case "audio/x-wav":
+                    return InventoryType.Sound;
                 case "application/vnd.ll.callingcard":
-                    return (int)InventoryType.CallingCard;
+                    return InventoryType.CallingCard;
                 case "application/vnd.ll.landmark":
-                    return (int)InventoryType.Landmark;
+                    return InventoryType.Landmark;
                 case "application/vnd.ll.clothing":
                 case "application/vnd.ll.bodypart":
-                    return (int)InventoryType.Wearable;
+                    return InventoryType.Wearable;
                 case "application/vnd.ll.primitive":
-                    return (int)InventoryType.Object;
+                    return InventoryType.Object;
                 case "application/vnd.ll.notecard":
-                    return (int)InventoryType.Notecard;
+                    return InventoryType.Notecard;
+                case "application/vnd.ll.folder":
+                    return InventoryType.Folder;
+                case "application/vnd.ll.rootfolder":
+                    return InventoryType.RootCategory;
                 case "application/vnd.ll.lsltext":
                 case "application/vnd.ll.lslbyte":
-                    return (int)InventoryType.LSL;
+                    return InventoryType.LSL;
+                case "application/vnd.ll.trashfolder":
+                case "application/vnd.ll.snapshotfolder":
+                case "application/vnd.ll.lostandfoundfolder":
+                    return InventoryType.Folder;
                 case "application/vnd.ll.animation":
-                    return (int)InventoryType.Animation;
+                    return InventoryType.Animation;
                 case "application/vnd.ll.gesture":
-                    return (int)InventoryType.Gesture;
+                    return InventoryType.Gesture;
+                case "application/octet-stream":
                 default:
-                    return (int)InventoryType.Unknown;
+                    return InventoryType.Unknown;
             }
         }
 
@@ -124,16 +173,33 @@ namespace OpenMetaverse.Messages.CableBeach
                     return "primitive";
                 case "application/vnd.ll.notecard":
                     return "notecard";
+                case "application/vnd.ll.folder":
+                    return "folder";
+                case "application/vnd.ll.rootfolder":
+                    return "rootfolder";
                 case "application/vnd.ll.lsltext":
                     return "lsltext";
                 case "application/vnd.ll.lslbyte":
                     return "lslbyte";
+                case "image/tga":
+                    return "tga";
                 case "application/vnd.ll.bodypart":
                     return "bodypart";
+                case "application/vnd.ll.trashfolder":
+                    return "trashfolder";
+                case "application/vnd.ll.snapshotfolder":
+                    return "snapshotfolder";
+                case "application/vnd.ll.lostandfoundfolder":
+                    return "lostandfoundfolder";
+                case "audio/x-wav":
+                    return "wav";
+                case "image/jpeg":
+                    return "jpg";
                 case "application/vnd.ll.animation":
                     return "animatn";
                 case "application/vnd.ll.gesture":
                     return "gesture";
+                case "application/octet-stream":
                 default:
                     return "binary";
             }
@@ -144,10 +210,7 @@ namespace OpenMetaverse.Messages.CableBeach
             switch (extension)
             {
                 case "texture":
-                case "jp2":
-                case "j2c":
                     return "image/x-j2c";
-                case "sound":
                 case "ogg":
                     return "application/ogg";
                 case "callingcard":
@@ -160,16 +223,33 @@ namespace OpenMetaverse.Messages.CableBeach
                     return "application/vnd.ll.primitive";
                 case "notecard":
                     return "application/vnd.ll.notecard";
-                case "lsl":
+                case "folder":
+                    return "application/vnd.ll.folder";
+                case "rootfolder":
+                    return "application/vnd.ll.rootfolder";
+                case "lsltext":
                     return "application/vnd.ll.lsltext";
-                case "lso":
+                case "lslbyte":
                     return "application/vnd.ll.lslbyte";
+                case "tga":
+                    return "image/tga";
                 case "bodypart":
                     return "application/vnd.ll.bodypart";
+                case "trashfolder":
+                    return "application/vnd.ll.trashfolder";
+                case "snapshotfolder":
+                    return "application/vnd.ll.snapshotfolder";
+                case "lostandfoundfolder":
+                    return "application/vnd.ll.lostandfoundfolder";
+                case "wav":
+                    return "audio/x-wav";
+                case "jpg":
+                    return "image/jpeg";
                 case "animatn":
                     return "application/vnd.ll.animation";
                 case "gesture":
                     return "application/vnd.ll.gesture";
+                case "binary":
                 default:
                     return "application/octet-stream";
             }

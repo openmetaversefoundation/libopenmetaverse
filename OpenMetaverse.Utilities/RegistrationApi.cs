@@ -35,6 +35,8 @@ namespace OpenMetaverse
 {
     public class RegistrationApi
     {
+        const int REQUEST_TIMEOUT = 1000 * 100;
+
         private struct UserInfo
         {
             public string FirstName;
@@ -137,7 +139,7 @@ namespace OpenMetaverse
 
             CapsClient request = new CapsClient(RegistrationApiCaps);
             request.OnComplete += new CapsClient.CompleteCallback(GatherCapsResponse);
-            request.BeginGetResponse(postData);
+            request.BeginGetResponse(postData, "application/x-www-form-urlencoded", REQUEST_TIMEOUT);
         }
 
         private void GatherCapsResponse(CapsClient client, OSD response, Exception error)
@@ -168,7 +170,7 @@ namespace OpenMetaverse
 
             CapsClient request = new CapsClient(_caps.GetErrorCodes);
             request.OnComplete += new CapsClient.CompleteCallback(GatherErrorMessagesResponse);
-            request.BeginGetResponse();
+            request.BeginGetResponse(REQUEST_TIMEOUT);
         }
 
         private void GatherErrorMessagesResponse(CapsClient client, OSD response, Exception error)
@@ -206,7 +208,7 @@ namespace OpenMetaverse
 
             CapsClient request = new CapsClient(_caps.GetLastNames);
             request.OnComplete += new CapsClient.CompleteCallback(GatherLastNamesResponse);
-            request.BeginGetResponse();
+            request.BeginGetResponse(REQUEST_TIMEOUT);
 
             // FIXME: Block
         }
@@ -250,7 +252,7 @@ namespace OpenMetaverse
 
             CapsClient request = new CapsClient(_caps.CheckName);
             request.OnComplete += new CapsClient.CompleteCallback(CheckNameResponse);
-            request.BeginGetResponse();
+            request.BeginGetResponse(REQUEST_TIMEOUT);
 
             // FIXME:
             return false;
@@ -316,7 +318,7 @@ namespace OpenMetaverse
             // Make the request
             CapsClient request = new CapsClient(_caps.CreateUser);
             request.OnComplete += new CapsClient.CompleteCallback(CreateUserResponse);
-            request.BeginGetResponse();
+            request.BeginGetResponse(REQUEST_TIMEOUT);
 
             // FIXME: Block
             return UUID.Zero;

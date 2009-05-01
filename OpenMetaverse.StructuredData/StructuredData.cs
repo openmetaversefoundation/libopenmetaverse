@@ -62,6 +62,13 @@ namespace OpenMetaverse.StructuredData
         Array
     }
 
+    public enum OSDFormat
+    {
+        Xml = 0,
+        Json,
+        Binary
+    }
+
     /// <summary>
     /// 
     /// </summary>

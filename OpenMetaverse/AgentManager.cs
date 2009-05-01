@@ -1490,10 +1490,8 @@ namespace OpenMetaverse
                 ChatSessionAcceptInvitation acceptInvite = new ChatSessionAcceptInvitation();
                 acceptInvite.SessionID = session_id;
 
-                byte[] postData = OSDParser.SerializeLLSDXmlBytes(acceptInvite.Serialize());
-
                 CapsClient request = new CapsClient(url);
-                request.BeginGetResponse(postData);
+                request.BeginGetResponse(acceptInvite.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
             }
             else
             {
@@ -1527,7 +1525,7 @@ namespace OpenMetaverse
                 byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(startConference.Serialize());
 
                 CapsClient request = new CapsClient(url);
-                request.BeginGetResponse(postData);
+                request.BeginGetResponse(startConference.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
             }
             else
             {
@@ -3353,12 +3351,8 @@ namespace OpenMetaverse
                 req.SessionID = sessionID;
                 req.AgentID = memberID;
 
-                OSDMap map = req.Serialize();
-                
-                byte[] postData = OSDParser.SerializeLLSDXmlBytes(map);
-
                 CapsClient request = new CapsClient(url);
-                request.BeginGetResponse(postData);
+                request.BeginGetResponse(req.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
             }
             else
             {

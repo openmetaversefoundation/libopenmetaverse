@@ -335,7 +335,7 @@ namespace OpenMetaverse.Utilities
                         CapsClient request = new CapsClient(url);
                         OSDMap body = new OSDMap();
                         request.OnComplete += new CapsClient.CompleteCallback(callback);
-                        request.BeginGetResponse(body);
+                        request.BeginGetResponse(body, OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
 
                         return true;
                     }

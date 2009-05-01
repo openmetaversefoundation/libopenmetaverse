@@ -304,16 +304,6 @@ namespace GridImageUpload
 
                 Client.Inventory.RequestCreateItemFromAsset(UploadData, name, "Uploaded with SL Image Upload", AssetType.Texture,
                     InventoryType.Texture, Client.Inventory.FindFolderForType(AssetType.Texture),
-
-                    delegate(CapsClient client, long bytesReceived, long bytesSent, long totalBytesToReceive, long totalBytesToSend)
-                    {
-                        if (bytesSent > 0)
-                        {
-                            Transferred = (int)bytesSent;
-                            BeginInvoke((MethodInvoker)delegate() { SetProgress(); });
-                        }
-                    },
-
                     delegate(bool success, string status, UUID itemID, UUID assetID)
                     {
                         if (this.InvokeRequired)

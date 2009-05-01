@@ -64,13 +64,6 @@ namespace OpenMetaverse.TestClient
 
                 Client.Inventory.RequestCreateItemFromAsset(UploadData, name, "Uploaded with TestClient",
                     AssetType.Texture, InventoryType.Texture, Client.Inventory.FindFolderForType(AssetType.Texture),
-
-                    delegate(CapsClient client, long bytesReceived, long bytesSent, long totalBytesToReceive, long totalBytesToSend)
-                    {
-                        if (bytesSent > 0)
-                            Console.WriteLine(String.Format("Texture upload: {0} / {1}", bytesSent, totalBytesToSend));
-                    },
-
                     delegate(bool success, string status, UUID itemID, UUID assetID)
                     {
                         Console.WriteLine(String.Format(

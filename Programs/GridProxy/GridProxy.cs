@@ -1132,8 +1132,8 @@ namespace GridProxy
                         remoteComplete.Set();
                     }
                     );
-                loginRequest.BeginGetResponse(content, "application/xml+llsd"); //xml+llsd
-                remoteComplete.WaitOne(30000, false);
+                loginRequest.BeginGetResponse(content, "application/llsd+xml", 1000 * 100);
+                remoteComplete.WaitOne(1000 * 100, false);
 
                 if (response == null) {
                     byte[] wr = Encoding.ASCII.GetBytes("HTTP/1.0 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n");

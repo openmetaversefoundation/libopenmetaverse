@@ -691,12 +691,15 @@ namespace OpenMetaverse.Messages.CableBeach
     {
         public bool Success;
         public string Message;
+        public InventoryBlock Object;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
             map["success"] = OSD.FromBoolean(Success);
             map["message"] = OSD.FromString(Message);
+            if (Object != null)
+                map["object"] = Object.Serialize();
             return map;
         }
 
@@ -704,6 +707,20 @@ namespace OpenMetaverse.Messages.CableBeach
         {
             Success = map["success"].AsBoolean();
             Message = map["message"].AsString();
+            OSDMap objMap = map["object"] as OSDMap;
+            if (objMap != null)
+            {
+                if (objMap.ContainsKey("asset_id"))
+                    Object = new InventoryBlockItem();
+                else
+                    Object = new InventoryBlockFolder();
+
+                Object.Deserialize(objMap);
+            }
+            else
+            {
+                Object = null;
+            }
         }
     }
 

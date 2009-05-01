@@ -1834,7 +1834,7 @@ namespace OpenMetaverse
         }
 
         public void RequestCreateItemFromAsset(byte[] data, string name, string description, AssetType assetType,
-            InventoryType invType, UUID folderID, CapsClient.ProgressCallback progCallback, ItemCreatedFromAssetCallback callback)
+            InventoryType invType, UUID folderID, ItemCreatedFromAssetCallback callback)
         {
             if (_Client.Network.CurrentSim == null || _Client.Network.CurrentSim.Caps == null)
                 throw new Exception("NewFileAgentInventory capability is not currently available");
@@ -1853,9 +1853,9 @@ namespace OpenMetaverse
                 // Make the request
                 CapsClient request = new CapsClient(url);
                 request.OnComplete += new CapsClient.CompleteCallback(CreateItemFromAssetResponse);
-                request.UserData = new object[] { progCallback, callback, data };
+                request.UserData = new object[] { callback, data, _Client.Settings.CAPS_TIMEOUT };
 
-                request.BeginGetResponse(query);
+                request.BeginGetResponse(query, OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);
             }
             else
             {
@@ -2056,13 +2056,11 @@ namespace OpenMetaverse
                 OSDMap query = new OSDMap();
                 query.Add("item_id", OSD.FromUUID(notecardID));
 
-                byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(query);
-
                 // Make the request
                 CapsClient request = new CapsClient(url);
                 request.OnComplete += new CapsClient.CompleteCallback(UploadNotecardAssetResponse);
-                request.UserData = new object[2] { new KeyValuePair<NotecardUploadedAssetCallback, byte[]>(callback, data), notecardID };
-                request.BeginGetResponse(postData);
+                request.UserData = new object[] { new KeyValuePair<NotecardUploadedAssetCallback, byte[]>(callback, data), notecardID };
+                request.BeginGetResponse(query, OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);
             }
             else
             {
@@ -2987,9 +2985,9 @@ namespace OpenMetaverse
         private void CreateItemFromAssetResponse(CapsClient client, OSD result, Exception error)
         {
             object[] args = (object[])client.UserData;
-            CapsClient.ProgressCallback progCallback = (CapsClient.ProgressCallback)args[0];
-            ItemCreatedFromAssetCallback callback = (ItemCreatedFromAssetCallback)args[1];
-            byte[] itemData = (byte[])args[2];
+            ItemCreatedFromAssetCallback callback = (ItemCreatedFromAssetCallback)args[0];
+            byte[] itemData = (byte[])args[1];
+            int millisecondsTimeout = (int)args[2];
 
             if (result == null)
             {
@@ -3011,10 +3009,9 @@ namespace OpenMetaverse
                 // This makes the assumption that all uploads go to CurrentSim, to avoid
                 // the problem of HttpRequestState not knowing anything about simulators
                 CapsClient upload = new CapsClient(new Uri(uploadURL));
-                upload.OnProgress += progCallback;
                 upload.OnComplete += new CapsClient.CompleteCallback(CreateItemFromAssetResponse);
                 upload.UserData = new object[] { null, callback, itemData };
-                upload.BeginGetResponse(itemData, "application/octet-stream");
+                upload.BeginGetResponse(itemData, "application/octet-stream", millisecondsTimeout);
             }
             else if (status == "complete")
             {
@@ -3609,7 +3606,7 @@ namespace OpenMetaverse
                 CapsClient upload = new CapsClient(new Uri(uploadURL));
                 upload.OnComplete += new CapsClient.CompleteCallback(UploadNotecardAssetResponse);
                 upload.UserData = new object[2] { kvp, (UUID)(((object[])client.UserData)[1]) };
-                upload.BeginGetResponse(itemData, "application/octet-stream");
+                upload.BeginGetResponse(itemData, "application/octet-stream", _Client.Settings.CAPS_TIMEOUT);
             }
             else if (status == "complete")
             {
