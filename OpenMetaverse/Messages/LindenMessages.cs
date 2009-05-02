@@ -822,14 +822,17 @@ namespace OpenMetaverse.Messages.Linden
             UserLocation = parcelDataMap["UserLocation"].AsVector3();
             UserLookAt = parcelDataMap["UserLookAt"].AsVector3();
 
-            OSDMap mediaDataMap = (OSDMap)((OSDArray)map["MediaData"])[0];
-            MediaDesc = mediaDataMap["MediaDesc"].AsString();
-            MediaHeight = mediaDataMap["MediaHeight"].AsInteger();
-            MediaWidth = mediaDataMap["MediaWidth"].AsInteger();
-            MediaLoop = mediaDataMap["MediaLoop"].AsBoolean();
-            MediaType = mediaDataMap["MediaType"].AsString();
-            ObscureMedia = mediaDataMap["ObscureMedia"].AsBoolean();
-            ObscureMusic = mediaDataMap["ObscureMusic"].AsBoolean();
+            if (map.ContainsKey("MediaData")) // temporary, OpenSim doesn't send this block
+            {
+                OSDMap mediaDataMap = (OSDMap) ((OSDArray) map["MediaData"])[0];
+                MediaDesc = mediaDataMap["MediaDesc"].AsString();
+                MediaHeight = mediaDataMap["MediaHeight"].AsInteger();
+                MediaWidth = mediaDataMap["MediaWidth"].AsInteger();
+                MediaLoop = mediaDataMap["MediaLoop"].AsBoolean();
+                MediaType = mediaDataMap["MediaType"].AsString();
+                ObscureMedia = mediaDataMap["ObscureMedia"].AsBoolean();
+                ObscureMusic = mediaDataMap["ObscureMusic"].AsBoolean();
+            }
 
             OSDMap ageVerificationBlockMap = (OSDMap)((OSDArray)map["AgeVerificationBlock"])[0];
             RegionDenyAgeUnverified = ageVerificationBlockMap["RegionDenyAgeUnverified"].AsBoolean();
