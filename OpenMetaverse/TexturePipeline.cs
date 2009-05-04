@@ -123,7 +123,7 @@ namespace OpenMetaverse
 
             // HACK: Re-request stale pending image downloads
             RefreshDownloadsTimer.Elapsed += RefreshDownloadsTimer_Elapsed;
-            //RefreshDownloadsTimer.Start();
+            RefreshDownloadsTimer.Start();
 
         }
 
@@ -251,6 +251,7 @@ namespace OpenMetaverse
                             request.Callback = callback;
                             //request.Transfer = new ImageDownload();
                             //request.Transfer.ID = textureID;
+                            Console.WriteLine("Add Download Request: {0}", textureID);
                             _Transfers.Add(textureID, request);
                         }
                     }
@@ -392,8 +393,9 @@ namespace OpenMetaverse
                             active++;
                     }
 
+                    Console.WriteLine("Pending: {0} Active {1}", pending, active);
 
-                    if (pending >= 0 && active <= maxTextureRequests)
+                    if (pending > 0 && active <= maxTextureRequests)
                     {
                         slot = -1;
                         // find available slot for reset event
@@ -403,11 +405,15 @@ namespace OpenMetaverse
                             {
                                 if (threadpoolSlots[i] == -1)
                                 {
+                                    // found a free slot
                                     threadpoolSlots[i] = 1;
                                     slot = i;
                                     break;
                                 }
                             }
+                            for (int i = 0; i < threadpoolSlots.Length; i++)
+                                Console.WriteLine("Slot {0} = {1}", i, threadpoolSlots[i]);
+                            Console.WriteLine("Slot {0}", slot);
                         }
 
                         if (slot != -1)
@@ -433,7 +439,7 @@ namespace OpenMetaverse
                                 task.Transfer = new ImageDownload();
                                 task.Transfer.ID = task.RequestID;
 
-                                //Logger.DebugLog(String.Format("Sending Worker thread new download request {0}", slot));
+                                Logger.DebugLog(String.Format("Sending Worker thread new download request {0}", slot));
                                 ThreadPool.QueueUserWorkItem(TextureRequestDoWork, task);
                                 continue;
                             }
