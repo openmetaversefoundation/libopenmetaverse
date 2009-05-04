@@ -286,6 +286,8 @@ namespace OpenMetaverse
         /// <summary>Throttle outgoing packet rate</summary>
         public bool THROTTLE_OUTGOING_PACKETS = true;
 
+        /// <summary>The maximum number of concurrent texture downloads allowed</summary>
+        public int MAX_CONCURRENT_TEXTURE_DOWNLOADS = 10;
         #endregion
         #region Logging Configuration
 

@@ -256,8 +256,23 @@ namespace OpenMetaverse
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class ImageRequest
     {
+        public UUID ImageID;
+        public ImageType Type;
+        public float Priority;
+        public int DiscardLevel;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="imageid"></param>
+        /// <param name="type"></param>
+        /// <param name="priority"></param>
+        /// <param name="discardLevel"></param>
         public ImageRequest(UUID imageid, ImageType type, float priority, int discardLevel)
         {
             ImageID = imageid;
@@ -265,10 +280,7 @@ namespace OpenMetaverse
             Priority = priority;
             DiscardLevel = discardLevel;
         }
-        public UUID ImageID;
-        public ImageType Type;
-        public float Priority;
-        public int DiscardLevel;
+        
     }
     #endregion Transfer Classes
 
@@ -325,10 +337,6 @@ namespace OpenMetaverse
         /// <summary></summary>
         public event XferReceivedCallback OnXferReceived;
         /// <summary></summary>
-        public event ImageReceivedCallback OnImageReceived;
-        /// <summary></summary>
-        public event ImageReceiveProgressCallback OnImageReceiveProgress;
-        /// <summary></summary>
         public event AssetUploadedCallback OnAssetUploaded;
         /// <summary></summary>
         public event UploadProgressCallback OnUploadProgress;
@@ -339,12 +347,15 @@ namespace OpenMetaverse
         /// <summary>Texture download cache</summary>
         public TextureCache Cache;
 
+        public TexturePipeline Texture;
+
         private GridClient Client;
+
         private Dictionary<UUID, Transfer> Transfers = new Dictionary<UUID, Transfer>();
+
         private AssetUpload PendingUpload;
         private object PendingUploadLock = new object();
         private volatile bool WaitingForUploadConfirm = false;
-        private System.Timers.Timer RefreshDownloadsTimer = new System.Timers.Timer(500.0);
         
         /// <summary>
         /// Default constructor
@@ -354,15 +365,16 @@ namespace OpenMetaverse
         {
             Client = client;
             Cache = new TextureCache(client);
+            Texture = new TexturePipeline(client);
 
             // Transfer packets for downloading large assets
             Client.Network.RegisterCallback(PacketType.TransferInfo, new NetworkManager.PacketCallback(TransferInfoHandler));
             Client.Network.RegisterCallback(PacketType.TransferPacket, new NetworkManager.PacketCallback(TransferPacketHandler));
 
             // Image downloading packets
-            Client.Network.RegisterCallback(PacketType.ImageData, new NetworkManager.PacketCallback(ImageDataHandler));
-            Client.Network.RegisterCallback(PacketType.ImagePacket, new NetworkManager.PacketCallback(ImagePacketHandler));
-            Client.Network.RegisterCallback(PacketType.ImageNotInDatabase, new NetworkManager.PacketCallback(ImageNotInDatabaseHandler));
+            //Client.Network.RegisterCallback(PacketType.ImageData, new NetworkManager.PacketCallback(ImageDataHandler));
+            //Client.Network.RegisterCallback(PacketType.ImagePacket, new NetworkManager.PacketCallback(ImagePacketHandler));
+            //Client.Network.RegisterCallback(PacketType.ImageNotInDatabase, new NetworkManager.PacketCallback(ImageNotInDatabaseHandler));
 
             // Xfer packets for uploading large assets
             Client.Network.RegisterCallback(PacketType.RequestXfer, new NetworkManager.PacketCallback(RequestXferHandler));
@@ -375,66 +387,6 @@ namespace OpenMetaverse
             // Simulator is responding to a request to download a file
             Client.Network.RegisterCallback(PacketType.InitiateDownload, new NetworkManager.PacketCallback(InitiateDownloadPacketHandler));
 
-            // HACK: Re-request stale pending image downloads
-            RefreshDownloadsTimer.Elapsed += new System.Timers.ElapsedEventHandler(RefreshDownloadsTimer_Elapsed);
-            RefreshDownloadsTimer.Start();
-        }
-
-        private void RefreshDownloadsTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
-        {
-            lock (Transfers)
-            {
-                foreach (Transfer transfer in Transfers.Values)
-                {
-                    if (transfer is ImageDownload)
-                    {
-                        ImageDownload download = (ImageDownload)transfer;
-
-                        uint packet = 0;
-                        
-                        if (download.PacketsSeen != null && download.PacketsSeen.Count > 0)
-                        {
-                            lock (download.PacketsSeen)
-                            {
-                                bool first = true;
-                                foreach (KeyValuePair<ushort, ushort> packetSeen in download.PacketsSeen)
-                                {
-                                    if (first)
-                                    {
-                                        // Initially set this to the earliest packet received in the transfer
-                                        packet = packetSeen.Value;
-                                        first = false;
-                                    }
-                                    else
-                                    {
-                                        ++packet;
-
-                                        // If there is a missing packet in the list, break and request the download
-                                        // resume here
-                                        if (packetSeen.Value != packet)
-                                        {
-                                            --packet;
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                ++packet;
-                            }
-                        }
-
-                        if (download.TimeSinceLastPacket > 5000)
-                        {
-                            if (download.DiscardLevel > 0)
-                            {
-                                --download.DiscardLevel;
-                            }
-                            download.TimeSinceLastPacket = 0;
-                            RequestImage(download.ID, download.ImageType, download.Priority, download.DiscardLevel, packet);
-                        }
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -580,10 +532,10 @@ namespace OpenMetaverse
         /// <param name="imageID">The image to download</param>
         /// <param name="type">Type of the image to download, either a baked
         /// avatar texture or a normal texture</param>
-        public void RequestImage(UUID imageID, ImageType type)
-        {
-            RequestImage(imageID, type, 1013000.0f, 0, 0);
-        }
+        //public void RequestImage(UUID imageID, ImageType type)
+        //{
+        //    RequestImage(imageID, type, 1013000.0f, 0, 0);
+        //}
 
         /// <summary>
         /// Initiate an image download. This is an asynchronous function
@@ -599,157 +551,157 @@ namespace OpenMetaverse
         /// This controls the start marker of the data sent</param>
         /// <remarks>Sending a priority of 0 and a discardlevel of -1 aborts
         /// download</remarks>
-        public void RequestImage(UUID imageID, ImageType type, float priority, int discardLevel, uint packetNum)
-        {
-            if (Cache.HasImage(imageID))
-            {
-                ImageDownload transfer = Cache.GetCachedImage(imageID);
-                transfer.ImageType = type;
+        //public void RequestImage(UUID imageID, ImageType type, float priority, int discardLevel, uint packetNum, TextureDownloadCallback callback)
+        //{
+            //if (Cache.HasImage(imageID))
+            //{
+            //    ImageDownload transfer = Cache.GetCachedImage(imageID);
+            //    transfer.ImageType = type;
 
-                if (null != transfer)
-                {
-                    if (null != OnImageReceived)
-                    {
-                        AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
+            //    if (null != transfer)
+            //    {
+            //        if (null != OnImageReceived)
+            //        {
+            //            AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
 
-                        try { OnImageReceived(transfer, asset); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                    }
-                    return;
-                }
-            }
+            //            try { OnImageReceived(transfer, asset); }
+            //            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            //        }
+            //        return;
+            //    }
+            //}
 
-            // Priority == 0 && DiscardLevel == -1 means cancel the transfer
-            if (priority.Equals(0) && discardLevel.Equals(-1))
-            {
-                if (Transfers.ContainsKey(imageID))
-                    Transfers.Remove(imageID);
+            //// Priority == 0 && DiscardLevel == -1 means cancel the transfer
+            //if (priority.Equals(0) && discardLevel.Equals(-1))
+            //{
+            //    if (Transfers.ContainsKey(imageID))
+            //        Transfers.Remove(imageID);
 
-                RequestImagePacket cancel = new RequestImagePacket();
-                cancel.AgentData.AgentID = Client.Self.AgentID;
-                cancel.AgentData.SessionID = Client.Self.SessionID;
-                cancel.RequestImage = new RequestImagePacket.RequestImageBlock[1];
-                cancel.RequestImage[0] = new RequestImagePacket.RequestImageBlock();
-                cancel.RequestImage[0].DiscardLevel = -1;
-                cancel.RequestImage[0].DownloadPriority = 0;
-                cancel.RequestImage[0].Packet = 0;
-                cancel.RequestImage[0].Image = imageID;
-                cancel.RequestImage[0].Type = 0;
-            }
-            else
-            {
-                Simulator currentSim = Client.Network.CurrentSim;
+            //    RequestImagePacket cancel = new RequestImagePacket();
+            //    cancel.AgentData.AgentID = Client.Self.AgentID;
+            //    cancel.AgentData.SessionID = Client.Self.SessionID;
+            //    cancel.RequestImage = new RequestImagePacket.RequestImageBlock[1];
+            //    cancel.RequestImage[0] = new RequestImagePacket.RequestImageBlock();
+            //    cancel.RequestImage[0].DiscardLevel = -1;
+            //    cancel.RequestImage[0].DownloadPriority = 0;
+            //    cancel.RequestImage[0].Packet = 0;
+            //    cancel.RequestImage[0].Image = imageID;
+            //    cancel.RequestImage[0].Type = 0;
+            //}
+            //else
+            //{
+            //    Simulator currentSim = Client.Network.CurrentSim;
 
-                if (!Transfers.ContainsKey(imageID))
-                {
-                    // New download
-                    ImageDownload transfer = new ImageDownload();
-                    transfer.ID = imageID;
-                    transfer.Simulator = currentSim;
-                    transfer.ImageType = type;
-                    transfer.DiscardLevel = discardLevel;
-                    transfer.Priority = priority;
+            //    if (!Transfers.ContainsKey(imageID))
+            //    {
+            //        // New download
+            //        ImageDownload transfer = new ImageDownload();
+            //        transfer.ID = imageID;
+            //        transfer.Simulator = currentSim;
+            //        transfer.ImageType = type;
+            //        transfer.DiscardLevel = discardLevel;
+            //        transfer.Priority = priority;
 
-                    // Add this transfer to the dictionary
-                    lock (Transfers) Transfers[transfer.ID] = transfer;
+            //        // Add this transfer to the dictionary
+            //        lock (Transfers) Transfers[transfer.ID] = transfer;
 
-                    Logger.DebugLog("Adding image " + imageID.ToString() + " to the download queue");
-                }
-                else
-                {
-                    // Already downloading, just updating the priority
-                    Transfer transfer = Transfers[imageID];
-                    float percentComplete = ((float)transfer.Transferred / (float)transfer.Size) * 100f;
-                    if (Single.IsNaN(percentComplete))
-                        percentComplete = 0f;
+            //        Logger.DebugLog("Adding image " + imageID.ToString() + " to the download queue");
+            //    }
+            //    else
+            //    {
+            //        // Already downloading, just updating the priority
+            //        Transfer transfer = Transfers[imageID];
+            //        float percentComplete = ((float)transfer.Transferred / (float)transfer.Size) * 100f;
+            //        if (Single.IsNaN(percentComplete))
+            //            percentComplete = 0f;
 
-                    Logger.DebugLog(String.Format("Updating priority on image transfer {0}, {1}% complete",
-                        imageID, Math.Round(percentComplete, 2)));
-                }
+            //        Logger.DebugLog(String.Format("Updating priority on image transfer {0}, {1}% complete",
+            //            imageID, Math.Round(percentComplete, 2)));
+            //    }
 
-                // Build and send the request packet
-                RequestImagePacket request = new RequestImagePacket();
-                request.AgentData.AgentID = Client.Self.AgentID;
-                request.AgentData.SessionID = Client.Self.SessionID;
-                request.RequestImage = new RequestImagePacket.RequestImageBlock[1];
-                request.RequestImage[0] = new RequestImagePacket.RequestImageBlock();
-                request.RequestImage[0].DiscardLevel = (sbyte)discardLevel;
-                request.RequestImage[0].DownloadPriority = priority;
-                request.RequestImage[0].Packet = packetNum;
-                request.RequestImage[0].Image = imageID;
-                request.RequestImage[0].Type = (byte)type;
+            //    // Build and send the request packet
+            //    RequestImagePacket request = new RequestImagePacket();
+            //    request.AgentData.AgentID = Client.Self.AgentID;
+            //    request.AgentData.SessionID = Client.Self.SessionID;
+            //    request.RequestImage = new RequestImagePacket.RequestImageBlock[1];
+            //    request.RequestImage[0] = new RequestImagePacket.RequestImageBlock();
+            //    request.RequestImage[0].DiscardLevel = (sbyte)discardLevel;
+            //    request.RequestImage[0].DownloadPriority = priority;
+            //    request.RequestImage[0].Packet = packetNum;
+            //    request.RequestImage[0].Image = imageID;
+            //    request.RequestImage[0].Type = (byte)type;
 
-                Client.Network.SendPacket(request, currentSim);
-            }
-        }
+            //    Client.Network.SendPacket(request, currentSim);
+            //}
+//        }
 
         /// <summary>
         /// Requests multiple Images
         /// </summary>
         /// <param name="Images">List of requested images</param>
-        public void RequestImages(List<ImageRequest> Images)
-        {
-            for (int iri = 0; iri < Images.Count; iri++)
-            {
-                if (Transfers.ContainsKey(Images[iri].ImageID))
-                {
-                    Images.RemoveAt(iri);
-                }
+        //public void RequestImages(List<ImageRequest> Images)
+        //{
+            //for (int iri = 0; iri < Images.Count; iri++)
+            //{
+            //    if (Transfers.ContainsKey(Images[iri].ImageID))
+            //    {
+            //        Images.RemoveAt(iri);
+            //    }
 
-                if (Cache.HasImage(Images[iri].ImageID))
-                {
-                    ImageDownload transfer = Cache.GetCachedImage(Images[iri].ImageID);
-                    if (null != transfer)
-                    {
-                        if (null != OnImageReceived)
-                        {
-                            AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
+            //    if (Cache.HasImage(Images[iri].ImageID))
+            //    {
+            //        ImageDownload transfer = Cache.GetCachedImage(Images[iri].ImageID);
+            //        if (null != transfer)
+            //        {
+            //            if (null != OnImageReceived)
+            //            {
+            //                AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
 
-                            try { OnImageReceived(transfer, asset); }
-                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                        }
+            //                try { OnImageReceived(transfer, asset); }
+            //                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            //            }
 
-                        Images.RemoveAt(iri);
-                    }
-                }
-            }
+            //            Images.RemoveAt(iri);
+            //        }
+            //    }
+            //}
 
-            if (Images.Count > 0)
-            {
-                // Build and send the request packet
-                RequestImagePacket request = new RequestImagePacket();
-                request.AgentData.AgentID = Client.Self.AgentID;
-                request.AgentData.SessionID = Client.Self.SessionID;
-                request.RequestImage = new RequestImagePacket.RequestImageBlock[Images.Count];
+            //if (Images.Count > 0)
+            //{
+            //    // Build and send the request packet
+            //    RequestImagePacket request = new RequestImagePacket();
+            //    request.AgentData.AgentID = Client.Self.AgentID;
+            //    request.AgentData.SessionID = Client.Self.SessionID;
+            //    request.RequestImage = new RequestImagePacket.RequestImageBlock[Images.Count];
 
-                for (int iru = 0; iru < Images.Count; ++iru)
-                {
-                    ImageDownload transfer = new ImageDownload();
-                    //transfer.AssetType = AssetType.Texture // Handled in ImageDataHandler.
-                    transfer.ID = Images[iru].ImageID;
-                    transfer.Simulator = Client.Network.CurrentSim;
-                    transfer.ImageType = Images[iru].Type;
-                    transfer.DiscardLevel = Images[iru].DiscardLevel;
-                    transfer.Priority = Images[iru].Priority;
+            //    for (int iru = 0; iru < Images.Count; ++iru)
+            //    {
+            //        ImageDownload transfer = new ImageDownload();
+            //        //transfer.AssetType = AssetType.Texture // Handled in ImageDataHandler.
+            //        transfer.ID = Images[iru].ImageID;
+            //        transfer.Simulator = Client.Network.CurrentSim;
+            //        transfer.ImageType = Images[iru].Type;
+            //        transfer.DiscardLevel = Images[iru].DiscardLevel;
+            //        transfer.Priority = Images[iru].Priority;
 
-                    // Add this transfer to the dictionary
-                    lock (Transfers) Transfers[transfer.ID] = transfer;
-                    request.RequestImage[iru] = new RequestImagePacket.RequestImageBlock();
-                    request.RequestImage[iru].DiscardLevel = (sbyte)Images[iru].DiscardLevel;
-                    request.RequestImage[iru].DownloadPriority = Images[iru].Priority;
-                    request.RequestImage[iru].Packet = 0;
-                    request.RequestImage[iru].Image = Images[iru].ImageID;
-                    request.RequestImage[iru].Type = (byte)Images[iru].Type;
-                }
+            //        // Add this transfer to the dictionary
+            //        lock (Transfers) Transfers[transfer.ID] = transfer;
+            //        request.RequestImage[iru] = new RequestImagePacket.RequestImageBlock();
+            //        request.RequestImage[iru].DiscardLevel = (sbyte)Images[iru].DiscardLevel;
+            //        request.RequestImage[iru].DownloadPriority = Images[iru].Priority;
+            //        request.RequestImage[iru].Packet = 0;
+            //        request.RequestImage[iru].Image = Images[iru].ImageID;
+            //        request.RequestImage[iru].Type = (byte)Images[iru].Type;
+            //    }
 
-                Client.Network.SendPacket(request, Client.Network.CurrentSim);
-            }
-            else
-            {
-                Logger.Log("RequestImages() called for an image(s) we are already downloading or an empty list, ignoring",
-                    Helpers.LogLevel.Info, Client);
-            }
-        }
+            //    Client.Network.SendPacket(request, Client.Network.CurrentSim);
+            //}
+            //else
+            //{
+            //    Logger.Log("RequestImages() called for an image(s) we are already downloading or an empty list, ignoring",
+            //        Helpers.LogLevel.Info, Client);
+            //}
+   //     }
 
         /// <summary>
         /// Used to force asset data into the PendingUpload property, ie: for raw terrain uploads
@@ -1373,168 +1325,168 @@ namespace OpenMetaverse
         /// along with the first block of data for the image. If the image is small enough
         /// there will be no additional packets
         /// </summary>
-        private void ImageDataHandler(Packet packet, Simulator simulator)
-        {
-            ImageDataPacket data = (ImageDataPacket)packet;
-            ImageDownload transfer = null;
+        //private void ImageDataHandler(Packet packet, Simulator simulator)
+        //{
+        //    ImageDataPacket data = (ImageDataPacket)packet;
+        //    ImageDownload transfer = null;
 
-            Logger.DebugLog(String.Format("ImageData: Size={0}, Packets={1}", data.ImageID.Size, data.ImageID.Packets));
+        //    Logger.DebugLog(String.Format("ImageData: Size={0}, Packets={1}", data.ImageID.Size, data.ImageID.Packets));
 
-            lock (Transfers)
-            {
-                if (Transfers.ContainsKey(data.ImageID.ID))
-                {
-                    transfer = (ImageDownload)Transfers[data.ImageID.ID];
+        //    lock (Transfers)
+        //    {
+        //        if (Transfers.ContainsKey(data.ImageID.ID))
+        //        {
+        //            transfer = (ImageDownload)Transfers[data.ImageID.ID];
 
-                    // Don't set header information if we have already
-                    // received it (due to re-request)
-                    if (transfer.Size == 0)
-                    {
-                        //Client.DebugLog("Received first " + data.ImageData.Data.Length + " bytes for image " +
-                        //    data.ImageID.ID.ToString());
+        //            // Don't set header information if we have already
+        //            // received it (due to re-request)
+        //            if (transfer.Size == 0)
+        //            {
+        //                //Client.DebugLog("Received first " + data.ImageData.Data.Length + " bytes for image " +
+        //                //    data.ImageID.ID.ToString());
 
-                        if (OnImageReceiveProgress != null)
-                        {
-                            try { OnImageReceiveProgress(data.ImageID.ID, 0, data.ImageData.Data.Length, transfer.Size); }
-                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                        }
+        //                if (OnImageReceiveProgress != null)
+        //                {
+        //                    try { OnImageReceiveProgress(data.ImageID.ID, 0, data.ImageData.Data.Length, transfer.Size); }
+        //                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+        //                }
 
-                        transfer.Codec = (ImageCodec)data.ImageID.Codec;
-                        transfer.PacketCount = data.ImageID.Packets;
-                        transfer.Size = (int)data.ImageID.Size;
-                        transfer.AssetData = new byte[transfer.Size];
-                        transfer.AssetType = AssetType.Texture;
-                        transfer.PacketsSeen = new SortedList<ushort, ushort>();
-                        Buffer.BlockCopy(data.ImageData.Data, 0, transfer.AssetData, 0, data.ImageData.Data.Length);
-                        transfer.InitialDataSize = data.ImageData.Data.Length;
-                        transfer.Transferred += data.ImageData.Data.Length;
+        //                transfer.Codec = (ImageCodec)data.ImageID.Codec;
+        //                transfer.PacketCount = data.ImageID.Packets;
+        //                transfer.Size = (int)data.ImageID.Size;
+        //                transfer.AssetData = new byte[transfer.Size];
+        //                transfer.AssetType = AssetType.Texture;
+        //                transfer.PacketsSeen = new SortedList<ushort, ushort>();
+        //                Buffer.BlockCopy(data.ImageData.Data, 0, transfer.AssetData, 0, data.ImageData.Data.Length);
+        //                transfer.InitialDataSize = data.ImageData.Data.Length;
+        //                transfer.Transferred += data.ImageData.Data.Length;
 			            
-                        // Check if we downloaded the full image
-                        if (transfer.Transferred >= transfer.Size)
-                        {
-                            Transfers.Remove(transfer.ID);
-                            transfer.Success = true;
-                            Cache.SaveImageToCache(transfer.ID, transfer.AssetData);
-                        }
-                    }
-                }
-            }
+        //                // Check if we downloaded the full image
+        //                if (transfer.Transferred >= transfer.Size)
+        //                {
+        //                    Transfers.Remove(transfer.ID);
+        //                    transfer.Success = true;
+        //                    Cache.SaveImageToCache(transfer.ID, transfer.AssetData);
+        //                }
+        //            }
+        //        }
+        //    }
 
-            if (transfer != null)
-            {
-                transfer.HeaderReceivedEvent.Set();
+        //    if (transfer != null)
+        //    {
+        //        transfer.HeaderReceivedEvent.Set();
 
-                if (OnImageReceived != null && transfer.Transferred >= transfer.Size)
-                {
-                    AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
+        //        if (OnImageReceived != null && transfer.Transferred >= transfer.Size)
+        //        {
+        //            AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
 
-                    try { OnImageReceived(transfer, asset); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                }
-            }
-        }
+        //            try { OnImageReceived(transfer, asset); }
+        //            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Handles the remaining Image data that did not fit in the initial ImageData packet
         /// </summary>
-        private void ImagePacketHandler(Packet packet, Simulator simulator)
-        {
-            ImagePacketPacket image = (ImagePacketPacket)packet;
-            ImageDownload transfer = null;
+        //private void ImagePacketHandler(Packet packet, Simulator simulator)
+        //{
+        //    ImagePacketPacket image = (ImagePacketPacket)packet;
+        //    ImageDownload transfer = null;
 
-            lock (Transfers)
-            {
-                if (Transfers.ContainsKey(image.ImageID.ID))
-                {
-                    transfer = (ImageDownload)Transfers[image.ImageID.ID];
+        //    lock (Transfers)
+        //    {
+        //        if (Transfers.ContainsKey(image.ImageID.ID))
+        //        {
+        //            transfer = (ImageDownload)Transfers[image.ImageID.ID];
 
-                    if (transfer.Size == 0)
-                    {
-                        // We haven't received the header yet, block until it's received or times out
-                        transfer.HeaderReceivedEvent.WaitOne(1000 * 5, false);
+        //            if (transfer.Size == 0)
+        //            {
+        //                // We haven't received the header yet, block until it's received or times out
+        //                transfer.HeaderReceivedEvent.WaitOne(1000 * 5, false);
 
-                        if (transfer.Size == 0)
-                        {
-                            Logger.Log("Timed out while waiting for the image header to download for " +
-                                transfer.ID.ToString(), Helpers.LogLevel.Warning, Client);
+        //                if (transfer.Size == 0)
+        //                {
+        //                    Logger.Log("Timed out while waiting for the image header to download for " +
+        //                        transfer.ID.ToString(), Helpers.LogLevel.Warning, Client);
 
-                            transfer.Success = false;
-                            Transfers.Remove(transfer.ID);
-                            goto Callback;
-                        }
-                    }
+        //                    transfer.Success = false;
+        //                    Transfers.Remove(transfer.ID);
+        //                    goto Callback;
+        //                }
+        //            }
 
-                    // The header is downloaded, we can insert this data in to the proper position
-                    // Only insert if we haven't seen this packet before
-                    lock (transfer.PacketsSeen)
-                    {
-                        if (!transfer.PacketsSeen.ContainsKey(image.ImageID.Packet))
-                        {
-                            transfer.PacketsSeen[image.ImageID.Packet] = image.ImageID.Packet;
-                            Buffer.BlockCopy(image.ImageData.Data, 0, transfer.AssetData,
-                                transfer.InitialDataSize + (1000 * (image.ImageID.Packet - 1)),
-                                image.ImageData.Data.Length);
-                            transfer.Transferred += image.ImageData.Data.Length;
-                        }
-                    }
+        //            // The header is downloaded, we can insert this data in to the proper position
+        //            // Only insert if we haven't seen this packet before
+        //            lock (transfer.PacketsSeen)
+        //            {
+        //                if (!transfer.PacketsSeen.ContainsKey(image.ImageID.Packet))
+        //                {
+        //                    transfer.PacketsSeen[image.ImageID.Packet] = image.ImageID.Packet;
+        //                    Buffer.BlockCopy(image.ImageData.Data, 0, transfer.AssetData,
+        //                        transfer.InitialDataSize + (1000 * (image.ImageID.Packet - 1)),
+        //                        image.ImageData.Data.Length);
+        //                    transfer.Transferred += image.ImageData.Data.Length;
+        //                }
+        //            }
 
-                    //Client.DebugLog("Received " + image.ImageData.Data.Length + "/" + transfer.Transferred +
-                    //    "/" + transfer.Size + " bytes for image " + image.ImageID.ID.ToString());
+        //            //Client.DebugLog("Received " + image.ImageData.Data.Length + "/" + transfer.Transferred +
+        //            //    "/" + transfer.Size + " bytes for image " + image.ImageID.ID.ToString());
 
-                    transfer.TimeSinceLastPacket = 0;
+        //            transfer.TimeSinceLastPacket = 0;
                     
-                    if (OnImageReceiveProgress != null)
-                    {
-                        try { OnImageReceiveProgress(image.ImageID.ID, image.ImageID.Packet, transfer.Transferred, transfer.Size); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                    }
+        //            if (OnImageReceiveProgress != null)
+        //            {
+        //                try { OnImageReceiveProgress(image.ImageID.ID, image.ImageID.Packet, transfer.Transferred, transfer.Size); }
+        //                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+        //            }
 
-                    // Check if we downloaded the full image
-                    if (transfer.Transferred >= transfer.Size)
-                    {
-                        Cache.SaveImageToCache(transfer.ID, transfer.AssetData);
-                        transfer.Success = true;
-                        Transfers.Remove(transfer.ID);
-                    }
-                }
-            }
+        //            // Check if we downloaded the full image
+        //            if (transfer.Transferred >= transfer.Size)
+        //            {
+        //                Cache.SaveImageToCache(transfer.ID, transfer.AssetData);
+        //                transfer.Success = true;
+        //                Transfers.Remove(transfer.ID);
+        //            }
+        //        }
+        //    }
 
-        Callback:
+        //Callback:
 
-            if (transfer != null && OnImageReceived != null && (transfer.Transferred >= transfer.Size || transfer.Size == 0))
-            {
-                AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
+        //    if (transfer != null && OnImageReceived != null && (transfer.Transferred >= transfer.Size || transfer.Size == 0))
+        //    {
+        //        AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
 
-                try { OnImageReceived(transfer, asset); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-            }
-        }
+        //        try { OnImageReceived(transfer, asset); }
+        //        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+        //    }
+        //}
 
         /// <summary>
         /// The requested image does not exist on the asset server
         /// </summary>
-        private void ImageNotInDatabaseHandler(Packet packet, Simulator simulator)
-        {
-            ImageNotInDatabasePacket notin = (ImageNotInDatabasePacket)packet;
-            ImageDownload transfer = null;
+        //private void ImageNotInDatabaseHandler(Packet packet, Simulator simulator)
+        //{
+        //    ImageNotInDatabasePacket notin = (ImageNotInDatabasePacket)packet;
+        //    ImageDownload transfer = null;
 
-            lock (Transfers)
-            {
-                if (Transfers.ContainsKey(notin.ImageID.ID))
-                {
-                    transfer = (ImageDownload)Transfers[notin.ImageID.ID];
-                    transfer.NotFound = true;
-                    Transfers.Remove(transfer.ID);
-                }
-            }
+        //    lock (Transfers)
+        //    {
+        //        if (Transfers.ContainsKey(notin.ImageID.ID))
+        //        {
+        //            transfer = (ImageDownload)Transfers[notin.ImageID.ID];
+        //            transfer.NotFound = true;
+        //            Transfers.Remove(transfer.ID);
+        //        }
+        //    }
 
-            // Fire the event with our transfer that contains Success = false;
-            if (transfer != null && OnImageReceived != null)
-            {
-                try { OnImageReceived(transfer, null); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-            }
-        }
+        //    // Fire the event with our transfer that contains Success = false;
+        //    if (transfer != null && OnImageReceived != null)
+        //    {
+        //        try { OnImageReceived(transfer, null); }
+        //        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+        //    }
+        //}
 
         #endregion Image Callbacks
     }

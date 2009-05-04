@@ -102,7 +102,6 @@ namespace OpenMetaverse.GUI
         private void InitializeClient(GridClient client)
         {
             _Client = client;
-            _Client.Assets.OnImageReceived += new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
             _Client.Grid.OnCoarseLocationUpdate += new GridManager.CoarseLocationUpdateCallback(Grid_OnCoarseLocationUpdate);
             _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
         }
@@ -195,9 +194,9 @@ namespace OpenMetaverse.GUI
             _MousePosition = e.Location;
         }
 
-        void Assets_OnImageReceived(ImageDownload image, AssetTexture asset)
+        void Assets_OnImageReceived(TextureRequestState state, ImageDownload image, AssetTexture asset)
         {
-            if (asset.AssetID == _MapImageID)
+            if (state == TextureRequestState.Finished && asset.AssetID == _MapImageID)
             {
                 ManagedImage nullImage;
                 OpenJPEG.DecodeToImage(asset.AssetData, out nullImage, out _MapLayer);
@@ -217,7 +216,7 @@ namespace OpenMetaverse.GUI
                 SetMapLayer(null);
 
                 _MapImageID = region.MapImageID;
-                Client.Assets.RequestImage(_MapImageID, ImageType.Baked);
+                Client.Assets.Texture.RequestTexture(_MapImageID, ImageType.Baked, Assets_OnImageReceived, false);
             }
         }       
 

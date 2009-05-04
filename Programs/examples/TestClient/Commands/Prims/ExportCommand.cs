@@ -22,7 +22,6 @@ namespace OpenMetaverse.TestClient
         {
             testClient.Objects.OnObjectPropertiesFamily += new ObjectManager.ObjectPropertiesFamilyCallback(Objects_OnObjectPropertiesFamily);
             testClient.Objects.OnObjectProperties += new ObjectManager.ObjectPropertiesCallback(Objects_OnObjectProperties);
-            testClient.Assets.OnImageReceived += new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
             testClient.Avatars.OnPointAt += new AvatarManager.PointAtCallback(Avatars_OnPointAt);
 
             Name = "export";
@@ -143,7 +142,10 @@ namespace OpenMetaverse.TestClient
                 }
 
                 // Download all of the textures in the export list
-                Client.Assets.RequestImages(textureRequests);
+                foreach (ImageRequest request in textureRequests)
+                {
+                    Client.Assets.Texture.RequestTexture(request.ImageID, request.Type, Assets_OnImageReceived, false);
+                }
 
                 return "XML exported, began downloading " + Textures.Count + " textures";
             }
@@ -176,9 +178,10 @@ namespace OpenMetaverse.TestClient
             return AllPropertiesReceived.WaitOne(2000 + msPerRequest * objects.Count, false);
         }
 
-        private void Assets_OnImageReceived(ImageDownload image, AssetTexture asset)
+        private void Assets_OnImageReceived(TextureRequestState state, ImageDownload image, AssetTexture asset)
         {
-            if (Textures.Contains(image.ID))
+
+            if (state == TextureRequestState.Finished && Textures.Contains(image.ID))
             {
                 lock (Textures)
                     Textures.Remove(image.ID);

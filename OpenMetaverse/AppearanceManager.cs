@@ -644,10 +644,10 @@ namespace OpenMetaverse
 
             // Register an asset download callback to get wearable data
             AssetManager.AssetReceivedCallback assetCallback = new AssetManager.AssetReceivedCallback(Assets_OnAssetReceived);
-            AssetManager.ImageReceivedCallback imageCallback = new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
+            //AssetManager.ImageReceivedCallback imageCallback = new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
             AssetManager.AssetUploadedCallback uploadCallback = new AssetManager.AssetUploadedCallback(Assets_OnAssetUploaded);
             Assets.OnAssetReceived += assetCallback;
-            Assets.OnImageReceived += imageCallback;
+            //Assets.OnImageReceived += imageCallback;
             Assets.OnAssetUploaded += uploadCallback;
 
             // Download assets for what we are wearing and fill in AgentTextures
@@ -667,7 +667,7 @@ namespace OpenMetaverse
             if (bake) CachedResponseEvent.WaitOne();
 
             // Unregister the image download and asset upload callbacks
-            Assets.OnImageReceived -= imageCallback;
+            //Assets.OnImageReceived -= imageCallback;
             Assets.OnAssetUploaded -= uploadCallback;
 
             Logger.DebugLog("CachedResponseEvent completed", Client);
@@ -1342,7 +1342,7 @@ namespace OpenMetaverse
                     foreach (UUID image in imgKeys)
                     {
                         // Download all the images we need for baking
-                        Assets.RequestImage(image, ImageType.Normal, 1013000.0f, 0, 0);
+                        Assets.Texture.RequestTexture(image, ImageType.Normal, new TextureDownloadCallback(Assets_OnImageReceived), false);
                     }
                 }
             }
@@ -1412,7 +1412,7 @@ namespace OpenMetaverse
             }
         }
 
-        private void Assets_OnImageReceived(ImageDownload image, AssetTexture assetTexture)
+        private void Assets_OnImageReceived(TextureRequestState state, ImageDownload image, AssetTexture assetTexture)
         {
             lock (ImageDownloads)
             {

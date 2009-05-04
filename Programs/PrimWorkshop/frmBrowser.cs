@@ -147,7 +147,7 @@ namespace PrimWorkshop
             Client.Settings.ALWAYS_REQUEST_OBJECTS = true;
             Client.Settings.SEND_AGENT_UPDATES = true;
             Client.Settings.USE_TEXTURE_CACHE = true;
-            Client.Settings.TEXTURE_CACHE_DIR = Application.StartupPath + System.IO.Path.DirectorySeparatorChar + "cache";
+            //Client.Settings.TEXTURE_CACHE_DIR = Application.StartupPath + System.IO.Path.DirectorySeparatorChar + "cache";
             Client.Settings.ALWAYS_REQUEST_PARCEL_ACL = false;
             Client.Settings.ALWAYS_REQUEST_PARCEL_DWELL = false;
             // Crank up the throttle on texture downloads
@@ -169,9 +169,9 @@ namespace PrimWorkshop
             // Initialize the texture download pipeline
             if (TextureDownloader != null)
                 TextureDownloader.Shutdown();
-            TextureDownloader = new TexturePipeline(Client, 10);
-            TextureDownloader.OnDownloadFinished += new TexturePipeline.DownloadFinishedCallback(TextureDownloader_OnDownloadFinished);
-            TextureDownloader.OnDownloadProgress += new TexturePipeline.DownloadProgressCallback(TextureDownloader_OnDownloadProgress);
+            TextureDownloader = new TexturePipeline(Client);
+            //TextureDownloader.OnDownloadFinished += new TexturePipeline.DownloadFinishedCallback(TextureDownloader_OnDownloadFinished);
+            //TextureDownloader.OnDownloadProgress += new TexturePipeline.DownloadProgressCallback(TextureDownloader_OnDownloadProgress);
 
             // Initialize the camera object
             InitCamera();
@@ -976,7 +976,7 @@ namespace PrimWorkshop
                         if (!Textures.ContainsKey(teFace.TextureID))
                         {
                             // We haven't constructed this image in OpenGL yet, get ahold of it
-                            TextureDownloader.RequestTexture(teFace.TextureID, ImageType.Normal);
+                            TextureDownloader.RequestTexture(teFace.TextureID, ImageType.Normal, TextureDownloader_OnDownloadFinished, false);
                         }
                     }
                 }
@@ -1401,18 +1401,22 @@ StartRender:
 
         #region Texture Downloading
 
-        private void TextureDownloader_OnDownloadFinished(UUID id, bool success)
+        private void TextureDownloader_OnDownloadFinished(TextureRequestState state, ImageDownload download, AssetTexture asset)
         {
             bool alpha = false;
             ManagedImage imgData = null;
             byte[] raw = null;
+            
+            bool success = (state == TextureRequestState.Finished);
+
+            UUID id = download.ID;
 
             try
             {
                 // Load the image off the disk
                 if (success)
                 {
-                    ImageDownload download = TextureDownloader.GetTextureToRender(id);
+                    //ImageDownload download = TextureDownloader.GetTextureToRender(id);
                     if (OpenJPEG.DecodeToImage(download.AssetData, out imgData))
                     {
                         raw = imgData.ExportRaw();

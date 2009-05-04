@@ -10,7 +10,6 @@ namespace OpenMetaverse.TestClient
     public class DumpOutfitCommand : Command
     {
         List<UUID> OutfitAssets = new List<UUID>();
-        AssetManager.ImageReceivedCallback ImageReceivedHandler;
 
         public DumpOutfitCommand(TestClient testClient)
         {
@@ -18,7 +17,6 @@ namespace OpenMetaverse.TestClient
             Description = "Dumps all of the textures from an avatars outfit to the hard drive. Usage: dumpoutfit [avatar-uuid]";
             Category = CommandCategory.Inventory;
 
-            ImageReceivedHandler = new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
@@ -49,7 +47,6 @@ namespace OpenMetaverse.TestClient
                         StringBuilder output = new StringBuilder("Downloading ");
 
                         lock (OutfitAssets) OutfitAssets.Clear();
-                        Client.Assets.OnImageReceived += ImageReceivedHandler;
 
                         for (int j = 0; j < targetAv.Textures.FaceTextures.Length; j++)
                         {
@@ -71,8 +68,7 @@ namespace OpenMetaverse.TestClient
                                 }
 
                                 OutfitAssets.Add(face.TextureID);
-                                Client.Assets.RequestImage(face.TextureID, type, 100000.0f, 0, 0);
-
+                                Client.Assets.Texture.RequestTexture(face.TextureID, type, Assets_OnImageReceived, false);
                                 output.Append(((AppearanceManager.TextureIndex)j).ToString());
                                 output.Append(" ");
                             }
@@ -86,13 +82,13 @@ namespace OpenMetaverse.TestClient
             return "Couldn't find avatar " + target.ToString();
         }
 
-        private void Assets_OnImageReceived(ImageDownload image, AssetTexture assetTexture)
+        private void Assets_OnImageReceived(TextureRequestState state, ImageDownload image, AssetTexture assetTexture)
         {
             lock (OutfitAssets)
             {
                 if (OutfitAssets.Contains(image.ID))
                 {
-                    if (image.Success)
+                    if (state == TextureRequestState.Finished && image.Success)
                     {
                         try
                         {
@@ -116,9 +112,6 @@ namespace OpenMetaverse.TestClient
                     }
 
                     OutfitAssets.Remove(image.ID);
-
-                    if (OutfitAssets.Count == 0)
-                        Client.Assets.OnImageReceived -= ImageReceivedHandler;
                 }
             }
         }
