@@ -118,6 +118,10 @@ namespace OpenMetaverse
         public string ReadCritical;
         /// <summary>An array of string sent to the login server to enable various options</summary>
         public string[] Options;
+
+        /// <summary>A randomly generated ID to distinguish between login attempts. This value is only used
+        /// internally in the library and is never sent over the wire</summary>
+        internal UUID LoginID;
     }
 
     public struct BuddyListEntry
@@ -1250,6 +1254,9 @@ namespace OpenMetaverse
         private void BeginLogin()
         {
             LoginParams loginParams = CurrentContext.Value;
+            // Generate a random ID to identify this login attempt
+            loginParams.LoginID = UUID.Random();
+            CurrentContext = loginParams;
 
             #region Sanity Check loginParams
 
@@ -1454,15 +1461,11 @@ namespace OpenMetaverse
             try
             {
                 reply.Parse(response.Value as Hashtable);
-                if (context.GetHashCode() != CurrentContext.Value.GetHashCode())
+                if (context.LoginID != CurrentContext.Value.LoginID)
                 {
-                    Logger.Log("Login Response does not match login request", Helpers.LogLevel.Warning);
-                    // TODO: Although the hash codes to not match the login appears to work correctly if
-                    // we don't exit the process here. Need to look into why the hashcodes do not match with Mono.
-                    // See LIBOMV-485 for additional information
-                    //
-                    // Temporarily disabling this to allow mono based clients to login with XML-RPC
-                    //return;
+                    Logger.Log("Login response does not match login request. Only one login can be attempted at a time",
+                        Helpers.LogLevel.Error);
+                    return;
                 }
             }
             catch (Exception e)

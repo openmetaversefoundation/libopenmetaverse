@@ -200,7 +200,7 @@ namespace OpenMetaverse
                         SocketFlags.None,
                         //ref wrappedBuffer.Instance.RemoteEndPoint,
                         ref buf.RemoteEndPoint,
-                        new AsyncCallback(AsyncEndReceive),
+                        AsyncEndReceive,
                         //wrappedBuffer);
                         buf);
                 }
