@@ -635,7 +635,7 @@ namespace OpenMetaverse
             // anyone who was not listed in the previous update
             List<UUID> newEntries = new List<UUID>();
 
-            lock (simulator.avatarPositions)
+            lock (simulator.avatarPositions.Dictionary)
             {
                 // remove stale entries
                 foreach(UUID trackedID in removedEntries)

@@ -360,13 +360,14 @@ namespace OpenMetaverse
 
             Client.Network.SendPacket(request);
 
-            FriendInfo friend = new FriendInfo(fromAgentID, FriendRights.CanSeeOnline,
+            FriendInfo friend = new FriendInfo(fromAgentID, FriendRights.CanSeeOnline, 
                 FriendRights.CanSeeOnline);
-            lock (FriendList)
-            {
-                if(!FriendList.ContainsKey(fromAgentID))  FriendList.Add(friend.UUID, friend);
-            }
-            lock (FriendRequests) { if (FriendRequests.ContainsKey(fromAgentID)) FriendRequests.Remove(fromAgentID); }
+
+            if (!FriendList.ContainsKey(fromAgentID))
+                FriendList.Add(friend.UUID, friend);
+
+            if (FriendRequests.ContainsKey(fromAgentID))
+                FriendRequests.Remove(fromAgentID);
 
             Client.Avatars.RequestAvatarName(fromAgentID);
         }
@@ -384,7 +385,8 @@ namespace OpenMetaverse
             request.TransactionBlock.TransactionID = imSessionID;
             Client.Network.SendPacket(request);
 
-            lock (FriendRequests) { if (FriendRequests.ContainsKey(fromAgentID)) FriendRequests.Remove(fromAgentID); }
+            if (FriendRequests.ContainsKey(fromAgentID))
+                FriendRequests.Remove(fromAgentID);
         }
 
         /// <summary>
@@ -422,11 +424,8 @@ namespace OpenMetaverse
 
                 Client.Network.SendPacket(request);
 
-                lock (FriendList)
-                {
-                    if (FriendList.ContainsKey(agentID))
-                        FriendList.Remove(agentID);
-                }
+                if (FriendList.ContainsKey(agentID))
+                    FriendList.Remove(agentID);
             }
         }
         /// <summary>
@@ -439,14 +438,13 @@ namespace OpenMetaverse
         {
             TerminateFriendshipPacket itsOver = (TerminateFriendshipPacket)packet;
             string name = String.Empty;
-            lock (FriendList)
+
+            if (FriendList.ContainsKey(itsOver.ExBlock.OtherID))
             {
-                if (FriendList.ContainsKey(itsOver.ExBlock.OtherID))
-                {
-                    name = FriendList[itsOver.ExBlock.OtherID].Name;
-                    FriendList.Remove(itsOver.ExBlock.OtherID);
-                }
+                name = FriendList[itsOver.ExBlock.OtherID].Name;
+                FriendList.Remove(itsOver.ExBlock.OtherID);
             }
+
             if (OnFriendshipTerminated != null)
             {
                 OnFriendshipTerminated(itsOver.ExBlock.OtherID, name);
@@ -501,6 +499,7 @@ namespace OpenMetaverse
         }
 
         #endregion
+
         #region Internal events
         /// <summary>
         /// Called when a connection to the SL server is established.  The list of friend avatars 
@@ -512,16 +511,15 @@ namespace OpenMetaverse
         {
             List<UUID> names = new List<UUID>();
 
-            if ( FriendList.Count > 0 )
+            if (FriendList.Count > 0)
             {
-                lock (FriendList)
-                {
-                    foreach (KeyValuePair<UUID, FriendInfo> kvp in FriendList.Dictionary)
+                FriendList.ForEach(
+                    delegate(KeyValuePair<UUID, FriendInfo> kvp)
                     {
                         if (String.IsNullOrEmpty(kvp.Value.Name))
                             names.Add(kvp.Key);
                     }
-                }
+                );
 
                 Client.Avatars.RequestAvatarNames(names);
             }
@@ -534,27 +532,29 @@ namespace OpenMetaverse
         /// <param name="names">names cooresponding to the the list of IDs sent the the RequestAvatarNames call.</param>
         private void Avatars_OnAvatarNames(Dictionary<UUID, string> names)
         {
-            lock (FriendList)
-            {
-                Dictionary<UUID, string> newNames = new Dictionary<UUID, string>();
-                foreach (KeyValuePair<UUID, string> kvp in names)
-                {
-                    if (FriendList.ContainsKey(kvp.Key))
-                    {
-                        if (FriendList[kvp.Key].Name == null)
-                            newNames.Add(kvp.Key, names[kvp.Key]);
+            Dictionary<UUID, string> newNames = new Dictionary<UUID, string>();
 
-                        FriendList[kvp.Key].Name = names[kvp.Key];
-                    }
-                }
-                if (newNames.Count > 0 && OnFriendNamesReceived != null)
+            foreach (KeyValuePair<UUID, string> kvp in names)
+            {
+                FriendInfo friend;
+                if (FriendList.TryGetValue(kvp.Key, out friend))
                 {
-                    try { OnFriendNamesReceived(newNames); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    if (friend.Name == null)
+                        newNames.Add(kvp.Key, names[kvp.Key]);
+
+                    friend.Name = names[kvp.Key];
+                    FriendList[kvp.Key] = friend;
                 }
+            }
+
+            if (newNames.Count > 0 && OnFriendNamesReceived != null)
+            {
+                try { OnFriendNamesReceived(newNames); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
         #endregion
+
         #region Packet Handlers
 
         /// <summary>
@@ -572,18 +572,15 @@ namespace OpenMetaverse
                 {
                     FriendInfo friend;
 
-                    lock (FriendList)
+                    if (!FriendList.ContainsKey(block.AgentID))
                     {
-                        if (!FriendList.ContainsKey(block.AgentID))
-                        {
-                            friend = new FriendInfo(block.AgentID, FriendRights.CanSeeOnline,
-                                FriendRights.CanSeeOnline);
-                            FriendList.Add(block.AgentID, friend);
-                        }
-                        else
-                        {
-                            friend = FriendList[block.AgentID];
-                        }
+                        friend = new FriendInfo(block.AgentID, FriendRights.CanSeeOnline,
+                            FriendRights.CanSeeOnline);
+                        FriendList.Add(block.AgentID, friend);
+                    }
+                    else
+                    {
+                        friend = FriendList[block.AgentID];
                     }
 
                     bool doNotify = !friend.IsOnline;
@@ -597,7 +594,6 @@ namespace OpenMetaverse
                 }
             }
         }
-
 
         /// <summary>
         /// Handle notifications sent when a friends has gone offline.
@@ -614,14 +610,11 @@ namespace OpenMetaverse
                 {
                     FriendInfo friend;
 
-                    lock (FriendList)
-                    {
-                        if (!FriendList.ContainsKey(block.AgentID))
-                            FriendList.Add(block.AgentID, new FriendInfo(block.AgentID, FriendRights.CanSeeOnline, FriendRights.CanSeeOnline));
+                    if (!FriendList.ContainsKey(block.AgentID))
+                        FriendList.Add(block.AgentID, new FriendInfo(block.AgentID, FriendRights.CanSeeOnline, FriendRights.CanSeeOnline));
 
-                        friend = FriendList[block.AgentID];
-                        friend.IsOnline = false;
-                    }
+                    friend = FriendList[block.AgentID];
+                    friend.IsOnline = false;
 
                     if (OnFriendOffline != null)
                     {
@@ -709,13 +702,11 @@ namespace OpenMetaverse
             {
                 if (OnFriendshipOffered != null)
                 {
-                    lock (FriendRequests)
-                    {
-                        if (FriendRequests.ContainsKey(im.FromAgentID))
-                        	FriendRequests[im.FromAgentID] = im.IMSessionID;
-                        else
-                        	FriendRequests.Add(im.FromAgentID, im.IMSessionID);
-                    }
+                    if (FriendRequests.ContainsKey(im.FromAgentID))
+                        FriendRequests[im.FromAgentID] = im.IMSessionID;
+                    else
+                        FriendRequests.Add(im.FromAgentID, im.IMSessionID);
+
                     try { OnFriendshipOffered(im.FromAgentID, im.FromAgentName, im.IMSessionID); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
@@ -725,7 +716,7 @@ namespace OpenMetaverse
                 FriendInfo friend = new FriendInfo(im.FromAgentID, FriendRights.CanSeeOnline,
                     FriendRights.CanSeeOnline);
                 friend.Name = im.FromAgentName;
-                lock (FriendList) FriendList[friend.UUID] = friend;
+                FriendList[friend.UUID] = friend;
 
                 if (OnFriendshipResponse != null)
                 {
@@ -757,17 +748,14 @@ namespace OpenMetaverse
         {
             if (loginSuccess && replyData.BuddyList != null)
             {
-                lock (FriendList)
+                if (replyData.BuddyList != null)
                 {
-                    if (replyData.BuddyList != null)
+                    foreach (BuddyListEntry buddy in replyData.BuddyList)
                     {
-                        foreach (BuddyListEntry buddy in replyData.BuddyList)
-                        {
-                            FriendList.Add(UUID.Parse(buddy.buddy_id),
-                                new FriendInfo(UUID.Parse(buddy.buddy_id),
-                                    (FriendRights)buddy.buddy_rights_given,
-                                    (FriendRights)buddy.buddy_rights_has));
-                        }
+                        FriendList.Add(UUID.Parse(buddy.buddy_id),
+                            new FriendInfo(UUID.Parse(buddy.buddy_id),
+                                (FriendRights)buddy.buddy_rights_given,
+                                (FriendRights)buddy.buddy_rights_has));
                     }
                 }
             }

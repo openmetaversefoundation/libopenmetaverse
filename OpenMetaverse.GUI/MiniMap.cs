@@ -126,9 +126,8 @@ namespace OpenMetaverse.GUI
 
                 int i = 0;
 
-                lock (_Client.Network.CurrentSim.AvatarPositions.Dictionary)
-                {
-                    foreach (KeyValuePair<UUID, Vector3> coarse in _Client.Network.CurrentSim.AvatarPositions.Dictionary)
+                _Client.Network.CurrentSim.AvatarPositions.ForEach(
+                    delegate(KeyValuePair<UUID, Vector3> coarse)
                     {
                         int x = (int)coarse.Value.X;
                         int y = 255 - (int)coarse.Value.Y;
@@ -174,8 +173,8 @@ namespace OpenMetaverse.GUI
                             }
                         }
                         i++;
-                    };
-                }
+                    }
+                );
 
                 g.DrawImage(bmp, 0, 0);
                 this.Image = bmp;

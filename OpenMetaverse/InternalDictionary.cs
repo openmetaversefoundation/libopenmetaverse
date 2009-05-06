@@ -253,12 +253,26 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>
+        /// Perform an <seealso cref="T:System.Action"/> on each KeyValuePair of an <seealso cref="T:OpenMetaverse.InternalDictionary"/>
+        /// </summary>
+        /// <param name="action"><seealso cref="T:System.Action"/> to perform</param>
+        public void ForEach(Action<KeyValuePair<TKey, TValue>> action)
+        {
+            lock (Dictionary)
+            {
+                foreach (KeyValuePair<TKey, TValue> entry in Dictionary)
+                {
+                    action(entry);
+                }
+            }
+        }
+
         /// <summary>Check if Key exists in Dictionary</summary>
         /// <param name="key">Key to check for</param>
         /// <returns><see langword="true"/> if found, <see langword="false"/> otherwise</returns>
         public bool ContainsKey(TKey key)
         {
-            lock(Dictionary)
             return Dictionary.ContainsKey(key);
         }
 
@@ -267,7 +281,6 @@ namespace OpenMetaverse
         /// <returns><see langword="true"/> if found, <see langword="false"/> otherwise</returns>
         public bool ContainsValue(TValue value)
         {
-            lock(Dictionary)
             return Dictionary.ContainsValue(value);
         }
 
@@ -279,7 +292,8 @@ namespace OpenMetaverse
         /// <param name="value">The value</param>
         internal void Add(TKey key, TValue value)
         {
-            Dictionary.Add(key, value);
+            lock (Dictionary)
+                Dictionary.Add(key, value);
         }
 
         /// <summary>
@@ -288,27 +302,6 @@ namespace OpenMetaverse
         /// <param name="key">The key.</param>
         /// <returns><see langword="true"/> if successful, <see langword="false"/> otherwise</returns>
         internal bool Remove(TKey key)
-        {
-            return Dictionary.Remove(key);
-        }
-
-        /// <summary>
-        /// Safely add a key/value pair to the dictionary
-        /// </summary>
-        /// <param name="key">The key</param>
-        /// <param name="value">The value</param>
-        internal void SafeAdd(TKey key, TValue value)
-        {
-            lock (Dictionary)
-                Dictionary.Add(key, value);
-        }
-
-        /// <summary>
-        /// Safely Removes an item from the InternalDictionary
-        /// </summary>
-        /// <param name="key">The key</param>
-        /// <returns><see langword="true"/> if successful, <see langword="false"/> otherwise</returns>
-        internal bool SafeRemove(TKey key)
         {
             lock (Dictionary)
                 return Dictionary.Remove(key);
@@ -321,8 +314,16 @@ namespace OpenMetaverse
         /// <returns>The value</returns>
         internal TValue this[TKey key]
         {
-            get { return Dictionary[key]; }
-            set { Dictionary[key] = value; }
+            get
+            {
+                lock (Dictionary)
+                    return Dictionary[key];
+            }
+            set
+            {
+                lock (Dictionary)
+                    Dictionary[key] = value;
+            }
         }
     }
 }

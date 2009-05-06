@@ -1522,7 +1522,7 @@ namespace OpenMetaverse
             {
                 groupNames.Add(block.ID, Utils.BytesToString(block.GroupName));
                     if (!GroupName2KeyCache.ContainsKey(block.ID))
-                        GroupName2KeyCache.SafeAdd(block.ID, Utils.BytesToString(block.GroupName));
+                        GroupName2KeyCache.Add(block.ID, Utils.BytesToString(block.GroupName));
             }
 
             if (OnGroupNames != null)
