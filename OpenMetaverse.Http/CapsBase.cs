@@ -142,6 +142,9 @@ namespace OpenMetaverse.Http
 
                 // Write our data to the upload stream
                 uploadStream.Write(state.UploadData, 0, state.UploadData.Length);
+                // We don't have to call Close with .NET, but Mono 2.4 will hang on
+                // BeginGetResponse if we don't call it
+                uploadStream.Close();
 
                 // Start the request for the remote server response
                 IAsyncResult result = state.Request.BeginGetResponse(GetResponse, state);
