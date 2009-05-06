@@ -144,7 +144,7 @@ namespace OpenMetaverse.TestClient
                 // Download all of the textures in the export list
                 foreach (ImageRequest request in textureRequests)
                 {
-                    Client.Assets.Texture.RequestTexture(request.ImageID, request.Type, Assets_OnImageReceived, false);
+                    Client.Assets.RequestImage(request.ImageID, request.Type, Assets_OnImageReceived);
                 }
 
                 return "XML exported, began downloading " + Textures.Count + " textures";
@@ -178,34 +178,34 @@ namespace OpenMetaverse.TestClient
             return AllPropertiesReceived.WaitOne(2000 + msPerRequest * objects.Count, false);
         }
 
-        private void Assets_OnImageReceived(TextureRequestState state, ImageDownload image, AssetTexture asset)
+        private void Assets_OnImageReceived(TextureRequestState state, AssetTexture asset)
         {
 
-            if (state == TextureRequestState.Finished && Textures.Contains(image.ID))
+            if (state == TextureRequestState.Finished && Textures.Contains(asset.AssetID))
             {
                 lock (Textures)
-                    Textures.Remove(image.ID);
+                    Textures.Remove(asset.AssetID);
 
-                if (image.Success)
+                if (state == TextureRequestState.Finished)
                 {
-                    try { File.WriteAllBytes(image.ID.ToString() + ".jp2", asset.AssetData); }
+                    try { File.WriteAllBytes(asset.AssetID + ".jp2", asset.AssetData); }
                     catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client); }
 
                     if (asset.Decode())
                     {
-                        try { File.WriteAllBytes(image.ID.ToString() + ".tga", asset.Image.ExportTGA()); }
+                        try { File.WriteAllBytes(asset.AssetID + ".tga", asset.Image.ExportTGA()); }
                         catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client); }
                     }
                     else
                     {
-                        Logger.Log("Failed to decode image " + image.ID.ToString(), Helpers.LogLevel.Error, Client);
+                        Logger.Log("Failed to decode image " + asset.AssetID, Helpers.LogLevel.Error, Client);
                     }
 
-                    Logger.Log("Finished downloading image " + image.ID.ToString(), Helpers.LogLevel.Info, Client);
+                    Logger.Log("Finished downloading image " + asset.AssetID, Helpers.LogLevel.Info, Client);
                 }
                 else
                 {
-                    Logger.Log("Failed to download image " + image.ID.ToString(), Helpers.LogLevel.Warning, Client);
+                    Logger.Log("Failed to download image " + asset.AssetID + ":" + state, Helpers.LogLevel.Warning, Client);
                 }
             }
         }

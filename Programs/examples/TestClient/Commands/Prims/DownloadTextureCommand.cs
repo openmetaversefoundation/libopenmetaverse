@@ -9,8 +9,8 @@ namespace OpenMetaverse.TestClient
     {
         UUID TextureID;
         AutoResetEvent DownloadHandle = new AutoResetEvent(false);
-        ImageDownload Image;
         AssetTexture Asset;
+        TextureRequestState resultState;
 
         public DownloadTextureCommand(TestClient testClient)
         {
@@ -28,7 +28,6 @@ namespace OpenMetaverse.TestClient
 
             TextureID = UUID.Zero;
             DownloadHandle.Reset();
-            Image = null;
             Asset = null;
 
             if (UUID.TryParse(args[0], out TextureID))
@@ -41,31 +40,31 @@ namespace OpenMetaverse.TestClient
                         return "Usage: downloadtexture [texture-uuid] [discardlevel]";
                 }
 
-                Client.Assets.Texture.RequestTexture(TextureID, ImageType.Normal, Assets_OnImageReceived, false);
+                Client.Assets.RequestImage(TextureID, ImageType.Normal, Assets_OnImageReceived);
 
                 if (DownloadHandle.WaitOne(120 * 1000, false))
                 {
-                    if (Image != null && Image.Success)
+                    if (resultState == TextureRequestState.Finished)
                     {
                         if (Asset != null && Asset.Decode())
                         {
-                            try { File.WriteAllBytes(Image.ID.ToString() + ".jp2", Asset.AssetData); }
+                            try { File.WriteAllBytes(Asset.AssetID + ".jp2", Asset.AssetData); }
                             catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
 
-                            return String.Format("Saved {0}.jp2 ({1}x{2})", Image.ID, Asset.Image.Width, Asset.Image.Height);
+                            return String.Format("Saved {0}.jp2 ({1}x{2})", Asset.AssetID, Asset.Image.Width, Asset.Image.Height);
                         }
                         else
                         {
                             return "Failed to decode texture " + TextureID.ToString();
                         }
                     }
-                    else if (Image != null && Image.NotFound)
+                    else if (resultState == TextureRequestState.NotFound)
                     {
                         return "Simulator reported texture not found: " + TextureID.ToString();
                     }
                     else
                     {
-                        return "Download failed for texture " + TextureID.ToString();
+                        return "Download failed for texture " + TextureID + " " +  resultState;
                     }
                 }
                 else
@@ -79,10 +78,9 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        private void Assets_OnImageReceived(TextureRequestState state, ImageDownload image, AssetTexture asset)
+        private void Assets_OnImageReceived(TextureRequestState state, AssetTexture asset)
         {
-            if(state == TextureRequestState.Finished && asset != null)
-            Image = image;
+            resultState = state;
             Asset = asset;
 
             DownloadHandle.Set();

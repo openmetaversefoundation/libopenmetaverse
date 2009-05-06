@@ -224,13 +224,11 @@ namespace OpenMetaverse
     {
         public ushort PacketCount;
         public ImageCodec Codec;
-        public bool NotFound;
         public Simulator Simulator;
         public SortedList<ushort, ushort> PacketsSeen;
         public ImageType ImageType;
         public int DiscardLevel;
         public float Priority;
-
         internal int InitialDataSize;
         internal AutoResetEvent HeaderReceivedEvent = new AutoResetEvent(false);
 
@@ -347,7 +345,7 @@ namespace OpenMetaverse
         /// <summary>Texture download cache</summary>
         public TextureCache Cache;
 
-        public TexturePipeline Texture;
+        private TexturePipeline Texture;
 
         private GridClient Client;
 
@@ -370,11 +368,6 @@ namespace OpenMetaverse
             // Transfer packets for downloading large assets
             Client.Network.RegisterCallback(PacketType.TransferInfo, new NetworkManager.PacketCallback(TransferInfoHandler));
             Client.Network.RegisterCallback(PacketType.TransferPacket, new NetworkManager.PacketCallback(TransferPacketHandler));
-
-            // Image downloading packets
-            //Client.Network.RegisterCallback(PacketType.ImageData, new NetworkManager.PacketCallback(ImageDataHandler));
-            //Client.Network.RegisterCallback(PacketType.ImagePacket, new NetworkManager.PacketCallback(ImagePacketHandler));
-            //Client.Network.RegisterCallback(PacketType.ImageNotInDatabase, new NetworkManager.PacketCallback(ImageNotInDatabaseHandler));
 
             // Xfer packets for uploading large assets
             Client.Network.RegisterCallback(PacketType.RequestXfer, new NetworkManager.PacketCallback(RequestXferHandler));
@@ -527,183 +520,6 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Initiate an image download. This is an asynchronous function
-        /// </summary>
-        /// <param name="imageID">The image to download</param>
-        /// <param name="type">Type of the image to download, either a baked
-        /// avatar texture or a normal texture</param>
-        //public void RequestImage(UUID imageID, ImageType type)
-        //{
-        //    RequestImage(imageID, type, 1013000.0f, 0, 0);
-        //}
-
-        /// <summary>
-        /// Initiate an image download. This is an asynchronous function
-        /// </summary>
-        /// <param name="imageID">The image to download</param>
-        /// <param name="type">Type of the image to download, either a baked
-        /// avatar texture or a normal texture</param>
-        /// <param name="priority">Priority level of the download. Default is
-        /// <c>1,013,000.0f</c></param>
-        /// <param name="discardLevel">Number of quality layers to discard.
-        /// This controls the end marker of the data sent</param>
-        /// <param name="packetNum">Packet number to start the download at.
-        /// This controls the start marker of the data sent</param>
-        /// <remarks>Sending a priority of 0 and a discardlevel of -1 aborts
-        /// download</remarks>
-        //public void RequestImage(UUID imageID, ImageType type, float priority, int discardLevel, uint packetNum, TextureDownloadCallback callback)
-        //{
-            //if (Cache.HasImage(imageID))
-            //{
-            //    ImageDownload transfer = Cache.GetCachedImage(imageID);
-            //    transfer.ImageType = type;
-
-            //    if (null != transfer)
-            //    {
-            //        if (null != OnImageReceived)
-            //        {
-            //            AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
-
-            //            try { OnImageReceived(transfer, asset); }
-            //            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-            //        }
-            //        return;
-            //    }
-            //}
-
-            //// Priority == 0 && DiscardLevel == -1 means cancel the transfer
-            //if (priority.Equals(0) && discardLevel.Equals(-1))
-            //{
-            //    if (Transfers.ContainsKey(imageID))
-            //        Transfers.Remove(imageID);
-
-            //    RequestImagePacket cancel = new RequestImagePacket();
-            //    cancel.AgentData.AgentID = Client.Self.AgentID;
-            //    cancel.AgentData.SessionID = Client.Self.SessionID;
-            //    cancel.RequestImage = new RequestImagePacket.RequestImageBlock[1];
-            //    cancel.RequestImage[0] = new RequestImagePacket.RequestImageBlock();
-            //    cancel.RequestImage[0].DiscardLevel = -1;
-            //    cancel.RequestImage[0].DownloadPriority = 0;
-            //    cancel.RequestImage[0].Packet = 0;
-            //    cancel.RequestImage[0].Image = imageID;
-            //    cancel.RequestImage[0].Type = 0;
-            //}
-            //else
-            //{
-            //    Simulator currentSim = Client.Network.CurrentSim;
-
-            //    if (!Transfers.ContainsKey(imageID))
-            //    {
-            //        // New download
-            //        ImageDownload transfer = new ImageDownload();
-            //        transfer.ID = imageID;
-            //        transfer.Simulator = currentSim;
-            //        transfer.ImageType = type;
-            //        transfer.DiscardLevel = discardLevel;
-            //        transfer.Priority = priority;
-
-            //        // Add this transfer to the dictionary
-            //        lock (Transfers) Transfers[transfer.ID] = transfer;
-
-            //        Logger.DebugLog("Adding image " + imageID.ToString() + " to the download queue");
-            //    }
-            //    else
-            //    {
-            //        // Already downloading, just updating the priority
-            //        Transfer transfer = Transfers[imageID];
-            //        float percentComplete = ((float)transfer.Transferred / (float)transfer.Size) * 100f;
-            //        if (Single.IsNaN(percentComplete))
-            //            percentComplete = 0f;
-
-            //        Logger.DebugLog(String.Format("Updating priority on image transfer {0}, {1}% complete",
-            //            imageID, Math.Round(percentComplete, 2)));
-            //    }
-
-            //    // Build and send the request packet
-            //    RequestImagePacket request = new RequestImagePacket();
-            //    request.AgentData.AgentID = Client.Self.AgentID;
-            //    request.AgentData.SessionID = Client.Self.SessionID;
-            //    request.RequestImage = new RequestImagePacket.RequestImageBlock[1];
-            //    request.RequestImage[0] = new RequestImagePacket.RequestImageBlock();
-            //    request.RequestImage[0].DiscardLevel = (sbyte)discardLevel;
-            //    request.RequestImage[0].DownloadPriority = priority;
-            //    request.RequestImage[0].Packet = packetNum;
-            //    request.RequestImage[0].Image = imageID;
-            //    request.RequestImage[0].Type = (byte)type;
-
-            //    Client.Network.SendPacket(request, currentSim);
-            //}
-//        }
-
-        /// <summary>
-        /// Requests multiple Images
-        /// </summary>
-        /// <param name="Images">List of requested images</param>
-        //public void RequestImages(List<ImageRequest> Images)
-        //{
-            //for (int iri = 0; iri < Images.Count; iri++)
-            //{
-            //    if (Transfers.ContainsKey(Images[iri].ImageID))
-            //    {
-            //        Images.RemoveAt(iri);
-            //    }
-
-            //    if (Cache.HasImage(Images[iri].ImageID))
-            //    {
-            //        ImageDownload transfer = Cache.GetCachedImage(Images[iri].ImageID);
-            //        if (null != transfer)
-            //        {
-            //            if (null != OnImageReceived)
-            //            {
-            //                AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
-
-            //                try { OnImageReceived(transfer, asset); }
-            //                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-            //            }
-
-            //            Images.RemoveAt(iri);
-            //        }
-            //    }
-            //}
-
-            //if (Images.Count > 0)
-            //{
-            //    // Build and send the request packet
-            //    RequestImagePacket request = new RequestImagePacket();
-            //    request.AgentData.AgentID = Client.Self.AgentID;
-            //    request.AgentData.SessionID = Client.Self.SessionID;
-            //    request.RequestImage = new RequestImagePacket.RequestImageBlock[Images.Count];
-
-            //    for (int iru = 0; iru < Images.Count; ++iru)
-            //    {
-            //        ImageDownload transfer = new ImageDownload();
-            //        //transfer.AssetType = AssetType.Texture // Handled in ImageDataHandler.
-            //        transfer.ID = Images[iru].ImageID;
-            //        transfer.Simulator = Client.Network.CurrentSim;
-            //        transfer.ImageType = Images[iru].Type;
-            //        transfer.DiscardLevel = Images[iru].DiscardLevel;
-            //        transfer.Priority = Images[iru].Priority;
-
-            //        // Add this transfer to the dictionary
-            //        lock (Transfers) Transfers[transfer.ID] = transfer;
-            //        request.RequestImage[iru] = new RequestImagePacket.RequestImageBlock();
-            //        request.RequestImage[iru].DiscardLevel = (sbyte)Images[iru].DiscardLevel;
-            //        request.RequestImage[iru].DownloadPriority = Images[iru].Priority;
-            //        request.RequestImage[iru].Packet = 0;
-            //        request.RequestImage[iru].Image = Images[iru].ImageID;
-            //        request.RequestImage[iru].Type = (byte)Images[iru].Type;
-            //    }
-
-            //    Client.Network.SendPacket(request, Client.Network.CurrentSim);
-            //}
-            //else
-            //{
-            //    Logger.Log("RequestImages() called for an image(s) we are already downloading or an empty list, ignoring",
-            //        Helpers.LogLevel.Info, Client);
-            //}
-   //     }
-
-        /// <summary>
         /// Used to force asset data into the PendingUpload property, ie: for raw terrain uploads
         /// </summary>
         /// <param name="assetData">An AssetUpload object containing the data to upload to the simulator</param>
@@ -838,6 +654,131 @@ namespace OpenMetaverse
                     throw new Exception("Timeout waiting for previous asset upload to begin");
                 }
             }
+        }
+
+        /// <summary>
+        /// Request a texture asset from the simulator using the <see cref="TexturePipeline"/> system to 
+        /// manage the requests and re-assemble the image from the packets received from the simulator
+        /// </summary>
+        /// <param name="textureID">The <see cref="UUID"/> of the texture asset to download</param>
+        /// <param name="imageType">The <see cref="ImageType"/> of the texture asset. 
+        /// Use <see cref="ImageType.Normal"/> for most textures, or <see cref="ImageType.Baked"/> for baked layer texture assets</param>
+        /// <param name="priority">A float indicating the requested priority for the transfer. Higher priority values tell the simulator
+        /// to prioritize the request before lower valued requests. An image already being transferred using the <see cref="TexturePipeline"/> can have
+        /// its priority changed by resending the request with the new priority value</param>
+        /// <param name="discardLevel">Number of quality layers to discard.
+        /// This controls the end marker of the data sent</param>
+        /// <param name="packetStart">The packet number to begin the request at. A value of 0 begins the request
+        /// from the start of the asset texture</param>
+        /// <param name="callback">The <see cref="TextureDownloadCallback"/> callback to fire when the image is retrieved. The callback
+        /// will contain the result of the request and the texture asset data</param>
+        /// <param name="progress">If true, the callback will be fired for each chunk of the downloaded image. 
+        /// The callback asset parameter will contain all previously received chunks of the texture asset starting 
+        /// from the beginning of the request</param>
+        /// <example>
+        /// Request an image and fire a callback when the request is complete
+        /// <code>
+        /// Client.Assets.RequestImage(UUID.Parse("c307629f-e3a1-4487-5e88-0d96ac9d4965"), ImageType.Normal, TextureDownloader_OnDownloadFinished);
+        /// 
+        /// private void TextureDownloader_OnDownloadFinished(TextureRequestState state, AssetTexture asset)
+        /// {
+        ///     if(state == TextureRequestState.Finished)
+        ///     {
+        ///       Console.WriteLine("Texture {0} ({1} bytes) has been successfully downloaded", 
+        ///         asset.AssetID,
+        ///         asset.AssetData.Length); 
+        ///     }
+        /// }
+        /// </code>
+        /// Request an image and use an inline anonymous method to handle the downloaded texture data
+        /// <code>
+        /// Client.Assets.RequestImage(UUID.Parse("c307629f-e3a1-4487-5e88-0d96ac9d4965"), ImageType.Normal, delegate(TextureRequestState state, AssetTexture asset) 
+        ///                                         {
+        ///                                             if(state == TextureRequestState.Finished)
+        ///                                             {
+        ///                                                 Console.WriteLine("Texture {0} ({1} bytes) has been successfully downloaded", 
+        ///                                                 asset.AssetID,
+        ///                                                 asset.AssetData.Length); 
+        ///                                             }
+        ///                                         }
+        /// );
+        /// </code>
+        /// Request a texture, decode the texture to a bitmap image and apply it to a imagebox 
+        /// <code>
+        /// Client.Assets.RequestImage(UUID.Parse("c307629f-e3a1-4487-5e88-0d96ac9d4965"), ImageType.Normal, TextureDownloader_OnDownloadFinished);
+        /// 
+        /// private void TextureDownloader_OnDownloadFinished(TextureRequestState state, AssetTexture asset)
+        /// {
+        ///     if(state == TextureRequestState.Finished)
+        ///     {
+        ///         ManagedImage imgData;
+        ///         Image bitmap;
+        ///
+        ///         if (state == TextureRequestState.Finished)
+        ///         {
+        ///             OpenJPEG.DecodeToImage(assetTexture.AssetData, out imgData, out bitmap);
+        ///             picInsignia.Image = bitmap;
+        ///         }               
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
+        public void RequestImage(UUID textureID, ImageType imageType, float priority, int discardLevel, 
+            uint packetStart, TextureDownloadCallback callback, bool progress)
+        {
+            Texture.RequestTexture(textureID, imageType, priority, discardLevel, packetStart, callback, progress);
+        }
+
+        /// <summary>
+        /// Overload: Request a texture asset from the simulator using the <see cref="TexturePipeline"/> system to 
+        /// manage the requests and re-assemble the image from the packets received from the simulator
+        /// </summary>
+        /// <param name="textureID">The <see cref="UUID"/> of the texture asset to download</param>
+        /// <param name="callback">The <see cref="TextureDownloadCallback"/> callback to fire when the image is retrieved. The callback
+        /// will contain the result of the request and the texture asset data</param>
+        public void RequestImage(UUID textureID, TextureDownloadCallback callback)
+        {
+            RequestImage(textureID, ImageType.Normal, 101300.0f, 0, 0, callback, false);
+        }
+
+        /// <summary>
+        /// Overload: Request a texture asset from the simulator using the <see cref="TexturePipeline"/> system to 
+        /// manage the requests and re-assemble the image from the packets received from the simulator
+        /// </summary>
+        /// <param name="textureID">The <see cref="UUID"/> of the texture asset to download</param>
+        /// <param name="imageType">The <see cref="ImageType"/> of the texture asset. 
+        /// Use <see cref="ImageType.Normal"/> for most textures, or <see cref="ImageType.Baked"/> for baked layer texture assets</param>
+        /// <param name="callback">The <see cref="TextureDownloadCallback"/> callback to fire when the image is retrieved. The callback
+        /// will contain the result of the request and the texture asset data</param>
+        public void RequestImage(UUID textureID, ImageType imageType, TextureDownloadCallback callback)
+        {
+            RequestImage(textureID, imageType, 101300.0f, 0, 0, callback, false);
+        }
+
+        /// <summary>
+        /// Overload: Request a texture asset from the simulator using the <see cref="TexturePipeline"/> system to 
+        /// manage the requests and re-assemble the image from the packets received from the simulator
+        /// </summary>
+        /// <param name="textureID">The <see cref="UUID"/> of the texture asset to download</param>
+        /// <param name="imageType">The <see cref="ImageType"/> of the texture asset. 
+        /// Use <see cref="ImageType.Normal"/> for most textures, or <see cref="ImageType.Baked"/> for baked layer texture assets</param>
+        /// <param name="callback">The <see cref="TextureDownloadCallback"/> callback to fire when the image is retrieved. The callback
+        /// will contain the result of the request and the texture asset data</param>
+        /// <param name="progress">If true, the callback will be fired for each chunk of the downloaded image. 
+        /// The callback asset parameter will contain all previously received chunks of the texture asset starting 
+        /// from the beginning of the request</param>
+        public void RequestImage(UUID textureID, ImageType imageType, TextureDownloadCallback callback, bool progress)
+        {
+            RequestImage(textureID, imageType, 101300.0f, 0, 0, callback, progress);
+        }
+
+        /// <summary>
+        /// Cancel a texture request
+        /// </summary>
+        /// <param name="textureID">The texture assets <see cref="UUID"/></param>
+        public void RequestImageCancel(UUID textureID)
+        {
+            Texture.AbortTextureRequest(textureID);
         }
 
         #region Helpers
@@ -1318,176 +1259,5 @@ namespace OpenMetaverse
 
         #endregion Xfer Callbacks
 
-        #region Image Callbacks
-
-        /// <summary>
-        /// Handles the Image Data packet which includes the ID and Size of the image,
-        /// along with the first block of data for the image. If the image is small enough
-        /// there will be no additional packets
-        /// </summary>
-        //private void ImageDataHandler(Packet packet, Simulator simulator)
-        //{
-        //    ImageDataPacket data = (ImageDataPacket)packet;
-        //    ImageDownload transfer = null;
-
-        //    Logger.DebugLog(String.Format("ImageData: Size={0}, Packets={1}", data.ImageID.Size, data.ImageID.Packets));
-
-        //    lock (Transfers)
-        //    {
-        //        if (Transfers.ContainsKey(data.ImageID.ID))
-        //        {
-        //            transfer = (ImageDownload)Transfers[data.ImageID.ID];
-
-        //            // Don't set header information if we have already
-        //            // received it (due to re-request)
-        //            if (transfer.Size == 0)
-        //            {
-        //                //Client.DebugLog("Received first " + data.ImageData.Data.Length + " bytes for image " +
-        //                //    data.ImageID.ID.ToString());
-
-        //                if (OnImageReceiveProgress != null)
-        //                {
-        //                    try { OnImageReceiveProgress(data.ImageID.ID, 0, data.ImageData.Data.Length, transfer.Size); }
-        //                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-        //                }
-
-        //                transfer.Codec = (ImageCodec)data.ImageID.Codec;
-        //                transfer.PacketCount = data.ImageID.Packets;
-        //                transfer.Size = (int)data.ImageID.Size;
-        //                transfer.AssetData = new byte[transfer.Size];
-        //                transfer.AssetType = AssetType.Texture;
-        //                transfer.PacketsSeen = new SortedList<ushort, ushort>();
-        //                Buffer.BlockCopy(data.ImageData.Data, 0, transfer.AssetData, 0, data.ImageData.Data.Length);
-        //                transfer.InitialDataSize = data.ImageData.Data.Length;
-        //                transfer.Transferred += data.ImageData.Data.Length;
-			            
-        //                // Check if we downloaded the full image
-        //                if (transfer.Transferred >= transfer.Size)
-        //                {
-        //                    Transfers.Remove(transfer.ID);
-        //                    transfer.Success = true;
-        //                    Cache.SaveImageToCache(transfer.ID, transfer.AssetData);
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //    if (transfer != null)
-        //    {
-        //        transfer.HeaderReceivedEvent.Set();
-
-        //        if (OnImageReceived != null && transfer.Transferred >= transfer.Size)
-        //        {
-        //            AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
-
-        //            try { OnImageReceived(transfer, asset); }
-        //            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-        //        }
-        //    }
-        //}
-
-        /// <summary>
-        /// Handles the remaining Image data that did not fit in the initial ImageData packet
-        /// </summary>
-        //private void ImagePacketHandler(Packet packet, Simulator simulator)
-        //{
-        //    ImagePacketPacket image = (ImagePacketPacket)packet;
-        //    ImageDownload transfer = null;
-
-        //    lock (Transfers)
-        //    {
-        //        if (Transfers.ContainsKey(image.ImageID.ID))
-        //        {
-        //            transfer = (ImageDownload)Transfers[image.ImageID.ID];
-
-        //            if (transfer.Size == 0)
-        //            {
-        //                // We haven't received the header yet, block until it's received or times out
-        //                transfer.HeaderReceivedEvent.WaitOne(1000 * 5, false);
-
-        //                if (transfer.Size == 0)
-        //                {
-        //                    Logger.Log("Timed out while waiting for the image header to download for " +
-        //                        transfer.ID.ToString(), Helpers.LogLevel.Warning, Client);
-
-        //                    transfer.Success = false;
-        //                    Transfers.Remove(transfer.ID);
-        //                    goto Callback;
-        //                }
-        //            }
-
-        //            // The header is downloaded, we can insert this data in to the proper position
-        //            // Only insert if we haven't seen this packet before
-        //            lock (transfer.PacketsSeen)
-        //            {
-        //                if (!transfer.PacketsSeen.ContainsKey(image.ImageID.Packet))
-        //                {
-        //                    transfer.PacketsSeen[image.ImageID.Packet] = image.ImageID.Packet;
-        //                    Buffer.BlockCopy(image.ImageData.Data, 0, transfer.AssetData,
-        //                        transfer.InitialDataSize + (1000 * (image.ImageID.Packet - 1)),
-        //                        image.ImageData.Data.Length);
-        //                    transfer.Transferred += image.ImageData.Data.Length;
-        //                }
-        //            }
-
-        //            //Client.DebugLog("Received " + image.ImageData.Data.Length + "/" + transfer.Transferred +
-        //            //    "/" + transfer.Size + " bytes for image " + image.ImageID.ID.ToString());
-
-        //            transfer.TimeSinceLastPacket = 0;
-                    
-        //            if (OnImageReceiveProgress != null)
-        //            {
-        //                try { OnImageReceiveProgress(image.ImageID.ID, image.ImageID.Packet, transfer.Transferred, transfer.Size); }
-        //                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-        //            }
-
-        //            // Check if we downloaded the full image
-        //            if (transfer.Transferred >= transfer.Size)
-        //            {
-        //                Cache.SaveImageToCache(transfer.ID, transfer.AssetData);
-        //                transfer.Success = true;
-        //                Transfers.Remove(transfer.ID);
-        //            }
-        //        }
-        //    }
-
-        //Callback:
-
-        //    if (transfer != null && OnImageReceived != null && (transfer.Transferred >= transfer.Size || transfer.Size == 0))
-        //    {
-        //        AssetTexture asset = new AssetTexture(transfer.ID, transfer.AssetData);
-
-        //        try { OnImageReceived(transfer, asset); }
-        //        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-        //    }
-        //}
-
-        /// <summary>
-        /// The requested image does not exist on the asset server
-        /// </summary>
-        //private void ImageNotInDatabaseHandler(Packet packet, Simulator simulator)
-        //{
-        //    ImageNotInDatabasePacket notin = (ImageNotInDatabasePacket)packet;
-        //    ImageDownload transfer = null;
-
-        //    lock (Transfers)
-        //    {
-        //        if (Transfers.ContainsKey(notin.ImageID.ID))
-        //        {
-        //            transfer = (ImageDownload)Transfers[notin.ImageID.ID];
-        //            transfer.NotFound = true;
-        //            Transfers.Remove(transfer.ID);
-        //        }
-        //    }
-
-        //    // Fire the event with our transfer that contains Success = false;
-        //    if (transfer != null && OnImageReceived != null)
-        //    {
-        //        try { OnImageReceived(transfer, null); }
-        //        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-        //    }
-        //}
-
-        #endregion Image Callbacks
     }
 }

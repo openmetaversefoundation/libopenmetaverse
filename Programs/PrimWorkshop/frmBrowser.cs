@@ -35,7 +35,6 @@ namespace PrimWorkshop
         int TotalPrims;
 
         // Textures
-        TexturePipeline TextureDownloader;
         Dictionary<UUID, TextureInfo> Textures = new Dictionary<UUID, TextureInfo>();
 
         // Terrain
@@ -165,13 +164,6 @@ namespace PrimWorkshop
             Client.Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
             Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
             Client.Parcels.OnSimParcelsDownloaded += new ParcelManager.SimParcelsDownloaded(Parcels_OnSimParcelsDownloaded);
-
-            // Initialize the texture download pipeline
-            if (TextureDownloader != null)
-                TextureDownloader.Shutdown();
-            TextureDownloader = new TexturePipeline(Client);
-            //TextureDownloader.OnDownloadFinished += new TexturePipeline.DownloadFinishedCallback(TextureDownloader_OnDownloadFinished);
-            //TextureDownloader.OnDownloadProgress += new TexturePipeline.DownloadProgressCallback(TextureDownloader_OnDownloadProgress);
 
             // Initialize the camera object
             InitCamera();
@@ -976,7 +968,7 @@ namespace PrimWorkshop
                         if (!Textures.ContainsKey(teFace.TextureID))
                         {
                             // We haven't constructed this image in OpenGL yet, get ahold of it
-                            TextureDownloader.RequestTexture(teFace.TextureID, ImageType.Normal, TextureDownloader_OnDownloadFinished, false);
+                            Client.Assets.RequestImage(teFace.TextureID, ImageType.Normal, TextureDownloader_OnDownloadFinished);
                         }
                     }
                 }
@@ -1401,7 +1393,7 @@ StartRender:
 
         #region Texture Downloading
 
-        private void TextureDownloader_OnDownloadFinished(TextureRequestState state, ImageDownload download, AssetTexture asset)
+        private void TextureDownloader_OnDownloadFinished(TextureRequestState state, AssetTexture asset)
         {
             bool alpha = false;
             ManagedImage imgData = null;
@@ -1409,7 +1401,7 @@ StartRender:
             
             bool success = (state == TextureRequestState.Finished);
 
-            UUID id = download.ID;
+            UUID id = asset.AssetID;
 
             try
             {
@@ -1417,7 +1409,7 @@ StartRender:
                 if (success)
                 {
                     //ImageDownload download = TextureDownloader.GetTextureToRender(id);
-                    if (OpenJPEG.DecodeToImage(download.AssetData, out imgData))
+                    if (OpenJPEG.DecodeToImage(asset.AssetData, out imgData))
                     {
                         raw = imgData.ExportRaw();
 
@@ -1617,10 +1609,6 @@ StartRender:
 
             // Set the login button back to login state
             cmdLogin.Text = "Login";
-
-            // Shutdown the texture downloader
-            if (TextureDownloader != null)
-                TextureDownloader.Shutdown();
 
             // Enable input controls
             txtFirst.Enabled = txtLast.Enabled = txtPass.Enabled = true;

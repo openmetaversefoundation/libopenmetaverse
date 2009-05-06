@@ -24,7 +24,6 @@ namespace groupmanager
         GroupManager.GroupMembersCallback GroupMembersCallback;
         GroupManager.GroupTitlesCallback GroupTitlesCallback;
         AvatarManager.AvatarNamesCallback AvatarNamesCallback;
-        AssetManager.ImageReceivedCallback ImageReceivedCallback;
         
         public frmGroupInfo(Group group, GridClient client)
         {
@@ -70,22 +69,21 @@ namespace groupmanager
             Profile = profile;
 
             if (Group.InsigniaID != UUID.Zero)
-                Client.Assets.Texture.RequestTexture(Group.InsigniaID, ImageType.Normal, Assets_OnImageReceived, false);
+                Client.Assets.RequestImage(Group.InsigniaID, ImageType.Normal,
+                    delegate(TextureRequestState state, AssetTexture assetTexture)
+                        {
+                            ManagedImage imgData;
+                            Image bitmap;
+
+                            if (state == TextureRequestState.Finished)
+                            {
+                                OpenJPEG.DecodeToImage(assetTexture.AssetData, out imgData, out bitmap);
+                                picInsignia.Image = bitmap;
+                            }               
+                        });
 
             if (this.InvokeRequired)
                 this.BeginInvoke(new MethodInvoker(UpdateProfile));
-        }
-
-        void Assets_OnImageReceived(TextureRequestState state, ImageDownload image, AssetTexture assetTexture)
-        {
-            ManagedImage imgData;
-            Image bitmap;
-
-            if (state == TextureRequestState.Finished && image.Success)
-            {
-                OpenJPEG.DecodeToImage(image.AssetData, out imgData, out bitmap);
-                picInsignia.Image = bitmap;
-            }
         }
 
         private void UpdateProfile()

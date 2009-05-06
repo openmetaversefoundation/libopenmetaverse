@@ -1342,7 +1342,7 @@ namespace OpenMetaverse
                     foreach (UUID image in imgKeys)
                     {
                         // Download all the images we need for baking
-                        Assets.Texture.RequestTexture(image, ImageType.Normal, new TextureDownloadCallback(Assets_OnImageReceived), false);
+                        Assets.RequestImage(image, ImageType.Normal, Assets_OnImageReceived);
                     }
                 }
             }
@@ -1412,18 +1412,18 @@ namespace OpenMetaverse
             }
         }
 
-        private void Assets_OnImageReceived(TextureRequestState state, ImageDownload image, AssetTexture assetTexture)
+        private void Assets_OnImageReceived(TextureRequestState state, AssetTexture assetTexture)
         {
             lock (ImageDownloads)
             {
-                if (ImageDownloads.ContainsKey(image.ID))
+                if (ImageDownloads.ContainsKey(assetTexture.AssetID))
                 {
-                    ImageDownloads.Remove(image.ID);
+                    ImageDownloads.Remove(assetTexture.AssetID);
 
                     // NOTE: This image may occupy more than one TextureIndex! We must finish this loop
                     for (int at = 0; at < AgentTextures.Length; at++)
                     {
-                        if (AgentTextures[at] == image.ID)
+                        if (AgentTextures[at] == assetTexture.AssetID)
                         {
                             TextureIndex index = (TextureIndex)at;
                             BakeType type = Baker.BakeTypeFor(index);
@@ -1437,15 +1437,15 @@ namespace OpenMetaverse
 
                             if (PendingBakes.ContainsKey(type))
                             {
-                                if (image.Success)
+                                if (state == TextureRequestState.Finished)
                                 {
                                     Logger.DebugLog("Finished downloading texture for " + index.ToString(), Client);
-                                    OpenJPEG.DecodeToImage(image.AssetData, out assetTexture.Image);
+                                    OpenJPEG.DecodeToImage(assetTexture.AssetData, out assetTexture.Image);
                                     baked = PendingBakes[type].AddTexture(index, assetTexture, false);
                                 }
                                 else
                                 {
-                                    Logger.Log("Texture for " + index.ToString() + " failed to download, " +
+                                    Logger.Log("Texture for " + index + " failed to download, " +
                                         "bake will be incomplete", Helpers.LogLevel.Warning, Client);
                                     baked = PendingBakes[type].MissingTexture(index);
                                 }
@@ -1475,7 +1475,7 @@ namespace OpenMetaverse
                 }
                 else
                 {
-                    Logger.Log("Received an image download callback for an image we did not request " + image.ID.ToString(),
+                    Logger.Log("Received an image download callback for an image we did not request " + assetTexture.AssetID,
                         Helpers.LogLevel.Warning, Client);
                 }
             }

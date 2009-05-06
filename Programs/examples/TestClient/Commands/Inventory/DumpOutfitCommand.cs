@@ -33,9 +33,7 @@ namespace OpenMetaverse.TestClient
             {
                 for (int i = 0; i < Client.Network.Simulators.Count; i++)
                 {
-                    Avatar targetAv;
-
-                    targetAv = Client.Network.Simulators[i].ObjectsAvatars.Find(
+                    Avatar targetAv = Client.Network.Simulators[i].ObjectsAvatars.Find(
                         delegate(Avatar avatar)
                         {
                             return avatar.ID == target;
@@ -68,7 +66,7 @@ namespace OpenMetaverse.TestClient
                                 }
 
                                 OutfitAssets.Add(face.TextureID);
-                                Client.Assets.Texture.RequestTexture(face.TextureID, type, Assets_OnImageReceived, false);
+                                Client.Assets.RequestImage(face.TextureID, type, Assets_OnImageReceived);
                                 output.Append(((AppearanceManager.TextureIndex)j).ToString());
                                 output.Append(" ");
                             }
@@ -82,24 +80,24 @@ namespace OpenMetaverse.TestClient
             return "Couldn't find avatar " + target.ToString();
         }
 
-        private void Assets_OnImageReceived(TextureRequestState state, ImageDownload image, AssetTexture assetTexture)
+        private void Assets_OnImageReceived(TextureRequestState state, AssetTexture assetTexture)
         {
             lock (OutfitAssets)
             {
-                if (OutfitAssets.Contains(image.ID))
+                if (OutfitAssets.Contains(assetTexture.AssetID))
                 {
-                    if (state == TextureRequestState.Finished && image.Success)
+                    if (state == TextureRequestState.Finished)
                     {
                         try
                         {
-                            File.WriteAllBytes(image.ID.ToString() + ".jp2", image.AssetData);
-                            Console.WriteLine("Wrote JPEG2000 image " + image.ID.ToString() + ".jp2");
+                            File.WriteAllBytes(assetTexture.AssetID + ".jp2", assetTexture.AssetData);
+                            Console.WriteLine("Wrote JPEG2000 image " + assetTexture.AssetID + ".jp2");
 
                             ManagedImage imgData;
-                            OpenJPEG.DecodeToImage(image.AssetData, out imgData);
+                            OpenJPEG.DecodeToImage(assetTexture.AssetData, out imgData);
                             byte[] tgaFile = imgData.ExportTGA();
-                            File.WriteAllBytes(image.ID.ToString() + ".tga", tgaFile);
-                            Console.WriteLine("Wrote TGA image " + image.ID.ToString() + ".tga");
+                            File.WriteAllBytes(assetTexture.AssetID + ".tga", tgaFile);
+                            Console.WriteLine("Wrote TGA image " + assetTexture.AssetID + ".tga");
                         }
                         catch (Exception e)
                         {
@@ -108,10 +106,10 @@ namespace OpenMetaverse.TestClient
                     }
                     else
                     {
-                        Console.WriteLine("Failed to download image " + image.ID.ToString());
+                        Console.WriteLine("Failed to download image " + assetTexture.AssetID);
                     }
 
-                    OutfitAssets.Remove(image.ID);
+                    OutfitAssets.Remove(assetTexture.AssetID);
                 }
             }
         }
