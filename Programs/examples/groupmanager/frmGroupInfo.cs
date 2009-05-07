@@ -24,7 +24,6 @@ namespace groupmanager
         GroupManager.GroupMembersCallback GroupMembersCallback;
         GroupManager.GroupTitlesCallback GroupTitlesCallback;
         AvatarManager.AvatarNamesCallback AvatarNamesCallback;
-        AssetManager.ImageReceivedCallback ImageReceivedCallback;
         
         public frmGroupInfo(Group group, GridClient client)
         {
@@ -40,13 +39,11 @@ namespace groupmanager
             GroupMembersCallback = new GroupManager.GroupMembersCallback(GroupMembersHandler);
             GroupTitlesCallback = new GroupManager.GroupTitlesCallback(GroupTitlesHandler);
             AvatarNamesCallback = new AvatarManager.AvatarNamesCallback(AvatarNamesHandler);
-            ImageReceivedCallback = new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
 
             Group = group;
             Client = client;
             
             // Register the callbacks for this form
-            Client.Assets.OnImageReceived += ImageReceivedCallback;
             Client.Groups.OnGroupProfile += GroupProfileCallback;
             Client.Groups.OnGroupMembers += GroupMembersCallback;
             Client.Groups.OnGroupTitles += GroupTitlesCallback;
@@ -61,7 +58,6 @@ namespace groupmanager
         ~frmGroupInfo()
         {
             // Unregister the callbacks for this form
-            Client.Assets.OnImageReceived -= ImageReceivedCallback;
             Client.Groups.OnGroupProfile -= GroupProfileCallback;
             Client.Groups.OnGroupMembers -= GroupMembersCallback;
             Client.Groups.OnGroupTitles -= GroupTitlesCallback;
@@ -73,22 +69,21 @@ namespace groupmanager
             Profile = profile;
 
             if (Group.InsigniaID != UUID.Zero)
-                Client.Assets.RequestImage(Group.InsigniaID, ImageType.Normal, 113000.0f, 0, 0);
+                Client.Assets.RequestImage(Group.InsigniaID, ImageType.Normal,
+                    delegate(TextureRequestState state, AssetTexture assetTexture)
+                        {
+                            ManagedImage imgData;
+                            Image bitmap;
+
+                            if (state == TextureRequestState.Finished)
+                            {
+                                OpenJPEG.DecodeToImage(assetTexture.AssetData, out imgData, out bitmap);
+                                picInsignia.Image = bitmap;
+                            }               
+                        });
 
             if (this.InvokeRequired)
                 this.BeginInvoke(new MethodInvoker(UpdateProfile));
-        }
-
-        void Assets_OnImageReceived(ImageDownload image, AssetTexture assetTexture)
-        {
-            ManagedImage imgData;
-            Image bitmap;
-
-            if (image.Success)
-            {
-                OpenJPEG.DecodeToImage(image.AssetData, out imgData, out bitmap);
-                picInsignia.Image = bitmap;
-            }
         }
 
         private void UpdateProfile()

@@ -19,7 +19,6 @@ namespace OpenMetaverse.TestClient
 
             testClient.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
             testClient.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
-            testClient.Assets.OnImageReceived += new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
@@ -72,7 +71,7 @@ namespace OpenMetaverse.TestClient
                                     break;
                             }
 
-                            Client.Assets.RequestImage(face.TextureID, type);
+                            Client.Assets.RequestImage(face.TextureID, type, Assets_OnImageReceived);
                         }
                     }
                 }
@@ -93,21 +92,21 @@ namespace OpenMetaverse.TestClient
                         if (!alreadyRequested.ContainsKey(face.TextureID))
                         {
                             alreadyRequested[face.TextureID] = face.TextureID;
-                            Client.Assets.RequestImage(face.TextureID, ImageType.Normal);
+                            Client.Assets.RequestImage(face.TextureID, ImageType.Normal, Assets_OnImageReceived);
                         }
                     }
                 }
             }
         }
 
-        private void Assets_OnImageReceived(ImageDownload image, AssetTexture asset)
+        private void Assets_OnImageReceived(TextureRequestState state, AssetTexture asset)
         {
-            if (enabled && alreadyRequested.ContainsKey(image.ID))
+            if (state == TextureRequestState.Finished && enabled && alreadyRequested.ContainsKey(asset.AssetID))
             {
-                if (image.Success)
-                    Logger.DebugLog(String.Format("Finished downloading texture {0} ({1} bytes)", image.ID, image.Size));
+                if (state == TextureRequestState.Finished)
+                    Logger.DebugLog(String.Format("Finished downloading texture {0} ({1} bytes)", asset.AssetID, asset.AssetData.Length));
                 else
-                    Logger.Log("Failed to download texture " + image.ID.ToString(), Helpers.LogLevel.Warning);
+                    Logger.Log("Failed to download texture " + asset.AssetID + ": " + state, Helpers.LogLevel.Warning);
             }
         }
     }

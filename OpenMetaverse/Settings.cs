@@ -287,6 +287,25 @@ namespace OpenMetaverse
         public bool THROTTLE_OUTGOING_PACKETS = true;
 
         #endregion
+        #region Texture Pipeline
+
+        /// <summary>The maximum number of concurrent texture downloads allowed</summary>
+        /// <remarks>Increasing this number will not necessarily increase texture retrieval times due to
+        /// simulator throttles</remarks>
+        public int MAX_CONCURRENT_TEXTURE_DOWNLOADS = 4;
+
+        /// <summary>
+        /// The Refresh timer inteval is used to set the delay between checks for stalled texture downloads
+        /// </summary>
+        /// <remarks>This is a static variable which applies to all instances</remarks>
+        public static float PIPELINE_REFRESH_INTERVAL = 500.0f;
+
+        /// <summary>
+        /// Textures taking longer than this value will be flagged as timed out and removed from the pipeline
+        /// </summary>
+        public int PIPELINE_REQUEST_TIMEOUT = 45*1000;
+        #endregion
+
         #region Logging Configuration
 
         /// <summary>
