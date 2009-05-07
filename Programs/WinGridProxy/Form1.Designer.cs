@@ -31,6 +31,7 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormWinGridProxy));
             this.panelProxyConfig = new System.Windows.Forms.Panel();
+            this.comboBoxListenAddress = new System.Windows.Forms.ComboBox();
             this.comboBoxLoginURL = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -54,6 +55,7 @@
             this.toolStripMenuItemRemoveAll = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemRemoveSelected = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemRemoveUnselected = new System.Windows.Forms.ToolStripMenuItem();
+            this.removeToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.selectToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripSelect = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.allToolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
@@ -61,6 +63,7 @@
             this.noneToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparatorSelectPacketProto = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripMenuItemSelectPacketName = new System.Windows.Forms.ToolStripMenuItem();
+            this.selectToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparatorFilterPacketByName = new System.Windows.Forms.ToolStripSeparator();
             this.enableDisableFilterByNameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
@@ -73,7 +76,6 @@
             this.orangeToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator17 = new System.Windows.Forms.ToolStripSeparator();
             this.unmarkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.markToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator16 = new System.Windows.Forms.ToolStripSeparator();
             this.findToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
@@ -140,8 +142,7 @@
             this.button3 = new System.Windows.Forms.Button();
             this.buttonInjectPacket = new System.Windows.Forms.Button();
             this.richTextBoxInject = new System.Windows.Forms.RichTextBox();
-            this.removeToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.selectToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.markToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripLabelHexEditorRequest = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
@@ -222,7 +223,8 @@
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.autoColorizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
-            this.comboBoxListenAddress = new System.Windows.Forms.ComboBox();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator14 = new System.Windows.Forms.ToolStripSeparator();
             this.panelProxyConfig.SuspendLayout();
             this.panelMainWindow.SuspendLayout();
             this.splitContainerSessionsTabs.Panel1.SuspendLayout();
@@ -281,6 +283,15 @@
             this.panelProxyConfig.Name = "panelProxyConfig";
             this.panelProxyConfig.Size = new System.Drawing.Size(1070, 32);
             this.panelProxyConfig.TabIndex = 0;
+            // 
+            // comboBoxListenAddress
+            // 
+            this.comboBoxListenAddress.FormattingEnabled = true;
+            this.comboBoxListenAddress.Location = new System.Drawing.Point(98, 6);
+            this.comboBoxListenAddress.Name = "comboBoxListenAddress";
+            this.comboBoxListenAddress.Size = new System.Drawing.Size(139, 21);
+            this.comboBoxListenAddress.TabIndex = 7;
+            this.comboBoxListenAddress.Text = "127.0.0.1";
             // 
             // comboBoxLoginURL
             // 
@@ -468,7 +479,7 @@
             this.toolStripMenuItemRemoveSelected,
             this.toolStripMenuItemRemoveUnselected});
             this.contextMenuStripRemove.Name = "contextMenuStripRemove";
-            this.contextMenuStripRemove.OwnerItem = this.removeToolStripMenuItem2;
+            this.contextMenuStripRemove.OwnerItem = this.toolStripMenuSessionsRemove;
             this.contextMenuStripRemove.Size = new System.Drawing.Size(149, 70);
             // 
             // toolStripMenuItemRemoveAll
@@ -493,6 +504,13 @@
             this.toolStripMenuItemRemoveUnselected.Text = "Unselected";
             this.toolStripMenuItemRemoveUnselected.Click += new System.EventHandler(this.sessionRemoveUnselected_Click);
             // 
+            // removeToolStripMenuItem2
+            // 
+            this.removeToolStripMenuItem2.DropDown = this.contextMenuStripRemove;
+            this.removeToolStripMenuItem2.Name = "removeToolStripMenuItem2";
+            this.removeToolStripMenuItem2.Size = new System.Drawing.Size(143, 22);
+            this.removeToolStripMenuItem2.Text = "Remove";
+            // 
             // selectToolStripMenuItem2
             // 
             this.selectToolStripMenuItem2.DropDown = this.contextMenuStripSelect;
@@ -509,7 +527,7 @@
             this.toolStripSeparatorSelectPacketProto,
             this.toolStripMenuItemSelectPacketName});
             this.contextMenuStripSelect.Name = "contextMenuStripSelect";
-            this.contextMenuStripSelect.OwnerItem = this.selectToolStripMenuItem1;
+            this.contextMenuStripSelect.OwnerItem = this.selectToolStripMenuItem2;
             this.contextMenuStripSelect.Size = new System.Drawing.Size(167, 98);
             // 
             // allToolStripMenuItem4
@@ -545,6 +563,13 @@
             this.toolStripMenuItemSelectPacketName.Size = new System.Drawing.Size(166, 22);
             this.toolStripMenuItemSelectPacketName.Text = "All (Packet Type)";
             this.toolStripMenuItemSelectPacketName.Click += new System.EventHandler(this.sessionSelectAllPacketType_Click);
+            // 
+            // selectToolStripMenuItem1
+            // 
+            this.selectToolStripMenuItem1.DropDown = this.contextMenuStripSelect;
+            this.selectToolStripMenuItem1.Name = "selectToolStripMenuItem1";
+            this.selectToolStripMenuItem1.Size = new System.Drawing.Size(143, 22);
+            this.selectToolStripMenuItem1.Text = "Select";
             // 
             // toolStripSeparatorFilterPacketByName
             // 
@@ -584,7 +609,7 @@
             this.toolStripSeparator17,
             this.unmarkToolStripMenuItem});
             this.contextMenuStripMark.Name = "contextMenuStripMarkDropdown";
-            this.contextMenuStripMark.OwnerItem = this.markToolStripMenuItem2;
+            this.contextMenuStripMark.OwnerItem = this.markToolStripMenuItem1;
             this.contextMenuStripMark.Size = new System.Drawing.Size(122, 142);
             // 
             // redToolStripMenuItem2
@@ -633,13 +658,6 @@
             this.unmarkToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
             this.unmarkToolStripMenuItem.Text = "Unmark";
             this.unmarkToolStripMenuItem.Click += new System.EventHandler(this.sessionUnmarkSelected_Click);
-            // 
-            // markToolStripMenuItem1
-            // 
-            this.markToolStripMenuItem1.DropDown = this.contextMenuStripMark;
-            this.markToolStripMenuItem1.Name = "markToolStripMenuItem1";
-            this.markToolStripMenuItem1.Size = new System.Drawing.Size(143, 22);
-            this.markToolStripMenuItem1.Text = "Mark";
             // 
             // toolStripSeparator16
             // 
@@ -1335,6 +1353,7 @@
             // 
             // radioButtonViewer
             // 
+            this.radioButtonViewer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.radioButtonViewer.AutoSize = true;
             this.radioButtonViewer.Location = new System.Drawing.Point(397, 370);
             this.radioButtonViewer.Name = "radioButtonViewer";
@@ -1345,6 +1364,7 @@
             // 
             // radioButtonSimulator
             // 
+            this.radioButtonSimulator.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.radioButtonSimulator.AutoSize = true;
             this.radioButtonSimulator.Checked = true;
             this.radioButtonSimulator.Location = new System.Drawing.Point(283, 370);
@@ -1390,19 +1410,12 @@
             this.richTextBoxInject.Text = "";
             this.richTextBoxInject.TextChanged += new System.EventHandler(this.richTextBoxInject_TextChanged);
             // 
-            // removeToolStripMenuItem2
+            // markToolStripMenuItem1
             // 
-            this.removeToolStripMenuItem2.DropDown = this.contextMenuStripRemove;
-            this.removeToolStripMenuItem2.Name = "removeToolStripMenuItem2";
-            this.removeToolStripMenuItem2.Size = new System.Drawing.Size(143, 22);
-            this.removeToolStripMenuItem2.Text = "Remove";
-            // 
-            // selectToolStripMenuItem1
-            // 
-            this.selectToolStripMenuItem1.DropDown = this.contextMenuStripSelect;
-            this.selectToolStripMenuItem1.Name = "selectToolStripMenuItem1";
-            this.selectToolStripMenuItem1.Size = new System.Drawing.Size(143, 22);
-            this.selectToolStripMenuItem1.Text = "Select";
+            this.markToolStripMenuItem1.DropDown = this.contextMenuStripMark;
+            this.markToolStripMenuItem1.Name = "markToolStripMenuItem1";
+            this.markToolStripMenuItem1.Size = new System.Drawing.Size(143, 22);
+            this.markToolStripMenuItem1.Text = "Mark";
             // 
             // toolStripLabelHexEditorRequest
             // 
@@ -1438,6 +1451,8 @@
             this.toolStripSeparator8,
             this.settingsToolStripMenuItem,
             this.toolStripSeparator9,
+            this.toolStripMenuItem1,
+            this.toolStripSeparator14,
             this.exitToolStripMenuItem1});
             this.toolStripFileMenu.Image = ((System.Drawing.Image)(resources.GetObject("toolStripFileMenu.Image")));
             this.toolStripFileMenu.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -2022,14 +2037,17 @@
             this.autoColorizeToolStripMenuItem.Text = "Auto Colorize";
             this.autoColorizeToolStripMenuItem.Click += new System.EventHandler(this.autoColorizeToolStripMenuItem_Click);
             // 
-            // comboBoxListenAddress
+            // toolStripMenuItem1
             // 
-            this.comboBoxListenAddress.FormattingEnabled = true;
-            this.comboBoxListenAddress.Location = new System.Drawing.Point(98, 6);
-            this.comboBoxListenAddress.Name = "comboBoxListenAddress";
-            this.comboBoxListenAddress.Size = new System.Drawing.Size(139, 21);
-            this.comboBoxListenAddress.TabIndex = 7;
-            this.comboBoxListenAddress.Text = "127.0.0.1";
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(187, 22);
+            this.toolStripMenuItem1.Text = "Plugins";
+            this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
+            // 
+            // toolStripSeparator14
+            // 
+            this.toolStripSeparator14.Name = "toolStripSeparator14";
+            this.toolStripSeparator14.Size = new System.Drawing.Size(184, 6);
             // 
             // FormWinGridProxy
             // 
@@ -2298,6 +2316,8 @@
         private System.Windows.Forms.ColorDialog colorDialog1;
         private System.Windows.Forms.ColumnHeader columnHeaderContentType;
         private System.Windows.Forms.ComboBox comboBoxListenAddress;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;
     }
 }
 

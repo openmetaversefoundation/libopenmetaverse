@@ -24,7 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define DEBUG_TIMING
+//#define DEBUG_TIMING
 
 using System;
 using System.Collections.Generic;

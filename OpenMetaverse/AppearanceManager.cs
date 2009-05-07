@@ -143,7 +143,7 @@ namespace OpenMetaverse
         private AssetManager Assets;
 
         /// <summary>
-        /// An <seealso cref="T:InternalDictionary"/> which keeps track of wearables data
+        /// An <seealso cref="InternalDictionary"/> which keeps track of wearables data
         /// </summary>
         public InternalDictionary<WearableType, WearableData> Wearables = new InternalDictionary<WearableType, WearableData>();
         // As wearable assets are downloaded and decoded, the textures are added to this array
@@ -644,10 +644,10 @@ namespace OpenMetaverse
 
             // Register an asset download callback to get wearable data
             AssetManager.AssetReceivedCallback assetCallback = new AssetManager.AssetReceivedCallback(Assets_OnAssetReceived);
-            //AssetManager.ImageReceivedCallback imageCallback = new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
+            
             AssetManager.AssetUploadedCallback uploadCallback = new AssetManager.AssetUploadedCallback(Assets_OnAssetUploaded);
             Assets.OnAssetReceived += assetCallback;
-            //Assets.OnImageReceived += imageCallback;
+            
             Assets.OnAssetUploaded += uploadCallback;
 
             // Download assets for what we are wearing and fill in AgentTextures
