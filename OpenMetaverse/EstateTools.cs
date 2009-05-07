@@ -29,27 +29,43 @@ using System.Collections.Generic;
 
 namespace OpenMetaverse
 {
+    /// <summary>Describes tasks returned in LandStatReply</summary>
+    public class EstateTask
+    {
+        public Vector3 Position;
+        public float Score;
+        public UUID TaskID;
+        public uint TaskLocalID;
+        public string TaskName;
+        public string OwnerName;
+    }
+
 	/// <summary>
 	/// Estate level administration and utilities
 	/// </summary>
 	public class EstateTools
 	{
 		private GridClient Client;
+
+        /// <summary>Textures for each of the four terrain height levels</summary>
         public GroundTextureSettings GroundTextures;
+
+        /// <summary>Upper/lower texture boundaries for each corner of the sim</summary>
+        public GroundTextureHeightSettings GroundTextureLimits;
 
         /// <summary>
         /// Triggered on LandStatReply when the report type is for "top colliders"
         /// </summary>
         /// <param name="objectCount"></param>
         /// <param name="Tasks"></param>
-        public delegate void GetTopCollidersReply(int objectCount, List<EstateTask> Tasks);
+        public delegate void TopCollidersReplyCallback(int objectCount, Dictionary<UUID, EstateTask> Tasks);
 
         /// <summary>
         /// Triggered on LandStatReply when the report type is for "top scripts"
         /// </summary>
         /// <param name="objectCount"></param>
         /// <param name="Tasks"></param>
-        public delegate void GetTopScriptsReply(int objectCount, List<EstateTask> Tasks);
+        public delegate void TopScriptsReplyCallback(int objectCount, Dictionary<UUID, EstateTask> Tasks);
 
         /// <summary>
         /// Triggered when the list of estate managers is received for the current estate
@@ -82,9 +98,9 @@ namespace OpenMetaverse
         // <summary>Callback for LandStatReply packets</summary>
         //public event LandStatReply OnLandStatReply;
         /// <summary>Triggered upon a successful .GetTopColliders()</summary>
-        public event GetTopCollidersReply OnGetTopColliders;
+        public event TopCollidersReplyCallback OnGetTopColliders;
         /// <summary>Triggered upon a successful .GetTopScripts()</summary>
-        public event GetTopScriptsReply OnGetTopScripts;
+        public event TopScriptsReplyCallback OnGetTopScripts;
         /// <summary>Returned, along with other info, upon a successful .GetInfo()</summary>
         public event EstateUpdateInfoReply OnGetEstateUpdateInfo;
         /// <summary>Returned, along with other info, upon a successful .GetInfo()</summary>
@@ -104,22 +120,14 @@ namespace OpenMetaverse
         /// <param name="client"></param>
 		public EstateTools(GridClient client)
 		{
+            GroundTextures = new GroundTextureSettings();
+            GroundTextureLimits = new GroundTextureHeightSettings();
+
 			Client = client;
             Client.Network.RegisterCallback(PacketType.LandStatReply, new NetworkManager.PacketCallback(LandStatReplyHandler));
             Client.Network.RegisterCallback(PacketType.EstateOwnerMessage, new NetworkManager.PacketCallback(EstateOwnerMessageHandler));
             Client.Network.RegisterCallback(PacketType.EstateCovenantReply, new NetworkManager.PacketCallback(EstateCovenantReplyHandler));
 		}
-
-        /// <summary>Describes tasks returned in LandStatReply</summary>
-        public class EstateTask
-        {
-            public Vector3 Position;
-            public float Score;
-            public UUID TaskID;
-            public uint TaskLocalID;
-            public string TaskName;
-            public string OwnerName;
-        }
 
         /// <summary>Used in the ReportType field of a LandStatRequest</summary>
         public enum LandStatReportType
@@ -137,6 +145,7 @@ namespace OpenMetaverse
             UnbanUserAllEstates = 130
         }
 
+        /// <summary>Used by EstateOwnerMessage packets</summary>
         public enum EstateAccessReplyDelta : uint
         {
             AllowedUsers = 17,
@@ -145,21 +154,30 @@ namespace OpenMetaverse
             EstateManagers = 24
         }
 
-        /// <summary>Used by GroundTextureSettings</summary>
-        public class GroundTextureRegion
+        /// <summary>Ground texture settings for each corner of the region</summary>
+        // TODO: maybe move this class to the Simulator object and implement it there too        
+        public struct GroundTextureSettings
         {
-            public UUID TextureID;
+            public UUID Low;
+            public UUID MidLow;
+            public UUID MidHigh;
+            public UUID High;
+        }
+
+        /// <summary>Used by GroundTextureHeightSettings</summary>
+        public struct GroundTextureHeight
+        {
             public float Low;
             public float High;
         }
 
-        /// <summary>Ground texture settings for each corner of the region</summary>
-        public class GroundTextureSettings
+        /// <summary>The high and low texture thresholds for each corner of the sim</summary>
+        public struct GroundTextureHeightSettings
         {
-            public GroundTextureRegion Southwest;
-            public GroundTextureRegion Northwest;
-            public GroundTextureRegion Southeast;
-            public GroundTextureRegion Northeast;
+            public GroundTextureHeight SW;
+            public GroundTextureHeight NW;
+            public GroundTextureHeight SE;
+            public GroundTextureHeight NE;
         }
 
         /// <summary>
@@ -182,25 +200,28 @@ namespace OpenMetaverse
         }
 
         /// <summary>Requests estate settings, including estate manager and access/ban lists</summary>
-        public void GetInfo()
+        public void RequestInfo()
         {
             EstateOwnerMessage("getinfo", "");
         }
 
         /// <summary>Requests the "Top Scripts" list for the current region</summary>
-        public void GetTopScripts()
+        public void RequestTopScripts()
         {
             //EstateOwnerMessage("scripts", "");
             LandStatRequest(0, LandStatReportType.TopScripts, 0, "");
         }
 
         /// <summary>Requests the "Top Colliders" list for the current region</summary>
-        public void GetTopColliders()
+        public void RequestTopColliders()
         {
             //EstateOwnerMessage("colliders", "");
             LandStatRequest(0, LandStatReportType.TopColliders, 0, "");
         }
 
+        /// <summary></summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
         private void EstateCovenantReplyHandler(Packet packet, Simulator simulator)
         {
             EstateCovenantReplyPacket reply = (EstateCovenantReplyPacket)packet;
@@ -377,7 +398,7 @@ namespace OpenMetaverse
             if (OnGetTopScripts != null || OnGetTopColliders != null)
             {
                 LandStatReplyPacket p = (LandStatReplyPacket)packet;
-                List<EstateTask> Tasks = new List<EstateTask>();
+                Dictionary<UUID, EstateTask> Tasks = new Dictionary<UUID, EstateTask>();
 
                 foreach (LandStatReplyPacket.ReportDataBlock rep in p.ReportData)
                 {
@@ -388,7 +409,7 @@ namespace OpenMetaverse
                     task.TaskLocalID = rep.TaskLocalID;
                     task.TaskName = Utils.BytesToString(rep.TaskName);
                     task.OwnerName = Utils.BytesToString(rep.OwnerName);
-                    Tasks.Add(task);
+                    Tasks.Add(task.TaskID, task);
                 }
 
                 LandStatReportType type = (LandStatReportType)p.RequestData.ReportType;
@@ -420,6 +441,9 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary></summary>
+        /// <param name="method"></param>
+        /// <param name="param"></param>
         public void EstateOwnerMessage(string method, string param)
         {
             List<string> listParams = new List<string>();
@@ -566,6 +590,35 @@ namespace OpenMetaverse
             EstateOwnerMessage("setregiondebug", listParams);
         }
 
+        /// <summary>Used for setting the region's terrain textures for its four height levels</summary>
+        /// <param name="low"></param>
+        /// <param name="midLow"></param>
+        /// <param name="midHigh"></param>
+        /// <param name="high"></param>
+        public void SetRegionTerrain(UUID low, UUID midLow, UUID midHigh, UUID high)
+        {
+            List<string> listParams = new List<string>();
+            listParams.Add("0 " + low.ToString());
+            listParams.Add("1 " + midLow.ToString());
+            listParams.Add("2 " + midHigh.ToString());
+            listParams.Add("3 " + high.ToString());
+            EstateOwnerMessage("texturedetail", listParams);
+            EstateOwnerMessage("texturecommit", "");
+        }
+
+        /// <summary>Used for setting sim terrain texture heights</summary> 
+        public void SetRegionTerrainHeights(float lowSW, float highSW, float lowNW, float highNW, float lowSE, float highSE, float lowNE, float highNE)
+        {
+            List<string> listParams = new List<string>();
+            listParams.Add("0 " + lowSW.ToString() + " " + highSW.ToString(Utils.EnUsCulture)); //SW low-high 
+            listParams.Add("1 " + lowNW.ToString() + " " + highNW.ToString(Utils.EnUsCulture)); //NW low-high 
+            listParams.Add("2 " + lowSE.ToString() + " " + highSE.ToString(Utils.EnUsCulture)); //SE low-high 
+            listParams.Add("3 " + lowNE.ToString() + " " + highNE.ToString(Utils.EnUsCulture)); //NE low-high 
+            EstateOwnerMessage("texturedetail", listParams);
+            EstateOwnerMessage("texturecommit", "");
+        }
+
+        /// <summary>Requests the estate covenant</summary>
         public void RequestCovenant()
         {
             EstateCovenantRequestPacket req = new EstateCovenantRequestPacket();
@@ -597,7 +650,7 @@ namespace OpenMetaverse
             paramList.Add(fileName);
 
             // Tell the simulator we have a new raw file to upload
-            Client.Network.CurrentSim.Estate.EstateOwnerMessage("terrain", paramList);
+            Client.Estate.EstateOwnerMessage("terrain", paramList);
 
             return upload.ID;
         }
