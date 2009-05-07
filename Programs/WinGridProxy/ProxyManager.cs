@@ -61,7 +61,7 @@ namespace WinGridProxy
         private string _ListenIP;
         private string _LoginURI;
 
-        ProxyFrame Proxy;
+        public ProxyFrame Proxy;
 
         public ProxyManager(string port, string listenIP, string loginUri)
         {

@@ -311,7 +311,7 @@ namespace WinGridProxy
 
                 // enable any gui elements
                 toolStripDropDownButton5.Enabled =
-                grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = true;
+                toolStripMenuItemPlugins.Enabled = grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = true;
                 button1.Text = "Stop Proxy";
 
                 if (enableStatisticsToolStripMenuItem.Checked && !timer1.Enabled)
@@ -321,7 +321,7 @@ namespace WinGridProxy
             {
                 // stop the proxy
                 proxy.Stop();
-                grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = false;
+                toolStripMenuItemPlugins.Enabled = grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = false;
                 button1.Text = "Start Proxy";
                 comboBoxListenAddress.Enabled = textBoxProxyPort.Enabled = comboBoxLoginURL.Enabled = true;
 
@@ -760,6 +760,22 @@ namespace WinGridProxy
             if (openFileDialog2.ShowDialog() == DialogResult.OK)
             {
                 RestoreSavedSettings(openFileDialog2.FileName);
+                if(listViewSessions.Items.Count > 0)
+                {
+                    if(MessageBox.Show("Would you like to apply these settings to the currention session list?", "Apply Filter", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == System.Windows.Forms.DialogResult.Yes)
+                    {
+                        foreach(ListViewItem item in listViewSessions.Items)
+                        {
+                            ListViewItem found = FindListViewItem(listViewPacketFilters, item.SubItems[2].Text, false);
+                            if (found == null)
+                                found = FindListViewItem(listViewMessageFilters, item.SubItems[2].Text, false);
+
+                            if(found != null && !found.Checked)
+                                listViewSessions.Items.Remove(item);
+
+                        }
+                    }
+                }
             }
         }
 
@@ -1027,29 +1043,44 @@ namespace WinGridProxy
                 {
                     foreach (object nestedArrayRecord in packetDataObject as Array)
                     {
+                        // handle properties
+                        foreach (PropertyInfo propertyInfo in nestedArrayRecord.GetType().GetProperties())
+                        {
+                            if (propertyInfo.GetValue(nestedArrayRecord, null).GetType() == typeof(byte[]))
+                            {
+
+                                result.AppendFormat("{0, 30}: {1}" + Environment.NewLine,
+                            propertyInfo.Name, Utils.BytesToString((byte[])propertyInfo.GetValue(nestedArrayRecord, null)));
+
+                            }
+
+                        }
+
+                        // handle fields
                         foreach (FieldInfo packetArrayField in nestedArrayRecord.GetType().GetFields())
                         {
-                            if (packetArrayField.GetValue(nestedArrayRecord).GetType() == typeof(System.Byte[]))
+                            if (packetArrayField.GetValue(nestedArrayRecord).GetType() == typeof(Byte[]))
                             {
-                                result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
+                                result.AppendFormat("{0,30}: {1}" + Environment.NewLine,
                                     packetArrayField.Name,
-                                    new Color4((byte[])packetArrayField.GetValue(nestedArrayRecord), 0, false).ToString());
+                                    new Color4((byte[])packetArrayField.GetValue(nestedArrayRecord), 0, false));
                             }
                             else
                             {
-                                result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
+                                result.AppendFormat("{0,30}: {1}" + Environment.NewLine,
                                     packetArrayField.Name, packetArrayField.GetValue(nestedArrayRecord));
                             }
                         }
                     }
                 }
+
                 else
                 {
                     // handle non array data blocks
                     foreach (PropertyInfo packetPropertyField in packetField.GetValue(packet).GetType().GetProperties())
                     {
                         // Handle fields named "Data" specifically, this is generally binary data, we'll display it as hex values
-                        if (packetPropertyField.PropertyType.Equals(typeof(System.Byte[]))
+                        if (packetPropertyField.PropertyType.Equals(typeof(Byte[]))
                             && packetPropertyField.Name.Equals("Data"))
                         {
                             result.AppendFormat("{0}" + System.Environment.NewLine,
@@ -1057,7 +1088,7 @@ namespace WinGridProxy
                                 packetPropertyField.Name));
                         }
                         // decode bytes into strings
-                        else if (packetPropertyField.PropertyType.Equals(typeof(System.Byte[])))
+                        else if (packetPropertyField.PropertyType.Equals(typeof(Byte[])))
                         {
                             // Handle TextureEntry fields specifically
                             if (packetPropertyField.Name.Equals("TextureEntry"))
@@ -1080,7 +1111,10 @@ namespace WinGridProxy
                                     } 
                                     else if (bytes.Length == 17)
                                     {
-                                        bbDecoded = String.Format("{0} {1} ({2})", new UUID(bytes, 1).ToString(), bytes[0], (AssetType)bytes[0]);
+                                        bbDecoded = String.Format("{0} {1} ({2})", 
+                                            new UUID(bytes, 1), 
+                                            bytes[0], 
+                                            (AssetType)bytes[0]);
                                     }
                                     else
                                     {
@@ -1538,6 +1572,12 @@ namespace WinGridProxy
             {
                 //listview.BackColor = colorDialog1.Color;
             }
+        }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            FormPluginManager pluginManager = new FormPluginManager(proxy.Proxy);
+            pluginManager.ShowDialog();
         }
     }
 }
