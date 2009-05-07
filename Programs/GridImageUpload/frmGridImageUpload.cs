@@ -214,15 +214,11 @@ namespace GridImageUpload
             {
                 cmdConnect.Text = "Disconnect";
                 cboLoginURL.Enabled = txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
-                LoginParams lp = new LoginParams();
-                lp.FirstName = txtFirstName.Text;
-                lp.LastName = txtLastName.Text;
-                lp.Password = txtPassword.Text;
+                LoginParams lp = Client.Network.DefaultLoginParams(txtFirstName.Text, txtLastName.Text, txtPassword.Text,
+                    "GridImageUpload", Application.ProductVersion);
                 lp.URI = cboLoginURL.Text;
-                lp.Start = "last";
                 cmdConnect.Enabled = false;
                 Client.Network.BeginLogin(lp);
-                return;
             }
             else
             {

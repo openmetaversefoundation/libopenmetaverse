@@ -1406,13 +1406,20 @@ namespace OpenMetaverse
                     XmlRpcRequest request = new XmlRpcRequest(CurrentContext.Value.MethodName, loginArray);
 
                     // Start the request
-                    Thread requestThread = new Thread(new ThreadStart(
-                        delegate()
+                    Thread requestThread = new Thread(
+                        (ThreadStart)delegate()
                         {
-                            LoginReplyXmlRpcHandler(
-                                request.Send(CurrentContext.Value.URI, CurrentContext.Value.Timeout),
-                                loginParams);
-                        }));
+                            try
+                            {
+                                LoginReplyXmlRpcHandler(
+                                    request.Send(CurrentContext.Value.URI, CurrentContext.Value.Timeout),
+                                    loginParams);
+                            }
+                            catch (WebException e)
+                            {
+                                UpdateLoginStatus(LoginStatus.Failed, "Error opening the login server connection: " + e.Message);
+                            }
+                        });
                     requestThread.Name = "XML-RPC Login";
                     requestThread.Start();
                 }
