@@ -168,7 +168,6 @@ namespace OpenMetaverse
             downloadMaster.IsBackground = true;
             
             RefreshDownloadsTimer.Elapsed += RefreshDownloadsTimer_Elapsed;
-            
         }
 
         /// <summary>
@@ -518,12 +517,9 @@ namespace OpenMetaverse
                                 //Logger.DebugLog(String.Format("Sending Worker thread new download request {0}", slot));
                                 ThreadPool.QueueUserWorkItem(TextureRequestDoWork, nextTask);
                                 continue;
-                            
                         }
                     }
-                
-                if(pending <= 0)
-                    Console.WriteLine("No Pending Downloads... {0} Still Running", active);
+
                 // Queue was empty or all download slots are inuse, let's give up some CPU time
                 Thread.Sleep(500);
             }
