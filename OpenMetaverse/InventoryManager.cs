@@ -1852,7 +1852,7 @@ namespace OpenMetaverse
 
                 // Make the request
                 CapsClient request = new CapsClient(url);
-                request.OnComplete += new CapsClient.CompleteCallback(CreateItemFromAssetResponse);
+                request.OnComplete += CreateItemFromAssetResponse;
                 request.UserData = new object[] { callback, data, _Client.Settings.CAPS_TIMEOUT };
 
                 request.BeginGetResponse(query, OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);
@@ -3009,8 +3009,8 @@ namespace OpenMetaverse
                 // This makes the assumption that all uploads go to CurrentSim, to avoid
                 // the problem of HttpRequestState not knowing anything about simulators
                 CapsClient upload = new CapsClient(new Uri(uploadURL));
-                upload.OnComplete += new CapsClient.CompleteCallback(CreateItemFromAssetResponse);
-                upload.UserData = new object[] { null, callback, itemData };
+                upload.OnComplete += CreateItemFromAssetResponse;
+                upload.UserData = new object[] { callback, itemData, millisecondsTimeout };
                 upload.BeginGetResponse(itemData, "application/octet-stream", millisecondsTimeout);
             }
             else if (status == "complete")
