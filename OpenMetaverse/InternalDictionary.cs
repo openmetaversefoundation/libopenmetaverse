@@ -313,14 +313,14 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="key">The key</param>
         /// <returns>The value</returns>
-        internal TValue this[TKey key]
+        public TValue this[TKey key]
         {
             get
             {
                 lock (Dictionary)
                     return Dictionary[key];
             }
-            set
+            internal set
             {
                 lock (Dictionary)
                     Dictionary[key] = value;
