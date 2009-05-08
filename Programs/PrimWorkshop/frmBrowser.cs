@@ -165,6 +165,7 @@ namespace PrimWorkshop
             Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
             Client.Parcels.OnSimParcelsDownloaded += new ParcelManager.SimParcelsDownloaded(Parcels_OnSimParcelsDownloaded);
 
+            Client.Assets.OnImageRecieveProgress += new AssetManager.ImageReceiveProgressCallback(Assets_OnImageRecieveProgress);
             // Initialize the camera object
             InitCamera();
 
@@ -188,6 +189,7 @@ namespace PrimWorkshop
             Gl.glLightfv(Gl.GL_LIGHT0, Gl.GL_SPECULAR, specularLight);
             */
         }
+
 
         private void InitOpenGL()
         {
@@ -1486,50 +1488,50 @@ StartRender:
                 Console.WriteLine(ex);
             }
         }
+        
+        private void Assets_OnImageRecieveProgress(UUID imageID, int recieved, int total)
+        {
+            lock (DownloadList)
+            {
+                GlacialComponents.Controls.GLItem item;
+                if (DownloadList.TryGetValue(imageID, out item))
+                {
+                    // Update an existing item
+                    BeginInvoke(
+                        (MethodInvoker)delegate()
+                        {
+                            ProgressBar prog = (ProgressBar)item.SubItems[1].Control;
+                            if (total >= recieved)
+                                prog.Value = (int)Math.Round((((double)recieved / (double)total) * 100.0d));
+                        });
+                }
+                else
+                {
+                    // Progress bar
+                    ProgressBar prog = new ProgressBar();
+                    prog.Minimum = 0;
+                    prog.Maximum = 100;
+                    if (total >= recieved)
+                        prog.Value = (int)Math.Round((((double)recieved / (double)total) * 100.0d));
+                    else
+                        prog.Value = 0;
 
-        //private void TextureDownloader_OnDownloadProgress(UUID image, int recieved, int total)
-        //{
-        //    lock (DownloadList)
-        //    {
-        //        GlacialComponents.Controls.GLItem item;
-        //        if (DownloadList.TryGetValue(image, out item))
-        //        {
-        //            // Update an existing item
-        //            BeginInvoke(
-        //                (MethodInvoker)delegate()
-        //                {
-        //                    ProgressBar prog = (ProgressBar)item.SubItems[1].Control;
-        //                    if (total >= recieved)
-        //                        prog.Value = (int)Math.Round((((double)recieved / (double)total) * 100.0d));
-        //                });
-        //        }
-        //        else
-        //        {
-        //            // Progress bar
-        //            ProgressBar prog = new ProgressBar();
-        //            prog.Minimum = 0;
-        //            prog.Maximum = 100;
-        //            if (total >= recieved)
-        //                prog.Value = (int)Math.Round((((double)recieved / (double)total) * 100.0d));
-        //            else
-        //                prog.Value = 0;
+                    // List item
+                    item = new GlacialComponents.Controls.GLItem();
+                    item.SubItems[0].Text = imageID.ToString();
+                    item.SubItems[1].Control = prog;
 
-        //            // List item
-        //            item = new GlacialComponents.Controls.GLItem();
-        //            item.SubItems[0].Text = image.ToString();
-        //            item.SubItems[1].Control = prog;
+                    DownloadList[imageID] = item;
 
-        //            DownloadList[image] = item;
-
-        //            BeginInvoke(
-        //                (MethodInvoker)delegate()
-        //                {
-        //                    lstDownloads.Items.Add(item);
-        //                    lstDownloads.Invalidate();
-        //                });
-        //        }
-        //    }
-        //}
+                    BeginInvoke(
+                        (MethodInvoker)delegate()
+                        {
+                            lstDownloads.Items.Add(item);
+                            lstDownloads.Invalidate();
+                        });
+                }
+            }
+        }
 
         #endregion Texture Downloading
 
