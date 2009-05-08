@@ -137,6 +137,9 @@ namespace OpenMetaverse
         private readonly System.Timers.Timer RefreshDownloadsTimer = 
             new System.Timers.Timer(Settings.PIPELINE_REFRESH_INTERVAL);
 
+        /// <summary>Current number of pending and in-process transfers</summary>
+        public int TransferCount { get { return _Transfers.Count; } }
+
         /// <summary>
         /// Default constructor, Instantiates a new copy of the TexturePipeline class
         /// </summary>
