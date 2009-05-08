@@ -1292,11 +1292,11 @@ namespace GridProxy
                                 needsCopy = true;
                             } */
 
-                            if (needsCopy)
+                            if (packet.Header.AckList != null && needsCopy)
                             {
-                                uint[] newAcks = new uint[packet.Header.AckList.Length];
-                                Array.Copy(packet.Header.AckList, 0, newAcks, 0, newAcks.Length);
-                                packet.Header.AckList = newAcks; // FIXME
+                                    uint[] newAcks = new uint[packet.Header.AckList.Length];
+                                    Array.Copy(packet.Header.AckList, 0, newAcks, 0, newAcks.Length);
+                                    packet.Header.AckList = newAcks; // FIXME
                             }
 
                             try
@@ -1662,11 +1662,11 @@ namespace GridProxy
                             // pass the packet to any callback delegates
                             if (proxy.outgoingDelegates.ContainsKey(packet.Type))
                             {
-                                if (needsCopy)
+                                if (packet.Header.AckList != null && needsCopy)
                                 {
-                                    uint[] newAcks = new uint[packet.Header.AckList.Length];
-                                    Array.Copy(packet.Header.AckList, 0, newAcks, 0, newAcks.Length);
-                                    packet.Header.AckList = newAcks; // FIXME
+                                        uint[] newAcks = new uint[packet.Header.AckList.Length];
+                                        Array.Copy(packet.Header.AckList, 0, newAcks, 0, newAcks.Length);
+                                        packet.Header.AckList = newAcks; // FIXME
                                 }
 
                                 try
