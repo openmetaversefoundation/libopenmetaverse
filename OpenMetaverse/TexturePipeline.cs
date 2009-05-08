@@ -147,6 +147,7 @@ namespace OpenMetaverse
         public TexturePipeline(GridClient client)
         {
             _Client = client;
+
             maxTextureRequests = client.Settings.MAX_CONCURRENT_TEXTURE_DOWNLOADS;
 
             resetEvents = new AutoResetEvent[maxTextureRequests];
@@ -312,7 +313,8 @@ namespace OpenMetaverse
                     image.Success = true;
                     
                     AssetTexture asset = new AssetTexture(image.ID, image.AssetData);
-                    callback(TextureRequestState.Finished, /*image,*/ asset);
+                    callback(TextureRequestState.Finished, asset);
+                    _Client.Assets.FireImageProgressEvent(image.ID, image.Transferred, image.Size);
                 }
                 else
                 {
@@ -444,7 +446,7 @@ namespace OpenMetaverse
                         _Client.Network.SendPacket(request);
 
                         task.Callback(TextureRequestState.Aborted, new AssetTexture(textureID, Utils.EmptyBytes));
-
+                        _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
 
                         resetEvents[task.RequestSlot].Set();
 
@@ -455,6 +457,7 @@ namespace OpenMetaverse
                         _Transfers.Remove(textureID);
                         
                         task.Callback(TextureRequestState.Aborted, new AssetTexture(textureID, Utils.EmptyBytes));
+                        _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
                     }
                 }
             }
@@ -555,6 +558,7 @@ namespace OpenMetaverse
                 Logger.Log("Worker " + task.RequestSlot + " Timeout waiting for Texture " + task.RequestID + " to Download Got " + task.Transfer.Transferred + " of " + task.Transfer.Size, Helpers.LogLevel.Warning);
 
                 task.Callback(TextureRequestState.Timeout, new AssetTexture(task.RequestID, task.Transfer.AssetData));
+                _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
 
                 lock (_Transfers)
                     _Transfers.Remove(task.RequestID);
@@ -632,6 +636,7 @@ namespace OpenMetaverse
                             _Transfers.Remove(task.Transfer.ID);
                             resetEvents[task.RequestSlot].Set(); // free up request slot
                             task.Callback(TextureRequestState.Timeout, new AssetTexture(task.RequestID, task.Transfer.AssetData));
+                            _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
                             return;
                         }
                     }
@@ -679,11 +684,13 @@ namespace OpenMetaverse
                         _Client.Assets.Cache.SaveImageToCache(task.RequestID, task.Transfer.AssetData);
 
                         task.Callback(TextureRequestState.Finished, new AssetTexture(task.RequestID, task.Transfer.AssetData));
+                        _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
                     }
                     else
                     {
                         if (task.ReportProgress)
                             task.Callback(TextureRequestState.Progress, new AssetTexture(task.RequestID, task.Transfer.AssetData));
+                        _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
                     }
                 }
             }
@@ -753,13 +760,14 @@ namespace OpenMetaverse
                     _Client.Assets.Cache.SaveImageToCache(task.RequestID, task.Transfer.AssetData);
                     //AssetTexture asset = new AssetTexture(task.RequestID, task.Transfer.AssetData);
                     task.Callback(TextureRequestState.Finished, new AssetTexture(task.RequestID, task.Transfer.AssetData));
+                    _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
                 }
                 else
                 {
                     if (task.ReportProgress)
-                    {
                         task.Callback(TextureRequestState.Progress, new AssetTexture(task.RequestID, task.Transfer.AssetData));
-                    }
+                    _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
+                    
                 }
             }
         }

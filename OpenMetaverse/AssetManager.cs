@@ -303,16 +303,6 @@ namespace OpenMetaverse
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="image"></param>
-        /// <param name="asset"></param>
-        public delegate void ImageReceivedCallback(ImageDownload image, AssetTexture asset);
-        /// <summary>
-        /// 
-        /// </summary>
-        public delegate void ImageReceiveProgressCallback(UUID image, int lastPacket, int recieved, int total);
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="upload"></param>
         public delegate void AssetUploadedCallback(AssetUpload upload);
         /// <summary>
@@ -326,6 +316,14 @@ namespace OpenMetaverse
         /// <param name="simFilename">The filename on the simulator</param>
         /// <param name="viewerFilename">The name of the file the viewer requested</param>
         public delegate void InitiateDownloadCallback(string simFilename, string viewerFilename);
+        /// <summary>
+        /// Fired when a texture is in the process of being downloaded by the TexturePipeline class
+        /// </summary>
+        /// <param name="imageID">The asset textures <see cref="UUID"/></param>
+        /// <param name="recieved">The total number of bytes received</param>
+        /// <param name="total">The total number of bytes expected</param>
+        public delegate void ImageReceiveProgressCallback(UUID imageID, int recieved, int total);
+        
         #endregion Delegates
 
         #region Events
@@ -340,6 +338,8 @@ namespace OpenMetaverse
         public event UploadProgressCallback OnUploadProgress;
         /// <summary>Fired when the simulator sends an InitiateDownloadPacket, used to download terrain .raw files</summary>
         public event InitiateDownloadCallback OnInitiateDownload;
+        /// <summary>Fired when during texture downloads to indicate the progress of the download</summary>
+        public event ImageReceiveProgressCallback OnImageRecieveProgress;
         #endregion Events
 
         /// <summary>Texture download cache</summary>
@@ -779,6 +779,21 @@ namespace OpenMetaverse
         public void RequestImageCancel(UUID textureID)
         {
             Texture.AbortTextureRequest(textureID);
+        }
+
+        /// <summary>
+        /// Lets TexturePipeline class fire the progress event
+        /// </summary>
+        /// <param name="texureID">The texture ID currently being downloaded</param>
+        /// <param name="transferredBytes">the number of bytes transferred</param>
+        /// <param name="totalBytes">the total number of bytes expected</param>
+        internal void FireImageProgressEvent(UUID texureID, int transferredBytes, int totalBytes)
+        {
+            if (OnImageRecieveProgress != null)
+            {
+                try { OnImageRecieveProgress(texureID, transferredBytes, totalBytes); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
         }
 
         #region Helpers
@@ -1258,6 +1273,5 @@ namespace OpenMetaverse
         }
 
         #endregion Xfer Callbacks
-
     }
 }
