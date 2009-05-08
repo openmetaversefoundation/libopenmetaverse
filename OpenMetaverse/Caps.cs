@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using System.Threading;
 using OpenMetaverse.Packets;
@@ -192,6 +193,15 @@ namespace OpenMetaverse
                     _EventQueueCap.OnEvent += EventQueueEventHandler;
                     _EventQueueCap.Start();
                 }
+            }
+            else if (
+                error != null &&
+                error is WebException &&
+                ((WebException)error).Response != null &&
+                ((HttpWebResponse)((WebException)error).Response).StatusCode == HttpStatusCode.NotFound)
+            {
+                // 404 error
+                Logger.Log("Seed capability returned a 404, capability system is aborting", Helpers.LogLevel.Error);
             }
             else
             {

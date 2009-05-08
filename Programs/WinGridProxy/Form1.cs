@@ -989,16 +989,16 @@ namespace WinGridProxy
             return result.ToString();
         }
 
-        private static string InterpretOptions(byte options)
+        private static string InterpretOptions(Header header)
         {
             return "["
-                 + ((options & Helpers.MSG_APPENDED_ACKS) != 0 ? "Ack" : "   ")
+                 + (header.AppendedAcks ? "Ack" : "   ")
                  + " "
-                 + ((options & Helpers.MSG_RESENT) != 0 ? "Res" : "   ")
+                 + (header.Resent ? "Res" : "   ")
                  + " "
-                 + ((options & Helpers.MSG_RELIABLE) != 0 ? "Rel" : "   ")
+                 + (header.Reliable ? "Rel" : "   ")
                  + " "
-                 + ((options & Helpers.MSG_ZEROCODED) != 0 ? "Zer" : "   ")
+                 + (header.Zerocoded ? "Zer" : "   ")
                  + "]"
                  ;
         }
@@ -1018,7 +1018,7 @@ namespace WinGridProxy
             result.AppendLine("[Packet Header]");
             // payload
             result.AppendFormat("Sequence: {0}" + System.Environment.NewLine, packet.Header.Sequence);
-            result.AppendFormat(" Options: {0}" + System.Environment.NewLine, InterpretOptions(packet.Header.Flags));
+            result.AppendFormat(" Options: {0}" + System.Environment.NewLine, InterpretOptions(packet.Header));
             result.AppendLine();
 
             result.AppendLine("[Packet Payload]");

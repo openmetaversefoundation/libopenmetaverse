@@ -785,7 +785,7 @@ namespace OpenMetaverse
                             #region ACK handling
 
                             // Handle appended ACKs
-                            if (packet.Header.AppendedAcks)
+                            if (packet.Header.AppendedAcks && packet.Header.AckList != null)
                             {
                                 lock (simulator.NeedAck)
                                 {

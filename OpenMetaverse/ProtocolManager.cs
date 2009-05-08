@@ -33,7 +33,7 @@ namespace OpenMetaverse
     /// <summary>
     /// 
     /// </summary>
-	public enum PacketFrequency
+	public enum PacketFrequency : byte
 	{
         /// <summary></summary>
 		Low,

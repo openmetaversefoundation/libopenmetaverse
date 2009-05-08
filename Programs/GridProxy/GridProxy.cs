@@ -1294,9 +1294,9 @@ namespace GridProxy
 
                             if (needsCopy)
                             {
-                                byte[] newData = new byte[packet.Header.Data.Length];
-                                Array.Copy(packet.Header.Data, 0, newData, 0, packet.Header.Data.Length);
-                                packet.Header.Data = newData; // FIXME
+                                uint[] newAcks = new uint[packet.Header.AckList.Length];
+                                Array.Copy(packet.Header.AckList, 0, newAcks, 0, newAcks.Length);
+                                packet.Header.AckList = newAcks; // FIXME
                             }
 
                             try
@@ -1304,18 +1304,18 @@ namespace GridProxy
                                 Packet newPacket = callDelegates(incomingDelegates, packet, (IPEndPoint)remoteEndPoint);
                                 if (newPacket == null)
                                 {
-                                    if ((packet.Header.Flags & Helpers.MSG_RELIABLE) != 0)
+                                    if (packet.Header.Reliable)
                                         simProxy.Inject(SpoofAck(oldSequence), Direction.Outgoing);
 
-                                    if ((packet.Header.Flags & Helpers.MSG_APPENDED_ACKS) != 0)
+                                    if (packet.Header.AppendedAcks)
                                         packet = SeparateAck(packet);
                                     else
                                         packet = null;
                                 }
                                 else
                                 {
-                                    bool oldReliable = (packet.Header.Flags & Helpers.MSG_RELIABLE) != 0;
-                                    bool newReliable = (newPacket.Header.Flags & Helpers.MSG_RELIABLE) != 0;
+                                    bool oldReliable = packet.Header.Reliable;
+                                    bool newReliable = newPacket.Header.Reliable;
                                     if (oldReliable && !newReliable)
                                         simProxy.Inject(SpoofAck(oldSequence), Direction.Outgoing);
                                     else if (!oldReliable && newReliable)
@@ -1364,7 +1364,7 @@ namespace GridProxy
         public void SendPacket(Packet packet, IPEndPoint endPoint, bool skipZero)
         {
             byte[] buffer = packet.ToBytes();
-            if (skipZero || (packet.Header.Data[0] & Helpers.MSG_ZEROCODED) == 0)
+            if (skipZero || !packet.Header.Zerocoded)
                 simFacingSocket.SendTo(buffer, buffer.Length, SocketFlags.None, endPoint);
             else
             {
@@ -1412,18 +1412,16 @@ namespace GridProxy
         {
             newPacket.Header.Sequence = oldPacket.Header.Sequence;
 
-            int oldAcks = (oldPacket.Header.Data[0] & Helpers.MSG_APPENDED_ACKS) == 0 ? 0 : oldPacket.Header.AckList.Length;
-            int newAcks = (newPacket.Header.Data[0] & Helpers.MSG_APPENDED_ACKS) == 0 ? 0 : newPacket.Header.AckList.Length;
+            int oldAcks = oldPacket.Header.AppendedAcks ? oldPacket.Header.AckList.Length : 0;
+            int newAcks = newPacket.Header.AppendedAcks ? newPacket.Header.AckList.Length : 0;
 
             if (oldAcks != 0 || newAcks != 0)
             {
-
                 uint[] newAckList = new uint[oldAcks];
                 Array.Copy(oldPacket.Header.AckList, 0, newAckList, 0, oldAcks);
 
                 newPacket.Header.AckList = newAckList;
                 newPacket.Header.AppendedAcks = oldPacket.Header.AppendedAcks;
-
             }
         }
 
@@ -1558,7 +1556,7 @@ namespace GridProxy
                                 if (!incomingSeenAcks.Contains(id))
                                 {
                                     Packet packet = (Packet)incomingAcks[id];
-                                    packet.Header.Data[0] |= Helpers.MSG_RESENT;
+                                    packet.Header.Resent = true;
 #if DEBUG_SEQUENCE
 							Console.WriteLine("RESEND <- " + packet.Type + " #" + packet.Header.Sequence);
 #endif
@@ -1569,7 +1567,7 @@ namespace GridProxy
                                 if (!outgoingSeenAcks.Contains(id))
                                 {
                                     Packet packet = (Packet)outgoingAcks[id];
-                                    packet.Header.Data[0] |= Helpers.MSG_RESENT;
+                                    packet.Header.Resent = true;
 #if DEBUG_SEQUENCE
 							Console.WriteLine("RESEND -> " + packet.Type + " #" + packet.Header.Sequence);
 #endif
@@ -1658,24 +1656,17 @@ namespace GridProxy
                                 Packet newPacket = ((AddressChecker)proxy.outgoingCheckers[packet.Type])(packet);
                                 SwapPacket(packet, newPacket);
                                 packet = newPacket;
-                                length = packet.Header.Data.Length;
                                 needsCopy = false;
                             }
 
                             // pass the packet to any callback delegates
                             if (proxy.outgoingDelegates.ContainsKey(packet.Type))
                             {
-                                /* if (packet.Header.Zerocoded) {
-                                    length = Helpers.ZeroDecode(packet.Header.Data, length, zeroBuffer);
-                                    packet.Header.Data = zeroBuffer;
-                                    needsCopy = true;
-                                } */
-
                                 if (needsCopy)
                                 {
-                                    byte[] newData = new byte[packet.Header.Data.Length];
-                                    Array.Copy(packet.Header.Data, 0, newData, 0, packet.Header.Data.Length);
-                                    packet.Header.Data = newData; // FIXME!!!
+                                    uint[] newAcks = new uint[packet.Header.AckList.Length];
+                                    Array.Copy(packet.Header.AckList, 0, newAcks, 0, newAcks.Length);
+                                    packet.Header.AckList = newAcks; // FIXME
                                 }
 
                                 try
@@ -1683,18 +1674,18 @@ namespace GridProxy
                                     Packet newPacket = proxy.callDelegates(proxy.outgoingDelegates, packet, remoteEndPoint);
                                     if (newPacket == null)
                                     {
-                                        if ((packet.Header.Flags & Helpers.MSG_RELIABLE) != 0)
+                                        if (packet.Header.Reliable)
                                             Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
 
-                                        if ((packet.Header.Flags & Helpers.MSG_APPENDED_ACKS) != 0)
+                                        if (packet.Header.AppendedAcks)
                                             packet = proxy.SeparateAck(packet);
                                         else
                                             packet = null;
                                     }
                                     else
                                     {
-                                        bool oldReliable = (packet.Header.Flags & Helpers.MSG_RELIABLE) != 0;
-                                        bool newReliable = (newPacket.Header.Flags & Helpers.MSG_RELIABLE) != 0;
+                                        bool oldReliable = packet.Header.Reliable;
+                                        bool newReliable = newPacket.Header.Reliable;
                                         if (oldReliable && !newReliable)
                                             Inject(proxy.SpoofAck(oldSequence), Direction.Incoming);
                                         else if (!oldReliable && newReliable)
@@ -1750,7 +1741,7 @@ namespace GridProxy
             public void SendPacket(Packet packet, bool skipZero)
             {
                 byte[] buffer = packet.ToBytes();
-                if (skipZero || (packet.Header.Data[0] & Helpers.MSG_ZEROCODED) == 0)
+                if (skipZero || !packet.Header.Zerocoded)
                     socket.SendTo(buffer, buffer.Length, SocketFlags.None, clientEndPoint);
                 else
                 {
@@ -1783,13 +1774,13 @@ namespace GridProxy
 				Console.WriteLine("INJECT " + (direction == Direction.Incoming ? "<-" : "->") + " " + packet.Type + " #" + packet.Header.Sequence);
 
 #endif
-                if ((packet.Header.Data[0] & Helpers.MSG_RELIABLE) != 0)
+                if (packet.Header.Reliable)
                     WaitForAck(packet, direction);
 
                 if (direction == Direction.Incoming)
                 {
                     byte[] buffer = packet.ToBytes();
-                    if ((packet.Header.Data[0] & Helpers.MSG_ZEROCODED) == 0)
+                    if (!packet.Header.Zerocoded)
                         socket.SendTo(buffer, buffer.Length, SocketFlags.None, clientEndPoint);
                     else
                     {
@@ -1856,13 +1847,12 @@ namespace GridProxy
 
                         SwapPacket(packet, (Packet)newPacket);
                         packet = newPacket;
-                        length = packet.Header.Data.Length;
                         needsCopy = false;
                     }
                 }
 
                 // check for appended ACKs
-                if ((packet.Header.Data[0] & Helpers.MSG_APPENDED_ACKS) != 0)
+                if (packet.Header.AppendedAcks)
                 {
                     int ackCount = packet.Header.AckList.Length;
                     for (int i = 0; i < ackCount; )
@@ -1893,7 +1883,7 @@ namespace GridProxy
                     }
                     if (ackCount == 0)
                     {
-                        packet.Header.Flags ^= Helpers.MSG_APPENDED_ACKS;
+                        packet.Header.AppendedAcks = false;
                         packet.Header.AckList = new uint[0];
                     }
                 }
@@ -1918,7 +1908,7 @@ namespace GridProxy
 #endif
                 packet.Header.Sequence = newSequence;
 
-                if ((packet.Header.Flags & Helpers.MSG_APPENDED_ACKS) != 0)
+                if (packet.Header.AppendedAcks)
                 {
                     int ackCount = packet.Header.AckList.Length;
                     for (int i = 0; i < ackCount; ++i)
@@ -1958,7 +1948,13 @@ namespace GridProxy
                     }
                     //SwapPacket(packet, (Packet)pap);
                     // packet = (Packet)pap;
-                    length = packet.Header.Data.Length;
+                    switch (packet.Header.Frequency)
+                    {
+                        case PacketFrequency.High: length = 7; break;
+                        case PacketFrequency.Medium: length = 8; break;
+                        case PacketFrequency.Low: length = 10; break;
+                    }
+
                     needsCopy = false;
                 }
 

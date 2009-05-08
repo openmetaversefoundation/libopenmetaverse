@@ -676,7 +676,7 @@ namespace OpenMetaverse
                         }
                     }
                 }
-                else if (packet.Header.AckList.Length > 0)
+                else if (packet.Header.AckList != null && packet.Header.AckList.Length > 0)
                 {
                     // Sanity check for ACKS appended on an unreliable packet, this is bad form
                     Logger.Log("Sending appended ACKs on an unreliable packet", Helpers.LogLevel.Warning);
@@ -689,7 +689,7 @@ namespace OpenMetaverse
                 // off it and reinsert them into the outgoing ACK queue under the 
                 // assumption that this packet will continually be rejected from the
                 // server or that the appended ACKs are possibly making the delivery fail
-                if (packet.Header.AckList.Length > 0)
+                if (packet.Header.AckList != null && packet.Header.AckList.Length > 0)
                 {
                     Logger.DebugLog(String.Format("Purging ACKs from packet #{0} ({1}) which will be resent.",
                         packet.Header.Sequence, packet.GetType()));
@@ -704,7 +704,7 @@ namespace OpenMetaverse
                     }
 
                     packet.Header.AppendedAcks = false;
-                    packet.Header.AckList = new uint[0];
+                    packet.Header.AckList = null;
                 }
             }
 

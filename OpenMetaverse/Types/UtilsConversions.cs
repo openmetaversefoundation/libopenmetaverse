@@ -326,6 +326,12 @@ namespace OpenMetaverse
             dest[pos + 1] = (byte)((value >> 8) % 256);
         }
 
+        public static void UInt16ToBytesBig(ushort value, byte[] dest, int pos)
+        {
+            dest[pos] = (byte)((value >> 8) % 256);
+            dest[pos + 1] = (byte)(value % 256);
+        }
+
         /// <summary>
         /// Convert an integer to a byte array in little endian format
         /// </summary>
@@ -384,6 +390,14 @@ namespace OpenMetaverse
             dest[pos + 1] = (byte)((value >> 8) % 256);
             dest[pos + 2] = (byte)((value >> 16) % 256);
             dest[pos + 3] = (byte)((value >> 24) % 256);
+        }
+
+        public static void UIntToBytesBig(uint value, byte[] dest, int pos)
+        {
+            dest[pos] = (byte)((value >> 24) % 256);
+            dest[pos + 1] = (byte)((value >> 16) % 256);
+            dest[pos + 2] = (byte)((value >> 8) % 256);
+            dest[pos + 3] = (byte)(value % 256);
         }
 
         /// <summary>
