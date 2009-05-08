@@ -667,7 +667,6 @@ namespace WinGridProxy
                 enableDisableFilterByNameToolStripMenuItem.Text = String.Format("Capture {0} {1}", listViewSessions.FocusedItem.SubItems[2].Text, strPacketOrMessage);
                 toolStripMenuItemSelectPacketName.Tag = enableDisableFilterByNameToolStripMenuItem.Tag = listViewSessions.FocusedItem.SubItems[2].Text;
 
-
                 toolStripMenuItemSelectPacketName.Text = String.Format("All {0} {1}", listViewSessions.FocusedItem.SubItems[2].Text, strPacketOrMessage);
 
                 enableDisableFilterByNameToolStripMenuItem.Visible =
@@ -715,7 +714,6 @@ namespace WinGridProxy
                 toolStripMenuSessionsRemove.Enabled =
                         selectToolStripMenuItem2.Enabled = false;
             }
-
         }
 
         private void findSessions_Click(object sender, EventArgs e)
@@ -733,7 +731,6 @@ namespace WinGridProxy
                 sThread.Name = "Search";
                 sThread.Start();
             }
-
         }
 
         // Enable Inject button if box contains text
@@ -764,6 +761,7 @@ namespace WinGridProxy
                 {
                     if(MessageBox.Show("Would you like to apply these settings to the currention session list?", "Apply Filter", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == System.Windows.Forms.DialogResult.Yes)
                     {
+                        listViewSessions.BeginUpdate();
                         foreach(ListViewItem item in listViewSessions.Items)
                         {
                             ListViewItem found = FindListViewItem(listViewPacketFilters, item.SubItems[2].Text, false);
@@ -772,8 +770,8 @@ namespace WinGridProxy
 
                             if(found != null && !found.Checked)
                                 listViewSessions.Items.Remove(item);
-
                         }
+                        listViewSessions.EndUpdate();
                     }
                 }
             }
@@ -788,7 +786,6 @@ namespace WinGridProxy
         {
             proxy.AddUDPDelegate(packetTypeFromName(e.Item.Text), e.Item.Checked);
         }
-
 
         private void checkBoxCheckallCaps_CheckedChanged(object sender, EventArgs e)
         {
@@ -815,12 +812,8 @@ namespace WinGridProxy
 
         private void saveSessionArchiveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Stream myStream;
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                if ((myStream = saveFileDialog1.OpenFile()) != null)
-                {
-                    StreamWriter wText = new StreamWriter(myStream);
                     OSDMap map = new OSDMap(1);
                     OSDArray sessionArray = new OSDArray();
                     foreach (ListViewItem item in listViewSessions.Items)
@@ -834,33 +827,35 @@ namespace WinGridProxy
                         session["size"] = OSD.FromString(item.SubItems[3].Text);
                         session["host"] = OSD.FromString(item.SubItems[4].Text);
 
-
-
                         try
                         {
                             session["tag"] = OSD.FromBinary((byte[])item.Tag);
                         }
-                        catch (Exception ex)
+                        catch 
                         {
-                            Console.WriteLine(ex.Message + ": " + ex.StackTrace);
                             session["tag"] = OSD.FromBinary(Utils.EmptyBytes);
                         }
-
-                        sessionArray.Add(session);
+                        finally
+                        {
+                            sessionArray.Add(session);
+                        }
                     }
 
                     map["sessions"] = sessionArray;
-                    wText.Write(map.ToString());
-                    wText.Flush();
 
-                    myStream.Close();
+                try
+                {
+                    File.WriteAllText(saveFileDialog1.FileName, map.ToString());
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Exception occurred trying to save session archive: " + ex);
                 }
             }
         }
 
         private void loadSessionArchiveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 OSD osd = OSDParser.DeserializeLLSDNotation(File.ReadAllText(openFileDialog1.FileName));
@@ -891,7 +886,6 @@ namespace WinGridProxy
         private void listViewFilterSorter_ColumnClick(object sender, ColumnClickEventArgs e)
         {
             ListView lv = (ListView)sender;
-            //this.listViewPacketFilters.ListViewItemSorter = new ListViewItemComparer(e.Column);
             ListViewItemComparer columnSorter = new ListViewItemComparer();
             columnSorter.column = e.Column;
 
@@ -905,7 +899,7 @@ namespace WinGridProxy
 
         private void exitToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            // warn if connected!
+            // TODO: warn if client is connected!
             this.Close();
         }
 
@@ -947,7 +941,6 @@ namespace WinGridProxy
 
                         foreach (FieldInfo nestedField in nestedArrayObject.GetType().GetFields())
                         {
-                            //var nt = nestedField.GetValue(nestedArrayObject).GetType().Name;
                             if (nestedField.FieldType.IsEnum)
                             {
                                 result.AppendFormat("{0, 30}: {1} {2} ({3})" + System.Environment.NewLine,
@@ -1015,6 +1008,8 @@ namespace WinGridProxy
         /// </summary>
         /// <param name="packet">The Packet</param>
         /// <returns>A formatted string of values of the nested items in the Packet object</returns>
+        /// <remarks>TODO: This is overly complex. Static helpers should be created to clean this up and it
+        /// should be made generic enough to decode IMessage objects too.</remarks>
         public static string PacketToString(Packet packet)
         {
             StringBuilder result = new StringBuilder();
@@ -1048,12 +1043,10 @@ namespace WinGridProxy
                         {
                             if (propertyInfo.GetValue(nestedArrayRecord, null).GetType() == typeof(byte[]))
                             {
-
                                 result.AppendFormat("{0, 30}: {1}" + Environment.NewLine,
-                            propertyInfo.Name, Utils.BytesToString((byte[])propertyInfo.GetValue(nestedArrayRecord, null)));
-
+                                    propertyInfo.Name, 
+                                    Utils.BytesToString((byte[])propertyInfo.GetValue(nestedArrayRecord, null)));
                             }
-
                         }
 
                         // handle fields

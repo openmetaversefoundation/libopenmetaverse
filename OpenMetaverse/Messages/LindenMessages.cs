@@ -361,7 +361,10 @@ namespace OpenMetaverse.Messages.Linden
             requestDataMap["ReportType"] = OSD.FromInteger(this.ReporType);
             requestDataMap["RequestFlags"] = OSD.FromInteger(this.RequestFlags);
             requestDataMap["TotalObjectCount"] = OSD.FromInteger(this.TotalObjectCount);
-            map["RequestData"] = requestDataMap;
+            
+            OSDArray requestDatArray = new OSDArray();
+            requestDatArray.Add(requestDataMap);
+            map["RequestData"] = requestDatArray;
 
             OSDArray reportDataArray = new OSDArray();
             OSDArray dataExtendedArray = new OSDArray();
@@ -385,7 +388,7 @@ namespace OpenMetaverse.Messages.Linden
             }
 
             map["ReportData"] = reportDataArray;
-            map["ExtendedData"] = dataExtendedArray;
+            map["DataExtended"] = dataExtendedArray;
 
             return map;
         }
@@ -393,13 +396,15 @@ namespace OpenMetaverse.Messages.Linden
         public void Deserialize(OSDMap map)
         {
             
-            OSDMap requestDataMap = (OSDMap)map["RequestData"];
-            this.ReporType = requestDataMap["ReportType"].AsInteger();
-            this.RequestFlags = requestDataMap["RequestFlags"].AsInteger();
-            this.TotalObjectCount = requestDataMap["TotalObjectCount"].AsInteger();
+            OSDArray requestDataArray = (OSDArray)map["RequestData"];
+            OSDMap requestMap = (OSDMap)requestDataArray[0];
+            
+            this.ReporType = requestMap["ReportType"].AsInteger();
+            this.RequestFlags = requestMap["RequestFlags"].AsInteger();
+            this.TotalObjectCount = requestMap["TotalObjectCount"].AsInteger();
 
             OSDArray dataArray = (OSDArray)map["ReportData"];
-            OSDArray dataExtendedArray = (OSDArray)map["ExtendedData"];
+            OSDArray dataExtendedArray = (OSDArray)map["DataExtended"];
 
             ReportDataBlocks = new ReportDataBlock[dataArray.Count];
             for (int i = 0; i < dataArray.Count; i++)
@@ -417,7 +422,7 @@ namespace OpenMetaverse.Messages.Linden
                 block.TaskLocalID = blockMap["TaskLocalID"].AsUInteger();
                 block.TaskName = blockMap["TaskName"].AsString();
                 block.MonoScore = (float)extMap["MonoScore"].AsReal();
-                block.TimeStamp = extMap["TimeStamp"].AsDate();
+                block.TimeStamp = Utils.UnixTimeToDateTime(extMap["TimeStamp"].AsUInteger());
 
                 ReportDataBlocks[i] = block;
             }
