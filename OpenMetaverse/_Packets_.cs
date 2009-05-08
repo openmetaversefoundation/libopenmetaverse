@@ -184,6 +184,7 @@ namespace OpenMetaverse.Packets
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="header"></param>
         /// <param name="bytes"></param>
         /// <param name="packetEnd"></param>
         static void CreateAckList(ref Header header, byte[] bytes, ref int packetEnd)
@@ -234,6 +235,7 @@ namespace OpenMetaverse.Packets
         /// serialized block when the call returns</param>
         public abstract void ToBytes(byte[] bytes, ref int i);
     }
+
     public enum PacketType
     {
         /// <summary>A generic value, not an actual packet type</summary>

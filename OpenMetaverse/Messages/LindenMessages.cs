@@ -1841,8 +1841,6 @@ namespace OpenMetaverse.Messages.Linden
 
             map.Add("agent_updates", agent_updatesMap);
 
-        //    OSDMap updates = new OSDMap();
-
             map["session_id"] = OSD.FromUUID(SessionID);
 
             map["message"] = OSD.FromString(Message);

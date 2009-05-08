@@ -692,8 +692,8 @@ namespace OpenMetaverse
         private void OutgoingPacketHandler()
         {
             OutgoingPacket outgoingPacket = null;
-            Simulator simulator = null;
-            Packet packet = null;
+            Simulator simulator;
+            
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 
             while (connected)
@@ -701,8 +701,7 @@ namespace OpenMetaverse
                 if (PacketOutbox.Dequeue(100, ref outgoingPacket))
                 {
                     simulator = outgoingPacket.Simulator;
-                    packet = outgoingPacket.Packet;
-
+                    
                     // Very primitive rate limiting, keeps a fixed buffer of time between each packet
                     stopwatch.Stop();
                     if (stopwatch.ElapsedMilliseconds < 10)

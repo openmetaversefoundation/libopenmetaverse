@@ -88,7 +88,7 @@ namespace OpenMetaverse
         public string Password;
         /// <summary>The agents starting location once logged in</summary>
         /// <remarks>Either "last", "home", or a string encoded URI 
-        /// containing the simulator name and x/y/z coordinates e.g: uri:hooper&128&152&17</remarks>
+        /// containing the simulator name and x/y/z coordinates e.g: uri:hooper&amp;128&amp;152&amp;17</remarks>
         public string Start;
         /// <summary>A string containing the client software channel information</summary>
         /// <example>Second Life Release</example>
