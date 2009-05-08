@@ -623,7 +623,7 @@ namespace OpenMetaverse
         {
             OSD osd;
             if (reply.TryGetValue(key, out osd))
-                return (uint)osd.AsInteger();
+                return osd.AsUInteger();
             else
                 return 0;
         }

@@ -158,7 +158,7 @@ namespace OpenMetaverse.TestClient
                     im.Dialog == InstantMessageDialog.MessageFromAgent ||
                     im.Dialog == InstantMessageDialog.MessageFromObject)
                 {
-                    ClientManagerRef.ClientManager.DoCommandAll(im.Message, im.FromAgentID);
+                    ClientManager.Instance.DoCommandAll(im.Message, im.FromAgentID);
                 }
             }
             else

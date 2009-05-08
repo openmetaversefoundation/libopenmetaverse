@@ -23,7 +23,6 @@ namespace OpenMetaverse.TestClient
         {
             Arguments arguments = new Arguments(args);
 
-            ClientManager manager;
             List<LoginDetails> accounts = new List<LoginDetails>();
             LoginDetails account;
             bool groupCommands = false;
@@ -149,13 +148,13 @@ namespace OpenMetaverse.TestClient
             }
 
             // Login the accounts and run the input loop
-            manager = new ClientManager(accounts, getTextures);
+            ClientManager.Instance.Start(accounts, getTextures);
 
             if (!String.IsNullOrEmpty(scriptFile))
-                manager.DoCommandAll("script " + scriptFile, UUID.Zero);
+                ClientManager.Instance.DoCommandAll("script " + scriptFile, UUID.Zero);
 
             // Then Run the ClientManager normally
-            manager.Run();
+            ClientManager.Instance.Run();
         }
     }
 }
