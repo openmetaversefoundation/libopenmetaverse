@@ -24,10 +24,6 @@ namespace OpenMetaverse.TestClient
         // Shell-like inventory commands need to be aware of the 'current' inventory folder.
         public InventoryFolder CurrentDirectory = null;
 
-        private Quaternion bodyRotation = Quaternion.Identity;
-        private Vector3 forward = new Vector3(0, 0.9999f, 0);
-        private Vector3 left = new Vector3(0.9999f, 0, 0);
-        private Vector3 up = new Vector3(0, 0, 0.9999f);
         private System.Timers.Timer updateTimer;
 
         /// <summary>
@@ -104,25 +100,6 @@ namespace OpenMetaverse.TestClient
             if (!Commands.ContainsKey(command.Name.ToLower()))
             {
                 Commands.Add(command.Name.ToLower(), command);
-            }
-        }
-
-        //breaks up large responses to deal with the max IM size
-        private void SendResponseIM(GridClient client, UUID fromAgentID, string data)
-        {
-            for (int i = 0; i < data.Length; i += 1024)
-            {
-                int y;
-                if ((i + 1023) > data.Length)
-                {
-                    y = data.Length - i;
-                }
-                else
-                {
-                    y = 1023;
-                }
-                string message = data.Substring(i, y);
-                client.Self.InstantMessage(fromAgentID, message);
             }
         }
 

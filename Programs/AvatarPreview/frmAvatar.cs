@@ -64,7 +64,7 @@ namespace AvatarPreview
                         string type = meshNode.Attributes.GetNamedItem("type").Value;
                         int lod = Int32.Parse(meshNode.Attributes.GetNamedItem("lod").Value);
                         string fileName = meshNode.Attributes.GetNamedItem("file_name").Value;
-                        string minPixelWidth = meshNode.Attributes.GetNamedItem("min_pixel_width").Value;
+                        //string minPixelWidth = meshNode.Attributes.GetNamedItem("min_pixel_width").Value;
 
                         // Mash up the filename with the current path
                         fileName = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(dialog.FileName), fileName);
@@ -443,23 +443,6 @@ namespace AvatarPreview
             }
 
             return paramValues;
-        }
-
-        private static System.Drawing.Image ConvertToRGB(System.Drawing.Image image)
-        {
-            int width = image.Width;
-            int height = image.Height;
-
-            Bitmap noAlpha = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-            Graphics graphics = Graphics.FromImage(noAlpha);
-            graphics.DrawImage(image, 0, 0, width, height);
-
-            return noAlpha;
-        }
-
-        private static bool IsPowerOfTwo(uint n)
-        {
-            return (n & (n - 1)) == 0 && n != 0;
         }
     }
 }

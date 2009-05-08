@@ -75,32 +75,6 @@ namespace OpenMetaverse.TestClient
             return false;
         }
 
-        bool Follow(UUID id)
-        {
-            lock (Client.Network.Simulators)
-            {
-                for (int i = 0; i < Client.Network.Simulators.Count; i++)
-                {
-                    Avatar target = Client.Network.Simulators[i].ObjectsAvatars.Find(
-                        delegate(Avatar avatar)
-                        {
-                            return avatar.ID == id;
-                        }
-                    );
-
-                    if (target != null)
-                    {
-                        targetLocalID = target.LocalID;
-                        Active = true;
-                        return true;
-                    }
-                }
-            }
-
-            Active = false;
-            return false;
-        }
-
 		public override void Think()
 		{
             if (Active)

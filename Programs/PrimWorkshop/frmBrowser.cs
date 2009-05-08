@@ -50,7 +50,7 @@ namespace PrimWorkshop
 
         //
         Vector3 PivotPosition = Vector3.Zero;
-        bool Pivoting = false;
+        private bool Pivoting;
         Point LastPivot;
 
         //
@@ -693,7 +693,8 @@ namespace PrimWorkshop
                     // Determine the total height of the object
                     float minHeight = Single.MaxValue;
                     float maxHeight = Single.MinValue;
-                    float totalHeight = 0f;
+
+                    //float totalHeight = 0f;
 
                     for (int i = 0; i < primList.Count; i++)
                     {
@@ -711,7 +712,7 @@ namespace PrimWorkshop
                         if (bottom < minHeight) minHeight = bottom;
                     }
 
-                    totalHeight = maxHeight - minHeight;
+                    //totalHeight = maxHeight - minHeight;
 
                     // Create a progress bar for the import process
                     ProgressBar prog = new ProgressBar();
@@ -1227,15 +1228,15 @@ namespace PrimWorkshop
             }
         }
 
-        int[] CubeMapDefines = new int[]
-        {
-            Gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
-            Gl.GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB,
-            Gl.GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB,
-            Gl.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB,
-            Gl.GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB,
-            Gl.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB
-        };
+        //int[] CubeMapDefines = new int[]
+        //{
+        //    Gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
+        //    Gl.GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB,
+        //    Gl.GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB,
+        //    Gl.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB,
+        //    Gl.GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB,
+        //    Gl.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB
+        //};
 
         private void RenderPrims()
         {
@@ -1486,49 +1487,49 @@ StartRender:
             }
         }
 
-        private void TextureDownloader_OnDownloadProgress(UUID image, int recieved, int total)
-        {
-            lock (DownloadList)
-            {
-                GlacialComponents.Controls.GLItem item;
-                if (DownloadList.TryGetValue(image, out item))
-                {
-                    // Update an existing item
-                    BeginInvoke(
-                        (MethodInvoker)delegate()
-                        {
-                            ProgressBar prog = (ProgressBar)item.SubItems[1].Control;
-                            if (total >= recieved)
-                                prog.Value = (int)Math.Round((((double)recieved / (double)total) * 100.0d));
-                        });
-                }
-                else
-                {
-                    // Progress bar
-                    ProgressBar prog = new ProgressBar();
-                    prog.Minimum = 0;
-                    prog.Maximum = 100;
-                    if (total >= recieved)
-                        prog.Value = (int)Math.Round((((double)recieved / (double)total) * 100.0d));
-                    else
-                        prog.Value = 0;
+        //private void TextureDownloader_OnDownloadProgress(UUID image, int recieved, int total)
+        //{
+        //    lock (DownloadList)
+        //    {
+        //        GlacialComponents.Controls.GLItem item;
+        //        if (DownloadList.TryGetValue(image, out item))
+        //        {
+        //            // Update an existing item
+        //            BeginInvoke(
+        //                (MethodInvoker)delegate()
+        //                {
+        //                    ProgressBar prog = (ProgressBar)item.SubItems[1].Control;
+        //                    if (total >= recieved)
+        //                        prog.Value = (int)Math.Round((((double)recieved / (double)total) * 100.0d));
+        //                });
+        //        }
+        //        else
+        //        {
+        //            // Progress bar
+        //            ProgressBar prog = new ProgressBar();
+        //            prog.Minimum = 0;
+        //            prog.Maximum = 100;
+        //            if (total >= recieved)
+        //                prog.Value = (int)Math.Round((((double)recieved / (double)total) * 100.0d));
+        //            else
+        //                prog.Value = 0;
 
-                    // List item
-                    item = new GlacialComponents.Controls.GLItem();
-                    item.SubItems[0].Text = image.ToString();
-                    item.SubItems[1].Control = prog;
+        //            // List item
+        //            item = new GlacialComponents.Controls.GLItem();
+        //            item.SubItems[0].Text = image.ToString();
+        //            item.SubItems[1].Control = prog;
 
-                    DownloadList[image] = item;
+        //            DownloadList[image] = item;
 
-                    BeginInvoke(
-                        (MethodInvoker)delegate()
-                        {
-                            lstDownloads.Items.Add(item);
-                            lstDownloads.Invalidate();
-                        });
-                }
-            }
-        }
+        //            BeginInvoke(
+        //                (MethodInvoker)delegate()
+        //                {
+        //                    lstDownloads.Items.Add(item);
+        //                    lstDownloads.Invalidate();
+        //                });
+        //        }
+        //    }
+        //}
 
         #endregion Texture Downloading
 

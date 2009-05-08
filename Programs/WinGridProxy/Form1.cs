@@ -75,7 +75,7 @@ namespace WinGridProxy
 
             // populate the listen box with IPs
             IPHostEntry iphostentry = Dns.GetHostByName(Dns.GetHostName());
-            foreach(IPAddress address in iphostentry.AddressList)
+            foreach (IPAddress address in iphostentry.AddressList)
                 comboBoxListenAddress.Items.Add(address.ToString());
 
 
@@ -117,7 +117,7 @@ namespace WinGridProxy
             {
 
                 ListViewItem foundCap = FindListViewItem(listViewMessageFilters, req.Info.CapType, false);
-                
+
                 if (foundCap == null)
                 {
                     ListViewItem addedItem = listViewMessageFilters.Items.Add(new ListViewItem(req.Info.CapType, new ListViewGroup("EventQueue Messages")));
@@ -181,7 +181,7 @@ namespace WinGridProxy
                 PacketCounter++;
 
                 string loginType = (request is XmlRpcRequest) ? "Login Request" : "Login Response";
-                ListViewItem session = new ListViewItem(new string[] { PacketCounter.ToString(), "HTTPS", loginType, request.ToString().Length.ToString(), comboBoxLoginURL.Text, "xml-rpc"});
+                ListViewItem session = new ListViewItem(new string[] { PacketCounter.ToString(), "HTTPS", loginType, request.ToString().Length.ToString(), comboBoxLoginURL.Text, "xml-rpc" });
                 session.Tag = request;
                 session.ImageIndex = (request is XmlRpcRequest) ? 1 : 0;
 
@@ -213,8 +213,8 @@ namespace WinGridProxy
                     PacketsOutBytes += packet.Length;
                 }
 
-                
-                ListViewItem session = new ListViewItem(new string[] { PacketCounter.ToString(), "UDP", packet.Type.ToString(), packet.Length.ToString(), endpoint.ToString(), "binary udp"});
+
+                ListViewItem session = new ListViewItem(new string[] { PacketCounter.ToString(), "UDP", packet.Type.ToString(), packet.Length.ToString(), endpoint.ToString(), "binary udp" });
                 session.Tag = packet;
                 session.ImageIndex = (direction == Direction.Incoming) ? 0 : 1;
                 listViewSessions.Items.Add(session);
@@ -243,7 +243,7 @@ namespace WinGridProxy
 
                     int size = 0;
                     string cType = String.Empty;
-                    if(req.RawRequest != null)
+                    if (req.RawRequest != null)
                     {
                         size += req.RawRequest.Length;
                         cType = req.RequestHeaders.Get("Content-Type"); //req.RequestHeaders["Content-Type"];
@@ -406,8 +406,8 @@ namespace WinGridProxy
                         richTextBoxDecodedRequest.Text = String.Empty;
                         richTextBoxRawRequest.Text = String.Empty;
                         hexBoxRequest.ByteProvider = null;
-                    } 
-                    else 
+                    }
+                    else
                     {
                         richTextBoxDecodedRequest.Text = TagToString(tag, listViewSessions.FocusedItem.SubItems[2].Text);
                         richTextBoxRawRequest.Text = TagToString(tag, listViewSessions.FocusedItem.SubItems[2].Text);
@@ -418,7 +418,7 @@ namespace WinGridProxy
                         richTextBoxRawResponse.Text = String.Empty;
                         hexBoxResponse.ByteProvider = null;
                     }
-                    
+
                 }
                 else if (tag is CapsRequest)
                 {
@@ -757,18 +757,18 @@ namespace WinGridProxy
             if (openFileDialog2.ShowDialog() == DialogResult.OK)
             {
                 RestoreSavedSettings(openFileDialog2.FileName);
-                if(listViewSessions.Items.Count > 0)
+                if (listViewSessions.Items.Count > 0)
                 {
-                    if(MessageBox.Show("Would you like to apply these settings to the currention session list?", "Apply Filter", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == System.Windows.Forms.DialogResult.Yes)
+                    if (MessageBox.Show("Would you like to apply these settings to the currention session list?", "Apply Filter", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == System.Windows.Forms.DialogResult.Yes)
                     {
                         listViewSessions.BeginUpdate();
-                        foreach(ListViewItem item in listViewSessions.Items)
+                        foreach (ListViewItem item in listViewSessions.Items)
                         {
                             ListViewItem found = FindListViewItem(listViewPacketFilters, item.SubItems[2].Text, false);
                             if (found == null)
                                 found = FindListViewItem(listViewMessageFilters, item.SubItems[2].Text, false);
 
-                            if(found != null && !found.Checked)
+                            if (found != null && !found.Checked)
                                 listViewSessions.Items.Remove(item);
                         }
                         listViewSessions.EndUpdate();
@@ -814,34 +814,34 @@ namespace WinGridProxy
         {
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                    OSDMap map = new OSDMap(1);
-                    OSDArray sessionArray = new OSDArray();
-                    foreach (ListViewItem item in listViewSessions.Items)
+                OSDMap map = new OSDMap(1);
+                OSDArray sessionArray = new OSDArray();
+                foreach (ListViewItem item in listViewSessions.Items)
+                {
+                    OSDMap session = new OSDMap();
+                    session["name"] = OSD.FromString(item.Name);
+                    session["image_index"] = OSD.FromInteger(item.ImageIndex);
+                    session["id"] = OSD.FromString(item.SubItems[0].Text);
+                    session["protocol"] = OSD.FromString(item.SubItems[1].Text);
+                    session["packet"] = OSD.FromString(item.SubItems[2].Text);
+                    session["size"] = OSD.FromString(item.SubItems[3].Text);
+                    session["host"] = OSD.FromString(item.SubItems[4].Text);
+
+                    try
                     {
-                        OSDMap session = new OSDMap();
-                        session["name"] = OSD.FromString(item.Name);
-                        session["image_index"] = OSD.FromInteger(item.ImageIndex);
-                        session["id"] = OSD.FromString(item.SubItems[0].Text);
-                        session["protocol"] = OSD.FromString(item.SubItems[1].Text);
-                        session["packet"] = OSD.FromString(item.SubItems[2].Text);
-                        session["size"] = OSD.FromString(item.SubItems[3].Text);
-                        session["host"] = OSD.FromString(item.SubItems[4].Text);
-
-                        try
-                        {
-                            session["tag"] = OSD.FromBinary((byte[])item.Tag);
-                        }
-                        catch 
-                        {
-                            session["tag"] = OSD.FromBinary(Utils.EmptyBytes);
-                        }
-                        finally
-                        {
-                            sessionArray.Add(session);
-                        }
+                        session["tag"] = OSD.FromBinary((byte[])item.Tag);
                     }
+                    catch
+                    {
+                        session["tag"] = OSD.FromBinary(Utils.EmptyBytes);
+                    }
+                    finally
+                    {
+                        sessionArray.Add(session);
+                    }
+                }
 
-                    map["sessions"] = sessionArray;
+                map["sessions"] = sessionArray;
 
                 try
                 {
@@ -1044,7 +1044,7 @@ namespace WinGridProxy
                             if (propertyInfo.GetValue(nestedArrayRecord, null).GetType() == typeof(byte[]))
                             {
                                 result.AppendFormat("{0, 30}: {1}" + Environment.NewLine,
-                                    propertyInfo.Name, 
+                                    propertyInfo.Name,
                                     Utils.BytesToString((byte[])propertyInfo.GetValue(nestedArrayRecord, null)));
                             }
                         }
@@ -1101,12 +1101,12 @@ namespace WinGridProxy
                                     if (bytes.Length == 1)
                                     {
                                         bbDecoded = String.Format("{0}", bytes[0]);
-                                    } 
+                                    }
                                     else if (bytes.Length == 17)
                                     {
-                                        bbDecoded = String.Format("{0} {1} ({2})", 
-                                            new UUID(bytes, 1), 
-                                            bytes[0], 
+                                        bbDecoded = String.Format("{0} {1} ({2})",
+                                            new UUID(bytes, 1),
+                                            bytes[0],
                                             (AssetType)bytes[0]);
                                     }
                                     else
@@ -1242,6 +1242,7 @@ namespace WinGridProxy
                     try
                     {
                         pType = packetTypeFromName(name);
+
                         ListViewItem found = listViewPacketFilters.FindItemWithText(name);
                         if (!String.IsNullOrEmpty(name) && found == null)
                         {

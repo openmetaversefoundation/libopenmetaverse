@@ -678,8 +678,7 @@ namespace OpenMetaverse
                         resetEvents[task.RequestSlot].Set(); // free up request slot
                         _Client.Assets.Cache.SaveImageToCache(task.RequestID, task.Transfer.AssetData);
 
-                        AssetTexture asset = new AssetTexture(task.RequestID, task.Transfer.AssetData);
-                        task.Callback(TextureRequestState.Finished, /*task.Transfer,*/ new AssetTexture(task.RequestID, task.Transfer.AssetData));
+                        task.Callback(TextureRequestState.Finished, new AssetTexture(task.RequestID, task.Transfer.AssetData));
                     }
                     else
                     {

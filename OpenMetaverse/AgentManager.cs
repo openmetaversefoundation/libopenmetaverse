@@ -1522,8 +1522,6 @@ namespace OpenMetaverse
 
                 startConference.SessionID = tmp_session_id;
 
-                byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(startConference.Serialize());
-
                 CapsClient request = new CapsClient(url);
                 request.BeginGetResponse(startConference.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
             }

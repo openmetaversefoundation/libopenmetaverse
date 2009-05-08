@@ -50,7 +50,6 @@ namespace OpenMetaverse.Messages.Linden
 
         public OSDMap Serialize()
         {
-
             OSDMap map = new OSDMap(1);
 
             OSDArray infoArray = new OSDArray(1);
@@ -442,15 +441,9 @@ namespace OpenMetaverse.Messages.Linden
                 dataMap["OnlineStatus"] = OSD.FromBoolean(PrimOwnersBlock[i].OnlineStatus);
                 dataArray.Add(dataMap);
 
-                /* If the tmestamp is null, don't create the DataExtended map, this 
-                 * is usually when the parcel contains no primitives, or the agent does not have
-                 * permissions to see ownership information */
-                if (PrimOwnersBlock[i].TimeStamp != null)
-                {
-                    OSDMap dataExtendedMap = new OSDMap(1);
-                    dataExtendedMap["TimeStamp"] = OSD.FromDate(PrimOwnersBlock[i].TimeStamp);
-                    dataExtendedArray.Add(dataExtendedMap);
-                }
+                OSDMap dataExtendedMap = new OSDMap(1);
+                dataExtendedMap["TimeStamp"] = OSD.FromDate(PrimOwnersBlock[i].TimeStamp);
+                dataExtendedArray.Add(dataExtendedMap);
             }
 
             OSDMap map = new OSDMap();
@@ -1848,7 +1841,7 @@ namespace OpenMetaverse.Messages.Linden
 
             map.Add("agent_updates", agent_updatesMap);
 
-            OSDMap updates = new OSDMap();
+        //    OSDMap updates = new OSDMap();
 
             map["session_id"] = OSD.FromUUID(SessionID);
 
