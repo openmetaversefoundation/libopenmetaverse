@@ -48,6 +48,7 @@ namespace OpenMetaverse.TestClient
 
         public bool Running = true;
         public bool GetTextures = false;
+        public volatile int PendingLogins = 0;
 
         ClientManager()
         {
@@ -63,7 +64,6 @@ namespace OpenMetaverse.TestClient
 
         public TestClient Login(string[] args)
         {
-
             if (args.Length < 3)
             {
                 Console.WriteLine("Usage: login firstname lastname password [simname] [login server url]");
@@ -112,11 +112,6 @@ namespace OpenMetaverse.TestClient
             return Login(account);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="account"></param>
-        /// <returns></returns>
         public TestClient Login(LoginDetails account)
         {
             // Check if this client is already logged in
@@ -128,6 +123,8 @@ namespace OpenMetaverse.TestClient
                     break;
                 }
             }
+
+            ++PendingLogins;
 
             TestClient client = new TestClient(this);
             client.Network.OnLogin +=
@@ -164,11 +161,13 @@ namespace OpenMetaverse.TestClient
                         }
 
                         Logger.Log("Logged in " + client.ToString(), Helpers.LogLevel.Info);
+                        --PendingLogins;
                     }
                     else if (login == LoginStatus.Failed)
                     {
                         Logger.Log("Failed to login " + account.FirstName + " " + account.LastName + ": " +
                             client.Network.LoginMessage, Helpers.LogLevel.Warning);
+                        --PendingLogins;
                     }
                 };
 
@@ -282,6 +281,19 @@ namespace OpenMetaverse.TestClient
                 // No reason to pass this to all bots, and we also want to allow it when there are no bots
                 ScriptCommand command = new ScriptCommand(null);
                 Logger.Log(command.Execute(args, UUID.Zero), Helpers.LogLevel.Info);
+            }
+            else if (firstToken == "waitforlogin")
+            {
+                // Special exception to allow this to run before any bots have logged in
+                if (ClientManager.Instance.PendingLogins > 0)
+                {
+                    WaitForLoginCommand command = new WaitForLoginCommand(null);
+                    Logger.Log(command.Execute(args, UUID.Zero), Helpers.LogLevel.Info);
+                }
+                else
+                {
+                    Logger.Log("No pending logins", Helpers.LogLevel.Info);
+                }
             }
             else
             {
