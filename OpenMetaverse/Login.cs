@@ -298,6 +298,7 @@ namespace OpenMetaverse
                 SecureSessionID = ParseUUID("secure_session_id", reply);
                 FirstName = ParseString("first_name", reply).Trim('"');
                 LastName = ParseString("last_name", reply).Trim('"');
+                // "first_login" for brand new accounts
                 StartLocation = ParseString("start_location", reply);
                 AgentAccess = ParseString("agent_access", reply);
                 LookAt = ParseVector3("look_at", reply);
@@ -319,24 +320,28 @@ namespace OpenMetaverse
 
             // Home
             OSDMap home = null;
-            OSD osdHome = OSDParser.DeserializeLLSDNotation(reply["home"].ToString());
-
-            if (osdHome.Type == OSDType.Map)
+            if (reply.ContainsKey("home"))
             {
-                home = (OSDMap)osdHome;
+                OSD osdHome = OSDParser.DeserializeLLSDNotation(reply["home"].ToString());
 
-                OSD homeRegion;
-                if (home.TryGetValue("region_handle", out homeRegion) && homeRegion.Type == OSDType.Array)
+                if (osdHome.Type == OSDType.Map)
                 {
-                    OSDArray homeArray = (OSDArray)homeRegion;
-                    if (homeArray.Count == 2)
-                        HomeRegion = Utils.UIntsToLong((uint)homeArray[0].AsInteger(), (uint)homeArray[1].AsInteger());
-                    else
-                        HomeRegion = 0;
-                }
+                    home = (OSDMap) osdHome;
 
-                HomePosition = ParseVector3("position", home);
-                HomeLookAt = ParseVector3("look_at", home);
+                    OSD homeRegion;
+                    if (home.TryGetValue("region_handle", out homeRegion) && homeRegion.Type == OSDType.Array)
+                    {
+                        OSDArray homeArray = (OSDArray) homeRegion;
+                        if (homeArray.Count == 2)
+                            HomeRegion = Utils.UIntsToLong((uint) homeArray[0].AsInteger(),
+                                                           (uint) homeArray[1].AsInteger());
+                        else
+                            HomeRegion = 0;
+                    }
+
+                    HomePosition = ParseVector3("position", home);
+                    HomeLookAt = ParseVector3("look_at", home);
+                }
             }
             else
             {

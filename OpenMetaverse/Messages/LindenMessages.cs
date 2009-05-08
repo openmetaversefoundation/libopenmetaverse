@@ -291,54 +291,10 @@ namespace OpenMetaverse.Messages.Linden
 
     public class LandStatReplyMessage : IMessage
     {
-
-        /* Single map
-         'RequestData':
-        [        
-            {
-            'ReportType':b64"AAAAAA=="
-            ,
-            'RequestFlags':b64"AAAABA=="
-            ,
-            'TotalObjectCount':b64"AAABbw=="
-            }
-        ]
-         */
         public int ReporType;
         public int RequestFlags;
         public int TotalObjectCount;
 
-        /*
-          'DataExtended':
-            [        
-                {
-                'MonoScore':r0.0053327744826674461
-                ,
-                'TimeStamp':b64"Seo9lw=="
-                }
-            ]
-            ,
-         'ReportData':
-            [        
-                {
-                'LocationX':r34.764884948730469
-                ,
-                'LocationY':r86.75262451171875
-                ,
-                'LocationZ':r26.555828094482422
-                ,
-                'OwnerName':'Preostan Scribe'
-                ,
-                'Score':r0.0023237180430442095
-                ,
-                'TaskID':u1623b11b-127f-a170-da37-21523b9967a1
-                ,
-                'TaskLocalID':b64"BhZW4g=="
-                ,
-                'TaskName':'Dutch Door Upper Half'
-                }
-            ]
-      ,*/
         public class ReportDataBlock
         {
             public Vector3 Location;
