@@ -53,6 +53,8 @@ namespace OpenMetaverse
         /// <summary>Upper/lower texture boundaries for each corner of the sim</summary>
         public GroundTextureHeightSettings GroundTextureLimits;
 
+        #region Delegates
+
         /// <summary>
         /// Triggered on LandStatReply when the report type is for "top colliders"
         /// </summary>
@@ -93,8 +95,9 @@ namespace OpenMetaverse
         public delegate void EstateGroupsReply(uint estateID, int count, List<UUID> allowedGroups);
 
         public delegate void EstateCovenantReply(UUID covenantID, long timestamp, string estateName, UUID estateOwnerID);
+#endregion
 
-
+        #region Events
         // <summary>Callback for LandStatReply packets</summary>
         //public event LandStatReply OnLandStatReply;
         /// <summary>Triggered upon a successful .GetTopColliders()</summary>
@@ -113,6 +116,7 @@ namespace OpenMetaverse
         public event EstateUsersReply OnGetAllowedUsers;
         /// <summary>Triggered upon a successful .RequestCovenant()</summary>
         public event EstateCovenantReply OnGetCovenant;
+        #endregion
 
         /// <summary>
         /// Constructor for EstateTools class
@@ -127,8 +131,9 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.LandStatReply, new NetworkManager.PacketCallback(LandStatReplyHandler));
             Client.Network.RegisterCallback(PacketType.EstateOwnerMessage, new NetworkManager.PacketCallback(EstateOwnerMessageHandler));
             Client.Network.RegisterCallback(PacketType.EstateCovenantReply, new NetworkManager.PacketCallback(EstateCovenantReplyHandler));
-		}
+        }
 
+        #region Enums
         /// <summary>Used in the ReportType field of a LandStatRequest</summary>
         public enum LandStatReportType
         {
@@ -154,6 +159,23 @@ namespace OpenMetaverse
             EstateManagers = 24
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        [Flags]
+        public enum EstateReturnFlags : uint
+        {
+            /// <summary>No flags set</summary>
+            None = 2,
+            /// <summary>Only return targets scripted objects</summary>
+            ReturnScripted = 6,
+            /// <summary>Only return targets objects if on others land</summary>
+            ReturnOnOthersLand = 3,
+            /// <summary>Returns target's scripted objects and objects on other parcels</summary>
+            ReturnScriptedAndOnOthers = 7
+        }
+#endregion
+        #region Structs
         /// <summary>Ground texture settings for each corner of the region</summary>
         // TODO: maybe move this class to the Simulator object and implement it there too        
         public struct GroundTextureSettings
@@ -179,7 +201,8 @@ namespace OpenMetaverse
             public GroundTextureHeight SE;
             public GroundTextureHeight NE;
         }
-
+#endregion
+        #region Public Methods
         /// <summary>
         /// Requests estate information such as top scripts and colliders
         /// </summary>
@@ -219,225 +242,55 @@ namespace OpenMetaverse
             LandStatRequest(0, LandStatReportType.TopColliders, 0, "");
         }
 
-        /// <summary></summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void EstateCovenantReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>
+        /// Set several estate specific configuration variables
+        /// </summary>
+        /// <param name="WaterHeight">The Height of the waterlevel over the entire estate. Defaults to 20</param>
+        /// <param name="TerrainRaiseLimit">The maximum height change allowed above the baked terrain. Defaults to 4</param>
+        /// <param name="TerrainLowerLimit">The minimum height change allowed below the baked terrain. Defaults to -4</param>
+        /// <param name="UseEstateSun">true to use</param>
+        /// <param name="FixedSun">if True forces the sun position to the position in SunPosition</param>
+        /// <param name="SunPosition">The current position of the sun on the estate, or when FixedSun is true the static position
+        /// the sun will remain. <remarks>6.0 = Sunrise, 30.0 = Sunset</remarks></param>
+        public void SetTerrainVariables(float WaterHeight, float TerrainRaiseLimit, 
+            float TerrainLowerLimit, bool UseEstateSun, bool FixedSun, float SunPosition)
         {
-            EstateCovenantReplyPacket reply = (EstateCovenantReplyPacket)packet;
-            if (OnGetCovenant != null)
-            {
-                try
-                {
-                    OnGetCovenant(
-                       reply.Data.CovenantID,
-                       reply.Data.CovenantTimestamp,
-                       Utils.BytesToString(reply.Data.EstateName),
-                       reply.Data.EstateOwnerID);
-                }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-            }
+            List<string> simVariables = new List<string>();
+            simVariables.Add(WaterHeight.ToString(Utils.EnUsCulture));
+            simVariables.Add(TerrainRaiseLimit.ToString(Utils.EnUsCulture));
+            simVariables.Add(TerrainLowerLimit.ToString(Utils.EnUsCulture));
+            simVariables.Add(UseEstateSun ? "Y" : "N");
+            simVariables.Add(FixedSun ? "Y" : "N");
+            simVariables.Add(SunPosition.ToString(Utils.EnUsCulture));
+            simVariables.Add("Y"); //Not used?
+            simVariables.Add("N"); //Not used?
+            simVariables.Add("0.00"); //Also not used?
+            EstateOwnerMessage("setregionterrain", simVariables);
         }
 
-        /// <summary></summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void EstateOwnerMessageHandler(Packet packet, Simulator simulator)
+        /// <summary>
+        /// Request return of objects owned by specified avatar 
+        /// </summary>
+        /// <param name="Target">The Agents <see cref="UUID"/> owning the primitives to return</param>
+        /// <param name="flag">specify the coverage and type of objects to be included in the return</param>
+        /// <param name="EstateWide">true to perform return on entire estate</param>
+        public void SimWideReturn(UUID Target, EstateReturnFlags flag, bool EstateWide)
         {
-            EstateOwnerMessagePacket message = (EstateOwnerMessagePacket)packet;
-            uint estateID;
-            string method = Utils.BytesToString(message.MethodData.Method);
-            //List<string> parameters = new List<string>();
-
-            if (method == "estateupdateinfo")
+            if (EstateWide)
             {
-                string estateName = Utils.BytesToString(message.ParamList[0].Parameter);
-                UUID estateOwner = new UUID(Utils.BytesToString(message.ParamList[1].Parameter));
-                estateID = Utils.BytesToUInt(message.ParamList[2].Parameter);
-                /*
-                foreach (EstateOwnerMessagePacket.ParamListBlock param in message.ParamList)
-                {
-                    parameters.Add(Utils.BytesToString(param.Parameter));
-                }
-                */
-                bool denyNoPaymentInfo;
-                if (Utils.BytesToUInt(message.ParamList[8].Parameter) == 0) denyNoPaymentInfo = true;
-                else denyNoPaymentInfo = false;
-
-                if (OnGetEstateUpdateInfo != null)
-                {
-                    try
-                    {
-                        OnGetEstateUpdateInfo(estateName, estateOwner, estateID, denyNoPaymentInfo);
-                    }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                }
+                List<string> param = new List<string>();
+                param.Add(flag.ToString());
+                param.Add(Target.ToString());
+                EstateOwnerMessage("estateobjectreturn", param);
             }
-
-            else if (method == "setaccess")
+            else
             {
-                int count;
-                estateID = Utils.BytesToUInt(message.ParamList[0].Parameter);
-                if (message.ParamList.Length > 1)
-                {
-                    //param comes in as a string for some reason
-                    uint param;
-                    if (!uint.TryParse(Utils.BytesToString(message.ParamList[1].Parameter), out param)) return;
-
-                    EstateAccessReplyDelta accessType = (EstateAccessReplyDelta)param;
-
-                    switch (accessType)
-                    {
-                        case EstateAccessReplyDelta.EstateManagers:
-                            if (OnGetEstateManagers != null)
-                            {
-                                if (message.ParamList.Length > 5)
-                                {
-                                    if (!int.TryParse(Utils.BytesToString(message.ParamList[5].Parameter), out count)) return;
-                                    List<UUID> managers = new List<UUID>();
-                                    for (int i = 6; i < message.ParamList.Length; i++)
-                                    {
-                                        try
-                                        {
-                                            UUID managerID = new UUID(message.ParamList[i].Parameter, 0);
-                                            managers.Add(managerID);
-                                        }
-                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                                    }
-                                    try { OnGetEstateManagers(estateID, count, managers); }
-                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                                }
-                            }
-                            break;
-
-                        case EstateAccessReplyDelta.EstateBans:
-                            if (OnGetEstateBans != null)
-                            {
-                                if (message.ParamList.Length > 6)
-                                {
-                                    if (!int.TryParse(Utils.BytesToString(message.ParamList[4].Parameter), out count)) return;
-                                    List<UUID> bannedUsers = new List<UUID>();
-                                    for (int i = 7; i < message.ParamList.Length; i++)
-                                    {
-                                        try
-                                        {
-                                            UUID bannedID = new UUID(message.ParamList[i].Parameter, 0);
-                                            bannedUsers.Add(bannedID);
-                                        }
-                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                                    }
-                                    try { OnGetEstateBans(estateID, count, bannedUsers); }
-                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                                }
-                            }
-                            break;
-
-                        case EstateAccessReplyDelta.AllowedUsers:
-                            if (OnGetAllowedUsers != null)
-                            {
-                                if (message.ParamList.Length > 5)
-                                {
-                                    if (!int.TryParse(Utils.BytesToString(message.ParamList[2].Parameter), out count)) return;
-                                    List<UUID> allowedUsers = new List<UUID>();
-                                    for (int i = 6; i < message.ParamList.Length; i++)
-                                    {
-                                        try
-                                        {
-                                            UUID allowedID = new UUID(message.ParamList[i].Parameter, 0);
-                                            allowedUsers.Add(allowedID);
-                                        }
-                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                                    }
-                                    try { OnGetAllowedUsers(estateID, count, allowedUsers); }
-                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                                }
-                            }
-                            break;
-
-                        case EstateAccessReplyDelta.AllowedGroups:
-                            if (OnGetAllowedGroups != null)
-                            {
-                                if (message.ParamList.Length > 5)
-                                {
-                                    if (!int.TryParse(Utils.BytesToString(message.ParamList[3].Parameter), out count)) return;
-                                    List<UUID> allowedGroups = new List<UUID>();
-                                    for (int i = 5; i < message.ParamList.Length; i++)
-                                    {
-                                        try
-                                        {
-                                            UUID groupID = new UUID(message.ParamList[i].Parameter, 0);
-                                            allowedGroups.Add(groupID);
-                                        }
-                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                                    }
-                                    try { OnGetAllowedGroups(estateID, count, allowedGroups); }
-                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                                }
-                            }
-                            break;
-                    }
-                }
-            }
-
-            /*
-            Console.WriteLine("--- " + method + " ---");
-            foreach (EstateOwnerMessagePacket.ParamListBlock block in message.ParamList)
-            {
-                Console.WriteLine(Utils.BytesToString(block.Parameter));
-            }
-            Console.WriteLine("------");
-            */
-        }
-
-        /// <summary></summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void LandStatReplyHandler(Packet packet, Simulator simulator)
-        {
-            //if (OnLandStatReply != null || OnGetTopScripts != null || OnGetTopColliders != null)
-            if (OnGetTopScripts != null || OnGetTopColliders != null)
-            {
-                LandStatReplyPacket p = (LandStatReplyPacket)packet;
-                Dictionary<UUID, EstateTask> Tasks = new Dictionary<UUID, EstateTask>();
-
-                foreach (LandStatReplyPacket.ReportDataBlock rep in p.ReportData)
-                {
-                    EstateTask task = new EstateTask();
-                    task.Position = new Vector3(rep.LocationX, rep.LocationY, rep.LocationZ);
-                    task.Score = rep.Score;
-                    task.TaskID = rep.TaskID;
-                    task.TaskLocalID = rep.TaskLocalID;
-                    task.TaskName = Utils.BytesToString(rep.TaskName);
-                    task.OwnerName = Utils.BytesToString(rep.OwnerName);
-                    Tasks.Add(task.TaskID, task);
-                }
-
-                LandStatReportType type = (LandStatReportType)p.RequestData.ReportType;
-
-                if (OnGetTopScripts != null && type == LandStatReportType.TopScripts)
-                {
-                    try { OnGetTopScripts((int)p.RequestData.TotalObjectCount, Tasks); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                }
-                else if (OnGetTopColliders != null && type == LandStatReportType.TopColliders)
-                {
-                    try { OnGetTopColliders((int)p.RequestData.TotalObjectCount, Tasks); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                }
-
-                /*
-                if (OnGetTopColliders != null)
-                {
-                    //FIXME - System.UnhandledExceptionEventArgs
-                    OnLandStatReply(
-                        type,
-                        p.RequestData.RequestFlags,
-                        (int)p.RequestData.TotalObjectCount,
-                        Tasks
-                    );
-                }
-                */
-
+                SimWideDeletesPacket simDelete = new SimWideDeletesPacket();
+                simDelete.AgentData.AgentID = Client.Self.AgentID;
+                simDelete.AgentData.SessionID = Client.Self.SessionID;
+                simDelete.DataBlock.TargetID = Target;
+                simDelete.DataBlock.Flags = (uint)flag;
+                Client.Network.SendPacket(simDelete);
             }
         }
 
@@ -654,6 +507,224 @@ namespace OpenMetaverse
 
             return upload.ID;
         }
+
+#endregion
+#region Packet Handlers
+
+        /// <summary></summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void EstateCovenantReplyHandler(Packet packet, Simulator simulator)
+        {
+            EstateCovenantReplyPacket reply = (EstateCovenantReplyPacket)packet;
+            if (OnGetCovenant != null)
+            {
+                try
+                {
+                    OnGetCovenant(
+                       reply.Data.CovenantID,
+                       reply.Data.CovenantTimestamp,
+                       Utils.BytesToString(reply.Data.EstateName),
+                       reply.Data.EstateOwnerID);
+                }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
+        }
+
+        /// <summary></summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void EstateOwnerMessageHandler(Packet packet, Simulator simulator)
+        {
+            EstateOwnerMessagePacket message = (EstateOwnerMessagePacket)packet;
+            uint estateID;
+            string method = Utils.BytesToString(message.MethodData.Method);
+            //List<string> parameters = new List<string>();
+
+            if (method == "estateupdateinfo")
+            {
+                string estateName = Utils.BytesToString(message.ParamList[0].Parameter);
+                UUID estateOwner = new UUID(Utils.BytesToString(message.ParamList[1].Parameter));
+                estateID = Utils.BytesToUInt(message.ParamList[2].Parameter);
+                /*
+                foreach (EstateOwnerMessagePacket.ParamListBlock param in message.ParamList)
+                {
+                    parameters.Add(Utils.BytesToString(param.Parameter));
+                }
+                */
+                bool denyNoPaymentInfo;
+                if (Utils.BytesToUInt(message.ParamList[8].Parameter) == 0) denyNoPaymentInfo = true;
+                else denyNoPaymentInfo = false;
+
+                if (OnGetEstateUpdateInfo != null)
+                {
+                    try
+                    {
+                        OnGetEstateUpdateInfo(estateName, estateOwner, estateID, denyNoPaymentInfo);
+                    }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                }
+            }
+
+            else if (method == "setaccess")
+            {
+                int count;
+                estateID = Utils.BytesToUInt(message.ParamList[0].Parameter);
+                if (message.ParamList.Length > 1)
+                {
+                    //param comes in as a string for some reason
+                    uint param;
+                    if (!uint.TryParse(Utils.BytesToString(message.ParamList[1].Parameter), out param)) return;
+
+                    EstateAccessReplyDelta accessType = (EstateAccessReplyDelta)param;
+
+                    switch (accessType)
+                    {
+                        case EstateAccessReplyDelta.EstateManagers:
+                            if (OnGetEstateManagers != null)
+                            {
+                                if (message.ParamList.Length > 5)
+                                {
+                                    if (!int.TryParse(Utils.BytesToString(message.ParamList[5].Parameter), out count)) return;
+                                    List<UUID> managers = new List<UUID>();
+                                    for (int i = 6; i < message.ParamList.Length; i++)
+                                    {
+                                        try
+                                        {
+                                            UUID managerID = new UUID(message.ParamList[i].Parameter, 0);
+                                            managers.Add(managerID);
+                                        }
+                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                    }
+                                    try { OnGetEstateManagers(estateID, count, managers); }
+                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                }
+                            }
+                            break;
+
+                        case EstateAccessReplyDelta.EstateBans:
+                            if (OnGetEstateBans != null)
+                            {
+                                if (message.ParamList.Length > 6)
+                                {
+                                    if (!int.TryParse(Utils.BytesToString(message.ParamList[4].Parameter), out count)) return;
+                                    List<UUID> bannedUsers = new List<UUID>();
+                                    for (int i = 7; i < message.ParamList.Length; i++)
+                                    {
+                                        try
+                                        {
+                                            UUID bannedID = new UUID(message.ParamList[i].Parameter, 0);
+                                            bannedUsers.Add(bannedID);
+                                        }
+                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                    }
+                                    try { OnGetEstateBans(estateID, count, bannedUsers); }
+                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                }
+                            }
+                            break;
+
+                        case EstateAccessReplyDelta.AllowedUsers:
+                            if (OnGetAllowedUsers != null)
+                            {
+                                if (message.ParamList.Length > 5)
+                                {
+                                    if (!int.TryParse(Utils.BytesToString(message.ParamList[2].Parameter), out count)) return;
+                                    List<UUID> allowedUsers = new List<UUID>();
+                                    for (int i = 6; i < message.ParamList.Length; i++)
+                                    {
+                                        try
+                                        {
+                                            UUID allowedID = new UUID(message.ParamList[i].Parameter, 0);
+                                            allowedUsers.Add(allowedID);
+                                        }
+                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                    }
+                                    try { OnGetAllowedUsers(estateID, count, allowedUsers); }
+                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                }
+                            }
+                            break;
+
+                        case EstateAccessReplyDelta.AllowedGroups:
+                            if (OnGetAllowedGroups != null)
+                            {
+                                if (message.ParamList.Length > 5)
+                                {
+                                    if (!int.TryParse(Utils.BytesToString(message.ParamList[3].Parameter), out count)) return;
+                                    List<UUID> allowedGroups = new List<UUID>();
+                                    for (int i = 5; i < message.ParamList.Length; i++)
+                                    {
+                                        try
+                                        {
+                                            UUID groupID = new UUID(message.ParamList[i].Parameter, 0);
+                                            allowedGroups.Add(groupID);
+                                        }
+                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                    }
+                                    try { OnGetAllowedGroups(estateID, count, allowedGroups); }
+                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
+        /// <summary></summary>
+        /// <param name="packet"></param>
+        /// <param name="simulator"></param>
+        private void LandStatReplyHandler(Packet packet, Simulator simulator)
+        {
+            //if (OnLandStatReply != null || OnGetTopScripts != null || OnGetTopColliders != null)
+            if (OnGetTopScripts != null || OnGetTopColliders != null)
+            {
+                LandStatReplyPacket p = (LandStatReplyPacket)packet;
+                Dictionary<UUID, EstateTask> Tasks = new Dictionary<UUID, EstateTask>();
+
+                foreach (LandStatReplyPacket.ReportDataBlock rep in p.ReportData)
+                {
+                    EstateTask task = new EstateTask();
+                    task.Position = new Vector3(rep.LocationX, rep.LocationY, rep.LocationZ);
+                    task.Score = rep.Score;
+                    task.TaskID = rep.TaskID;
+                    task.TaskLocalID = rep.TaskLocalID;
+                    task.TaskName = Utils.BytesToString(rep.TaskName);
+                    task.OwnerName = Utils.BytesToString(rep.OwnerName);
+                    Tasks.Add(task.TaskID, task);
+                }
+
+                LandStatReportType type = (LandStatReportType)p.RequestData.ReportType;
+
+                if (OnGetTopScripts != null && type == LandStatReportType.TopScripts)
+                {
+                    try { OnGetTopScripts((int)p.RequestData.TotalObjectCount, Tasks); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                }
+                else if (OnGetTopColliders != null && type == LandStatReportType.TopColliders)
+                {
+                    try { OnGetTopColliders((int)p.RequestData.TotalObjectCount, Tasks); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                }
+
+                /*
+                if (OnGetTopColliders != null)
+                {
+                    //FIXME - System.UnhandledExceptionEventArgs
+                    OnLandStatReply(
+                        type,
+                        p.RequestData.RequestFlags,
+                        (int)p.RequestData.TotalObjectCount,
+                        Tasks
+                    );
+                }
+                */
+
+            }
+        }
+#endregion
+
     }
 
 }
