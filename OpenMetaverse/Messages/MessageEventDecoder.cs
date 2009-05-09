@@ -76,6 +76,7 @@ namespace OpenMetaverse.Messages
                 case "EventQueueGet": message = new EventQueueGetMessage(); break;
                 case "CrossedRegion": message = new CrossedRegionMessage(); break;
                 case "TeleportFailed": message = new TeleportFailedMessage(); break;
+                case "PlacesReply": message = new PlacesReplyMessage(); break;
                 //case "ProductInfoRequest": message = new ProductInfoRequestMessage(); break;
 
                 // Capabilities TODO:

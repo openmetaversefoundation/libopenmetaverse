@@ -1926,7 +1926,6 @@ namespace OpenMetaverse.Messages.Linden
                     }
                     updatesList.Add(block);
                 }
-
             }
 
             Updates = new AgentUpdatesBlock[updatesList.Count];
@@ -2249,6 +2248,123 @@ namespace OpenMetaverse.Messages.Linden
             SystemGPUVersion = systemStatsMap["gpu_version"].AsString();
             SystemOS = systemStatsMap["os"].AsString();
             SystemInstalledRam = systemStatsMap["ram"].AsInteger();
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class PlacesReplyMessage : IMessage
+    {
+        public UUID AgentID;
+        public UUID QueryID;
+        public UUID TransactionID;
+
+        public class QueryData
+        {
+            public int ActualArea;
+            public int BillableArea;
+            public string Description;
+            public float Dwell;
+            public int Flags;
+            public float GlobalX;
+            public float GlobalY;
+            public float GlobalZ;
+            public string Name;
+            public UUID OwnerID;
+            public string SimName;
+            public UUID SnapShotID;
+            public string ProductSku;
+            public int Price;
+        }
+
+        public QueryData[] QueryDataBlocks;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(3);
+
+            // add the AgentData map
+            OSDMap agentIDmap = new OSDMap(1);
+            agentIDmap["AgentID"] = OSD.FromUUID(AgentID);
+
+            OSDMap queryIDMap = new OSDMap(1);
+            queryIDMap["QueryID"] = OSD.FromUUID(QueryID);
+
+            OSDArray agentDataArray = new OSDArray(2);
+            agentDataArray.Add(agentIDmap);
+            agentDataArray.Add(queryIDMap);
+
+            map["AgentData"] = agentDataArray;
+
+            // add the QueryData map
+            OSDArray dataBlocksArray = new OSDArray(QueryDataBlocks.Length);
+            for(int i = 0; i < QueryDataBlocks.Length; i++)
+            {
+                OSDMap queryDataMap = new OSDMap(10);
+                queryDataMap["ActualArea"] = OSD.FromInteger(QueryDataBlocks[i].ActualArea);
+                queryDataMap["BillableArea"] = OSD.FromInteger(QueryDataBlocks[i].BillableArea);
+                queryDataMap["Desc"] = OSD.FromString(QueryDataBlocks[i].Description);
+                queryDataMap["Dwell"] = OSD.FromReal(QueryDataBlocks[i].Dwell);
+                queryDataMap["Flags"] = OSD.FromInteger(QueryDataBlocks[i].Flags);
+                queryDataMap["GlobalX"] = OSD.FromReal(QueryDataBlocks[i].GlobalX);
+                queryDataMap["GlobalY"] = OSD.FromReal(QueryDataBlocks[i].GlobalY);
+                queryDataMap["GlobalZ"] = OSD.FromReal(QueryDataBlocks[i].GlobalZ);
+                queryDataMap["Name"] = OSD.FromString(QueryDataBlocks[i].Name);
+                queryDataMap["OwnerID"] = OSD.FromUUID(QueryDataBlocks[i].OwnerID);
+                queryDataMap["Price"] = OSD.FromInteger(QueryDataBlocks[i].Price);
+                queryDataMap["SimName"] = OSD.FromString(QueryDataBlocks[i].SimName);
+                queryDataMap["SnapshotID"] = OSD.FromUUID(QueryDataBlocks[i].SnapShotID);
+                queryDataMap["ProductSKU"] = OSD.FromString(QueryDataBlocks[i].ProductSku);
+                dataBlocksArray.Add(queryDataMap);
+            }
+
+            map["QueryData"] = dataBlocksArray;
+
+            // add the TransactionData map
+            OSDMap transMap = new OSDMap(1);
+            transMap["TransactionID"] = OSD.FromUUID(TransactionID);
+            OSDArray transArray = new OSDArray();
+            transArray.Add(transMap);
+            map["TransactionData"] = transArray;
+
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDArray agentDataArray = (OSDArray) map["AgentData"];
+            OSDMap agentDataMap = (OSDMap)agentDataArray[0];
+            AgentID = agentDataMap["AgentID"].AsUUID();
+            QueryID = agentDataMap["QueryID"].AsUUID();
+
+
+            OSDArray dataBlocksArray = (OSDArray) map["QueryData"];
+            QueryDataBlocks = new QueryData[dataBlocksArray.Count];
+            for(int i = 0; i < dataBlocksArray.Count; i++)
+            {
+                QueryData data = new QueryData();
+                OSDMap dataMap = (OSDMap) dataBlocksArray[i];
+                data.ActualArea = dataMap["ActualArea"].AsInteger();
+                data.BillableArea = dataMap["BillableArea"].AsInteger();
+                data.Description = dataMap["Desc"].AsString();
+                data.Dwell = (float)dataMap["Dwell"].AsReal();
+                data.Flags = dataMap["Flags"].AsInteger();
+                data.GlobalX = dataMap["GlobalX"].AsInteger();
+                data.GlobalY = dataMap["GlobalY"].AsInteger();
+                data.GlobalZ = dataMap["GlobalX"].AsInteger();
+                data.Name = dataMap["Name"].AsString();
+                data.OwnerID = dataMap["OwnerID"].AsUUID();
+                data.Price = dataMap["Price"].AsInteger();
+                data.SimName = dataMap["SimName"].AsString();
+                data.SnapShotID = dataMap["SnapshotID"].AsUUID();
+                data.ProductSku = dataMap["ProductSKU"].AsString();
+                QueryDataBlocks[i] = data;
+            }
+
+            OSDArray transactionArray = (OSDArray) map["TransactionData"];
+            OSDMap transactionDataMap = (OSDMap) transactionArray[0];
+            TransactionID = transactionDataMap["TransactionID"].AsUUID();
         }
     }
 
