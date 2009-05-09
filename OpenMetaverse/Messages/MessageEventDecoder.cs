@@ -25,8 +25,6 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Interfaces;
 using OpenMetaverse.Messages.Linden;
@@ -78,7 +76,7 @@ namespace OpenMetaverse.Messages
                 case "EventQueueGet": message = new EventQueueGetMessage(); break;
                 case "CrossedRegion": message = new CrossedRegionMessage(); break;
                 case "TeleportFailed": message = new TeleportFailedMessage(); break;
-
+                //case "ProductInfoRequest": message = new ProductInfoRequestMessage(); break;
 
                 // Capabilities TODO:
                 // DispatchRegionInfo

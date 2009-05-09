@@ -1417,6 +1417,23 @@ namespace OpenMetaverse.Messages.Linden
 
     #region Session/Communication
 
+    /// <summary>
+    /// New as of 1.23 RC1, no details yet.
+    /// </summary>
+    public class ProductInfoRequestMessage : IMessage
+    {        
+        public OSDMap Serialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            
+        }
+
+    }
+
     #region ChatSessionRequestMessage
 
     public interface IChatSessionRequest

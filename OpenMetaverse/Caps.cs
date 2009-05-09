@@ -167,6 +167,7 @@ namespace OpenMetaverse
             req.Add("UploadBakedTexture");
             req.Add("ViewerStartAuction");
             req.Add("ViewerStats");
+            req.Add("ProductInfoRequest");
 
             _SeedRequest = new CapsClient(new Uri(_SeedCapsURI));
             _SeedRequest.OnComplete += new CapsClient.CompleteCallback(SeedRequestCompleteHandler);
