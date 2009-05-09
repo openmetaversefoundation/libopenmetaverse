@@ -40,12 +40,12 @@ namespace OpenMetaverse
         public string OwnerName;
     }
 
-	/// <summary>
-	/// Estate level administration and utilities
-	/// </summary>
-	public class EstateTools
-	{
-		private GridClient Client;
+    /// <summary>
+    /// Estate level administration and utilities
+    /// </summary>
+    public class EstateTools
+    {
+        private GridClient Client;
 
         /// <summary>Textures for each of the four terrain height levels</summary>
         public GroundTextureSettings GroundTextures;
@@ -95,7 +95,7 @@ namespace OpenMetaverse
         public delegate void EstateGroupsReply(uint estateID, int count, List<UUID> allowedGroups);
 
         public delegate void EstateCovenantReply(UUID covenantID, long timestamp, string estateName, UUID estateOwnerID);
-#endregion
+        #endregion
 
         #region Events
         // <summary>Callback for LandStatReply packets</summary>
@@ -122,12 +122,12 @@ namespace OpenMetaverse
         /// Constructor for EstateTools class
         /// </summary>
         /// <param name="client"></param>
-		public EstateTools(GridClient client)
-		{
+        public EstateTools(GridClient client)
+        {
             GroundTextures = new GroundTextureSettings();
             GroundTextureLimits = new GroundTextureHeightSettings();
 
-			Client = client;
+            Client = client;
             Client.Network.RegisterCallback(PacketType.LandStatReply, new NetworkManager.PacketCallback(LandStatReplyHandler));
             Client.Network.RegisterCallback(PacketType.EstateOwnerMessage, new NetworkManager.PacketCallback(EstateOwnerMessageHandler));
             Client.Network.RegisterCallback(PacketType.EstateCovenantReply, new NetworkManager.PacketCallback(EstateCovenantReplyHandler));
@@ -142,12 +142,16 @@ namespace OpenMetaverse
         }
 
         /// <summary>Used by EstateOwnerMessage packets</summary>
-        public enum EstateAccessDelta
+        public enum EstateAccessDelta : uint 
         {
             BanUser = 64,
             BanUserAllEstates = 66,
             UnbanUser = 128,
-            UnbanUserAllEstates = 130
+            UnbanUserAllEstates = 130,
+            AddManager = 256,
+            AddManagerAllEstates = 257,
+            RemoveManager = 512,
+            RemoveManagerAllEstates = 513
         }
 
         /// <summary>Used by EstateOwnerMessage packets</summary>
@@ -174,7 +178,7 @@ namespace OpenMetaverse
             /// <summary>Returns target's scripted objects and objects on other parcels</summary>
             ReturnScriptedAndOnOthers = 7
         }
-#endregion
+        #endregion
         #region Structs
         /// <summary>Ground texture settings for each corner of the region</summary>
         // TODO: maybe move this class to the Simulator object and implement it there too        
@@ -201,7 +205,7 @@ namespace OpenMetaverse
             public GroundTextureHeight SE;
             public GroundTextureHeight NE;
         }
-#endregion
+        #endregion
         #region Public Methods
         /// <summary>
         /// Requests estate information such as top scripts and colliders
@@ -218,7 +222,7 @@ namespace OpenMetaverse
             p.RequestData.Filter = Utils.StringToBytes(filter);
             p.RequestData.ParcelLocalID = parcelLocalID;
             p.RequestData.ReportType = (uint)reportType;
-            p.RequestData.RequestFlags = requestFlags;            
+            p.RequestData.RequestFlags = requestFlags;
             Client.Network.SendPacket(p);
         }
 
@@ -252,7 +256,7 @@ namespace OpenMetaverse
         /// <param name="FixedSun">if True forces the sun position to the position in SunPosition</param>
         /// <param name="SunPosition">The current position of the sun on the estate, or when FixedSun is true the static position
         /// the sun will remain. <remarks>6.0 = Sunrise, 30.0 = Sunset</remarks></param>
-        public void SetTerrainVariables(float WaterHeight, float TerrainRaiseLimit, 
+        public void SetTerrainVariables(float WaterHeight, float TerrainRaiseLimit,
             float TerrainLowerLimit, bool UseEstateSun, bool FixedSun, float SunPosition)
         {
             List<string> simVariables = new List<string>();
@@ -309,7 +313,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="method">EstateOwnerMessage Method field</param>
         /// <param name="listParams">List of parameters to include</param>
-        public void EstateOwnerMessage(string method, List<string>listParams)
+        public void EstateOwnerMessage(string method, List<string> listParams)
         {
             EstateOwnerMessagePacket estate = new EstateOwnerMessagePacket();
             estate.AgentData.AgentID = Client.Self.AgentID;
@@ -330,10 +334,10 @@ namespace OpenMetaverse
         /// Kick an avatar from an estate
         /// </summary>
         /// <param name="userID">Key of Agent to remove</param>
-		public void KickUser(UUID userID) 
-		{
+        public void KickUser(UUID userID)
+        {
             EstateOwnerMessage("kickestate", userID.ToString());
-		}
+        }
 
         /// <summary>
         /// Ban an avatar from an estate</summary>
@@ -508,8 +512,46 @@ namespace OpenMetaverse
             return upload.ID;
         }
 
-#endregion
-#region Packet Handlers
+        /// <summary>
+        /// Teleports all users home in current Estate
+        /// </summary>
+        public void TeleportHomeAllUsers()
+        {
+            List<string> Params = new List<string>();
+            Params.Add(Client.Self.AgentID.ToString());
+            EstateOwnerMessage("teleporthomeallusers", Params);
+        }
+
+        /// <summary>
+        /// Remove estate manager</summary>
+        /// <param name="userID">Key of Agent to Remove</param>
+        /// <param name="allEstates">removes manager to this estate and all others owned by the estate owner</param>
+        public void RemoveEstateManager(UUID userID, bool allEstates)
+        {
+            List<string> listParams = new List<string>();
+            uint flag = allEstates ? (uint)EstateAccessDelta.RemoveManagerAllEstates : (uint)EstateAccessDelta.RemoveManager;
+            listParams.Add(Client.Self.AgentID.ToString());
+            listParams.Add(flag.ToString());
+            listParams.Add(userID.ToString());
+            EstateOwnerMessage("estateaccessdelta", listParams);
+        }
+
+        /// <summary>
+        /// Add estate manager</summary>
+        /// <param name="userID">Key of Agent to Add</param>
+        /// <param name="allEstates">Add agent as manager to this estate and all others owned by the estate owner</param>
+        public void AddEstateManager(UUID userID, bool allEstates)
+        {
+            List<string> listParams = new List<string>();
+            uint flag = allEstates ? (uint)EstateAccessDelta.AddManagerAllEstates : (uint)EstateAccessDelta.AddManager;
+            listParams.Add(Client.Self.AgentID.ToString());
+            listParams.Add(flag.ToString());
+            listParams.Add(userID.ToString());
+            EstateOwnerMessage("estateaccessdelta", listParams);
+        }
+
+        #endregion
+        #region Packet Handlers
 
         /// <summary></summary>
         /// <param name="packet"></param>
@@ -723,7 +765,7 @@ namespace OpenMetaverse
 
             }
         }
-#endregion
+        #endregion
 
     }
 
