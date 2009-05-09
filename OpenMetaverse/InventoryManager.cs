@@ -31,6 +31,7 @@ using System.Threading;
 using System.Text;
 using System.Runtime.Serialization;
 using OpenMetaverse.Http;
+using OpenMetaverse.Messages.Linden;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Packets;
 
@@ -907,6 +908,14 @@ namespace OpenMetaverse
         /// <param name="newAssetID">The new AssetID of the item, or UUID.Zero</param>
         public delegate void SaveAssetToInventoryCallback(UUID itemID, UUID newAssetID);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="success"></param>
+        /// <param name="status"></param>
+        /// <param name="itemID"></param>
+        /// <param name="assetID"></param>
+        public delegate void ScriptUpdatedCallback(bool success, string status, UUID itemID, UUID assetID);
         #endregion Delegates
 
         #region Events
@@ -2067,6 +2076,35 @@ namespace OpenMetaverse
                 throw new Exception("UpdateNotecardAgentInventory capability is not currently available");
             }
         }
+        /// <summary>
+        /// Update an exsting script in an agents Inventory
+        /// </summary>
+        /// <param name="data">A byte[] array containing the encoded scripts contents</param>
+        /// <param name="itemID">the itemID of the script</param>
+        /// <param name="callback"></param>
+        public void RequestUpdateScriptAgentInventory(byte[] data, UUID itemID, ScriptUpdatedCallback callback)
+        {
+            Uri url = _Client.Network.CurrentSim.Caps.CapabilityURI("UpdateScriptAgentInventory");
+
+            if(url != null)
+            {
+                OSDMap query = new OSDMap();
+                query.Add("item_id", OSD.FromUUID(itemID));
+
+                CapsClient request = new CapsClient(url);
+                request.OnComplete += new CapsClient.CompleteCallback(UpdateScriptAgentInventoryResponse);
+                request.UserData = new object[2] { new KeyValuePair<ScriptUpdatedCallback, byte[]>(callback, data), itemID };
+                request.BeginGetResponse(query, OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);
+                
+            }
+            else
+            {
+                throw new Exception("UpdateScriptAgentInventory capability is not currently available");
+            }
+
+        }
+
+
         #endregion Update
 
         #region Rez/Give
@@ -3624,6 +3662,57 @@ namespace OpenMetaverse
             else
             {
                 // Failure
+                try { callback(false, status, UUID.Zero, UUID.Zero); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="result"></param>
+        /// <param name="error"></param>
+        private void UpdateScriptAgentInventoryResponse(CapsClient client, OSD result, Exception error)
+        {
+            KeyValuePair<ScriptUpdatedCallback, byte[]> kvp = (KeyValuePair<ScriptUpdatedCallback, byte[]>)(((object[])client.UserData)[0]);
+            ScriptUpdatedCallback callback = kvp.Key;
+            byte[] itemData = (byte[])kvp.Value;
+
+            if (result == null)
+            {
+                try { callback(false, error.Message, UUID.Zero, UUID.Zero); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                return;
+            }
+
+            OSDMap contents = (OSDMap)result;
+
+            string status = contents["state"].AsString();
+            if (status == "upload")
+            {
+                string uploadURL = contents["uploader"].AsString();
+
+                CapsClient upload = new CapsClient(new Uri(uploadURL));
+                upload.OnComplete += new CapsClient.CompleteCallback(UpdateScriptAgentInventoryResponse);
+                upload.UserData = new object[2] { kvp, (UUID)(((object[])client.UserData)[1]) };
+                upload.BeginGetResponse(itemData, "application/octet-stream", _Client.Settings.CAPS_TIMEOUT);
+            }
+            else if (status == "complete" && callback != null)
+            {
+                if (contents.ContainsKey("new_asset"))
+                {
+                    try { callback(true, status, (UUID)(((object[])client.UserData)[1]), contents["new_asset"].AsUUID()); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                }
+                else
+                {
+                    try { callback(false, "Failed to parse asset UUID", UUID.Zero, UUID.Zero); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                }
+            }
+            else if (callback != null)
+            {
                 try { callback(false, status, UUID.Zero, UUID.Zero); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
             }
