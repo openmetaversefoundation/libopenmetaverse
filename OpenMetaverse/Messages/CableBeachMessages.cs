@@ -160,14 +160,12 @@ namespace OpenMetaverse.Messages.CableBeach
     {
         public bool Success;
         public string Message;
-        public UUID SimulationKey;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
             map["success"] = OSD.FromBoolean(Success);
             map["message"] = OSD.FromString(Message);
-            map["simulation_key"] = OSD.FromUUID(SimulationKey);
             return map;
         }
 
@@ -175,27 +173,23 @@ namespace OpenMetaverse.Messages.CableBeach
         {
             Success = map["success"].AsBoolean();
             Message = map["message"].AsString();
-            SimulationKey = map["simulation_key"].AsUUID();
         }
     }
 
     public class DeleteRegionMessage : IMessage
     {
         public UUID ID;
-        public UUID SimulationKey;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
             map["id"] = OSD.FromUUID(ID);
-            map["simulation_key"] = OSD.FromUUID(SimulationKey);
             return map;
         }
 
         public void Deserialize(OSDMap map)
         {
             ID = map["id"].AsUUID();
-            SimulationKey = map["simulation_key"].AsUUID();
         }
     }
 
@@ -222,13 +216,11 @@ namespace OpenMetaverse.Messages.CableBeach
     public class RegionUpdateMessage : IMessage
     {
         public RegionInfo Region;
-        public UUID SimulationKey;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
             map["region"] = Region.Serialize();
-            map["simulation_key"] = OSD.FromUUID(SimulationKey);
             return map;
         }
 
@@ -236,7 +228,6 @@ namespace OpenMetaverse.Messages.CableBeach
         {
             Region = new RegionInfo();
             Region.Deserialize((OSDMap)map["region"]);
-            SimulationKey = map["simulation_key"].AsUUID();
         }
     }
 

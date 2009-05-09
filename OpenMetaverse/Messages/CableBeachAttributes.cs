@@ -36,6 +36,7 @@ namespace OpenMetaverse.Messages.CableBeach
 
     public static class AvatarAttributes
     {
+        // axschema.org attributes
         public static readonly Uri EMAIL = new Uri("http://axschema.org/contact/email");
         public static readonly Uri BIRTH_DATE = new Uri("http://axschema.org/birthDate");
         public static readonly Uri LANGUAGE = new Uri("http://axschema.org/pref/language");
@@ -44,10 +45,10 @@ namespace OpenMetaverse.Messages.CableBeach
         public static readonly Uri LAST_NAME = new Uri("http://axschema.org/namePerson/last");
         public static readonly Uri COMPANY = new Uri("http://axschema.org/company/name");
         public static readonly Uri WEBSITE = new Uri("http://axschema.org/contact/web/default");
-        public static readonly Uri IMAGE = new Uri("http://axschema.org/media/image/default");
         public static readonly Uri BIOGRAPHY = new Uri("http://axschema.org/media/biography");
 
         // OpenSim attributes
+        public static readonly Uri AVATAR_ID = new Uri("http://opensimulator.org/attributes/avatarID");
         public static readonly Uri DEFAULT_INVENTORY = new Uri("http://opensimulator.org/attributes/defaultInventory");
         public static readonly Uri LIBRARY_INVENTORY = new Uri("http://opensimulator.org/attributes/libraryInventory");
         public static readonly Uri IMAGE_ID = new Uri("http://opensimulator.org/attributes/imageID");
@@ -64,9 +65,12 @@ namespace OpenMetaverse.Messages.CableBeach
         public static readonly Uri LAST_REGION_Y = new Uri("http://opensimulator.org/attributes/lastRegionY");
         public static readonly Uri LAST_POSITION = new Uri("http://opensimulator.org/attributes/lastPosition");
         public static readonly Uri LAST_LOOKAT = new Uri("http://opensimulator.org/attributes/lastLookat");
+        public static readonly Uri CREATION_DATE = new Uri("http://opensimulator.org/attributes/creationDate");
         public static readonly Uri LAST_LOGIN_DATE = new Uri("http://opensimulator.org/attributes/lastLoginDate");
         public static readonly Uri PROFILE_FLAGS = new Uri("http://opensimulator.org/attributes/profileFlags");
         public static readonly Uri GOD_LEVEL = new Uri("http://opensimulator.org/attributes/godLevel");
         public static readonly Uri PARTNER_ID = new Uri("http://opensimulator.org/attributes/partnerId");
+        public static readonly Uri USER_FLAGS = new Uri("http://opensimulator.org/attributes/userFlags");
+        public static readonly Uri CUSTOM_TYPE = new Uri("http://opensimulator.org/attributes/customType");
     }
 }
