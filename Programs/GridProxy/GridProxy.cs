@@ -31,7 +31,7 @@
  */
 
 // #define DEBUG_SEQUENCE
-// #define DEBUG_CAPS
+//#define DEBUG_CAPS
 // #define DEBUG_THREADS
 
 using System;
@@ -708,6 +708,14 @@ namespace GridProxy
                 capReq.RequestHeaders = req.Headers;
 
                 req.Method = meth;
+                
+                // can't do gets on requests with a content body
+                // without throwing a protocol exception. So force it to post 
+                // incase our parser stupidly set it to GET due to the viewer 
+                // doing something stupid like sending an empty request
+                if(content.Length > 0)
+                    req.Method = "POST";
+
                 req.ContentLength = content.Length;
 
                 HttpWebResponse resp;
