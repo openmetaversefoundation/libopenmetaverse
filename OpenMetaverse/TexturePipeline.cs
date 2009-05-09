@@ -323,8 +323,7 @@ namespace OpenMetaverse
                     {
                         if (_Transfers.ContainsKey(textureID))
                         {
-                            TaskInfo request = _Transfers[textureID];
-                                request.Callbacks.Add(callback);
+                            _Transfers[textureID].Callbacks.Add(callback);
                         } 
                         else 
                         {
@@ -334,6 +333,7 @@ namespace OpenMetaverse
                             request.ReportProgress = progressive;
                             request.RequestSlot = -1;
                             request.Type = imageType;
+
                             request.Callbacks = new List<TextureDownloadCallback>(); 
                             request.Callbacks.Add(callback);
 
@@ -390,8 +390,6 @@ namespace OpenMetaverse
                             float percentComplete = (task.Transfer.Transferred / (float)task.Transfer.Size) * 100f;
                             if (Single.IsNaN(percentComplete))
                                 percentComplete = 0f;
-
-                            
 
                             if (percentComplete > 0)
                                 Logger.DebugLog(String.Format("Updating priority on image transfer {0}, {1}% complete",
@@ -653,8 +651,6 @@ namespace OpenMetaverse
                             foreach (TextureDownloadCallback callback in task.Callbacks)
                                 callback(TextureRequestState.Timeout, new AssetTexture(task.RequestID, task.Transfer.AssetData));
 
-                            _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
-
                             return;
                         }
                     }
@@ -674,7 +670,6 @@ namespace OpenMetaverse
                     }
 
                     task.Transfer.TimeSinceLastPacket = 0;
-                    //resetEvents[task.RequestNbr].Reset();
 
                     if (task.Transfer.Transferred >= task.Transfer.Size)
                     {
@@ -711,11 +706,10 @@ namespace OpenMetaverse
                         {
                             foreach (TextureDownloadCallback callback in task.Callbacks)
                                 callback(TextureRequestState.Progress,
-                                          new AssetTexture(task.RequestID, task.Transfer.AssetData));
-
-                            _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred,
-                                                                  task.Transfer.Size);
+                                         new AssetTexture(task.RequestID, task.Transfer.AssetData));
                         }
+                        _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred,
+                                                                  task.Transfer.Size);
                     }
                 }
             }
@@ -786,6 +780,7 @@ namespace OpenMetaverse
 
                     foreach (TextureDownloadCallback callback in task.Callbacks)
                         callback(TextureRequestState.Finished, new AssetTexture(task.RequestID, task.Transfer.AssetData));
+
                     _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
                 }
                 else
@@ -795,16 +790,13 @@ namespace OpenMetaverse
                         foreach (TextureDownloadCallback callback in task.Callbacks)
                             callback(TextureRequestState.Progress,
                                       new AssetTexture(task.RequestID, task.Transfer.AssetData));
-
-                        _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred,
-                                                              task.Transfer.Size);
                     }
-
+                    _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred,
+                                                              task.Transfer.Size);
                 }
             }
         }
     }
-
         #endregion
     }
 }
