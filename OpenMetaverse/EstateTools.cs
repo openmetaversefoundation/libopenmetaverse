@@ -151,7 +151,15 @@ namespace OpenMetaverse
             AddManager = 256,
             AddManagerAllEstates = 257,
             RemoveManager = 512,
-            RemoveManagerAllEstates = 513
+            RemoveManagerAllEstates = 513,
+            AddUserAsAllowed = 4,
+            AddAllowedAllEstates = 6,
+            RemoveUserAsAllowed = 8,
+            RemoveUserAllowedAllEstates = 10,
+            AddGroupAsAllowed = 16,
+            AddGroupAllowedAllEstates = 18,
+            RemoveGroupAsAllowed = 32,
+            RemoveGroupAllowedAllEstates = 34
         }
 
         /// <summary>Used by EstateOwnerMessage packets</summary>
@@ -471,7 +479,7 @@ namespace OpenMetaverse
             listParams.Add("1 " + lowNW.ToString() + " " + highNW.ToString(Utils.EnUsCulture)); //NW low-high 
             listParams.Add("2 " + lowSE.ToString() + " " + highSE.ToString(Utils.EnUsCulture)); //SE low-high 
             listParams.Add("3 " + lowNE.ToString() + " " + highNE.ToString(Utils.EnUsCulture)); //NE low-high 
-            EstateOwnerMessage("texturedetail", listParams);
+            EstateOwnerMessage("textureheights", listParams);
             EstateOwnerMessage("texturecommit", "");
         }
 
@@ -550,7 +558,64 @@ namespace OpenMetaverse
             EstateOwnerMessage("estateaccessdelta", listParams);
         }
 
+        /// <summary>
+        /// Add's an agent to the estate Allowed list</summary>
+        /// <param name="userID">Key of Agent to Add</param>
+        /// <param name="allEstates">Add agent as an allowed reisdent to All estates if true</param>
+        public void AddAllowedUser(UUID userID, bool allEstates)
+        {
+            List<string> listParams = new List<string>();
+            uint flag = allEstates ? (uint)EstateAccessDelta.AddAllowedAllEstates : (uint)EstateAccessDelta.AddUserAsAllowed;
+            listParams.Add(Client.Self.AgentID.ToString());
+            listParams.Add(flag.ToString());
+            listParams.Add(userID.ToString());
+            EstateOwnerMessage("estateaccessdelta", listParams);
+        }
+
+        /// <summary>
+        /// Removes an agent from the estate Allowed list</summary>
+        /// <param name="userID">Key of Agent to Remove</param>
+        /// <param name="allEstates">Removes agent as an allowed reisdent from All estates if true</param>
+        public void RemoveAllowedUser(UUID userID, bool allEstates)
+        {
+            List<string> listParams = new List<string>();
+            uint flag = allEstates ? (uint)EstateAccessDelta.RemoveUserAllowedAllEstates : (uint)EstateAccessDelta.RemoveUserAsAllowed;
+            listParams.Add(Client.Self.AgentID.ToString());
+            listParams.Add(flag.ToString());
+            listParams.Add(userID.ToString());
+            EstateOwnerMessage("estateaccessdelta", listParams);
+        }
+        ///
+        /// <summary>
+        /// Add's a group to the estate Allowed list</summary>
+        /// <param name="userID">Key of Group to Add</param>
+        /// <param name="allEstates">Add Group as an allowed group to All estates if true</param>
+        public void AddAllowedGroup(UUID groupID, bool allEstates)
+        {
+            List<string> listParams = new List<string>();
+            uint flag = allEstates ? (uint)EstateAccessDelta.AddGroupAllowedAllEstates : (uint)EstateAccessDelta.AddAllowedAllEstates;
+            listParams.Add(Client.Self.AgentID.ToString());
+            listParams.Add(flag.ToString());
+            listParams.Add(groupID.ToString());
+            EstateOwnerMessage("estateaccessdelta", listParams);
+        }
+        ///
+        /// <summary>
+        /// Removes a group from the estate Allowed list</summary>
+        /// <param name="userID">Key of Group to Remove</param>
+        /// <param name="allEstates">Removes Group as an allowed Group from All estates if true</param>
+        public void RemoveAllowedGroup(UUID groupID, bool allEstates)
+        {
+            List<string> listParams = new List<string>();
+            uint flag = allEstates ? (uint)EstateAccessDelta.RemoveGroupAllowedAllEstates : (uint)EstateAccessDelta.RemoveGroupAsAllowed;
+            listParams.Add(Client.Self.AgentID.ToString());
+            listParams.Add(flag.ToString());
+            listParams.Add(groupID.ToString());
+            EstateOwnerMessage("estateaccessdelta", listParams);
+        }
         #endregion
+
+
         #region Packet Handlers
 
         /// <summary></summary>
