@@ -1095,6 +1095,15 @@ namespace OpenMetaverse
             simulator.BillableFactor = handshake.RegionInfo.BillableFactor;
             simulator.Access = (SimAccess)handshake.RegionInfo.SimAccess;
 
+
+            simulator.RegionID = handshake.RegionInfo2.RegionID;
+            simulator.ColoLocation = Utils.BytesToString(handshake.RegionInfo3.ColoName);
+            simulator.CPUClass = handshake.RegionInfo3.CPUClassID;
+            simulator.CPURatio = handshake.RegionInfo3.CPURatio;
+            simulator.ProductName = Utils.BytesToString(handshake.RegionInfo3.ProductName);
+            simulator.ProductSku = Utils.BytesToString(handshake.RegionInfo3.ProductSKU);
+            
+
             Logger.Log("Received a region handshake for " + simulator.ToString(), Helpers.LogLevel.Info, Client);
 
             // Send a RegionHandshakeReply
