@@ -1000,6 +1000,101 @@ namespace OpenMetaverse.Tests
             Assert.AreEqual(s.Reason, t.Reason);
 
         }
+
+        [Test]
+        public void UpdateAgentInformationMessage()
+        {
+            UpdateAgentInformationMessage s = new UpdateAgentInformationMessage();
+            s.MaxAccess = "PG";
+            OSDMap map = s.Serialize();
+
+            UpdateAgentInformationMessage t = new UpdateAgentInformationMessage();
+            t.Deserialize(map);
+
+            Assert.AreEqual(s.MaxAccess, t.MaxAccess);
+        }
+
+        [Test]
+        public void PlacesReplyMessage()
+        {
+            PlacesReplyMessage s = new PlacesReplyMessage();
+            s.TransactionID = UUID.Random();
+            s.AgentID = UUID.Random();
+            s.QueryID = UUID.Random();
+            s.QueryDataBlocks = new PlacesReplyMessage.QueryData[2];
+
+            PlacesReplyMessage.QueryData q1 = new PlacesReplyMessage.QueryData();
+            q1.ActualArea = 1024;
+            q1.BillableArea = 768;
+            q1.Description = "Test Description Q1";
+            q1.Dwell = 1435.4f;
+            q1.Flags = 1 << 6;
+            q1.GlobalX = 1;
+            q1.GlobalY = 2;
+            q1.GlobalZ = 3;
+            q1.Name = "Test Name Q1";
+            q1.OwnerID = UUID.Random();
+            q1.Price = 1;
+            q1.ProductSku = "021";
+            q1.SimName = "Hooper";
+            q1.SnapShotID = UUID.Random();
+
+            s.QueryDataBlocks[0] = q1;
+
+            PlacesReplyMessage.QueryData q2 = new PlacesReplyMessage.QueryData();
+            q2.ActualArea = 512;
+            q2.BillableArea = 384;
+            q2.Description = "Test Description Q2";
+            q2.Dwell = 1;
+            q2.Flags = 1 << 4;
+            q2.GlobalX = 4;
+            q2.GlobalY = 5;
+            q2.GlobalZ = 6;
+            q2.Name = "Test Name Q2";
+            q2.OwnerID = UUID.Random();
+            q2.Price = 2;
+            q2.ProductSku = "022";
+            q2.SimName = "Tethys";
+            q2.SnapShotID = UUID.Random();
+
+            s.QueryDataBlocks[1] = q2;
+
+            OSDMap map = s.Serialize();
+
+            PlacesReplyMessage t = new PlacesReplyMessage();
+            t.Deserialize(map);
+
+            Assert.AreEqual(s.AgentID, t.AgentID);
+            Assert.AreEqual(s.TransactionID, t.TransactionID);
+            Assert.AreEqual(s.QueryID, t.QueryID);
+
+            for(int i = 0; i < s.QueryDataBlocks.Length; i++)
+            {
+                Assert.AreEqual(s.QueryDataBlocks[i].ActualArea, t.QueryDataBlocks[i].ActualArea);
+                Assert.AreEqual(s.QueryDataBlocks[i].BillableArea, t.QueryDataBlocks[i].BillableArea);
+                Assert.AreEqual(s.QueryDataBlocks[i].Description, t.QueryDataBlocks[i].Description);
+                Assert.AreEqual(s.QueryDataBlocks[i].Dwell, t.QueryDataBlocks[i].Dwell);
+                Assert.AreEqual(s.QueryDataBlocks[i].Flags, t.QueryDataBlocks[i].Flags);
+                Assert.AreEqual(s.QueryDataBlocks[i].GlobalX, t.QueryDataBlocks[i].GlobalX);
+                Assert.AreEqual(s.QueryDataBlocks[i].GlobalY, t.QueryDataBlocks[i].GlobalY);
+                Assert.AreEqual(s.QueryDataBlocks[i].GlobalZ, t.QueryDataBlocks[i].GlobalZ);
+                Assert.AreEqual(s.QueryDataBlocks[i].Name, t.QueryDataBlocks[i].Name);
+                Assert.AreEqual(s.QueryDataBlocks[i].OwnerID, t.QueryDataBlocks[i].OwnerID);
+                Assert.AreEqual(s.QueryDataBlocks[i].Price, t.QueryDataBlocks[i].Price);
+                Assert.AreEqual(s.QueryDataBlocks[i].ProductSku, t.QueryDataBlocks[i].ProductSku);
+                Assert.AreEqual(s.QueryDataBlocks[i].SimName, t.QueryDataBlocks[i].SimName);
+                Assert.AreEqual(s.QueryDataBlocks[i].SnapShotID, t.QueryDataBlocks[i].SnapShotID);
+            }
+
+
+
+
+
+
+
+        }
+
+
     }
 }
 

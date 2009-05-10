@@ -77,6 +77,7 @@ namespace OpenMetaverse.Messages
                 case "CrossedRegion": message = new CrossedRegionMessage(); break;
                 case "TeleportFailed": message = new TeleportFailedMessage(); break;
                 case "PlacesReply": message = new PlacesReplyMessage(); break;
+                case "UpdateAgentInformation": message = new UpdateAgentInformationMessage(); break;
                 //case "ProductInfoRequest": message = new ProductInfoRequestMessage(); break;
 
                 // Capabilities TODO:

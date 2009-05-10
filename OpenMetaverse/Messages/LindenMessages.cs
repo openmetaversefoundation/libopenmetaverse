@@ -2285,23 +2285,20 @@ namespace OpenMetaverse.Messages.Linden
             OSDMap map = new OSDMap(3);
 
             // add the AgentData map
-            OSDMap agentIDmap = new OSDMap(1);
+            OSDMap agentIDmap = new OSDMap(2);
             agentIDmap["AgentID"] = OSD.FromUUID(AgentID);
+            agentIDmap["QueryID"] = OSD.FromUUID(QueryID);
 
-            OSDMap queryIDMap = new OSDMap(1);
-            queryIDMap["QueryID"] = OSD.FromUUID(QueryID);
-
-            OSDArray agentDataArray = new OSDArray(2);
+            OSDArray agentDataArray = new OSDArray();
             agentDataArray.Add(agentIDmap);
-            agentDataArray.Add(queryIDMap);
-
+            
             map["AgentData"] = agentDataArray;
 
             // add the QueryData map
             OSDArray dataBlocksArray = new OSDArray(QueryDataBlocks.Length);
             for(int i = 0; i < QueryDataBlocks.Length; i++)
             {
-                OSDMap queryDataMap = new OSDMap(10);
+                OSDMap queryDataMap = new OSDMap(14);
                 queryDataMap["ActualArea"] = OSD.FromInteger(QueryDataBlocks[i].ActualArea);
                 queryDataMap["BillableArea"] = OSD.FromInteger(QueryDataBlocks[i].BillableArea);
                 queryDataMap["Desc"] = OSD.FromString(QueryDataBlocks[i].Description);
@@ -2334,6 +2331,7 @@ namespace OpenMetaverse.Messages.Linden
         public void Deserialize(OSDMap map)
         {
             OSDArray agentDataArray = (OSDArray) map["AgentData"];
+
             OSDMap agentDataMap = (OSDMap)agentDataArray[0];
             AgentID = agentDataMap["AgentID"].AsUUID();
             QueryID = agentDataMap["QueryID"].AsUUID();
@@ -2343,16 +2341,16 @@ namespace OpenMetaverse.Messages.Linden
             QueryDataBlocks = new QueryData[dataBlocksArray.Count];
             for(int i = 0; i < dataBlocksArray.Count; i++)
             {
+                OSDMap dataMap = (OSDMap)dataBlocksArray[i];
                 QueryData data = new QueryData();
-                OSDMap dataMap = (OSDMap) dataBlocksArray[i];
                 data.ActualArea = dataMap["ActualArea"].AsInteger();
                 data.BillableArea = dataMap["BillableArea"].AsInteger();
                 data.Description = dataMap["Desc"].AsString();
                 data.Dwell = (float)dataMap["Dwell"].AsReal();
                 data.Flags = dataMap["Flags"].AsInteger();
-                data.GlobalX = dataMap["GlobalX"].AsInteger();
-                data.GlobalY = dataMap["GlobalY"].AsInteger();
-                data.GlobalZ = dataMap["GlobalX"].AsInteger();
+                data.GlobalX = (float)dataMap["GlobalX"].AsReal();
+                data.GlobalY = (float)dataMap["GlobalY"].AsReal();
+                data.GlobalZ = (float)dataMap["GlobalZ"].AsReal();
                 data.Name = dataMap["Name"].AsString();
                 data.OwnerID = dataMap["OwnerID"].AsUUID();
                 data.Price = dataMap["Price"].AsInteger();
@@ -2365,6 +2363,26 @@ namespace OpenMetaverse.Messages.Linden
             OSDArray transactionArray = (OSDArray) map["TransactionData"];
             OSDMap transactionDataMap = (OSDMap) transactionArray[0];
             TransactionID = transactionDataMap["TransactionID"].AsUUID();
+        }
+    }
+
+    public class UpdateAgentInformationMessage : IMessage
+    {
+        public string MaxAccess; // PG, A, or M
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(1);
+            OSDMap prefsMap = new OSDMap(1);
+            prefsMap["max"] = OSD.FromString(MaxAccess);
+            map["access_prefs"] = prefsMap;
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDMap prefsMap = (OSDMap)map["access_prefs"];
+            MaxAccess = prefsMap["max"].AsString();
         }
     }
 
