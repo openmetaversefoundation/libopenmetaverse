@@ -44,6 +44,14 @@ namespace OpenMetaverse.TestClient
             output.AppendLine(Client.Network.CurrentSim.TerrainDetail3.ToString());
             output.Append("Water Height: ");
             output.AppendLine(Client.Network.CurrentSim.WaterHeight.ToString());
+            output.Append("Datacenter:");
+            output.AppendLine(Client.Network.CurrentSim.ColoLocation);
+            output.Append("CPU Ratio:");
+            output.AppendLine(Client.Network.CurrentSim.CPURatio.ToString());
+            output.Append("CPU Class:");
+            output.AppendLine(Client.Network.CurrentSim.CPUClass.ToString());
+            output.Append("Region SKU/Type:");
+            output.AppendLine(Client.Network.CurrentSim.ProductSku + " " + Client.Network.CurrentSim.ProductName);
 
             return output.ToString();
         }
