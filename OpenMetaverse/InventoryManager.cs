@@ -2236,6 +2236,48 @@ namespace OpenMetaverse
             _Client.Network.SendPacket(take);
         }
 
+        /// <summary>
+        /// Rez an item from inventory to its previous simulator location
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="rotation"></param>
+        /// <param name="position"></param>
+        /// <param name="item"></param>
+        /// <param name="queryID"></param>
+        /// <param name="requestObjectDetails"></param>
+        /// <returns></returns>
+        public UUID RequestRestoreRezFromInventory(Simulator simulator, InventoryItem item, UUID queryID)
+        {
+            RezRestoreToWorldPacket add = new RezRestoreToWorldPacket();
+
+            add.AgentData.AgentID = _Client.Self.AgentID;
+            add.AgentData.SessionID = _Client.Self.SessionID;
+
+            add.InventoryData.ItemID = item.UUID;
+            add.InventoryData.FolderID = item.ParentUUID;
+            add.InventoryData.CreatorID = item.CreatorID;
+            add.InventoryData.OwnerID = item.OwnerID;
+            add.InventoryData.GroupID = item.GroupID;
+            add.InventoryData.BaseMask = (uint)item.Permissions.BaseMask;
+            add.InventoryData.OwnerMask = (uint)item.Permissions.OwnerMask;
+            add.InventoryData.GroupMask = (uint)item.Permissions.GroupMask;
+            add.InventoryData.EveryoneMask = (uint)item.Permissions.EveryoneMask;
+            add.InventoryData.NextOwnerMask = (uint)item.Permissions.NextOwnerMask;
+            add.InventoryData.GroupOwned = item.GroupOwned;
+            add.InventoryData.TransactionID = queryID;
+            add.InventoryData.Type = (sbyte)item.InventoryType;
+            add.InventoryData.InvType = (sbyte)item.InventoryType;
+            add.InventoryData.Flags = (uint)item.Flags;
+            add.InventoryData.SaleType = (byte)item.SaleType;
+            add.InventoryData.SalePrice = item.SalePrice;
+            add.InventoryData.Name = Utils.StringToBytes(item.Name);
+            add.InventoryData.Description = Utils.StringToBytes(item.Description);
+            add.InventoryData.CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
+
+            _Client.Network.SendPacket(add, simulator);
+
+            return queryID;
+        }
 
         /// <summary>
         /// Give an inventory item to another avatar
