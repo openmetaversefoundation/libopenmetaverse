@@ -475,10 +475,10 @@ namespace OpenMetaverse
         public void SetRegionTerrainHeights(float lowSW, float highSW, float lowNW, float highNW, float lowSE, float highSE, float lowNE, float highNE)
         {
             List<string> listParams = new List<string>();
-            listParams.Add("0 " + lowSW.ToString() + " " + highSW.ToString(Utils.EnUsCulture)); //SW low-high 
-            listParams.Add("1 " + lowNW.ToString() + " " + highNW.ToString(Utils.EnUsCulture)); //NW low-high 
-            listParams.Add("2 " + lowSE.ToString() + " " + highSE.ToString(Utils.EnUsCulture)); //SE low-high 
-            listParams.Add("3 " + lowNE.ToString() + " " + highNE.ToString(Utils.EnUsCulture)); //NE low-high 
+            listParams.Add("0 " + lowSW.ToString(Utils.EnUsCulture) + " " + highSW.ToString(Utils.EnUsCulture)); //SW low-high 
+            listParams.Add("1 " + lowNW.ToString(Utils.EnUsCulture) + " " + highNW.ToString(Utils.EnUsCulture)); //NW low-high 
+            listParams.Add("2 " + lowSE.ToString(Utils.EnUsCulture) + " " + highSE.ToString(Utils.EnUsCulture)); //SE low-high 
+            listParams.Add("3 " + lowNE.ToString(Utils.EnUsCulture) + " " + highNE.ToString(Utils.EnUsCulture)); //NE low-high 
             EstateOwnerMessage("textureheights", listParams);
             EstateOwnerMessage("texturecommit", "");
         }
