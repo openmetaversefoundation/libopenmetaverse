@@ -28,16 +28,14 @@
 <-
 {
 	success: boolean,
-	message: string,
-	simulation_key: uuid
+	message: string
 }
 
 %%delete_region
 
 ->
 {
-	id: uuid,
-	simulation_key: uuid
+	id: uuid
 }
 
 <-
@@ -50,8 +48,7 @@
 
 ->
 {
-	region: region_info,
-	simulation_key: uuid
+	region: region_info
 }
 
 <-
@@ -100,6 +97,13 @@
 // This message should be ignored if it originates from anywhere other than the
 // identity server for the given identity
 
+&identity_attribute = string
+&identity_attribute = integer
+&identity_attribute = date
+&identity_attribute = uuid
+&identity_attribute = uri
+&identity_attribute = [ real, real, real ]
+
 %%request_capabilities
 
 ->
@@ -111,6 +115,43 @@
 <-
 {
     capabilities: { $: uri }
+}
+
+%%authenticate_ll
+
+->
+{
+	first: string,
+	last: string,
+	md5_pass: string,
+	services: { $: [ string, ... ] }
+}
+
+<-
+{
+	success: boolean,
+	message: string,
+	identity: uri,
+	attributes: { $: identity_attribute },
+    services: { $: { $: uri } }
+}
+
+%%authenticate_openid
+
+->
+{
+	identity: uri,
+	# FIXME: Need whatever piece of data OpenID uses to confirm auth
+	services: { $: [ string, ... ] }
+}
+
+<-
+{
+	success: boolean,
+	message: string,
+	identity: uri,
+	attributes: { $: identity_attribute },
+    services: { $: { $: uri } }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -128,12 +169,12 @@
 	perms_group: integer,
 	perms_everyone: integer,
 	perms_next_owner: integer,
-	creator_id: uuid,
-	owner_id: uuid,
+	creator_identity: string,
+	owner_identity: string,
+	last_owner_identity: string,
+	group_identity: string,
 	last_attachment_point: integer,
-	last_owner_id: uuid,
 	link_number: integer,
-	group_id: uuid,
 	local_id: integer,
 	position: [ real, real, real ],
 	rotation: [ real, real, real, real ],
@@ -164,6 +205,54 @@
 	rez_time: date,
 	sale_price: integer,
 	sale_type: integer,
+	flexible:
+	{
+		softness: integer,
+		gravity: real,
+		drag: real,
+		wind: real,
+		tension: real,
+		force: [ real, real, real ]
+	},
+	light:
+	{
+		color: [ real, real, real, real ],
+		intensity: real,
+		radius: real,
+		cutoff: real,
+		falloff: real
+	},
+	sculpt:
+	{
+		sculpt_texture: uuid,
+		sculpt_type: integer
+	},
+	particles:
+	{
+		flags: integer,
+		pattern: integer,
+		max_age: real,
+		start_age: real,
+		inner_angle: real,
+		outer_angle: real,
+		burst_rate: real,
+		burst_radius: real,
+		burst_speed_min: real,
+		burst_speed_max: real,
+		burst_particle_count: integer,
+		angular_velocity: [ real, real, real ],
+		acceleration: [ real, real, real ],
+		texture_id: uuid,
+		target_id: uuid,
+		data_flags: integer,
+		particle_max_age: real,
+		particle_start_color: [ real, real, real, real ],
+		particle_end_color: [ real, real, real, real ],
+		particle_start_scale_x: real,
+		particle_start_scale_y: real,
+		particle_end_scale_x: real,
+		particle_end_scale_y: real
+	},
 	shape:
 	{
 		path_curve: integer,
@@ -211,11 +300,11 @@
 				id: uuid,
 				parent_id: uuid,
 				name: string,
-				owner_id: uuid,
+				owner_identity: string,
+				creator_identity: string,
+				group_identity: string,
 				asset_id: uuid,
 				content_type: string,
-				creator_id: uuid,
-				group_id: uuid,
 				description: string,
 				group_owned: boolean,
 				perms_base: binary,
@@ -351,7 +440,8 @@
 <-
 {
 	success: boolean,
-	message: string
+	message: string,
+	object: inventory_object
 }
 
 %%fetch_object
