@@ -2386,5 +2386,89 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    public class DirLandReplyMessage : IMessage
+    {
+        public UUID AgentID;
+        public UUID QueryID;
+
+        public class QueryReply
+        {
+            public int ActualArea;
+            public bool Auction;
+            public bool ForSale;
+            public string Name;
+            public UUID ParcelID;
+            public string ProductSku;
+            public int SalePrice;
+        }
+    
+
+        public QueryReply[] QueryReplies;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(3);
+
+            OSDMap agentMap = new OSDMap(1);
+            agentMap["AgentID"] = OSD.FromUUID(AgentID);
+            OSDArray agentDataArray = new OSDArray(1);
+            agentDataArray.Add(agentMap);
+            map["AgentData"] = agentDataArray;
+
+            OSDMap queryMap = new OSDMap(1);
+            queryMap["QueryID"] = OSD.FromUUID(QueryID);
+            OSDArray queryDataArray = new OSDArray(1);
+            queryDataArray.Add(queryMap);
+            map["QueryData"] = queryDataArray;
+
+            OSDArray queryReplyArray = new OSDArray();
+            for (int i = 0; i < QueryReplies.Length; i++)
+            {
+                OSDMap queryReply = new OSDMap(100);
+                queryReply["ActualArea"] = OSD.FromInteger(QueryReplies[i].ActualArea);
+                queryReply["Auction"] = OSD.FromBoolean(QueryReplies[i].Auction);
+                queryReply["ForSale"] = OSD.FromBoolean(QueryReplies[i].ForSale);
+                queryReply["Name"] = OSD.FromString(QueryReplies[i].Name);
+                queryReply["ParcelID"] = OSD.FromUUID(QueryReplies[i].ParcelID);
+                queryReply["ProductSKU"] = OSD.FromString(QueryReplies[i].ProductSku);
+                queryReply["SalePrice"] = OSD.FromInteger(QueryReplies[i].SalePrice);
+
+                queryReplyArray.Add(queryReply);
+            }
+            map["QueryReplies"] = queryReplyArray;
+
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDArray agentDataArray = (OSDArray) map["AgentData"];
+            OSDMap agentDataMap = (OSDMap)agentDataArray[0];
+            AgentID = agentDataMap["AgentID"].AsUUID();
+
+            OSDArray queryDataArray = (OSDArray) map["QueryData"];
+            OSDMap queryDataMap = (OSDMap) queryDataArray[0];
+            QueryID = queryDataMap["QueryID"].AsUUID();
+
+            OSDArray queryRepliesArray = (OSDArray) map["QueryReplies"];
+
+            QueryReplies = new QueryReply[queryRepliesArray.Count];
+            for(int i = 0; i < queryRepliesArray.Count; i++)
+            {
+                QueryReply reply = new QueryReply();
+                OSDMap replyMap = (OSDMap) queryRepliesArray[i];
+                reply.ActualArea = replyMap["ActualArea"].AsInteger();
+                reply.Auction = replyMap["Auction"].AsBoolean();
+                reply.ForSale = replyMap["ForSale"].AsBoolean();
+                reply.Name = replyMap["Name"].AsString();
+                reply.ParcelID = replyMap["ParcelID"].AsUUID();
+                reply.ProductSku = replyMap["ProductSKU"].AsString();
+                reply.SalePrice = replyMap["SalePrice"].AsInteger();
+
+                QueryReplies[i] = reply;
+            }
+        }
+    }
+
     #endregion
 }

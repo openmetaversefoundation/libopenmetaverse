@@ -1085,16 +1085,61 @@ namespace OpenMetaverse.Tests
                 Assert.AreEqual(s.QueryDataBlocks[i].SimName, t.QueryDataBlocks[i].SimName);
                 Assert.AreEqual(s.QueryDataBlocks[i].SnapShotID, t.QueryDataBlocks[i].SnapShotID);
             }
+        }
 
+        [Test]
+        public void DirLandReplyMessage()
+        {
+            DirLandReplyMessage s = new DirLandReplyMessage();
+            s.AgentID = UUID.Random();
+            s.QueryID = UUID.Random();
+            s.QueryReplies = new DirLandReplyMessage.QueryReply[2];
 
+            DirLandReplyMessage.QueryReply q1 = new DirLandReplyMessage.QueryReply();
+            q1.ActualArea = 1024;
+            q1.Auction = true;
+            q1.ForSale = true;
+            q1.Name = "For Sale Parcel Q1";
+            q1.ProductSku = "023";
+            q1.SalePrice = 2193;
+            q1.ParcelID = UUID.Random();
 
+            s.QueryReplies[0] = q1;
 
+            DirLandReplyMessage.QueryReply q2 = new DirLandReplyMessage.QueryReply();
+            q2.ActualArea = 512;
+            q2.Auction = true;
+            q2.ForSale = true;
+            q2.Name = "For Sale Parcel Q2";
+            q2.ProductSku = "023";
+            q2.SalePrice = 22193;
+            q2.ParcelID = UUID.Random();
 
+            s.QueryReplies[1] = q2;
+
+            OSDMap map = s.Serialize();
+
+            DirLandReplyMessage t = new DirLandReplyMessage();
+            t.Deserialize(map);
+
+            Assert.AreEqual(s.AgentID, t.AgentID);
+            Assert.AreEqual(s.QueryID, t.QueryID);
+
+            for(int i = 0; i < s.QueryReplies.Length; i++)
+            {
+                Assert.AreEqual(s.QueryReplies[i].ActualArea, t.QueryReplies[i].ActualArea);
+                Assert.AreEqual(s.QueryReplies[i].Auction, t.QueryReplies[i].Auction);
+                Assert.AreEqual(s.QueryReplies[i].ForSale, t.QueryReplies[i].ForSale);
+                Assert.AreEqual(s.QueryReplies[i].Name, t.QueryReplies[i].Name);
+                Assert.AreEqual(s.QueryReplies[i].ProductSku, t.QueryReplies[i].ProductSku);
+                Assert.AreEqual(s.QueryReplies[i].ParcelID, t.QueryReplies[i].ParcelID);
+                Assert.AreEqual(s.QueryReplies[i].SalePrice, t.QueryReplies[i].SalePrice);
+                
+
+            }
 
 
         }
-
-
     }
 }
 
