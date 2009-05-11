@@ -163,6 +163,7 @@
           <Exclude name="Vector4.cs"/>
           <Exclude name="BlockingQueue.cs"/>
           <Exclude name="DoubleDictionary.cs"/>
+          <Exclude name="ThreadSafeDictionary.cs"/>
           <Exclude name="ExpiringCache.cs"/>
           <Exclude name="CircularQueue.cs"/>
           <Exclude name="CRC32.cs"/>
