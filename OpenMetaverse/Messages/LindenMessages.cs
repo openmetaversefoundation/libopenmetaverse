@@ -35,19 +35,33 @@ namespace OpenMetaverse.Messages.Linden
     #region Teleport/Region/Movement Messages
 
     /// <summary>
-    /// 
+    /// Sent to the client to indicate a teleport request has completed
     /// </summary>
     public class TeleportFinishMessage : IMessage
     {
+        /// <summary>The <see cref="UUID"/> of the agent</summary>
         public UUID AgentID;
+        /// <summary></summary>
         public int LocationID;
+        /// <summary>The simulators handle the agent teleported to</summary>
         public ulong RegionHandle;
+        /// <summary>A Uri which contains a list of Capabilities the simulator supports</summary>
         public Uri SeedCapability;
+        /// <summary>Indicates the level of access required
+        /// to access the simulator, or the content rating, or the simulators 
+        /// map status</summary>
         public SimAccess SimAccess;
+        /// <summary>The IP Address of the simulator</summary>
         public IPAddress IP;
+        /// <summary>The UDP Port the simulator will listen for UDP traffic on</summary>
         public int Port;
+        /// <summary>Status flags indicating the state of the Agent upon arrival, Flying, etc.</summary>
         public TeleportFlags Flags;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
@@ -71,6 +85,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             OSDArray array = (OSDArray)map["Info"];
@@ -87,6 +105,9 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    /// <summary>
+    /// Sent to the viewer when a neighboring simulator is requesting the agent make a connection to it.
+    /// </summary>
     public class EstablishAgentCommunicationMessage : IMessage
     {
         public UUID AgentID;
@@ -94,6 +115,10 @@ namespace OpenMetaverse.Messages.Linden
         public int Port;
         public Uri SeedCapability;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(3);
@@ -103,6 +128,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             string ipAndPort = map["sim-ip-and-port"].AsString();
@@ -126,6 +155,10 @@ namespace OpenMetaverse.Messages.Linden
         public IPAddress IP;
         public int Port;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(3);
@@ -156,6 +189,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             OSDMap infoMap = (OSDMap)((OSDArray)map["Info"])[0];
@@ -185,6 +222,10 @@ namespace OpenMetaverse.Messages.Linden
 
         public SimulatorInfoBlock[] Simulators;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
@@ -205,6 +246,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             OSDArray array = (OSDArray)map["SimulatorInfo"];
@@ -241,15 +286,14 @@ namespace OpenMetaverse.Messages.Linden
         public string Reason;
 
         /// <summary>
-        /// Serialize the message object into an OSD map
+        /// Serialize the object
         /// </summary>
-        /// <returns>An <see cref="OSDMap"/> containing the serialized message object</returns>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(2);
             
             OSDMap alertInfoMap = new OSDMap(2);
-
 
             alertInfoMap["ExtraParams"] = OSD.FromString(ExtraParams);
             alertInfoMap["Message"] = OSD.FromString(MessageKey);
@@ -265,13 +309,12 @@ namespace OpenMetaverse.Messages.Linden
             map["Info"] = infoArray;
 
             return map;
-
         }
 
         /// <summary>
-        /// Deserialize an OSDMap into a message object
+        /// Deserialize the message
         /// </summary>
-        /// <param name="map"></param>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
 
@@ -308,6 +351,10 @@ namespace OpenMetaverse.Messages.Linden
 
         public ReportDataBlock[] ReportDataBlocks;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(3);
@@ -348,6 +395,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             
@@ -424,9 +475,9 @@ namespace OpenMetaverse.Messages.Linden
         public PrimOwner[] PrimOwnersBlock;
 
         /// <summary>
-        /// Create an <see cref="OSDMap"/> from an array of <see cref="PrimOwners"/> objects
+        /// Serialize the object
         /// </summary>
-        /// <returns></returns>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDArray dataArray = new OSDArray(PrimOwnersBlock.Length);
@@ -501,6 +552,7 @@ namespace OpenMetaverse.Messages.Linden
     /// <summary>
     /// The details of a single parcel in a region, also contains some regionwide globals
     /// </summary>
+    [Serializable]
     public class ParcelPropertiesMessage : IMessage
     {
         /// <summary>Simulator-local ID of this parcel</summary>
@@ -631,9 +683,9 @@ namespace OpenMetaverse.Messages.Linden
         public bool ObscureMusic;
 
         /// <summary>
-        /// Encode the data object as an OSDMap
+        /// Serialize the object
         /// </summary>
-        /// <returns>An OSDMap containing the encoded object</returns>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
 
@@ -850,6 +902,10 @@ namespace OpenMetaverse.Messages.Linden
             UserLookAt = map["user_look_at"].AsVector3();
         }
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
@@ -887,6 +943,10 @@ namespace OpenMetaverse.Messages.Linden
     {
         public UUID ParcelID;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
@@ -894,6 +954,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             ParcelID = map["parcel_id"].AsUUID();
@@ -912,6 +976,10 @@ namespace OpenMetaverse.Messages.Linden
         public string Name;
         public string Description;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(5);
@@ -925,6 +993,10 @@ namespace OpenMetaverse.Messages.Linden
 
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             FolderID = map["folder_id"].AsUUID();
@@ -956,6 +1028,10 @@ namespace OpenMetaverse.Messages.Linden
 
         public GroupData[] GroupDataBlock;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(3);
@@ -988,6 +1064,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             OSDArray agentArray = (OSDArray)map["AgentData"];
@@ -1024,6 +1104,10 @@ namespace OpenMetaverse.Messages.Linden
         public string Language;
         public bool LanguagePublic;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(2);
@@ -1034,6 +1118,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             LanguagePublic = map["language_is_public"].AsBoolean();
@@ -1052,6 +1140,10 @@ namespace OpenMetaverse.Messages.Linden
         public string RegionName;
         public string Message = "RequiredVoiceVersion";
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(4);
@@ -1062,6 +1154,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             MajorVersion = map["major_version"].AsInteger();
@@ -1077,6 +1173,10 @@ namespace OpenMetaverse.Messages.Linden
         public string RegionName;
         public Uri SipChannelUri;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(3);
@@ -1091,6 +1191,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             ParcelID = map["parcel_local_id"].AsInteger();
@@ -1106,6 +1210,10 @@ namespace OpenMetaverse.Messages.Linden
         public string Password;
         public string Username;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(2);
@@ -1116,6 +1224,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             Username = map["username"].AsString();
@@ -1132,6 +1244,10 @@ namespace OpenMetaverse.Messages.Linden
         public string State; // "upload"
         public Uri UploaderUrl;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(2);
@@ -1141,6 +1257,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             State = map["state"].AsString();
@@ -1156,6 +1276,10 @@ namespace OpenMetaverse.Messages.Linden
         public bool Running;
         public string message = "ScriptRunningReply";
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(2);
@@ -1175,6 +1299,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             OSDArray scriptArray = (OSDArray)map["Script"];
@@ -1195,6 +1323,10 @@ namespace OpenMetaverse.Messages.Linden
         public UUID TaskID;
         public UUID ItemID;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
@@ -1204,6 +1336,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             TaskID = map["task_id"].AsUUID();
@@ -1216,6 +1352,10 @@ namespace OpenMetaverse.Messages.Linden
     {
         public UUID ItemID;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
@@ -1224,6 +1364,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             ItemID = map["item_id"].AsUUID();
@@ -1238,6 +1382,10 @@ namespace OpenMetaverse.Messages.Linden
         public UUID NotecardID;
         public UUID ObjectID;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(5);
@@ -1250,6 +1398,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             CallbackID = map["callback-id"].AsInteger();
@@ -1270,6 +1422,10 @@ namespace OpenMetaverse.Messages.Linden
         public string Target; // mono or lsl2
         public UUID TaskID;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(4);
@@ -1280,6 +1436,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             ScriptRunning = map["is_script_running"].AsBoolean();
@@ -1294,6 +1454,10 @@ namespace OpenMetaverse.Messages.Linden
         public UUID ItemID;
         public string Target;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(2);
@@ -1302,6 +1466,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             ItemID = map["item_id"].AsUUID();
@@ -1319,6 +1487,10 @@ namespace OpenMetaverse.Messages.Linden
         public string Subject;
         public string ToEmail;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(6);
@@ -1331,6 +1503,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             FromEmail = map["from"].AsString();
@@ -1362,6 +1538,10 @@ namespace OpenMetaverse.Messages.Linden
 
         public LayerData[] LayerDataBlocks;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(2);
@@ -1388,6 +1568,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             OSDMap agentMap = (OSDMap)map["AgentData"];
@@ -1421,12 +1605,20 @@ namespace OpenMetaverse.Messages.Linden
     /// New as of 1.23 RC1, no details yet.
     /// </summary>
     public class ProductInfoRequestMessage : IMessage
-    {        
+    {
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             
@@ -1438,11 +1630,16 @@ namespace OpenMetaverse.Messages.Linden
 
     public interface IChatSessionRequest
     {
-        /// <summary>Serialize the implementing classes fields</summary>
-        /// <returns>An <see cref="OSDMap"/> of the implementing classes data</returns>
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         OSDMap Serialize();
-        /// <summary></summary>
-        /// <param name="map"></param>
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         void Deserialize(OSDMap map);
     }
 
@@ -1471,6 +1668,10 @@ namespace OpenMetaverse.Messages.Linden
         /// <summary>The conferences Session ID</summary>
         public UUID SessionID;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(3);
@@ -1486,6 +1687,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             Method = map["method"].AsString();
@@ -1544,6 +1749,10 @@ namespace OpenMetaverse.Messages.Linden
         public string RequestKey; // "text" or "voice"
         public bool RequestValue;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(3);
@@ -1562,6 +1771,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             Method = map["method"].AsString();
@@ -1599,6 +1812,10 @@ namespace OpenMetaverse.Messages.Linden
         /// <summary>The conference SessionID</summary>
         public UUID SessionID;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(2);
@@ -1607,6 +1824,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             Method = map["method"].AsString();
@@ -1618,11 +1839,19 @@ namespace OpenMetaverse.Messages.Linden
     {
         public IChatSessionRequest Request;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             return Request.Serialize();
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             if (map.ContainsKey("method") && map["method"].AsString().Equals("start conference"))
@@ -1645,6 +1874,10 @@ namespace OpenMetaverse.Messages.Linden
         public UUID SessionID;
         public bool Success;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(2);
@@ -1654,6 +1887,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             Success = map["success"].AsBoolean();
@@ -1675,6 +1912,10 @@ namespace OpenMetaverse.Messages.Linden
 
         /* Is Text moderation possible? */
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap moderatedMap = new OSDMap(1);
@@ -1695,6 +1936,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             SessionID = map["session_id"].AsUUID();
@@ -1743,6 +1988,10 @@ namespace OpenMetaverse.Messages.Linden
         /// <summary>Context specific packed data</summary>
         public byte[] BinaryBucket;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap dataMap = new OSDMap(3);
@@ -1774,6 +2023,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             OSDMap im = (OSDMap)map["instantmessage"];
@@ -1833,6 +2086,10 @@ namespace OpenMetaverse.Messages.Linden
 
         public AgentUpdatesBlock[] Updates;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
@@ -1865,6 +2122,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
 
@@ -1959,6 +2220,10 @@ namespace OpenMetaverse.Messages.Linden
         public int AckID;
         public bool Done;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
@@ -1967,6 +2232,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             AckID = map["ack"].AsInteger();
@@ -1985,6 +2254,10 @@ namespace OpenMetaverse.Messages.Linden
         }
         public QueueEvent[] MessageEvents;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
@@ -2005,6 +2278,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             Sequence = map["id"].AsInteger();
@@ -2028,11 +2305,19 @@ namespace OpenMetaverse.Messages.Linden
         {
             public IEventMessage Messages;
 
+            /// <summary>
+            /// Serialize the object
+            /// </summary>
+            /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
             public OSDMap Serialize()
             {
                 return Messages.Serialize();
             }
 
+            /// <summary>
+            /// Deserialize the message
+            /// </summary>
+            /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
             public void Deserialize(OSDMap map)
             {
                 if (map.ContainsKey("ack"))
@@ -2104,6 +2389,10 @@ namespace OpenMetaverse.Messages.Linden
         public string SystemOS;
         public int SystemInstalledRam;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(5);
@@ -2186,6 +2475,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             SessionID = map["session_id"].AsUUID();
@@ -2280,6 +2573,10 @@ namespace OpenMetaverse.Messages.Linden
 
         public QueryData[] QueryDataBlocks;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(3);
@@ -2328,6 +2625,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             OSDArray agentDataArray = (OSDArray) map["AgentData"];
@@ -2370,6 +2671,10 @@ namespace OpenMetaverse.Messages.Linden
     {
         public string MaxAccess; // PG, A, or M
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
@@ -2379,6 +2684,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             OSDMap prefsMap = (OSDMap)map["access_prefs"];
@@ -2386,11 +2695,13 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    [Serializable]
     public class DirLandReplyMessage : IMessage
     {
         public UUID AgentID;
         public UUID QueryID;
 
+        [Serializable]
         public class QueryReply
         {
             public int ActualArea;
@@ -2402,9 +2713,12 @@ namespace OpenMetaverse.Messages.Linden
             public int SalePrice;
         }
     
-
         public QueryReply[] QueryReplies;
 
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(3);
@@ -2440,6 +2754,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             OSDArray agentDataArray = (OSDArray) map["AgentData"];

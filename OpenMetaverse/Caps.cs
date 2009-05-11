@@ -145,6 +145,7 @@ namespace OpenMetaverse
             req.Add("NewFileAgentInventory");
             req.Add("ParcelPropertiesUpdate");
             req.Add("ParcelVoiceInfoRequest");
+            req.Add("ProductInfoRequest");
             req.Add("ProvisionVoiceAccountRequest");
             req.Add("RemoteParcelRequest");
             req.Add("RequestTextureDownload");
@@ -167,7 +168,7 @@ namespace OpenMetaverse
             req.Add("UploadBakedTexture");
             req.Add("ViewerStartAuction");
             req.Add("ViewerStats");
-            req.Add("ProductInfoRequest");
+
 
             _SeedRequest = new CapsClient(new Uri(_SeedCapsURI));
             _SeedRequest.OnComplete += new CapsClient.CompleteCallback(SeedRequestCompleteHandler);
