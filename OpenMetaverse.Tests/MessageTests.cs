@@ -1259,6 +1259,66 @@ namespace OpenMetaverse.Tests
 
         [Test]
         [Category("Benchmark")]
+        public void ReflectionPerformanceDirLandReply2()
+        {
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(DirLandReplyMessage));
+
+            DirLandReplyMessage s = new DirLandReplyMessage();
+            s.AgentID = UUID.Random();
+            s.QueryID = UUID.Random();
+            s.QueryReplies = new DirLandReplyMessage.QueryReply[2];
+
+            DirLandReplyMessage.QueryReply q1 = new DirLandReplyMessage.QueryReply();
+            q1.ActualArea = 1024;
+            q1.Auction = true;
+            q1.ForSale = true;
+            q1.Name = "For Sale Parcel Q1";
+            q1.ProductSku = "023";
+            q1.SalePrice = 2193;
+            q1.ParcelID = UUID.Random();
+
+            s.QueryReplies[0] = q1;
+
+            DirLandReplyMessage.QueryReply q2 = new DirLandReplyMessage.QueryReply();
+            q2.ActualArea = 512;
+            q2.Auction = true;
+            q2.ForSale = true;
+            q2.Name = "For Sale Parcel Q2";
+            q2.ProductSku = "023";
+            q2.SalePrice = 22193;
+            q2.ParcelID = UUID.Random();
+
+            s.QueryReplies[1] = q2;
+
+            System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
+            timer.Start();
+            for (int i = 0; i < TEST_ITER; ++i)
+            {
+                MemoryStream stream = new MemoryStream();
+                OSDMap map = s.Serialize();
+                byte[] jsonData = Encoding.UTF8.GetBytes(OSDParser.SerializeJsonString(map));
+                stream.Write(jsonData, 0, jsonData.Length);
+                stream.Flush();
+                stream.Close();
+            }
+            timer.Stop();
+            Console.WriteLine("OMV Message System Serialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, timer.Elapsed.TotalSeconds);
+
+            timer.Reset();
+            timer.Start();
+            for (int i = 0; i < TEST_ITER; ++i)
+            {
+                MemoryStream stream = new MemoryStream();
+                xmlSerializer.Serialize(stream, s);
+                stream.Flush();
+                stream.Close();
+            }
+            timer.Stop();
+            Console.WriteLine(".NET BinarySerialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, timer.Elapsed.TotalSeconds);
+        }
+
+        [Test]
+        [Category("Benchmark")]
         public void ReflectionPerformanceParcelProperties()
         {
 
