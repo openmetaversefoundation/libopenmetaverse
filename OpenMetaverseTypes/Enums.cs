@@ -162,4 +162,39 @@ namespace OpenMetaverse
         /// <summary>The contents of the object are for sale</summary>
         Contents = 3
     }
+
+    /// <summary>
+    /// Types of wearable assets
+    /// </summary>
+    public enum WearableType : byte
+    {
+        /// <summary>Body shape</summary>
+        Shape = 0,
+        /// <summary>Skin textures and attributes</summary>
+        Skin,
+        /// <summary>Hair</summary>
+        Hair,
+        /// <summary>Eyes</summary>
+        Eyes,
+        /// <summary>Shirt</summary>
+        Shirt,
+        /// <summary>Pants</summary>
+        Pants,
+        /// <summary>Shoes</summary>
+        Shoes,
+        /// <summary>Socks</summary>
+        Socks,
+        /// <summary>Jacket</summary>
+        Jacket,
+        /// <summary>Gloves</summary>
+        Gloves,
+        /// <summary>Undershirt</summary>
+        Undershirt,
+        /// <summary>Underpants</summary>
+        Underpants,
+        /// <summary>Skirt</summary>
+        Skirt,
+        /// <summary>Invalid wearable asset</summary>
+        Invalid = 255
+    };
 }

@@ -56,20 +56,20 @@
 
     <!-- Libraries -->
     
-    <Project name="OpenMetaverseTypes" path="OpenMetaverse/Types" type="Library" rootNamespace="OpenMetaverse">
+    <Project name="OpenMetaverseTypes" path="OpenMetaverseTypes" type="Library" rootNamespace="OpenMetaverse">
       <Configuration name="Debug">
         <Options>
-          <OutputPath>../../bin/</OutputPath>
+          <OutputPath>../bin/</OutputPath>
         </Options>
       </Configuration>
       <Configuration name="Release">
         <Options>
-          <OutputPath>../../bin/</OutputPath>
+          <OutputPath>../bin/</OutputPath>
           <XmlDocFile>OpenMetaverseTypes.XML</XmlDocFile>
         </Options>
       </Configuration>
 
-      <ReferencePath>../../bin/</ReferencePath>
+      <ReferencePath>../bin/</ReferencePath>
       <Reference name="System"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -149,28 +149,7 @@
       <Reference name="XMLRPC"/>
 
       <Files>
-        <Match pattern="*.cs" recurse="true">
-          <Exclude name="Color4.cs"/>
-          <Exclude name="Matrix4.cs"/>
-          <Exclude name="Quaternion.cs"/>
-          <Exclude name="Ray.cs"/>
-          <Exclude name="Utils.cs"/>
-          <Exclude name="UtilsConversions.cs"/>
-          <Exclude name="UUID.cs"/>
-          <Exclude name="Vector2.cs"/>
-          <Exclude name="Vector3.cs"/>
-          <Exclude name="Vector3d.cs"/>
-          <Exclude name="Vector4.cs"/>
-          <Exclude name="BlockingQueue.cs"/>
-          <Exclude name="DoubleDictionary.cs"/>
-          <Exclude name="ThreadSafeDictionary.cs"/>
-          <Exclude name="ExpiringCache.cs"/>
-          <Exclude name="CircularQueue.cs"/>
-          <Exclude name="CRC32.cs"/>
-          <Exclude name="CircularHashedQueue.cs"/>
-          <Exclude name="TokenBucket.cs"/>
-          <Exclude name="Enums.cs"/>
-        </Match>
+        <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
 

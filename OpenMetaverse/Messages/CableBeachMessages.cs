@@ -35,6 +35,7 @@ namespace OpenMetaverse.Messages.CableBeach
     /// <summary>
     /// Holds information about a grid region
     /// </summary>
+    // TODO: Make this a class
     public struct RegionInfo
     {
         public string Name;

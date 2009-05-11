@@ -30,6 +30,7 @@ using System.IO;
 using System.Reflection;
 using System.Drawing;
 using System.Drawing.Imaging;
+using OpenMetaverse.Assets;
 
 namespace OpenMetaverse.Imaging
 {
