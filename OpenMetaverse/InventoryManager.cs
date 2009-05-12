@@ -2084,7 +2084,7 @@ namespace OpenMetaverse
         /// <param name="callback"></param>
         public void RequestUpdateScriptAgentInventory(byte[] data, UUID itemID, ScriptUpdatedCallback callback)
         {
-            Uri url = _Client.Network.CurrentSim.Caps.CapabilityURI("UpdateScriptAgentInventory");
+            Uri url = _Client.Network.CurrentSim.Caps.CapabilityURI("UpdateScriptAgent"); 
 
             if(url != null)
             {
