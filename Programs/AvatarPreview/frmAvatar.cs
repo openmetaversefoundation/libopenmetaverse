@@ -14,6 +14,7 @@ using Tao.Platform.Windows;
 using OpenMetaverse;
 using OpenMetaverse.Imaging;
 using OpenMetaverse.Rendering;
+using OpenMetaverse.Assets;
 
 namespace AvatarPreview
 {

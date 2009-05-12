@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using System.IO;
 using OpenMetaverse;
 using OpenMetaverse.Imaging;
+using OpenMetaverse.Assets;
 
 namespace groupmanager
 {

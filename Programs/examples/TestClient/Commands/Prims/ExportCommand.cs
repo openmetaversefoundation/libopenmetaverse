@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
+using OpenMetaverse.Assets;
 
 namespace OpenMetaverse.TestClient
 {

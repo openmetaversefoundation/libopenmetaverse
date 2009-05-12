@@ -32,6 +32,7 @@ using System.IO;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 using OpenMetaverse.Imaging;
+using OpenMetaverse.Assets;
 
 namespace OpenMetaverse
 {

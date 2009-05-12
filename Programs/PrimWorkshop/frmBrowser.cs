@@ -13,6 +13,7 @@ using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Imaging;
 using OpenMetaverse.Rendering;
+using OpenMetaverse.Assets;
 
 namespace PrimWorkshop
 {

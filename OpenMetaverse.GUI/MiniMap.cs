@@ -24,11 +24,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using OpenMetaverse.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using OpenMetaverse.Imaging;
+using OpenMetaverse.Assets;
 
 namespace OpenMetaverse.GUI
 {

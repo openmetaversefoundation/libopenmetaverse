@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using OpenMetaverse.Packets;
+using OpenMetaverse.Assets;
 
 namespace OpenMetaverse
 {

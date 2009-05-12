@@ -9,6 +9,7 @@ using System.Xml.Serialization;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 using OpenMetaverse.TestClient;
+using OpenMetaverse.Assets;
 
 namespace OpenMetaverse.TestClient
 {

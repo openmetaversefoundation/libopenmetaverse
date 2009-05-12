@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using OpenMetaverse;
 using OpenMetaverse.Imaging;
+using OpenMetaverse.Assets;
 
 namespace OpenMetaverse.TestClient
 {
