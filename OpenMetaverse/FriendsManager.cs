@@ -388,10 +388,20 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Offer friendship to an avatar.
+        /// Overload: Offer friendship to an avatar.
         /// </summary>
         /// <param name="agentID">System ID of the avatar you are offering friendship to</param>
         public void OfferFriendship(UUID agentID)
+        {
+            OfferFriendship(agentID, "Do ya wanna be my buddy?");
+        }
+
+        /// <summary>
+        /// Offer friendship to an avatar.
+        /// </summary>
+        /// <param name="agentID">System ID of the avatar you are offering friendship to</param>
+        /// <param name="message">A message to send with the request</param>
+        public void OfferFriendship(UUID agentID, string message)
         {
             // HACK: folder id stored as "message"
             UUID callingCardFolder = Client.Inventory.FindFolderForType(AssetType.CallingCard);
@@ -403,7 +413,7 @@ namespace OpenMetaverse
                 InstantMessageOnline.Online,
                 Client.Self.SimPosition,
                 Client.Network.CurrentSim.ID,
-                Utils.EmptyBytes);
+                Utils.StringToBytes(message));
         }
 
 
