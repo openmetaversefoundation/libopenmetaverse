@@ -270,19 +270,19 @@ namespace OpenMetaverse.Assets
             archive.WriteFile("archive.xml", ARCHIVE_XML);
 
             // Add the assets
-            string[] files = Directory.GetFiles(directoryName + "/assets");
+            string[] files = Directory.GetFiles(directoryName + "/" + ArchiveConstants.ASSETS_PATH);
             foreach (string file in files)
-                archive.WriteFile("assets/" + Path.GetFileName(file), File.ReadAllBytes(file));
+                archive.WriteFile(ArchiveConstants.ASSETS_PATH + Path.GetFileName(file), File.ReadAllBytes(file));
 
             // Add the objects
-            files = Directory.GetFiles(directoryName + "/objects");
+            files = Directory.GetFiles(directoryName + "/" + ArchiveConstants.OBJECTS_PATH);
             foreach (string file in files)
-                archive.WriteFile("objects/" + Path.GetFileName(file), File.ReadAllBytes(file));
+                archive.WriteFile(ArchiveConstants.OBJECTS_PATH + Path.GetFileName(file), File.ReadAllBytes(file));
 
             // Add the terrain(s)
-            files = Directory.GetFiles(directoryName + "/terrains");
+            files = Directory.GetFiles(directoryName + "/" + ArchiveConstants.TERRAINS_PATH);
             foreach (string file in files)
-                archive.WriteFile("terrains/" + Path.GetFileName(file), File.ReadAllBytes(file));
+                archive.WriteFile(ArchiveConstants.TERRAINS_PATH + Path.GetFileName(file), File.ReadAllBytes(file));
 
             archive.Close();
         }
