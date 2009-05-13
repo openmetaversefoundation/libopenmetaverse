@@ -916,6 +916,15 @@ namespace OpenMetaverse
         /// <param name="itemID"></param>
         /// <param name="assetID"></param>
         public delegate void ScriptUpdatedCallback(bool success, string status, UUID itemID, UUID assetID);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="objectID"></param>
+        /// <param name="sctriptID"></param>
+        /// <param name="isMono"></param>
+        /// <param name="isRunning"></param>
+        public delegate void ScriptRunningCallback(UUID objectID, UUID sctriptID, bool isMono, bool isRunning);
         #endregion Delegates
 
         #region Events
@@ -964,6 +973,10 @@ namespace OpenMetaverse
         /// </summary>
         public event SaveAssetToInventoryCallback OnSaveAssetToInventory;
 
+        /// <summary>
+        /// Fired in response to a GetScriptRunning request
+        /// </summary>
+        public event ScriptRunningCallback OnScriptRunning;
         #endregion Events
 
         #region String Arrays
@@ -1030,7 +1043,8 @@ namespace OpenMetaverse
             _Client.Network.RegisterCallback(PacketType.InventoryDescendents, new NetworkManager.PacketCallback(InventoryDescendentsHandler));
             _Client.Network.RegisterCallback(PacketType.FetchInventoryReply, new NetworkManager.PacketCallback(FetchInventoryReplyHandler));
             _Client.Network.RegisterCallback(PacketType.ReplyTaskInventory, new NetworkManager.PacketCallback(ReplyTaskInventoryHandler));
-            
+            _Client.Network.RegisterEventCallback("ScriptRunningReply", new Caps.EventQueueCallback(ScriptRunningReplyMessageHandler));
+
             // Watch for inventory given to us through instant message
             _Client.Self.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
 
@@ -3792,6 +3806,16 @@ namespace OpenMetaverse
             else if (callback != null)
             {
                 try { callback(false, status, UUID.Zero, UUID.Zero); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+            }
+        }
+
+        public void ScriptRunningReplyMessageHandler(string capsKey, Interfaces.IMessage message, Simulator simulator)
+        {
+            if (OnScriptRunning != null)
+            {
+                ScriptRunningReplyMessage msg = (ScriptRunningReplyMessage) message;
+                try { OnScriptRunning(msg.ObjectID, msg.ItemID, msg.Mono, msg.Running);}
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
             }
         }
