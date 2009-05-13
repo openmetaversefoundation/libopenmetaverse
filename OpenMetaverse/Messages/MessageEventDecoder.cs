@@ -80,6 +80,7 @@ namespace OpenMetaverse.Messages
                 case "UpdateAgentInformation": message = new UpdateAgentInformationMessage(); break;
                 case "DirLandReply": message = new DirLandReplyMessage(); break;
                 case "ScriptRunningReply": message = new ScriptRunningReplyMessage(); break;
+                case "SearchStatRequest": message = new SearchStatRequestMessage(); break;
                 //case "ProductInfoRequest": message = new ProductInfoRequestMessage(); break;
 
                 // Capabilities TODO:

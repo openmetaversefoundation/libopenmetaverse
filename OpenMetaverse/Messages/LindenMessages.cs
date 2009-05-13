@@ -1631,6 +1631,103 @@ namespace OpenMetaverse.Messages.Linden
 
     #region ChatSessionRequestMessage
 
+
+    public interface ISearchStatRequest
+    {
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        OSDMap Serialize();
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        void Deserialize(OSDMap map);
+    }
+
+    // variant A - the request to the simulator
+    public class SearchStatRequestRequest : ISearchStatRequest
+    {
+        public UUID ClassifiedID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(1);
+            map["classified_id"] = OSD.FromUUID(ClassifiedID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            ClassifiedID = map["classified_id"].AsUUID();
+        }
+
+    }
+
+    public class SearchStatRequestReply : ISearchStatRequest
+    {
+        public int MapClicks;
+        public int ProfileClicks;
+        public int SearchMapClicks;
+        public int SearchProfileClicks;
+        public int SearchTeleportClicks;
+        public int TeleportClicks;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(6);
+            map["map_clicks"] = OSD.FromInteger(MapClicks);
+            map["profile_clicks"] = OSD.FromInteger(ProfileClicks);
+            map["search_map_clicks"] = OSD.FromInteger(SearchMapClicks);
+            map["search_profile_clicks"] = OSD.FromInteger(SearchProfileClicks);
+            map["search_teleport_clicks"] = OSD.FromInteger(SearchTeleportClicks);
+            map["teleport_clicks"] = OSD.FromInteger(TeleportClicks);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            MapClicks = map["map_clicks"].AsInteger();
+            ProfileClicks = map["profile_clicks"].AsInteger();
+            SearchMapClicks = map["search_map_clicks"].AsInteger();
+            SearchProfileClicks = map["search_profile_clicks"].AsInteger();
+            SearchTeleportClicks = map["search_teleport_clicks"].AsInteger();
+            TeleportClicks = map["teleport_clicks"].AsInteger();
+        }
+    }
+
+    public class SearchStatRequestMessage : IMessage
+    {
+        public ISearchStatRequest Request;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            return Request.Serialize();
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("map_clicks"))
+                Request = new SearchStatRequestReply();
+            else if (map.ContainsKey("classified_id"))
+                Request = new SearchStatRequestRequest();
+            else
+                Logger.Log("Unable to deserialize SearchStatRequest: No message handler exists for method " + map["method"].AsString(), Helpers.LogLevel.Warning);
+
+            Request.Deserialize(map);
+        }
+    }
+
     public interface IChatSessionRequest
     {
         /// <summary>
