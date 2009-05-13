@@ -2076,8 +2076,9 @@ namespace OpenMetaverse
                 throw new Exception("UpdateNotecardAgentInventory capability is not currently available");
             }
         }
+
         /// <summary>
-        /// Update an exsting script in an agents Inventory
+        /// Update an existing script in an agents Inventory
         /// </summary>
         /// <param name="data">A byte[] array containing the encoded scripts contents</param>
         /// <param name="itemID">the itemID of the script</param>
@@ -2088,22 +2089,20 @@ namespace OpenMetaverse
 
             if(url != null)
             {
-                OSDMap query = new OSDMap();
-                query.Add("item_id", OSD.FromUUID(itemID));
-
+                UpdateScriptAgentMessage msg = new UpdateScriptAgentMessage();
+                msg.ItemID = itemID;
+                msg.Target = "lsl2";
+                
                 CapsClient request = new CapsClient(url);
                 request.OnComplete += new CapsClient.CompleteCallback(UpdateScriptAgentInventoryResponse);
                 request.UserData = new object[2] { new KeyValuePair<ScriptUpdatedCallback, byte[]>(callback, data), itemID };
-                request.BeginGetResponse(query, OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);
-                
+                request.BeginGetResponse(msg.Serialize(), OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);   
             }
             else
             {
-                throw new Exception("UpdateScriptAgentInventory capability is not currently available");
+                throw new Exception("UpdateScriptAgent capability is not currently available");
             }
-
         }
-
 
         #endregion Update
 
@@ -2607,6 +2606,25 @@ namespace OpenMetaverse
             _Client.Network.SendPacket(ScriptPacket);
 
             return transactionID;
+        }
+
+        /// <summary>
+        /// Sets a script running state which is in a task inventory
+        /// </summary>
+        /// <param name="objectID">The object containing the scripts <see cref="UUID"/></param>
+        /// <param name="scriptID">The script contained in the task inventorys <see cref="UUID"/></param>
+        /// <param name="running">true to set the script running, false to stop a running script</param>
+        public void SetScriptRunning(UUID objectID, UUID scriptID, bool running)
+        {
+            SetScriptRunningPacket request = new SetScriptRunningPacket();
+            request.AgentData.AgentID = _Client.Self.AgentID;
+            request.AgentData.SessionID = _Client.Self.SessionID;
+
+            request.Script.Running = running;
+            request.Script.ItemID = scriptID;
+            request.Script.ObjectID = objectID;
+
+            _Client.Network.SendPacket(request);
         }
 
         #endregion Task
