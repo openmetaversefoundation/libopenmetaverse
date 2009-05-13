@@ -2608,10 +2608,25 @@ namespace OpenMetaverse
             return transactionID;
         }
 
+
+        /// <summary>
+        /// Send a request to the simulator to get the running status of a script. The reply will come back via the EventQueue
+        /// in a ScriptRunningReply message
+        /// </summary>
+        /// <param name="objectID">The object containing the script <see cref="UUID"/></param>
+        /// <param name="scriptID">The script contained in the task inventorys <see cref="UUID"/></param>
+        public void GetScriptRunning(UUID objectID, UUID scriptID)
+        {
+            GetScriptRunningPacket request = new GetScriptRunningPacket();
+            request.Script.ObjectID = objectID;
+            request.Script.ItemID = scriptID;
+            _Client.Network.SendPacket(request);
+        }
+
         /// <summary>
         /// Sets a script running state which is in a task inventory
         /// </summary>
-        /// <param name="objectID">The object containing the scripts <see cref="UUID"/></param>
+        /// <param name="objectID">The object containing the script <see cref="UUID"/></param>
         /// <param name="scriptID">The script contained in the task inventorys <see cref="UUID"/></param>
         /// <param name="running">true to set the script running, false to stop a running script</param>
         public void SetScriptRunning(UUID objectID, UUID scriptID, bool running)
