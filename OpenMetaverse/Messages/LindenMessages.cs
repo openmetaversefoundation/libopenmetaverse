@@ -939,8 +939,11 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
     }
+
+    [Serializable]
     public class RemoteParcelRequestMessage : IMessage
     {
+        /// <summary>The grid-wide unique parcel ID</summary>
         public UUID ParcelID;
 
         /// <summary>

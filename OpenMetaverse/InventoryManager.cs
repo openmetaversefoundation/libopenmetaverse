@@ -2082,8 +2082,9 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="data">A byte[] array containing the encoded scripts contents</param>
         /// <param name="itemID">the itemID of the script</param>
+        /// <param name="mono">if true, sets the script content to run on the mono interpreter</param>
         /// <param name="callback"></param>
-        public void RequestUpdateScriptAgentInventory(byte[] data, UUID itemID, ScriptUpdatedCallback callback)
+        public void RequestUpdateScriptAgentInventory(byte[] data, UUID itemID, bool mono, ScriptUpdatedCallback callback)
         {
             Uri url = _Client.Network.CurrentSim.Caps.CapabilityURI("UpdateScriptAgent"); 
 
@@ -2091,7 +2092,7 @@ namespace OpenMetaverse
             {
                 UpdateScriptAgentMessage msg = new UpdateScriptAgentMessage();
                 msg.ItemID = itemID;
-                msg.Target = "lsl2";
+                msg.Target = mono ? "mono" : "lsl2";
                 
                 CapsClient request = new CapsClient(url);
                 request.OnComplete += new CapsClient.CompleteCallback(UpdateScriptAgentInventoryResponse);
@@ -2559,6 +2560,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="objectLocalID">An unsigned integer representing a primitive being simulated</param>
         /// <param name="item">An <seealso cref="InventoryItem"/> which represents a script object from the agents inventory</param>
+        /// <param name="enableScript">true to set the scripts running state to enabled</param>
         /// <returns>A Unique Transaction ID</returns>
         /// <remarks>
         /// <code>
@@ -2571,7 +2573,7 @@ namespace OpenMetaverse
         ///    UUID Transaction = Client.Inventory.RezScript(Prim, (InventoryItem)Client.Inventory.Store[Script]);
         /// </code>
         /// </remarks>
-        public UUID CopyScriptToTask(uint objectLocalID, InventoryItem item)
+        public UUID CopyScriptToTask(uint objectLocalID, InventoryItem item, bool enableScript)
         {
             UUID transactionID = UUID.Random();
 
@@ -2580,6 +2582,7 @@ namespace OpenMetaverse
             ScriptPacket.AgentData.SessionID = _Client.Self.SessionID;
 
             ScriptPacket.UpdateBlock.ObjectLocalID = objectLocalID;
+            ScriptPacket.UpdateBlock.Enabled = enableScript;
 
             ScriptPacket.InventoryBlock.ItemID = item.UUID;
             ScriptPacket.InventoryBlock.FolderID = item.ParentUUID;

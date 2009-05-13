@@ -45,17 +45,17 @@ namespace OpenMetaverse.TestClient
                 using (StreamReader reader = new StreamReader(file))
                 {
                     string body = reader.ReadToEnd();
-                    string desc = String.Format("{0} created by OpenMetaverse BotClient {1}", file, DateTime.Now);
+                    string desc = String.Format("{0} created by OpenMetaverse TestClient {1}", file, DateTime.Now);
                     // create the asset
                     Client.Inventory.RequestCreateItem(Client.Inventory.FindFolderForType(AssetType.LSLText), file, desc, AssetType.LSLText, UUID.Random(), InventoryType.LSL, PermissionMask.All,
                     delegate(bool success, InventoryItem item)
                     {
                         if (success)
                             // upload the asset
-                            Client.Inventory.RequestUpdateScriptAgentInventory(EncodeScript(body), item.UUID, new InventoryManager.ScriptUpdatedCallback(delegate(bool success1, string status, UUID itemid, UUID assetid)
+                            Client.Inventory.RequestUpdateScriptAgentInventory(EncodeScript(body), item.UUID, true, new InventoryManager.ScriptUpdatedCallback(delegate(bool success1, string status, UUID itemid, UUID assetid)
                             {
                                 if (success1)
-                                    ret += String.Format("Script successfully uploaded, ItemID {0} AssetID {1}", itemid, assetid);
+                                    ret += String.Format(" Script successfully uploaded, ItemID {0} AssetID {1}", itemid, assetid);
                             }));
                     });
                 }

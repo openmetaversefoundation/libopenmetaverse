@@ -1143,7 +1143,47 @@ namespace OpenMetaverse.Tests
         }
         #region Performance Testing
 
-        private const int TEST_ITER = 1000;
+        private const int TEST_ITER = 100000;
+
+        [Test]
+        [Category("Benchmark")]
+        public void ReflectionPerformanceRemoteParcelRequest()
+        {
+            DateTime messageTestTime = DateTime.UtcNow;
+            for (int x = 0; x < TEST_ITER; x++)
+            {
+                RemoteParcelRequestMessage s = new RemoteParcelRequestMessage();
+                s.ParcelID = UUID.Random();
+                OSDMap map = s.Serialize();
+
+                RemoteParcelRequestMessage t = new RemoteParcelRequestMessage();
+                t.Deserialize(map);
+
+                Assert.AreEqual(s.ParcelID, t.ParcelID);
+            }
+            TimeSpan duration = DateTime.UtcNow - messageTestTime;
+            Console.WriteLine("RemoteParcelRequestMessage: OMV Message System Serialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, duration);
+
+            BinaryFormatter formatter = new BinaryFormatter();
+            DateTime xmlTestTime = DateTime.UtcNow;
+            for (int x = 0; x < TEST_ITER; x++)
+            {
+                RemoteParcelRequestMessage s = new RemoteParcelRequestMessage();
+                s.ParcelID = UUID.Random();
+                
+                MemoryStream stream = new MemoryStream();
+
+                formatter.Serialize(stream, s);
+
+                stream.Seek(0, SeekOrigin.Begin);
+                RemoteParcelRequestMessage t = (RemoteParcelRequestMessage)formatter.Deserialize(stream);
+
+                Assert.AreEqual(s.ParcelID, t.ParcelID);
+            }
+            TimeSpan durationxml = DateTime.UtcNow - xmlTestTime;
+            Console.WriteLine("RemoteParcelRequestMessage: .NET BinarySerialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, durationxml);
+        }
+
 
         [Test]
         [Category("Benchmark")]
@@ -1199,7 +1239,7 @@ namespace OpenMetaverse.Tests
                 }
             }
             TimeSpan duration = DateTime.UtcNow - messageTestTime;
-            Console.WriteLine("OMV Message System Serialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, duration);
+            Console.WriteLine("DirLandReplyMessage: OMV Message System Serialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, duration);
 
             BinaryFormatter formatter = new BinaryFormatter();
             DateTime xmlTestTime = DateTime.UtcNow;
@@ -1254,7 +1294,7 @@ namespace OpenMetaverse.Tests
                 }
             }
             TimeSpan durationxml = DateTime.UtcNow - xmlTestTime;
-            Console.WriteLine(".NET BinarySerialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, durationxml);
+            Console.WriteLine("DirLandReplyMessage: .NET BinarySerialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, durationxml);
         }
 
         [Test]
@@ -1321,7 +1361,6 @@ namespace OpenMetaverse.Tests
         [Category("Benchmark")]
         public void ReflectionPerformanceParcelProperties()
         {
-
             DateTime messageTestTime = DateTime.UtcNow;
             for (int x = 0; x < TEST_ITER; x++)
             {
@@ -1444,7 +1483,7 @@ namespace OpenMetaverse.Tests
                 Assert.AreEqual(s.UserLookAt, t.UserLookAt);
             }
             TimeSpan duration = DateTime.UtcNow - messageTestTime;
-            Console.WriteLine("OMV Message System Serialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, duration);
+            Console.WriteLine("ParcelPropertiesMessage: OMV Message System Serialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, duration);
 
             BinaryFormatter formatter = new BinaryFormatter();
             
@@ -1574,7 +1613,7 @@ namespace OpenMetaverse.Tests
                 Assert.AreEqual(s.UserLookAt, t.UserLookAt);
             }
             TimeSpan durationxml = DateTime.UtcNow - xmlTestTime;
-            Console.WriteLine(".NET BinarySerialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, durationxml);
+            Console.WriteLine("ParcelPropertiesMessage: .NET BinarySerialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, durationxml);
         }
 
 #endregion
