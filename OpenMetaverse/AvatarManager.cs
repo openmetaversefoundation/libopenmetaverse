@@ -74,6 +74,20 @@ namespace OpenMetaverse
         public int SortOrder;
         public bool Enabled;
     }
+
+    public struct ClassifiedAd
+    {
+        public UUID ClassifiedID;
+        public uint Catagory;
+        public UUID ParcelID;
+        public uint ParentEstate;
+        public UUID SnapShotID;
+        public Vector3d Position;
+        public byte ClassifiedFlags;
+        public int Price;
+        public string Name;
+        public string Desc; 
+    }
     #endregion
 
     /// <summary>
@@ -173,6 +187,18 @@ namespace OpenMetaverse
         /// <param name="pickid"></param>
         /// <param name="pick"></param>
         public delegate void PickInfoCallback(UUID pickid, ProfilePick pick);
+        /// <summary>
+        /// Callback returning a dictionary of avatar's Classified
+        /// </summary>
+        /// <param name="avatarid"></param>
+        /// <param name="classified"></param>
+        public delegate void AvatarClassifiedCallback(UUID avatarid, Dictionary<UUID, string> classified);
+        /// <summary>
+        /// Callback returning a details of a specifick Classified
+        /// </summary>
+        /// <param name="classifiedID"></param>
+        /// <param name="Classified"></param>
+        public delegate void ClassifiedInfoCallback(UUID classifiedID, ClassifiedAd Classified);
         /// <summary></summary>
         public event AvatarAnimationCallback OnAvatarAnimation;
         /// <summary></summary>
@@ -197,6 +223,10 @@ namespace OpenMetaverse
         public event AvatarPicksCallback OnAvatarPicks;
         /// <summary></summary>
         public event PickInfoCallback OnPickInfo;
+        /// <summary></summary>
+        public event AvatarClassifiedCallback OnAvatarClassifieds;
+        /// <summary></summary>
+        public event ClassifiedInfoCallback OnClassifiedInfo;
 
         private GridClient Client;
 
@@ -230,6 +260,10 @@ namespace OpenMetaverse
             // Picks callbacks
             Client.Network.RegisterCallback(PacketType.AvatarPicksReply, new NetworkManager.PacketCallback(AvatarPicksHandler));
             Client.Network.RegisterCallback(PacketType.PickInfoReply, new NetworkManager.PacketCallback(PickInfoHandler));
+
+            // Classifieds callbacks
+            Client.Network.RegisterCallback(PacketType.AvatarClassifiedReply, new NetworkManager.PacketCallback(AvatarClassifiedsHandler));
+            Client.Network.RegisterCallback(PacketType.ClassifiedInfoReply, new NetworkManager.PacketCallback(ClassifiedInfoHandler));
         }
 
         /// <summary>Tracks the specified avatar on your map</summary>
@@ -353,6 +387,27 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Start a request for Avatar Classifieds
+        /// </summary>
+        /// <param name="avatarid">UUID of the avatar</param>
+        public void RequestAvatarClassified(UUID avatarid)
+        {
+            GenericMessagePacket gmp = new GenericMessagePacket();
+
+            gmp.AgentData.AgentID = Client.Self.AgentID;
+            gmp.AgentData.SessionID = Client.Self.SessionID;
+            gmp.AgentData.TransactionID = UUID.Zero;
+
+            gmp.MethodData.Method = Utils.StringToBytes("avatarclassifiedsrequest");
+            gmp.MethodData.Invoice = UUID.Zero;
+            gmp.ParamList = new GenericMessagePacket.ParamListBlock[1];
+            gmp.ParamList[0] = new GenericMessagePacket.ParamListBlock();
+            gmp.ParamList[0].Parameter = Utils.StringToBytes(avatarid.ToString());
+
+            Client.Network.SendPacket(gmp);
+        }
+
+        /// <summary>
         /// Start a request for details of a specific profile pick
         /// </summary>
         /// <param name="avatarid">UUID of the avatar</param>
@@ -376,6 +431,29 @@ namespace OpenMetaverse
             Client.Network.SendPacket(gmp);
         }
 
+        /// <summary>
+        /// Start a request for details of a specific profile classified
+        /// </summary>
+        /// <param name="avatarid">UUID of the avatar</param>
+        /// <param name="classifiedid">UUID of the profile classified</param>
+        public void RequestClassifiedInfo(UUID avatarid, UUID classifiedid)
+        {
+            GenericMessagePacket gmp = new GenericMessagePacket();
+
+            gmp.AgentData.AgentID = Client.Self.AgentID;
+            gmp.AgentData.SessionID = Client.Self.SessionID;
+            gmp.AgentData.TransactionID = UUID.Zero;
+
+            gmp.MethodData.Method = Utils.StringToBytes("classifiedinforequest");
+            gmp.MethodData.Invoice = UUID.Zero;
+            gmp.ParamList = new GenericMessagePacket.ParamListBlock[2];
+            gmp.ParamList[0] = new GenericMessagePacket.ParamListBlock();
+            gmp.ParamList[0].Parameter = Utils.StringToBytes(avatarid.ToString());
+            gmp.ParamList[1] = new GenericMessagePacket.ParamListBlock();
+            gmp.ParamList[1].Parameter = Utils.StringToBytes(classifiedid.ToString());
+
+            Client.Network.SendPacket(gmp);
+        }
         #region Packet Handlers
 
         /// <summary>
@@ -739,6 +817,52 @@ namespace OpenMetaverse
                 OnPickInfo(ret.PickID, ret);
             } catch (Exception ex) {
                 Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex);
+            }
+        }
+
+        /// <summary>
+        /// Process an incoming list of profile classifieds
+        /// </summary>
+        private void AvatarClassifiedsHandler(Packet packet, Simulator simulator)
+        {
+            if (OnAvatarClassifieds != null)
+            {
+
+                AvatarClassifiedReplyPacket p = (AvatarClassifiedReplyPacket) packet;
+                Dictionary<UUID, string> classifieds = new Dictionary<UUID, string>();
+                
+                foreach (AvatarClassifiedReplyPacket.DataBlock b in p.Data)
+                {
+                    classifieds.Add(b.ClassifiedID, Utils.BytesToString(b.Name));
+                }
+
+                try { OnAvatarClassifieds(p.AgentData.TargetID, classifieds); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
+            }
+        }
+
+        /// <summary>
+        /// Process an incoming details of a profile Classified
+        /// </summary>
+        private void ClassifiedInfoHandler(Packet packet, Simulator simulator)
+        {
+            if (OnClassifiedInfo != null)
+            {
+                ClassifiedInfoReplyPacket p = (ClassifiedInfoReplyPacket) packet;
+                ClassifiedAd ret = new ClassifiedAd();
+                ret.Desc = Utils.BytesToString(p.Data.Desc);
+                ret.Name = Utils.BytesToString(p.Data.Name);
+                ret.ParcelID = p.Data.ParcelID;
+                ret.ClassifiedID = p.Data.ClassifiedID;
+                ret.Position = p.Data.PosGlobal;
+                ret.SnapShotID = p.Data.SnapshotID;
+                ret.Price = p.Data.PriceForListing;
+                ret.ParentEstate = p.Data.ParentEstate;
+                ret.ClassifiedFlags = p.Data.ClassifiedFlags;
+                ret.Catagory = p.Data.Category;
+
+                try { OnClassifiedInfo(ret.ClassifiedID, ret); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
             }
         }
 

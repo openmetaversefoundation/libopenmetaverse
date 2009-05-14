@@ -2566,6 +2566,62 @@ namespace OpenMetaverse
             Client.Network.SendPacket(delete);
         }
 
+        /// <summary>
+        /// Create or update profile Classified
+        /// </summary>
+        /// <param name="classifiedID">UUID of the classified to update, or random UUID to create a new classified</param>
+        /// <param name="category">Defines what catagory the classified is in</param>
+        /// <param name="snapshotID">UUID of the image displayed with the classified</param>
+        /// <param name="price">Price that the classified will cost to place for a week</param>
+        /// <param name="position">Global position of the classified landmark</param>
+        /// <param name="name">Name of the classified</param>
+        /// <param name="desc">Long description of the classified</param>
+        /// <param name="autoRenew">if true, auto renew classified after expiration</param>
+        public void UpdateClassifiedInfo(UUID classifiedID, DirectoryManager.ClassifiedCategories category, 
+            UUID snapshotID, int price, Vector3d position, string name, string desc, bool autoRenew)
+        {
+            ClassifiedInfoUpdatePacket classified = new ClassifiedInfoUpdatePacket();
+            classified.AgentData.AgentID = Client.Self.AgentID;
+            classified.AgentData.SessionID = Client.Self.SessionID;
+
+            classified.Data.ClassifiedID = classifiedID;
+            classified.Data.Category = (uint)category;
+
+            classified.Data.ParcelID = UUID.Zero;
+            // TODO: verify/fix ^
+            classified.Data.ParentEstate = 0;
+            // TODO: verify/fix ^
+
+            classified.Data.SnapshotID = snapshotID;
+            classified.Data.PosGlobal = position;
+
+            classified.Data.ClassifiedFlags = autoRenew ? (byte)32 : (byte)0;
+            // TODO: verify/fix ^
+
+            classified.Data.PriceForListing = price;
+            classified.Data.Name = Utils.StringToBytes(name);
+            classified.Data.Desc = Utils.StringToBytes(desc);
+            Client.Network.SendPacket(classified);
+        }
+
+        public void UpdateClassifiedInfo(UUID classifiedID, DirectoryManager.ClassifiedCategories category, UUID snapshotID, int price, string name, string desc, bool autoRenew)
+        {
+            UpdateClassifiedInfo(classifiedID, category, snapshotID, price, Client.Self.GlobalPosition, name, desc, autoRenew);
+        }
+
+        /// <summary>
+        /// Delete a classified ad
+        /// </summary>
+        /// <param name="classifiedID">The classified ads ID</param>
+        public void DeleteClassfied(UUID classifiedID)
+        {
+            ClassifiedDeletePacket classified = new ClassifiedDeletePacket();
+            classified.AgentData.AgentID = Client.Self.AgentID;
+            classified.AgentData.SessionID = Client.Self.SessionID;
+
+            classified.Data.ClassifiedID = classifiedID;
+            Client.Network.SendPacket(classified);
+        }
         #endregion Misc
 
         #region Packet Handlers
