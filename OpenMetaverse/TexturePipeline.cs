@@ -184,13 +184,15 @@ namespace OpenMetaverse
             if(_Running)
                 return;
 
+            _Running = true;
+
             _Client.Network.RegisterCallback(PacketType.ImageData, ImageDataHandler);
             _Client.Network.RegisterCallback(PacketType.ImagePacket, ImagePacketHandler);
             _Client.Network.RegisterCallback(PacketType.ImageNotInDatabase, ImageNotInDatabaseHandler);
             downloadMaster.Start();
             RefreshDownloadsTimer.Start();
 
-            _Running = true;
+            
         }
 
         /// <summary>
