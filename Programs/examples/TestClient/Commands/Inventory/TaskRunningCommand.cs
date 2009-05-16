@@ -33,7 +33,7 @@ namespace OpenMetaverse.TestClient
 
             List<InventoryBase> items = Client.Inventory.GetTaskInventory(objectID, objectLocalID, 1000 * 30);
 
-            bool wantSet = false;
+            //bool wantSet = false;
             bool setTaskTo = false;
             if (items != null)
             {

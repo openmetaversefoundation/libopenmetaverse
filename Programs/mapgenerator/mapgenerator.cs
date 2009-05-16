@@ -818,7 +818,7 @@ namespace mapgenerator
             writer.WriteLine(@"
         public static Packet BuildPacket(byte[] packetBuffer, ref int packetEnd, byte[] zeroBuffer)
         {
-            byte[] bytes; ushort id; PacketFrequency freq;
+            byte[] bytes;
             int i = 0;
             Header header = Header.BuildHeader(packetBuffer, ref i, ref packetEnd);
             if (header.Zerocoded)
