@@ -30,6 +30,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
+#if VISUAL_STUDIO
+using ReaderWriterLockImpl = System.Threading.ReaderWriterLockSlim;
+#else
+using ReaderWriterLockImpl = OpenMetaverse.ReaderWriterLockSlim;
+#endif
+
 namespace OpenMetaverse
 {
     /// <summary>
@@ -56,7 +62,7 @@ namespace OpenMetaverse
         // wait until all outstanding operations are completed before shutting down.
         // this avoids the problem of closing the socket with outstanding operations
         // and trying to catch the inevitable ObjectDisposedException.
-        private ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
+        private ReaderWriterLockImpl rwLock = new ReaderWriterLockImpl();
 
         // number of outstanding operations.  This is a reference count
         // which we use to ensure that the threads exit cleanly. Note that
@@ -219,17 +225,14 @@ namespace OpenMetaverse
 
         private void AsyncEndReceive(IAsyncResult iar)
         {
-            bool unlock = false;
+            bool dolock = false;
 
             // Asynchronous receive operations will complete here through the call
             // to AsyncBeginReceive
 
             // aquire a reader lock
-            if (rwLock.RecursiveReadCount == 0)
-            {
-                rwLock.EnterReadLock();
-                unlock = true;
-            }
+            dolock = rwLock.IsReadLockHeld;
+            if (dolock) rwLock.EnterReadLock();
 
             if (!shutdownFlag)
             {
@@ -252,8 +255,7 @@ namespace OpenMetaverse
                     Interlocked.Decrement(ref rwOperationCount);
 
                     // we're done with the socket, release the reader lock
-                    if (unlock)
-                        rwLock.ExitReadLock();
+                    if (dolock) rwLock.ExitReadLock();
 
                     // call the abstract method PacketReceived(), passing the buffer that
                     // has just been filled from the socket read.
@@ -265,8 +267,7 @@ namespace OpenMetaverse
                     Interlocked.Decrement(ref rwOperationCount);
 
                     // we're done with the socket for now, release the reader lock.
-                    if (unlock)
-                        rwLock.ExitReadLock();
+                    if (dolock) rwLock.ExitReadLock();
                 }
                 finally
                 {
@@ -278,8 +279,7 @@ namespace OpenMetaverse
                 // nothing bad happened, but we are done with the operation
                 // decrement the reference count and release the reader lock
                 Interlocked.Decrement(ref rwOperationCount);
-                if (unlock)
-                    rwLock.ExitReadLock();
+                if (dolock) rwLock.ExitReadLock();
             }
         }
 
