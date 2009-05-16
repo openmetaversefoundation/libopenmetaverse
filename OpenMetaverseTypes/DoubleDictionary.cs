@@ -58,21 +58,23 @@ namespace OpenMetaverse
         {
             rwLock.EnterWriteLock();
 
-            if (Dictionary1.ContainsKey(key1))
+            try
             {
-                if (!Dictionary2.ContainsKey(key2))
-                    throw new ArgumentException("key1 exists in the dictionary but not key2");
-            }
-            else if (Dictionary2.ContainsKey(key2))
-            {
-                if (!Dictionary1.ContainsKey(key1))
-                    throw new ArgumentException("key2 exists in the dictionary but not key1");
-            }
+                if (Dictionary1.ContainsKey(key1))
+                {
+                    if (!Dictionary2.ContainsKey(key2))
+                        throw new ArgumentException("key1 exists in the dictionary but not key2");
+                }
+                else if (Dictionary2.ContainsKey(key2))
+                {
+                    if (!Dictionary1.ContainsKey(key1))
+                        throw new ArgumentException("key2 exists in the dictionary but not key1");
+                }
 
-            Dictionary1[key1] = value;
-            Dictionary2[key2] = value;
-
-            rwLock.ExitWriteLock();
+                Dictionary1[key1] = value;
+                Dictionary2[key2] = value;
+            }
+            finally { rwLock.ExitWriteLock(); }
         }
 
         public bool Remove(TKey1 key1, TKey2 key2)
@@ -80,10 +82,13 @@ namespace OpenMetaverse
             bool success;
             rwLock.EnterWriteLock();
 
-            Dictionary1.Remove(key1);
-            success = Dictionary2.Remove(key2);
+            try
+            {
+                Dictionary1.Remove(key1);
+                success = Dictionary2.Remove(key2);
+            }
+            finally { rwLock.ExitWriteLock(); }
 
-            rwLock.ExitWriteLock();
             return success;
         }
 
@@ -92,23 +97,26 @@ namespace OpenMetaverse
             bool found = false;
             rwLock.EnterWriteLock();
 
-            // This is an O(n) operation!
-            TValue value;
-            if (Dictionary1.TryGetValue(key1, out value))
+            try
             {
-                foreach (KeyValuePair<TKey2, TValue> kvp in Dictionary2)
+                // This is an O(n) operation!
+                TValue value;
+                if (Dictionary1.TryGetValue(key1, out value))
                 {
-                    if (kvp.Value.Equals(value))
+                    foreach (KeyValuePair<TKey2, TValue> kvp in Dictionary2)
                     {
-                        Dictionary1.Remove(key1);
-                        Dictionary2.Remove(kvp.Key);
-                        found = true;
-                        break;
+                        if (kvp.Value.Equals(value))
+                        {
+                            Dictionary1.Remove(key1);
+                            Dictionary2.Remove(kvp.Key);
+                            found = true;
+                            break;
+                        }
                     }
                 }
             }
+            finally { rwLock.ExitWriteLock(); }
 
-            rwLock.ExitWriteLock();
             return found;
         }
 
@@ -117,23 +125,26 @@ namespace OpenMetaverse
             bool found = false;
             rwLock.EnterWriteLock();
 
-            // This is an O(n) operation!
-            TValue value;
-            if (Dictionary2.TryGetValue(key2, out value))
+            try
             {
-                foreach (KeyValuePair<TKey1, TValue> kvp in Dictionary1)
+                // This is an O(n) operation!
+                TValue value;
+                if (Dictionary2.TryGetValue(key2, out value))
                 {
-                    if (kvp.Value.Equals(value))
+                    foreach (KeyValuePair<TKey1, TValue> kvp in Dictionary1)
                     {
-                        Dictionary2.Remove(key2);
-                        Dictionary1.Remove(kvp.Key);
-                        found = true;
-                        break;
+                        if (kvp.Value.Equals(value))
+                        {
+                            Dictionary2.Remove(key2);
+                            Dictionary1.Remove(kvp.Key);
+                            found = true;
+                            break;
+                        }
                     }
                 }
             }
+            finally { rwLock.ExitWriteLock(); }
 
-            rwLock.ExitWriteLock();
             return found;
         }
 
@@ -141,10 +152,12 @@ namespace OpenMetaverse
         {
             rwLock.EnterWriteLock();
 
-            Dictionary1.Clear();
-            Dictionary2.Clear();
-
-            rwLock.ExitWriteLock();
+            try
+            {
+                Dictionary1.Clear();
+                Dictionary2.Clear();
+            }
+            finally { rwLock.ExitWriteLock(); }
         }
 
         public int Count
@@ -167,9 +180,9 @@ namespace OpenMetaverse
             bool success;
             rwLock.EnterReadLock();
 
-            success = Dictionary1.TryGetValue(key, out value);
+            try { success = Dictionary1.TryGetValue(key, out value); }
+            finally { rwLock.ExitReadLock(); }
 
-            rwLock.ExitReadLock();
             return success;
         }
 
@@ -178,9 +191,9 @@ namespace OpenMetaverse
             bool success;
             rwLock.EnterReadLock();
 
-            success = Dictionary2.TryGetValue(key, out value);
+            try { success = Dictionary2.TryGetValue(key, out value); }
+            finally { rwLock.ExitReadLock(); }
 
-            rwLock.ExitReadLock();
             return success;
         }
 
@@ -188,30 +201,36 @@ namespace OpenMetaverse
         {
             rwLock.EnterReadLock();
 
-            foreach (TValue value in Dictionary1.Values)
-                action(value);
-
-            rwLock.ExitReadLock();
+            try
+            {
+                foreach (TValue value in Dictionary1.Values)
+                    action(value);
+            }
+            finally { rwLock.ExitReadLock(); }
         }
 
         public void ForEach(Action<KeyValuePair<TKey1, TValue>> action)
         {
             rwLock.EnterReadLock();
 
-            foreach (KeyValuePair<TKey1, TValue> entry in Dictionary1)
-                action(entry);
-
-            rwLock.ExitReadLock();
+            try
+            {
+                foreach (KeyValuePair<TKey1, TValue> entry in Dictionary1)
+                    action(entry);
+            }
+            finally { rwLock.ExitReadLock(); }
         }
 
         public void ForEach(Action<KeyValuePair<TKey2, TValue>> action)
         {
             rwLock.EnterReadLock();
 
-            foreach (KeyValuePair<TKey2, TValue> entry in Dictionary2)
-                action(entry);
-
-            rwLock.ExitReadLock();
+            try
+            {
+                foreach (KeyValuePair<TKey2, TValue> entry in Dictionary2)
+                    action(entry);
+            }
+            finally { rwLock.ExitReadLock(); }
         }
 
         public TValue FindValue(Predicate<TValue> predicate)
@@ -236,13 +255,16 @@ namespace OpenMetaverse
             IList<TValue> list = new List<TValue>();
             rwLock.EnterReadLock();
 
-            foreach (TValue value in Dictionary1.Values)
+            try
             {
-                if (predicate(value))
-                    list.Add(value);
+                foreach (TValue value in Dictionary1.Values)
+                {
+                    if (predicate(value))
+                        list.Add(value);
+                }
             }
+            finally { rwLock.ExitReadLock(); }
 
-            rwLock.ExitReadLock();
             return list;
         }
 
@@ -252,53 +274,36 @@ namespace OpenMetaverse
 
             rwLock.EnterUpgradeableReadLock();
 
-            foreach (KeyValuePair<TKey1, TValue> kvp in Dictionary1)
+            try
             {
-                if (predicate(kvp.Value))
-                    list.Add(kvp.Key);
+                foreach (KeyValuePair<TKey1, TValue> kvp in Dictionary1)
+                {
+                    if (predicate(kvp.Value))
+                        list.Add(kvp.Key);
+                }
+
+                IList<TKey2> list2 = new List<TKey2>(list.Count);
+                foreach (KeyValuePair<TKey2, TValue> kvp in Dictionary2)
+                {
+                    if (predicate(kvp.Value))
+                        list2.Add(kvp.Key);
+                }
+
+                rwLock.EnterWriteLock();
+
+                try
+                {
+                    for (int i = 0; i < list.Count; i++)
+                        Dictionary1.Remove(list[i]);
+
+                    for (int i = 0; i < list2.Count; i++)
+                        Dictionary2.Remove(list2[i]);
+                }
+                finally { rwLock.ExitWriteLock(); }
             }
-
-            IList<TKey2> list2 = new List<TKey2>(list.Count);
-            foreach (KeyValuePair<TKey2, TValue> kvp in Dictionary2)
-            {
-                if (predicate(kvp.Value))
-                    list2.Add(kvp.Key);
-            }
-
-            rwLock.EnterWriteLock();
-
-            for (int i = 0; i < list.Count; i++)
-                Dictionary1.Remove(list[i]);
-
-            for (int i = 0; i < list2.Count; i++)
-                Dictionary2.Remove(list2[i]);
-
-            rwLock.ExitWriteLock();
-            rwLock.ExitUpgradeableReadLock();
+            finally { rwLock.ExitUpgradeableReadLock(); }
 
             return list.Count;
-        }
-
-        public TValue this[TKey1 key1]
-        {
-            get
-            {
-                rwLock.EnterReadLock();
-                TValue value = Dictionary1[key1];
-                rwLock.ExitReadLock();
-                return value;
-            }
-        }
-
-        public TValue this[TKey2 key2]
-        {
-            get
-            {
-                rwLock.EnterReadLock();
-                TValue value = Dictionary2[key2];
-                rwLock.ExitReadLock();
-                return value;
-            }
         }
     }
 }
