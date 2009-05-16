@@ -56,7 +56,7 @@
 
     <!-- Libraries -->
     
-    <Project name="OpenMetaverseTypes" path="OpenMetaverseTypes" type="Library" rootNamespace="OpenMetaverse">
+    <Project name="OpenMetaverseTypes" path="OpenMetaverseTypes" type="Library" rootNamespace="OpenMetaverse" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../bin/</OutputPath>
@@ -71,6 +71,7 @@
 
       <ReferencePath>../bin/</ReferencePath>
       <Reference name="System"/>
+      <Reference name="System.Core"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
