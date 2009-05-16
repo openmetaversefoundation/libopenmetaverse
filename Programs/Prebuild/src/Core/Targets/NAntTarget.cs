@@ -559,7 +559,6 @@ namespace Prebuild.Core.Targets
                 ss.WriteLine("                  />");
                 ss.WriteLine("        <echo message=\"Platform ${sys.os.platform}\" />");
                 ss.WriteLine("        <property name=\"build.dir\" value=\"${project::get-base-directory()}/${bin.dir}\" />");
-                ss.WriteLine("        <property name=\"nant.settings.currentframework\" value=\"mono-3.5\" />");
                 ss.WriteLine("    </target>");
                 ss.WriteLine();
 
