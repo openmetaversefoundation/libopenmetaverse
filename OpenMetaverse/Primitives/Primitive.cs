@@ -874,11 +874,29 @@ namespace OpenMetaverse
         /// </summary>
         public class SculptData
         {
-            public bool mirror = false;
-            public bool invert = false;
-
             public UUID SculptTexture;
-            public SculptType Type;
+            private byte type;
+
+            public SculptType Type
+            {
+                get { return (SculptType)(type & 7); }
+            }
+
+            /// <summary>
+            /// Render inside out (inverts the normals).
+            /// </summary>
+            public bool Invert
+            {
+                get { return ((type & 64) != 0); }
+            }
+
+            /// <summary>
+            /// Render an X axis mirror of the sculpty.
+            /// </summary>
+            public bool Mirror
+            {
+                get { return ((type & 128) != 0); }
+            }            
 
             /// <summary>
             /// Default constructor
@@ -897,15 +915,12 @@ namespace OpenMetaverse
                 if (data.Length >= 17)
                 {
                     SculptTexture = new UUID(data, pos);
-                    byte TypeByte = data[pos + 16];
-                    mirror = ((TypeByte & 128) != 0);
-                    invert = ((TypeByte & 64) != 0);
-                    Type = (SculptType)(TypeByte & 7);
+                    type = data[pos + 16];
                 }
                 else
                 {
                     SculptTexture = UUID.Zero;
-                    Type = SculptType.None;
+                    type = (byte)SculptType.None;
                 }
             }
 
@@ -924,7 +939,7 @@ namespace OpenMetaverse
                 OSDMap map = new OSDMap();
 
                 map["texture"] = OSD.FromUUID(SculptTexture);
-                map["type"] = OSD.FromInteger((int)Type);
+                map["type"] = OSD.FromInteger(type);
 
                 return map;
             }
@@ -938,7 +953,7 @@ namespace OpenMetaverse
                     OSDMap map = (OSDMap)osd;
 
                     sculpt.SculptTexture = map["texture"].AsUUID();
-                    sculpt.Type = (SculptType)map["type"].AsInteger();
+                    sculpt.type = (byte)map["type"].AsInteger();
                 }
 
                 return sculpt;
@@ -946,7 +961,7 @@ namespace OpenMetaverse
 
             public override int GetHashCode()
             {
-                return SculptTexture.GetHashCode() ^ Type.GetHashCode();
+                return SculptTexture.GetHashCode() ^ type.GetHashCode();
             }
         }
 
