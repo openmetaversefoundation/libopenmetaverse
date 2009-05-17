@@ -880,6 +880,7 @@ namespace OpenMetaverse
             public SculptType Type
             {
                 get { return (SculptType)(type & 7); }
+                set { type = (byte)value; }
             }
 
             /// <summary>
