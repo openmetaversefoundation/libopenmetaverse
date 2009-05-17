@@ -874,6 +874,9 @@ namespace OpenMetaverse
         /// </summary>
         public class SculptData
         {
+            public bool mirror = false;
+            public bool invert = false;
+
             public UUID SculptTexture;
             public SculptType Type;
 
@@ -894,7 +897,10 @@ namespace OpenMetaverse
                 if (data.Length >= 17)
                 {
                     SculptTexture = new UUID(data, pos);
-                    Type = (SculptType)data[pos + 16];
+                    byte TypeByte = data[pos + 16];
+                    mirror = ((TypeByte & 128) != 0);
+                    invert = ((TypeByte & 64) != 0);
+                    Type = (SculptType)(TypeByte & 7);
                 }
                 else
                 {
