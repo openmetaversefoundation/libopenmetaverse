@@ -437,11 +437,7 @@
       </Configuration>
 
       <ReferencePath>../../../bin/</ReferencePath>
-      <Reference name="System"/>
-      <Reference name="System.Net"/>
-      <Reference name="System.Net.Sockets"/>
-      <Reference name="System.Text"/>
-      <Reference name="System.Threading"/>
+      <Reference name="System"/>
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
       <Files>
