@@ -292,12 +292,14 @@ namespace OpenMetaverse
                 try
                 {
                     Interlocked.Increment(ref rwOperationCount);
-                    udpSocket.SendTo(
+                    udpSocket.BeginSendTo(
                         buf.Data,
                         0,
                         buf.DataLength,
                         SocketFlags.None,
-                        buf.RemoteEndPoint);
+                        buf.RemoteEndPoint,
+                        AsyncEndSend,
+                        udpSocket);
                     Interlocked.Decrement(ref rwOperationCount);
                 }
                 catch (SocketException)
@@ -307,6 +309,18 @@ namespace OpenMetaverse
                     //    Helpers.LogLevel.Error, se);
                 }
             }
+
+            rwLock.ExitReadLock();
+        }
+
+        void AsyncEndSend(IAsyncResult result)
+        {
+            Socket udpSocket = (Socket)result.AsyncState;
+
+            rwLock.EnterReadLock();
+
+            try { udpSocket.EndSendTo(result); }
+            catch (SocketException) { }
 
             rwLock.ExitReadLock();
         }
