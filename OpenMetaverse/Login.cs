@@ -1569,7 +1569,6 @@ namespace OpenMetaverse
                 loginParams.URI = reply.NextUrl;
                 loginParams.MethodName = reply.NextMethod;
                 loginParams.Options = reply.NextOptions;
-                //CurrentContext.Value.MethodName = reply.next_method;
 
                 // Sleep for some amount of time while the servers work
                 int seconds = reply.NextDuration;
@@ -1577,10 +1576,7 @@ namespace OpenMetaverse
                     Helpers.LogLevel.Info);
                 Thread.Sleep(seconds * 1000);
 
-                // Ignore next_options for now
                 CurrentContext = loginParams;
-                
-                // Ignore next_options and next_duration for now
                 BeginLogin();
             }
             else if (reply.Success)
