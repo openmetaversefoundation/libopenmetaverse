@@ -308,6 +308,15 @@ namespace OpenMetaverse
                 {
                     Login = (string)reply["login"];
                     Success = Login == "true";
+
+                    // Parse redirect options
+                    if (Login == "indeterminate")
+                    {
+                        NextUrl = ParseString("next_url", reply);
+                        NextDuration = (int)ParseUInt("next_duration", reply);
+                        NextMethod = ParseString("next_method", reply);
+                        NextOptions = (string[])((ArrayList)reply["next_options"]).ToArray(typeof(string));
+                    }
                 }
             }
             catch (Exception e)
@@ -1558,6 +1567,8 @@ namespace OpenMetaverse
                 UpdateLoginStatus(LoginStatus.Redirecting, "Redirecting login...");
                 LoginParams loginParams = CurrentContext.Value;
                 loginParams.URI = reply.NextUrl;
+                loginParams.MethodName = reply.NextMethod;
+                loginParams.Options = reply.NextOptions;
                 //CurrentContext.Value.MethodName = reply.next_method;
 
                 // Sleep for some amount of time while the servers work
