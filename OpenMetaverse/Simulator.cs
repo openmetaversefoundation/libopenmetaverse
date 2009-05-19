@@ -137,13 +137,13 @@ namespace OpenMetaverse
         public struct SimStats
         {
             /// <summary>Total number of packets sent by this simulator to this agent</summary>
-            public ulong SentPackets;
+            public long SentPackets;
             /// <summary>Total number of packets received by this simulator to this agent</summary>
-            public ulong RecvPackets;
+            public long RecvPackets;
             /// <summary>Total number of bytes sent by this simulator to this agent</summary>
-            public ulong SentBytes;
+            public long SentBytes;
             /// <summary>Total number of bytes received by this simulator to this agent</summary>
-            public ulong RecvBytes;
+            public long RecvBytes;
             /// <summary>Time in seconds agent has been connected to simulator</summary>
             public int ConnectTime;
             /// <summary>Total number of packets that have been resent</summary>
@@ -431,7 +431,7 @@ namespace OpenMetaverse
         internal int pauseSerial;
 
         private NetworkManager Network;
-        private Queue<ulong> InBytes, OutBytes;
+        private Queue<long> InBytes, OutBytes;
         // ACKs that are queued up to be sent to the simulator
         private SortedList<uint, uint> PendingAcks = new SortedList<uint, uint>();
         private Timer AckTimer;
@@ -458,8 +458,8 @@ namespace OpenMetaverse
             Estate = new EstateTools(Client);
             Network = Client.Network;
             PacketArchive = new Queue<uint>(Settings.PACKET_ARCHIVE_SIZE);
-            InBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
-            OutBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
+            InBytes = new Queue<long>(Client.Settings.STATS_QUEUE_SIZE);
+            OutBytes = new Queue<long>(Client.Settings.STATS_QUEUE_SIZE);
         }
 
         /// <summary>
@@ -751,8 +751,8 @@ namespace OpenMetaverse
             // Serialize the packet
             buffer = packet.ToBytes();
             bytes = buffer.Length;
-            Stats.SentBytes += (ulong)bytes;
-            ++Stats.SentPackets;
+            Interlocked.Add(ref Stats.SentBytes, bytes);
+            Interlocked.Increment(ref Stats.SentPackets);
 
             UDPPacketBuffer buf = new UDPPacketBuffer(remoteEndPoint);
 
@@ -786,8 +786,8 @@ namespace OpenMetaverse
                     payload[3] = (byte)(sequence % 256);
                 }
 
-                Stats.SentBytes += (ulong)payload.Length;
-                ++Stats.SentPackets;
+                Interlocked.Add(ref Stats.SentBytes, payload.Length);
+                Interlocked.Increment(ref Stats.SentPackets);
 
                 UDPPacketBuffer buf = new UDPPacketBuffer(remoteEndPoint);
                 Buffer.BlockCopy(payload, 0, buf.Data, 0, payload.Length);
@@ -931,8 +931,8 @@ namespace OpenMetaverse
                 return;
             }
 
-            Stats.RecvBytes += (ulong)buffer.DataLength;
-            ++Stats.RecvPackets;
+            Interlocked.Add(ref Stats.RecvBytes, buffer.DataLength);
+            Interlocked.Increment(ref Stats.RecvPackets);
 
             #endregion Packet Decoding
 
@@ -1044,9 +1044,9 @@ namespace OpenMetaverse
                             outgoing.TickCount = 0;
                             outgoing.SetSequence = false;
                             outgoing.Packet.Header.Resent = true;
-                            ++outgoing.ResendCount;
 
-                            ++Stats.ResentPackets;
+                            Interlocked.Increment(ref outgoing.ResendCount);
+                            Interlocked.Increment(ref Stats.ResentPackets);
 
                             SendPacket(outgoing);
                         }
@@ -1070,20 +1070,22 @@ namespace OpenMetaverse
 
         private void StatsTimer_Elapsed(object obj)
         {
-            ulong old_in = 0, old_out = 0;
+            long old_in = 0, old_out = 0;
+            long recv = Stats.RecvBytes;
+            long sent = Stats.SentBytes;
 
             if (InBytes.Count >= Client.Settings.STATS_QUEUE_SIZE)
                 old_in = InBytes.Dequeue();
             if (OutBytes.Count >= Client.Settings.STATS_QUEUE_SIZE)
                 old_out = OutBytes.Dequeue();
 
-            InBytes.Enqueue(Stats.RecvBytes);
-            OutBytes.Enqueue(Stats.SentBytes);
+            InBytes.Enqueue(recv);
+            OutBytes.Enqueue(sent);
 
             if (old_in > 0 && old_out > 0)
             {
-                Stats.IncomingBPS = (int)(Stats.RecvBytes - old_in) / Client.Settings.STATS_QUEUE_SIZE;
-                Stats.OutgoingBPS = (int)(Stats.SentBytes - old_out) / Client.Settings.STATS_QUEUE_SIZE;
+                Stats.IncomingBPS = (int)(recv - old_in) / Client.Settings.STATS_QUEUE_SIZE;
+                Stats.OutgoingBPS = (int)(sent - old_out) / Client.Settings.STATS_QUEUE_SIZE;
                 //Client.Log("Incoming: " + IncomingBPS + " Out: " + OutgoingBPS +
                 //    " Lag: " + LastLag + " Pings: " + ReceivedPongs +
                 //    "/" + SentPings, Helpers.LogLevel.Debug); 
@@ -1093,7 +1095,7 @@ namespace OpenMetaverse
         private void PingTimer_Elapsed(object obj)
         {
             SendPing();
-            Stats.SentPings++;
+            Interlocked.Increment(ref Stats.SentPings);
         }
     }
 }
