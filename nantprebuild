@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<project name="OpenMetaverse" default="prebuild">
+    <property name="project.main.dir" value="${project::get-base-directory()}" />
+    
+    
+    <target name="prebuild">
+        <exec program="runprebuild2008.bat" />
+    </target>
+    
+    <target name="build" depends="prebuild">
+      <nant buildfile="${project::get-base-directory()}/OpenMetaverse.build" target="build" />
+    </target>
+    
+</project>
