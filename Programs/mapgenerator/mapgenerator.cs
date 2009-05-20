@@ -398,18 +398,13 @@ namespace mapgenerator
 
             //writer.WriteLine("    /// <summary>" + packet.Name + " packet</summary>");
             writer.WriteLine("    /// <exclude/>");
-            writer.WriteLine("    public class " + packet.Name + "Packet : Packet" + Environment.NewLine + "    {");
+            writer.WriteLine("    public sealed class " + packet.Name + "Packet : Packet" + Environment.NewLine + "    {");
 
             // Write out each block class
             foreach (MapBlock block in packet.Blocks)
             {
                 WriteBlockClass(writer, block, packet);
             }
-
-            // PacketType member
-            //writer.WriteLine("        /// <summary>Will return PacketType." + packet.Name+ "</summary>");
-            writer.WriteLine("        public override PacketType Type { get { return PacketType." +
-                packet.Name + "; } }");
 
             // Length member
             writer.WriteLine("        public override int Length" + Environment.NewLine +
@@ -460,6 +455,7 @@ namespace mapgenerator
             // Default constructor
             //writer.WriteLine("        /// <summary>Default constructor</summary>");
             writer.WriteLine("        public " + packet.Name + "Packet()" + Environment.NewLine + "        {");
+            writer.WriteLine("            Type = PacketType." + packet.Name + ";");
             writer.WriteLine("            Header = new Header();");
             writer.WriteLine("            Header.Frequency = PacketFrequency." + packet.Frequency + ";");
             writer.WriteLine("            Header.ID = " + packet.ID + ";");
@@ -761,7 +757,7 @@ namespace mapgenerator
             writer.WriteLine(
                 "    public abstract partial class Packet" + Environment.NewLine + "    {" + Environment.NewLine +
                 "        public Header Header;" + Environment.NewLine +
-                "        public abstract PacketType Type { get; }" + Environment.NewLine +
+                "        public PacketType Type;" + Environment.NewLine +
                 "        public abstract int Length { get; }" + Environment.NewLine +
                 "        public abstract void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);" + Environment.NewLine +
                 "        public abstract void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);" + Environment.NewLine +

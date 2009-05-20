@@ -225,13 +225,11 @@ namespace OpenMetaverse
 
         private void AsyncEndReceive(IAsyncResult iar)
         {
-            bool dolock = false;
-
             // Asynchronous receive operations will complete here through the call
             // to AsyncBeginReceive
 
             // aquire a reader lock
-            dolock = rwLock.IsReadLockHeld;
+            bool dolock = !rwLock.IsReadLockHeld;
             if (dolock) rwLock.EnterReadLock();
 
             if (!shutdownFlag)
@@ -317,12 +315,13 @@ namespace OpenMetaverse
         {
             Socket udpSocket = (Socket)result.AsyncState;
 
-            rwLock.EnterReadLock();
+            bool dolock = !rwLock.IsReadLockHeld;
+            if (dolock) rwLock.EnterReadLock();
 
             try { udpSocket.EndSendTo(result); }
             catch (SocketException) { }
 
-            rwLock.ExitReadLock();
+            if (dolock) rwLock.ExitReadLock();
         }
     }
 }

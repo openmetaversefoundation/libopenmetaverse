@@ -637,7 +637,7 @@ namespace OpenMetaverse.Packets
     public abstract partial class Packet
     {
         public Header Header;
-        public abstract PacketType Type { get; }
+        public PacketType Type;
         public abstract int Length { get; }
         public abstract void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);
         public abstract void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);
@@ -1890,7 +1890,7 @@ namespace OpenMetaverse.Packets
         }
     }
     /// <exclude/>
-    public class TestMessagePacket : Packet
+    public sealed class TestMessagePacket : Packet
     {
         /// <exclude/>
         public class TestBlock1Block : PacketBlock
@@ -1974,7 +1974,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TestMessage; } }
         public override int Length
         {
             get
@@ -1991,6 +1990,7 @@ namespace OpenMetaverse.Packets
 
         public TestMessagePacket()
         {
+            Type = PacketType.TestMessage;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 1;
@@ -2064,7 +2064,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UseCircuitCodePacket : Packet
+    public sealed class UseCircuitCodePacket : Packet
     {
         /// <exclude/>
         public class CircuitCodeBlock : PacketBlock
@@ -2110,7 +2110,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UseCircuitCode; } }
         public override int Length
         {
             get
@@ -2124,6 +2123,7 @@ namespace OpenMetaverse.Packets
 
         public UseCircuitCodePacket()
         {
+            Type = PacketType.UseCircuitCode;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 3;
@@ -2181,7 +2181,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TelehubInfoPacket : Packet
+    public sealed class TelehubInfoPacket : Packet
     {
         /// <exclude/>
         public class TelehubBlockBlock : PacketBlock
@@ -2284,7 +2284,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TelehubInfo; } }
         public override int Length
         {
             get
@@ -2301,6 +2300,7 @@ namespace OpenMetaverse.Packets
 
         public TelehubInfoPacket()
         {
+            Type = PacketType.TelehubInfo;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 10;
@@ -2377,9 +2377,8 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class EconomyDataRequestPacket : Packet
+    public sealed class EconomyDataRequestPacket : Packet
     {
-        public override PacketType Type { get { return PacketType.EconomyDataRequest; } }
         public override int Length
         {
             get
@@ -2391,6 +2390,7 @@ namespace OpenMetaverse.Packets
 
         public EconomyDataRequestPacket()
         {
+            Type = PacketType.EconomyDataRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 24;
@@ -2444,7 +2444,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class EconomyDataPacket : Packet
+    public sealed class EconomyDataPacket : Packet
     {
         /// <exclude/>
         public class InfoBlock : PacketBlock
@@ -2532,7 +2532,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.EconomyData; } }
         public override int Length
         {
             get
@@ -2546,6 +2545,7 @@ namespace OpenMetaverse.Packets
 
         public EconomyDataPacket()
         {
+            Type = PacketType.EconomyData;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 25;
@@ -2604,7 +2604,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarPickerRequestPacket : Packet
+    public sealed class AvatarPickerRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -2704,7 +2704,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarPickerRequest; } }
         public override int Length
         {
             get
@@ -2720,6 +2719,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarPickerRequestPacket()
         {
+            Type = PacketType.AvatarPickerRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 26;
@@ -2781,7 +2781,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarPickerReplyPacket : Packet
+    public sealed class AvatarPickerReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -2898,7 +2898,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarPickerReply; } }
         public override int Length
         {
             get
@@ -2915,6 +2914,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarPickerReplyPacket()
         {
+            Type = PacketType.AvatarPickerReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 28;
@@ -2991,7 +2991,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class PlacesQueryPacket : Packet
+    public sealed class PlacesQueryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -3152,7 +3152,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.PlacesQuery; } }
         public override int Length
         {
             get
@@ -3170,6 +3169,7 @@ namespace OpenMetaverse.Packets
 
         public PlacesQueryPacket()
         {
+            Type = PacketType.PlacesQuery;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 29;
@@ -3236,7 +3236,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class PlacesReplyPacket : Packet
+    public sealed class PlacesReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -3435,7 +3435,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.PlacesReply; } }
         public override int Length
         {
             get
@@ -3454,6 +3453,7 @@ namespace OpenMetaverse.Packets
 
         public PlacesReplyPacket()
         {
+            Type = PacketType.PlacesReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 30;
@@ -3535,7 +3535,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DirFindQueryPacket : Packet
+    public sealed class DirFindQueryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -3641,7 +3641,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DirFindQuery; } }
         public override int Length
         {
             get
@@ -3657,6 +3656,7 @@ namespace OpenMetaverse.Packets
 
         public DirFindQueryPacket()
         {
+            Type = PacketType.DirFindQuery;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 31;
@@ -3719,7 +3719,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DirPlacesQueryPacket : Packet
+    public sealed class DirPlacesQueryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -3845,7 +3845,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DirPlacesQuery; } }
         public override int Length
         {
             get
@@ -3861,6 +3860,7 @@ namespace OpenMetaverse.Packets
 
         public DirPlacesQueryPacket()
         {
+            Type = PacketType.DirPlacesQuery;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 33;
@@ -3923,7 +3923,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DirPlacesReplyPacket : Packet
+    public sealed class DirPlacesReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -4105,7 +4105,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DirPlacesReply; } }
         public override int Length
         {
             get
@@ -4128,6 +4127,7 @@ namespace OpenMetaverse.Packets
 
         public DirPlacesReplyPacket()
         {
+            Type = PacketType.DirPlacesReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 35;
@@ -4243,7 +4243,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DirPeopleReplyPacket : Packet
+    public sealed class DirPeopleReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -4418,7 +4418,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DirPeopleReply; } }
         public override int Length
         {
             get
@@ -4437,6 +4436,7 @@ namespace OpenMetaverse.Packets
 
         public DirPeopleReplyPacket()
         {
+            Type = PacketType.DirPeopleReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 36;
@@ -4518,7 +4518,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DirEventsReplyPacket : Packet
+    public sealed class DirEventsReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -4717,7 +4717,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DirEventsReply; } }
         public override int Length
         {
             get
@@ -4739,6 +4738,7 @@ namespace OpenMetaverse.Packets
 
         public DirEventsReplyPacket()
         {
+            Type = PacketType.DirEventsReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 37;
@@ -4839,7 +4839,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DirGroupsReplyPacket : Packet
+    public sealed class DirGroupsReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -4980,7 +4980,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DirGroupsReply; } }
         public override int Length
         {
             get
@@ -4999,6 +4998,7 @@ namespace OpenMetaverse.Packets
 
         public DirGroupsReplyPacket()
         {
+            Type = PacketType.DirGroupsReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 38;
@@ -5080,7 +5080,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DirClassifiedQueryPacket : Packet
+    public sealed class DirClassifiedQueryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -5189,7 +5189,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DirClassifiedQuery; } }
         public override int Length
         {
             get
@@ -5205,6 +5204,7 @@ namespace OpenMetaverse.Packets
 
         public DirClassifiedQueryPacket()
         {
+            Type = PacketType.DirClassifiedQuery;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 39;
@@ -5267,7 +5267,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DirClassifiedReplyPacket : Packet
+    public sealed class DirClassifiedReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -5452,7 +5452,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DirClassifiedReply; } }
         public override int Length
         {
             get
@@ -5474,6 +5473,7 @@ namespace OpenMetaverse.Packets
 
         public DirClassifiedReplyPacket()
         {
+            Type = PacketType.DirClassifiedReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 41;
@@ -5574,7 +5574,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarClassifiedReplyPacket : Packet
+    public sealed class AvatarClassifiedReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -5674,7 +5674,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarClassifiedReply; } }
         public override int Length
         {
             get
@@ -5691,6 +5690,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarClassifiedReplyPacket()
         {
+            Type = PacketType.AvatarClassifiedReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 42;
@@ -5767,7 +5767,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ClassifiedInfoRequestPacket : Packet
+    public sealed class ClassifiedInfoRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -5848,7 +5848,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ClassifiedInfoRequest; } }
         public override int Length
         {
             get
@@ -5864,6 +5863,7 @@ namespace OpenMetaverse.Packets
 
         public ClassifiedInfoRequestPacket()
         {
+            Type = PacketType.ClassifiedInfoRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 43;
@@ -5926,7 +5926,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ClassifiedInfoReplyPacket : Packet
+    public sealed class ClassifiedInfoReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -6105,7 +6105,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ClassifiedInfoReply; } }
         public override int Length
         {
             get
@@ -6121,6 +6120,7 @@ namespace OpenMetaverse.Packets
 
         public ClassifiedInfoReplyPacket()
         {
+            Type = PacketType.ClassifiedInfoReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 44;
@@ -6182,7 +6182,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ClassifiedInfoUpdatePacket : Packet
+    public sealed class ClassifiedInfoUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -6321,7 +6321,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ClassifiedInfoUpdate; } }
         public override int Length
         {
             get
@@ -6337,6 +6336,7 @@ namespace OpenMetaverse.Packets
 
         public ClassifiedInfoUpdatePacket()
         {
+            Type = PacketType.ClassifiedInfoUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 45;
@@ -6398,7 +6398,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ClassifiedDeletePacket : Packet
+    public sealed class ClassifiedDeletePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -6479,7 +6479,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ClassifiedDelete; } }
         public override int Length
         {
             get
@@ -6495,6 +6494,7 @@ namespace OpenMetaverse.Packets
 
         public ClassifiedDeletePacket()
         {
+            Type = PacketType.ClassifiedDelete;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 46;
@@ -6556,7 +6556,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ClassifiedGodDeletePacket : Packet
+    public sealed class ClassifiedGodDeletePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -6640,7 +6640,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ClassifiedGodDelete; } }
         public override int Length
         {
             get
@@ -6656,6 +6655,7 @@ namespace OpenMetaverse.Packets
 
         public ClassifiedGodDeletePacket()
         {
+            Type = PacketType.ClassifiedGodDelete;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 47;
@@ -6717,7 +6717,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DirLandQueryPacket : Packet
+    public sealed class DirLandQueryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -6813,7 +6813,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DirLandQuery; } }
         public override int Length
         {
             get
@@ -6829,6 +6828,7 @@ namespace OpenMetaverse.Packets
 
         public DirLandQueryPacket()
         {
+            Type = PacketType.DirLandQuery;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 48;
@@ -6891,7 +6891,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DirLandReplyPacket : Packet
+    public sealed class DirLandReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -7038,7 +7038,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DirLandReply; } }
         public override int Length
         {
             get
@@ -7057,6 +7056,7 @@ namespace OpenMetaverse.Packets
 
         public DirLandReplyPacket()
         {
+            Type = PacketType.DirLandReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 50;
@@ -7138,7 +7138,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DirPopularQueryPacket : Packet
+    public sealed class DirPopularQueryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -7222,7 +7222,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DirPopularQuery; } }
         public override int Length
         {
             get
@@ -7238,6 +7237,7 @@ namespace OpenMetaverse.Packets
 
         public DirPopularQueryPacket()
         {
+            Type = PacketType.DirPopularQuery;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 51;
@@ -7300,7 +7300,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DirPopularReplyPacket : Packet
+    public sealed class DirPopularReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -7438,7 +7438,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DirPopularReply; } }
         public override int Length
         {
             get
@@ -7457,6 +7456,7 @@ namespace OpenMetaverse.Packets
 
         public DirPopularReplyPacket()
         {
+            Type = PacketType.DirPopularReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 53;
@@ -7538,7 +7538,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelInfoRequestPacket : Packet
+    public sealed class ParcelInfoRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -7619,7 +7619,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelInfoRequest; } }
         public override int Length
         {
             get
@@ -7635,6 +7634,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelInfoRequestPacket()
         {
+            Type = PacketType.ParcelInfoRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 54;
@@ -7696,7 +7696,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelInfoReplyPacket : Packet
+    public sealed class ParcelInfoReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -7860,7 +7860,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelInfoReply; } }
         public override int Length
         {
             get
@@ -7876,6 +7875,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelInfoReplyPacket()
         {
+            Type = PacketType.ParcelInfoReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 55;
@@ -7938,7 +7938,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelObjectOwnersRequestPacket : Packet
+    public sealed class ParcelObjectOwnersRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -8019,7 +8019,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelObjectOwnersRequest; } }
         public override int Length
         {
             get
@@ -8035,6 +8034,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelObjectOwnersRequestPacket()
         {
+            Type = PacketType.ParcelObjectOwnersRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 56;
@@ -8096,7 +8096,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelObjectOwnersReplyPacket : Packet
+    public sealed class ParcelObjectOwnersReplyPacket : Packet
     {
         /// <exclude/>
         public class DataBlock : PacketBlock
@@ -8145,7 +8145,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelObjectOwnersReply; } }
         public override int Length
         {
             get
@@ -8160,6 +8159,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelObjectOwnersReplyPacket()
         {
+            Type = PacketType.ParcelObjectOwnersReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 57;
@@ -8233,7 +8233,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupNoticesListRequestPacket : Packet
+    public sealed class GroupNoticesListRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -8314,7 +8314,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupNoticesListRequest; } }
         public override int Length
         {
             get
@@ -8330,6 +8329,7 @@ namespace OpenMetaverse.Packets
 
         public GroupNoticesListRequestPacket()
         {
+            Type = PacketType.GroupNoticesListRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 58;
@@ -8391,7 +8391,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupNoticesListReplyPacket : Packet
+    public sealed class GroupNoticesListReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -8519,7 +8519,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupNoticesListReply; } }
         public override int Length
         {
             get
@@ -8536,6 +8535,7 @@ namespace OpenMetaverse.Packets
 
         public GroupNoticesListReplyPacket()
         {
+            Type = PacketType.GroupNoticesListReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 59;
@@ -8612,7 +8612,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupNoticeRequestPacket : Packet
+    public sealed class GroupNoticeRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -8693,7 +8693,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupNoticeRequest; } }
         public override int Length
         {
             get
@@ -8709,6 +8708,7 @@ namespace OpenMetaverse.Packets
 
         public GroupNoticeRequestPacket()
         {
+            Type = PacketType.GroupNoticeRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 60;
@@ -8770,7 +8770,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TeleportRequestPacket : Packet
+    public sealed class TeleportRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -8857,7 +8857,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TeleportRequest; } }
         public override int Length
         {
             get
@@ -8873,6 +8872,7 @@ namespace OpenMetaverse.Packets
 
         public TeleportRequestPacket()
         {
+            Type = PacketType.TeleportRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 62;
@@ -8934,7 +8934,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TeleportLocationRequestPacket : Packet
+    public sealed class TeleportLocationRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -9021,7 +9021,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TeleportLocationRequest; } }
         public override int Length
         {
             get
@@ -9037,6 +9036,7 @@ namespace OpenMetaverse.Packets
 
         public TeleportLocationRequestPacket()
         {
+            Type = PacketType.TeleportLocationRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 63;
@@ -9098,7 +9098,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TeleportLocalPacket : Packet
+    public sealed class TeleportLocalPacket : Packet
     {
         /// <exclude/>
         public class InfoBlock : PacketBlock
@@ -9150,7 +9150,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TeleportLocal; } }
         public override int Length
         {
             get
@@ -9164,6 +9163,7 @@ namespace OpenMetaverse.Packets
 
         public TeleportLocalPacket()
         {
+            Type = PacketType.TeleportLocal;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 64;
@@ -9221,7 +9221,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TeleportLandmarkRequestPacket : Packet
+    public sealed class TeleportLandmarkRequestPacket : Packet
     {
         /// <exclude/>
         public class InfoBlock : PacketBlock
@@ -9267,7 +9267,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TeleportLandmarkRequest; } }
         public override int Length
         {
             get
@@ -9281,6 +9280,7 @@ namespace OpenMetaverse.Packets
 
         public TeleportLandmarkRequestPacket()
         {
+            Type = PacketType.TeleportLandmarkRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 65;
@@ -9339,7 +9339,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TeleportProgressPacket : Packet
+    public sealed class TeleportProgressPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -9436,7 +9436,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TeleportProgress; } }
         public override int Length
         {
             get
@@ -9452,6 +9451,7 @@ namespace OpenMetaverse.Packets
 
         public TeleportProgressPacket()
         {
+            Type = PacketType.TeleportProgress;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 66;
@@ -9513,7 +9513,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TeleportFinishPacket : Packet
+    public sealed class TeleportFinishPacket : Packet
     {
         /// <exclude/>
         public class InfoBlock : PacketBlock
@@ -9592,7 +9592,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TeleportFinish; } }
         public override int Length
         {
             get
@@ -9606,6 +9605,7 @@ namespace OpenMetaverse.Packets
 
         public TeleportFinishPacket()
         {
+            Type = PacketType.TeleportFinish;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 69;
@@ -9663,7 +9663,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class StartLurePacket : Packet
+    public sealed class StartLurePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -9801,7 +9801,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.StartLure; } }
         public override int Length
         {
             get
@@ -9820,6 +9819,7 @@ namespace OpenMetaverse.Packets
 
         public StartLurePacket()
         {
+            Type = PacketType.StartLure;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 70;
@@ -9900,7 +9900,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TeleportLureRequestPacket : Packet
+    public sealed class TeleportLureRequestPacket : Packet
     {
         /// <exclude/>
         public class InfoBlock : PacketBlock
@@ -9949,7 +9949,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TeleportLureRequest; } }
         public override int Length
         {
             get
@@ -9963,6 +9962,7 @@ namespace OpenMetaverse.Packets
 
         public TeleportLureRequestPacket()
         {
+            Type = PacketType.TeleportLureRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 71;
@@ -10020,7 +10020,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TeleportCancelPacket : Packet
+    public sealed class TeleportCancelPacket : Packet
     {
         /// <exclude/>
         public class InfoBlock : PacketBlock
@@ -10063,7 +10063,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TeleportCancel; } }
         public override int Length
         {
             get
@@ -10077,6 +10076,7 @@ namespace OpenMetaverse.Packets
 
         public TeleportCancelPacket()
         {
+            Type = PacketType.TeleportCancel;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 72;
@@ -10134,7 +10134,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TeleportStartPacket : Packet
+    public sealed class TeleportStartPacket : Packet
     {
         /// <exclude/>
         public class InfoBlock : PacketBlock
@@ -10174,7 +10174,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TeleportStart; } }
         public override int Length
         {
             get
@@ -10188,6 +10187,7 @@ namespace OpenMetaverse.Packets
 
         public TeleportStartPacket()
         {
+            Type = PacketType.TeleportStart;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 73;
@@ -10245,7 +10245,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TeleportFailedPacket : Packet
+    public sealed class TeleportFailedPacket : Packet
     {
         /// <exclude/>
         public class InfoBlock : PacketBlock
@@ -10375,7 +10375,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TeleportFailed; } }
         public override int Length
         {
             get
@@ -10392,6 +10391,7 @@ namespace OpenMetaverse.Packets
 
         public TeleportFailedPacket()
         {
+            Type = PacketType.TeleportFailed;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 74;
@@ -10468,7 +10468,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UndoPacket : Packet
+    public sealed class UndoPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -10552,7 +10552,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.Undo; } }
         public override int Length
         {
             get
@@ -10569,6 +10568,7 @@ namespace OpenMetaverse.Packets
 
         public UndoPacket()
         {
+            Type = PacketType.Undo;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 75;
@@ -10645,7 +10645,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RedoPacket : Packet
+    public sealed class RedoPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -10729,7 +10729,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.Redo; } }
         public override int Length
         {
             get
@@ -10746,6 +10745,7 @@ namespace OpenMetaverse.Packets
 
         public RedoPacket()
         {
+            Type = PacketType.Redo;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 76;
@@ -10822,7 +10822,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UndoLandPacket : Packet
+    public sealed class UndoLandPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -10865,7 +10865,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UndoLand; } }
         public override int Length
         {
             get
@@ -10879,6 +10878,7 @@ namespace OpenMetaverse.Packets
 
         public UndoLandPacket()
         {
+            Type = PacketType.UndoLand;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 77;
@@ -10936,7 +10936,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentPausePacket : Packet
+    public sealed class AgentPausePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -10982,7 +10982,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentPause; } }
         public override int Length
         {
             get
@@ -10996,6 +10995,7 @@ namespace OpenMetaverse.Packets
 
         public AgentPausePacket()
         {
+            Type = PacketType.AgentPause;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 78;
@@ -11053,7 +11053,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentResumePacket : Packet
+    public sealed class AgentResumePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -11099,7 +11099,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentResume; } }
         public override int Length
         {
             get
@@ -11113,6 +11112,7 @@ namespace OpenMetaverse.Packets
 
         public AgentResumePacket()
         {
+            Type = PacketType.AgentResume;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 79;
@@ -11170,7 +11170,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ChatFromViewerPacket : Packet
+    public sealed class ChatFromViewerPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -11274,7 +11274,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ChatFromViewer; } }
         public override int Length
         {
             get
@@ -11290,6 +11289,7 @@ namespace OpenMetaverse.Packets
 
         public ChatFromViewerPacket()
         {
+            Type = PacketType.ChatFromViewer;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 80;
@@ -11352,7 +11352,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentThrottlePacket : Packet
+    public sealed class AgentThrottlePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -11455,7 +11455,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentThrottle; } }
         public override int Length
         {
             get
@@ -11471,6 +11470,7 @@ namespace OpenMetaverse.Packets
 
         public AgentThrottlePacket()
         {
+            Type = PacketType.AgentThrottle;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 81;
@@ -11533,7 +11533,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentFOVPacket : Packet
+    public sealed class AgentFOVPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -11620,7 +11620,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentFOV; } }
         public override int Length
         {
             get
@@ -11636,6 +11635,7 @@ namespace OpenMetaverse.Packets
 
         public AgentFOVPacket()
         {
+            Type = PacketType.AgentFOV;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 82;
@@ -11697,7 +11697,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentHeightWidthPacket : Packet
+    public sealed class AgentHeightWidthPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -11789,7 +11789,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentHeightWidth; } }
         public override int Length
         {
             get
@@ -11805,6 +11804,7 @@ namespace OpenMetaverse.Packets
 
         public AgentHeightWidthPacket()
         {
+            Type = PacketType.AgentHeightWidth;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 83;
@@ -11866,7 +11866,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentSetAppearancePacket : Packet
+    public sealed class AgentSetAppearancePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -12049,7 +12049,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentSetAppearance; } }
         public override int Length
         {
             get
@@ -12071,6 +12070,7 @@ namespace OpenMetaverse.Packets
 
         public AgentSetAppearancePacket()
         {
+            Type = PacketType.AgentSetAppearance;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 84;
@@ -12171,7 +12171,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentQuitCopyPacket : Packet
+    public sealed class AgentQuitCopyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -12252,7 +12252,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentQuitCopy; } }
         public override int Length
         {
             get
@@ -12268,6 +12267,7 @@ namespace OpenMetaverse.Packets
 
         public AgentQuitCopyPacket()
         {
+            Type = PacketType.AgentQuitCopy;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 85;
@@ -12329,7 +12329,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ImageNotInDatabasePacket : Packet
+    public sealed class ImageNotInDatabasePacket : Packet
     {
         /// <exclude/>
         public class ImageIDBlock : PacketBlock
@@ -12369,7 +12369,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ImageNotInDatabase; } }
         public override int Length
         {
             get
@@ -12383,6 +12382,7 @@ namespace OpenMetaverse.Packets
 
         public ImageNotInDatabasePacket()
         {
+            Type = PacketType.ImageNotInDatabase;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 86;
@@ -12440,7 +12440,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RebakeAvatarTexturesPacket : Packet
+    public sealed class RebakeAvatarTexturesPacket : Packet
     {
         /// <exclude/>
         public class TextureDataBlock : PacketBlock
@@ -12480,7 +12480,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RebakeAvatarTextures; } }
         public override int Length
         {
             get
@@ -12494,6 +12493,7 @@ namespace OpenMetaverse.Packets
 
         public RebakeAvatarTexturesPacket()
         {
+            Type = PacketType.RebakeAvatarTextures;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 87;
@@ -12551,7 +12551,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class SetAlwaysRunPacket : Packet
+    public sealed class SetAlwaysRunPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -12597,7 +12597,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.SetAlwaysRun; } }
         public override int Length
         {
             get
@@ -12611,6 +12610,7 @@ namespace OpenMetaverse.Packets
 
         public SetAlwaysRunPacket()
         {
+            Type = PacketType.SetAlwaysRun;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 88;
@@ -12668,7 +12668,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectDeletePacket : Packet
+    public sealed class ObjectDeletePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -12752,7 +12752,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectDelete; } }
         public override int Length
         {
             get
@@ -12769,6 +12768,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectDeletePacket()
         {
+            Type = PacketType.ObjectDelete;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 89;
@@ -12846,7 +12846,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectDuplicatePacket : Packet
+    public sealed class ObjectDuplicatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -12971,7 +12971,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectDuplicate; } }
         public override int Length
         {
             get
@@ -12990,6 +12989,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectDuplicatePacket()
         {
+            Type = PacketType.ObjectDuplicate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 90;
@@ -13071,7 +13071,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectDuplicateOnRayPacket : Packet
+    public sealed class ObjectDuplicateOnRayPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -13179,7 +13179,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectDuplicateOnRay; } }
         public override int Length
         {
             get
@@ -13196,6 +13195,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectDuplicateOnRayPacket()
         {
+            Type = PacketType.ObjectDuplicateOnRay;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 91;
@@ -13273,7 +13273,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectScalePacket : Packet
+    public sealed class ObjectScalePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -13357,7 +13357,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectScale; } }
         public override int Length
         {
             get
@@ -13374,6 +13373,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectScalePacket()
         {
+            Type = PacketType.ObjectScale;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 92;
@@ -13451,7 +13451,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectRotationPacket : Packet
+    public sealed class ObjectRotationPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -13535,7 +13535,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectRotation; } }
         public override int Length
         {
             get
@@ -13552,6 +13551,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectRotationPacket()
         {
+            Type = PacketType.ObjectRotation;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 93;
@@ -13629,7 +13629,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectFlagUpdatePacket : Packet
+    public sealed class ObjectFlagUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -13687,7 +13687,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectFlagUpdate; } }
         public override int Length
         {
             get
@@ -13701,6 +13700,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectFlagUpdatePacket()
         {
+            Type = PacketType.ObjectFlagUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 94;
@@ -13759,7 +13759,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectClickActionPacket : Packet
+    public sealed class ObjectClickActionPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -13843,7 +13843,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectClickAction; } }
         public override int Length
         {
             get
@@ -13860,6 +13859,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectClickActionPacket()
         {
+            Type = PacketType.ObjectClickAction;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 95;
@@ -13937,7 +13937,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectImagePacket : Packet
+    public sealed class ObjectImagePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -14055,7 +14055,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectImage; } }
         public override int Length
         {
             get
@@ -14072,6 +14071,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectImagePacket()
         {
+            Type = PacketType.ObjectImage;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 96;
@@ -14149,7 +14149,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectMaterialPacket : Packet
+    public sealed class ObjectMaterialPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -14233,7 +14233,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectMaterial; } }
         public override int Length
         {
             get
@@ -14250,6 +14249,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectMaterialPacket()
         {
+            Type = PacketType.ObjectMaterial;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 97;
@@ -14327,7 +14327,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectShapePacket : Packet
+    public sealed class ObjectShapePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -14467,7 +14467,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectShape; } }
         public override int Length
         {
             get
@@ -14484,6 +14483,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectShapePacket()
         {
+            Type = PacketType.ObjectShape;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 98;
@@ -14561,7 +14561,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectExtraParamsPacket : Packet
+    public sealed class ObjectExtraParamsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -14671,7 +14671,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectExtraParams; } }
         public override int Length
         {
             get
@@ -14688,6 +14687,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectExtraParamsPacket()
         {
+            Type = PacketType.ObjectExtraParams;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 99;
@@ -14765,7 +14765,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectOwnerPacket : Packet
+    public sealed class ObjectOwnerPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -14890,7 +14890,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectOwner; } }
         public override int Length
         {
             get
@@ -14909,6 +14908,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectOwnerPacket()
         {
+            Type = PacketType.ObjectOwner;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 100;
@@ -14990,7 +14990,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectGroupPacket : Packet
+    public sealed class ObjectGroupPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -15074,7 +15074,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectGroup; } }
         public override int Length
         {
             get
@@ -15091,6 +15090,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectGroupPacket()
         {
+            Type = PacketType.ObjectGroup;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 101;
@@ -15168,7 +15168,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectBuyPacket : Packet
+    public sealed class ObjectBuyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -15261,7 +15261,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectBuy; } }
         public override int Length
         {
             get
@@ -15278,6 +15277,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectBuyPacket()
         {
+            Type = PacketType.ObjectBuy;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 102;
@@ -15355,7 +15355,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class BuyObjectInventoryPacket : Packet
+    public sealed class BuyObjectInventoryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -15442,7 +15442,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.BuyObjectInventory; } }
         public override int Length
         {
             get
@@ -15458,6 +15457,7 @@ namespace OpenMetaverse.Packets
 
         public BuyObjectInventoryPacket()
         {
+            Type = PacketType.BuyObjectInventory;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 103;
@@ -15520,7 +15520,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DerezContainerPacket : Packet
+    public sealed class DerezContainerPacket : Packet
     {
         /// <exclude/>
         public class DataBlock : PacketBlock
@@ -15563,7 +15563,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DerezContainer; } }
         public override int Length
         {
             get
@@ -15577,6 +15576,7 @@ namespace OpenMetaverse.Packets
 
         public DerezContainerPacket()
         {
+            Type = PacketType.DerezContainer;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 104;
@@ -15635,7 +15635,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectPermissionsPacket : Packet
+    public sealed class ObjectPermissionsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -15763,7 +15763,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectPermissions; } }
         public override int Length
         {
             get
@@ -15782,6 +15781,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectPermissionsPacket()
         {
+            Type = PacketType.ObjectPermissions;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 105;
@@ -15863,7 +15863,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectSaleInfoPacket : Packet
+    public sealed class ObjectSaleInfoPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -15950,7 +15950,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectSaleInfo; } }
         public override int Length
         {
             get
@@ -15967,6 +15966,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectSaleInfoPacket()
         {
+            Type = PacketType.ObjectSaleInfo;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 106;
@@ -16044,7 +16044,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectNamePacket : Packet
+    public sealed class ObjectNamePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -16144,7 +16144,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectName; } }
         public override int Length
         {
             get
@@ -16161,6 +16160,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectNamePacket()
         {
+            Type = PacketType.ObjectName;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 107;
@@ -16238,7 +16238,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectDescriptionPacket : Packet
+    public sealed class ObjectDescriptionPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -16338,7 +16338,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectDescription; } }
         public override int Length
         {
             get
@@ -16355,6 +16354,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectDescriptionPacket()
         {
+            Type = PacketType.ObjectDescription;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 108;
@@ -16432,7 +16432,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectCategoryPacket : Packet
+    public sealed class ObjectCategoryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -16516,7 +16516,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectCategory; } }
         public override int Length
         {
             get
@@ -16533,6 +16532,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectCategoryPacket()
         {
+            Type = PacketType.ObjectCategory;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 109;
@@ -16610,7 +16610,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectSelectPacket : Packet
+    public sealed class ObjectSelectPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -16691,7 +16691,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectSelect; } }
         public override int Length
         {
             get
@@ -16708,6 +16707,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectSelectPacket()
         {
+            Type = PacketType.ObjectSelect;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 110;
@@ -16785,7 +16785,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectDeselectPacket : Packet
+    public sealed class ObjectDeselectPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -16866,7 +16866,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectDeselect; } }
         public override int Length
         {
             get
@@ -16883,6 +16882,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectDeselectPacket()
         {
+            Type = PacketType.ObjectDeselect;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 111;
@@ -16960,7 +16960,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectAttachPacket : Packet
+    public sealed class ObjectAttachPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -17047,7 +17047,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectAttach; } }
         public override int Length
         {
             get
@@ -17064,6 +17063,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectAttachPacket()
         {
+            Type = PacketType.ObjectAttach;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 112;
@@ -17141,7 +17141,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectDetachPacket : Packet
+    public sealed class ObjectDetachPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -17222,7 +17222,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectDetach; } }
         public override int Length
         {
             get
@@ -17239,6 +17238,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectDetachPacket()
         {
+            Type = PacketType.ObjectDetach;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 113;
@@ -17315,7 +17315,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectDropPacket : Packet
+    public sealed class ObjectDropPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -17396,7 +17396,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectDrop; } }
         public override int Length
         {
             get
@@ -17413,6 +17412,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectDropPacket()
         {
+            Type = PacketType.ObjectDrop;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 114;
@@ -17489,7 +17489,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectLinkPacket : Packet
+    public sealed class ObjectLinkPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -17570,7 +17570,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectLink; } }
         public override int Length
         {
             get
@@ -17587,6 +17586,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectLinkPacket()
         {
+            Type = PacketType.ObjectLink;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 115;
@@ -17663,7 +17663,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectDelinkPacket : Packet
+    public sealed class ObjectDelinkPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -17744,7 +17744,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectDelink; } }
         public override int Length
         {
             get
@@ -17761,6 +17760,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectDelinkPacket()
         {
+            Type = PacketType.ObjectDelink;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 116;
@@ -17837,7 +17837,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectGrabPacket : Packet
+    public sealed class ObjectGrabPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -17974,7 +17974,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectGrab; } }
         public override int Length
         {
             get
@@ -17993,6 +17992,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectGrabPacket()
         {
+            Type = PacketType.ObjectGrab;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 117;
@@ -18074,7 +18074,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectGrabUpdatePacket : Packet
+    public sealed class ObjectGrabUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -18217,7 +18217,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectGrabUpdate; } }
         public override int Length
         {
             get
@@ -18236,6 +18235,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectGrabUpdatePacket()
         {
+            Type = PacketType.ObjectGrabUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 118;
@@ -18317,7 +18317,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectDeGrabPacket : Packet
+    public sealed class ObjectDeGrabPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -18451,7 +18451,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectDeGrab; } }
         public override int Length
         {
             get
@@ -18470,6 +18469,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectDeGrabPacket()
         {
+            Type = PacketType.ObjectDeGrab;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 119;
@@ -18550,7 +18550,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectSpinStartPacket : Packet
+    public sealed class ObjectSpinStartPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -18631,7 +18631,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectSpinStart; } }
         public override int Length
         {
             get
@@ -18647,6 +18646,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectSpinStartPacket()
         {
+            Type = PacketType.ObjectSpinStart;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 120;
@@ -18709,7 +18709,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectSpinUpdatePacket : Packet
+    public sealed class ObjectSpinUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -18793,7 +18793,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectSpinUpdate; } }
         public override int Length
         {
             get
@@ -18809,6 +18808,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectSpinUpdatePacket()
         {
+            Type = PacketType.ObjectSpinUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 121;
@@ -18871,7 +18871,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectSpinStopPacket : Packet
+    public sealed class ObjectSpinStopPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -18952,7 +18952,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectSpinStop; } }
         public override int Length
         {
             get
@@ -18968,6 +18967,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectSpinStopPacket()
         {
+            Type = PacketType.ObjectSpinStop;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 122;
@@ -19030,7 +19030,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectExportSelectedPacket : Packet
+    public sealed class ObjectExportSelectedPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -19115,7 +19115,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectExportSelected; } }
         public override int Length
         {
             get
@@ -19132,6 +19131,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectExportSelectedPacket()
         {
+            Type = PacketType.ObjectExportSelected;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 123;
@@ -19209,7 +19209,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ModifyLandPacket : Packet
+    public sealed class ModifyLandPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -19387,7 +19387,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ModifyLand; } }
         public override int Length
         {
             get
@@ -19409,6 +19408,7 @@ namespace OpenMetaverse.Packets
 
         public ModifyLandPacket()
         {
+            Type = PacketType.ModifyLand;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 124;
@@ -19509,7 +19509,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class VelocityInterpolateOnPacket : Packet
+    public sealed class VelocityInterpolateOnPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -19552,7 +19552,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.VelocityInterpolateOn; } }
         public override int Length
         {
             get
@@ -19566,6 +19565,7 @@ namespace OpenMetaverse.Packets
 
         public VelocityInterpolateOnPacket()
         {
+            Type = PacketType.VelocityInterpolateOn;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 125;
@@ -19623,7 +19623,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class VelocityInterpolateOffPacket : Packet
+    public sealed class VelocityInterpolateOffPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -19666,7 +19666,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.VelocityInterpolateOff; } }
         public override int Length
         {
             get
@@ -19680,6 +19679,7 @@ namespace OpenMetaverse.Packets
 
         public VelocityInterpolateOffPacket()
         {
+            Type = PacketType.VelocityInterpolateOff;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 126;
@@ -19737,7 +19737,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class StateSavePacket : Packet
+    public sealed class StateSavePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -19834,7 +19834,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.StateSave; } }
         public override int Length
         {
             get
@@ -19850,6 +19849,7 @@ namespace OpenMetaverse.Packets
 
         public StateSavePacket()
         {
+            Type = PacketType.StateSave;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 127;
@@ -19911,7 +19911,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ReportAutosaveCrashPacket : Packet
+    public sealed class ReportAutosaveCrashPacket : Packet
     {
         /// <exclude/>
         public class AutosaveDataBlock : PacketBlock
@@ -19954,7 +19954,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ReportAutosaveCrash; } }
         public override int Length
         {
             get
@@ -19968,6 +19967,7 @@ namespace OpenMetaverse.Packets
 
         public ReportAutosaveCrashPacket()
         {
+            Type = PacketType.ReportAutosaveCrash;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 128;
@@ -20025,7 +20025,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class SimWideDeletesPacket : Packet
+    public sealed class SimWideDeletesPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -20109,7 +20109,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.SimWideDeletes; } }
         public override int Length
         {
             get
@@ -20125,6 +20124,7 @@ namespace OpenMetaverse.Packets
 
         public SimWideDeletesPacket()
         {
+            Type = PacketType.SimWideDeletes;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 129;
@@ -20186,7 +20186,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TrackAgentPacket : Packet
+    public sealed class TrackAgentPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -20267,7 +20267,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TrackAgent; } }
         public override int Length
         {
             get
@@ -20283,6 +20282,7 @@ namespace OpenMetaverse.Packets
 
         public TrackAgentPacket()
         {
+            Type = PacketType.TrackAgent;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 130;
@@ -20344,7 +20344,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ViewerStatsPacket : Packet
+    public sealed class ViewerStatsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -20655,7 +20655,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ViewerStats; } }
         public override int Length
         {
             get
@@ -20679,6 +20678,7 @@ namespace OpenMetaverse.Packets
 
         public ViewerStatsPacket()
         {
+            Type = PacketType.ViewerStats;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 131;
@@ -20779,7 +20779,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ScriptAnswerYesPacket : Packet
+    public sealed class ScriptAnswerYesPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -20866,7 +20866,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ScriptAnswerYes; } }
         public override int Length
         {
             get
@@ -20882,6 +20881,7 @@ namespace OpenMetaverse.Packets
 
         public ScriptAnswerYesPacket()
         {
+            Type = PacketType.ScriptAnswerYes;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 132;
@@ -20943,7 +20943,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UserReportPacket : Packet
+    public sealed class UserReportPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -21116,7 +21116,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UserReport; } }
         public override int Length
         {
             get
@@ -21132,6 +21131,7 @@ namespace OpenMetaverse.Packets
 
         public UserReportPacket()
         {
+            Type = PacketType.UserReport;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 133;
@@ -21194,7 +21194,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AlertMessagePacket : Packet
+    public sealed class AlertMessagePacket : Packet
     {
         /// <exclude/>
         public class AlertDataBlock : PacketBlock
@@ -21321,7 +21321,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AlertMessage; } }
         public override int Length
         {
             get
@@ -21338,6 +21337,7 @@ namespace OpenMetaverse.Packets
 
         public AlertMessagePacket()
         {
+            Type = PacketType.AlertMessage;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 134;
@@ -21414,7 +21414,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentAlertMessagePacket : Packet
+    public sealed class AgentAlertMessagePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -21511,7 +21511,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentAlertMessage; } }
         public override int Length
         {
             get
@@ -21527,6 +21526,7 @@ namespace OpenMetaverse.Packets
 
         public AgentAlertMessagePacket()
         {
+            Type = PacketType.AgentAlertMessage;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 135;
@@ -21588,7 +21588,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MeanCollisionAlertPacket : Packet
+    public sealed class MeanCollisionAlertPacket : Packet
     {
         /// <exclude/>
         public class MeanCollisionBlock : PacketBlock
@@ -21640,7 +21640,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MeanCollisionAlert; } }
         public override int Length
         {
             get
@@ -21655,6 +21654,7 @@ namespace OpenMetaverse.Packets
 
         public MeanCollisionAlertPacket()
         {
+            Type = PacketType.MeanCollisionAlert;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 136;
@@ -21728,7 +21728,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ViewerFrozenMessagePacket : Packet
+    public sealed class ViewerFrozenMessagePacket : Packet
     {
         /// <exclude/>
         public class FrozenDataBlock : PacketBlock
@@ -21768,7 +21768,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ViewerFrozenMessage; } }
         public override int Length
         {
             get
@@ -21782,6 +21781,7 @@ namespace OpenMetaverse.Packets
 
         public ViewerFrozenMessagePacket()
         {
+            Type = PacketType.ViewerFrozenMessage;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 137;
@@ -21839,7 +21839,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class HealthMessagePacket : Packet
+    public sealed class HealthMessagePacket : Packet
     {
         /// <exclude/>
         public class HealthDataBlock : PacketBlock
@@ -21879,7 +21879,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.HealthMessage; } }
         public override int Length
         {
             get
@@ -21893,6 +21892,7 @@ namespace OpenMetaverse.Packets
 
         public HealthMessagePacket()
         {
+            Type = PacketType.HealthMessage;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 138;
@@ -21951,7 +21951,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ChatFromSimulatorPacket : Packet
+    public sealed class ChatFromSimulatorPacket : Packet
     {
         /// <exclude/>
         public class ChatDataBlock : PacketBlock
@@ -22043,7 +22043,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ChatFromSimulator; } }
         public override int Length
         {
             get
@@ -22057,6 +22056,7 @@ namespace OpenMetaverse.Packets
 
         public ChatFromSimulatorPacket()
         {
+            Type = PacketType.ChatFromSimulator;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 139;
@@ -22114,7 +22114,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class SimStatsPacket : Packet
+    public sealed class SimStatsPacket : Packet
     {
         /// <exclude/>
         public class RegionBlock : PacketBlock
@@ -22242,7 +22242,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.SimStats; } }
         public override int Length
         {
             get
@@ -22261,6 +22260,7 @@ namespace OpenMetaverse.Packets
 
         public SimStatsPacket()
         {
+            Type = PacketType.SimStats;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 140;
@@ -22341,7 +22341,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RequestRegionInfoPacket : Packet
+    public sealed class RequestRegionInfoPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -22384,7 +22384,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RequestRegionInfo; } }
         public override int Length
         {
             get
@@ -22398,6 +22397,7 @@ namespace OpenMetaverse.Packets
 
         public RequestRegionInfoPacket()
         {
+            Type = PacketType.RequestRegionInfo;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 141;
@@ -22455,7 +22455,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RegionInfoPacket : Packet
+    public sealed class RegionInfoPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -22677,7 +22677,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RegionInfo; } }
         public override int Length
         {
             get
@@ -22695,6 +22694,7 @@ namespace OpenMetaverse.Packets
 
         public RegionInfoPacket()
         {
+            Type = PacketType.RegionInfo;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 142;
@@ -22761,7 +22761,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GodUpdateRegionInfoPacket : Packet
+    public sealed class GodUpdateRegionInfoPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -22879,7 +22879,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GodUpdateRegionInfo; } }
         public override int Length
         {
             get
@@ -22895,6 +22894,7 @@ namespace OpenMetaverse.Packets
 
         public GodUpdateRegionInfoPacket()
         {
+            Type = PacketType.GodUpdateRegionInfo;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 143;
@@ -22957,7 +22957,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class NearestLandingRegionUpdatedPacket : Packet
+    public sealed class NearestLandingRegionUpdatedPacket : Packet
     {
         /// <exclude/>
         public class RegionDataBlock : PacketBlock
@@ -22997,7 +22997,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.NearestLandingRegionUpdated; } }
         public override int Length
         {
             get
@@ -23011,6 +23010,7 @@ namespace OpenMetaverse.Packets
 
         public NearestLandingRegionUpdatedPacket()
         {
+            Type = PacketType.NearestLandingRegionUpdated;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 146;
@@ -23068,7 +23068,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RegionHandshakePacket : Packet
+    public sealed class RegionHandshakePacket : Packet
     {
         /// <exclude/>
         public class RegionInfoBlock : PacketBlock
@@ -23325,7 +23325,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RegionHandshake; } }
         public override int Length
         {
             get
@@ -23343,6 +23342,7 @@ namespace OpenMetaverse.Packets
 
         public RegionHandshakePacket()
         {
+            Type = PacketType.RegionHandshake;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 148;
@@ -23409,7 +23409,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RegionHandshakeReplyPacket : Packet
+    public sealed class RegionHandshakeReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -23490,7 +23490,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RegionHandshakeReply; } }
         public override int Length
         {
             get
@@ -23506,6 +23505,7 @@ namespace OpenMetaverse.Packets
 
         public RegionHandshakeReplyPacket()
         {
+            Type = PacketType.RegionHandshakeReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 149;
@@ -23568,7 +23568,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class SimulatorViewerTimeMessagePacket : Packet
+    public sealed class SimulatorViewerTimeMessagePacket : Packet
     {
         /// <exclude/>
         public class TimeInfoBlock : PacketBlock
@@ -23623,7 +23623,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.SimulatorViewerTimeMessage; } }
         public override int Length
         {
             get
@@ -23637,6 +23636,7 @@ namespace OpenMetaverse.Packets
 
         public SimulatorViewerTimeMessagePacket()
         {
+            Type = PacketType.SimulatorViewerTimeMessage;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 150;
@@ -23694,7 +23694,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class EnableSimulatorPacket : Packet
+    public sealed class EnableSimulatorPacket : Packet
     {
         /// <exclude/>
         public class SimulatorInfoBlock : PacketBlock
@@ -23741,7 +23741,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.EnableSimulator; } }
         public override int Length
         {
             get
@@ -23755,6 +23754,7 @@ namespace OpenMetaverse.Packets
 
         public EnableSimulatorPacket()
         {
+            Type = PacketType.EnableSimulator;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 151;
@@ -23812,9 +23812,8 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DisableSimulatorPacket : Packet
+    public sealed class DisableSimulatorPacket : Packet
     {
-        public override PacketType Type { get { return PacketType.DisableSimulator; } }
         public override int Length
         {
             get
@@ -23826,6 +23825,7 @@ namespace OpenMetaverse.Packets
 
         public DisableSimulatorPacket()
         {
+            Type = PacketType.DisableSimulator;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 152;
@@ -23879,7 +23879,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TransferRequestPacket : Packet
+    public sealed class TransferRequestPacket : Packet
     {
         /// <exclude/>
         public class TransferInfoBlock : PacketBlock
@@ -23948,7 +23948,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TransferRequest; } }
         public override int Length
         {
             get
@@ -23962,6 +23961,7 @@ namespace OpenMetaverse.Packets
 
         public TransferRequestPacket()
         {
+            Type = PacketType.TransferRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 153;
@@ -24020,7 +24020,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TransferInfoPacket : Packet
+    public sealed class TransferInfoPacket : Packet
     {
         /// <exclude/>
         public class TransferInfoBlock : PacketBlock
@@ -24092,7 +24092,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TransferInfo; } }
         public override int Length
         {
             get
@@ -24106,6 +24105,7 @@ namespace OpenMetaverse.Packets
 
         public TransferInfoPacket()
         {
+            Type = PacketType.TransferInfo;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 154;
@@ -24164,7 +24164,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TransferAbortPacket : Packet
+    public sealed class TransferAbortPacket : Packet
     {
         /// <exclude/>
         public class TransferInfoBlock : PacketBlock
@@ -24207,7 +24207,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TransferAbort; } }
         public override int Length
         {
             get
@@ -24221,6 +24220,7 @@ namespace OpenMetaverse.Packets
 
         public TransferAbortPacket()
         {
+            Type = PacketType.TransferAbort;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 155;
@@ -24279,7 +24279,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RequestXferPacket : Packet
+    public sealed class RequestXferPacket : Packet
     {
         /// <exclude/>
         public class XferIDBlock : PacketBlock
@@ -24354,7 +24354,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RequestXfer; } }
         public override int Length
         {
             get
@@ -24368,6 +24367,7 @@ namespace OpenMetaverse.Packets
 
         public RequestXferPacket()
         {
+            Type = PacketType.RequestXfer;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 156;
@@ -24426,7 +24426,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AbortXferPacket : Packet
+    public sealed class AbortXferPacket : Packet
     {
         /// <exclude/>
         public class XferIDBlock : PacketBlock
@@ -24469,7 +24469,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AbortXfer; } }
         public override int Length
         {
             get
@@ -24483,6 +24482,7 @@ namespace OpenMetaverse.Packets
 
         public AbortXferPacket()
         {
+            Type = PacketType.AbortXfer;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 157;
@@ -24540,7 +24540,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarAppearancePacket : Packet
+    public sealed class AvatarAppearancePacket : Packet
     {
         /// <exclude/>
         public class SenderBlock : PacketBlock
@@ -24676,7 +24676,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarAppearance; } }
         public override int Length
         {
             get
@@ -24695,6 +24694,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarAppearancePacket()
         {
+            Type = PacketType.AvatarAppearance;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 158;
@@ -24776,7 +24776,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class SetFollowCamPropertiesPacket : Packet
+    public sealed class SetFollowCamPropertiesPacket : Packet
     {
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
@@ -24857,7 +24857,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.SetFollowCamProperties; } }
         public override int Length
         {
             get
@@ -24874,6 +24873,7 @@ namespace OpenMetaverse.Packets
 
         public SetFollowCamPropertiesPacket()
         {
+            Type = PacketType.SetFollowCamProperties;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 159;
@@ -24950,7 +24950,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ClearFollowCamPropertiesPacket : Packet
+    public sealed class ClearFollowCamPropertiesPacket : Packet
     {
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
@@ -24990,7 +24990,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ClearFollowCamProperties; } }
         public override int Length
         {
             get
@@ -25004,6 +25003,7 @@ namespace OpenMetaverse.Packets
 
         public ClearFollowCamPropertiesPacket()
         {
+            Type = PacketType.ClearFollowCamProperties;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 160;
@@ -25061,7 +25061,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RequestPayPricePacket : Packet
+    public sealed class RequestPayPricePacket : Packet
     {
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
@@ -25101,7 +25101,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RequestPayPrice; } }
         public override int Length
         {
             get
@@ -25115,6 +25114,7 @@ namespace OpenMetaverse.Packets
 
         public RequestPayPricePacket()
         {
+            Type = PacketType.RequestPayPrice;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 161;
@@ -25172,7 +25172,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class PayPriceReplyPacket : Packet
+    public sealed class PayPriceReplyPacket : Packet
     {
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
@@ -25253,7 +25253,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.PayPriceReply; } }
         public override int Length
         {
             get
@@ -25270,6 +25269,7 @@ namespace OpenMetaverse.Packets
 
         public PayPriceReplyPacket()
         {
+            Type = PacketType.PayPriceReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 162;
@@ -25346,7 +25346,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class KickUserPacket : Packet
+    public sealed class KickUserPacket : Packet
     {
         /// <exclude/>
         public class TargetBlockBlock : PacketBlock
@@ -25451,7 +25451,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.KickUser; } }
         public override int Length
         {
             get
@@ -25467,6 +25466,7 @@ namespace OpenMetaverse.Packets
 
         public KickUserPacket()
         {
+            Type = PacketType.KickUser;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 163;
@@ -25528,7 +25528,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class KickUserAckPacket : Packet
+    public sealed class KickUserAckPacket : Packet
     {
         /// <exclude/>
         public class UserInfoBlock : PacketBlock
@@ -25571,7 +25571,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.KickUserAck; } }
         public override int Length
         {
             get
@@ -25585,6 +25584,7 @@ namespace OpenMetaverse.Packets
 
         public KickUserAckPacket()
         {
+            Type = PacketType.KickUserAck;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 164;
@@ -25642,7 +25642,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GodKickUserPacket : Packet
+    public sealed class GodKickUserPacket : Packet
     {
         /// <exclude/>
         public class UserInfoBlock : PacketBlock
@@ -25711,7 +25711,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GodKickUser; } }
         public override int Length
         {
             get
@@ -25725,6 +25724,7 @@ namespace OpenMetaverse.Packets
 
         public GodKickUserPacket()
         {
+            Type = PacketType.GodKickUser;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 165;
@@ -25782,7 +25782,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class EjectUserPacket : Packet
+    public sealed class EjectUserPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -25866,7 +25866,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.EjectUser; } }
         public override int Length
         {
             get
@@ -25882,6 +25881,7 @@ namespace OpenMetaverse.Packets
 
         public EjectUserPacket()
         {
+            Type = PacketType.EjectUser;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 167;
@@ -25943,7 +25943,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class FreezeUserPacket : Packet
+    public sealed class FreezeUserPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -26027,7 +26027,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.FreezeUser; } }
         public override int Length
         {
             get
@@ -26043,6 +26042,7 @@ namespace OpenMetaverse.Packets
 
         public FreezeUserPacket()
         {
+            Type = PacketType.FreezeUser;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 168;
@@ -26104,7 +26104,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarPropertiesRequestPacket : Packet
+    public sealed class AvatarPropertiesRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -26150,7 +26150,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarPropertiesRequest; } }
         public override int Length
         {
             get
@@ -26164,6 +26163,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarPropertiesRequestPacket()
         {
+            Type = PacketType.AvatarPropertiesRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 169;
@@ -26221,7 +26221,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarPropertiesReplyPacket : Packet
+    public sealed class AvatarPropertiesReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -26399,7 +26399,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarPropertiesReply; } }
         public override int Length
         {
             get
@@ -26415,6 +26414,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarPropertiesReplyPacket()
         {
+            Type = PacketType.AvatarPropertiesReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 171;
@@ -26477,7 +26477,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarInterestsReplyPacket : Packet
+    public sealed class AvatarInterestsReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -26614,7 +26614,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarInterestsReply; } }
         public override int Length
         {
             get
@@ -26630,6 +26629,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarInterestsReplyPacket()
         {
+            Type = PacketType.AvatarInterestsReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 172;
@@ -26692,7 +26692,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarGroupsReplyPacket : Packet
+    public sealed class AvatarGroupsReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -26856,7 +26856,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarGroupsReply; } }
         public override int Length
         {
             get
@@ -26875,6 +26874,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarGroupsReplyPacket()
         {
+            Type = PacketType.AvatarGroupsReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 173;
@@ -26956,7 +26956,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarPropertiesUpdatePacket : Packet
+    public sealed class AvatarPropertiesUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -27100,7 +27100,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarPropertiesUpdate; } }
         public override int Length
         {
             get
@@ -27116,6 +27115,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarPropertiesUpdatePacket()
         {
+            Type = PacketType.AvatarPropertiesUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 174;
@@ -27178,7 +27178,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarInterestsUpdatePacket : Packet
+    public sealed class AvatarInterestsUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -27315,7 +27315,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarInterestsUpdate; } }
         public override int Length
         {
             get
@@ -27331,6 +27330,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarInterestsUpdatePacket()
         {
+            Type = PacketType.AvatarInterestsUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 175;
@@ -27393,7 +27393,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarNotesReplyPacket : Packet
+    public sealed class AvatarNotesReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -27491,7 +27491,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarNotesReply; } }
         public override int Length
         {
             get
@@ -27507,6 +27506,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarNotesReplyPacket()
         {
+            Type = PacketType.AvatarNotesReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 176;
@@ -27568,7 +27568,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarNotesUpdatePacket : Packet
+    public sealed class AvatarNotesUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -27669,7 +27669,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarNotesUpdate; } }
         public override int Length
         {
             get
@@ -27685,6 +27684,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarNotesUpdatePacket()
         {
+            Type = PacketType.AvatarNotesUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 177;
@@ -27746,7 +27746,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarPicksReplyPacket : Packet
+    public sealed class AvatarPicksReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -27846,7 +27846,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarPicksReply; } }
         public override int Length
         {
             get
@@ -27863,6 +27862,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarPicksReplyPacket()
         {
+            Type = PacketType.AvatarPicksReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 178;
@@ -27939,7 +27939,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class EventInfoRequestPacket : Packet
+    public sealed class EventInfoRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -28020,7 +28020,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.EventInfoRequest; } }
         public override int Length
         {
             get
@@ -28036,6 +28035,7 @@ namespace OpenMetaverse.Packets
 
         public EventInfoRequestPacket()
         {
+            Type = PacketType.EventInfoRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 179;
@@ -28097,7 +28097,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class EventInfoReplyPacket : Packet
+    public sealed class EventInfoReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -28298,7 +28298,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.EventInfoReply; } }
         public override int Length
         {
             get
@@ -28314,6 +28313,7 @@ namespace OpenMetaverse.Packets
 
         public EventInfoReplyPacket()
         {
+            Type = PacketType.EventInfoReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 180;
@@ -28375,7 +28375,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class EventNotificationAddRequestPacket : Packet
+    public sealed class EventNotificationAddRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -28456,7 +28456,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.EventNotificationAddRequest; } }
         public override int Length
         {
             get
@@ -28472,6 +28471,7 @@ namespace OpenMetaverse.Packets
 
         public EventNotificationAddRequestPacket()
         {
+            Type = PacketType.EventNotificationAddRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 181;
@@ -28533,7 +28533,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class EventNotificationRemoveRequestPacket : Packet
+    public sealed class EventNotificationRemoveRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -28614,7 +28614,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.EventNotificationRemoveRequest; } }
         public override int Length
         {
             get
@@ -28630,6 +28629,7 @@ namespace OpenMetaverse.Packets
 
         public EventNotificationRemoveRequestPacket()
         {
+            Type = PacketType.EventNotificationRemoveRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 182;
@@ -28691,7 +28691,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class EventGodDeletePacket : Packet
+    public sealed class EventGodDeletePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -28835,7 +28835,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.EventGodDelete; } }
         public override int Length
         {
             get
@@ -28853,6 +28852,7 @@ namespace OpenMetaverse.Packets
 
         public EventGodDeletePacket()
         {
+            Type = PacketType.EventGodDelete;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 183;
@@ -28918,7 +28918,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class PickInfoReplyPacket : Packet
+    public sealed class PickInfoReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -29105,7 +29105,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.PickInfoReply; } }
         public override int Length
         {
             get
@@ -29121,6 +29120,7 @@ namespace OpenMetaverse.Packets
 
         public PickInfoReplyPacket()
         {
+            Type = PacketType.PickInfoReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 184;
@@ -29182,7 +29182,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class PickInfoUpdatePacket : Packet
+    public sealed class PickInfoUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -29321,7 +29321,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.PickInfoUpdate; } }
         public override int Length
         {
             get
@@ -29337,6 +29336,7 @@ namespace OpenMetaverse.Packets
 
         public PickInfoUpdatePacket()
         {
+            Type = PacketType.PickInfoUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 185;
@@ -29398,7 +29398,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class PickDeletePacket : Packet
+    public sealed class PickDeletePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -29479,7 +29479,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.PickDelete; } }
         public override int Length
         {
             get
@@ -29495,6 +29494,7 @@ namespace OpenMetaverse.Packets
 
         public PickDeletePacket()
         {
+            Type = PacketType.PickDelete;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 186;
@@ -29556,7 +29556,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class PickGodDeletePacket : Packet
+    public sealed class PickGodDeletePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -29640,7 +29640,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.PickGodDelete; } }
         public override int Length
         {
             get
@@ -29656,6 +29655,7 @@ namespace OpenMetaverse.Packets
 
         public PickGodDeletePacket()
         {
+            Type = PacketType.PickGodDelete;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 187;
@@ -29717,7 +29717,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ScriptQuestionPacket : Packet
+    public sealed class ScriptQuestionPacket : Packet
     {
         /// <exclude/>
         public class DataBlock : PacketBlock
@@ -29799,7 +29799,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ScriptQuestion; } }
         public override int Length
         {
             get
@@ -29813,6 +29812,7 @@ namespace OpenMetaverse.Packets
 
         public ScriptQuestionPacket()
         {
+            Type = PacketType.ScriptQuestion;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 188;
@@ -29870,7 +29870,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ScriptControlChangePacket : Packet
+    public sealed class ScriptControlChangePacket : Packet
     {
         /// <exclude/>
         public class DataBlock : PacketBlock
@@ -29916,7 +29916,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ScriptControlChange; } }
         public override int Length
         {
             get
@@ -29931,6 +29930,7 @@ namespace OpenMetaverse.Packets
 
         public ScriptControlChangePacket()
         {
+            Type = PacketType.ScriptControlChange;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 189;
@@ -30003,7 +30003,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ScriptDialogPacket : Packet
+    public sealed class ScriptDialogPacket : Packet
     {
         /// <exclude/>
         public class DataBlock : PacketBlock
@@ -30174,7 +30174,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ScriptDialog; } }
         public override int Length
         {
             get
@@ -30191,6 +30190,7 @@ namespace OpenMetaverse.Packets
 
         public ScriptDialogPacket()
         {
+            Type = PacketType.ScriptDialog;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 190;
@@ -30268,7 +30268,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ScriptDialogReplyPacket : Packet
+    public sealed class ScriptDialogReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -30374,7 +30374,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ScriptDialogReply; } }
         public override int Length
         {
             get
@@ -30390,6 +30389,7 @@ namespace OpenMetaverse.Packets
 
         public ScriptDialogReplyPacket()
         {
+            Type = PacketType.ScriptDialogReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 191;
@@ -30452,7 +30452,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ForceScriptControlReleasePacket : Packet
+    public sealed class ForceScriptControlReleasePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -30495,7 +30495,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ForceScriptControlRelease; } }
         public override int Length
         {
             get
@@ -30509,6 +30508,7 @@ namespace OpenMetaverse.Packets
 
         public ForceScriptControlReleasePacket()
         {
+            Type = PacketType.ForceScriptControlRelease;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 192;
@@ -30566,7 +30566,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RevokePermissionsPacket : Packet
+    public sealed class RevokePermissionsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -30650,7 +30650,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RevokePermissions; } }
         public override int Length
         {
             get
@@ -30666,6 +30665,7 @@ namespace OpenMetaverse.Packets
 
         public RevokePermissionsPacket()
         {
+            Type = PacketType.RevokePermissions;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 193;
@@ -30727,7 +30727,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class LoadURLPacket : Packet
+    public sealed class LoadURLPacket : Packet
     {
         /// <exclude/>
         public class DataBlock : PacketBlock
@@ -30826,7 +30826,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.LoadURL; } }
         public override int Length
         {
             get
@@ -30840,6 +30839,7 @@ namespace OpenMetaverse.Packets
 
         public LoadURLPacket()
         {
+            Type = PacketType.LoadURL;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 194;
@@ -30897,7 +30897,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ScriptTeleportRequestPacket : Packet
+    public sealed class ScriptTeleportRequestPacket : Packet
     {
         /// <exclude/>
         public class DataBlock : PacketBlock
@@ -30976,7 +30976,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ScriptTeleportRequest; } }
         public override int Length
         {
             get
@@ -30990,6 +30989,7 @@ namespace OpenMetaverse.Packets
 
         public ScriptTeleportRequestPacket()
         {
+            Type = PacketType.ScriptTeleportRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 195;
@@ -31047,7 +31047,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelOverlayPacket : Packet
+    public sealed class ParcelOverlayPacket : Packet
     {
         /// <exclude/>
         public class ParcelDataBlock : PacketBlock
@@ -31107,7 +31107,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelOverlay; } }
         public override int Length
         {
             get
@@ -31121,6 +31120,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelOverlayPacket()
         {
+            Type = PacketType.ParcelOverlay;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 196;
@@ -31179,7 +31179,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelPropertiesRequestByIDPacket : Packet
+    public sealed class ParcelPropertiesRequestByIDPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -31263,7 +31263,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelPropertiesRequestByID; } }
         public override int Length
         {
             get
@@ -31279,6 +31278,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelPropertiesRequestByIDPacket()
         {
+            Type = PacketType.ParcelPropertiesRequestByID;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 197;
@@ -31341,7 +31341,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelPropertiesUpdatePacket : Packet
+    public sealed class ParcelPropertiesUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -31534,7 +31534,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelPropertiesUpdate; } }
         public override int Length
         {
             get
@@ -31550,6 +31549,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelPropertiesUpdatePacket()
         {
+            Type = PacketType.ParcelPropertiesUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 198;
@@ -31612,7 +31612,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelReturnObjectsPacket : Packet
+    public sealed class ParcelReturnObjectsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -31772,7 +31772,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelReturnObjects; } }
         public override int Length
         {
             get
@@ -31794,6 +31793,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelReturnObjectsPacket()
         {
+            Type = PacketType.ParcelReturnObjects;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 199;
@@ -31894,7 +31894,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelSetOtherCleanTimePacket : Packet
+    public sealed class ParcelSetOtherCleanTimePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -31978,7 +31978,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelSetOtherCleanTime; } }
         public override int Length
         {
             get
@@ -31994,6 +31993,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelSetOtherCleanTimePacket()
         {
+            Type = PacketType.ParcelSetOtherCleanTime;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 200;
@@ -32056,7 +32056,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelDisableObjectsPacket : Packet
+    public sealed class ParcelDisableObjectsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -32216,7 +32216,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelDisableObjects; } }
         public override int Length
         {
             get
@@ -32238,6 +32237,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelDisableObjectsPacket()
         {
+            Type = PacketType.ParcelDisableObjects;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 201;
@@ -32338,7 +32338,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelSelectObjectsPacket : Packet
+    public sealed class ParcelSelectObjectsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -32460,7 +32460,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelSelectObjects; } }
         public override int Length
         {
             get
@@ -32479,6 +32478,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelSelectObjectsPacket()
         {
+            Type = PacketType.ParcelSelectObjects;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 202;
@@ -32560,7 +32560,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class EstateCovenantRequestPacket : Packet
+    public sealed class EstateCovenantRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -32603,7 +32603,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.EstateCovenantRequest; } }
         public override int Length
         {
             get
@@ -32617,6 +32616,7 @@ namespace OpenMetaverse.Packets
 
         public EstateCovenantRequestPacket()
         {
+            Type = PacketType.EstateCovenantRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 203;
@@ -32674,7 +32674,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class EstateCovenantReplyPacket : Packet
+    public sealed class EstateCovenantReplyPacket : Packet
     {
         /// <exclude/>
         public class DataBlock : PacketBlock
@@ -32739,7 +32739,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.EstateCovenantReply; } }
         public override int Length
         {
             get
@@ -32753,6 +32752,7 @@ namespace OpenMetaverse.Packets
 
         public EstateCovenantReplyPacket()
         {
+            Type = PacketType.EstateCovenantReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 204;
@@ -32810,7 +32810,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ForceObjectSelectPacket : Packet
+    public sealed class ForceObjectSelectPacket : Packet
     {
         /// <exclude/>
         public class HeaderBlock : PacketBlock
@@ -32888,7 +32888,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ForceObjectSelect; } }
         public override int Length
         {
             get
@@ -32905,6 +32904,7 @@ namespace OpenMetaverse.Packets
 
         public ForceObjectSelectPacket()
         {
+            Type = PacketType.ForceObjectSelect;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 205;
@@ -32981,7 +32981,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelBuyPassPacket : Packet
+    public sealed class ParcelBuyPassPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -33062,7 +33062,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelBuyPass; } }
         public override int Length
         {
             get
@@ -33078,6 +33077,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelBuyPassPacket()
         {
+            Type = PacketType.ParcelBuyPass;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 206;
@@ -33139,7 +33139,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelDeedToGroupPacket : Packet
+    public sealed class ParcelDeedToGroupPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -33223,7 +33223,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelDeedToGroup; } }
         public override int Length
         {
             get
@@ -33239,6 +33238,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelDeedToGroupPacket()
         {
+            Type = PacketType.ParcelDeedToGroup;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 207;
@@ -33300,7 +33300,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelReclaimPacket : Packet
+    public sealed class ParcelReclaimPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -33381,7 +33381,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelReclaim; } }
         public override int Length
         {
             get
@@ -33397,6 +33396,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelReclaimPacket()
         {
+            Type = PacketType.ParcelReclaim;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 208;
@@ -33458,7 +33458,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelClaimPacket : Packet
+    public sealed class ParcelClaimPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -33592,7 +33592,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelClaim; } }
         public override int Length
         {
             get
@@ -33611,6 +33610,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelClaimPacket()
         {
+            Type = PacketType.ParcelClaim;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 209;
@@ -33692,7 +33692,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelJoinPacket : Packet
+    public sealed class ParcelJoinPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -33782,7 +33782,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelJoin; } }
         public override int Length
         {
             get
@@ -33798,6 +33797,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelJoinPacket()
         {
+            Type = PacketType.ParcelJoin;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 210;
@@ -33859,7 +33859,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelDividePacket : Packet
+    public sealed class ParcelDividePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -33949,7 +33949,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelDivide; } }
         public override int Length
         {
             get
@@ -33965,6 +33964,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelDividePacket()
         {
+            Type = PacketType.ParcelDivide;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 211;
@@ -34026,7 +34026,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelReleasePacket : Packet
+    public sealed class ParcelReleasePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -34107,7 +34107,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelRelease; } }
         public override int Length
         {
             get
@@ -34123,6 +34122,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelReleasePacket()
         {
+            Type = PacketType.ParcelRelease;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 212;
@@ -34184,7 +34184,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelBuyPacket : Packet
+    public sealed class ParcelBuyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -34318,7 +34318,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelBuy; } }
         public override int Length
         {
             get
@@ -34336,6 +34335,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelBuyPacket()
         {
+            Type = PacketType.ParcelBuy;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 213;
@@ -34402,7 +34402,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelGodForceOwnerPacket : Packet
+    public sealed class ParcelGodForceOwnerPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -34486,7 +34486,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelGodForceOwner; } }
         public override int Length
         {
             get
@@ -34502,6 +34501,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelGodForceOwnerPacket()
         {
+            Type = PacketType.ParcelGodForceOwner;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 214;
@@ -34564,7 +34564,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelAccessListRequestPacket : Packet
+    public sealed class ParcelAccessListRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -34651,7 +34651,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelAccessListRequest; } }
         public override int Length
         {
             get
@@ -34667,6 +34666,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelAccessListRequestPacket()
         {
+            Type = PacketType.ParcelAccessListRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 215;
@@ -34729,7 +34729,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelAccessListReplyPacket : Packet
+    public sealed class ParcelAccessListReplyPacket : Packet
     {
         /// <exclude/>
         public class DataBlock : PacketBlock
@@ -34822,7 +34822,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelAccessListReply; } }
         public override int Length
         {
             get
@@ -34839,6 +34838,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelAccessListReplyPacket()
         {
+            Type = PacketType.ParcelAccessListReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 216;
@@ -34916,7 +34916,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelAccessListUpdatePacket : Packet
+    public sealed class ParcelAccessListUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -35053,7 +35053,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelAccessListUpdate; } }
         public override int Length
         {
             get
@@ -35072,6 +35071,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelAccessListUpdatePacket()
         {
+            Type = PacketType.ParcelAccessListUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 217;
@@ -35153,7 +35153,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelDwellRequestPacket : Packet
+    public sealed class ParcelDwellRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -35237,7 +35237,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelDwellRequest; } }
         public override int Length
         {
             get
@@ -35253,6 +35252,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelDwellRequestPacket()
         {
+            Type = PacketType.ParcelDwellRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 218;
@@ -35314,7 +35314,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelDwellReplyPacket : Packet
+    public sealed class ParcelDwellReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -35398,7 +35398,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelDwellReply; } }
         public override int Length
         {
             get
@@ -35414,6 +35413,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelDwellReplyPacket()
         {
+            Type = PacketType.ParcelDwellReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 219;
@@ -35475,7 +35475,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelGodMarkAsContentPacket : Packet
+    public sealed class ParcelGodMarkAsContentPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -35556,7 +35556,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelGodMarkAsContent; } }
         public override int Length
         {
             get
@@ -35572,6 +35571,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelGodMarkAsContentPacket()
         {
+            Type = PacketType.ParcelGodMarkAsContent;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 227;
@@ -35633,7 +35633,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ViewerStartAuctionPacket : Packet
+    public sealed class ViewerStartAuctionPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -35717,7 +35717,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ViewerStartAuction; } }
         public override int Length
         {
             get
@@ -35733,6 +35732,7 @@ namespace OpenMetaverse.Packets
 
         public ViewerStartAuctionPacket()
         {
+            Type = PacketType.ViewerStartAuction;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 228;
@@ -35794,7 +35794,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UUIDNameRequestPacket : Packet
+    public sealed class UUIDNameRequestPacket : Packet
     {
         /// <exclude/>
         public class UUIDNameBlockBlock : PacketBlock
@@ -35834,7 +35834,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UUIDNameRequest; } }
         public override int Length
         {
             get
@@ -35849,6 +35848,7 @@ namespace OpenMetaverse.Packets
 
         public UUIDNameRequestPacket()
         {
+            Type = PacketType.UUIDNameRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 235;
@@ -35921,7 +35921,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UUIDNameReplyPacket : Packet
+    public sealed class UUIDNameReplyPacket : Packet
     {
         /// <exclude/>
         public class UUIDNameBlockBlock : PacketBlock
@@ -35997,7 +35997,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UUIDNameReply; } }
         public override int Length
         {
             get
@@ -36012,6 +36011,7 @@ namespace OpenMetaverse.Packets
 
         public UUIDNameReplyPacket()
         {
+            Type = PacketType.UUIDNameReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 236;
@@ -36084,7 +36084,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UUIDGroupNameRequestPacket : Packet
+    public sealed class UUIDGroupNameRequestPacket : Packet
     {
         /// <exclude/>
         public class UUIDNameBlockBlock : PacketBlock
@@ -36124,7 +36124,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UUIDGroupNameRequest; } }
         public override int Length
         {
             get
@@ -36139,6 +36138,7 @@ namespace OpenMetaverse.Packets
 
         public UUIDGroupNameRequestPacket()
         {
+            Type = PacketType.UUIDGroupNameRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 237;
@@ -36211,7 +36211,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UUIDGroupNameReplyPacket : Packet
+    public sealed class UUIDGroupNameReplyPacket : Packet
     {
         /// <exclude/>
         public class UUIDNameBlockBlock : PacketBlock
@@ -36270,7 +36270,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UUIDGroupNameReply; } }
         public override int Length
         {
             get
@@ -36285,6 +36284,7 @@ namespace OpenMetaverse.Packets
 
         public UUIDGroupNameReplyPacket()
         {
+            Type = PacketType.UUIDGroupNameReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 238;
@@ -36357,7 +36357,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ChildAgentDyingPacket : Packet
+    public sealed class ChildAgentDyingPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -36400,7 +36400,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ChildAgentDying; } }
         public override int Length
         {
             get
@@ -36414,6 +36413,7 @@ namespace OpenMetaverse.Packets
 
         public ChildAgentDyingPacket()
         {
+            Type = PacketType.ChildAgentDying;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 240;
@@ -36472,7 +36472,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ChildAgentUnknownPacket : Packet
+    public sealed class ChildAgentUnknownPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -36515,7 +36515,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ChildAgentUnknown; } }
         public override int Length
         {
             get
@@ -36529,6 +36528,7 @@ namespace OpenMetaverse.Packets
 
         public ChildAgentUnknownPacket()
         {
+            Type = PacketType.ChildAgentUnknown;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 241;
@@ -36586,7 +36586,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GetScriptRunningPacket : Packet
+    public sealed class GetScriptRunningPacket : Packet
     {
         /// <exclude/>
         public class ScriptBlock : PacketBlock
@@ -36629,7 +36629,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GetScriptRunning; } }
         public override int Length
         {
             get
@@ -36643,6 +36642,7 @@ namespace OpenMetaverse.Packets
 
         public GetScriptRunningPacket()
         {
+            Type = PacketType.GetScriptRunning;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 243;
@@ -36700,7 +36700,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ScriptRunningReplyPacket : Packet
+    public sealed class ScriptRunningReplyPacket : Packet
     {
         /// <exclude/>
         public class ScriptBlock : PacketBlock
@@ -36746,7 +36746,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ScriptRunningReply; } }
         public override int Length
         {
             get
@@ -36760,6 +36759,7 @@ namespace OpenMetaverse.Packets
 
         public ScriptRunningReplyPacket()
         {
+            Type = PacketType.ScriptRunningReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 244;
@@ -36817,7 +36817,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class SetScriptRunningPacket : Packet
+    public sealed class SetScriptRunningPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -36904,7 +36904,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.SetScriptRunning; } }
         public override int Length
         {
             get
@@ -36920,6 +36919,7 @@ namespace OpenMetaverse.Packets
 
         public SetScriptRunningPacket()
         {
+            Type = PacketType.SetScriptRunning;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 245;
@@ -36981,7 +36981,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ScriptResetPacket : Packet
+    public sealed class ScriptResetPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -37065,7 +37065,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ScriptReset; } }
         public override int Length
         {
             get
@@ -37081,6 +37080,7 @@ namespace OpenMetaverse.Packets
 
         public ScriptResetPacket()
         {
+            Type = PacketType.ScriptReset;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 246;
@@ -37142,7 +37142,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ScriptSensorRequestPacket : Packet
+    public sealed class ScriptSensorRequestPacket : Packet
     {
         /// <exclude/>
         public class RequesterBlock : PacketBlock
@@ -37228,7 +37228,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ScriptSensorRequest; } }
         public override int Length
         {
             get
@@ -37242,6 +37241,7 @@ namespace OpenMetaverse.Packets
 
         public ScriptSensorRequestPacket()
         {
+            Type = PacketType.ScriptSensorRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 247;
@@ -37300,7 +37300,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ScriptSensorReplyPacket : Packet
+    public sealed class ScriptSensorReplyPacket : Packet
     {
         /// <exclude/>
         public class RequesterBlock : PacketBlock
@@ -37418,7 +37418,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ScriptSensorReply; } }
         public override int Length
         {
             get
@@ -37435,6 +37434,7 @@ namespace OpenMetaverse.Packets
 
         public ScriptSensorReplyPacket()
         {
+            Type = PacketType.ScriptSensorReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 248;
@@ -37512,7 +37512,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CompleteAgentMovementPacket : Packet
+    public sealed class CompleteAgentMovementPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -37558,7 +37558,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.CompleteAgentMovement; } }
         public override int Length
         {
             get
@@ -37572,6 +37571,7 @@ namespace OpenMetaverse.Packets
 
         public CompleteAgentMovementPacket()
         {
+            Type = PacketType.CompleteAgentMovement;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 249;
@@ -37629,7 +37629,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentMovementCompletePacket : Packet
+    public sealed class AgentMovementCompletePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -37774,7 +37774,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentMovementComplete; } }
         public override int Length
         {
             get
@@ -37792,6 +37791,7 @@ namespace OpenMetaverse.Packets
 
         public AgentMovementCompletePacket()
         {
+            Type = PacketType.AgentMovementComplete;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 250;
@@ -37857,7 +37857,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class LogoutRequestPacket : Packet
+    public sealed class LogoutRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -37900,7 +37900,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.LogoutRequest; } }
         public override int Length
         {
             get
@@ -37914,6 +37913,7 @@ namespace OpenMetaverse.Packets
 
         public LogoutRequestPacket()
         {
+            Type = PacketType.LogoutRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 252;
@@ -37971,7 +37971,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class LogoutReplyPacket : Packet
+    public sealed class LogoutReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -38052,7 +38052,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.LogoutReply; } }
         public override int Length
         {
             get
@@ -38069,6 +38068,7 @@ namespace OpenMetaverse.Packets
 
         public LogoutReplyPacket()
         {
+            Type = PacketType.LogoutReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 253;
@@ -38146,7 +38146,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ImprovedInstantMessagePacket : Packet
+    public sealed class ImprovedInstantMessagePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -38306,7 +38306,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ImprovedInstantMessage; } }
         public override int Length
         {
             get
@@ -38322,6 +38321,7 @@ namespace OpenMetaverse.Packets
 
         public ImprovedInstantMessagePacket()
         {
+            Type = PacketType.ImprovedInstantMessage;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 254;
@@ -38384,7 +38384,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RetrieveInstantMessagesPacket : Packet
+    public sealed class RetrieveInstantMessagesPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -38427,7 +38427,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RetrieveInstantMessages; } }
         public override int Length
         {
             get
@@ -38441,6 +38440,7 @@ namespace OpenMetaverse.Packets
 
         public RetrieveInstantMessagesPacket()
         {
+            Type = PacketType.RetrieveInstantMessages;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 255;
@@ -38498,7 +38498,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class FindAgentPacket : Packet
+    public sealed class FindAgentPacket : Packet
     {
         /// <exclude/>
         public class AgentBlockBlock : PacketBlock
@@ -38585,7 +38585,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.FindAgent; } }
         public override int Length
         {
             get
@@ -38602,6 +38601,7 @@ namespace OpenMetaverse.Packets
 
         public FindAgentPacket()
         {
+            Type = PacketType.FindAgent;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 256;
@@ -38678,7 +38678,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RequestGodlikePowersPacket : Packet
+    public sealed class RequestGodlikePowersPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -38762,7 +38762,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RequestGodlikePowers; } }
         public override int Length
         {
             get
@@ -38778,6 +38777,7 @@ namespace OpenMetaverse.Packets
 
         public RequestGodlikePowersPacket()
         {
+            Type = PacketType.RequestGodlikePowers;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 257;
@@ -38839,7 +38839,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GrantGodlikePowersPacket : Packet
+    public sealed class GrantGodlikePowersPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -38923,7 +38923,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GrantGodlikePowers; } }
         public override int Length
         {
             get
@@ -38939,6 +38938,7 @@ namespace OpenMetaverse.Packets
 
         public GrantGodlikePowersPacket()
         {
+            Type = PacketType.GrantGodlikePowers;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 258;
@@ -39000,7 +39000,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GodlikeMessagePacket : Packet
+    public sealed class GodlikeMessagePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -39157,7 +39157,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GodlikeMessage; } }
         public override int Length
         {
             get
@@ -39176,6 +39175,7 @@ namespace OpenMetaverse.Packets
 
         public GodlikeMessagePacket()
         {
+            Type = PacketType.GodlikeMessage;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 259;
@@ -39257,7 +39257,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class EstateOwnerMessagePacket : Packet
+    public sealed class EstateOwnerMessagePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -39414,7 +39414,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.EstateOwnerMessage; } }
         public override int Length
         {
             get
@@ -39433,6 +39432,7 @@ namespace OpenMetaverse.Packets
 
         public EstateOwnerMessagePacket()
         {
+            Type = PacketType.EstateOwnerMessage;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 260;
@@ -39514,7 +39514,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GenericMessagePacket : Packet
+    public sealed class GenericMessagePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -39671,7 +39671,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GenericMessage; } }
         public override int Length
         {
             get
@@ -39690,6 +39689,7 @@ namespace OpenMetaverse.Packets
 
         public GenericMessagePacket()
         {
+            Type = PacketType.GenericMessage;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 261;
@@ -39771,7 +39771,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MuteListRequestPacket : Packet
+    public sealed class MuteListRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -39852,7 +39852,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MuteListRequest; } }
         public override int Length
         {
             get
@@ -39868,6 +39867,7 @@ namespace OpenMetaverse.Packets
 
         public MuteListRequestPacket()
         {
+            Type = PacketType.MuteListRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 262;
@@ -39929,7 +39929,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UpdateMuteListEntryPacket : Packet
+    public sealed class UpdateMuteListEntryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -40035,7 +40035,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UpdateMuteListEntry; } }
         public override int Length
         {
             get
@@ -40051,6 +40050,7 @@ namespace OpenMetaverse.Packets
 
         public UpdateMuteListEntryPacket()
         {
+            Type = PacketType.UpdateMuteListEntry;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 263;
@@ -40112,7 +40112,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RemoveMuteListEntryPacket : Packet
+    public sealed class RemoveMuteListEntryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -40212,7 +40212,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RemoveMuteListEntry; } }
         public override int Length
         {
             get
@@ -40228,6 +40227,7 @@ namespace OpenMetaverse.Packets
 
         public RemoveMuteListEntryPacket()
         {
+            Type = PacketType.RemoveMuteListEntry;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 264;
@@ -40289,7 +40289,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CopyInventoryFromNotecardPacket : Packet
+    public sealed class CopyInventoryFromNotecardPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -40414,7 +40414,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.CopyInventoryFromNotecard; } }
         public override int Length
         {
             get
@@ -40433,6 +40432,7 @@ namespace OpenMetaverse.Packets
 
         public CopyInventoryFromNotecardPacket()
         {
+            Type = PacketType.CopyInventoryFromNotecard;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 265;
@@ -40514,7 +40514,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UpdateInventoryItemPacket : Packet
+    public sealed class UpdateInventoryItemPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -40691,7 +40691,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UpdateInventoryItem; } }
         public override int Length
         {
             get
@@ -40708,6 +40707,7 @@ namespace OpenMetaverse.Packets
 
         public UpdateInventoryItemPacket()
         {
+            Type = PacketType.UpdateInventoryItem;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 266;
@@ -40785,7 +40785,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UpdateCreateInventoryItemPacket : Packet
+    public sealed class UpdateCreateInventoryItemPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -40962,7 +40962,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UpdateCreateInventoryItem; } }
         public override int Length
         {
             get
@@ -40979,6 +40978,7 @@ namespace OpenMetaverse.Packets
 
         public UpdateCreateInventoryItemPacket()
         {
+            Type = PacketType.UpdateCreateInventoryItem;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 267;
@@ -41056,7 +41056,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MoveInventoryItemPacket : Packet
+    public sealed class MoveInventoryItemPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -41162,7 +41162,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MoveInventoryItem; } }
         public override int Length
         {
             get
@@ -41179,6 +41178,7 @@ namespace OpenMetaverse.Packets
 
         public MoveInventoryItemPacket()
         {
+            Type = PacketType.MoveInventoryItem;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 268;
@@ -41256,7 +41256,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CopyInventoryItemPacket : Packet
+    public sealed class CopyInventoryItemPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -41365,7 +41365,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.CopyInventoryItem; } }
         public override int Length
         {
             get
@@ -41382,6 +41381,7 @@ namespace OpenMetaverse.Packets
 
         public CopyInventoryItemPacket()
         {
+            Type = PacketType.CopyInventoryItem;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 269;
@@ -41459,7 +41459,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RemoveInventoryItemPacket : Packet
+    public sealed class RemoveInventoryItemPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -41540,7 +41540,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RemoveInventoryItem; } }
         public override int Length
         {
             get
@@ -41557,6 +41556,7 @@ namespace OpenMetaverse.Packets
 
         public RemoveInventoryItemPacket()
         {
+            Type = PacketType.RemoveInventoryItem;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 270;
@@ -41633,7 +41633,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ChangeInventoryItemFlagsPacket : Packet
+    public sealed class ChangeInventoryItemFlagsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -41717,7 +41717,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ChangeInventoryItemFlags; } }
         public override int Length
         {
             get
@@ -41734,6 +41733,7 @@ namespace OpenMetaverse.Packets
 
         public ChangeInventoryItemFlagsPacket()
         {
+            Type = PacketType.ChangeInventoryItemFlags;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 271;
@@ -41810,7 +41810,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class SaveAssetIntoInventoryPacket : Packet
+    public sealed class SaveAssetIntoInventoryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -41891,7 +41891,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.SaveAssetIntoInventory; } }
         public override int Length
         {
             get
@@ -41907,6 +41906,7 @@ namespace OpenMetaverse.Packets
 
         public SaveAssetIntoInventoryPacket()
         {
+            Type = PacketType.SaveAssetIntoInventory;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 272;
@@ -41968,7 +41968,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CreateInventoryFolderPacket : Packet
+    public sealed class CreateInventoryFolderPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -42074,7 +42074,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.CreateInventoryFolder; } }
         public override int Length
         {
             get
@@ -42090,6 +42089,7 @@ namespace OpenMetaverse.Packets
 
         public CreateInventoryFolderPacket()
         {
+            Type = PacketType.CreateInventoryFolder;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 273;
@@ -42151,7 +42151,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UpdateInventoryFolderPacket : Packet
+    public sealed class UpdateInventoryFolderPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -42257,7 +42257,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UpdateInventoryFolder; } }
         public override int Length
         {
             get
@@ -42274,6 +42273,7 @@ namespace OpenMetaverse.Packets
 
         public UpdateInventoryFolderPacket()
         {
+            Type = PacketType.UpdateInventoryFolder;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 274;
@@ -42350,7 +42350,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MoveInventoryFolderPacket : Packet
+    public sealed class MoveInventoryFolderPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -42437,7 +42437,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MoveInventoryFolder; } }
         public override int Length
         {
             get
@@ -42454,6 +42453,7 @@ namespace OpenMetaverse.Packets
 
         public MoveInventoryFolderPacket()
         {
+            Type = PacketType.MoveInventoryFolder;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 275;
@@ -42531,7 +42531,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RemoveInventoryFolderPacket : Packet
+    public sealed class RemoveInventoryFolderPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -42612,7 +42612,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RemoveInventoryFolder; } }
         public override int Length
         {
             get
@@ -42629,6 +42628,7 @@ namespace OpenMetaverse.Packets
 
         public RemoveInventoryFolderPacket()
         {
+            Type = PacketType.RemoveInventoryFolder;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 276;
@@ -42705,7 +42705,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class FetchInventoryDescendentsPacket : Packet
+    public sealed class FetchInventoryDescendentsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -42798,7 +42798,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.FetchInventoryDescendents; } }
         public override int Length
         {
             get
@@ -42814,6 +42813,7 @@ namespace OpenMetaverse.Packets
 
         public FetchInventoryDescendentsPacket()
         {
+            Type = PacketType.FetchInventoryDescendents;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 277;
@@ -42876,7 +42876,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class InventoryDescendentsPacket : Packet
+    public sealed class InventoryDescendentsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -43119,7 +43119,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.InventoryDescendents; } }
         public override int Length
         {
             get
@@ -43139,6 +43138,7 @@ namespace OpenMetaverse.Packets
 
         public InventoryDescendentsPacket()
         {
+            Type = PacketType.InventoryDescendents;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 278;
@@ -43235,7 +43235,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class FetchInventoryPacket : Packet
+    public sealed class FetchInventoryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -43319,7 +43319,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.FetchInventory; } }
         public override int Length
         {
             get
@@ -43336,6 +43335,7 @@ namespace OpenMetaverse.Packets
 
         public FetchInventoryPacket()
         {
+            Type = PacketType.FetchInventory;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 279;
@@ -43413,7 +43413,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class FetchInventoryReplyPacket : Packet
+    public sealed class FetchInventoryReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -43581,7 +43581,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.FetchInventoryReply; } }
         public override int Length
         {
             get
@@ -43598,6 +43597,7 @@ namespace OpenMetaverse.Packets
 
         public FetchInventoryReplyPacket()
         {
+            Type = PacketType.FetchInventoryReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 280;
@@ -43675,7 +43675,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class BulkUpdateInventoryPacket : Packet
+    public sealed class BulkUpdateInventoryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -43912,7 +43912,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.BulkUpdateInventory; } }
         public override int Length
         {
             get
@@ -43932,6 +43931,7 @@ namespace OpenMetaverse.Packets
 
         public BulkUpdateInventoryPacket()
         {
+            Type = PacketType.BulkUpdateInventory;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 281;
@@ -44028,7 +44028,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RequestInventoryAssetPacket : Packet
+    public sealed class RequestInventoryAssetPacket : Packet
     {
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
@@ -44077,7 +44077,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RequestInventoryAsset; } }
         public override int Length
         {
             get
@@ -44091,6 +44090,7 @@ namespace OpenMetaverse.Packets
 
         public RequestInventoryAssetPacket()
         {
+            Type = PacketType.RequestInventoryAsset;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 282;
@@ -44148,7 +44148,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class InventoryAssetResponsePacket : Packet
+    public sealed class InventoryAssetResponsePacket : Packet
     {
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
@@ -44194,7 +44194,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.InventoryAssetResponse; } }
         public override int Length
         {
             get
@@ -44208,6 +44207,7 @@ namespace OpenMetaverse.Packets
 
         public InventoryAssetResponsePacket()
         {
+            Type = PacketType.InventoryAssetResponse;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 283;
@@ -44265,7 +44265,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RemoveInventoryObjectsPacket : Packet
+    public sealed class RemoveInventoryObjectsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -44384,7 +44384,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RemoveInventoryObjects; } }
         public override int Length
         {
             get
@@ -44404,6 +44403,7 @@ namespace OpenMetaverse.Packets
 
         public RemoveInventoryObjectsPacket()
         {
+            Type = PacketType.RemoveInventoryObjects;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 284;
@@ -44499,7 +44499,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class PurgeInventoryDescendentsPacket : Packet
+    public sealed class PurgeInventoryDescendentsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -44580,7 +44580,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.PurgeInventoryDescendents; } }
         public override int Length
         {
             get
@@ -44596,6 +44595,7 @@ namespace OpenMetaverse.Packets
 
         public PurgeInventoryDescendentsPacket()
         {
+            Type = PacketType.PurgeInventoryDescendents;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 285;
@@ -44658,7 +44658,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UpdateTaskInventoryPacket : Packet
+    public sealed class UpdateTaskInventoryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -44870,7 +44870,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UpdateTaskInventory; } }
         public override int Length
         {
             get
@@ -44888,6 +44887,7 @@ namespace OpenMetaverse.Packets
 
         public UpdateTaskInventoryPacket()
         {
+            Type = PacketType.UpdateTaskInventory;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 286;
@@ -44954,7 +44954,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RemoveTaskInventoryPacket : Packet
+    public sealed class RemoveTaskInventoryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -45038,7 +45038,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RemoveTaskInventory; } }
         public override int Length
         {
             get
@@ -45054,6 +45053,7 @@ namespace OpenMetaverse.Packets
 
         public RemoveTaskInventoryPacket()
         {
+            Type = PacketType.RemoveTaskInventory;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 287;
@@ -45116,7 +45116,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MoveTaskInventoryPacket : Packet
+    public sealed class MoveTaskInventoryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -45203,7 +45203,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MoveTaskInventory; } }
         public override int Length
         {
             get
@@ -45219,6 +45218,7 @@ namespace OpenMetaverse.Packets
 
         public MoveTaskInventoryPacket()
         {
+            Type = PacketType.MoveTaskInventory;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 288;
@@ -45280,7 +45280,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RequestTaskInventoryPacket : Packet
+    public sealed class RequestTaskInventoryPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -45361,7 +45361,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RequestTaskInventory; } }
         public override int Length
         {
             get
@@ -45377,6 +45376,7 @@ namespace OpenMetaverse.Packets
 
         public RequestTaskInventoryPacket()
         {
+            Type = PacketType.RequestTaskInventory;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 289;
@@ -45438,7 +45438,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ReplyTaskInventoryPacket : Packet
+    public sealed class ReplyTaskInventoryPacket : Packet
     {
         /// <exclude/>
         public class InventoryDataBlock : PacketBlock
@@ -45501,7 +45501,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ReplyTaskInventory; } }
         public override int Length
         {
             get
@@ -45515,6 +45514,7 @@ namespace OpenMetaverse.Packets
 
         public ReplyTaskInventoryPacket()
         {
+            Type = PacketType.ReplyTaskInventory;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 290;
@@ -45573,7 +45573,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DeRezObjectPacket : Packet
+    public sealed class DeRezObjectPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -45707,7 +45707,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DeRezObject; } }
         public override int Length
         {
             get
@@ -45726,6 +45725,7 @@ namespace OpenMetaverse.Packets
 
         public DeRezObjectPacket()
         {
+            Type = PacketType.DeRezObject;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 291;
@@ -45807,7 +45807,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DeRezAckPacket : Packet
+    public sealed class DeRezAckPacket : Packet
     {
         /// <exclude/>
         public class TransactionDataBlock : PacketBlock
@@ -45850,7 +45850,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DeRezAck; } }
         public override int Length
         {
             get
@@ -45864,6 +45863,7 @@ namespace OpenMetaverse.Packets
 
         public DeRezAckPacket()
         {
+            Type = PacketType.DeRezAck;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 292;
@@ -45921,7 +45921,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RezObjectPacket : Packet
+    public sealed class RezObjectPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -46166,7 +46166,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RezObject; } }
         public override int Length
         {
             get
@@ -46184,6 +46183,7 @@ namespace OpenMetaverse.Packets
 
         public RezObjectPacket()
         {
+            Type = PacketType.RezObject;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 293;
@@ -46250,7 +46250,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RezObjectFromNotecardPacket : Packet
+    public sealed class RezObjectFromNotecardPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -46446,7 +46446,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RezObjectFromNotecard; } }
         public override int Length
         {
             get
@@ -46467,6 +46466,7 @@ namespace OpenMetaverse.Packets
 
         public RezObjectFromNotecardPacket()
         {
+            Type = PacketType.RezObjectFromNotecard;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 294;
@@ -46552,7 +46552,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AcceptFriendshipPacket : Packet
+    public sealed class AcceptFriendshipPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -46671,7 +46671,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AcceptFriendship; } }
         public override int Length
         {
             get
@@ -46690,6 +46689,7 @@ namespace OpenMetaverse.Packets
 
         public AcceptFriendshipPacket()
         {
+            Type = PacketType.AcceptFriendship;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 297;
@@ -46770,7 +46770,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DeclineFriendshipPacket : Packet
+    public sealed class DeclineFriendshipPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -46851,7 +46851,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DeclineFriendship; } }
         public override int Length
         {
             get
@@ -46867,6 +46866,7 @@ namespace OpenMetaverse.Packets
 
         public DeclineFriendshipPacket()
         {
+            Type = PacketType.DeclineFriendship;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 298;
@@ -46928,7 +46928,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class FormFriendshipPacket : Packet
+    public sealed class FormFriendshipPacket : Packet
     {
         /// <exclude/>
         public class AgentBlockBlock : PacketBlock
@@ -46971,7 +46971,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.FormFriendship; } }
         public override int Length
         {
             get
@@ -46985,6 +46984,7 @@ namespace OpenMetaverse.Packets
 
         public FormFriendshipPacket()
         {
+            Type = PacketType.FormFriendship;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 299;
@@ -47042,7 +47042,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TerminateFriendshipPacket : Packet
+    public sealed class TerminateFriendshipPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -47123,7 +47123,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TerminateFriendship; } }
         public override int Length
         {
             get
@@ -47139,6 +47138,7 @@ namespace OpenMetaverse.Packets
 
         public TerminateFriendshipPacket()
         {
+            Type = PacketType.TerminateFriendship;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 300;
@@ -47200,7 +47200,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class OfferCallingCardPacket : Packet
+    public sealed class OfferCallingCardPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -47284,7 +47284,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.OfferCallingCard; } }
         public override int Length
         {
             get
@@ -47300,6 +47299,7 @@ namespace OpenMetaverse.Packets
 
         public OfferCallingCardPacket()
         {
+            Type = PacketType.OfferCallingCard;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 301;
@@ -47361,7 +47361,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AcceptCallingCardPacket : Packet
+    public sealed class AcceptCallingCardPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -47480,7 +47480,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AcceptCallingCard; } }
         public override int Length
         {
             get
@@ -47499,6 +47498,7 @@ namespace OpenMetaverse.Packets
 
         public AcceptCallingCardPacket()
         {
+            Type = PacketType.AcceptCallingCard;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 302;
@@ -47579,7 +47579,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DeclineCallingCardPacket : Packet
+    public sealed class DeclineCallingCardPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -47660,7 +47660,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DeclineCallingCard; } }
         public override int Length
         {
             get
@@ -47676,6 +47675,7 @@ namespace OpenMetaverse.Packets
 
         public DeclineCallingCardPacket()
         {
+            Type = PacketType.DeclineCallingCard;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 303;
@@ -47737,7 +47737,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RezScriptPacket : Packet
+    public sealed class RezScriptPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -47952,7 +47952,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RezScript; } }
         public override int Length
         {
             get
@@ -47970,6 +47969,7 @@ namespace OpenMetaverse.Packets
 
         public RezScriptPacket()
         {
+            Type = PacketType.RezScript;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 304;
@@ -48036,7 +48036,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CreateInventoryItemPacket : Packet
+    public sealed class CreateInventoryItemPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -48171,7 +48171,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.CreateInventoryItem; } }
         public override int Length
         {
             get
@@ -48187,6 +48186,7 @@ namespace OpenMetaverse.Packets
 
         public CreateInventoryItemPacket()
         {
+            Type = PacketType.CreateInventoryItem;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 305;
@@ -48249,7 +48249,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CreateLandmarkForEventPacket : Packet
+    public sealed class CreateLandmarkForEventPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -48387,7 +48387,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.CreateLandmarkForEvent; } }
         public override int Length
         {
             get
@@ -48405,6 +48404,7 @@ namespace OpenMetaverse.Packets
 
         public CreateLandmarkForEventPacket()
         {
+            Type = PacketType.CreateLandmarkForEvent;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 306;
@@ -48471,7 +48471,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RegionHandleRequestPacket : Packet
+    public sealed class RegionHandleRequestPacket : Packet
     {
         /// <exclude/>
         public class RequestBlockBlock : PacketBlock
@@ -48511,7 +48511,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RegionHandleRequest; } }
         public override int Length
         {
             get
@@ -48525,6 +48524,7 @@ namespace OpenMetaverse.Packets
 
         public RegionHandleRequestPacket()
         {
+            Type = PacketType.RegionHandleRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 309;
@@ -48582,7 +48582,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RegionIDAndHandleReplyPacket : Packet
+    public sealed class RegionIDAndHandleReplyPacket : Packet
     {
         /// <exclude/>
         public class ReplyBlockBlock : PacketBlock
@@ -48625,7 +48625,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RegionIDAndHandleReply; } }
         public override int Length
         {
             get
@@ -48639,6 +48638,7 @@ namespace OpenMetaverse.Packets
 
         public RegionIDAndHandleReplyPacket()
         {
+            Type = PacketType.RegionIDAndHandleReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 310;
@@ -48696,7 +48696,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MoneyTransferRequestPacket : Packet
+    public sealed class MoneyTransferRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -48814,7 +48814,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MoneyTransferRequest; } }
         public override int Length
         {
             get
@@ -48830,6 +48829,7 @@ namespace OpenMetaverse.Packets
 
         public MoneyTransferRequestPacket()
         {
+            Type = PacketType.MoneyTransferRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 311;
@@ -48892,7 +48892,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MoneyBalanceRequestPacket : Packet
+    public sealed class MoneyBalanceRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -48973,7 +48973,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MoneyBalanceRequest; } }
         public override int Length
         {
             get
@@ -48989,6 +48988,7 @@ namespace OpenMetaverse.Packets
 
         public MoneyBalanceRequestPacket()
         {
+            Type = PacketType.MoneyBalanceRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 313;
@@ -49051,7 +49051,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MoneyBalanceReplyPacket : Packet
+    public sealed class MoneyBalanceReplyPacket : Packet
     {
         /// <exclude/>
         public class MoneyDataBlock : PacketBlock
@@ -49125,7 +49125,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MoneyBalanceReply; } }
         public override int Length
         {
             get
@@ -49139,6 +49138,7 @@ namespace OpenMetaverse.Packets
 
         public MoneyBalanceReplyPacket()
         {
+            Type = PacketType.MoneyBalanceReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 314;
@@ -49197,7 +49197,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RoutedMoneyBalanceReplyPacket : Packet
+    public sealed class RoutedMoneyBalanceReplyPacket : Packet
     {
         /// <exclude/>
         public class TargetBlockBlock : PacketBlock
@@ -49313,7 +49313,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RoutedMoneyBalanceReply; } }
         public override int Length
         {
             get
@@ -49329,6 +49328,7 @@ namespace OpenMetaverse.Packets
 
         public RoutedMoneyBalanceReplyPacket()
         {
+            Type = PacketType.RoutedMoneyBalanceReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 315;
@@ -49391,7 +49391,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ActivateGesturesPacket : Packet
+    public sealed class ActivateGesturesPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -49481,7 +49481,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ActivateGestures; } }
         public override int Length
         {
             get
@@ -49498,6 +49497,7 @@ namespace OpenMetaverse.Packets
 
         public ActivateGesturesPacket()
         {
+            Type = PacketType.ActivateGestures;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 316;
@@ -49574,7 +49574,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DeactivateGesturesPacket : Packet
+    public sealed class DeactivateGesturesPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -49661,7 +49661,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DeactivateGestures; } }
         public override int Length
         {
             get
@@ -49678,6 +49677,7 @@ namespace OpenMetaverse.Packets
 
         public DeactivateGesturesPacket()
         {
+            Type = PacketType.DeactivateGestures;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 317;
@@ -49754,7 +49754,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MuteListUpdatePacket : Packet
+    public sealed class MuteListUpdatePacket : Packet
     {
         /// <exclude/>
         public class MuteDataBlock : PacketBlock
@@ -49813,7 +49813,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MuteListUpdate; } }
         public override int Length
         {
             get
@@ -49827,6 +49826,7 @@ namespace OpenMetaverse.Packets
 
         public MuteListUpdatePacket()
         {
+            Type = PacketType.MuteListUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 318;
@@ -49884,7 +49884,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UseCachedMuteListPacket : Packet
+    public sealed class UseCachedMuteListPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -49924,7 +49924,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UseCachedMuteList; } }
         public override int Length
         {
             get
@@ -49938,6 +49937,7 @@ namespace OpenMetaverse.Packets
 
         public UseCachedMuteListPacket()
         {
+            Type = PacketType.UseCachedMuteList;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 319;
@@ -49995,7 +49995,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GrantUserRightsPacket : Packet
+    public sealed class GrantUserRightsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -50079,7 +50079,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GrantUserRights; } }
         public override int Length
         {
             get
@@ -50096,6 +50095,7 @@ namespace OpenMetaverse.Packets
 
         public GrantUserRightsPacket()
         {
+            Type = PacketType.GrantUserRights;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 320;
@@ -50172,7 +50172,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ChangeUserRightsPacket : Packet
+    public sealed class ChangeUserRightsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -50253,7 +50253,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ChangeUserRights; } }
         public override int Length
         {
             get
@@ -50270,6 +50269,7 @@ namespace OpenMetaverse.Packets
 
         public ChangeUserRightsPacket()
         {
+            Type = PacketType.ChangeUserRights;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 321;
@@ -50346,7 +50346,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class OnlineNotificationPacket : Packet
+    public sealed class OnlineNotificationPacket : Packet
     {
         /// <exclude/>
         public class AgentBlockBlock : PacketBlock
@@ -50386,7 +50386,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.OnlineNotification; } }
         public override int Length
         {
             get
@@ -50401,6 +50400,7 @@ namespace OpenMetaverse.Packets
 
         public OnlineNotificationPacket()
         {
+            Type = PacketType.OnlineNotification;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 322;
@@ -50473,7 +50473,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class OfflineNotificationPacket : Packet
+    public sealed class OfflineNotificationPacket : Packet
     {
         /// <exclude/>
         public class AgentBlockBlock : PacketBlock
@@ -50513,7 +50513,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.OfflineNotification; } }
         public override int Length
         {
             get
@@ -50528,6 +50527,7 @@ namespace OpenMetaverse.Packets
 
         public OfflineNotificationPacket()
         {
+            Type = PacketType.OfflineNotification;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 323;
@@ -50600,7 +50600,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class SetStartLocationRequestPacket : Packet
+    public sealed class SetStartLocationRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -50706,7 +50706,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.SetStartLocationRequest; } }
         public override int Length
         {
             get
@@ -50722,6 +50721,7 @@ namespace OpenMetaverse.Packets
 
         public SetStartLocationRequestPacket()
         {
+            Type = PacketType.SetStartLocationRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 324;
@@ -50784,7 +50784,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AssetUploadRequestPacket : Packet
+    public sealed class AssetUploadRequestPacket : Packet
     {
         /// <exclude/>
         public class AssetBlockBlock : PacketBlock
@@ -50853,7 +50853,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AssetUploadRequest; } }
         public override int Length
         {
             get
@@ -50867,6 +50866,7 @@ namespace OpenMetaverse.Packets
 
         public AssetUploadRequestPacket()
         {
+            Type = PacketType.AssetUploadRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 333;
@@ -50924,7 +50924,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AssetUploadCompletePacket : Packet
+    public sealed class AssetUploadCompletePacket : Packet
     {
         /// <exclude/>
         public class AssetBlockBlock : PacketBlock
@@ -50970,7 +50970,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AssetUploadComplete; } }
         public override int Length
         {
             get
@@ -50984,6 +50983,7 @@ namespace OpenMetaverse.Packets
 
         public AssetUploadCompletePacket()
         {
+            Type = PacketType.AssetUploadComplete;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 334;
@@ -51041,7 +51041,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CreateGroupRequestPacket : Packet
+    public sealed class CreateGroupRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -51174,7 +51174,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.CreateGroupRequest; } }
         public override int Length
         {
             get
@@ -51190,6 +51189,7 @@ namespace OpenMetaverse.Packets
 
         public CreateGroupRequestPacket()
         {
+            Type = PacketType.CreateGroupRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 339;
@@ -51252,7 +51252,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CreateGroupReplyPacket : Packet
+    public sealed class CreateGroupReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -51352,7 +51352,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.CreateGroupReply; } }
         public override int Length
         {
             get
@@ -51368,6 +51367,7 @@ namespace OpenMetaverse.Packets
 
         public CreateGroupReplyPacket()
         {
+            Type = PacketType.CreateGroupReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 340;
@@ -51429,7 +51429,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UpdateGroupInfoPacket : Packet
+    public sealed class UpdateGroupInfoPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -51548,7 +51548,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UpdateGroupInfo; } }
         public override int Length
         {
             get
@@ -51564,6 +51563,7 @@ namespace OpenMetaverse.Packets
 
         public UpdateGroupInfoPacket()
         {
+            Type = PacketType.UpdateGroupInfo;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 341;
@@ -51626,7 +51626,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupRoleChangesPacket : Packet
+    public sealed class GroupRoleChangesPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -51716,7 +51716,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupRoleChanges; } }
         public override int Length
         {
             get
@@ -51733,6 +51732,7 @@ namespace OpenMetaverse.Packets
 
         public GroupRoleChangesPacket()
         {
+            Type = PacketType.GroupRoleChanges;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 342;
@@ -51809,7 +51809,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class JoinGroupRequestPacket : Packet
+    public sealed class JoinGroupRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -51890,7 +51890,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.JoinGroupRequest; } }
         public override int Length
         {
             get
@@ -51906,6 +51905,7 @@ namespace OpenMetaverse.Packets
 
         public JoinGroupRequestPacket()
         {
+            Type = PacketType.JoinGroupRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 343;
@@ -51968,7 +51968,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class JoinGroupReplyPacket : Packet
+    public sealed class JoinGroupReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -52049,7 +52049,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.JoinGroupReply; } }
         public override int Length
         {
             get
@@ -52065,6 +52064,7 @@ namespace OpenMetaverse.Packets
 
         public JoinGroupReplyPacket()
         {
+            Type = PacketType.JoinGroupReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 344;
@@ -52126,7 +52126,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class EjectGroupMemberRequestPacket : Packet
+    public sealed class EjectGroupMemberRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -52245,7 +52245,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.EjectGroupMemberRequest; } }
         public override int Length
         {
             get
@@ -52264,6 +52263,7 @@ namespace OpenMetaverse.Packets
 
         public EjectGroupMemberRequestPacket()
         {
+            Type = PacketType.EjectGroupMemberRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 345;
@@ -52344,7 +52344,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class EjectGroupMemberReplyPacket : Packet
+    public sealed class EjectGroupMemberReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -52460,7 +52460,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.EjectGroupMemberReply; } }
         public override int Length
         {
             get
@@ -52478,6 +52477,7 @@ namespace OpenMetaverse.Packets
 
         public EjectGroupMemberReplyPacket()
         {
+            Type = PacketType.EjectGroupMemberReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 346;
@@ -52543,7 +52543,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class LeaveGroupRequestPacket : Packet
+    public sealed class LeaveGroupRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -52624,7 +52624,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.LeaveGroupRequest; } }
         public override int Length
         {
             get
@@ -52640,6 +52639,7 @@ namespace OpenMetaverse.Packets
 
         public LeaveGroupRequestPacket()
         {
+            Type = PacketType.LeaveGroupRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 347;
@@ -52701,7 +52701,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class LeaveGroupReplyPacket : Packet
+    public sealed class LeaveGroupReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -52782,7 +52782,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.LeaveGroupReply; } }
         public override int Length
         {
             get
@@ -52798,6 +52797,7 @@ namespace OpenMetaverse.Packets
 
         public LeaveGroupReplyPacket()
         {
+            Type = PacketType.LeaveGroupReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 348;
@@ -52859,7 +52859,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class InviteGroupRequestPacket : Packet
+    public sealed class InviteGroupRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -52981,7 +52981,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.InviteGroupRequest; } }
         public override int Length
         {
             get
@@ -53000,6 +52999,7 @@ namespace OpenMetaverse.Packets
 
         public InviteGroupRequestPacket()
         {
+            Type = PacketType.InviteGroupRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 349;
@@ -53080,7 +53080,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupProfileRequestPacket : Packet
+    public sealed class GroupProfileRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -53161,7 +53161,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupProfileRequest; } }
         public override int Length
         {
             get
@@ -53177,6 +53176,7 @@ namespace OpenMetaverse.Packets
 
         public GroupProfileRequestPacket()
         {
+            Type = PacketType.GroupProfileRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 351;
@@ -53238,7 +53238,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupProfileReplyPacket : Packet
+    public sealed class GroupProfileReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -53406,7 +53406,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupProfileReply; } }
         public override int Length
         {
             get
@@ -53422,6 +53421,7 @@ namespace OpenMetaverse.Packets
 
         public GroupProfileReplyPacket()
         {
+            Type = PacketType.GroupProfileReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 352;
@@ -53484,7 +53484,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupAccountSummaryRequestPacket : Packet
+    public sealed class GroupAccountSummaryRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -53574,7 +53574,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupAccountSummaryRequest; } }
         public override int Length
         {
             get
@@ -53590,6 +53589,7 @@ namespace OpenMetaverse.Packets
 
         public GroupAccountSummaryRequestPacket()
         {
+            Type = PacketType.GroupAccountSummaryRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 353;
@@ -53652,7 +53652,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupAccountSummaryReplyPacket : Packet
+    public sealed class GroupAccountSummaryReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -53834,7 +53834,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupAccountSummaryReply; } }
         public override int Length
         {
             get
@@ -53850,6 +53849,7 @@ namespace OpenMetaverse.Packets
 
         public GroupAccountSummaryReplyPacket()
         {
+            Type = PacketType.GroupAccountSummaryReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 354;
@@ -53912,7 +53912,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupAccountDetailsRequestPacket : Packet
+    public sealed class GroupAccountDetailsRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -54002,7 +54002,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupAccountDetailsRequest; } }
         public override int Length
         {
             get
@@ -54018,6 +54017,7 @@ namespace OpenMetaverse.Packets
 
         public GroupAccountDetailsRequestPacket()
         {
+            Type = PacketType.GroupAccountDetailsRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 355;
@@ -54080,7 +54080,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupAccountDetailsReplyPacket : Packet
+    public sealed class GroupAccountDetailsReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -54243,7 +54243,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupAccountDetailsReply; } }
         public override int Length
         {
             get
@@ -54262,6 +54261,7 @@ namespace OpenMetaverse.Packets
 
         public GroupAccountDetailsReplyPacket()
         {
+            Type = PacketType.GroupAccountDetailsReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 356;
@@ -54343,7 +54343,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupAccountTransactionsRequestPacket : Packet
+    public sealed class GroupAccountTransactionsRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -54433,7 +54433,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupAccountTransactionsRequest; } }
         public override int Length
         {
             get
@@ -54449,6 +54448,7 @@ namespace OpenMetaverse.Packets
 
         public GroupAccountTransactionsRequestPacket()
         {
+            Type = PacketType.GroupAccountTransactionsRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 357;
@@ -54511,7 +54511,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupAccountTransactionsReplyPacket : Packet
+    public sealed class GroupAccountTransactionsReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -54711,7 +54711,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupAccountTransactionsReply; } }
         public override int Length
         {
             get
@@ -54730,6 +54729,7 @@ namespace OpenMetaverse.Packets
 
         public GroupAccountTransactionsReplyPacket()
         {
+            Type = PacketType.GroupAccountTransactionsReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 358;
@@ -54811,7 +54811,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupActiveProposalsRequestPacket : Packet
+    public sealed class GroupActiveProposalsRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -54930,7 +54930,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupActiveProposalsRequest; } }
         public override int Length
         {
             get
@@ -54948,6 +54947,7 @@ namespace OpenMetaverse.Packets
 
         public GroupActiveProposalsRequestPacket()
         {
+            Type = PacketType.GroupActiveProposalsRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 359;
@@ -55013,7 +55013,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupActiveProposalItemReplyPacket : Packet
+    public sealed class GroupActiveProposalItemReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -55234,7 +55234,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupActiveProposalItemReply; } }
         public override int Length
         {
             get
@@ -55253,6 +55252,7 @@ namespace OpenMetaverse.Packets
 
         public GroupActiveProposalItemReplyPacket()
         {
+            Type = PacketType.GroupActiveProposalItemReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 360;
@@ -55334,7 +55334,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupVoteHistoryRequestPacket : Packet
+    public sealed class GroupVoteHistoryRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -55453,7 +55453,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupVoteHistoryRequest; } }
         public override int Length
         {
             get
@@ -55471,6 +55470,7 @@ namespace OpenMetaverse.Packets
 
         public GroupVoteHistoryRequestPacket()
         {
+            Type = PacketType.GroupVoteHistoryRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 361;
@@ -55536,7 +55536,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupVoteHistoryItemReplyPacket : Packet
+    public sealed class GroupVoteHistoryItemReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -55832,7 +55832,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupVoteHistoryItemReply; } }
         public override int Length
         {
             get
@@ -55853,6 +55852,7 @@ namespace OpenMetaverse.Packets
 
         public GroupVoteHistoryItemReplyPacket()
         {
+            Type = PacketType.GroupVoteHistoryItemReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 362;
@@ -55938,7 +55938,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class StartGroupProposalPacket : Packet
+    public sealed class StartGroupProposalPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -56047,7 +56047,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.StartGroupProposal; } }
         public override int Length
         {
             get
@@ -56063,6 +56062,7 @@ namespace OpenMetaverse.Packets
 
         public StartGroupProposalPacket()
         {
+            Type = PacketType.StartGroupProposal;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 363;
@@ -56125,7 +56125,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupProposalBallotPacket : Packet
+    public sealed class GroupProposalBallotPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -56228,7 +56228,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupProposalBallot; } }
         public override int Length
         {
             get
@@ -56244,6 +56243,7 @@ namespace OpenMetaverse.Packets
 
         public GroupProposalBallotPacket()
         {
+            Type = PacketType.GroupProposalBallot;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 364;
@@ -56305,7 +56305,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupMembersRequestPacket : Packet
+    public sealed class GroupMembersRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -56389,7 +56389,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupMembersRequest; } }
         public override int Length
         {
             get
@@ -56405,6 +56404,7 @@ namespace OpenMetaverse.Packets
 
         public GroupMembersRequestPacket()
         {
+            Type = PacketType.GroupMembersRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 366;
@@ -56466,7 +56466,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupMembersReplyPacket : Packet
+    public sealed class GroupMembersReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -56633,7 +56633,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupMembersReply; } }
         public override int Length
         {
             get
@@ -56652,6 +56651,7 @@ namespace OpenMetaverse.Packets
 
         public GroupMembersReplyPacket()
         {
+            Type = PacketType.GroupMembersReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 367;
@@ -56733,7 +56733,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ActivateGroupPacket : Packet
+    public sealed class ActivateGroupPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -56779,7 +56779,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ActivateGroup; } }
         public override int Length
         {
             get
@@ -56793,6 +56792,7 @@ namespace OpenMetaverse.Packets
 
         public ActivateGroupPacket()
         {
+            Type = PacketType.ActivateGroup;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 368;
@@ -56851,7 +56851,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class SetGroupContributionPacket : Packet
+    public sealed class SetGroupContributionPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -56935,7 +56935,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.SetGroupContribution; } }
         public override int Length
         {
             get
@@ -56951,6 +56950,7 @@ namespace OpenMetaverse.Packets
 
         public SetGroupContributionPacket()
         {
+            Type = PacketType.SetGroupContribution;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 369;
@@ -57012,7 +57012,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class SetGroupAcceptNoticesPacket : Packet
+    public sealed class SetGroupAcceptNoticesPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -57134,7 +57134,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.SetGroupAcceptNotices; } }
         public override int Length
         {
             get
@@ -57152,6 +57151,7 @@ namespace OpenMetaverse.Packets
 
         public SetGroupAcceptNoticesPacket()
         {
+            Type = PacketType.SetGroupAcceptNotices;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 370;
@@ -57217,7 +57217,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupRoleDataRequestPacket : Packet
+    public sealed class GroupRoleDataRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -57301,7 +57301,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupRoleDataRequest; } }
         public override int Length
         {
             get
@@ -57317,6 +57316,7 @@ namespace OpenMetaverse.Packets
 
         public GroupRoleDataRequestPacket()
         {
+            Type = PacketType.GroupRoleDataRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 371;
@@ -57378,7 +57378,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupRoleDataReplyPacket : Packet
+    public sealed class GroupRoleDataReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -57559,7 +57559,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupRoleDataReply; } }
         public override int Length
         {
             get
@@ -57578,6 +57577,7 @@ namespace OpenMetaverse.Packets
 
         public GroupRoleDataReplyPacket()
         {
+            Type = PacketType.GroupRoleDataReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 372;
@@ -57658,7 +57658,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupRoleMembersRequestPacket : Packet
+    public sealed class GroupRoleMembersRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -57742,7 +57742,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupRoleMembersRequest; } }
         public override int Length
         {
             get
@@ -57758,6 +57757,7 @@ namespace OpenMetaverse.Packets
 
         public GroupRoleMembersRequestPacket()
         {
+            Type = PacketType.GroupRoleMembersRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 373;
@@ -57819,7 +57819,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupRoleMembersReplyPacket : Packet
+    public sealed class GroupRoleMembersReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -57909,7 +57909,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupRoleMembersReply; } }
         public override int Length
         {
             get
@@ -57926,6 +57925,7 @@ namespace OpenMetaverse.Packets
 
         public GroupRoleMembersReplyPacket()
         {
+            Type = PacketType.GroupRoleMembersReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 374;
@@ -58002,7 +58002,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupTitlesRequestPacket : Packet
+    public sealed class GroupTitlesRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -58051,7 +58051,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupTitlesRequest; } }
         public override int Length
         {
             get
@@ -58065,6 +58064,7 @@ namespace OpenMetaverse.Packets
 
         public GroupTitlesRequestPacket()
         {
+            Type = PacketType.GroupTitlesRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 375;
@@ -58122,7 +58122,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupTitlesReplyPacket : Packet
+    public sealed class GroupTitlesReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -58228,7 +58228,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupTitlesReply; } }
         public override int Length
         {
             get
@@ -58245,6 +58244,7 @@ namespace OpenMetaverse.Packets
 
         public GroupTitlesReplyPacket()
         {
+            Type = PacketType.GroupTitlesReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 376;
@@ -58322,7 +58322,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupTitleUpdatePacket : Packet
+    public sealed class GroupTitleUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -58371,7 +58371,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupTitleUpdate; } }
         public override int Length
         {
             get
@@ -58385,6 +58384,7 @@ namespace OpenMetaverse.Packets
 
         public GroupTitleUpdatePacket()
         {
+            Type = PacketType.GroupTitleUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 377;
@@ -58442,7 +58442,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupRoleUpdatePacket : Packet
+    public sealed class GroupRoleUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -58585,7 +58585,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupRoleUpdate; } }
         public override int Length
         {
             get
@@ -58602,6 +58601,7 @@ namespace OpenMetaverse.Packets
 
         public GroupRoleUpdatePacket()
         {
+            Type = PacketType.GroupRoleUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 378;
@@ -58678,7 +58678,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class LiveHelpGroupRequestPacket : Packet
+    public sealed class LiveHelpGroupRequestPacket : Packet
     {
         /// <exclude/>
         public class RequestDataBlock : PacketBlock
@@ -58721,7 +58721,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.LiveHelpGroupRequest; } }
         public override int Length
         {
             get
@@ -58735,6 +58734,7 @@ namespace OpenMetaverse.Packets
 
         public LiveHelpGroupRequestPacket()
         {
+            Type = PacketType.LiveHelpGroupRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 379;
@@ -58792,7 +58792,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class LiveHelpGroupReplyPacket : Packet
+    public sealed class LiveHelpGroupReplyPacket : Packet
     {
         /// <exclude/>
         public class ReplyDataBlock : PacketBlock
@@ -58854,7 +58854,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.LiveHelpGroupReply; } }
         public override int Length
         {
             get
@@ -58868,6 +58867,7 @@ namespace OpenMetaverse.Packets
 
         public LiveHelpGroupReplyPacket()
         {
+            Type = PacketType.LiveHelpGroupReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 380;
@@ -58925,7 +58925,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentWearablesRequestPacket : Packet
+    public sealed class AgentWearablesRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -58968,7 +58968,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentWearablesRequest; } }
         public override int Length
         {
             get
@@ -58982,6 +58981,7 @@ namespace OpenMetaverse.Packets
 
         public AgentWearablesRequestPacket()
         {
+            Type = PacketType.AgentWearablesRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 381;
@@ -59039,7 +59039,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentWearablesUpdatePacket : Packet
+    public sealed class AgentWearablesUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -59129,7 +59129,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentWearablesUpdate; } }
         public override int Length
         {
             get
@@ -59146,6 +59145,7 @@ namespace OpenMetaverse.Packets
 
         public AgentWearablesUpdatePacket()
         {
+            Type = PacketType.AgentWearablesUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 382;
@@ -59223,7 +59223,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentIsNowWearingPacket : Packet
+    public sealed class AgentIsNowWearingPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -59307,7 +59307,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentIsNowWearing; } }
         public override int Length
         {
             get
@@ -59324,6 +59323,7 @@ namespace OpenMetaverse.Packets
 
         public AgentIsNowWearingPacket()
         {
+            Type = PacketType.AgentIsNowWearing;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 383;
@@ -59401,7 +59401,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentCachedTexturePacket : Packet
+    public sealed class AgentCachedTexturePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -59488,7 +59488,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentCachedTexture; } }
         public override int Length
         {
             get
@@ -59505,6 +59504,7 @@ namespace OpenMetaverse.Packets
 
         public AgentCachedTexturePacket()
         {
+            Type = PacketType.AgentCachedTexture;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 384;
@@ -59581,7 +59581,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentCachedTextureResponsePacket : Packet
+    public sealed class AgentCachedTextureResponsePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -59687,7 +59687,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentCachedTextureResponse; } }
         public override int Length
         {
             get
@@ -59704,6 +59703,7 @@ namespace OpenMetaverse.Packets
 
         public AgentCachedTextureResponsePacket()
         {
+            Type = PacketType.AgentCachedTextureResponse;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 385;
@@ -59780,7 +59780,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentDataUpdateRequestPacket : Packet
+    public sealed class AgentDataUpdateRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -59823,7 +59823,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentDataUpdateRequest; } }
         public override int Length
         {
             get
@@ -59837,6 +59836,7 @@ namespace OpenMetaverse.Packets
 
         public AgentDataUpdateRequestPacket()
         {
+            Type = PacketType.AgentDataUpdateRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 386;
@@ -59894,7 +59894,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentDataUpdatePacket : Packet
+    public sealed class AgentDataUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -60010,7 +60010,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentDataUpdate; } }
         public override int Length
         {
             get
@@ -60024,6 +60023,7 @@ namespace OpenMetaverse.Packets
 
         public AgentDataUpdatePacket()
         {
+            Type = PacketType.AgentDataUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 387;
@@ -60082,7 +60082,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class GroupDataUpdatePacket : Packet
+    public sealed class GroupDataUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentGroupDataBlock : PacketBlock
@@ -60147,7 +60147,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.GroupDataUpdate; } }
         public override int Length
         {
             get
@@ -60162,6 +60161,7 @@ namespace OpenMetaverse.Packets
 
         public GroupDataUpdatePacket()
         {
+            Type = PacketType.GroupDataUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 388;
@@ -60235,7 +60235,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentGroupDataUpdatePacket : Packet
+    public sealed class AgentGroupDataUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -60344,7 +60344,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentGroupDataUpdate; } }
         public override int Length
         {
             get
@@ -60361,6 +60360,7 @@ namespace OpenMetaverse.Packets
 
         public AgentGroupDataUpdatePacket()
         {
+            Type = PacketType.AgentGroupDataUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 389;
@@ -60438,7 +60438,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentDropGroupPacket : Packet
+    public sealed class AgentDropGroupPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -60481,7 +60481,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentDropGroup; } }
         public override int Length
         {
             get
@@ -60495,6 +60494,7 @@ namespace OpenMetaverse.Packets
 
         public AgentDropGroupPacket()
         {
+            Type = PacketType.AgentDropGroup;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 390;
@@ -60553,7 +60553,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CreateTrustedCircuitPacket : Packet
+    public sealed class CreateTrustedCircuitPacket : Packet
     {
         /// <exclude/>
         public class DataBlockBlock : PacketBlock
@@ -60597,7 +60597,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.CreateTrustedCircuit; } }
         public override int Length
         {
             get
@@ -60611,6 +60610,7 @@ namespace OpenMetaverse.Packets
 
         public CreateTrustedCircuitPacket()
         {
+            Type = PacketType.CreateTrustedCircuit;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 392;
@@ -60668,7 +60668,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DenyTrustedCircuitPacket : Packet
+    public sealed class DenyTrustedCircuitPacket : Packet
     {
         /// <exclude/>
         public class DataBlockBlock : PacketBlock
@@ -60708,7 +60708,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DenyTrustedCircuit; } }
         public override int Length
         {
             get
@@ -60722,6 +60721,7 @@ namespace OpenMetaverse.Packets
 
         public DenyTrustedCircuitPacket()
         {
+            Type = PacketType.DenyTrustedCircuit;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 393;
@@ -60779,9 +60779,8 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RequestTrustedCircuitPacket : Packet
+    public sealed class RequestTrustedCircuitPacket : Packet
     {
-        public override PacketType Type { get { return PacketType.RequestTrustedCircuit; } }
         public override int Length
         {
             get
@@ -60793,6 +60792,7 @@ namespace OpenMetaverse.Packets
 
         public RequestTrustedCircuitPacket()
         {
+            Type = PacketType.RequestTrustedCircuit;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 394;
@@ -60846,7 +60846,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RezSingleAttachmentFromInvPacket : Packet
+    public sealed class RezSingleAttachmentFromInvPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -60981,7 +60981,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RezSingleAttachmentFromInv; } }
         public override int Length
         {
             get
@@ -60997,6 +60996,7 @@ namespace OpenMetaverse.Packets
 
         public RezSingleAttachmentFromInvPacket()
         {
+            Type = PacketType.RezSingleAttachmentFromInv;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 395;
@@ -61059,7 +61059,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RezMultipleAttachmentsFromInvPacket : Packet
+    public sealed class RezMultipleAttachmentsFromInvPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -61238,7 +61238,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RezMultipleAttachmentsFromInv; } }
         public override int Length
         {
             get
@@ -61257,6 +61256,7 @@ namespace OpenMetaverse.Packets
 
         public RezMultipleAttachmentsFromInvPacket()
         {
+            Type = PacketType.RezMultipleAttachmentsFromInv;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 396;
@@ -61338,7 +61338,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class DetachAttachmentIntoInvPacket : Packet
+    public sealed class DetachAttachmentIntoInvPacket : Packet
     {
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
@@ -61381,7 +61381,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.DetachAttachmentIntoInv; } }
         public override int Length
         {
             get
@@ -61395,6 +61394,7 @@ namespace OpenMetaverse.Packets
 
         public DetachAttachmentIntoInvPacket()
         {
+            Type = PacketType.DetachAttachmentIntoInv;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 397;
@@ -61452,7 +61452,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CreateNewOutfitAttachmentsPacket : Packet
+    public sealed class CreateNewOutfitAttachmentsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -61574,7 +61574,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.CreateNewOutfitAttachments; } }
         public override int Length
         {
             get
@@ -61593,6 +61592,7 @@ namespace OpenMetaverse.Packets
 
         public CreateNewOutfitAttachmentsPacket()
         {
+            Type = PacketType.CreateNewOutfitAttachments;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 398;
@@ -61673,7 +61673,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UserInfoRequestPacket : Packet
+    public sealed class UserInfoRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -61716,7 +61716,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UserInfoRequest; } }
         public override int Length
         {
             get
@@ -61730,6 +61729,7 @@ namespace OpenMetaverse.Packets
 
         public UserInfoRequestPacket()
         {
+            Type = PacketType.UserInfoRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 399;
@@ -61787,7 +61787,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UserInfoReplyPacket : Packet
+    public sealed class UserInfoReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -61902,7 +61902,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UserInfoReply; } }
         public override int Length
         {
             get
@@ -61918,6 +61917,7 @@ namespace OpenMetaverse.Packets
 
         public UserInfoReplyPacket()
         {
+            Type = PacketType.UserInfoReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 400;
@@ -61979,7 +61979,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class UpdateUserInfoPacket : Packet
+    public sealed class UpdateUserInfoPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -62079,7 +62079,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.UpdateUserInfo; } }
         public override int Length
         {
             get
@@ -62095,6 +62094,7 @@ namespace OpenMetaverse.Packets
 
         public UpdateUserInfoPacket()
         {
+            Type = PacketType.UpdateUserInfo;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 401;
@@ -62156,7 +62156,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class InitiateDownloadPacket : Packet
+    public sealed class InitiateDownloadPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -62267,7 +62267,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.InitiateDownload; } }
         public override int Length
         {
             get
@@ -62283,6 +62282,7 @@ namespace OpenMetaverse.Packets
 
         public InitiateDownloadPacket()
         {
+            Type = PacketType.InitiateDownload;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 403;
@@ -62344,7 +62344,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class SystemMessagePacket : Packet
+    public sealed class SystemMessagePacket : Packet
     {
         /// <exclude/>
         public class MethodDataBlock : PacketBlock
@@ -62461,7 +62461,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.SystemMessage; } }
         public override int Length
         {
             get
@@ -62478,6 +62477,7 @@ namespace OpenMetaverse.Packets
 
         public SystemMessagePacket()
         {
+            Type = PacketType.SystemMessage;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 404;
@@ -62555,7 +62555,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MapLayerRequestPacket : Packet
+    public sealed class MapLayerRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -62607,7 +62607,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MapLayerRequest; } }
         public override int Length
         {
             get
@@ -62621,6 +62620,7 @@ namespace OpenMetaverse.Packets
 
         public MapLayerRequestPacket()
         {
+            Type = PacketType.MapLayerRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 405;
@@ -62678,7 +62678,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MapLayerReplyPacket : Packet
+    public sealed class MapLayerReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -62771,7 +62771,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MapLayerReply; } }
         public override int Length
         {
             get
@@ -62788,6 +62787,7 @@ namespace OpenMetaverse.Packets
 
         public MapLayerReplyPacket()
         {
+            Type = PacketType.MapLayerReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 406;
@@ -62864,7 +62864,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MapBlockRequestPacket : Packet
+    public sealed class MapBlockRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -62967,7 +62967,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MapBlockRequest; } }
         public override int Length
         {
             get
@@ -62983,6 +62982,7 @@ namespace OpenMetaverse.Packets
 
         public MapBlockRequestPacket()
         {
+            Type = PacketType.MapBlockRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 407;
@@ -63044,7 +63044,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MapNameRequestPacket : Packet
+    public sealed class MapNameRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -63150,7 +63150,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MapNameRequest; } }
         public override int Length
         {
             get
@@ -63166,6 +63165,7 @@ namespace OpenMetaverse.Packets
 
         public MapNameRequestPacket()
         {
+            Type = PacketType.MapNameRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 408;
@@ -63227,7 +63227,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MapBlockReplyPacket : Packet
+    public sealed class MapBlockReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -63347,7 +63347,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MapBlockReply; } }
         public override int Length
         {
             get
@@ -63364,6 +63363,7 @@ namespace OpenMetaverse.Packets
 
         public MapBlockReplyPacket()
         {
+            Type = PacketType.MapBlockReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 409;
@@ -63440,7 +63440,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MapItemRequestPacket : Packet
+    public sealed class MapItemRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -63533,7 +63533,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MapItemRequest; } }
         public override int Length
         {
             get
@@ -63549,6 +63548,7 @@ namespace OpenMetaverse.Packets
 
         public MapItemRequestPacket()
         {
+            Type = PacketType.MapItemRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 410;
@@ -63610,7 +63610,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MapItemReplyPacket : Packet
+    public sealed class MapItemReplyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -63760,7 +63760,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MapItemReply; } }
         public override int Length
         {
             get
@@ -63779,6 +63778,7 @@ namespace OpenMetaverse.Packets
 
         public MapItemReplyPacket()
         {
+            Type = PacketType.MapItemReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 411;
@@ -63859,7 +63859,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class SendPostcardPacket : Packet
+    public sealed class SendPostcardPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -64002,7 +64002,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.SendPostcard; } }
         public override int Length
         {
             get
@@ -64016,6 +64015,7 @@ namespace OpenMetaverse.Packets
 
         public SendPostcardPacket()
         {
+            Type = PacketType.SendPostcard;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 412;
@@ -64073,7 +64073,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelMediaCommandMessagePacket : Packet
+    public sealed class ParcelMediaCommandMessagePacket : Packet
     {
         /// <exclude/>
         public class CommandBlockBlock : PacketBlock
@@ -64119,7 +64119,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelMediaCommandMessage; } }
         public override int Length
         {
             get
@@ -64133,6 +64132,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelMediaCommandMessagePacket()
         {
+            Type = PacketType.ParcelMediaCommandMessage;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 419;
@@ -64190,7 +64190,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelMediaUpdatePacket : Packet
+    public sealed class ParcelMediaUpdatePacket : Packet
     {
         /// <exclude/>
         public class DataBlockBlock : PacketBlock
@@ -64332,7 +64332,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelMediaUpdate; } }
         public override int Length
         {
             get
@@ -64348,6 +64347,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelMediaUpdatePacket()
         {
+            Type = PacketType.ParcelMediaUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 420;
@@ -64409,7 +64409,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class LandStatRequestPacket : Packet
+    public sealed class LandStatRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -64515,7 +64515,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.LandStatRequest; } }
         public override int Length
         {
             get
@@ -64531,6 +64530,7 @@ namespace OpenMetaverse.Packets
 
         public LandStatRequestPacket()
         {
+            Type = PacketType.LandStatRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 421;
@@ -64592,7 +64592,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class LandStatReplyPacket : Packet
+    public sealed class LandStatReplyPacket : Packet
     {
         /// <exclude/>
         public class RequestDataBlock : PacketBlock
@@ -64727,7 +64727,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.LandStatReply; } }
         public override int Length
         {
             get
@@ -64744,6 +64743,7 @@ namespace OpenMetaverse.Packets
 
         public LandStatReplyPacket()
         {
+            Type = PacketType.LandStatReply;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 422;
@@ -64820,7 +64820,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ErrorPacket : Packet
+    public sealed class ErrorPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -64973,7 +64973,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.Error; } }
         public override int Length
         {
             get
@@ -64989,6 +64988,7 @@ namespace OpenMetaverse.Packets
 
         public ErrorPacket()
         {
+            Type = PacketType.Error;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 423;
@@ -65051,7 +65051,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectIncludeInSearchPacket : Packet
+    public sealed class ObjectIncludeInSearchPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -65135,7 +65135,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectIncludeInSearch; } }
         public override int Length
         {
             get
@@ -65152,6 +65151,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectIncludeInSearchPacket()
         {
+            Type = PacketType.ObjectIncludeInSearch;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 424;
@@ -65228,7 +65228,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RezRestoreToWorldPacket : Packet
+    public sealed class RezRestoreToWorldPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -65399,7 +65399,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RezRestoreToWorld; } }
         public override int Length
         {
             get
@@ -65415,6 +65414,7 @@ namespace OpenMetaverse.Packets
 
         public RezRestoreToWorldPacket()
         {
+            Type = PacketType.RezRestoreToWorld;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 425;
@@ -65476,7 +65476,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class PacketAckPacket : Packet
+    public sealed class PacketAckPacket : Packet
     {
         /// <exclude/>
         public class PacketsBlock : PacketBlock
@@ -65516,7 +65516,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.PacketAck; } }
         public override int Length
         {
             get
@@ -65531,6 +65530,7 @@ namespace OpenMetaverse.Packets
 
         public PacketAckPacket()
         {
+            Type = PacketType.PacketAck;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 65531;
@@ -65603,7 +65603,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class OpenCircuitPacket : Packet
+    public sealed class OpenCircuitPacket : Packet
     {
         /// <exclude/>
         public class CircuitInfoBlock : PacketBlock
@@ -65647,7 +65647,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.OpenCircuit; } }
         public override int Length
         {
             get
@@ -65661,6 +65660,7 @@ namespace OpenMetaverse.Packets
 
         public OpenCircuitPacket()
         {
+            Type = PacketType.OpenCircuit;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 65532;
@@ -65718,9 +65718,8 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CloseCircuitPacket : Packet
+    public sealed class CloseCircuitPacket : Packet
     {
-        public override PacketType Type { get { return PacketType.CloseCircuit; } }
         public override int Length
         {
             get
@@ -65732,6 +65731,7 @@ namespace OpenMetaverse.Packets
 
         public CloseCircuitPacket()
         {
+            Type = PacketType.CloseCircuit;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 65533;
@@ -65785,7 +65785,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectAddPacket : Packet
+    public sealed class ObjectAddPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -65958,7 +65958,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectAdd; } }
         public override int Length
         {
             get
@@ -65974,6 +65973,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectAddPacket()
         {
+            Type = PacketType.ObjectAdd;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 1;
@@ -66036,7 +66036,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class MultipleObjectUpdatePacket : Packet
+    public sealed class MultipleObjectUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -66139,7 +66139,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.MultipleObjectUpdate; } }
         public override int Length
         {
             get
@@ -66156,6 +66155,7 @@ namespace OpenMetaverse.Packets
 
         public MultipleObjectUpdatePacket()
         {
+            Type = PacketType.MultipleObjectUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 2;
@@ -66233,7 +66233,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RequestMultipleObjectsPacket : Packet
+    public sealed class RequestMultipleObjectsPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -66317,7 +66317,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RequestMultipleObjects; } }
         public override int Length
         {
             get
@@ -66334,6 +66333,7 @@ namespace OpenMetaverse.Packets
 
         public RequestMultipleObjectsPacket()
         {
+            Type = PacketType.RequestMultipleObjects;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 3;
@@ -66411,7 +66411,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectPositionPacket : Packet
+    public sealed class ObjectPositionPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -66495,7 +66495,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectPosition; } }
         public override int Length
         {
             get
@@ -66512,6 +66511,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectPositionPacket()
         {
+            Type = PacketType.ObjectPosition;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 4;
@@ -66589,7 +66589,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RequestObjectPropertiesFamilyPacket : Packet
+    public sealed class RequestObjectPropertiesFamilyPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -66673,7 +66673,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RequestObjectPropertiesFamily; } }
         public override int Length
         {
             get
@@ -66689,6 +66688,7 @@ namespace OpenMetaverse.Packets
 
         public RequestObjectPropertiesFamilyPacket()
         {
+            Type = PacketType.RequestObjectPropertiesFamily;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 5;
@@ -66751,7 +66751,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CoarseLocationUpdatePacket : Packet
+    public sealed class CoarseLocationUpdatePacket : Packet
     {
         /// <exclude/>
         public class LocationBlock : PacketBlock
@@ -66878,7 +66878,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.CoarseLocationUpdate; } }
         public override int Length
         {
             get
@@ -66898,6 +66897,7 @@ namespace OpenMetaverse.Packets
 
         public CoarseLocationUpdatePacket()
         {
+            Type = PacketType.CoarseLocationUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 6;
@@ -66993,7 +66993,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CrossedRegionPacket : Packet
+    public sealed class CrossedRegionPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -67142,7 +67142,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.CrossedRegion; } }
         public override int Length
         {
             get
@@ -67160,6 +67159,7 @@ namespace OpenMetaverse.Packets
 
         public CrossedRegionPacket()
         {
+            Type = PacketType.CrossedRegion;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 7;
@@ -67225,7 +67225,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ConfirmEnableSimulatorPacket : Packet
+    public sealed class ConfirmEnableSimulatorPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -67268,7 +67268,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ConfirmEnableSimulator; } }
         public override int Length
         {
             get
@@ -67282,6 +67281,7 @@ namespace OpenMetaverse.Packets
 
         public ConfirmEnableSimulatorPacket()
         {
+            Type = PacketType.ConfirmEnableSimulator;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 8;
@@ -67339,7 +67339,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectPropertiesPacket : Packet
+    public sealed class ObjectPropertiesPacket : Packet
     {
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
@@ -67530,7 +67530,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectProperties; } }
         public override int Length
         {
             get
@@ -67545,6 +67544,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectPropertiesPacket()
         {
+            Type = PacketType.ObjectProperties;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 9;
@@ -67618,7 +67618,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectPropertiesFamilyPacket : Packet
+    public sealed class ObjectPropertiesFamilyPacket : Packet
     {
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
@@ -67733,7 +67733,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectPropertiesFamily; } }
         public override int Length
         {
             get
@@ -67747,6 +67746,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectPropertiesFamilyPacket()
         {
+            Type = PacketType.ObjectPropertiesFamily;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 10;
@@ -67805,7 +67805,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelPropertiesRequestPacket : Packet
+    public sealed class ParcelPropertiesRequestPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -67901,7 +67901,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelPropertiesRequest; } }
         public override int Length
         {
             get
@@ -67917,6 +67916,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelPropertiesRequestPacket()
         {
+            Type = PacketType.ParcelPropertiesRequest;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 11;
@@ -67979,7 +67979,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AttachedSoundPacket : Packet
+    public sealed class AttachedSoundPacket : Packet
     {
         /// <exclude/>
         public class DataBlockBlock : PacketBlock
@@ -68031,7 +68031,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AttachedSound; } }
         public override int Length
         {
             get
@@ -68045,6 +68044,7 @@ namespace OpenMetaverse.Packets
 
         public AttachedSoundPacket()
         {
+            Type = PacketType.AttachedSound;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 13;
@@ -68102,7 +68102,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AttachedSoundGainChangePacket : Packet
+    public sealed class AttachedSoundGainChangePacket : Packet
     {
         /// <exclude/>
         public class DataBlockBlock : PacketBlock
@@ -68145,7 +68145,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AttachedSoundGainChange; } }
         public override int Length
         {
             get
@@ -68159,6 +68158,7 @@ namespace OpenMetaverse.Packets
 
         public AttachedSoundGainChangePacket()
         {
+            Type = PacketType.AttachedSoundGainChange;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 14;
@@ -68216,7 +68216,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class PreloadSoundPacket : Packet
+    public sealed class PreloadSoundPacket : Packet
     {
         /// <exclude/>
         public class DataBlockBlock : PacketBlock
@@ -68262,7 +68262,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.PreloadSound; } }
         public override int Length
         {
             get
@@ -68277,6 +68276,7 @@ namespace OpenMetaverse.Packets
 
         public PreloadSoundPacket()
         {
+            Type = PacketType.PreloadSound;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 15;
@@ -68349,7 +68349,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ViewerEffectPacket : Packet
+    public sealed class ViewerEffectPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -68462,7 +68462,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ViewerEffect; } }
         public override int Length
         {
             get
@@ -68479,6 +68478,7 @@ namespace OpenMetaverse.Packets
 
         public ViewerEffectPacket()
         {
+            Type = PacketType.ViewerEffect;
             Header = new Header();
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 17;
@@ -68556,7 +68556,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class StartPingCheckPacket : Packet
+    public sealed class StartPingCheckPacket : Packet
     {
         /// <exclude/>
         public class PingIDBlock : PacketBlock
@@ -68599,7 +68599,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.StartPingCheck; } }
         public override int Length
         {
             get
@@ -68613,6 +68612,7 @@ namespace OpenMetaverse.Packets
 
         public StartPingCheckPacket()
         {
+            Type = PacketType.StartPingCheck;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 1;
@@ -68670,7 +68670,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CompletePingCheckPacket : Packet
+    public sealed class CompletePingCheckPacket : Packet
     {
         /// <exclude/>
         public class PingIDBlock : PacketBlock
@@ -68710,7 +68710,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.CompletePingCheck; } }
         public override int Length
         {
             get
@@ -68724,6 +68723,7 @@ namespace OpenMetaverse.Packets
 
         public CompletePingCheckPacket()
         {
+            Type = PacketType.CompletePingCheck;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 2;
@@ -68781,7 +68781,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentUpdatePacket : Packet
+    public sealed class AgentUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -68854,7 +68854,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentUpdate; } }
         public override int Length
         {
             get
@@ -68868,6 +68867,7 @@ namespace OpenMetaverse.Packets
 
         public AgentUpdatePacket()
         {
+            Type = PacketType.AgentUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 4;
@@ -68926,7 +68926,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentAnimationPacket : Packet
+    public sealed class AgentAnimationPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -69064,7 +69064,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentAnimation; } }
         public override int Length
         {
             get
@@ -69084,6 +69083,7 @@ namespace OpenMetaverse.Packets
 
         public AgentAnimationPacket()
         {
+            Type = PacketType.AgentAnimation;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 5;
@@ -69179,7 +69179,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentRequestSitPacket : Packet
+    public sealed class AgentRequestSitPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -69263,7 +69263,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentRequestSit; } }
         public override int Length
         {
             get
@@ -69279,6 +69278,7 @@ namespace OpenMetaverse.Packets
 
         public AgentRequestSitPacket()
         {
+            Type = PacketType.AgentRequestSit;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 6;
@@ -69341,7 +69341,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AgentSitPacket : Packet
+    public sealed class AgentSitPacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -69384,7 +69384,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AgentSit; } }
         public override int Length
         {
             get
@@ -69398,6 +69397,7 @@ namespace OpenMetaverse.Packets
 
         public AgentSitPacket()
         {
+            Type = PacketType.AgentSit;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 7;
@@ -69455,7 +69455,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class RequestImagePacket : Packet
+    public sealed class RequestImagePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -69548,7 +69548,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.RequestImage; } }
         public override int Length
         {
             get
@@ -69565,6 +69564,7 @@ namespace OpenMetaverse.Packets
 
         public RequestImagePacket()
         {
+            Type = PacketType.RequestImage;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 8;
@@ -69641,7 +69641,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ImageDataPacket : Packet
+    public sealed class ImageDataPacket : Packet
     {
         /// <exclude/>
         public class ImageIDBlock : PacketBlock
@@ -69746,7 +69746,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ImageData; } }
         public override int Length
         {
             get
@@ -69762,6 +69761,7 @@ namespace OpenMetaverse.Packets
 
         public ImageDataPacket()
         {
+            Type = PacketType.ImageData;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 9;
@@ -69823,7 +69823,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ImagePacketPacket : Packet
+    public sealed class ImagePacketPacket : Packet
     {
         /// <exclude/>
         public class ImageIDBlock : PacketBlock
@@ -69922,7 +69922,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ImagePacket; } }
         public override int Length
         {
             get
@@ -69938,6 +69937,7 @@ namespace OpenMetaverse.Packets
 
         public ImagePacketPacket()
         {
+            Type = PacketType.ImagePacket;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 10;
@@ -69999,7 +69999,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class LayerDataPacket : Packet
+    public sealed class LayerDataPacket : Packet
     {
         /// <exclude/>
         public class LayerIDBlock : PacketBlock
@@ -70094,7 +70094,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.LayerData; } }
         public override int Length
         {
             get
@@ -70110,6 +70109,7 @@ namespace OpenMetaverse.Packets
 
         public LayerDataPacket()
         {
+            Type = PacketType.LayerData;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 11;
@@ -70171,7 +70171,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectUpdatePacket : Packet
+    public sealed class ObjectUpdatePacket : Packet
     {
         /// <exclude/>
         public class RegionDataBlock : PacketBlock
@@ -70525,7 +70525,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectUpdate; } }
         public override int Length
         {
             get
@@ -70542,6 +70541,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectUpdatePacket()
         {
+            Type = PacketType.ObjectUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 12;
@@ -70619,7 +70619,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectUpdateCompressedPacket : Packet
+    public sealed class ObjectUpdateCompressedPacket : Packet
     {
         /// <exclude/>
         public class RegionDataBlock : PacketBlock
@@ -70721,7 +70721,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectUpdateCompressed; } }
         public override int Length
         {
             get
@@ -70738,6 +70737,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectUpdateCompressedPacket()
         {
+            Type = PacketType.ObjectUpdateCompressed;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 13;
@@ -70814,7 +70814,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ObjectUpdateCachedPacket : Packet
+    public sealed class ObjectUpdateCachedPacket : Packet
     {
         /// <exclude/>
         public class RegionDataBlock : PacketBlock
@@ -70902,7 +70902,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ObjectUpdateCached; } }
         public override int Length
         {
             get
@@ -70919,6 +70918,7 @@ namespace OpenMetaverse.Packets
 
         public ObjectUpdateCachedPacket()
         {
+            Type = PacketType.ObjectUpdateCached;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 14;
@@ -70995,7 +70995,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ImprovedTerseObjectUpdatePacket : Packet
+    public sealed class ImprovedTerseObjectUpdatePacket : Packet
     {
         /// <exclude/>
         public class RegionDataBlock : PacketBlock
@@ -71111,7 +71111,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ImprovedTerseObjectUpdate; } }
         public override int Length
         {
             get
@@ -71128,6 +71127,7 @@ namespace OpenMetaverse.Packets
 
         public ImprovedTerseObjectUpdatePacket()
         {
+            Type = PacketType.ImprovedTerseObjectUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 15;
@@ -71204,7 +71204,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class KillObjectPacket : Packet
+    public sealed class KillObjectPacket : Packet
     {
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
@@ -71244,7 +71244,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.KillObject; } }
         public override int Length
         {
             get
@@ -71259,6 +71258,7 @@ namespace OpenMetaverse.Packets
 
         public KillObjectPacket()
         {
+            Type = PacketType.KillObject;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 16;
@@ -71331,7 +71331,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class TransferPacketPacket : Packet
+    public sealed class TransferPacketPacket : Packet
     {
         /// <exclude/>
         public class TransferDataBlock : PacketBlock
@@ -71400,7 +71400,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.TransferPacket; } }
         public override int Length
         {
             get
@@ -71414,6 +71413,7 @@ namespace OpenMetaverse.Packets
 
         public TransferPacketPacket()
         {
+            Type = PacketType.TransferPacket;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 17;
@@ -71471,7 +71471,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class SendXferPacketPacket : Packet
+    public sealed class SendXferPacketPacket : Packet
     {
         /// <exclude/>
         public class XferIDBlock : PacketBlock
@@ -71569,7 +71569,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.SendXferPacket; } }
         public override int Length
         {
             get
@@ -71585,6 +71584,7 @@ namespace OpenMetaverse.Packets
 
         public SendXferPacketPacket()
         {
+            Type = PacketType.SendXferPacket;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 18;
@@ -71646,7 +71646,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ConfirmXferPacketPacket : Packet
+    public sealed class ConfirmXferPacketPacket : Packet
     {
         /// <exclude/>
         public class XferIDBlock : PacketBlock
@@ -71689,7 +71689,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ConfirmXferPacket; } }
         public override int Length
         {
             get
@@ -71703,6 +71702,7 @@ namespace OpenMetaverse.Packets
 
         public ConfirmXferPacketPacket()
         {
+            Type = PacketType.ConfirmXferPacket;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 19;
@@ -71760,7 +71760,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarAnimationPacket : Packet
+    public sealed class AvatarAnimationPacket : Packet
     {
         /// <exclude/>
         public class SenderBlock : PacketBlock
@@ -71933,7 +71933,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarAnimation; } }
         public override int Length
         {
             get
@@ -71956,6 +71955,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarAnimationPacket()
         {
+            Type = PacketType.AvatarAnimation;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 20;
@@ -72070,7 +72070,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class AvatarSitResponsePacket : Packet
+    public sealed class AvatarSitResponsePacket : Packet
     {
         /// <exclude/>
         public class SitObjectBlock : PacketBlock
@@ -72163,7 +72163,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.AvatarSitResponse; } }
         public override int Length
         {
             get
@@ -72179,6 +72178,7 @@ namespace OpenMetaverse.Packets
 
         public AvatarSitResponsePacket()
         {
+            Type = PacketType.AvatarSitResponse;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 21;
@@ -72241,7 +72241,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class CameraConstraintPacket : Packet
+    public sealed class CameraConstraintPacket : Packet
     {
         /// <exclude/>
         public class CameraCollidePlaneBlock : PacketBlock
@@ -72281,7 +72281,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.CameraConstraint; } }
         public override int Length
         {
             get
@@ -72295,6 +72294,7 @@ namespace OpenMetaverse.Packets
 
         public CameraConstraintPacket()
         {
+            Type = PacketType.CameraConstraint;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 22;
@@ -72353,7 +72353,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ParcelPropertiesPacket : Packet
+    public sealed class ParcelPropertiesPacket : Packet
     {
         /// <exclude/>
         public class ParcelDataBlock : PacketBlock
@@ -72648,7 +72648,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ParcelProperties; } }
         public override int Length
         {
             get
@@ -72664,6 +72663,7 @@ namespace OpenMetaverse.Packets
 
         public ParcelPropertiesPacket()
         {
+            Type = PacketType.ParcelProperties;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 23;
@@ -72726,7 +72726,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ChildAgentUpdatePacket : Packet
+    public sealed class ChildAgentUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -73088,7 +73088,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ChildAgentUpdate; } }
         public override int Length
         {
             get
@@ -73117,6 +73116,7 @@ namespace OpenMetaverse.Packets
 
         public ChildAgentUpdatePacket()
         {
+            Type = PacketType.ChildAgentUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 25;
@@ -73270,7 +73270,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ChildAgentAlivePacket : Packet
+    public sealed class ChildAgentAlivePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -73319,7 +73319,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ChildAgentAlive; } }
         public override int Length
         {
             get
@@ -73333,6 +73332,7 @@ namespace OpenMetaverse.Packets
 
         public ChildAgentAlivePacket()
         {
+            Type = PacketType.ChildAgentAlive;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 26;
@@ -73390,7 +73390,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class ChildAgentPositionUpdatePacket : Packet
+    public sealed class ChildAgentPositionUpdatePacket : Packet
     {
         /// <exclude/>
         public class AgentDataBlock : PacketBlock
@@ -73463,7 +73463,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.ChildAgentPositionUpdate; } }
         public override int Length
         {
             get
@@ -73477,6 +73476,7 @@ namespace OpenMetaverse.Packets
 
         public ChildAgentPositionUpdatePacket()
         {
+            Type = PacketType.ChildAgentPositionUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 27;
@@ -73534,7 +73534,7 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public class SoundTriggerPacket : Packet
+    public sealed class SoundTriggerPacket : Packet
     {
         /// <exclude/>
         public class SoundDataBlock : PacketBlock
@@ -73592,7 +73592,6 @@ namespace OpenMetaverse.Packets
 
         }
 
-        public override PacketType Type { get { return PacketType.SoundTrigger; } }
         public override int Length
         {
             get
@@ -73606,6 +73605,7 @@ namespace OpenMetaverse.Packets
 
         public SoundTriggerPacket()
         {
+            Type = PacketType.SoundTrigger;
             Header = new Header();
             Header.Frequency = PacketFrequency.High;
             Header.ID = 29;
