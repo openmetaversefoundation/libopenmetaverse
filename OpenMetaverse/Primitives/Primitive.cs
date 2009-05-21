@@ -1315,8 +1315,16 @@ namespace OpenMetaverse
             volume["profile"] = profile;
 
             OSDMap prim = new OSDMap(9);
-            prim["name"] = OSD.FromString(Properties.Name);
-            prim["description"] = OSD.FromString(Properties.Description);
+            if (Properties != null)
+            {
+                prim["name"] = OSD.FromString(Properties.Name);
+                prim["description"] = OSD.FromString(Properties.Description);
+            }
+            else
+            {
+                prim["name"] = OSD.FromString("Object");
+                prim["description"] = OSD.FromString(String.Empty);
+            }
             prim["phantom"] = OSD.FromBoolean(((Flags & PrimFlags.Phantom) != 0));
             prim["physical"] = OSD.FromBoolean(((Flags & PrimFlags.Physics) != 0));
             prim["position"] = OSD.FromVector3(Position);
