@@ -729,22 +729,22 @@ namespace OpenMetaverse
                 // off it and reinsert them into the outgoing ACK queue under the 
                 // assumption that this packet will continually be rejected from the
                 // server or that the appended ACKs are possibly making the delivery fail
-                if (packet.Header.AckList != null && packet.Header.AckList.Length > 0)
+                lock (PendingAcks)
                 {
-                    Logger.DebugLog(String.Format("Purging ACKs from packet #{0} ({1}) which will be resent.",
-                        packet.Header.Sequence, packet.GetType()));
-
-                    lock (PendingAcks)
+                    if (packet.Header.AckList != null && packet.Header.AckList.Length > 0)
                     {
+                        Logger.DebugLog(String.Format("Purging ACKs from packet #{0} ({1}) which will be resent.",
+                            packet.Header.Sequence, packet.GetType()));
+
                         foreach (uint sequence in packet.Header.AckList)
                         {
                             if (!PendingAcks.ContainsKey(sequence))
                                 PendingAcks[sequence] = sequence;
                         }
-                    }
 
-                    packet.Header.AppendedAcks = false;
-                    packet.Header.AckList = null;
+                        packet.Header.AppendedAcks = false;
+                        packet.Header.AckList = null;
+                    }
                 }
             }
 
