@@ -116,7 +116,7 @@ namespace OpenMetaverse.Http
                 eventQueue.Enqueue(events[i]);
         }
 
-        public bool EventQueueHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response)
+        public void EventQueueHandler(IHttpClientContext context, IHttpRequest request, IHttpResponse response)
         {
             // Decode the request
             OSD osdRequest = null;
@@ -161,9 +161,6 @@ namespace OpenMetaverse.Http
                     Thread thread = new Thread(new ThreadStart(EventQueueThread));
                     thread.IsBackground = true;
                     thread.Start();
-
-                    // Tell HttpServer to leave the connection open
-                    return false;
                 }
                 else
                 {
@@ -172,7 +169,7 @@ namespace OpenMetaverse.Http
                     Stop();
 
                     response.Connection = request.Connection;
-                    return true;
+                    response.Send();
                 }
             }
             else
@@ -182,7 +179,7 @@ namespace OpenMetaverse.Http
 
                 response.Connection = request.Connection;
                 response.Status = HttpStatusCode.BadRequest;
-                return true;
+                response.Send();
             }
         }
 

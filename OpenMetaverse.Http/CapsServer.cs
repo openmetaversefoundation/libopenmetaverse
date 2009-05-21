@@ -43,8 +43,7 @@ namespace OpenMetaverse.Http
     /// <param name="request">HTTP request</param>
     /// <param name="response">HTTP response</param>
     /// <param name="state">User-defined state object</param>
-    /// <returns>True to send the response and close the connection, false to leave the connection open</returns>
-    public delegate bool CapsRequestCallback(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state);
+    public delegate void CapsRequestCallback(IHttpClientContext context, IHttpRequest request, IHttpResponse response, object state);
 
     public class CapsServer
     {
@@ -53,13 +52,15 @@ namespace OpenMetaverse.Http
             public CapsRequestCallback LocalCallback;
             public Uri RemoteHandler;
             public bool ClientCertRequired;
+            public bool SendResponseAfterCallback;
             public object State;
 
-            public CapsRedirector(CapsRequestCallback localCallback, Uri remoteHandler, bool clientCertRequired, object state)
+            public CapsRedirector(CapsRequestCallback localCallback, Uri remoteHandler, bool clientCertRequired, bool sendResponseAfterCallback, object state)
             {
                 LocalCallback = localCallback;
                 RemoteHandler = remoteHandler;
                 ClientCertRequired = clientCertRequired;
+                SendResponseAfterCallback = sendResponseAfterCallback;
                 State = state;
             }
         }
@@ -108,10 +109,21 @@ namespace OpenMetaverse.Http
             server.RemoveHandler(capsHandler);
         }
 
+        public UUID CreateCapability(CapsRequestCallback localHandler, bool clientCertRequired, bool sendResponseAfterCallback, object state)
+        {
+            UUID id = UUID.Random();
+            CapsRedirector redirector = new CapsRedirector(localHandler, null, clientCertRequired, sendResponseAfterCallback, state);
+
+            lock (syncRoot)
+                fixedCaps.Add(id, redirector);
+
+            return id;
+        }
+
         public UUID CreateCapability(CapsRequestCallback localHandler, bool clientCertRequired, object state)
         {
             UUID id = UUID.Random();
-            CapsRedirector redirector = new CapsRedirector(localHandler, null, clientCertRequired, state);
+            CapsRedirector redirector = new CapsRedirector(localHandler, null, clientCertRequired, true, state);
 
             lock (syncRoot)
                 fixedCaps.Add(id, redirector);
@@ -119,10 +131,10 @@ namespace OpenMetaverse.Http
             return id;
         }
 
-        public UUID CreateCapability(Uri remoteHandler, bool clientCertRequired)
+        public UUID CreateCapability(Uri remoteHandler, bool clientCertRequired, bool sendResponseAfterCallback)
         {
             UUID id = UUID.Random();
-            CapsRedirector redirector = new CapsRedirector(null, remoteHandler, clientCertRequired, null);
+            CapsRedirector redirector = new CapsRedirector(null, remoteHandler, clientCertRequired, sendResponseAfterCallback, null);
 
             lock (syncRoot)
                 fixedCaps.Add(id, redirector);
@@ -130,10 +142,10 @@ namespace OpenMetaverse.Http
             return id;
         }
 
-        public UUID CreateCapability(CapsRequestCallback localHandler, bool clientCertRequired, object state, double ttlSeconds)
+        public UUID CreateCapability(CapsRequestCallback localHandler, bool clientCertRequired, bool sendResponseAfterCallback, object state, double ttlSeconds)
         {
             UUID id = UUID.Random();
-            CapsRedirector redirector = new CapsRedirector(localHandler, null, clientCertRequired, state);
+            CapsRedirector redirector = new CapsRedirector(localHandler, null, clientCertRequired, sendResponseAfterCallback, state);
 
             lock (syncRoot)
                 expiringCaps.Add(id, redirector, DateTime.Now + TimeSpan.FromSeconds(ttlSeconds));
@@ -141,10 +153,10 @@ namespace OpenMetaverse.Http
             return id;
         }
 
-        public UUID CreateCapability(Uri remoteHandler, bool clientCertRequired, object state, double ttlSeconds)
+        public UUID CreateCapability(Uri remoteHandler, bool clientCertRequired, bool sendResponseAfterCallback, object state, double ttlSeconds)
         {
             UUID id = UUID.Random();
-            CapsRedirector redirector = new CapsRedirector(null, remoteHandler, clientCertRequired, state);
+            CapsRedirector redirector = new CapsRedirector(null, remoteHandler, clientCertRequired, sendResponseAfterCallback, state);
 
             lock (syncRoot)
                 expiringCaps.Add(id, redirector, DateTime.Now + TimeSpan.FromSeconds(ttlSeconds));
@@ -163,7 +175,7 @@ namespace OpenMetaverse.Http
             }
         }
 
-        bool CapsCallback(IHttpClientContext client, IHttpRequest request, IHttpResponse response)
+        void CapsCallback(IHttpClientContext client, IHttpRequest request, IHttpResponse response)
         {
             UUID capsID;
             CapsRedirector redirector;
@@ -192,14 +204,16 @@ namespace OpenMetaverse.Http
                     if (redirector.RemoteHandler != null)
                         ProxyCapCallback(client, request, response, redirector.RemoteHandler);
                     else
-                        return redirector.LocalCallback(client, request, response, redirector.State);
+                        redirector.LocalCallback(client, request, response, redirector.State);
 
-                    return true;
+                    if (redirector.SendResponseAfterCallback && !response.Sent)
+                        response.Send();
+                    return;
                 }
             }
 
             response.Status = HttpStatusCode.NotFound;
-            return true;
+            response.Send();
         }
 
         void ProxyCapCallback(IHttpClientContext client, IHttpRequest request, IHttpResponse response, Uri remoteHandler)
@@ -223,8 +237,6 @@ namespace OpenMetaverse.Http
                 {
                     while ((numBytes = request.Body.Read(buffer, 0, BUFFER_SIZE)) > 0)
                         writeStream.Write(buffer, 0, numBytes);
-
-                    request.Body.Close();
                 }
             }
 
@@ -242,16 +254,16 @@ namespace OpenMetaverse.Http
             {
                 while ((numBytes = readStream.Read(buffer, 0, BUFFER_SIZE)) > 0)
                     response.Body.Write(buffer, 0, numBytes);
-
-                response.Body.Close();
             }
+
+            response.Send();
         }
 
         HttpRequestHandler BuildCapsHandler(string path)
         {
-            HttpRequestSignature signature = new HttpRequestSignature();
-            signature.Path = path;
-            return new HttpServer.HttpRequestHandler(signature, CapsCallback);
+            // All responses have to be send with response.Send() manually to allow proper handling of event queue
+            // capabilities
+            return new HttpServer.HttpRequestHandler(new HttpRequestSignature(null, null, path), CapsCallback, false);
         }
     }
 }

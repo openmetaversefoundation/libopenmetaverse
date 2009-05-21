@@ -105,14 +105,14 @@ namespace OpenMetaverse.Http
             if (postData == null)
             {
                 // GET
-                Logger.Log.Debug("[CapsClient] GET " + _Address);
+                //Logger.Log.Debug("[CapsClient] GET " + _Address);
                 _Request = CapsBase.DownloadStringAsync(_Address, _ClientCert, millisecondsTimeout, DownloadProgressHandler,
                     RequestCompletedHandler);
             }
             else
             {
                 // POST
-                Logger.Log.Debug("[CapsClient] POST (" + postData.Length + " bytes) " + _Address);
+                //Logger.Log.Debug("[CapsClient] POST (" + postData.Length + " bytes) " + _Address);
                 _Request = CapsBase.UploadDataAsync(_Address, _ClientCert, contentType, postData, millisecondsTimeout, null,
                     DownloadProgressHandler, RequestCompletedHandler);
             }
