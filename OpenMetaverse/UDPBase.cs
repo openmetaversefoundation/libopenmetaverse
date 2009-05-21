@@ -30,12 +30,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 
-#if VISUAL_STUDIO
-using ReaderWriterLockImpl = System.Threading.ReaderWriterLockSlim;
-#else
-using ReaderWriterLockImpl = OpenMetaverse.ReaderWriterLockSlim;
-#endif
-
 namespace OpenMetaverse
 {
     /// <summary>
@@ -54,28 +48,11 @@ namespace OpenMetaverse
         // the UDP socket
         private Socket udpSocket;
 
-        // the ReaderWriterLock is used solely for the purposes of shutdown (Stop()).
-        // since there are potentially many "reader" threads in the internal .NET IOCP
-        // thread pool, this is a cheaper synchronization primitive than using
-        // a Mutex object.  This allows many UDP socket "reads" concurrently - when
-        // Stop() is called, it attempts to obtain a writer lock which will then
-        // wait until all outstanding operations are completed before shutting down.
-        // this avoids the problem of closing the socket with outstanding operations
-        // and trying to catch the inevitable ObjectDisposedException.
-        private ReaderWriterLockImpl rwLock = new ReaderWriterLockImpl();
-
-        // number of outstanding operations.  This is a reference count
-        // which we use to ensure that the threads exit cleanly. Note that
-        // we need this because the threads will potentially still need to process
-        // data even after the socket is closed.
-        private int rwOperationCount = 0;
-
-        // the all important shutdownFlag.  This is synchronized through the ReaderWriterLock.
+        // the all important shutdownFlag.
         private volatile bool shutdownFlag = true;
 
         // the remote endpoint to communicate with
         protected IPEndPoint remoteEndPoint = null;
-
 
         /// <summary>
         /// Initialize the UDP packet handler in server mode
@@ -130,15 +107,10 @@ namespace OpenMetaverse
                 // we're not shutting down, we're starting up
                 shutdownFlag = false;
 
-                // we aquire a reader lock here to ensure that no other thread
-                // is trying to set shutdownFlag and close the socket.
-                rwLock.EnterReadLock();
                 // kick off an async receive.  The Start() method will return, the
                 // actual receives will occur asynchronously and will be caught in
                 // AsyncEndRecieve().
                 AsyncBeginReceive();
-                // we're done with the socket for now, release the reader lock.
-                rwLock.ExitReadLock();
             }
         }
 
@@ -153,26 +125,8 @@ namespace OpenMetaverse
                 // will deny any more reader locks, in effect blocking all other send/receive
                 // threads.  Once we have the lock, we set shutdownFlag to inform the other
                 // threads that the socket is closed.
-                rwLock.EnterWriteLock();
                 shutdownFlag = true;
                 udpSocket.Close();
-                rwLock.ExitWriteLock();
-
-                // wait for any pending operations to complete on other
-                // threads before exiting.
-                const int FORCE_STOP = 100;
-                int i = 0;
-                while (rwOperationCount > 0 && i < FORCE_STOP)
-                {
-                    Thread.Sleep(10);
-                    ++i;
-                }
-
-                if (i >= FORCE_STOP)
-                {
-                    Logger.Log("UDPBase.Stop() forced shutdown while waiting on pending operations",
-                        Helpers.LogLevel.Warning);
-                }
             }
         }
 
@@ -186,15 +140,12 @@ namespace OpenMetaverse
 
         private void AsyncBeginReceive()
         {
+            // allocate a packet buffer
+            //WrappedObject<UDPPacketBuffer> wrappedBuffer = Pool.CheckOut();
+            UDPPacketBuffer buf = new UDPPacketBuffer();
+
             if (!shutdownFlag)
             {
-                // increment the count of pending operations
-                Interlocked.Increment(ref rwOperationCount);
-
-                // allocate a packet buffer
-                //WrappedObject<UDPPacketBuffer> wrappedBuffer = Pool.CheckOut();
-                UDPPacketBuffer buf = new UDPPacketBuffer();
-
                 try
                 {
                     // kick off an async read
@@ -210,16 +161,8 @@ namespace OpenMetaverse
                         //wrappedBuffer);
                         buf);
                 }
-                catch (SocketException)
-                {
-                    // something bad happened
-                    //Logger.Log(
-                    //    "A SocketException occurred in UDPServer.AsyncBeginReceive()", 
-                    //    Helpers.LogLevel.Error, se);
-
-                    // an error occurred, therefore the operation is void.  Decrement the reference count.
-                    Interlocked.Decrement(ref rwOperationCount);
-                }
+                catch (SocketException) { }
+                catch (ObjectDisposedException) { }
             }
         }
 
@@ -227,11 +170,6 @@ namespace OpenMetaverse
         {
             // Asynchronous receive operations will complete here through the call
             // to AsyncBeginReceive
-
-            // aquire a reader lock
-            bool dolock = !rwLock.IsReadLockHeld;
-            if (dolock) rwLock.EnterReadLock();
-
             if (!shutdownFlag)
             {
                 // start another receive - this keeps the server going!
@@ -249,50 +187,22 @@ namespace OpenMetaverse
                     // buffer
                     buffer.DataLength = udpSocket.EndReceiveFrom(iar, ref buffer.RemoteEndPoint);
 
-                    // this operation is now complete, decrement the reference count
-                    Interlocked.Decrement(ref rwOperationCount);
-
-                    // we're done with the socket, release the reader lock
-                    if (dolock)
-                    {
-                        rwLock.ExitReadLock();
-                        dolock = false;
-                    }
-
                     // call the abstract method PacketReceived(), passing the buffer that
                     // has just been filled from the socket read.
                     PacketReceived(buffer);
                 }
-                catch (SocketException)
-                {
-                    // an error occurred, therefore the operation is void.  Decrement the reference count.
-                    Interlocked.Decrement(ref rwOperationCount);
-                }
-                finally
-                {
-                    //wrappedBuffer.Dispose();
-                }
+                catch (SocketException) { }
+                catch (ObjectDisposedException) { }
+                //finally { wrappedBuffer.Dispose(); }
             }
-            else
-            {
-                // nothing bad happened, but we are done with the operation
-                // decrement the reference count and release the reader lock
-                Interlocked.Decrement(ref rwOperationCount);
-            }
-
-            if (dolock) rwLock.ExitReadLock();
         }
 
         public void AsyncBeginSend(UDPPacketBuffer buf)
         {
             if (!shutdownFlag)
             {
-                bool dolock = !rwLock.IsReadLockHeld;
-                if (dolock) rwLock.EnterReadLock();
-
                 try
                 {
-                    Interlocked.Increment(ref rwOperationCount);
                     udpSocket.BeginSendTo(
                         buf.Data,
                         0,
@@ -301,28 +211,21 @@ namespace OpenMetaverse
                         buf.RemoteEndPoint,
                         AsyncEndSend,
                         udpSocket);
-                    Interlocked.Decrement(ref rwOperationCount);
                 }
-                catch (SocketException)
-                {
-                    //Logger.Log(
-                    //    "A SocketException occurred in UDPServer.AsyncBeginSend()",
-                    //    Helpers.LogLevel.Error, se);
-                }
-                finally { if (dolock) rwLock.ExitReadLock(); }
+                catch (SocketException) { }
+                catch (ObjectDisposedException) { }
             }
         }
 
         void AsyncEndSend(IAsyncResult result)
         {
-            Socket udpSocket = (Socket)result.AsyncState;
-
-            bool dolock = !rwLock.IsReadLockHeld;
-            if (dolock) rwLock.EnterReadLock();
-
-            try { udpSocket.EndSendTo(result); }
+            try
+            {
+                Socket udpSocket = (Socket)result.AsyncState;
+                udpSocket.EndSendTo(result);
+            }
             catch (SocketException) { }
-            finally { if (dolock) rwLock.ExitReadLock(); }
+            catch (ObjectDisposedException) { }
         }
     }
 }
