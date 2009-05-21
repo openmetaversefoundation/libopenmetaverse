@@ -678,9 +678,7 @@ namespace OpenMetaverse
             // Set sequence implies that this is not a resent packet
             if (outgoingPacket.SetSequence)
             {
-                // Reset to zero if we've hit the upper sequence number limit
-                Interlocked.CompareExchange(ref Sequence, 0, Settings.MAX_SEQUENCE);
-                // Increment and fetch the current sequence number
+                // Increment and fetch the current sequence number (handles wrapping automatically)
                 packet.Header.Sequence = (uint)Interlocked.Increment(ref Sequence);
 
                 if (packet.Header.Reliable)
