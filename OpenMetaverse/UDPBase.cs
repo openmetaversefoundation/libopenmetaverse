@@ -253,7 +253,11 @@ namespace OpenMetaverse
                     Interlocked.Decrement(ref rwOperationCount);
 
                     // we're done with the socket, release the reader lock
-                    if (dolock) rwLock.ExitReadLock();
+                    if (dolock)
+                    {
+                        rwLock.ExitReadLock();
+                        dolock = false;
+                    }
 
                     // call the abstract method PacketReceived(), passing the buffer that
                     // has just been filled from the socket read.
@@ -263,9 +267,6 @@ namespace OpenMetaverse
                 {
                     // an error occurred, therefore the operation is void.  Decrement the reference count.
                     Interlocked.Decrement(ref rwOperationCount);
-
-                    // we're done with the socket for now, release the reader lock.
-                    if (dolock) rwLock.ExitReadLock();
                 }
                 finally
                 {
@@ -277,16 +278,18 @@ namespace OpenMetaverse
                 // nothing bad happened, but we are done with the operation
                 // decrement the reference count and release the reader lock
                 Interlocked.Decrement(ref rwOperationCount);
-                if (dolock) rwLock.ExitReadLock();
             }
+
+            if (dolock) rwLock.ExitReadLock();
         }
 
         public void AsyncBeginSend(UDPPacketBuffer buf)
         {
-            rwLock.EnterReadLock();
-
             if (!shutdownFlag)
             {
+                bool dolock = !rwLock.IsReadLockHeld;
+                if (dolock) rwLock.EnterReadLock();
+
                 try
                 {
                     Interlocked.Increment(ref rwOperationCount);
@@ -306,9 +309,8 @@ namespace OpenMetaverse
                     //    "A SocketException occurred in UDPServer.AsyncBeginSend()",
                     //    Helpers.LogLevel.Error, se);
                 }
+                finally { if (dolock) rwLock.ExitReadLock(); }
             }
-
-            rwLock.ExitReadLock();
         }
 
         void AsyncEndSend(IAsyncResult result)
@@ -320,8 +322,7 @@ namespace OpenMetaverse
 
             try { udpSocket.EndSendTo(result); }
             catch (SocketException) { }
-
-            if (dolock) rwLock.ExitReadLock();
+            finally { if (dolock) rwLock.ExitReadLock(); }
         }
     }
 }
