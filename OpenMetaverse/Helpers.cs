@@ -528,32 +528,6 @@ namespace OpenMetaverse
             return (AttachmentPoint)fixedState;
         }
 
-        public static List<int> SplitBlocks(PacketBlock[] blocks, int packetOverhead)
-        {
-            List<int> splitPoints = new List<int>();
-            int size = 0;
-
-            if (blocks != null && blocks.Length > 0)
-            {
-                splitPoints.Add(0);
-
-                for (int i = 0; i < blocks.Length; i++)
-                {
-                    size += blocks[i].Length;
-
-                    // If the next block will put this packet over the limit, add a split point
-                    if (i < blocks.Length - 1 &&
-                        size + blocks[i + 1].Length + packetOverhead >= Settings.MAX_PACKET_SIZE)
-                    {
-                        splitPoints.Add(i + 1);
-                        size = 0;
-                    }
-                }
-            }
-
-            return splitPoints;
-        }
-
         /// <summary>
         /// Parse a packet into human readable formatted key/value pairs
         /// </summary>

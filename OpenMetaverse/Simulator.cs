@@ -653,7 +653,7 @@ namespace OpenMetaverse
                 int packetCount = datas.Length;
 
                 if (packetCount > 1)
-                    Logger.Log("Split " + packet.Type + " packet into " + packetCount + " packets", Helpers.LogLevel.Info);
+                    Logger.DebugLog("Split " + packet.Type + " packet into " + packetCount + " packets");
 
                 for (int i = 0; i < packetCount; i++)
                 {
