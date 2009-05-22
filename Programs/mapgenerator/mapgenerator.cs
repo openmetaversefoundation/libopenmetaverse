@@ -394,6 +394,7 @@ namespace mapgenerator
 
         static void WritePacketClass(TextWriter writer, MapPacket packet)
         {
+            bool hasVariableBlocks = false;
             string sanitizedName;
 
             //writer.WriteLine("    /// <summary>" + packet.Name + " packet</summary>");
@@ -420,6 +421,8 @@ namespace mapgenerator
 
                 if (block.Count == -1)
                 {
+                    hasVariableBlocks = true;
+
                     // Variable count block
                     writer.WriteLine("                for (int j = 0; j < " + sanitizedName + ".Length; j++)");
                     writer.WriteLine("                    length += " + sanitizedName + "[j].Length;");
@@ -455,6 +458,7 @@ namespace mapgenerator
             // Default constructor
             //writer.WriteLine("        /// <summary>Default constructor</summary>");
             writer.WriteLine("        public " + packet.Name + "Packet()" + Environment.NewLine + "        {");
+            writer.WriteLine("            HasVariableBlocks = " + hasVariableBlocks.ToString().ToLowerInvariant() + ";");
             writer.WriteLine("            Type = PacketType." + packet.Name + ";");
             writer.WriteLine("            Header = new Header();");
             writer.WriteLine("            Header.Frequency = PacketFrequency." + packet.Frequency + ";");
@@ -978,6 +982,7 @@ namespace mapgenerator
                 "        public const int MTU = 1200;" + Environment.NewLine +
                 Environment.NewLine +
                 "        public Header Header;" + Environment.NewLine +
+                "        public bool HasVariableBlocks;" + Environment.NewLine +
                 "        public PacketType Type;" + Environment.NewLine +
                 "        public abstract int Length { get; }" + Environment.NewLine +
                 "        public abstract void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer);" + Environment.NewLine +

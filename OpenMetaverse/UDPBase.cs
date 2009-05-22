@@ -210,7 +210,7 @@ namespace OpenMetaverse
                         SocketFlags.None,
                         buf.RemoteEndPoint,
                         AsyncEndSend,
-                        udpSocket);
+                        buf);
                 }
                 catch (SocketException) { }
                 catch (ObjectDisposedException) { }
@@ -221,8 +221,10 @@ namespace OpenMetaverse
         {
             try
             {
-                Socket udpSocket = (Socket)result.AsyncState;
-                udpSocket.EndSendTo(result);
+                UDPPacketBuffer buf = (UDPPacketBuffer)result.AsyncState;
+                int bytesSent = udpSocket.EndSendTo(result);
+
+                PacketSent(buf, bytesSent);
             }
             catch (SocketException) { }
             catch (ObjectDisposedException) { }

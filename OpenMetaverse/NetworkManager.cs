@@ -93,27 +93,26 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Holds a simulator reference and an encoded packet, these structs are put in
+        /// Holds a simulator reference and a serialized packet, these structs are put in
         /// the packet outbox for sending
         /// </summary>
         public class OutgoingPacket
         {
             /// <summary>Reference to the simulator this packet is destined for</summary>
-            public Simulator Simulator;
-            /// <summary>Packet that needs to be processed</summary>
-            public Packet Packet;
-            /// <summary>True if the sequence number needs to be set, otherwise false</summary>
-            public bool SetSequence;
+            public readonly Simulator Simulator;
+            /// <summary>Packet that needs to be sent</summary>
+            public readonly UDPPacketBuffer Buffer;
+            /// <summary>Sequence number of the wrapped packet</summary>
+            public uint SequenceNumber;
             /// <summary>Number of times this packet has been resent</summary>
             public int ResendCount;
             /// <summary>Environment.TickCount when this packet was last sent over the wire</summary>
             public int TickCount;
 
-            public OutgoingPacket(Simulator simulator, Packet packet, bool setSequence)
+            public OutgoingPacket(Simulator simulator, UDPPacketBuffer buffer)
             {
                 Simulator = simulator;
-                Packet = packet;
-                SetSequence = setSequence;
+                Buffer = buffer;
                 ResendCount = 0;
                 TickCount = 0;
             }
@@ -367,7 +366,7 @@ namespace OpenMetaverse
         public void SendPacket(Packet packet)
         {
             if (CurrentSim != null && CurrentSim.Connected)
-                CurrentSim.SendPacket(packet, true);
+                CurrentSim.SendPacket(packet);
         }
 
         /// <summary>
@@ -378,7 +377,7 @@ namespace OpenMetaverse
         public void SendPacket(Packet packet, Simulator simulator)
         {
             if (simulator != null)
-                simulator.SendPacket(packet, true);
+                simulator.SendPacket(packet);
         }
 
         /// <summary>
@@ -694,6 +693,7 @@ namespace OpenMetaverse
             OutgoingPacket outgoingPacket = null;
             Simulator simulator;
             
+            // FIXME: This is kind of ridiculous. Port the HTB code from Simian over ASAP!
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 
             while (connected)
@@ -710,7 +710,7 @@ namespace OpenMetaverse
                         Thread.Sleep(10 - (int)stopwatch.ElapsedMilliseconds);
                     }
 
-                    simulator.SendPacketUnqueued(outgoingPacket);
+                    simulator.SendPacketFinal(outgoingPacket);
                     stopwatch.Start();
                 }
             }

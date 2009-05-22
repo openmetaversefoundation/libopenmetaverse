@@ -121,8 +121,6 @@ namespace OpenMetaverse
         #endregion
         #region Sizes
 
-        private int max_pending_acks = 10;
-
         /// <summary>The initial size of the packet inbox, where packets are
         /// stored before processing</summary>
         public const int PACKET_INBOX_SIZE = 100;
@@ -136,22 +134,7 @@ namespace OpenMetaverse
         public const int PACKET_ARCHIVE_SIZE = 200;
         /// <summary>Maximum number of queued ACKs to be sent before SendAcks()
         /// is forced</summary>
-        public int MAX_PENDING_ACKS
-        {
-            get { return max_pending_acks; }
-            set
-            {
-                // We can't safely fit more than 375 ACKs in 1500 bytes
-                if (value > 375)
-                    throw new ArgumentOutOfRangeException("Too many ACKs to fit in a single packet");
-                else if (value < 1)
-                    throw new ArgumentOutOfRangeException("Cannot send a non-positive number of ACKs");
-
-                max_pending_acks = value;
-            }
-        }
-        /// <summary>Maximum number of ACKs to append to a packet</summary>
-        public int MAX_APPENDED_ACKS = 10;
+        public int MAX_PENDING_ACKS = 10;
         /// <summary>Network stats queue length (seconds)</summary>
         public int STATS_QUEUE_SIZE = 5;
 

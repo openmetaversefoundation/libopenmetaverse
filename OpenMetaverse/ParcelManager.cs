@@ -706,7 +706,7 @@ namespace OpenMetaverse
                 request.ParcelData.UserLocation = this.UserLocation;
                 request.ParcelData.UserLookAt = this.UserLookAt;
 
-                simulator.SendPacket(request, true);
+                simulator.SendPacket(request);
             }
 
             UpdateOtherCleanTime(simulator);
@@ -725,7 +725,7 @@ namespace OpenMetaverse
             request.ParcelData.LocalID = this.LocalID;
             request.ParcelData.OtherCleanTime = this.OtherCleanTime;
 
-            simulator.SendPacket(request, true);
+            simulator.SendPacket(request);
         }
     }
 
