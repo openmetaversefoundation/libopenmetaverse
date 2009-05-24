@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, openmetaverse.org
+ * Copyright (c) 2007-2009, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -39,7 +39,7 @@ namespace OpenMetaverse.GUI
     public class GroupList : ListView
     {
         private GridClient _Client;
-        private ColumnSorter _ColumnSorter = new ColumnSorter();
+        private ListColumnSorter _ColumnSorter = new ListColumnSorter();
 
         public delegate void GroupDoubleClickCallback(Group group);
 
@@ -121,20 +121,6 @@ namespace OpenMetaverse.GUI
                     try { OnGroupDoubleClick(group); }
                     catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                 }
-            }
-        }
-
-        private class ColumnSorter : IComparer
-        {
-            public bool Ascending = true;
-
-            public int Compare(object a, object b)
-            {
-                ListViewItem itemA = (ListViewItem)a;
-                ListViewItem itemB = (ListViewItem)b;
-
-                if (Ascending) return string.Compare(itemA.Text, itemB.Text);
-                else return -string.Compare(itemA.Text, itemB.Text);
             }
         }
 

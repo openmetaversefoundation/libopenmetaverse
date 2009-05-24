@@ -189,7 +189,6 @@ namespace OpenMetaverse.GUI
                         break;
                     }
             }
-
         }
 
         void Network_OnLogin(LoginStatus login, string message)
