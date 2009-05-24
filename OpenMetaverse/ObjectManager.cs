@@ -2603,21 +2603,25 @@ namespace OpenMetaverse
         {
             if (Client.Settings.OBJECT_TRACKING)
             {
-                Primitive prim;
+                lock (simulator.ObjectsPrimitives.Dictionary)
+                {
 
-                if (simulator.ObjectsPrimitives.TryGetValue(localID, out prim))
-                {
-                    return prim;
-                }
-                else
-                {
-                    prim = new Primitive();
-                    prim.LocalID = localID;
-                    prim.ID = fullID;
-                    lock (simulator.ObjectsPrimitives.Dictionary)
+                    Primitive prim;
+
+                    if (simulator.ObjectsPrimitives.Dictionary.TryGetValue(localID, out prim))
+                    {
+                        return prim;
+                    }
+                    else
+                    {
+                        prim = new Primitive();
+                        prim.LocalID = localID;
+                        prim.ID = fullID;
+
                         simulator.ObjectsPrimitives.Dictionary[localID] = prim;
 
-                    return prim;
+                        return prim;
+                    }
                 }
             }
             else
@@ -2637,21 +2641,25 @@ namespace OpenMetaverse
         {
             if (Client.Settings.AVATAR_TRACKING)
             {
-                Avatar avatar;
+                lock (simulator.ObjectsAvatars.Dictionary)
+                {
 
-                if (simulator.ObjectsAvatars.TryGetValue(localID, out avatar))
-                {
-                    return avatar;
-                }
-                else
-                {
-                    avatar = new Avatar();
-                    avatar.LocalID = localID;
-                    avatar.ID = fullID;
-                    lock (simulator.ObjectsAvatars.Dictionary)
+                    Avatar avatar;
+
+                    if (simulator.ObjectsAvatars.Dictionary.TryGetValue(localID, out avatar))
+                    {
+                        return avatar;
+                    }
+                    else
+                    {
+                        avatar = new Avatar();
+                        avatar.LocalID = localID;
+                        avatar.ID = fullID;
+
                         simulator.ObjectsAvatars.Dictionary[localID] = avatar;
 
-                    return avatar;
+                        return avatar;
+                    }
                 }
             }
             else
