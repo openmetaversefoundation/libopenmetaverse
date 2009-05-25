@@ -10,6 +10,7 @@ using Nwc.XmlRpc;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 using GridProxy;
+using Logger=OpenMetaverse.Logger;
 
 
 namespace GridProxy
@@ -90,7 +91,9 @@ namespace GridProxy
                     {
                         string sw = arg.Substring(0, ipos);
                         string val = arg.Substring(ipos + 1);
-                        Console.WriteLine("arg '" + sw + "' val '" + val + "'");
+
+                        Logger.Log("arg '" + sw + "' val '" + val + "'", Helpers.LogLevel.Debug);
+
                         if (sw == "--load")
                         {
                             //externalPlugin = true;
@@ -114,7 +117,7 @@ namespace GridProxy
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.ToString());
+                    Logger.Log("LoadPlugin exception", Helpers.LogLevel.Error, e);
                 }
             }
         }
@@ -136,7 +139,7 @@ namespace GridProxy
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.ToString());
+                    Logger.Log("LoadPlugin exception", Helpers.LogLevel.Error, e);
                 }
             }
 
@@ -196,7 +199,10 @@ namespace GridProxy
             return packet;
         }
 
-        // SayToUser: send a message to the user as in-world chat
+        /// <summary>
+        /// Send a message to the viewer
+        /// </summary>
+        /// <param name="message">A string containing the message to send</param>
         public void SayToUser(string message)
         {
             ChatFromSimulatorPacket packet = new ChatFromSimulatorPacket();
@@ -210,9 +216,7 @@ namespace GridProxy
             packet.ChatData.Message = Utils.StringToBytes(message);
             proxy.InjectPacket(packet, Direction.Incoming);
         }
-
     }
-
 
     public abstract class ProxyPlugin : MarshalByRefObject
     {

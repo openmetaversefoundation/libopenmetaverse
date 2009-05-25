@@ -57,6 +57,7 @@ namespace OpenMetaverse
     [Flags]
     public enum CompressedFlags : uint
     {
+        None = 0x00,
         /// <summary>Unknown</summary>
         ScratchPad = 0x01,
         /// <summary>Whether the object has a TreeSpecies</summary>
@@ -1351,7 +1352,7 @@ namespace OpenMetaverse
         {
             ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
             UpdateDilation(simulator, update.RegionData.TimeDilation);
-
+            
             for (int b = 0; b < update.ObjectData.Length; b++)
             {
                 ObjectUpdatePacket.ObjectDataBlock block = update.ObjectData[b];

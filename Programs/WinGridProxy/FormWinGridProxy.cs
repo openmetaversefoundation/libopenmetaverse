@@ -30,7 +30,7 @@ using System.Net;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-
+using System.Text.RegularExpressions;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
@@ -43,6 +43,7 @@ using OpenMetaverse.StructuredData;
 using OpenMetaverse.Interfaces;
 using System.Xml;
 using Nwc.XmlRpc;
+using Logger=OpenMetaverse.Logger;
 
 namespace WinGridProxy
 {
@@ -56,6 +57,7 @@ namespace WinGridProxy
 
         ProxyManager proxy;
 
+        private PacketDecoder DecodePacket = new PacketDecoder();
 
         private int PacketCounter;
 
@@ -73,11 +75,17 @@ namespace WinGridProxy
         {
             InitializeComponent();
 
+            Logger.Log("WinGridProxy ready", Helpers.LogLevel.Info);
+
+            if (FireEventAppender.Instance != null)
+            {
+                FireEventAppender.Instance.MessageLoggedEvent += new MessageLoggedEventHandler(Instance_MessageLoggedEvent);
+            }
+                
             // populate the listen box with IPs
             IPHostEntry iphostentry = Dns.GetHostByName(Dns.GetHostName());
             foreach (IPAddress address in iphostentry.AddressList)
                 comboBoxListenAddress.Items.Add(address.ToString());
-
 
             ProxyManager.OnPacketLog += ProxyManager_OnPacketLog;
             ProxyManager.OnMessageLog += ProxyManager_OnMessageLog;
@@ -956,7 +964,7 @@ namespace WinGridProxy
                             }
                             else
                             {
-                                result.AppendFormat("{0, 30}: {1} ({2})" + System.Environment.NewLine,
+                                result.AppendFormat("{0, 30}: {1} ({2})" + Environment.NewLine,
                                  nestedField.Name,
                                  nestedField.GetValue(nestedArrayObject),
                                  nestedField.GetValue(nestedArrayObject).GetType().Name);
@@ -968,7 +976,7 @@ namespace WinGridProxy
                 {
                     if (messageField.FieldType.IsEnum)
                     {
-                        result.AppendFormat("{0, 30}: {1} {2} ({3})" + System.Environment.NewLine,
+                        result.AppendFormat("{0, 30}: {1} {2} ({3})" + Environment.NewLine,
                             messageField.Name,
                             Enum.Format(messageField.GetValue(message).GetType(),
                             messageField.GetValue(message), "D"),
@@ -986,159 +994,6 @@ namespace WinGridProxy
                 }
             }
 
-            return result.ToString();
-        }
-
-        private static string InterpretOptions(Header header)
-        {
-            return "["
-                 + (header.AppendedAcks ? "Ack" : "   ")
-                 + " "
-                 + (header.Resent ? "Res" : "   ")
-                 + " "
-                 + (header.Reliable ? "Rel" : "   ")
-                 + " "
-                 + (header.Zerocoded ? "Zer" : "   ")
-                 + "]"
-                 ;
-        }
-
-        /// <summary>
-        /// Creates a formatted string containing the values of a Packet
-        /// </summary>
-        /// <param name="packet">The Packet</param>
-        /// <returns>A formatted string of values of the nested items in the Packet object</returns>
-        /// <remarks>TODO: This is overly complex. Static helpers should be created to clean this up and it
-        /// should be made generic enough to decode IMessage objects too.</remarks>
-        public static string PacketToString(Packet packet)
-        {
-            StringBuilder result = new StringBuilder();
-
-            result.AppendFormat("Packet Type: {0}" + System.Environment.NewLine, packet.Type);
-            result.AppendLine("[Packet Header]");
-            // payload
-            result.AppendFormat("Sequence: {0}" + System.Environment.NewLine, packet.Header.Sequence);
-            result.AppendFormat(" Options: {0}" + System.Environment.NewLine, InterpretOptions(packet.Header));
-            result.AppendLine();
-
-            result.AppendLine("[Packet Payload]");
-            foreach (FieldInfo packetField in packet.GetType().GetFields())
-            {
-                object packetDataObject = packetField.GetValue(packet);
-
-                result.AppendFormat("-- {0,20} --" + System.Environment.NewLine, packetField.Name);
-                foreach (FieldInfo packetValueField in packetField.GetValue(packet).GetType().GetFields())
-                {
-                    result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
-                        packetValueField.Name, packetValueField.GetValue(packetDataObject));
-                }
-
-                // handle blocks that are arrays
-                if (packetDataObject.GetType().IsArray)
-                {
-                    foreach (object nestedArrayRecord in packetDataObject as Array)
-                    {
-                        // handle properties
-                        foreach (PropertyInfo propertyInfo in nestedArrayRecord.GetType().GetProperties())
-                        {
-                            if (propertyInfo.GetValue(nestedArrayRecord, null).GetType() == typeof(byte[]))
-                            {
-                                result.AppendFormat("{0, 30}: {1}" + Environment.NewLine,
-                                    propertyInfo.Name,
-                                    Utils.BytesToString((byte[])propertyInfo.GetValue(nestedArrayRecord, null)));
-                            }
-                        }
-
-                        // handle fields
-                        foreach (FieldInfo packetArrayField in nestedArrayRecord.GetType().GetFields())
-                        {
-                            if (packetArrayField.GetValue(nestedArrayRecord).GetType() == typeof(Byte[]))
-                            {
-                                result.AppendFormat("{0,30}: {1}" + Environment.NewLine,
-                                    packetArrayField.Name,
-                                    new Color4((byte[])packetArrayField.GetValue(nestedArrayRecord), 0, false));
-                            }
-                            else
-                            {
-                                result.AppendFormat("{0,30}: {1}" + Environment.NewLine,
-                                    packetArrayField.Name, packetArrayField.GetValue(nestedArrayRecord));
-                            }
-                        }
-                    }
-                }
-
-                else
-                {
-                    // handle non array data blocks
-                    foreach (PropertyInfo packetPropertyField in packetField.GetValue(packet).GetType().GetProperties())
-                    {
-                        // Handle fields named "Data" specifically, this is generally binary data, we'll display it as hex values
-                        if (packetPropertyField.PropertyType.Equals(typeof(Byte[]))
-                            && packetPropertyField.Name.Equals("Data"))
-                        {
-                            result.AppendFormat("{0}" + System.Environment.NewLine,
-                                Utils.BytesToHexString((byte[])packetPropertyField.GetValue(packetDataObject, null),
-                                packetPropertyField.Name));
-                        }
-                        // decode bytes into strings
-                        else if (packetPropertyField.PropertyType.Equals(typeof(Byte[])))
-                        {
-                            // Handle TextureEntry fields specifically
-                            if (packetPropertyField.Name.Equals("TextureEntry"))
-                            {
-                                byte[] tebytes = (byte[])packetPropertyField.GetValue(packetDataObject, null);
-
-                                Primitive.TextureEntry te = new Primitive.TextureEntry(tebytes, 0, tebytes.Length);
-                                result.AppendFormat("{0,30}:\n{1}", packetPropertyField.Name, te.ToString());
-                            }
-                            else
-                            {
-                                // Decode the BinaryBucket
-                                if (packetPropertyField.Name.Equals("BinaryBucket"))
-                                {
-                                    byte[] bytes = (byte[])packetPropertyField.GetValue(packetDataObject, null);
-                                    string bbDecoded = String.Empty;
-                                    if (bytes.Length == 1)
-                                    {
-                                        bbDecoded = String.Format("{0}", bytes[0]);
-                                    }
-                                    else if (bytes.Length == 17)
-                                    {
-                                        bbDecoded = String.Format("{0} {1} ({2})",
-                                            new UUID(bytes, 1),
-                                            bytes[0],
-                                            (AssetType)bytes[0]);
-                                    }
-                                    else
-                                    {
-                                        bbDecoded = Utils.BytesToString(bytes);
-                                    }
-
-                                    result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
-                                        packetPropertyField.Name,
-                                        bbDecoded);
-                                }
-                                else
-                                {
-                                    result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
-                                        packetPropertyField.Name,
-                                        Utils.BytesToString((byte[])packetPropertyField.GetValue(packetDataObject, null)));
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // this seems to be limited to the length property, since all others have been previously handled
-                            if (packetPropertyField.Name != "Length")
-                            {
-                                result.AppendFormat("{0,30}: {1} [{2}]" + System.Environment.NewLine,
-                                    packetPropertyField.Name, packetPropertyField.GetValue(packetDataObject, null),
-                                    packetPropertyField.GetType());
-                            }
-                        }
-                    }
-                }
-            }
             return result.ToString();
         }
 
@@ -1336,8 +1191,7 @@ namespace WinGridProxy
             else if (tag is Packet)
             {
                 Packet packet = (Packet)tag;
-
-                return PacketToString(packet);
+                return DecodePacket.PacketToString(packet);
             }
             else if (tag is CapsRequest)
             {
@@ -1561,7 +1415,6 @@ namespace WinGridProxy
 
         private void autoColorizeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
             if (colorDialog1.ShowDialog() == DialogResult.OK)
             {
                 //listview.BackColor = colorDialog1.Color;
@@ -1572,6 +1425,60 @@ namespace WinGridProxy
         {
             FormPluginManager pluginManager = new FormPluginManager(proxy.Proxy);
             pluginManager.ShowDialog();
+        }
+
+        void Instance_MessageLoggedEvent(object sender, MessageLoggedEventArgs e)
+        {
+            if(this.IsDisposed || this.Disposing)
+                return;
+
+            if (InvokeRequired)
+            {
+                BeginInvoke(new MethodInvoker(delegate()
+                {
+                    Instance_MessageLoggedEvent(sender, e);
+                }));
+            }
+            else
+            {
+                string s = String.Format("{0} [{1}] {2} {3}", e.LoggingEvent.TimeStamp, e.LoggingEvent.Level,
+                    e.LoggingEvent.RenderedMessage, e.LoggingEvent.ExceptionObject);
+                richTextBoxDebugLog.AppendText(s + "\n");
+            }
+        }
+
+        private void richTextBoxDecodedRequest_TextChanged(object sender, EventArgs e)
+        {
+            RichTextBox m_rtb = (RichTextBox) sender;
+            Regex typesRegex = new Regex(@"\[(?<Type>\w+|\w+\[\])\]|\((?<Enum>.*)\)|\s-- (?<Header>\w+|\w+ \[\]) --\s|(?<BlockSep>\s\*\*\*\s)|(?<Tag>\s<\w+>\s|\s<\/\w+>\s)|(?<BlockCounter>\s\w+\[\d+\]\s)", RegexOptions.ExplicitCapture);
+            
+            MatchCollection matches = typesRegex.Matches(m_rtb.Text);
+            foreach(Match match in matches)
+            {
+                m_rtb.SelectionStart = match.Index +1;
+                m_rtb.SelectionLength = match.Length -2;
+                m_rtb.SelectionFont = new Font(m_rtb.Font.FontFamily, m_rtb.Font.Size, FontStyle.Bold);
+
+                if (!String.IsNullOrEmpty(match.Groups["Type"].Value))
+                    m_rtb.SelectionColor = Color.Blue;
+                else if (!String.IsNullOrEmpty(match.Groups["Enum"].Value))
+                    m_rtb.SelectionColor = Color.FromArgb(43, 145, 175);
+                else if (!String.IsNullOrEmpty(match.Groups["Header"].Value))
+                {
+                    m_rtb.SelectionColor = Color.Green;
+                    m_rtb.SelectionBackColor = Color.LightSteelBlue;
+                }
+                else if (!String.IsNullOrEmpty(match.Groups["BlockSep"].Value))
+                    m_rtb.SelectionColor = Color.Gold;
+                else if (!String.IsNullOrEmpty(match.Groups["Tag"].Value))
+                {
+                    m_rtb.SelectionColor = Color.White;
+                    m_rtb.SelectionBackColor = Color.Black;
+                }
+                else if (!String.IsNullOrEmpty(match.Groups["BlockCounter"].Value))
+                    m_rtb.SelectionColor = Color.Green;
+
+            }
         }
     }
 }

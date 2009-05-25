@@ -267,7 +267,11 @@ namespace OpenMetaverse
         /// <summary></summary>
         Plane = 3,
         /// <summary></summary>
-        Cylinder = 4
+        Cylinder = 4,
+        /// <summary></summary>
+        Invert = 64,
+        /// <summary></summary>
+        Mirror = 128
     }
 
     /// <summary>
@@ -888,7 +892,7 @@ namespace OpenMetaverse
             /// </summary>
             public bool Invert
             {
-                get { return ((type & 64) != 0); }
+                get { return ((type & (byte)SculptType.Invert) != 0); }
             }
 
             /// <summary>
@@ -896,7 +900,7 @@ namespace OpenMetaverse
             /// </summary>
             public bool Mirror
             {
-                get { return ((type & 128) != 0); }
+                get { return ((type & (byte)SculptType.Mirror) != 0); }
             }            
 
             /// <summary>

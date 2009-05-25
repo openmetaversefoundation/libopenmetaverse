@@ -52,6 +52,8 @@ public class Analyst : ProxyPlugin
     private Dictionary<PacketType, Dictionary<BlockField, object>> modifiedPackets = new Dictionary<PacketType, Dictionary<BlockField, object>>();
     private Assembly openmvAssembly;
     private StreamWriter output;
+    
+    private PacketDecoder DecodePacket = new PacketDecoder();
 
     public Analyst(ProxyFrame frame)
     {
@@ -827,7 +829,7 @@ public class Analyst : ProxyPlugin
     // LogPacket: dump a packet to the console
     private void LogPacket(Packet packet, IPEndPoint endPoint, Direction direction)
     {
-        string packetText = Helpers.PacketToString(packet);
+        string packetText = DecodePacket.PacketToString(packet);
 
         if (logGrep == null || (logGrep != null && Regex.IsMatch(packetText, logGrep)))
         {

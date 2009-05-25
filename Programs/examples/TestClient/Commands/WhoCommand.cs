@@ -27,8 +27,8 @@ namespace OpenMetaverse.TestClient
                         delegate(Avatar av)
                         {
                             result.AppendLine();
-                            result.AppendFormat("{0} (Group: {1}, Location: {2}, UUID: {3})",
-                                av.Name, av.GroupName, av.Position, av.ID.ToString());
+                            result.AppendFormat("{0} (Group: {1}, Location: {2}, UUID: {3} LocalID: {4})",
+                                av.Name, av.GroupName, av.Position, av.ID, av.LocalID);
                         }
                     );
                 }
