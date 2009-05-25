@@ -1040,20 +1040,6 @@ namespace GridProxy
                     return;
                 }
 
-                // call the loginResponseDelegate
-                if (loginResponseDelegate != null)
-                {
-                    try
-                    {
-                        loginResponseDelegate(response);
-                    }
-                    catch (Exception e)
-                    {
-                        Log("exception in login response delegate: " + e.Message, true);
-                        Log(e.StackTrace, true);
-                    }
-                }
-
                 System.Collections.Hashtable responseData;
                 try
                 {
