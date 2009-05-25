@@ -901,11 +901,10 @@ namespace OpenMetaverse
 
                 // Send out ACKs if we have a lot of them
                 if (pendingAckCount >= Client.Settings.MAX_PENDING_ACKS)
-                {
                     SendAcks();
-                }
 
-                if (packet.Header.Resent) ++Stats.ReceivedResends;
+                if (packet.Header.Resent)
+                    Interlocked.Increment(ref Stats.ReceivedResends);
             }
 
             #endregion Reliable Handling
@@ -916,7 +915,6 @@ namespace OpenMetaverse
             incomingPacket.Simulator = this;
             incomingPacket.Packet = packet;
 
-            // TODO: Prioritize the queue
             Network.PacketInbox.Enqueue(incomingPacket);
 
             #endregion Inbox Insertion

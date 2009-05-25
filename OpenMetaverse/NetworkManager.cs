@@ -113,8 +113,6 @@ namespace OpenMetaverse
             {
                 Simulator = simulator;
                 Buffer = buffer;
-                ResendCount = 0;
-                TickCount = 0;
             }
         }
 

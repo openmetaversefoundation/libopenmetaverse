@@ -1420,7 +1420,7 @@ namespace OpenMetaverse
 
                     // Start the request
                     Thread requestThread = new Thread(
-                        (ThreadStart)delegate()
+                        delegate()
                         {
                             try
                             {
@@ -1478,9 +1478,16 @@ namespace OpenMetaverse
             uint regionY = 0;
 
             // Fetch the login response
+            if (response == null || !(response.Value is Hashtable))
+            {
+                UpdateLoginStatus(LoginStatus.Failed, "Invalid or missing login response from the server");
+                Logger.Log("Invalid or missing login response from the server", Helpers.LogLevel.Warning);
+                return;
+            }
+
             try
             {
-                reply.Parse(response.Value as Hashtable);
+                reply.Parse((Hashtable)response.Value);
                 if (context.LoginID != CurrentContext.Value.LoginID)
                 {
                     Logger.Log("Login response does not match login request. Only one login can be attempted at a time",
@@ -1490,8 +1497,8 @@ namespace OpenMetaverse
             }
             catch (Exception e)
             {
-                UpdateLoginStatus(LoginStatus.Failed, "Error retrieving the login response from the server " + e.Message );
-                Logger.Log("Login response failure: " + e.Message + " " + e.StackTrace, Helpers.LogLevel.Debug);
+                UpdateLoginStatus(LoginStatus.Failed, "Error retrieving the login response from the server: " + e.Message);
+                Logger.Log("Login response failure: " + e.Message + " " + e.StackTrace, Helpers.LogLevel.Warning);
                 return;
             }
 

@@ -1016,6 +1016,7 @@ namespace GridProxy
 
                 // call the loginRequestDelegate
                 if (loginRequestDelegate != null)
+                {
                     try
                     {
                         loginRequestDelegate(request);
@@ -1024,6 +1025,7 @@ namespace GridProxy
                     {
                         OpenMetaverse.Logger.Log("Exception in login request delegate" + e, Helpers.LogLevel.Error, e);
                     }
+                }
 
                 XmlRpcResponse response;
                 try
@@ -1038,7 +1040,30 @@ namespace GridProxy
                     return;
                 }
 
-                System.Collections.Hashtable responseData = (System.Collections.Hashtable)response.Value;
+                // call the loginResponseDelegate
+                if (loginResponseDelegate != null)
+                {
+                    try
+                    {
+                        loginResponseDelegate(response);
+                    }
+                    catch (Exception e)
+                    {
+                        Log("exception in login response delegate: " + e.Message, true);
+                        Log(e.StackTrace, true);
+                    }
+                }
+
+                System.Collections.Hashtable responseData;
+                try
+                {
+                    responseData = (System.Collections.Hashtable)response.Value;
+                }
+                catch (Exception e)
+                {
+                    OpenMetaverse.Logger.Log(e.Message, Helpers.LogLevel.Error);
+                    return;
+                }
 
                 // proxy any simulator address given in the XML-RPC response
                 if (responseData.Contains("sim_ip") && responseData.Contains("sim_port"))
@@ -1060,19 +1085,6 @@ namespace GridProxy
 
                     KnownCaps[(string)responseData["seed_capability"]] = info;
                     responseData["seed_capability"] = loginURI + responseData["seed_capability"];
-                }
-
-                // call the loginResponseDelegate
-                if (loginResponseDelegate != null)
-                {
-                    try
-                    {
-                        loginResponseDelegate(response);
-                    }
-                    catch (Exception e)
-                    {
-                        OpenMetaverse.Logger.Log("Error in login response delegate", Helpers.LogLevel.Error, e);
-                    }
                 }
 
                 // forward the XML-RPC response to the client
