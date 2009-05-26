@@ -622,7 +622,8 @@ namespace OpenMetaverse
             Dictionary<UUID, Vector3> coarseEntries = new Dictionary<UUID, Vector3>();
             for (int i = 0; i < coarse.AgentData.Length; i++)
             {
-                coarseEntries[coarse.AgentData[i].AgentID] = new Vector3((int)coarse.Location[i].X, (int)coarse.Location[i].Y, (int)coarse.Location[i].Z * 4);
+                if(coarse.Location.Length > 0)
+                    coarseEntries[coarse.AgentData[i].AgentID] = new Vector3((int)coarse.Location[i].X, (int)coarse.Location[i].Y, (int)coarse.Location[i].Z * 4);
 
                 // the friend we are tracking on radar
                 if (i == coarse.Index.Prey)
@@ -656,7 +657,6 @@ namespace OpenMetaverse
                 try { OnCoarseLocationUpdate(simulator, newEntries, removedEntries); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
-
         }
 
         private void RegionHandleReplyHandler(Packet packet, Simulator simulator)
