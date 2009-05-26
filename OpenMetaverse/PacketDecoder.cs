@@ -87,6 +87,8 @@ namespace OpenMetaverse.Packets
             AddCallback("AttachedSound.DataBlock.Flags", DecodeAttachedSoundFlags);
 
             AddCallback("RequestImage.Type", DecodeImageType);
+
+            AddCallback("EstateOwnerMessage.ParamList.Parameter", DecodeEstateParameter);
         }
 
         /// <summary>
@@ -615,9 +617,24 @@ namespace OpenMetaverse.Packets
             return result.ToString();
 
         }
+
         private static string DecodeGenericByteArrayToFormattedString(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-40} [Byte[]]", fieldName, Utils.BytesToString((byte[])fieldData));
+                return String.Format("{0,30}: {1,-40} [String]", fieldName, Utils.BytesToString((byte[]) fieldData));   
+        }
+
+        private static string DecodeEstateParameter(string fieldName, object fieldData)
+        {
+            byte[] bytes = (byte[])fieldData;
+
+            if (bytes.Length == 17)
+            {
+                return String.Format("{0,30}: {1,-40} [UUID]", fieldName, new UUID((byte[])fieldData, 0));
+            }
+            else
+            {
+                return String.Format("{0,30}: {1,-40} [Byte[]]", fieldName, Utils.BytesToString((byte[])fieldData));
+            }
         }
 
         private static string DecodeNameValue(string fieldName, object fieldData)
