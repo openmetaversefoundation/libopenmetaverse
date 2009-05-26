@@ -40,9 +40,14 @@ namespace OpenMetaverse.Packets
             AddCallback("GroupMask", DecodePermissionMask);
 
             AddCallback("WearableType", DecodeWearableType);
+            //
             AddCallback("InventoryData.Type", DecodeInventoryType);
-            AddCallback("InventoryData.InvType", DecodeInventoryInvType);
+            AddCallback("InvType", DecodeInventoryInvType);
             AddCallback("InventoryData.Flags", DecodeInventoryFlags);
+            // BulkUpdateInventory
+            AddCallback("ItemData.Type", DecodeInventoryType);
+            AddCallback("ItemData.Flags", DecodeInventoryFlags);
+            
             AddCallback("SaleType", DecodeObjectSaleType);
 
             AddCallback("Name", DecodeGenericByteArrayToFormattedString);
@@ -89,6 +94,10 @@ namespace OpenMetaverse.Packets
             AddCallback("RequestImage.Type", DecodeImageType);
 
             AddCallback("EstateOwnerMessage.ParamList.Parameter", DecodeEstateParameter);
+
+            AddCallback("ScriptDialog.Buttons.ButtonLabel", DecodeGenericByteArrayToFormattedString);
+            AddCallback("Codec", DecodeImageCodec);
+            AddCallback("Info.TeleportFlags", DecodeTeleportFlags);
         }
 
         /// <summary>
@@ -821,6 +830,14 @@ namespace OpenMetaverse.Packets
                 fieldData.GetType().Name);
         }
 
+        private static string DecodeTeleportFlags(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-10} {2,-29} [TeleportFlags]",
+                fieldName,
+                fieldData,
+                "(" + (TeleportFlags)(uint)fieldData + ")");
+        }
+
         private static string DecodeScriptControls(string fieldName, object fieldData)
         {
             return String.Format("{0,30}: {1,-10} {2,-29} [AgentManager.ControlFlags]",
@@ -1190,7 +1207,7 @@ namespace OpenMetaverse.Packets
 
             for (int i = 0; i < fields.Length; i++)
             {
-                if (fields[i].Name == "Type" || fields[i].Name == "Header")
+                if (fields[i].Name == "Type" || fields[i].Name == "Header" || fields[i].Name == "HasVariableBlocks")
                     continue;
 
                 if (fields[i].FieldType.IsArray)
