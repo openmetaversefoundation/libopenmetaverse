@@ -720,6 +720,33 @@ namespace OpenMetaverse
             // Keep track of when this packet was sent out (right now)
             outgoingPacket.TickCount = Environment.TickCount;
 
+            #region ACK Appending
+
+            int dataLength = buffer.DataLength;
+
+            // Keep appending ACKs until there is no room left in the packet or there are
+            // no more ACKs to append
+            uint ackCount = 0;
+            uint ack;
+            while (dataLength + 5 < Packet.MTU && PendingAcks.Dequeue(out ack))
+            {
+                Utils.UIntToBytesBig(ack, buffer.Data, dataLength);
+                dataLength += 4;
+                ++ackCount;
+            }
+
+            if (ackCount > 0)
+            {
+                // Set the last byte of the packet equal to the number of appended ACKs
+                buffer.Data[dataLength++] = (byte)ackCount;
+                // Set the appended ACKs flag on this packet
+                buffer.Data[0] = (byte)(buffer.Data[0] | Helpers.MSG_APPENDED_ACKS);
+            }
+
+            buffer.DataLength = dataLength;
+
+            #endregion ACK Appending
+
             if (!isResend)
             {
                 // Not a resend, assign a new sequence number
@@ -729,33 +756,6 @@ namespace OpenMetaverse
 
                 if (isReliable)
                 {
-                    #region ACK Appending
-
-                    int dataLength = buffer.DataLength;
-
-                    // Keep appending ACKs until there is no room left in the packet or there are
-                    // no more ACKs to append
-                    uint ackCount = 0;
-                    uint ack;
-                    while (dataLength + 5 < Packet.MTU && PendingAcks.Dequeue(out ack))
-                    {
-                        Utils.UIntToBytesBig(ack, buffer.Data, dataLength);
-                        dataLength += 4;
-                        ++ackCount;
-                    }
-
-                    if (ackCount > 0)
-                    {
-                        // Set the last byte of the packet equal to the number of appended ACKs
-                        buffer.Data[dataLength++] = (byte)ackCount;
-                        // Set the appended ACKs flag on this packet
-                        buffer.Data[0] = (byte)(buffer.Data[0] | Helpers.MSG_APPENDED_ACKS);
-                    }
-
-                    buffer.DataLength = dataLength;
-                    
-                    #endregion ACK Appending
-
                     // Add this packet to the list of ACK responses we are waiting on from the server
                     lock (NeedAck) NeedAck[sequenceNumber] = outgoingPacket;
                 }
