@@ -158,7 +158,7 @@ namespace OpenMetaverse.Http
                     this.response = response;
 
                     // Spawn a new thread to hold the connection open and return from our precious IOCP thread
-                    Thread thread = new Thread(new ThreadStart(EventQueueThread));
+                    Thread thread = new Thread(EventQueueThread);
                     thread.IsBackground = true;
                     thread.Start();
                 }
@@ -214,10 +214,6 @@ namespace OpenMetaverse.Http
 
                             batchMsPassed = (int)(DateTime.Now - start).TotalMilliseconds;
                         }
-                    }
-                    else
-                    {
-                        Logger.Log.Info("[EventQueue] Dequeued a signal to close the handler thread");
                     }
 
                     // Make sure we can actually send the events right now

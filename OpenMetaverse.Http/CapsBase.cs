@@ -152,7 +152,7 @@ namespace OpenMetaverse.Http
             }
             catch (Exception ex)
             {
-                Logger.Log.Debug("CapsBase.OpenWrite(): " + ex.Message);
+                //Logger.Log.Debug("CapsBase.OpenWrite(): " + ex.Message);
                 if (state.CompletedCallback != null)
                     state.CompletedCallback(state.Request, null, null, ex);
             }
@@ -218,7 +218,7 @@ namespace OpenMetaverse.Http
             }
             catch (Exception ex)
             {
-                Logger.Log.Debug("CapsBase.GetResponse(): " + ex.Message);
+                //Logger.Log.Debug("CapsBase.GetResponse(): " + ex.Message);
                 error = ex;
             }
 
@@ -231,8 +231,8 @@ namespace OpenMetaverse.Http
             if (timedOut)
             {
                 RequestState requestState = state as RequestState;
-                Logger.Log.Warn("CapsBase.TimeoutCallback(): Request to " + requestState.Request.RequestUri +
-                    " timed out after " + requestState.MillisecondsTimeout + " milliseconds");
+                //Logger.Log.Debug("CapsBase.TimeoutCallback(): Request to " + requestState.Request.RequestUri +
+                //    " timed out after " + requestState.MillisecondsTimeout + " milliseconds");
                 if (requestState != null && requestState.Request != null)
                     requestState.Request.Abort();
             }

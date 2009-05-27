@@ -743,12 +743,17 @@ namespace OpenMetaverse
                         dataLength += 4;
                         ++ackCount;
                     }
-                    buffer.Data[dataLength++] = (byte)ackCount;
+
+                    if (ackCount > 0)
+                    {
+                        // Set the last byte of the packet equal to the number of appended ACKs
+                        buffer.Data[dataLength++] = (byte)ackCount;
+                        // Set the appended ACKs flag on this packet
+                        buffer.Data[0] = (byte)(buffer.Data[0] | Helpers.MSG_APPENDED_ACKS);
+                    }
+
                     buffer.DataLength = dataLength;
                     
-                    // Set the appended ACKs flag on this packet
-                    buffer.Data[0] = (byte)(buffer.Data[0] | Helpers.MSG_APPENDED_ACKS);
-
                     #endregion ACK Appending
 
                     // Add this packet to the list of ACK responses we are waiting on from the server
