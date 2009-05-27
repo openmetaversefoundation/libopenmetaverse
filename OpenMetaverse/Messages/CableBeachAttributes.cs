@@ -72,5 +72,19 @@ namespace OpenMetaverse.Messages.CableBeach
         public static readonly Uri PARTNER_ID = new Uri("http://opensimulator.org/attributes/partnerId");
         public static readonly Uri USER_FLAGS = new Uri("http://opensimulator.org/attributes/userFlags");
         public static readonly Uri CUSTOM_TYPE = new Uri("http://opensimulator.org/attributes/customType");
+
+        public static readonly Uri SHAPE_ITEM = new Uri("http://opensimulator.org/attributes/shapeItem");
+        public static readonly Uri SKIN_ITEM = new Uri("http://opensimulator.org/attributes/skinItem");
+        public static readonly Uri HAIR_ITEM = new Uri("http://opensimulator.org/attributes/hairItem");
+        public static readonly Uri EYES_ITEM = new Uri("http://opensimulator.org/attributes/eyesItem");
+        public static readonly Uri SHIRT_ITEM = new Uri("http://opensimulator.org/attributes/shirtItem");
+        public static readonly Uri PANTS_ITEM = new Uri("http://opensimulator.org/attributes/pantsItem");
+        public static readonly Uri SHOES_ITEM = new Uri("http://opensimulator.org/attributes/shoesItem");
+        public static readonly Uri SOCKS_ITEM = new Uri("http://opensimulator.org/attributes/socksItem");
+        public static readonly Uri JACKET_ITEM = new Uri("http://opensimulator.org/attributes/jacketItem");
+        public static readonly Uri GLOVES_ITEM = new Uri("http://opensimulator.org/attributes/glovesItem");
+        public static readonly Uri UNDERSHIRT_ITEM = new Uri("http://opensimulator.org/attributes/undershirtItem");
+        public static readonly Uri UNDERPANTS_ITEM = new Uri("http://opensimulator.org/attributes/underpantsItem");
+        public static readonly Uri SKIRT_ITEM = new Uri("http://opensimulator.org/attributes/skirtItem");
     }
 }

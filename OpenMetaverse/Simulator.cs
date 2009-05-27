@@ -1112,26 +1112,22 @@ namespace OpenMetaverse
             hashSet = new HashSet<uint>();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="ack"></param>
-        /// <remarks>This function is only called from the synchronous
-        /// IncomingPacketHandler() thread, so there is no need to lock</remarks>
-        /// <returns></returns>
         public bool TryEnqueue(uint ack)
         {
-            if (hashSet.Add(ack))
+            lock (hashSet)
             {
-                Items[next] = ack;
-                next = (next + 1) % capacity;
-                if (next == first)
+                if (hashSet.Add(ack))
                 {
-                    hashSet.Remove(Items[first]);
-                    first = (first + 1) % capacity;
-                }
+                    Items[next] = ack;
+                    next = (next + 1) % capacity;
+                    if (next == first)
+                    {
+                        hashSet.Remove(Items[first]);
+                        first = (first + 1) % capacity;
+                    }
 
-                return true;
+                    return true;
+                }
             }
 
             return false;
