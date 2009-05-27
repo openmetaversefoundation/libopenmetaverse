@@ -297,7 +297,7 @@ namespace mapgenerator
 
         static void WriteBlockClass(TextWriter writer, MapBlock block, MapPacket packet)
         {
-            bool variableFields = false;
+            int variableFieldCountBytes = 0;
 
             //writer.WriteLine("        /// <summary>" + block.Name + " block</summary>");
             writer.WriteLine("        /// <exclude/>");
@@ -306,7 +306,7 @@ namespace mapgenerator
             foreach (MapField field in block.Fields)
             {
                 WriteFieldMember(writer, field);
-                if (field.Type == FieldType.Variable) { variableFields = true; }
+                if (field.Type == FieldType.Variable) { variableFieldCountBytes += field.Count; }
             }
 
             // Length property
@@ -316,7 +316,7 @@ namespace mapgenerator
                              "            {" + Environment.NewLine +
                              "                get" + Environment.NewLine +
                              "                {");
-            int length = 0;
+            int length = variableFieldCountBytes;
 
             // Figure out the length of this block
             foreach (MapField field in block.Fields)
@@ -324,7 +324,7 @@ namespace mapgenerator
                 length += GetFieldLength(writer, field);
             }
 
-            if (!variableFields)
+            if (variableFieldCountBytes == 0)
             {
                 writer.WriteLine("                    return " + length + ";");
             }
@@ -337,7 +337,7 @@ namespace mapgenerator
                     if (field.Type == FieldType.Variable)
                     {
                         writer.WriteLine("                    if (" + field.Name +
-                            " != null) { length += " + field.Count + " + " + field.Name + ".Length; }");
+                            " != null) { length += " + field.Name + ".Length; }");
                     }
                 }
 
@@ -362,7 +362,7 @@ namespace mapgenerator
                 "            {");
 
             // Declare a length variable if we need it for variable fields in this constructor
-            if (variableFields) { writer.WriteLine("                int length;"); }
+            if (variableFieldCountBytes > 0) { writer.WriteLine("                int length;"); }
 
             // Start of the try catch block
             writer.WriteLine("                try" + Environment.NewLine + "                {");
@@ -411,9 +411,23 @@ namespace mapgenerator
             writer.WriteLine("        public override int Length" + Environment.NewLine +
                 "        {" + Environment.NewLine + "            get" + Environment.NewLine +
                 "            {");
-            if (packet.Frequency == PacketFrequency.Low) { writer.WriteLine("                int length = 10;"); }
-            else if (packet.Frequency == PacketFrequency.Medium) { writer.WriteLine("                int length = 8;"); }
-            else { writer.WriteLine("                int length = 7;"); }
+
+            int length = 0;
+            if (packet.Frequency == PacketFrequency.Low) { length = 10; }
+            else if (packet.Frequency == PacketFrequency.Medium) { length = 8; }
+            else { length = 7; }
+
+            foreach (MapBlock block in packet.Blocks)
+            {
+                if (block.Count == -1)
+                {
+                    hasVariableBlocks = true;
+                    ++length;
+                }
+            }
+
+            writer.WriteLine("                int length = " + length + ";");
+
             foreach (MapBlock block in packet.Blocks)
             {
                 if (block.Name == "Header") { sanitizedName = "_" + block.Name; }
@@ -421,8 +435,6 @@ namespace mapgenerator
 
                 if (block.Count == -1)
                 {
-                    hasVariableBlocks = true;
-
                     // Variable count block
                     writer.WriteLine("                for (int j = 0; j < " + sanitizedName + ".Length; j++)");
                     writer.WriteLine("                    length += " + sanitizedName + "[j].Length;");
@@ -692,16 +704,23 @@ namespace mapgenerator
 
             // Check if there are any variable blocks
             bool hasVariable = false;
+            bool cannotSplit = false;
             foreach (MapBlock block in packet.Blocks)
             {
                 if (block.Count == -1)
                 {
                     hasVariable = true;
+                }
+                else if (hasVariable)
+                {
+                    // A fixed or single block showed up after a variable count block.
+                    // Our automatic splitting algorithm won't work for this packet
+                    cannotSplit = true;
                     break;
                 }
             }
 
-            if (hasVariable)
+            if (hasVariable && !cannotSplit)
             {
                 writer.WriteLine(
                     "            System.Collections.Generic.List<byte[]> packets = new System.Collections.Generic.List<byte[]>();");

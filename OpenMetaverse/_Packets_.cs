@@ -2220,8 +2220,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 40;
-                    if (ObjectName != null) { length += 1 + ObjectName.Length; }
+                    int length = 41;
+                    if (ObjectName != null) { length += ObjectName.Length; }
                     return length;
                 }
             }
@@ -2303,7 +2303,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += TelehubBlock.Length;
                 for (int j = 0; j < SpawnPointBlock.Length; j++)
                     length += SpawnPointBlock[j].Length;
@@ -2751,8 +2751,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 1;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -2943,9 +2943,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 16;
-                    if (FirstName != null) { length += 1 + FirstName.Length; }
-                    if (LastName != null) { length += 1 + LastName.Length; }
+                    int length = 18;
+                    if (FirstName != null) { length += FirstName.Length; }
+                    if (LastName != null) { length += LastName.Length; }
                     return length;
                 }
             }
@@ -2990,7 +2990,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < Data.Length; j++)
                     length += Data[j].Length;
@@ -3253,9 +3253,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 5;
-                    if (QueryText != null) { length += 1 + QueryText.Length; }
-                    if (SimName != null) { length += 1 + SimName.Length; }
+                    int length = 7;
+                    if (QueryText != null) { length += QueryText.Length; }
+                    if (SimName != null) { length += SimName.Length; }
                     return length;
                 }
             }
@@ -3521,10 +3521,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 61;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Desc != null) { length += 1 + Desc.Length; }
-                    if (SimName != null) { length += 1 + SimName.Length; }
+                    int length = 64;
+                    if (Name != null) { length += Name.Length; }
+                    if (Desc != null) { length += Desc.Length; }
+                    if (SimName != null) { length += SimName.Length; }
                     return length;
                 }
             }
@@ -3592,7 +3592,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += TransactionData.Length;
                 for (int j = 0; j < QueryData.Length; j++)
@@ -3814,8 +3814,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 24;
-                    if (QueryText != null) { length += 1 + QueryText.Length; }
+                    int length = 25;
+                    if (QueryText != null) { length += QueryText.Length; }
                     return length;
                 }
             }
@@ -4016,9 +4016,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 25;
-                    if (QueryText != null) { length += 1 + QueryText.Length; }
-                    if (SimName != null) { length += 1 + SimName.Length; }
+                    int length = 27;
+                    if (QueryText != null) { length += QueryText.Length; }
+                    if (SimName != null) { length += SimName.Length; }
                     return length;
                 }
             }
@@ -4250,8 +4250,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 22;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 23;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -4335,7 +4335,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 13;
                 length += AgentData.Length;
                 for (int j = 0; j < QueryData.Length; j++)
                     length += QueryData[j].Length;
@@ -4685,10 +4685,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 21;
-                    if (FirstName != null) { length += 1 + FirstName.Length; }
-                    if (LastName != null) { length += 1 + LastName.Length; }
-                    if (Group != null) { length += 1 + Group.Length; }
+                    int length = 24;
+                    if (FirstName != null) { length += FirstName.Length; }
+                    if (LastName != null) { length += LastName.Length; }
+                    if (Group != null) { length += Group.Length; }
                     return length;
                 }
             }
@@ -4742,7 +4742,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += QueryData.Length;
                 for (int j = 0; j < QueryReplies.Length; j++)
@@ -5011,9 +5011,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 28;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Date != null) { length += 1 + Date.Length; }
+                    int length = 30;
+                    if (Name != null) { length += Name.Length; }
+                    if (Date != null) { length += Date.Length; }
                     return length;
                 }
             }
@@ -5102,7 +5102,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 12;
                 length += AgentData.Length;
                 length += QueryData.Length;
                 for (int j = 0; j < QueryReplies.Length; j++)
@@ -5399,8 +5399,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 24;
-                    if (GroupName != null) { length += 1 + GroupName.Length; }
+                    int length = 25;
+                    if (GroupName != null) { length += GroupName.Length; }
                     return length;
                 }
             }
@@ -5444,7 +5444,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += QueryData.Length;
                 for (int j = 0; j < QueryReplies.Length; j++)
@@ -5667,8 +5667,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 28;
-                    if (QueryText != null) { length += 1 + QueryText.Length; }
+                    int length = 29;
+                    if (QueryText != null) { length += QueryText.Length; }
                     return length;
                 }
             }
@@ -5896,8 +5896,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 29;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 30;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -5983,7 +5983,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 12;
                 length += AgentData.Length;
                 length += QueryData.Length;
                 for (int j = 0; j < QueryReplies.Length; j++)
@@ -6243,8 +6243,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 16;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 17;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -6284,7 +6284,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < Data.Length; j++)
                     length += Data[j].Length;
@@ -6699,11 +6699,11 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 109;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Desc != null) { length += 2 + Desc.Length; }
-                    if (SimName != null) { length += 1 + SimName.Length; }
-                    if (ParcelName != null) { length += 1 + ParcelName.Length; }
+                    int length = 114;
+                    if (Name != null) { length += Name.Length; }
+                    if (Desc != null) { length += Desc.Length; }
+                    if (SimName != null) { length += SimName.Length; }
+                    if (ParcelName != null) { length += ParcelName.Length; }
                     return length;
                 }
             }
@@ -6939,9 +6939,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 85;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Desc != null) { length += 2 + Desc.Length; }
+                    int length = 88;
+                    if (Name != null) { length += Name.Length; }
+                    if (Desc != null) { length += Desc.Length; }
                     return length;
                 }
             }
@@ -7693,8 +7693,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 26;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 27;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -7742,7 +7742,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += QueryData.Length;
                 for (int j = 0; j < QueryReplies.Length; j++)
@@ -8166,8 +8166,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 20;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 21;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -8209,7 +8209,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += QueryData.Length;
                 for (int j = 0; j < QueryReplies.Length; j++)
@@ -8623,10 +8623,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 81;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Desc != null) { length += 1 + Desc.Length; }
-                    if (SimName != null) { length += 1 + SimName.Length; }
+                    int length = 84;
+                    if (Name != null) { length += Name.Length; }
+                    if (Desc != null) { length += Desc.Length; }
+                    if (SimName != null) { length += SimName.Length; }
                     return length;
                 }
             }
@@ -8995,7 +8995,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 for (int j = 0; j < Data.Length; j++)
                     length += Data[j].Length;
                 return length;
@@ -9375,9 +9375,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 22;
-                    if (FromName != null) { length += 2 + FromName.Length; }
-                    if (Subject != null) { length += 2 + Subject.Length; }
+                    int length = 26;
+                    if (FromName != null) { length += FromName.Length; }
+                    if (Subject != null) { length += Subject.Length; }
                     return length;
                 }
             }
@@ -9430,7 +9430,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < Data.Length; j++)
                     length += Data[j].Length;
@@ -10392,8 +10392,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 4;
-                    if (Message != null) { length += 1 + Message.Length; }
+                    int length = 5;
+                    if (Message != null) { length += Message.Length; }
                     return length;
                 }
             }
@@ -10540,8 +10540,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 39;
-                    if (SeedCapability != null) { length += 2 + SeedCapability.Length; }
+                    int length = 41;
+                    if (SeedCapability != null) { length += SeedCapability.Length; }
                     return length;
                 }
             }
@@ -10730,8 +10730,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 1;
-                    if (Message != null) { length += 1 + Message.Length; }
+                    int length = 2;
+                    if (Message != null) { length += Message.Length; }
                     return length;
                 }
             }
@@ -10809,7 +10809,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += Info.Length;
                 for (int j = 0; j < TargetData.Length; j++)
@@ -11347,8 +11347,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 16;
-                    if (Reason != null) { length += 1 + Reason.Length; }
+                    int length = 17;
+                    if (Reason != null) { length += Reason.Length; }
                     return length;
                 }
             }
@@ -11414,9 +11414,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Message != null) { length += 1 + Message.Length; }
-                    if (ExtraParams != null) { length += 1 + ExtraParams.Length; }
+                    int length = 2;
+                    if (Message != null) { length += Message.Length; }
+                    if (ExtraParams != null) { length += ExtraParams.Length; }
                     return length;
                 }
             }
@@ -11459,7 +11459,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += Info.Length;
                 for (int j = 0; j < AlertInfo.Length; j++)
                     length += AlertInfo[j].Length;
@@ -11694,7 +11694,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -11929,7 +11929,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -12503,8 +12503,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 5;
-                    if (Message != null) { length += 2 + Message.Length; }
+                    int length = 7;
+                    if (Message != null) { length += Message.Length; }
                     return length;
                 }
             }
@@ -12693,8 +12693,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 4;
-                    if (Throttles != null) { length += 1 + Throttles.Length; }
+                    int length = 5;
+                    if (Throttles != null) { length += Throttles.Length; }
                     return length;
                 }
             }
@@ -13268,8 +13268,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (TextureEntry != null) { length += 2 + TextureEntry.Length; }
+                    int length = 2;
+                    if (TextureEntry != null) { length += TextureEntry.Length; }
                     return length;
                 }
             }
@@ -13346,7 +13346,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 12;
                 length += AgentData.Length;
                 for (int j = 0; j < WearableData.Length; j++)
                     length += WearableData[j].Length;
@@ -13465,80 +13465,7 @@ namespace OpenMetaverse.Packets
 
         public override byte[][] ToBytesMultiple()
         {
-            System.Collections.Generic.List<byte[]> packets = new System.Collections.Generic.List<byte[]>();
-            int i = 0;
-            int fixedLength = 10;
-
-            byte[] ackBytes = null;
-            int acksLength = 0;
-            if (Header.AckList != null && Header.AckList.Length > 0) {
-                Header.AppendedAcks = true;
-                ackBytes = new byte[Header.AckList.Length * 4 + 1];
-                Header.AcksToBytes(ackBytes, ref acksLength);
-            }
-
-            fixedLength += AgentData.Length;
-            fixedLength += ObjectData.Length;
-            byte[] fixedBytes = new byte[fixedLength];
-            Header.ToBytes(fixedBytes, ref i);
-            AgentData.ToBytes(fixedBytes, ref i);
-            ObjectData.ToBytes(fixedBytes, ref i);
-            fixedLength += 2;
-
-            int WearableDataStart = 0;
-            int VisualParamStart = 0;
-            while (
-                WearableDataStart < WearableData.Length ||
-                VisualParamStart < VisualParam.Length)
-            {
-                int variableLength = 0;
-                int WearableDataCount = 0;
-                int VisualParamCount = 0;
-
-                i = WearableDataStart;
-                while (fixedLength + variableLength + acksLength < Packet.MTU && i < WearableData.Length) {
-                    int blockLength = WearableData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
-                        variableLength += blockLength;
-                        ++WearableDataCount;
-                    }
-                    else { break; }
-                    ++i;
-                }
-
-                i = VisualParamStart;
-                while (fixedLength + variableLength + acksLength < Packet.MTU && i < VisualParam.Length) {
-                    int blockLength = VisualParam[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
-                        variableLength += blockLength;
-                        ++VisualParamCount;
-                    }
-                    else { break; }
-                    ++i;
-                }
-
-                byte[] packet = new byte[fixedLength + variableLength + acksLength];
-                int length = fixedBytes.Length;
-                Buffer.BlockCopy(fixedBytes, 0, packet, 0, length);
-                if (packets.Count > 0) { packet[0] = (byte)(packet[0] & ~0x10); }
-
-                packet[length++] = (byte)WearableDataCount;
-                for (i = WearableDataStart; i < WearableDataStart + WearableDataCount; i++) { WearableData[i].ToBytes(packet, ref length); }
-                WearableDataStart += WearableDataCount;
-
-                packet[length++] = (byte)VisualParamCount;
-                for (i = VisualParamStart; i < VisualParamStart + VisualParamCount; i++) { VisualParam[i].ToBytes(packet, ref length); }
-                VisualParamStart += VisualParamCount;
-
-                if (acksLength > 0) {
-                    Buffer.BlockCopy(ackBytes, 0, packet, length, acksLength);
-                    acksLength = 0;
-                }
-
-                packets.Add(packet);
-            }
-
-            return packets.ToArray();
+            return new byte[][] { ToBytes() };
         }
     }
 
@@ -14149,7 +14076,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -14426,7 +14353,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += SharedData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
@@ -14695,7 +14622,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -14931,7 +14858,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -15167,7 +15094,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -15538,7 +15465,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -15760,9 +15687,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 4;
-                    if (MediaURL != null) { length += 1 + MediaURL.Length; }
-                    if (TextureEntry != null) { length += 2 + TextureEntry.Length; }
+                    int length = 7;
+                    if (MediaURL != null) { length += MediaURL.Length; }
+                    if (TextureEntry != null) { length += TextureEntry.Length; }
                     return length;
                 }
             }
@@ -15808,7 +15735,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -16044,7 +15971,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -16336,7 +16263,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -16550,8 +16477,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 11;
-                    if (ParamData != null) { length += 1 + ParamData.Length; }
+                    int length = 12;
+                    if (ParamData != null) { length += ParamData.Length; }
                     return length;
                 }
             }
@@ -16598,7 +16525,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -16875,7 +16802,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += HeaderData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
@@ -17120,7 +17047,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -17365,7 +17292,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -17936,7 +17863,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += HeaderData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
@@ -18184,7 +18111,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -18395,8 +18322,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 4;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 5;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -18436,7 +18363,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -18647,8 +18574,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 4;
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 5;
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -18688,7 +18615,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -18924,7 +18851,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -19157,7 +19084,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -19390,7 +19317,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -19629,7 +19556,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -19862,7 +19789,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -20094,7 +20021,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -20326,7 +20253,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -20558,7 +20485,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -20846,7 +20773,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += ObjectData.Length;
                 for (int j = 0; j < SurfaceInfo.Length; j++)
@@ -21150,7 +21077,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += ObjectData.Length;
                 for (int j = 0; j < SurfaceInfo.Length; j++)
@@ -21445,7 +21372,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += ObjectData.Length;
                 for (int j = 0; j < SurfaceInfo.Length; j++)
@@ -22188,7 +22115,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -22518,7 +22445,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 12;
                 length += AgentData.Length;
                 length += ModifyBlock.Length;
                 for (int j = 0; j < ParcelData.Length; j++)
@@ -23015,8 +22942,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Filename != null) { length += 1 + Filename.Length; }
+                    int length = 1;
+                    if (Filename != null) { length += Filename.Length; }
                     return length;
                 }
             }
@@ -23638,10 +23565,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 73;
-                    if (SysOS != null) { length += 1 + SysOS.Length; }
-                    if (SysCPU != null) { length += 1 + SysCPU.Length; }
-                    if (SysGPU != null) { length += 1 + SysGPU.Length; }
+                    int length = 76;
+                    if (SysOS != null) { length += SysOS.Length; }
+                    if (SysCPU != null) { length += SysCPU.Length; }
+                    if (SysGPU != null) { length += SysGPU.Length; }
                     return length;
                 }
             }
@@ -23898,7 +23825,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += DownloadTotals.Length;
                 for (int j = 0; j < 2; j++)
@@ -24357,11 +24284,11 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 79;
-                    if (AbuseRegionName != null) { length += 1 + AbuseRegionName.Length; }
-                    if (Summary != null) { length += 1 + Summary.Length; }
-                    if (Details != null) { length += 2 + Details.Length; }
-                    if (VersionString != null) { length += 1 + VersionString.Length; }
+                    int length = 84;
+                    if (AbuseRegionName != null) { length += AbuseRegionName.Length; }
+                    if (Summary != null) { length += Summary.Length; }
+                    if (Details != null) { length += Details.Length; }
+                    if (VersionString != null) { length += VersionString.Length; }
                     return length;
                 }
             }
@@ -24532,8 +24459,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Message != null) { length += 1 + Message.Length; }
+                    int length = 1;
+                    if (Message != null) { length += Message.Length; }
                     return length;
                 }
             }
@@ -24597,9 +24524,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Message != null) { length += 1 + Message.Length; }
-                    if (ExtraParams != null) { length += 1 + ExtraParams.Length; }
+                    int length = 2;
+                    if (Message != null) { length += Message.Length; }
+                    if (ExtraParams != null) { length += ExtraParams.Length; }
                     return length;
                 }
             }
@@ -24642,7 +24569,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AlertData.Length;
                 for (int j = 0; j < AlertInfo.Length; j++)
                     length += AlertInfo[j].Length;
@@ -24849,8 +24776,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 1;
-                    if (Message != null) { length += 1 + Message.Length; }
+                    int length = 2;
+                    if (Message != null) { length += Message.Length; }
                     return length;
                 }
             }
@@ -25025,7 +24952,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 for (int j = 0; j < MeanCollision.Length; j++)
                     length += MeanCollision[j].Length;
                 return length;
@@ -25435,9 +25362,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 47;
-                    if (FromName != null) { length += 1 + FromName.Length; }
-                    if (Message != null) { length += 2 + Message.Length; }
+                    int length = 50;
+                    if (FromName != null) { length += FromName.Length; }
+                    if (Message != null) { length += Message.Length; }
                     return length;
                 }
             }
@@ -25697,7 +25624,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += Region.Length;
                 for (int j = 0; j < Stat.Length; j++)
                     length += Stat[j].Length;
@@ -25793,62 +25720,7 @@ namespace OpenMetaverse.Packets
 
         public override byte[][] ToBytesMultiple()
         {
-            System.Collections.Generic.List<byte[]> packets = new System.Collections.Generic.List<byte[]>();
-            int i = 0;
-            int fixedLength = 10;
-
-            byte[] ackBytes = null;
-            int acksLength = 0;
-            if (Header.AckList != null && Header.AckList.Length > 0) {
-                Header.AppendedAcks = true;
-                ackBytes = new byte[Header.AckList.Length * 4 + 1];
-                Header.AcksToBytes(ackBytes, ref acksLength);
-            }
-
-            fixedLength += Region.Length;
-            fixedLength += PidStat.Length;
-            byte[] fixedBytes = new byte[fixedLength];
-            Header.ToBytes(fixedBytes, ref i);
-            Region.ToBytes(fixedBytes, ref i);
-            PidStat.ToBytes(fixedBytes, ref i);
-            fixedLength += 1;
-
-            int StatStart = 0;
-            while (
-                StatStart < Stat.Length)
-            {
-                int variableLength = 0;
-                int StatCount = 0;
-
-                i = StatStart;
-                while (fixedLength + variableLength + acksLength < Packet.MTU && i < Stat.Length) {
-                    int blockLength = Stat[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
-                        variableLength += blockLength;
-                        ++StatCount;
-                    }
-                    else { break; }
-                    ++i;
-                }
-
-                byte[] packet = new byte[fixedLength + variableLength + acksLength];
-                int length = fixedBytes.Length;
-                Buffer.BlockCopy(fixedBytes, 0, packet, 0, length);
-                if (packets.Count > 0) { packet[0] = (byte)(packet[0] & ~0x10); }
-
-                packet[length++] = (byte)StatCount;
-                for (i = StatStart; i < StatStart + StatCount; i++) { Stat[i].ToBytes(packet, ref length); }
-                StatStart += StatCount;
-
-                if (acksLength > 0) {
-                    Buffer.BlockCopy(ackBytes, 0, packet, length, acksLength);
-                    acksLength = 0;
-                }
-
-                packets.Add(packet);
-            }
-
-            return packets.ToArray();
+            return new byte[][] { ToBytes() };
         }
     }
 
@@ -26049,8 +25921,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 51;
-                    if (SimName != null) { length += 1 + SimName.Length; }
+                    int length = 52;
+                    if (SimName != null) { length += SimName.Length; }
                     return length;
                 }
             }
@@ -26147,9 +26019,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 12;
-                    if (ProductSKU != null) { length += 1 + ProductSKU.Length; }
-                    if (ProductName != null) { length += 1 + ProductName.Length; }
+                    int length = 14;
+                    if (ProductSKU != null) { length += ProductSKU.Length; }
+                    if (ProductName != null) { length += ProductName.Length; }
                     return length;
                 }
             }
@@ -26354,8 +26226,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 28;
-                    if (SimName != null) { length += 1 + SimName.Length; }
+                    int length = 29;
+                    if (SimName != null) { length += SimName.Length; }
                     return length;
                 }
             }
@@ -26647,8 +26519,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 206;
-                    if (SimName != null) { length += 1 + SimName.Length; }
+                    int length = 207;
+                    if (SimName != null) { length += SimName.Length; }
                     return length;
                 }
             }
@@ -26809,10 +26681,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 8;
-                    if (ColoName != null) { length += 1 + ColoName.Length; }
-                    if (ProductSKU != null) { length += 1 + ProductSKU.Length; }
-                    if (ProductName != null) { length += 1 + ProductName.Length; }
+                    int length = 11;
+                    if (ColoName != null) { length += ColoName.Length; }
+                    if (ProductSKU != null) { length += ProductSKU.Length; }
+                    if (ProductName != null) { length += ProductName.Length; }
                     return length;
                 }
             }
@@ -27466,8 +27338,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 28;
-                    if (Params != null) { length += 2 + Params.Length; }
+                    int length = 30;
+                    if (Params != null) { length += Params.Length; }
                     return length;
                 }
             }
@@ -27613,8 +27485,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 32;
-                    if (Params != null) { length += 2 + Params.Length; }
+                    int length = 34;
+                    if (Params != null) { length += Params.Length; }
                     return length;
                 }
             }
@@ -27883,8 +27755,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 29;
-                    if (Filename != null) { length += 1 + Filename.Length; }
+                    int length = 30;
+                    if (Filename != null) { length += Filename.Length; }
                     return length;
                 }
             }
@@ -28189,8 +28061,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (TextureEntry != null) { length += 2 + TextureEntry.Length; }
+                    int length = 2;
+                    if (TextureEntry != null) { length += TextureEntry.Length; }
                     return length;
                 }
             }
@@ -28267,7 +28139,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += Sender.Length;
                 length += ObjectData.Length;
                 for (int j = 0; j < VisualParam.Length; j++)
@@ -28509,7 +28381,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += ObjectData.Length;
                 for (int j = 0; j < CameraProperty.Length; j++)
                     length += CameraProperty[j].Length;
@@ -28973,7 +28845,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += ObjectData.Length;
                 for (int j = 0; j < ButtonData.Length; j++)
                     length += ButtonData[j].Length;
@@ -29185,8 +29057,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 32;
-                    if (Reason != null) { length += 2 + Reason.Length; }
+                    int length = 34;
+                    if (Reason != null) { length += Reason.Length; }
                     return length;
                 }
             }
@@ -29452,8 +29324,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 52;
-                    if (Reason != null) { length += 2 + Reason.Length; }
+                    int length = 54;
+                    if (Reason != null) { length += Reason.Length; }
                     return length;
                 }
             }
@@ -30138,12 +30010,12 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 52;
-                    if (AboutText != null) { length += 2 + AboutText.Length; }
-                    if (FLAboutText != null) { length += 1 + FLAboutText.Length; }
-                    if (BornOn != null) { length += 1 + BornOn.Length; }
-                    if (ProfileURL != null) { length += 1 + ProfileURL.Length; }
-                    if (CharterMember != null) { length += 1 + CharterMember.Length; }
+                    int length = 58;
+                    if (AboutText != null) { length += AboutText.Length; }
+                    if (FLAboutText != null) { length += FLAboutText.Length; }
+                    if (BornOn != null) { length += BornOn.Length; }
+                    if (ProfileURL != null) { length += ProfileURL.Length; }
+                    if (CharterMember != null) { length += CharterMember.Length; }
                     return length;
                 }
             }
@@ -30376,10 +30248,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 8;
-                    if (WantToText != null) { length += 1 + WantToText.Length; }
-                    if (SkillsText != null) { length += 1 + SkillsText.Length; }
-                    if (LanguagesText != null) { length += 1 + LanguagesText.Length; }
+                    int length = 11;
+                    if (WantToText != null) { length += WantToText.Length; }
+                    if (SkillsText != null) { length += SkillsText.Length; }
+                    if (LanguagesText != null) { length += LanguagesText.Length; }
                     return length;
                 }
             }
@@ -30588,9 +30460,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 41;
-                    if (GroupTitle != null) { length += 1 + GroupTitle.Length; }
-                    if (GroupName != null) { length += 1 + GroupName.Length; }
+                    int length = 43;
+                    if (GroupTitle != null) { length += GroupTitle.Length; }
+                    if (GroupName != null) { length += GroupName.Length; }
                     return length;
                 }
             }
@@ -30679,7 +30551,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < GroupData.Length; j++)
                     length += GroupData[j].Length;
@@ -30776,62 +30648,7 @@ namespace OpenMetaverse.Packets
 
         public override byte[][] ToBytesMultiple()
         {
-            System.Collections.Generic.List<byte[]> packets = new System.Collections.Generic.List<byte[]>();
-            int i = 0;
-            int fixedLength = 10;
-
-            byte[] ackBytes = null;
-            int acksLength = 0;
-            if (Header.AckList != null && Header.AckList.Length > 0) {
-                Header.AppendedAcks = true;
-                ackBytes = new byte[Header.AckList.Length * 4 + 1];
-                Header.AcksToBytes(ackBytes, ref acksLength);
-            }
-
-            fixedLength += AgentData.Length;
-            fixedLength += NewGroupData.Length;
-            byte[] fixedBytes = new byte[fixedLength];
-            Header.ToBytes(fixedBytes, ref i);
-            AgentData.ToBytes(fixedBytes, ref i);
-            NewGroupData.ToBytes(fixedBytes, ref i);
-            fixedLength += 1;
-
-            int GroupDataStart = 0;
-            while (
-                GroupDataStart < GroupData.Length)
-            {
-                int variableLength = 0;
-                int GroupDataCount = 0;
-
-                i = GroupDataStart;
-                while (fixedLength + variableLength + acksLength < Packet.MTU && i < GroupData.Length) {
-                    int blockLength = GroupData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
-                        variableLength += blockLength;
-                        ++GroupDataCount;
-                    }
-                    else { break; }
-                    ++i;
-                }
-
-                byte[] packet = new byte[fixedLength + variableLength + acksLength];
-                int length = fixedBytes.Length;
-                Buffer.BlockCopy(fixedBytes, 0, packet, 0, length);
-                if (packets.Count > 0) { packet[0] = (byte)(packet[0] & ~0x10); }
-
-                packet[length++] = (byte)GroupDataCount;
-                for (i = GroupDataStart; i < GroupDataStart + GroupDataCount; i++) { GroupData[i].ToBytes(packet, ref length); }
-                GroupDataStart += GroupDataCount;
-
-                if (acksLength > 0) {
-                    Buffer.BlockCopy(ackBytes, 0, packet, length, acksLength);
-                    acksLength = 0;
-                }
-
-                packets.Add(packet);
-            }
-
-            return packets.ToArray();
+            return new byte[][] { ToBytes() };
         }
     }
 
@@ -30924,10 +30741,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 34;
-                    if (AboutText != null) { length += 2 + AboutText.Length; }
-                    if (FLAboutText != null) { length += 1 + FLAboutText.Length; }
-                    if (ProfileURL != null) { length += 1 + ProfileURL.Length; }
+                    int length = 38;
+                    if (AboutText != null) { length += AboutText.Length; }
+                    if (FLAboutText != null) { length += FLAboutText.Length; }
+                    if (ProfileURL != null) { length += ProfileURL.Length; }
                     return length;
                 }
             }
@@ -31150,10 +30967,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 8;
-                    if (WantToText != null) { length += 1 + WantToText.Length; }
-                    if (SkillsText != null) { length += 1 + SkillsText.Length; }
-                    if (LanguagesText != null) { length += 1 + LanguagesText.Length; }
+                    int length = 11;
+                    if (WantToText != null) { length += WantToText.Length; }
+                    if (SkillsText != null) { length += SkillsText.Length; }
+                    if (LanguagesText != null) { length += LanguagesText.Length; }
                     return length;
                 }
             }
@@ -31345,8 +31162,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 16;
-                    if (Notes != null) { length += 2 + Notes.Length; }
+                    int length = 18;
+                    if (Notes != null) { length += Notes.Length; }
                     return length;
                 }
             }
@@ -31529,8 +31346,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 16;
-                    if (Notes != null) { length += 2 + Notes.Length; }
+                    int length = 18;
+                    if (Notes != null) { length += Notes.Length; }
                     return length;
                 }
             }
@@ -31713,8 +31530,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 16;
-                    if (PickName != null) { length += 1 + PickName.Length; }
+                    int length = 17;
+                    if (PickName != null) { length += PickName.Length; }
                     return length;
                 }
             }
@@ -31754,7 +31571,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < Data.Length; j++)
                     length += Data[j].Length;
@@ -32186,13 +32003,13 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 48;
-                    if (Creator != null) { length += 1 + Creator.Length; }
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Category != null) { length += 1 + Category.Length; }
-                    if (Desc != null) { length += 2 + Desc.Length; }
-                    if (Date != null) { length += 1 + Date.Length; }
-                    if (SimName != null) { length += 1 + SimName.Length; }
+                    int length = 55;
+                    if (Creator != null) { length += Creator.Length; }
+                    if (Name != null) { length += Name.Length; }
+                    if (Category != null) { length += Category.Length; }
+                    if (Desc != null) { length += Desc.Length; }
+                    if (Date != null) { length += Date.Length; }
+                    if (SimName != null) { length += SimName.Length; }
                     return length;
                 }
             }
@@ -32780,8 +32597,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 24;
-                    if (QueryText != null) { length += 1 + QueryText.Length; }
+                    int length = 25;
+                    if (QueryText != null) { length += QueryText.Length; }
                     return length;
                 }
             }
@@ -33022,12 +32839,12 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 94;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Desc != null) { length += 2 + Desc.Length; }
-                    if (User != null) { length += 1 + User.Length; }
-                    if (OriginalName != null) { length += 1 + OriginalName.Length; }
-                    if (SimName != null) { length += 1 + SimName.Length; }
+                    int length = 100;
+                    if (Name != null) { length += Name.Length; }
+                    if (Desc != null) { length += Desc.Length; }
+                    if (User != null) { length += User.Length; }
+                    if (OriginalName != null) { length += OriginalName.Length; }
+                    if (SimName != null) { length += SimName.Length; }
                     return length;
                 }
             }
@@ -33262,9 +33079,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 94;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Desc != null) { length += 2 + Desc.Length; }
+                    int length = 97;
+                    if (Name != null) { length += Name.Length; }
+                    if (Desc != null) { length += Desc.Length; }
                     return length;
                 }
             }
@@ -33769,9 +33586,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 36;
-                    if (ObjectName != null) { length += 1 + ObjectName.Length; }
-                    if (ObjectOwner != null) { length += 1 + ObjectOwner.Length; }
+                    int length = 38;
+                    if (ObjectName != null) { length += ObjectName.Length; }
+                    if (ObjectOwner != null) { length += ObjectOwner.Length; }
                     return length;
                 }
             }
@@ -33942,7 +33759,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 for (int j = 0; j < Data.Length; j++)
                     length += Data[j].Length;
                 return length;
@@ -34137,11 +33954,11 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 36;
-                    if (FirstName != null) { length += 1 + FirstName.Length; }
-                    if (LastName != null) { length += 1 + LastName.Length; }
-                    if (ObjectName != null) { length += 1 + ObjectName.Length; }
-                    if (Message != null) { length += 2 + Message.Length; }
+                    int length = 41;
+                    if (FirstName != null) { length += FirstName.Length; }
+                    if (LastName != null) { length += LastName.Length; }
+                    if (ObjectName != null) { length += ObjectName.Length; }
+                    if (Message != null) { length += Message.Length; }
                     return length;
                 }
             }
@@ -34216,8 +34033,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (ButtonLabel != null) { length += 1 + ButtonLabel.Length; }
+                    int length = 1;
+                    if (ButtonLabel != null) { length += ButtonLabel.Length; }
                     return length;
                 }
             }
@@ -34255,7 +34072,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += Data.Length;
                 for (int j = 0; j < Buttons.Length; j++)
                     length += Buttons[j].Length;
@@ -34468,8 +34285,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 24;
-                    if (ButtonLabel != null) { length += 1 + ButtonLabel.Length; }
+                    int length = 25;
+                    if (ButtonLabel != null) { length += ButtonLabel.Length; }
                     return length;
                 }
             }
@@ -34925,10 +34742,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 33;
-                    if (ObjectName != null) { length += 1 + ObjectName.Length; }
-                    if (Message != null) { length += 1 + Message.Length; }
-                    if (URL != null) { length += 1 + URL.Length; }
+                    int length = 36;
+                    if (ObjectName != null) { length += ObjectName.Length; }
+                    if (Message != null) { length += Message.Length; }
+                    if (URL != null) { length += URL.Length; }
                     return length;
                 }
             }
@@ -35088,9 +34905,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 24;
-                    if (ObjectName != null) { length += 1 + ObjectName.Length; }
-                    if (SimName != null) { length += 1 + SimName.Length; }
+                    int length = 26;
+                    if (ObjectName != null) { length += ObjectName.Length; }
+                    if (SimName != null) { length += SimName.Length; }
                     return length;
                 }
             }
@@ -35231,8 +35048,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 4;
-                    if (Data != null) { length += 2 + Data.Length; }
+                    int length = 6;
+                    if (Data != null) { length += Data.Length; }
                     return length;
                 }
             }
@@ -35624,11 +35441,11 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 115;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Desc != null) { length += 1 + Desc.Length; }
-                    if (MusicURL != null) { length += 1 + MusicURL.Length; }
-                    if (MediaURL != null) { length += 1 + MediaURL.Length; }
+                    int length = 119;
+                    if (Name != null) { length += Name.Length; }
+                    if (Desc != null) { length += Desc.Length; }
+                    if (MusicURL != null) { length += MusicURL.Length; }
+                    if (MediaURL != null) { length += MediaURL.Length; }
                     return length;
                 }
             }
@@ -35955,7 +35772,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 12;
                 length += AgentData.Length;
                 length += ParcelData.Length;
                 for (int j = 0; j < TaskIDs.Length; j++)
@@ -36484,7 +36301,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 12;
                 length += AgentData.Length;
                 length += ParcelData.Length;
                 for (int j = 0; j < TaskIDs.Length; j++)
@@ -36807,7 +36624,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += ParcelData.Length;
                 for (int j = 0; j < ReturnIDs.Length; j++)
@@ -37107,8 +36924,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 36;
-                    if (EstateName != null) { length += 1 + EstateName.Length; }
+                    int length = 37;
+                    if (EstateName != null) { length += EstateName.Length; }
                     return length;
                 }
             }
@@ -37306,7 +37123,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += _Header.Length;
                 for (int j = 0; j < Data.Length; j++)
                     length += Data[j].Length;
@@ -38086,7 +37903,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += Data.Length;
                 for (int j = 0; j < ParcelData.Length; j++)
@@ -39414,7 +39231,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += Data.Length;
                 for (int j = 0; j < List.Length; j++)
                     length += List[j].Length;
@@ -39703,7 +39520,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += Data.Length;
                 for (int j = 0; j < List.Length; j++)
@@ -40569,7 +40386,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 for (int j = 0; j < UUIDNameBlock.Length; j++)
                     length += UUIDNameBlock[j].Length;
                 return length;
@@ -40740,9 +40557,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 16;
-                    if (FirstName != null) { length += 1 + FirstName.Length; }
-                    if (LastName != null) { length += 1 + LastName.Length; }
+                    int length = 18;
+                    if (FirstName != null) { length += FirstName.Length; }
+                    if (LastName != null) { length += LastName.Length; }
                     return length;
                 }
             }
@@ -40787,7 +40604,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 for (int j = 0; j < UUIDNameBlock.Length; j++)
                     length += UUIDNameBlock[j].Length;
                 return length;
@@ -40969,7 +40786,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 for (int j = 0; j < UUIDNameBlock.Length; j++)
                     length += UUIDNameBlock[j].Length;
                 return length;
@@ -41129,8 +40946,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 16;
-                    if (GroupName != null) { length += 1 + GroupName.Length; }
+                    int length = 17;
+                    if (GroupName != null) { length += GroupName.Length; }
                     return length;
                 }
             }
@@ -41170,7 +40987,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 for (int j = 0; j < UUIDNameBlock.Length; j++)
                     length += UUIDNameBlock[j].Length;
                 return length;
@@ -42156,8 +41973,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 93;
-                    if (SearchName != null) { length += 1 + SearchName.Length; }
+                    int length = 94;
+                    if (SearchName != null) { length += SearchName.Length; }
                     return length;
                 }
             }
@@ -42355,8 +42172,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 92;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 93;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -42410,7 +42227,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += Requester.Length;
                 for (int j = 0; j < SensedData.Length; j++)
                     length += SensedData[j].Length;
@@ -42789,8 +42606,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (ChannelVersion != null) { length += 2 + ChannelVersion.Length; }
+                    int length = 2;
+                    if (ChannelVersion != null) { length += ChannelVersion.Length; }
                     return length;
                 }
             }
@@ -43119,7 +42936,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < InventoryData.Length; j++)
                     length += InventoryData[j].Length;
@@ -43360,10 +43177,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 71;
-                    if (FromAgentName != null) { length += 1 + FromAgentName.Length; }
-                    if (Message != null) { length += 2 + Message.Length; }
-                    if (BinaryBucket != null) { length += 2 + BinaryBucket.Length; }
+                    int length = 76;
+                    if (FromAgentName != null) { length += FromAgentName.Length; }
+                    if (Message != null) { length += Message.Length; }
+                    if (BinaryBucket != null) { length += BinaryBucket.Length; }
                     return length;
                 }
             }
@@ -43721,7 +43538,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentBlock.Length;
                 for (int j = 0; j < LocationBlock.Length; j++)
                     length += LocationBlock[j].Length;
@@ -44268,8 +44085,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 16;
-                    if (Method != null) { length += 1 + Method.Length; }
+                    int length = 17;
+                    if (Method != null) { length += Method.Length; }
                     return length;
                 }
             }
@@ -44324,8 +44141,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Parameter != null) { length += 1 + Parameter.Length; }
+                    int length = 1;
+                    if (Parameter != null) { length += Parameter.Length; }
                     return length;
                 }
             }
@@ -44363,7 +44180,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += MethodData.Length;
                 for (int j = 0; j < ParamList.Length; j++)
@@ -44586,8 +44403,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 16;
-                    if (Method != null) { length += 1 + Method.Length; }
+                    int length = 17;
+                    if (Method != null) { length += Method.Length; }
                     return length;
                 }
             }
@@ -44642,8 +44459,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Parameter != null) { length += 1 + Parameter.Length; }
+                    int length = 1;
+                    if (Parameter != null) { length += Parameter.Length; }
                     return length;
                 }
             }
@@ -44681,7 +44498,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += MethodData.Length;
                 for (int j = 0; j < ParamList.Length; j++)
@@ -44904,8 +44721,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 16;
-                    if (Method != null) { length += 1 + Method.Length; }
+                    int length = 17;
+                    if (Method != null) { length += Method.Length; }
                     return length;
                 }
             }
@@ -44960,8 +44777,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Parameter != null) { length += 1 + Parameter.Length; }
+                    int length = 1;
+                    if (Parameter != null) { length += Parameter.Length; }
                     return length;
                 }
             }
@@ -44999,7 +44816,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += MethodData.Length;
                 for (int j = 0; j < ParamList.Length; j++)
@@ -45385,8 +45202,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 24;
-                    if (MuteName != null) { length += 1 + MuteName.Length; }
+                    int length = 25;
+                    if (MuteName != null) { length += MuteName.Length; }
                     return length;
                 }
             }
@@ -45572,8 +45389,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 16;
-                    if (MuteName != null) { length += 1 + MuteName.Length; }
+                    int length = 17;
+                    if (MuteName != null) { length += MuteName.Length; }
                     return length;
                 }
             }
@@ -45821,7 +45638,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += NotecardData.Length;
                 for (int j = 0; j < InventoryData.Length; j++)
@@ -46074,9 +45891,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 140;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 142;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -46159,7 +45976,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < InventoryData.Length; j++)
                     length += InventoryData[j].Length;
@@ -46403,9 +46220,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 140;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 142;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -46488,7 +46305,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < InventoryData.Length; j++)
                     length += InventoryData[j].Length;
@@ -46703,8 +46520,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 32;
-                    if (NewName != null) { length += 1 + NewName.Length; }
+                    int length = 33;
+                    if (NewName != null) { length += NewName.Length; }
                     return length;
                 }
             }
@@ -46746,7 +46563,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < InventoryData.Length; j++)
                     length += InventoryData[j].Length;
@@ -46960,8 +46777,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 52;
-                    if (NewName != null) { length += 1 + NewName.Length; }
+                    int length = 53;
+                    if (NewName != null) { length += NewName.Length; }
                     return length;
                 }
             }
@@ -47007,7 +46824,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < InventoryData.Length; j++)
                     length += InventoryData[j].Length;
@@ -47240,7 +47057,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < InventoryData.Length; j++)
                     length += InventoryData[j].Length;
@@ -47475,7 +47292,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < InventoryData.Length; j++)
                     length += InventoryData[j].Length;
@@ -47851,8 +47668,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 33;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 34;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -48040,8 +47857,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 33;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 34;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -48085,7 +47902,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < FolderData.Length; j++)
                     length += FolderData[j].Length;
@@ -48323,7 +48140,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < InventoryData.Length; j++)
                     length += InventoryData[j].Length;
@@ -48556,7 +48373,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < FolderData.Length; j++)
                     length += FolderData[j].Length;
@@ -48954,8 +48771,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 33;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 34;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -49044,9 +48861,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 136;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 138;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -49127,7 +48944,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 12;
                 length += AgentData.Length;
                 for (int j = 0; j < FolderData.Length; j++)
                     length += FolderData[j].Length;
@@ -49403,7 +49220,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < InventoryData.Length; j++)
                     length += InventoryData[j].Length;
@@ -49640,9 +49457,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 136;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 138;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -49723,7 +49540,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < InventoryData.Length; j++)
                     length += InventoryData[j].Length;
@@ -49936,8 +49753,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 33;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 34;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -50027,9 +49844,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 140;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 142;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -50112,7 +49929,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 12;
                 length += AgentData.Length;
                 for (int j = 0; j < FolderData.Length; j++)
                     length += FolderData[j].Length;
@@ -50670,7 +50487,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 12;
                 length += AgentData.Length;
                 for (int j = 0; j < FolderData.Length; j++)
                     length += FolderData[j].Length;
@@ -51155,9 +50972,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 136;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 138;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -51850,8 +51667,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 18;
-                    if (Filename != null) { length += 1 + Filename.Length; }
+                    int length = 19;
+                    if (Filename != null) { length += Filename.Length; }
                     return length;
                 }
             }
@@ -52105,7 +51922,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += AgentBlock.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
@@ -52547,9 +52364,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 136;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 138;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -52917,7 +52734,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += RezData.Length;
                 length += NotecardData.Length;
@@ -53206,7 +53023,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += TransactionBlock.Length;
                 for (int j = 0; j < FolderData.Length; j++)
@@ -54099,7 +53916,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += TransactionBlock.Length;
                 for (int j = 0; j < FolderData.Length; j++)
@@ -54555,9 +54372,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 136;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 138;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -54805,9 +54622,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 43;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 45;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -55045,8 +54862,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 16;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 17;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -55477,8 +55294,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 43;
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 44;
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -55802,8 +55619,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 45;
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 46;
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -55995,8 +55812,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 45;
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 46;
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -56220,7 +56037,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < Data.Length; j++)
                     length += Data[j].Length;
@@ -56458,7 +56275,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < Data.Length; j++)
                     length += Data[j].Length;
@@ -56627,8 +56444,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 16;
-                    if (Filename != null) { length += 1 + Filename.Length; }
+                    int length = 17;
+                    if (Filename != null) { length += Filename.Length; }
                     return length;
                 }
             }
@@ -56944,7 +56761,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < Rights.Length; j++)
                     length += Rights[j].Length;
@@ -57176,7 +56993,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < Rights.Length; j++)
                     length += Rights[j].Length;
@@ -57367,7 +57184,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 for (int j = 0; j < AgentBlock.Length; j++)
                     length += AgentBlock[j].Length;
                 return length;
@@ -57549,7 +57366,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 for (int j = 0; j < AgentBlock.Length; j++)
                     length += AgentBlock[j].Length;
                 return length;
@@ -57752,8 +57569,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 28;
-                    if (SimName != null) { length += 1 + SimName.Length; }
+                    int length = 29;
+                    if (SimName != null) { length += SimName.Length; }
                     return length;
                 }
             }
@@ -57902,8 +57719,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 19;
-                    if (AssetData != null) { length += 2 + AssetData.Length; }
+                    int length = 21;
+                    if (AssetData != null) { length += AssetData.Length; }
                     return length;
                 }
             }
@@ -58223,9 +58040,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 24;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Charter != null) { length += 2 + Charter.Length; }
+                    int length = 27;
+                    if (Name != null) { length += Name.Length; }
+                    if (Charter != null) { length += Charter.Length; }
                     return length;
                 }
             }
@@ -58422,8 +58239,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 17;
-                    if (Message != null) { length += 1 + Message.Length; }
+                    int length = 18;
+                    if (Message != null) { length += Message.Length; }
                     return length;
                 }
             }
@@ -58613,8 +58430,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 40;
-                    if (Charter != null) { length += 2 + Charter.Length; }
+                    int length = 42;
+                    if (Charter != null) { length += Charter.Length; }
                     return length;
                 }
             }
@@ -58841,7 +58658,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < RoleChange.Length; j++)
                     length += RoleChange[j].Length;
@@ -59440,7 +59257,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += GroupData.Length;
                 for (int j = 0; j < EjectData.Length; j++)
@@ -60256,7 +60073,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += GroupData.Length;
                 for (int j = 0; j < InviteData.Length; j++)
@@ -60670,10 +60487,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 92;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Charter != null) { length += 2 + Charter.Length; }
-                    if (MemberTitle != null) { length += 1 + MemberTitle.Length; }
+                    int length = 96;
+                    if (Name != null) { length += Name.Length; }
+                    if (Charter != null) { length += Charter.Length; }
+                    if (MemberTitle != null) { length += MemberTitle.Length; }
                     return length;
                 }
             }
@@ -61103,10 +60920,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 80;
-                    if (StartDate != null) { length += 1 + StartDate.Length; }
-                    if (LastTaxDate != null) { length += 1 + LastTaxDate.Length; }
-                    if (TaxDate != null) { length += 1 + TaxDate.Length; }
+                    int length = 83;
+                    if (StartDate != null) { length += StartDate.Length; }
+                    if (LastTaxDate != null) { length += LastTaxDate.Length; }
+                    if (TaxDate != null) { length += TaxDate.Length; }
                     return length;
                 }
             }
@@ -61507,8 +61324,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 24;
-                    if (StartDate != null) { length += 1 + StartDate.Length; }
+                    int length = 25;
+                    if (StartDate != null) { length += StartDate.Length; }
                     return length;
                 }
             }
@@ -61568,8 +61385,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 4;
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 5;
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -61609,7 +61426,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += MoneyData.Length;
                 for (int j = 0; j < HistoryData.Length; j++)
@@ -62005,8 +61822,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 24;
-                    if (StartDate != null) { length += 1 + StartDate.Length; }
+                    int length = 25;
+                    if (StartDate != null) { length += StartDate.Length; }
                     return length;
                 }
             }
@@ -62089,10 +61906,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 8;
-                    if (Time != null) { length += 1 + Time.Length; }
-                    if (User != null) { length += 1 + User.Length; }
-                    if (Item != null) { length += 1 + Item.Length; }
+                    int length = 11;
+                    if (Time != null) { length += Time.Length; }
+                    if (User != null) { length += User.Length; }
+                    if (Item != null) { length += Item.Length; }
                     return length;
                 }
             }
@@ -62144,7 +61961,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += MoneyData.Length;
                 for (int j = 0; j < HistoryData.Length; j++)
@@ -62662,12 +62479,12 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 41;
-                    if (TerseDateID != null) { length += 1 + TerseDateID.Length; }
-                    if (StartDateTime != null) { length += 1 + StartDateTime.Length; }
-                    if (EndDateTime != null) { length += 1 + EndDateTime.Length; }
-                    if (VoteCast != null) { length += 1 + VoteCast.Length; }
-                    if (ProposalText != null) { length += 1 + ProposalText.Length; }
+                    int length = 46;
+                    if (TerseDateID != null) { length += TerseDateID.Length; }
+                    if (StartDateTime != null) { length += StartDateTime.Length; }
+                    if (EndDateTime != null) { length += EndDateTime.Length; }
+                    if (VoteCast != null) { length += VoteCast.Length; }
+                    if (ProposalText != null) { length += ProposalText.Length; }
                     return length;
                 }
             }
@@ -62735,7 +62552,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += TransactionData.Length;
                 for (int j = 0; j < ProposalData.Length; j++)
@@ -63263,13 +63080,13 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 40;
-                    if (TerseDateID != null) { length += 1 + TerseDateID.Length; }
-                    if (StartDateTime != null) { length += 1 + StartDateTime.Length; }
-                    if (EndDateTime != null) { length += 1 + EndDateTime.Length; }
-                    if (VoteType != null) { length += 1 + VoteType.Length; }
-                    if (VoteResult != null) { length += 1 + VoteResult.Length; }
-                    if (ProposalText != null) { length += 2 + ProposalText.Length; }
+                    int length = 47;
+                    if (TerseDateID != null) { length += TerseDateID.Length; }
+                    if (StartDateTime != null) { length += StartDateTime.Length; }
+                    if (EndDateTime != null) { length += EndDateTime.Length; }
+                    if (VoteType != null) { length += VoteType.Length; }
+                    if (VoteResult != null) { length += VoteResult.Length; }
+                    if (ProposalText != null) { length += ProposalText.Length; }
                     return length;
                 }
             }
@@ -63358,8 +63175,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 20;
-                    if (VoteCast != null) { length += 1 + VoteCast.Length; }
+                    int length = 21;
+                    if (VoteCast != null) { length += VoteCast.Length; }
                     return length;
                 }
             }
@@ -63401,7 +63218,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += TransactionData.Length;
                 length += HistoryItemData.Length;
@@ -63633,8 +63450,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 28;
-                    if (ProposalText != null) { length += 1 + ProposalText.Length; }
+                    int length = 29;
+                    if (ProposalText != null) { length += ProposalText.Length; }
                     return length;
                 }
             }
@@ -63824,8 +63641,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 32;
-                    if (VoteCast != null) { length += 1 + VoteCast.Length; }
+                    int length = 33;
+                    if (VoteCast != null) { length += VoteCast.Length; }
                     return length;
                 }
             }
@@ -64231,9 +64048,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 29;
-                    if (OnlineStatus != null) { length += 1 + OnlineStatus.Length; }
-                    if (Title != null) { length += 1 + Title.Length; }
+                    int length = 31;
+                    if (OnlineStatus != null) { length += OnlineStatus.Length; }
+                    if (Title != null) { length += Title.Length; }
                     return length;
                 }
             }
@@ -64284,7 +64101,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += GroupData.Length;
                 for (int j = 0; j < MemberData.Length; j++)
@@ -65238,10 +65055,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 28;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Title != null) { length += 1 + Title.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 31;
+                    if (Name != null) { length += Name.Length; }
+                    if (Title != null) { length += Title.Length; }
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -65295,7 +65112,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += GroupData.Length;
                 for (int j = 0; j < RoleData.Length; j++)
@@ -65712,7 +65529,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < MemberData.Length; j++)
                     length += MemberData[j].Length;
@@ -66051,8 +65868,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 17;
-                    if (Title != null) { length += 1 + Title.Length; }
+                    int length = 18;
+                    if (Title != null) { length += Title.Length; }
                     return length;
                 }
             }
@@ -66094,7 +65911,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < GroupData.Length; j++)
                     length += GroupData[j].Length;
@@ -66457,10 +66274,10 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 25;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
-                    if (Title != null) { length += 1 + Title.Length; }
+                    int length = 28;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
+                    if (Title != null) { length += Title.Length; }
                     return length;
                 }
             }
@@ -66514,7 +66331,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < RoleData.Length; j++)
                     length += RoleData[j].Length;
@@ -66803,8 +66620,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 32;
-                    if (Selection != null) { length += 1 + Selection.Length; }
+                    int length = 33;
+                    if (Selection != null) { length += Selection.Length; }
                     return length;
                 }
             }
@@ -67131,7 +66948,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < WearableData.Length; j++)
                     length += WearableData[j].Length;
@@ -67367,7 +67184,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < WearableData.Length; j++)
                     length += WearableData[j].Length;
@@ -67606,7 +67423,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < WearableData.Length; j++)
                     length += WearableData[j].Length;
@@ -67820,8 +67637,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 17;
-                    if (HostName != null) { length += 1 + HostName.Length; }
+                    int length = 18;
+                    if (HostName != null) { length += HostName.Length; }
                     return length;
                 }
             }
@@ -67863,7 +67680,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < WearableData.Length; j++)
                     length += WearableData[j].Length;
@@ -68186,11 +68003,11 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 40;
-                    if (FirstName != null) { length += 1 + FirstName.Length; }
-                    if (LastName != null) { length += 1 + LastName.Length; }
-                    if (GroupTitle != null) { length += 1 + GroupTitle.Length; }
-                    if (GroupName != null) { length += 1 + GroupName.Length; }
+                    int length = 44;
+                    if (FirstName != null) { length += FirstName.Length; }
+                    if (LastName != null) { length += LastName.Length; }
+                    if (GroupTitle != null) { length += GroupTitle.Length; }
+                    if (GroupName != null) { length += GroupName.Length; }
                     return length;
                 }
             }
@@ -68346,8 +68163,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 40;
-                    if (GroupTitle != null) { length += 1 + GroupTitle.Length; }
+                    int length = 41;
+                    if (GroupTitle != null) { length += GroupTitle.Length; }
                     return length;
                 }
             }
@@ -68391,7 +68208,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 for (int j = 0; j < AgentGroupData.Length; j++)
                     length += AgentGroupData[j].Length;
                 return length;
@@ -68594,8 +68411,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 45;
-                    if (GroupName != null) { length += 1 + GroupName.Length; }
+                    int length = 46;
+                    if (GroupName != null) { length += GroupName.Length; }
                     return length;
                 }
             }
@@ -68643,7 +68460,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < GroupData.Length; j++)
                     length += GroupData[j].Length;
@@ -69298,9 +69115,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 49;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 51;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -69561,9 +69378,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 49;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 51;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -69620,7 +69437,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += HeaderData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
@@ -70022,7 +69839,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += HeaderData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
@@ -70368,9 +70185,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 1;
-                    if (DirectoryVisibility != null) { length += 1 + DirectoryVisibility.Length; }
-                    if (EMail != null) { length += 2 + EMail.Length; }
+                    int length = 4;
+                    if (DirectoryVisibility != null) { length += DirectoryVisibility.Length; }
+                    if (EMail != null) { length += EMail.Length; }
                     return length;
                 }
             }
@@ -70558,8 +70375,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 1;
-                    if (DirectoryVisibility != null) { length += 1 + DirectoryVisibility.Length; }
+                    int length = 2;
+                    if (DirectoryVisibility != null) { length += DirectoryVisibility.Length; }
                     return length;
                 }
             }
@@ -70748,9 +70565,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (SimFilename != null) { length += 1 + SimFilename.Length; }
-                    if (ViewerFilename != null) { length += 1 + ViewerFilename.Length; }
+                    int length = 2;
+                    if (SimFilename != null) { length += SimFilename.Length; }
+                    if (ViewerFilename != null) { length += ViewerFilename.Length; }
                     return length;
                 }
             }
@@ -70895,8 +70712,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 48;
-                    if (Method != null) { length += 1 + Method.Length; }
+                    int length = 49;
+                    if (Method != null) { length += Method.Length; }
                     return length;
                 }
             }
@@ -70954,8 +70771,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Parameter != null) { length += 1 + Parameter.Length; }
+                    int length = 1;
+                    if (Parameter != null) { length += Parameter.Length; }
                     return length;
                 }
             }
@@ -70993,7 +70810,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += MethodData.Length;
                 for (int j = 0; j < ParamList.Length; j++)
                     length += ParamList[j].Length;
@@ -71366,7 +71183,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < LayerData.Length; j++)
                     length += LayerData[j].Length;
@@ -71770,8 +71587,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 1;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -71957,8 +71774,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 27;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 28;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -72012,7 +71829,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < Data.Length; j++)
                     length += Data[j].Length;
@@ -72440,8 +72257,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 32;
-                    if (Name != null) { length += 1 + Name.Length; }
+                    int length = 33;
+                    if (Name != null) { length += Name.Length; }
                     return length;
                 }
             }
@@ -72489,7 +72306,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 length += RequestData.Length;
                 for (int j = 0; j < Data.Length; j++)
@@ -72716,12 +72533,12 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 74;
-                    if (To != null) { length += 1 + To.Length; }
-                    if (From != null) { length += 1 + From.Length; }
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Subject != null) { length += 1 + Subject.Length; }
-                    if (Msg != null) { length += 2 + Msg.Length; }
+                    int length = 80;
+                    if (To != null) { length += To.Length; }
+                    if (From != null) { length += From.Length; }
+                    if (Name != null) { length += Name.Length; }
+                    if (Subject != null) { length += Subject.Length; }
+                    if (Msg != null) { length += Msg.Length; }
                     return length;
                 }
             }
@@ -73009,8 +72826,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 17;
-                    if (MediaURL != null) { length += 1 + MediaURL.Length; }
+                    int length = 18;
+                    if (MediaURL != null) { length += MediaURL.Length; }
                     return length;
                 }
             }
@@ -73081,9 +72898,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 9;
-                    if (MediaType != null) { length += 1 + MediaType.Length; }
-                    if (MediaDesc != null) { length += 1 + MediaDesc.Length; }
+                    int length = 11;
+                    if (MediaType != null) { length += MediaType.Length; }
+                    if (MediaDesc != null) { length += MediaDesc.Length; }
                     return length;
                 }
             }
@@ -73276,8 +73093,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 12;
-                    if (Filter != null) { length += 1 + Filter.Length; }
+                    int length = 13;
+                    if (Filter != null) { length += Filter.Length; }
                     return length;
                 }
             }
@@ -73482,9 +73299,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 36;
-                    if (TaskName != null) { length += 1 + TaskName.Length; }
-                    if (OwnerName != null) { length += 1 + OwnerName.Length; }
+                    int length = 38;
+                    if (TaskName != null) { length += TaskName.Length; }
+                    if (OwnerName != null) { length += OwnerName.Length; }
                     return length;
                 }
             }
@@ -73539,7 +73356,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += RequestData.Length;
                 for (int j = 0; j < ReportData.Length; j++)
                     length += ReportData[j].Length;
@@ -73780,11 +73597,11 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 20;
-                    if (Token != null) { length += 1 + Token.Length; }
-                    if (System != null) { length += 1 + System.Length; }
-                    if (Message != null) { length += 2 + Message.Length; }
-                    if (Data != null) { length += 2 + Data.Length; }
+                    int length = 26;
+                    if (Token != null) { length += Token.Length; }
+                    if (System != null) { length += System.Length; }
+                    if (Message != null) { length += Message.Length; }
+                    if (Data != null) { length += Data.Length; }
                     return length;
                 }
             }
@@ -74011,7 +73828,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -74250,9 +74067,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 136;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 138;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -74456,7 +74273,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 for (int j = 0; j < Packets.Length; j++)
                     length += Packets[j].Length;
                 return length;
@@ -75106,8 +74923,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 5;
-                    if (Data != null) { length += 1 + Data.Length; }
+                    int length = 6;
+                    if (Data != null) { length += Data.Length; }
                     return length;
                 }
             }
@@ -75149,7 +74966,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 8;
+                int length = 9;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -75385,7 +75202,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 8;
+                int length = 9;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -75621,7 +75438,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 8;
+                int length = 9;
                 length += AgentData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -76068,7 +75885,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 8;
+                int length = 10;
                 for (int j = 0; j < Location.Length; j++)
                     length += Location[j].Length;
                 length += Index.Length;
@@ -76179,78 +75996,7 @@ namespace OpenMetaverse.Packets
 
         public override byte[][] ToBytesMultiple()
         {
-            System.Collections.Generic.List<byte[]> packets = new System.Collections.Generic.List<byte[]>();
-            int i = 0;
-            int fixedLength = 8;
-
-            byte[] ackBytes = null;
-            int acksLength = 0;
-            if (Header.AckList != null && Header.AckList.Length > 0) {
-                Header.AppendedAcks = true;
-                ackBytes = new byte[Header.AckList.Length * 4 + 1];
-                Header.AcksToBytes(ackBytes, ref acksLength);
-            }
-
-            fixedLength += Index.Length;
-            byte[] fixedBytes = new byte[fixedLength];
-            Header.ToBytes(fixedBytes, ref i);
-            Index.ToBytes(fixedBytes, ref i);
-            fixedLength += 2;
-
-            int LocationStart = 0;
-            int AgentDataStart = 0;
-            while (
-                LocationStart < Location.Length ||
-                AgentDataStart < AgentData.Length)
-            {
-                int variableLength = 0;
-                int LocationCount = 0;
-                int AgentDataCount = 0;
-
-                i = LocationStart;
-                while (fixedLength + variableLength + acksLength < Packet.MTU && i < Location.Length) {
-                    int blockLength = Location[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
-                        variableLength += blockLength;
-                        ++LocationCount;
-                    }
-                    else { break; }
-                    ++i;
-                }
-
-                i = AgentDataStart;
-                while (fixedLength + variableLength + acksLength < Packet.MTU && i < AgentData.Length) {
-                    int blockLength = AgentData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
-                        variableLength += blockLength;
-                        ++AgentDataCount;
-                    }
-                    else { break; }
-                    ++i;
-                }
-
-                byte[] packet = new byte[fixedLength + variableLength + acksLength];
-                int length = fixedBytes.Length;
-                Buffer.BlockCopy(fixedBytes, 0, packet, 0, length);
-                if (packets.Count > 0) { packet[0] = (byte)(packet[0] & ~0x10); }
-
-                packet[length++] = (byte)LocationCount;
-                for (i = LocationStart; i < LocationStart + LocationCount; i++) { Location[i].ToBytes(packet, ref length); }
-                LocationStart += LocationCount;
-
-                packet[length++] = (byte)AgentDataCount;
-                for (i = AgentDataStart; i < AgentDataStart + AgentDataCount; i++) { AgentData[i].ToBytes(packet, ref length); }
-                AgentDataStart += AgentDataCount;
-
-                if (acksLength > 0) {
-                    Buffer.BlockCopy(ackBytes, 0, packet, length, acksLength);
-                    acksLength = 0;
-                }
-
-                packets.Add(packet);
-            }
-
-            return packets.ToArray();
+            return new byte[][] { ToBytes() };
         }
     }
 
@@ -76320,8 +76066,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 14;
-                    if (SeedCapability != null) { length += 2 + SeedCapability.Length; }
+                    int length = 16;
+                    if (SeedCapability != null) { length += SeedCapability.Length; }
                     return length;
                 }
             }
@@ -76700,12 +76446,12 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 174;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
-                    if (TouchName != null) { length += 1 + TouchName.Length; }
-                    if (SitName != null) { length += 1 + SitName.Length; }
-                    if (TextureID != null) { length += 1 + TextureID.Length; }
+                    int length = 179;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
+                    if (TouchName != null) { length += TouchName.Length; }
+                    if (SitName != null) { length += SitName.Length; }
+                    if (TextureID != null) { length += TextureID.Length; }
                     return length;
                 }
             }
@@ -76808,7 +76554,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 8;
+                int length = 9;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
                 return length;
@@ -76993,9 +76739,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 101;
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Description != null) { length += 1 + Description.Length; }
+                    int length = 103;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
                     return length;
                 }
             }
@@ -77616,7 +77362,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 8;
+                int length = 9;
                 for (int j = 0; j < DataBlock.Length; j++)
                     length += DataBlock[j].Length;
                 return length;
@@ -77821,8 +77567,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 41;
-                    if (TypeData != null) { length += 1 + TypeData.Length; }
+                    int length = 42;
+                    if (TypeData != null) { length += TypeData.Length; }
                     return length;
                 }
             }
@@ -77871,7 +77617,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 8;
+                int length = 9;
                 length += AgentData.Length;
                 for (int j = 0; j < Effect.Length; j++)
                     length += Effect[j].Length;
@@ -78507,8 +78253,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (TypeData != null) { length += 1 + TypeData.Length; }
+                    int length = 1;
+                    if (TypeData != null) { length += TypeData.Length; }
                     return length;
                 }
             }
@@ -78546,7 +78292,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 7;
+                int length = 9;
                 length += AgentData.Length;
                 for (int j = 0; j < AnimationList.Length; j++)
                     length += AnimationList[j].Length;
@@ -79117,7 +78863,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 7;
+                int length = 8;
                 length += AgentData.Length;
                 for (int j = 0; j < RequestImage.Length; j++)
                     length += RequestImage[j].Length;
@@ -79333,8 +79079,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Data != null) { length += 2 + Data.Length; }
+                    int length = 2;
+                    if (Data != null) { length += Data.Length; }
                     return length;
                 }
             }
@@ -79515,8 +79261,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Data != null) { length += 2 + Data.Length; }
+                    int length = 2;
+                    if (Data != null) { length += Data.Length; }
                     return length;
                 }
             }
@@ -79693,8 +79439,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Data != null) { length += 2 + Data.Length; }
+                    int length = 2;
+                    if (Data != null) { length += Data.Length; }
                     return length;
                 }
             }
@@ -80000,16 +79746,16 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 141;
-                    if (ObjectData != null) { length += 1 + ObjectData.Length; }
-                    if (TextureEntry != null) { length += 2 + TextureEntry.Length; }
-                    if (TextureAnim != null) { length += 1 + TextureAnim.Length; }
-                    if (NameValue != null) { length += 2 + NameValue.Length; }
-                    if (Data != null) { length += 2 + Data.Length; }
-                    if (Text != null) { length += 1 + Text.Length; }
-                    if (MediaURL != null) { length += 1 + MediaURL.Length; }
-                    if (PSBlock != null) { length += 1 + PSBlock.Length; }
-                    if (ExtraParams != null) { length += 1 + ExtraParams.Length; }
+                    int length = 153;
+                    if (ObjectData != null) { length += ObjectData.Length; }
+                    if (TextureEntry != null) { length += TextureEntry.Length; }
+                    if (TextureAnim != null) { length += TextureAnim.Length; }
+                    if (NameValue != null) { length += NameValue.Length; }
+                    if (Data != null) { length += Data.Length; }
+                    if (Text != null) { length += Text.Length; }
+                    if (MediaURL != null) { length += MediaURL.Length; }
+                    if (PSBlock != null) { length += PSBlock.Length; }
+                    if (ExtraParams != null) { length += ExtraParams.Length; }
                     return length;
                 }
             }
@@ -80170,7 +79916,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 7;
+                int length = 8;
                 length += RegionData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -80382,8 +80128,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 4;
-                    if (Data != null) { length += 2 + Data.Length; }
+                    int length = 6;
+                    if (Data != null) { length += Data.Length; }
                     return length;
                 }
             }
@@ -80424,7 +80170,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 7;
+                int length = 8;
                 length += RegionData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -80663,7 +80409,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 7;
+                int length = 8;
                 length += RegionData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -80884,9 +80630,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Data != null) { length += 1 + Data.Length; }
-                    if (TextureEntry != null) { length += 2 + TextureEntry.Length; }
+                    int length = 3;
+                    if (Data != null) { length += Data.Length; }
+                    if (TextureEntry != null) { length += TextureEntry.Length; }
                     return length;
                 }
             }
@@ -80930,7 +80676,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 7;
+                int length = 8;
                 length += RegionData.Length;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
@@ -81121,7 +80867,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 7;
+                int length = 8;
                 for (int j = 0; j < ObjectData.Length; j++)
                     length += ObjectData[j].Length;
                 return length;
@@ -81284,8 +81030,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 28;
-                    if (Data != null) { length += 2 + Data.Length; }
+                    int length = 30;
+                    if (Data != null) { length += Data.Length; }
                     return length;
                 }
             }
@@ -81466,8 +81212,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (Data != null) { length += 2 + Data.Length; }
+                    int length = 2;
+                    if (Data != null) { length += Data.Length; }
                     return length;
                 }
             }
@@ -81842,8 +81588,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (TypeData != null) { length += 1 + TypeData.Length; }
+                    int length = 1;
+                    if (TypeData != null) { length += TypeData.Length; }
                     return length;
                 }
             }
@@ -81881,7 +81627,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 7;
+                int length = 10;
                 length += Sender.Length;
                 for (int j = 0; j < AnimationList.Length; j++)
                     length += AnimationList[j].Length;
@@ -82511,12 +82257,12 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 238;
-                    if (Bitmap != null) { length += 2 + Bitmap.Length; }
-                    if (Name != null) { length += 1 + Name.Length; }
-                    if (Desc != null) { length += 1 + Desc.Length; }
-                    if (MusicURL != null) { length += 1 + MusicURL.Length; }
-                    if (MediaURL != null) { length += 1 + MediaURL.Length; }
+                    int length = 244;
+                    if (Bitmap != null) { length += Bitmap.Length; }
+                    if (Name != null) { length += Name.Length; }
+                    if (Desc != null) { length += Desc.Length; }
+                    if (MusicURL != null) { length += MusicURL.Length; }
+                    if (MediaURL != null) { length += MediaURL.Length; }
                     return length;
                 }
             }
@@ -82837,9 +82583,9 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 208;
-                    if (Throttles != null) { length += 1 + Throttles.Length; }
-                    if (AgentTextures != null) { length += 2 + AgentTextures.Length; }
+                    int length = 211;
+                    if (Throttles != null) { length += Throttles.Length; }
+                    if (AgentTextures != null) { length += AgentTextures.Length; }
                     return length;
                 }
             }
@@ -83069,8 +82815,8 @@ namespace OpenMetaverse.Packets
             {
                 get
                 {
-                    int length = 0;
-                    if (NVPairs != null) { length += 2 + NVPairs.Length; }
+                    int length = 2;
+                    if (NVPairs != null) { length += NVPairs.Length; }
                     return length;
                 }
             }
@@ -83147,7 +82893,7 @@ namespace OpenMetaverse.Packets
         {
             get
             {
-                int length = 7;
+                int length = 12;
                 length += AgentData.Length;
                 for (int j = 0; j < GroupData.Length; j++)
                     length += GroupData[j].Length;
