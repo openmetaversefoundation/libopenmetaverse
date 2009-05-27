@@ -26,9 +26,10 @@ namespace OpenMetaverse.Packets
             AddCallback("EstateCovenantReply.Data.CovenantTimestamp", DecodeTimeStamp);
             AddCallback("CreationDate", DecodeTimeStamp);
             AddCallback("BinaryBucket", DecodeBinaryBucket);
-            AddCallback("ParcelData.Data", DecodeParcelData);
-            AddCallback("LayerData.Data", DecodeParcelData);
+            AddCallback("ParcelData.Data", DecodeBinaryToHexString);
+            AddCallback("LayerData.Data", DecodeBinaryToHexString);
             AddCallback("ImageData.Data", DecodeImageData);
+            AddCallback("TransferData.Data", DecodeBinaryToHexString);
             AddCallback("ObjectData.TextureEntry", DecodeTextureEntry);
             AddCallback("ImprovedInstantMessage.MessageBlock.Dialog", DecodeDialog);
 
@@ -38,6 +39,9 @@ namespace OpenMetaverse.Packets
             AddCallback("EveryoneMask", DecodePermissionMask);
             AddCallback("NextOwnerMask", DecodePermissionMask);
             AddCallback("GroupMask", DecodePermissionMask);
+            
+            // FetchInventoryDescendents
+            AddCallback("InventoryData.SortOrder", DecodeInventorySort);
 
             AddCallback("WearableType", DecodeWearableType);
             //
@@ -49,9 +53,6 @@ namespace OpenMetaverse.Packets
             AddCallback("ItemData.Flags", DecodeInventoryFlags);
             
             AddCallback("SaleType", DecodeObjectSaleType);
-
-            AddCallback("Name", DecodeGenericByteArrayToFormattedString);
-            AddCallback("Description", DecodeGenericByteArrayToFormattedString);
 
             AddCallback("ScriptControlChange.Data.Controls", DecodeScriptControls);
 
@@ -74,8 +75,6 @@ namespace OpenMetaverse.Packets
             AddCallback("ObjectUpdate.ObjectData.NameValue", DecodeNameValue);
             AddCallback("ObjectUpdate.ObjectData.Data", DecodeObjectData);
             
-            AddCallback("ObjectUpdate.ObjectData.Text", DecodeGenericByteArrayToFormattedString);
-            AddCallback("ObjectUpdate.ObjectData.MediaURL", DecodeGenericByteArrayToFormattedString);
             AddCallback("ObjectUpdate.ObjectData.PSBlock", DecodeObjectParticleSystem);
             AddCallback("ParticleSys", DecodeObjectParticleSystem);
             AddCallback("ObjectUpdate.ObjectData.ExtraParams", DecodeObjectExtraParams);
@@ -95,9 +94,34 @@ namespace OpenMetaverse.Packets
 
             AddCallback("EstateOwnerMessage.ParamList.Parameter", DecodeEstateParameter);
 
-            AddCallback("ScriptDialog.Buttons.ButtonLabel", DecodeGenericByteArrayToFormattedString);
+            //AddCallback("ScriptDialog.Buttons.ButtonLabel", DecodeGenericByteArrayToFormattedString);
+            //AddCallback("FirstName", DecodeGenericByteArrayToFormattedString);
+            //AddCallback("LastName", DecodeGenericByteArrayToFormattedString);
+            //AddCallback("GroupData.Title", DecodeGenericByteArrayToFormattedString);
             AddCallback("Codec", DecodeImageCodec);
             AddCallback("Info.TeleportFlags", DecodeTeleportFlags);
+
+            // map
+            AddCallback("MapBlockRequest.AgentData.Flags", DecodeMapRequestFlags);
+            AddCallback("MapItemRequest.AgentData.Flags", DecodeMapRequestFlags);
+            AddCallback("MapBlockReply.Data.Access", DecodeMapAccess);
+            AddCallback("FolderData.Type", DecodeFolderType);
+            AddCallback("RequestData.ItemType", DecodeGridItemType);
+
+            // TransferRequest/TransferInfo
+            AddCallback("TransferInfo.Params", DecodeTransferParams);
+            AddCallback("TransferInfo.ChannelType", DecodeTransferChannelType);
+            AddCallback("TransferInfo.SourceType", DecodeTransferSourceType);
+            AddCallback("TransferInfo.TargetType", DecodeTransferTargetType);
+            AddCallback("TransferData.ChannelType", DecodeTransferChannelType);
+            // Directory Manager
+            AddCallback("QueryData.QueryFlags", DecodeDirQueryFlags);
+            AddCallback("Category", DecodeCategory);
+            AddCallback("QueryData.SearchType", SearchTypeFlags);
+
+            AddCallback("ParcelAccessListRequest.Data.Flags", DecodeParcelACL);
+            AddCallback("ParcelAccessListReply.Data.Flags", DecodeParcelACL);
+            //AddCallback("ParcelAccessListReply.List.Flags", DecodeParcelACLReply);
         }
 
         /// <summary>
@@ -213,7 +237,7 @@ namespace OpenMetaverse.Packets
                                         "Quaternion");
             i += 8;
             // Angular velocity (omega)
-            result.AppendFormat("{0,30}: {1,-40} [{2}]" + Environment.NewLine,
+            result.AppendFormat("{0,30}: {1,-40} [{2}]",
                                         "AngularVelocity",
                               new Vector3(
                 Utils.UInt16ToFloat(block, i, -64.0f, 64.0f),
@@ -770,64 +794,99 @@ namespace OpenMetaverse.Packets
                 }
                 else
                 {
-                    result.AppendFormat("{0,30}: {1,-40} [{2}]" + System.Environment.NewLine, field.Name,
-                                        field.GetValue(obj), field.FieldType.Name);
+                    result.AppendFormat("{0,30}: {1,-40} [{2}]" + System.Environment.NewLine, 
+                        field.Name,
+                        field.GetValue(obj), 
+                        field.FieldType.Name);
                 }
             }
         }
 
         private static string DecodeObjectPCode(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,2} {2,-38} [{3}]",
+            return String.Format("{0,30}: {1,2} {2,-37} [PCode]",
                 fieldName,
                 fieldData,
-                "(" + (PCode)(byte)fieldData + ")",
-                fieldData.GetType().Name);
+                "(" + (PCode)(byte)fieldData + ")");
         }
 
         private static string DecodeImageType(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-38} [{3}]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [ImageType]",
                 fieldName,
                 fieldData,
-                "(" + (ImageType)(byte)fieldData + ")",
-                fieldData.GetType().Name);
+                "(" + (ImageType)(byte)fieldData + ")");
         }
 
         private static string DecodeImageCodec(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-38} [{3}]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [ImageCodec]",
                 fieldName,
                 fieldData,
-                "(" + (ImageCodec)(byte)fieldData + ")",
-                fieldData.GetType().Name);
+                "(" + (ImageCodec)(byte)fieldData + ")");
         }
 
         private static string DecodeObjectMaterial(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-38} [{3}]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [Material]",
                 fieldName,
                 fieldData,
-                "(" + (Material)(byte)fieldData + ")",
-                fieldData.GetType().Name);
+                "(" + (Material)(byte)fieldData + ")");
         }
 
         private static string DecodeObjectClickAction(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-38} [{3}]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [ClickAction]",
                 fieldName,
                 fieldData,
-                "(" + (ClickAction)(byte)fieldData + ")",
-                fieldData.GetType().Name);
+                "(" + (ClickAction)(byte)fieldData + ")");
+        }
+
+        private static string DecodeDirQueryFlags(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-10} {2,-29} [DirectoryManager.DirFindFlags]",
+                fieldName,
+                fieldData,
+                "(" + (DirectoryManager.DirFindFlags)(uint)fieldData + ")");
+        }
+
+        private static string DecodeParcelACL(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-10} {2,-29} [AccessList]",
+                fieldName,
+                fieldData,
+                "(" + (AccessList)(uint)fieldData + ")");
+        }
+
+        private static string DecodeParcelACLReply(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-10} {2,-29} [ParcelAccessFlags]",
+                fieldName,
+                fieldData,
+                "(" + (ParcelAccessFlags)(uint)fieldData + ")");
+        }
+        private static string SearchTypeFlags(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-10} {2,-29} [DirectoryManager.SearchTypeFlags]",
+                fieldName,
+                fieldData,
+                "(" + (DirectoryManager.SearchTypeFlags)(uint)fieldData + ")");
+        }
+
+        private static string DecodeCategory(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-2} {2,-37} [ParcelCategory]",
+                fieldName,
+                fieldData,
+                "(" + (ParcelCategory)(uint)fieldData + ")");
         }
 
         private static string DecodeObjectUpdateFlags(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-10} {2,-29} [{3}]",
+            return String.Format("{0,30}: {1,-10} {2,-29} [PrimFlags]",
                 fieldName,
                 fieldData,
-                "(" + (PrimFlags)(uint)fieldData + ")",
-                fieldData.GetType().Name);
+                "(" + (PrimFlags)(uint)fieldData + ")");
         }
 
         private static string DecodeTeleportFlags(string fieldName, object fieldData)
@@ -896,7 +955,7 @@ namespace OpenMetaverse.Packets
             return String.Format("{0,30}: {1,-40} [Byte[]]", fieldName, bucket);
         }
 
-        private static string DecodeParcelData(string fieldName, object fieldData)
+        private static string DecodeBinaryToHexString(string fieldName, object fieldData)
         {
             return String.Format("{0,30}",
                                 Utils.BytesToHexString((byte[])fieldData,
@@ -905,7 +964,7 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeWearableType(string fieldName, object fieldData)
         {
-            return String.Format("{0,30} {1,-2} {2,-38} [WearableType]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [WearableType]",
                 fieldName,
                 (byte)fieldData,
                 "(" + (WearableType)fieldData + ")");
@@ -913,23 +972,39 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeInventoryType(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-38} [AssetType]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [AssetType]",
                                  fieldName,
                                  (sbyte)fieldData,
                                  "(" + (AssetType)(sbyte)fieldData + ")");
         }
 
+        private static string DecodeInventorySort(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-2} {2,-37} [InventorySortOrder]",
+                                 fieldName,
+                                 fieldData,
+                                 "(" + (InventorySortOrder)(int)fieldData + ")");
+        }
+
         private static string DecodeInventoryInvType(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-38} [InventoryType]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [InventoryType]",
                                  fieldName,
                                  (sbyte)fieldData,
                                  "(" + (InventoryType)fieldData + ")");
         }
 
+        private static string DecodeFolderType(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-2} {2,-37} [AssetType]",
+                                 fieldName,
+                                 (sbyte)fieldData,
+                                 "(" + (AssetType)fieldData + ")");
+        }
+
         private static string DecodeInventoryFlags(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-38} [FixMe]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [FixMe]",
                                  fieldName,
                                   fieldData,
                                  "(" + fieldData + ")");
@@ -937,7 +1012,7 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeObjectSaleType(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-38} [SaleType]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [SaleType]",
                                  fieldName,
                                  (byte)fieldData,
                                  "(" + (SaleType)fieldData + ")");
@@ -945,17 +1020,125 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeRegionFlags(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-38} [RegionFlags]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [RegionFlags]",
                 fieldName,
                 fieldData,
-                "(" + (RegionFlags)(uint)fieldData + ")",
-                fieldData.GetType().Name);
+                "(" + (RegionFlags)(uint)fieldData + ")");
 
+        }
+
+        private static string DecodeTransferParams(string fieldName, object fieldData)
+        {
+            byte[] paramData = (byte[])fieldData;
+            StringBuilder result = new StringBuilder();
+            result.AppendLine(" <Params>");
+            if (paramData.Length == 20)
+            {
+                result.AppendFormat("{0,30}: {1,-40} [UUID]" + Environment.NewLine,
+                                    "AssetID",
+                                    new UUID(paramData, 0));
+
+                result.AppendFormat("{0,30}: {1,-2} {2,-37} [AssetType]" + Environment.NewLine,
+                "AssetType",
+                (sbyte)paramData[16],
+                "(" + (AssetType)(sbyte)paramData[16] + ")");
+
+            }
+            else if (paramData.Length == 100)
+            {
+                //UUID agentID = new UUID(info.TransferInfo.Params, 0);
+                result.AppendFormat("{0,30}: {1,-40} [UUID]" + Environment.NewLine,
+                                    "AgentID",
+                                    new UUID(paramData, 0));
+
+                //UUID sessionID = new UUID(info.TransferInfo.Params, 16);
+                result.AppendFormat("{0,30}: {1,-40} [UUID]" + Environment.NewLine,
+                                    "SessionID",
+                                    new UUID(paramData, 16));
+                //UUID ownerID = new UUID(info.TransferInfo.Params, 32);
+                result.AppendFormat("{0,30}: {1,-40} [UUID]" + Environment.NewLine,
+                                    "OwnerID",
+                                    new UUID(paramData, 32));
+                //UUID taskID = new UUID(info.TransferInfo.Params, 48);
+                result.AppendFormat("{0,30}: {1,-40} [UUID]" + Environment.NewLine,
+                                    "TaskID",
+                                    new UUID(paramData, 48));
+                //UUID itemID = new UUID(info.TransferInfo.Params, 64);
+                result.AppendFormat("{0,30}: {1,-40} [UUID]" + Environment.NewLine,
+                                    "ItemID",
+                                    new UUID(paramData, 64));
+
+                result.AppendFormat("{0,30}: {1,-40} [UUID]" + Environment.NewLine,
+                                    "AssetID",
+                                    new UUID(paramData, 80));
+
+                result.AppendFormat("{0,30}: {1,-2} {2,-37} [AssetType]" + Environment.NewLine,
+                    "AssetType",
+                    (sbyte)paramData[96],
+                    "(" + (AssetType)(sbyte)paramData[96] + ")");
+            }
+            else
+            {
+                Console.WriteLine("Oh Shit!");
+            }
+
+            result.Append("</Params>");
+
+            return result.ToString();
+        }
+
+        private static string DecodeTransferChannelType(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-2} {2,-37} [ChannelType]",
+                fieldName,
+                fieldData,
+                "(" + (ChannelType)(int)fieldData + ")");
+        }
+
+        private static string DecodeTransferSourceType(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-2} {2,-37} [SourceType]",
+                fieldName,
+                fieldData,
+                "(" + (SourceType)(int)fieldData + ")");
+        }
+
+        private static string DecodeTransferTargetType(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-2} {2,-37} [TargetType]",
+                fieldName,
+                fieldData,
+                "(" + (TargetType)(int)fieldData + ")");
+        }
+
+        private static string DecodeMapRequestFlags(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-2} {2,-37} [GridLayerType]",
+                fieldName,
+                fieldData,
+                "(" + (GridLayerType)(uint)fieldData + ")");
+        }
+
+        private static string DecodeGridItemType(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-2} {2,-37} [GridItemType]",
+                fieldName,
+                fieldData,
+                "(" + (GridItemType)(uint)fieldData + ")");
+
+        }
+
+        private static string DecodeMapAccess(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-2} {2,-37} [SimAccess]",
+                                 fieldName,
+                                 fieldData,
+                                 "(" + (SimAccess)(byte)fieldData + ")");
         }
 
         private static string DecodeSimAccess(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-38} [SimAccess]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [SimAccess]",
                 fieldName,
                 (byte)fieldData,
                 "(" + (SimAccess)fieldData + ")");
@@ -963,7 +1146,7 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeAttachedSoundFlags(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-38} [SoundFlags]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [SoundFlags]",
                 fieldName,
                 (byte)fieldData,
                 "(" + (SoundFlags)fieldData + ")");
@@ -972,7 +1155,7 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeChatSourceType(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-38} [SourceType]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [SourceType]",
                 fieldName,
                 fieldData,
                 "(" + (SourceType)(byte)fieldData + ")");
@@ -980,7 +1163,7 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeChatChatType(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-38} [ChatType]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [ChatType]",
                 fieldName,
                 (byte)fieldData,
                 "(" + (ChatType)fieldData + ")");
@@ -988,7 +1171,7 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeChatAudible(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-38} [ChatAudibleLevel]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [ChatAudibleLevel]",
                 fieldName,
                 (byte)fieldData,
                 "(" + (ChatAudibleLevel)(byte)fieldData + ")");
@@ -1207,6 +1390,7 @@ namespace OpenMetaverse.Packets
 
             for (int i = 0; i < fields.Length; i++)
             {
+                // we're not interested in any of these here
                 if (fields[i].Name == "Type" || fields[i].Name == "Header" || fields[i].Name == "HasVariableBlocks")
                     continue;
 
@@ -1284,11 +1468,15 @@ namespace OpenMetaverse.Packets
                         result.AppendLine(special);
                     }
                     else
-                    { 
+                    {
+                        var p = propertyInfo.GetValue(nestedArrayRecord, null);
+                        string s = Utils.BytesToString((byte[])p);
+                        
                         result.AppendFormat("{0, 30}: {1,-40} [{2}]c" + Environment.NewLine,
                             propertyInfo.Name,
-                            /*Utils.BytesToString((byte[])*/propertyInfo.GetValue(nestedArrayRecord, null)/*)*/,
+                            Utils.BytesToString((byte[])propertyInfo.GetValue(nestedArrayRecord, null)),
                             propertyInfo.PropertyType.Name);
+                        //result.AppendFormat("TEST: {0} ### ", s);
                     }
                 }
                 result.AppendFormat("{0,32}" + Environment.NewLine, "***");
