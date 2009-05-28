@@ -2204,10 +2204,10 @@ namespace OpenMetaverse.Messages.Linden
                 OSDMap infoMap = new OSDMap(4);
                 infoMap["can_voice_chat"] = OSD.FromBoolean((bool)Updates[i].CanVoiceChat);
                 infoMap["is_moderator"] = OSD.FromBoolean((bool)Updates[i].IsModerator);
-                infoMap["transition"] = OSD.FromString(Updates[i].Transition);
 
                 OSDMap imap = new OSDMap(1);
                 imap["info"] = infoMap;
+ 		imap["transition"] = OSD.FromString(Updates[i].Transition);
                 imap.Add("mutes", mutesMap);
 
                 agent_updatesMap.Add(Updates[i].AgentID.ToString(), imap);
@@ -2277,7 +2277,8 @@ namespace OpenMetaverse.Messages.Linden
 
                     block.CanVoiceChat = agentPermsMap["can_voice_chat"].AsBoolean();
                     block.IsModerator = agentPermsMap["is_moderator"].AsBoolean();
-                    block.Transition = agentPermsMap["transition"].AsString();
+            
+  	            block.Transition = infoMap["transition"].AsString();
 
                     if (infoMap.ContainsKey("mutes"))
                     {
