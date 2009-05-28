@@ -134,7 +134,7 @@ namespace OpenMetaverse
         /// <summary>true if the TexturePipeline is currently running</summary>
         bool _Running;
         /// <summary>A synchronization object used by the primary thread</summary>
-        private static object lockerObject = new object();
+        private object lockerObject = new object();
         /// <summary>A refresh timer used to increase the priority of stalled requests</summary>
         private readonly System.Timers.Timer RefreshDownloadsTimer = 
             new System.Timers.Timer(Settings.PIPELINE_REFRESH_INTERVAL);
@@ -526,7 +526,6 @@ namespace OpenMetaverse
                         // -1 = slot not available
                         if (slot != -1 && nextTask != null)
                         {
-                            
                                 nextTask.State = TextureRequestState.Started;
                                 nextTask.RequestSlot = slot;
                                 nextTask.Transfer = new ImageDownload();
@@ -569,8 +568,11 @@ namespace OpenMetaverse
                 // Timed out
                 Logger.Log("Worker " + task.RequestSlot + " Timeout waiting for Texture " + task.RequestID + " to Download Got " + task.Transfer.Transferred + " of " + task.Transfer.Size, Helpers.LogLevel.Warning);
 
-                foreach(TextureDownloadCallback callback in task.Callbacks)
-                    callback(TextureRequestState.Timeout, new AssetTexture(task.RequestID, task.Transfer.AssetData));
+                AssetTexture texture = new AssetTexture(task.RequestID, task.Transfer.AssetData);
+                foreach (TextureDownloadCallback callback in task.Callbacks)
+                {
+                    callback(TextureRequestState.Timeout, texture);
+                }
 
                 _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
 
