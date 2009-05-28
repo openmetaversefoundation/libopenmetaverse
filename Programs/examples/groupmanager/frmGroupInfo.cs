@@ -76,15 +76,33 @@ namespace groupmanager
                             ManagedImage imgData;
                             Image bitmap;
 
-                            if (state == TextureRequestState.Finished)
+                            if (state != TextureRequestState.Timeout || state != TextureRequestState.NotFound)
                             {
                                 OpenJPEG.DecodeToImage(assetTexture.AssetData, out imgData, out bitmap);
                                 picInsignia.Image = bitmap;
-                            }               
-                        });
+                                UpdateInsigniaProgressText("Progress...");
+                            }
+                            if (state == TextureRequestState.Finished)
+                            {
+                                UpdateInsigniaProgressText("");
+                            }
+                        }, true);
 
             if (this.InvokeRequired)
                 this.BeginInvoke(new MethodInvoker(UpdateProfile));
+        }
+
+        private void UpdateInsigniaProgressText(string resultText)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new MethodInvoker(delegate()
+                {
+                    UpdateInsigniaProgressText(resultText);
+                }));
+            }   
+            else
+                labelInsigniaProgress.Text = resultText;
         }
 
         private void UpdateProfile()
