@@ -80,29 +80,15 @@ namespace OpenMetaverse
         {
             if (shutdownFlag)
             {
-                if (remoteEndPoint == null)
-                {
-                    // Server mode
+                const int SIO_UDP_CONNRESET = -1744830452;
 
-                    // create and bind the socket
-                    IPEndPoint ipep = new IPEndPoint(Settings.BIND_ADDR, udpPort);
-                    udpSocket = new Socket(
-                        AddressFamily.InterNetwork,
-                        SocketType.Dgram,
-                        ProtocolType.Udp);
-                    udpSocket.Bind(ipep);
-                }
-                else
-                {
-                    // Client mode
-                    IPEndPoint ipep = new IPEndPoint(Settings.BIND_ADDR, udpPort);
-                    udpSocket = new Socket(
-                        AddressFamily.InterNetwork,
-                        SocketType.Dgram,
-                        ProtocolType.Udp);
-                    udpSocket.Bind(ipep);
-                    //udpSocket.Connect(remoteEndPoint);
-                }
+                IPEndPoint ipep = new IPEndPoint(Settings.BIND_ADDR, udpPort);
+                udpSocket = new Socket(
+                    AddressFamily.InterNetwork,
+                    SocketType.Dgram,
+                    ProtocolType.Udp);
+                udpSocket.IOControl(SIO_UDP_CONNRESET, new byte[] { 0 }, null);
+                udpSocket.Bind(ipep);
 
                 // we're not shutting down, we're starting up
                 shutdownFlag = false;
@@ -155,13 +141,40 @@ namespace OpenMetaverse
                         0,
                         UDPPacketBuffer.BUFFER_SIZE,
                         SocketFlags.None,
-                        //ref wrappedBuffer.Instance.RemoteEndPoint,
                         ref buf.RemoteEndPoint,
                         AsyncEndReceive,
                         //wrappedBuffer);
                         buf);
                 }
-                catch (SocketException) { }
+                catch (SocketException e)
+                {
+                    if (e.SocketErrorCode == SocketError.ConnectionReset)
+                    {
+                        Logger.Log("SIO_UDP_CONNRESET was ignored, attempting to salvage the UDP listener on port " + udpPort, Helpers.LogLevel.Error);
+                        bool salvaged = false;
+                        while (!salvaged)
+                        {
+                            try
+                            {
+                                udpSocket.BeginReceiveFrom(
+                                    //wrappedBuffer.Instance.Data,
+                                    buf.Data,
+                                    0,
+                                    UDPPacketBuffer.BUFFER_SIZE,
+                                    SocketFlags.None,
+                                    ref buf.RemoteEndPoint,
+                                    AsyncEndReceive,
+                                    //wrappedBuffer);
+                                    buf);
+                                salvaged = true;
+                            }
+                            catch (SocketException) { }
+                            catch (ObjectDisposedException) { return; }
+                        }
+
+                        Logger.Log("Salvaged the UDP listener on port " + udpPort, Helpers.LogLevel.Info);
+                    }
+                }
                 catch (ObjectDisposedException) { }
             }
         }
