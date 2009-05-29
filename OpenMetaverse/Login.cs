@@ -462,14 +462,7 @@ namespace OpenMetaverse
         public static string ParseString(string key, Hashtable reply)
         {
             if (reply.ContainsKey(key))
-                try
-                {
-                    return (string)reply[key];
-                }
-                catch (Exception e)
-                {
-                    Console.Write(e.Message);
-                }
+                    return String.Format("{0}", reply[key]);
 
             return String.Empty;
         }
