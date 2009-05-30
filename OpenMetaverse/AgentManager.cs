@@ -1867,33 +1867,91 @@ namespace OpenMetaverse
         /// <seealso cref="T:OpenMetaverse.NetworkManager.CurrentSim.ObjectsPrimitives"/>
         public void Grab(uint objectLocalID)
         {
+            Grab(objectLocalID, Vector3.Zero, Vector3.Zero, Vector3.Zero, 0, Vector3.Zero, Vector3.Zero, Vector3.Zero);
+        }
+
+        /// <summary>
+        /// Overload: Grab a simulated object
+        /// </summary>
+        /// <param name="objectLocalID">an unsigned integer of the objects ID within the simulator</param>
+        /// <param name="grabOffset"></param>
+        /// <param name="uvCoord"></param>
+        /// <param name="stCoord"></param>
+        /// <param name="faceIndex"></param>
+        /// <param name="position"></param>
+        /// <param name="normal"></param>
+        /// <param name="binormal"></param>
+        public void Grab(uint objectLocalID, Vector3 grabOffset, Vector3 uvCoord, Vector3 stCoord, int faceIndex, Vector3 position,
+            Vector3 normal, Vector3 binormal)
+        {
             ObjectGrabPacket grab = new ObjectGrabPacket();
+
             grab.AgentData.AgentID = Client.Self.AgentID;
             grab.AgentData.SessionID = Client.Self.SessionID;
+            
             grab.ObjectData.LocalID = objectLocalID;
-            grab.ObjectData.GrabOffset = new Vector3(0, 0, 0);
+            grab.ObjectData.GrabOffset = grabOffset;
+
+            grab.SurfaceInfo = new ObjectGrabPacket.SurfaceInfoBlock[1];
+            grab.SurfaceInfo[0] = new ObjectGrabPacket.SurfaceInfoBlock();
+            grab.SurfaceInfo[0].UVCoord = uvCoord;
+            grab.SurfaceInfo[0].STCoord = stCoord;
+            grab.SurfaceInfo[0].FaceIndex = faceIndex;
+            grab.SurfaceInfo[0].Position = position;
+            grab.SurfaceInfo[0].Normal = normal;
+            grab.SurfaceInfo[0].Binormal = binormal;
+
             Client.Network.SendPacket(grab);
         }
 
         /// <summary>
-        /// Drags an object
+        /// Drag an object
         /// </summary>
         /// <param name="objectID"><seealso cref="UUID"/> of the object to drag</param>
         /// <param name="grabPosition">Drag target in region coordinates</param>
         public void GrabUpdate(UUID objectID, Vector3 grabPosition)
         {
+            GrabUpdate(objectID, grabPosition, Vector3.Zero, Vector3.Zero, Vector3.Zero, 0, Vector3.Zero, Vector3.Zero, Vector3.Zero);
+        }
+
+        /// <summary>
+        /// Overload: Drag an object
+        /// </summary>
+        /// <param name="objectID"><seealso cref="UUID"/> of the object to drag</param>
+        /// <param name="grabPosition">Drag target in region coordinates</param>
+        /// <param name="grabOffset"></param>
+        /// <param name="uvCoord"></param>
+        /// <param name="stCoord"></param>
+        /// <param name="faceIndex"></param>
+        /// <param name="position"></param>
+        /// <param name="normal"></param>
+        /// <param name="binormal"></param>
+        public void GrabUpdate(UUID objectID, Vector3 grabPosition, Vector3 grabOffset, Vector3 uvCoord, Vector3 stCoord, int faceIndex, Vector3 position,
+            Vector3 normal, Vector3 binormal)
+        {
             ObjectGrabUpdatePacket grab = new ObjectGrabUpdatePacket();
             grab.AgentData.AgentID = Client.Self.AgentID;
             grab.AgentData.SessionID = Client.Self.SessionID;
+
             grab.ObjectData.ObjectID = objectID;
-            grab.ObjectData.GrabOffsetInitial = new Vector3(0, 0, 0);
+            grab.ObjectData.GrabOffsetInitial = grabOffset;
             grab.ObjectData.GrabPosition = grabPosition;
             grab.ObjectData.TimeSinceLast = 0;
+
+            grab.SurfaceInfo = new ObjectGrabUpdatePacket.SurfaceInfoBlock[1];
+            grab.SurfaceInfo[0] = new ObjectGrabUpdatePacket.SurfaceInfoBlock();
+            grab.SurfaceInfo[0].UVCoord = uvCoord;
+            grab.SurfaceInfo[0].STCoord = stCoord;
+            grab.SurfaceInfo[0].FaceIndex = faceIndex;
+            grab.SurfaceInfo[0].Position = position;
+            grab.SurfaceInfo[0].Normal = normal;
+            grab.SurfaceInfo[0].Binormal = binormal;
+
             Client.Network.SendPacket(grab);
         }
 
         /// <summary>
-        /// Releases a grabbed object
+        /// Release a grabbed object
         /// </summary>
         /// <param name="objectLocalID">The Objects Simulator Local ID</param>
         /// <seealso cref="T:OpenMetaverse.NetworkManager.CurrentSim.ObjectsPrimitives"/>
@@ -1901,10 +1959,37 @@ namespace OpenMetaverse
         /// <seealso cref="GrabUpdate"/>
         public void DeGrab(uint objectLocalID)
         {
+            DeGrab(objectLocalID, Vector3.Zero, Vector3.Zero, 0, Vector3.Zero, Vector3.Zero, Vector3.Zero);
+        }
+
+        /// <summary>
+        /// Release a grabbed object
+        /// </summary>
+        /// <param name="objectLocalID">The Objects Simulator Local ID</param>
+        /// <param name="uvCoord"></param>
+        /// <param name="stCoord"></param>
+        /// <param name="faceIndex"></param>
+        /// <param name="position"></param>
+        /// <param name="normal"></param>
+        /// <param name="binormal"></param>
+        public void DeGrab(uint objectLocalID, Vector3 uvCoord, Vector3 stCoord, int faceIndex, Vector3 position,
+            Vector3 normal, Vector3 binormal)
+        {
             ObjectDeGrabPacket degrab = new ObjectDeGrabPacket();
             degrab.AgentData.AgentID = Client.Self.AgentID;
             degrab.AgentData.SessionID = Client.Self.SessionID;
+
             degrab.ObjectData.LocalID = objectLocalID;
+            
+            degrab.SurfaceInfo = new ObjectDeGrabPacket.SurfaceInfoBlock[1];
+            degrab.SurfaceInfo[0] = new ObjectDeGrabPacket.SurfaceInfoBlock();
+            degrab.SurfaceInfo[0].UVCoord = uvCoord;
+            degrab.SurfaceInfo[0].STCoord = stCoord;
+            degrab.SurfaceInfo[0].FaceIndex = faceIndex;
+            degrab.SurfaceInfo[0].Position = position;
+            degrab.SurfaceInfo[0].Normal = normal;
+            degrab.SurfaceInfo[0].Binormal = binormal;
+
             Client.Network.SendPacket(degrab);
         }
 
