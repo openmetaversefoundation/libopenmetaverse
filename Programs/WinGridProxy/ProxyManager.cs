@@ -28,14 +28,17 @@ using System;
 using System.Net;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Reflection;
 using GridProxy;
 using Nwc.XmlRpc;
 using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
+using OpenMetaverse;
 
 namespace WinGridProxy
 {
-     public class ProxyManager
+    public class ProxyManager
     {
         // fired when a new packet arrives
         public delegate void PacketLogHandler(Packet packet, Direction direction, IPEndPoint endpoint);
@@ -63,8 +66,12 @@ namespace WinGridProxy
 
         public ProxyFrame Proxy;
 
+        private Assembly openmvAssembly;
+
         public ProxyManager(string port, string listenIP, string loginUri)
         {
+            openmvAssembly = Assembly.Load("OpenMetaverse");
+            if (openmvAssembly == null) throw new Exception("Assembly load exception");
 
             _Port = string.Format("--proxy-login-port={0}", port);
 
@@ -95,10 +102,10 @@ namespace WinGridProxy
             ProxyConfig pc = new ProxyConfig("WinGridProxy", "Jim Radford", args);
 
             Proxy = new ProxyFrame(args, pc);
-            
 
-            Proxy.proxy.SetLoginRequestDelegate(new XmlRpcRequestDelegate(LoginRequest));
-            Proxy.proxy.SetLoginResponseDelegate(new XmlRpcResponseDelegate(LoginResponse));
+
+            Proxy.proxy.AddLoginRequestDelegate(new XmlRpcRequestDelegate(LoginRequest));
+            Proxy.proxy.AddLoginResponseDelegate(new XmlRpcResponseDelegate(LoginResponse));
 
             Proxy.proxy.AddCapsDelegate("EventQueueGet", new CapsDelegate(EventQueueGetHandler));
 
@@ -156,13 +163,13 @@ namespace WinGridProxy
             return false;
         }
 
-         /// <summary>
-         /// Process individual messages that arrive via the EventQueue and convert each indvidual event into a format
-         /// suitable for processing by the IMessage system
-         /// </summary>
-         /// <param name="req"></param>
-         /// <param name="stage"></param>
-         /// <returns></returns>
+        /// <summary>
+        /// Process individual messages that arrive via the EventQueue and convert each indvidual event into a format
+        /// suitable for processing by the IMessage system
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="stage"></param>
+        /// <returns></returns>
         private bool EventQueueGetHandler(CapsRequest req, CapsStage stage)
         {
             if (stage == CapsStage.Response)
@@ -223,7 +230,278 @@ namespace WinGridProxy
 
         internal void InjectPacket(string packetData, bool toSimulator)
         {
-            
+            Direction direction = Direction.Incoming;
+            string name = null;
+            string block = null;
+            object blockObj = null;
+            Type packetClass = null;
+            Packet packet = null;
+
+            try
+            {
+                foreach (string line in packetData.Split(new[] { '\n' }))
+                {
+                    Match match;
+
+                    if (name == null)
+                    {
+                        match = (new Regex(@"^\s*(in|out)\s+(\w+)\s*$")).Match(line);
+                        if (!match.Success)
+                        {
+                            OpenMetaverse.Logger.Log("expecting direction and packet name, got: " + line, OpenMetaverse.Helpers.LogLevel.Error);
+                            return;
+                        }
+
+                        string lineDir = match.Groups[1].Captures[0].ToString();
+                        string lineName = match.Groups[2].Captures[0].ToString();
+
+                        if (lineDir == "in")
+                            direction = Direction.Incoming;
+                        else if (lineDir == "out")
+                            direction = Direction.Outgoing;
+                        else
+                        {
+                            OpenMetaverse.Logger.Log("expecting 'in' or 'out', got: " + line, OpenMetaverse.Helpers.LogLevel.Error);
+                            return;
+                        }
+
+                        name = lineName;
+                        packetClass = openmvAssembly.GetType("OpenMetaverse.Packets." + name + "Packet");
+                        if (packetClass == null) throw new Exception("Couldn't get class " + name + "Packet");
+                        ConstructorInfo ctr = packetClass.GetConstructor(new Type[] { });
+                        if (ctr == null) throw new Exception("Couldn't get suitable constructor for " + name + "Packet");
+                        packet = (Packet)ctr.Invoke(new object[] { });
+                    }
+                    else
+                    {
+                        match = (new Regex(@"^\s*\[(\w+)\]\s*$")).Match(line);
+                        if (match.Success)
+                        {
+                            block = match.Groups[1].Captures[0].ToString();
+                            FieldInfo blockField = packetClass.GetField(block);
+                            if (blockField == null) throw new Exception("Couldn't get " + name + "Packet." + block);
+                            Type blockClass = blockField.FieldType;
+                            if (blockClass.IsArray)
+                            {
+                                blockClass = blockClass.GetElementType();
+                                ConstructorInfo ctr = blockClass.GetConstructor(new Type[] { });
+                                if (ctr == null) throw new Exception("Couldn't get suitable constructor for " + blockClass.Name);
+                                blockObj = ctr.Invoke(new object[] { });
+                                object[] arr = (object[])blockField.GetValue(packet);
+                                object[] narr = (object[])Array.CreateInstance(blockClass, arr.Length + 1);
+                                Array.Copy(arr, narr, arr.Length);
+                                narr[arr.Length] = blockObj;
+                                blockField.SetValue(packet, narr);
+                                //Console.WriteLine("Added block "+block);
+                            }
+                            else
+                            {
+                                blockObj = blockField.GetValue(packet);
+                            }
+                            if (blockObj == null) throw new Exception("Got " + name + "Packet." + block + " == null");
+                            //Console.WriteLine("Got block " + name + "Packet." + block);
+
+                            continue;
+                        }
+
+                        if (block == null)
+                        {
+                            OpenMetaverse.Logger.Log("expecting block name, got: " + line, OpenMetaverse.Helpers.LogLevel.Error);
+                            return;
+                        }
+
+                        match = (new Regex(@"^\s*(\w+)\s*=\s*(.*)$")).Match(line);
+                        if (match.Success)
+                        {
+                            string lineField = match.Groups[1].Captures[0].ToString();
+                            string lineValue = match.Groups[2].Captures[0].ToString();
+                            object fval;
+
+                            //FIXME: use of MagicCast inefficient
+                            //if (lineValue == "$Value")
+                            //    fval = MagicCast(name, block, lineField, value);
+                            if (lineValue == "$UUID")
+                                fval = UUID.Random();
+                            else if (lineValue == "$AgentID")
+                                fval = Proxy.AgentID;
+                            else if (lineValue == "$SessionID")
+                                fval = Proxy.SessionID;
+                            else
+                                fval = MagicCast(name, block, lineField, lineValue);
+
+                            MagicSetField(blockObj, lineField, fval);
+                            continue;
+                        }
+                        OpenMetaverse.Logger.Log("expecting block name or field, got: " + line, OpenMetaverse.Helpers.LogLevel.Error);
+                        return;
+                    }
+                }
+
+                if (name == null)
+                {
+
+                    OpenMetaverse.Logger.Log("expecting direction and packet name, got EOF", OpenMetaverse.Helpers.LogLevel.Error);
+                    return;
+                }
+
+                packet.Header.Reliable = true;
+
+                Proxy.proxy.InjectPacket(packet, direction);
+
+                OpenMetaverse.Logger.Log("Injected " + name, OpenMetaverse.Helpers.LogLevel.Info);                
+            }
+            catch (Exception e)
+            {
+                OpenMetaverse.Logger.Log("failed to injected " + name, OpenMetaverse.Helpers.LogLevel.Error, e);
+            }
+        }
+
+        private static void MagicSetField(object obj, string field, object val)
+        {
+            Type cls = obj.GetType();
+
+            FieldInfo fieldInf = cls.GetField(field);
+            if (fieldInf == null)
+            {
+                PropertyInfo prop = cls.GetProperty(field);
+                if (prop == null) throw new Exception("Couldn't find field " + cls.Name + "." + field);
+                prop.SetValue(obj, val, null);
+                //throw new Exception("FIXME: can't set properties");
+            }
+            else
+            {
+                fieldInf.SetValue(obj, val);
+            }
+        }
+
+        // MagicCast: given a packet/block/field name and a string, convert the string to a value of the appropriate type
+        private object MagicCast(string name, string block, string field, string value)
+        {
+            Type packetClass = openmvAssembly.GetType("OpenMetaverse.Packets." + name + "Packet");
+            if (packetClass == null) throw new Exception("Couldn't get class " + name + "Packet");
+
+            FieldInfo blockField = packetClass.GetField(block);
+            if (blockField == null) throw new Exception("Couldn't get " + name + "Packet." + block);
+            Type blockClass = blockField.FieldType;
+            if (blockClass.IsArray) blockClass = blockClass.GetElementType();
+            // Console.WriteLine("DEBUG: " + blockClass.Name);
+
+            FieldInfo fieldField = blockClass.GetField(field); PropertyInfo fieldProp = null;
+            Type fieldClass = null;
+            if (fieldField == null)
+            {
+                fieldProp = blockClass.GetProperty(field);
+                if (fieldProp == null) throw new Exception("Couldn't get " + name + "Packet." + block + "." + field);
+                fieldClass = fieldProp.PropertyType;
+            }
+            else
+            {
+                fieldClass = fieldField.FieldType;
+            }
+
+            try
+            {
+                if (fieldClass == typeof(byte))
+                {
+                    return Convert.ToByte(value);
+                }
+                else if (fieldClass == typeof(ushort))
+                {
+                    return Convert.ToUInt16(value);
+                }
+                else if (fieldClass == typeof(uint))
+                {
+                    return Convert.ToUInt32(value);
+                }
+                else if (fieldClass == typeof(ulong))
+                {
+                    return Convert.ToUInt64(value);
+                }
+                else if (fieldClass == typeof(sbyte))
+                {
+                    return Convert.ToSByte(value);
+                }
+                else if (fieldClass == typeof(short))
+                {
+                    return Convert.ToInt16(value);
+                }
+                else if (fieldClass == typeof(int))
+                {
+                    return Convert.ToInt32(value);
+                }
+                else if (fieldClass == typeof(long))
+                {
+                    return Convert.ToInt64(value);
+                }
+                else if (fieldClass == typeof(float))
+                {
+                    return Convert.ToSingle(value);
+                }
+                else if (fieldClass == typeof(double))
+                {
+                    return Convert.ToDouble(value);
+                }
+                else if (fieldClass == typeof(UUID))
+                {
+                    return new UUID(value);
+                }
+                else if (fieldClass == typeof(bool))
+                {
+                    if (value.ToLower() == "true")
+                        return true;
+                    else if (value.ToLower() == "false")
+                        return false;
+                    else
+                        throw new Exception();
+                }
+                else if (fieldClass == typeof(byte[]))
+                {
+                    return Utils.StringToBytes(value);
+                }
+                else if (fieldClass == typeof(Vector3))
+                {
+                    Vector3 result;
+                    if (Vector3.TryParse(value, out result))
+                        return result;
+                    else
+                        throw new Exception();
+                }
+                else if (fieldClass == typeof(Vector3d))
+                {
+                    Vector3d result;
+                    if (Vector3d.TryParse(value, out result))
+                        return result;
+                    else
+                        throw new Exception();
+                }
+                else if (fieldClass == typeof(Vector4))
+                {
+                    Vector4 result;
+                    if (Vector4.TryParse(value, out result))
+                        return result;
+                    else
+                        throw new Exception();
+                }
+                else if (fieldClass == typeof(Quaternion))
+                {
+                    Quaternion result;
+                    if (Quaternion.TryParse(value, out result))
+                        return result;
+                    else
+                        throw new Exception();
+                }
+                else
+                {
+                    throw new Exception("unsupported field type " + fieldClass);
+                }
+            }
+            catch
+            {
+                throw new Exception("unable to interpret " + value + " as " + fieldClass);
+            }
         }
     }
+
+
+
 }

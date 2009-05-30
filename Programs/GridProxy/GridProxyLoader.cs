@@ -74,8 +74,8 @@ namespace GridProxy
             proxy = new Proxy(proxyConfig);
 
             // add delegates for login
-            proxy.SetLoginRequestDelegate(new XmlRpcRequestDelegate(LoginRequest));
-            proxy.SetLoginResponseDelegate(new XmlRpcResponseDelegate(LoginResponse));
+            proxy.AddLoginRequestDelegate(new XmlRpcRequestDelegate(LoginRequest));
+            proxy.AddLoginResponseDelegate(new XmlRpcResponseDelegate(LoginResponse));
 
             // add a delegate for outgoing chat
             proxy.AddDelegate(PacketType.ChatFromViewer, Direction.Outgoing, new PacketDelegate(ChatFromViewerOut));

@@ -250,30 +250,6 @@ namespace GridProxy
 		    OpenMetaverse.Logger.Log("<T< KeepAlive", Helpers.LogLevel.Debug);
         }
 
-        // SetLoginRequestDelegate: specify a callback loginRequestDelegate that will be called when the client requests login
-        public XmlRpcRequestDelegate SetLoginRequestDelegate(XmlRpcRequestDelegate loginRequestDelegate)
-        {
-            XmlRpcRequestDelegate lastDelegate;
-            lock (this)
-            {
-                lastDelegate = this.loginRequestDelegate;
-                this.loginRequestDelegate = loginRequestDelegate;
-            }
-            return lastDelegate;
-        }
-
-        // SetLoginResponseDelegate: specify a callback loginResponseDelegate that will be called when the server responds to login
-        public XmlRpcResponseDelegate SetLoginResponseDelegate(XmlRpcResponseDelegate loginResponseDelegate)
-        {
-            XmlRpcResponseDelegate lastDelegate;
-            lock (this)
-            {
-                lastDelegate = this.loginResponseDelegate;
-                this.loginResponseDelegate = loginResponseDelegate;
-            }
-            return lastDelegate;
-        }
-
         // AddDelegate: add callback packetDelegate for packets of type packetName going direction
         public void AddDelegate(PacketType packetType, Direction direction, PacketDelegate packetDelegate)
         {
@@ -1015,18 +991,14 @@ namespace GridProxy
                 XmlRpcRequest request = (XmlRpcRequest)(new XmlRpcRequestDeserializer()).Deserialize(Encoding.UTF8.GetString(content));
 
                 // call the loginRequestDelegate
-                if (loginRequestDelegate != null)
+                lock (loginRequestDelegates)
                 {
-                    try
+                    foreach (XmlRpcRequestDelegate d in loginRequestDelegates)
                     {
-                        loginRequestDelegate(request);
-                    }
-                    catch (Exception e)
-                    {
-                        OpenMetaverse.Logger.Log("Exception in login request delegate" + e, Helpers.LogLevel.Error, e);
+                        try { d(request); }
+                        catch (Exception e) { OpenMetaverse.Logger.Log("Exception in login request delegate" + e, Helpers.LogLevel.Error, e); }
                     }
                 }
-
                 XmlRpcResponse response;
                 try
                 {
@@ -1082,6 +1054,16 @@ namespace GridProxy
                 XmlTextWriter responseWriter = new XmlTextWriter(writer);
                 XmlRpcResponseSerializer.Singleton.Serialize(responseWriter, response);
                 responseWriter.Close(); writer.Close();
+
+                lock (loginResponseDelegates)
+                {
+                    foreach (XmlRpcResponseDelegate d in loginResponseDelegates)
+                    {
+                        try { d(response); }
+                        catch (Exception e) { OpenMetaverse.Logger.Log("Exception in login response delegate" + e, Helpers.LogLevel.Error, e); }
+                    }
+                }
+               
             }
         }
 
@@ -1164,8 +1146,12 @@ namespace GridProxy
         private Dictionary<IPEndPoint, IPEndPoint> proxyEndPoints = new Dictionary<IPEndPoint, IPEndPoint>();
         private Dictionary<IPEndPoint, SimProxy> simProxies = new Dictionary<IPEndPoint, SimProxy>();
         private Dictionary<EndPoint, SimProxy> proxyHandlers = new Dictionary<EndPoint, SimProxy>();
-        private XmlRpcRequestDelegate loginRequestDelegate = null;
-        private XmlRpcResponseDelegate loginResponseDelegate = null;
+        //private XmlRpcRequestDelegate loginRequestDelegate = null;
+        //private XmlRpcResponseDelegate loginResponseDelegate = null;
+        
+        public List<XmlRpcRequestDelegate> loginRequestDelegates = new List<XmlRpcRequestDelegate>();
+        public List<XmlRpcResponseDelegate> loginResponseDelegates = new List<XmlRpcResponseDelegate>();
+
         private Dictionary<PacketType, List<PacketDelegate>> incomingDelegates = new Dictionary<PacketType, List<PacketDelegate>>();
         private Dictionary<PacketType, List<PacketDelegate>> outgoingDelegates = new Dictionary<PacketType, List<PacketDelegate>>();
         private List<Packet> queuedIncomingInjections = new List<Packet>();
@@ -1186,7 +1172,7 @@ namespace GridProxy
         {
             foreach (SimProxy simProxy in simProxies.Values)
                 simProxy.Reset();
-            KnownCaps.Clear(); //= new ObservableDictionary<string,CapInfo>();
+            KnownCaps.Clear();
         }
 
         private byte[] receiveBuffer = new byte[8192];
@@ -1334,6 +1320,7 @@ namespace GridProxy
         // SendPacket: send a packet to a sim from our fake client endpoint
         public void SendPacket(Packet packet, IPEndPoint endPoint, bool skipZero)
         {
+           
             byte[] buffer = packet.ToBytes();
             if (skipZero || !packet.Header.Zerocoded)
                 simFacingSocket.SendTo(buffer, buffer.Length, SocketFlags.None, endPoint);
@@ -1341,7 +1328,7 @@ namespace GridProxy
             {
                 int zeroLength = Helpers.ZeroEncode(buffer, buffer.Length, zeroBuffer);
                 simFacingSocket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, endPoint);
-            }
+            } 
         }
 
         // SpoofAck: create an ACK for the given packet
@@ -1431,6 +1418,9 @@ namespace GridProxy
             private Dictionary<uint, Packet> outgoingAcks;
             private List<uint> incomingSeenAcks;
             private List<uint> outgoingSeenAcks;
+
+            private List<XmlRpcRequestDelegate> loginRequestDelegates = new List<XmlRpcRequestDelegate>();
+            private List<XmlRpcResponseDelegate> loginResponseDelegates = new List<XmlRpcResponseDelegate>();
 
             // SimProxy: construct a proxy for a single simulator
             public SimProxy(ProxyConfig proxyConfig, IPEndPoint simEndPoint, Proxy proxy)
@@ -2027,6 +2017,21 @@ namespace GridProxy
         private Packet LogOutgoingMysteryPacket(Packet packet)
         {
             return LogPacket (packet , "outgoing mystery");
+        }
+
+        public void AddLoginRequestDelegate(XmlRpcRequestDelegate xmlRpcRequestDelegate)
+        {
+            lock(loginRequestDelegates)
+                if(!loginRequestDelegates.Contains(xmlRpcRequestDelegate))
+                    loginRequestDelegates.Add(xmlRpcRequestDelegate);
+            
+        }
+
+        public void AddLoginResponseDelegate(XmlRpcResponseDelegate xmlRpcResponseDelegate)
+        {
+            lock (loginResponseDelegates)
+                if (!loginResponseDelegates.Contains(xmlRpcResponseDelegate))
+                    loginResponseDelegates.Add(xmlRpcResponseDelegate);
         }
     }
 
