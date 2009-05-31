@@ -43,7 +43,7 @@ using OpenMetaverse.StructuredData;
 using OpenMetaverse.Interfaces;
 using System.Xml;
 using Nwc.XmlRpc;
-using Logger=OpenMetaverse.Logger;
+using Logger = OpenMetaverse.Logger;
 
 namespace WinGridProxy
 {
@@ -81,7 +81,7 @@ namespace WinGridProxy
             {
                 FireEventAppender.Instance.MessageLoggedEvent += new MessageLoggedEventHandler(Instance_MessageLoggedEvent);
             }
-                
+
             // populate the listen box with IPs
             IPHostEntry iphostentry = Dns.GetHostByName(Dns.GetHostName());
             foreach (IPAddress address in iphostentry.AddressList)
@@ -357,7 +357,41 @@ namespace WinGridProxy
                 tabControl1.SelectTab("tabPageInspect");
                 object tag = e.Item.Tag;
 
-                if (tag is XmlRpcRequest)
+                if (tag is string && tag.ToString().StartsWith("Packet Type:"))
+                {
+                    Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(tag.ToString()));
+                    var ei = e.Item;
+                    if (e.Item.ImageIndex == 1) // sent item
+                    {
+                        richTextBoxDecodedRequest.Text = String.Format("{0}", tag);
+                        richTextBoxRawRequest.Text = String.Format("{0}", tag);
+                        richTextBoxNotationRequest.Text = "No Notation decoding for String items";
+                        treeViewXMLRequest.Nodes.Clear();
+                        hexBoxRequest.ByteProvider = data;
+
+                        richTextBoxDecodedResponse.Text = "No Data";
+                        richTextBoxRawResponse.Text = "No Data";
+                        richTextBoxNotationResponse.Text = "No Data";
+                        treeViewXmlResponse.Nodes.Clear();
+                        hexBoxResponse.ByteProvider = null;
+                    }
+                    else
+                    {
+                        richTextBoxDecodedRequest.Text = "No Data";
+                        richTextBoxRawRequest.Text = "No Data";
+                        richTextBoxNotationRequest.Text = "No Notation decoding for String items";
+                        treeViewXMLRequest.Nodes.Clear();
+                        hexBoxRequest.ByteProvider = null;
+
+                        richTextBoxDecodedResponse.Text = String.Format("{0}", tag);
+                        richTextBoxRawResponse.Text = String.Format("{0}", tag);
+                        richTextBoxNotationResponse.Text = "No Notation decoding for String items";
+                        treeViewXmlResponse.Nodes.Clear();
+                        hexBoxResponse.ByteProvider = data;
+                    }
+                }
+
+                else if (tag is XmlRpcRequest)
                 {
                     XmlRpcRequest requestData = (XmlRpcRequest)tag;
 
@@ -631,15 +665,6 @@ namespace WinGridProxy
             }
         }
 
-        //private void sessionSelectAllProtocol_Click(object sender, EventArgs e)
-        //{
-        //    foreach (ListViewItem item in listViewSessions.Items)
-        //    {
-        //        if (item.SubItems[1].Text.Equals(toolStripMenuItemSelectProtocol.Tag) && !item.Selected)
-        //            item.Selected = true;
-        //    }
-        //}
-
         // stop capturing selected filters
         private void filterDisableByPacketName_CheckedChanged(object sender, EventArgs e)
         {
@@ -826,25 +851,36 @@ namespace WinGridProxy
                 OSDArray sessionArray = new OSDArray();
                 foreach (ListViewItem item in listViewSessions.Items)
                 {
-                    OSDMap session = new OSDMap();
-                    session["name"] = OSD.FromString(item.Name);
-                    session["image_index"] = OSD.FromInteger(item.ImageIndex);
-                    session["id"] = OSD.FromString(item.SubItems[0].Text);
-                    session["protocol"] = OSD.FromString(item.SubItems[1].Text);
-                    session["packet"] = OSD.FromString(item.SubItems[2].Text);
-                    session["size"] = OSD.FromString(item.SubItems[3].Text);
-                    session["host"] = OSD.FromString(item.SubItems[4].Text);
+                    if (item.Tag is Packet || item.Tag is IMessage || item.Tag is String || item.Tag is CapsRequest)
+                    {
+                        OSDMap session = new OSDMap();
+                        session["name"] = OSD.FromString(item.Name);
+                        session["image_index"] = OSD.FromInteger(item.ImageIndex);
+                        session["id"] = OSD.FromString(item.SubItems[0].Text);
+                        session["protocol"] = OSD.FromString(item.SubItems[1].Text);
+                        session["packet"] = OSD.FromString(item.SubItems[2].Text);
+                        session["size"] = OSD.FromString(item.SubItems[3].Text);
+                        session["host"] = OSD.FromString(item.SubItems[4].Text);
 
-                    try
-                    {
-                        session["tag"] = OSD.FromBinary((byte[])item.Tag);
-                    }
-                    catch
-                    {
-                        session["tag"] = OSD.FromBinary(Utils.EmptyBytes);
-                    }
-                    finally
-                    {
+                        if (item.Tag is Packet)
+                        {
+                            session["tag"] = OSD.FromBinary(Utils.StringToBytes(DecodePacket.PacketToString((Packet)item.Tag)));
+                        }
+                        else if (item.Tag is IMessage)
+                        {
+                            IMessage m = (IMessage)item.Tag;
+                            session["tag"] = OSD.FromBinary(Utils.StringToBytes(m.Serialize().ToString()));
+                        }
+                        else if (item.Tag is System.String)
+                        {
+                            session["tag"] = OSD.FromBinary(Utils.StringToBytes(Tag.ToString()));
+                        }
+                        else
+                        {
+                            // we intentionally don't save login requests or responses
+                            session["tag"] = OSD.FromBinary(Utils.StringToBytes("Encoding disabled for this item type"));
+                        }
+
                         sessionArray.Add(session);
                     }
                 }
@@ -881,9 +917,10 @@ namespace WinGridProxy
                         session["packet"].AsString(),
                         session["size"].AsString(),
                         session["host"].AsString()}));
-
+                    var id = addedItem.SubItems[1];
                     addedItem.ImageIndex = session["image_index"].AsInteger();
-                    addedItem.Tag = LitJson.JsonMapper.ToObject(Utils.BytesToString(session["tag"].AsBinary(), 0, session["tag"].AsBinary().Length));
+                    addedItem.BackColor = Color.GhostWhite; // give imported items a different color
+                    addedItem.Tag = Utils.BytesToString(session["tag"].AsBinary());
                 }
 
                 listViewSessions.EndUpdate();
@@ -1333,7 +1370,6 @@ namespace WinGridProxy
 
         private void EditToolStripButton_DropDownOpening(object sender, EventArgs e)
         {
-
             if (listViewSessions.Items.Count > 0)
             {
                 toolStripMenuSessionsRemove.Enabled =
@@ -1429,7 +1465,7 @@ namespace WinGridProxy
 
         void Instance_MessageLoggedEvent(object sender, MessageLoggedEventArgs e)
         {
-            if(this.IsDisposed || this.Disposing)
+            if (this.IsDisposed || this.Disposing)
                 return;
 
             if (InvokeRequired)
@@ -1449,14 +1485,14 @@ namespace WinGridProxy
 
         private void richTextBoxDecodedRequest_TextChanged(object sender, EventArgs e)
         {
-            RichTextBox m_rtb = (RichTextBox) sender;
+            RichTextBox m_rtb = (RichTextBox)sender;
             Regex typesRegex = new Regex(@"\[(?<Type>\w+|\w+\[\])\]|\((?<Enum>.*)\)|\s-- (?<Header>\w+|\w+ \[\]) --\s|(?<BlockSep>\s\*\*\*\s)|(?<Tag>\s<\w+>\s|\s<\/\w+>\s)|(?<BlockCounter>\s\w+\[\d+\]\s)", RegexOptions.ExplicitCapture);
-            
+
             MatchCollection matches = typesRegex.Matches(m_rtb.Text);
-            foreach(Match match in matches)
+            foreach (Match match in matches)
             {
-                m_rtb.SelectionStart = match.Index +1;
-                m_rtb.SelectionLength = match.Length -2;
+                m_rtb.SelectionStart = match.Index + 1;
+                m_rtb.SelectionLength = match.Length - 2;
                 m_rtb.SelectionFont = new Font(m_rtb.Font.FontFamily, m_rtb.Font.Size, FontStyle.Bold);
 
                 if (!String.IsNullOrEmpty(match.Groups["Type"].Value))
