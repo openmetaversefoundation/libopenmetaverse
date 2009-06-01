@@ -487,13 +487,7 @@ namespace OpenMetaverse.Messages.CableBeach
 
     #region Asset Messages
 
-    public interface MetadataBlock
-    {
-        OSDMap Serialize();
-        void Deserialize(OSDMap map);
-    }
-
-    public class MetadataDefault : MetadataBlock
+    public abstract class MetadataBlock
     {
         public UUID ID;
         public string Name;
@@ -504,7 +498,13 @@ namespace OpenMetaverse.Messages.CableBeach
         public bool Temporary;
         public Dictionary<string, Uri> Methods;
 
-        public OSDMap Serialize()
+        public abstract OSDMap Serialize();
+        public abstract void Deserialize(OSDMap map);
+    }
+
+    public class MetadataDefault : MetadataBlock
+    {
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
             map["id"] = OSD.FromUUID(ID);
@@ -521,7 +521,7 @@ namespace OpenMetaverse.Messages.CableBeach
             return map;
         }
 
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             ID = map["id"].AsUUID();
             Name = map["name"].AsString();
@@ -546,18 +546,10 @@ namespace OpenMetaverse.Messages.CableBeach
 
     public class MetadataJPEG2000 : MetadataBlock
     {
-        public UUID ID;
-        public string Name;
-        public string Description;
-        public DateTime CreationDate;
-        public string ContentType;
-        public byte[] SHA256;
-        public bool Temporary;
-        public Dictionary<string, Uri> Methods;
         public int Components;
         public int[] LayerEnds;
 
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
             map["id"] = OSD.FromUUID(ID);
@@ -579,7 +571,7 @@ namespace OpenMetaverse.Messages.CableBeach
             return map;
         }
 
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             ID = map["id"].AsUUID();
             Name = map["name"].AsString();
@@ -638,18 +630,19 @@ namespace OpenMetaverse.Messages.CableBeach
 
     #region Inventory Messages
 
-    public interface InventoryBlock
-    {
-        OSDMap Serialize();
-        void Deserialize(OSDMap map);
-    }
-
-    public class InventoryBlockItem : InventoryBlock
+    public abstract class InventoryBlock
     {
         public UUID ID;
         public UUID ParentID;
         public string Name;
         public UUID OwnerID;
+
+        public abstract OSDMap Serialize();
+        public abstract void Deserialize(OSDMap map);
+    }
+
+    public class InventoryBlockItem : InventoryBlock
+    {
         public UUID AssetID;
         public string ContentType;
         public UUID CreatorID;
@@ -666,7 +659,7 @@ namespace OpenMetaverse.Messages.CableBeach
         public uint Flags;
         public DateTime CreationDate;
 
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
             map["id"] = OSD.FromUUID(ID);
@@ -691,7 +684,7 @@ namespace OpenMetaverse.Messages.CableBeach
             return map;
         }
 
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             ID = map["id"].AsUUID();
             ParentID = map["parent_id"].AsUUID();
@@ -713,15 +706,11 @@ namespace OpenMetaverse.Messages.CableBeach
 
     public class InventoryBlockFolder : InventoryBlock
     {
-        public UUID ID;
-        public UUID ParentID;
-        public string Name;
-        public UUID OwnerID;
         public string PreferredContentType;
         public int Version;
         public InventoryBlock[] Children;
 
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
             map["id"] = OSD.FromUUID(ID);
@@ -744,7 +733,7 @@ namespace OpenMetaverse.Messages.CableBeach
             return map;
         }
 
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             ID = map["id"].AsUUID();
             ParentID = map["parent_id"].AsUUID();
