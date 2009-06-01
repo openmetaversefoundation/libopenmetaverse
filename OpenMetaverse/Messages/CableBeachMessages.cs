@@ -485,6 +485,157 @@ namespace OpenMetaverse.Messages.CableBeach
 
     #endregion Identity Messages
 
+    #region Asset Messages
+
+    public interface MetadataBlock
+    {
+        OSDMap Serialize();
+        void Deserialize(OSDMap map);
+    }
+
+    public class MetadataDefault : MetadataBlock
+    {
+        public UUID ID;
+        public string Name;
+        public string Description;
+        public DateTime CreationDate;
+        public string ContentType;
+        public byte[] SHA256;
+        public bool Temporary;
+        public Dictionary<string, Uri> Methods;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["id"] = OSD.FromUUID(ID);
+            map["name"] = OSD.FromString(Name);
+            map["description"] = OSD.FromString(Description);
+            map["creation_date"] = OSD.FromDate(CreationDate);
+            map["content_type"] = OSD.FromString(ContentType);
+            map["sha256"] = OSD.FromBinary(SHA256);
+            map["temporary"] = OSD.FromBoolean(Temporary);
+            OSDMap methodsMap = new OSDMap(Methods.Count);
+            foreach (KeyValuePair<string, Uri> entry in Methods)
+                methodsMap.Add(entry.Key, OSD.FromUri(entry.Value));
+            map["methods"] = methodsMap;
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            ID = map["id"].AsUUID();
+            Name = map["name"].AsString();
+            Description = map["description"].AsString();
+            CreationDate = map["creation_date"].AsDate();
+            ContentType = map["content_type"].AsString();
+            SHA256 = map["sha256"].AsBinary();
+            Temporary = map["temporary"].AsBoolean();
+            OSDMap methodsMap = map["methods"] as OSDMap;
+            if (methodsMap != null)
+            {
+                Methods = new Dictionary<string, Uri>(methodsMap.Count);
+                foreach (KeyValuePair<string, OSD> entry in methodsMap)
+                    Methods.Add(entry.Key, entry.Value.AsUri());
+            }
+            else
+            {
+                Methods = new Dictionary<string, Uri>(0);
+            }
+        }
+    }
+
+    public class MetadataJPEG2000 : MetadataBlock
+    {
+        public UUID ID;
+        public string Name;
+        public string Description;
+        public DateTime CreationDate;
+        public string ContentType;
+        public byte[] SHA256;
+        public bool Temporary;
+        public Dictionary<string, Uri> Methods;
+        public int Components;
+        public int[] LayerEnds;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["id"] = OSD.FromUUID(ID);
+            map["name"] = OSD.FromString(Name);
+            map["description"] = OSD.FromString(Description);
+            map["creation_date"] = OSD.FromDate(CreationDate);
+            map["content_type"] = OSD.FromString(ContentType);
+            map["sha256"] = OSD.FromBinary(SHA256);
+            map["temporary"] = OSD.FromBoolean(Temporary);
+            OSDMap methodsMap = new OSDMap(Methods.Count);
+            foreach (KeyValuePair<string, Uri> entry in Methods)
+                methodsMap.Add(entry.Key, OSD.FromUri(entry.Value));
+            map["methods"] = methodsMap;
+            map["components"] = OSD.FromInteger(Components);
+            OSDArray layerEndsArray = new OSDArray(LayerEnds.Length);
+            for (int i = 0; i < LayerEnds.Length; i++)
+                layerEndsArray.Add(OSD.FromInteger(LayerEnds[i]));
+            map["layer_ends"] = layerEndsArray;
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            ID = map["id"].AsUUID();
+            Name = map["name"].AsString();
+            Description = map["description"].AsString();
+            CreationDate = map["creation_date"].AsDate();
+            ContentType = map["content_type"].AsString();
+            SHA256 = map["sha256"].AsBinary();
+            Temporary = map["temporary"].AsBoolean();
+            OSDMap methodsMap = map["methods"] as OSDMap;
+            if (methodsMap != null)
+            {
+                Methods = new Dictionary<string, Uri>(methodsMap.Count);
+                foreach (KeyValuePair<string, OSD> entry in methodsMap)
+                    Methods.Add(entry.Key, entry.Value.AsUri());
+            }
+            else
+            {
+                Methods = new Dictionary<string, Uri>(0);
+            }
+            Components = map["components"].AsInteger();
+            OSDArray layerEndsArray = map["layer_ends"] as OSDArray;
+            if (layerEndsArray != null)
+            {
+                LayerEnds = new int[layerEndsArray.Count];
+                for (int i = 0; i < layerEndsArray.Count; i++)
+                    LayerEnds[i] = layerEndsArray[i].AsInteger();
+            }
+            else
+            {
+                LayerEnds = new int[0];
+            }
+        }
+    }
+
+    public class GetAssetMetadataMessage : IMessage
+    {
+        public MetadataBlock Metadata;
+
+        public OSDMap Serialize()
+        {
+            return Metadata.Serialize();
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("components"))
+                Metadata = new MetadataJPEG2000();
+            else
+                Metadata = new MetadataDefault();
+
+            Metadata.Deserialize(map);
+        }
+    }
+
+    #endregion Asset Messages
+
     #region Inventory Messages
 
     public interface InventoryBlock

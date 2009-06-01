@@ -219,7 +219,7 @@ namespace OpenMetaverse.Http
                     // Make sure we can actually send the events right now
                     if (context.Stream == null || !context.Stream.CanWrite)
                     {
-                        Logger.Log.Info("[EventQueue] Connection is closed, requeuing events and closing the handler thread");
+                        //Logger.Log.Info("[EventQueue] Connection is closed, requeuing events and closing the handler thread");
                         if (eventsToSend != null)
                         {
                             for (int i = 0; i < eventsToSend.Count; i++)
