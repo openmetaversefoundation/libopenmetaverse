@@ -6,10 +6,10 @@ using System.Runtime.CompilerServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("OpenMetaverse")]
-[assembly: AssemblyDescription("OpenMetaverse library")]
+[assembly: AssemblyDescription("OpenMetaverse Protocol Library")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("openmetaverse.org")]
-[assembly: AssemblyProduct("OpenMetaverse")]
+[assembly: AssemblyProduct("libOpenMetaverse")]
 [assembly: AssemblyCopyright("Copyright © openmetaverse.org 2006-2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]		
@@ -25,7 +25,7 @@ using System.Runtime.CompilerServices;
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
 
-[assembly: AssemblyVersion("0.6.2.*")]
+[assembly: AssemblyVersion("0.6.3.*")]
 
 //
 // In order to sign your assembly you must specify a key to use. Refer to the 

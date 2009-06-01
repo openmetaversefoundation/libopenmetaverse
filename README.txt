@@ -1,4 +1,4 @@
-OpenMetaverse Library Quick Start (Formerly known as libsecondlife) for Release 0.6.2
+OpenMetaverse Library Quick Start (Formerly known as libsecondlife) for Release 0.6.3
 
 
 Finding Help
