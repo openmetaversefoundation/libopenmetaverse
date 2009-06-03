@@ -35,7 +35,6 @@ namespace OpenMetaverse.Messages.CableBeach
     /// <summary>
     /// Holds information about a grid region
     /// </summary>
-    // TODO: Make this a class
     public struct RegionInfo
     {
         public string Name;
@@ -44,7 +43,6 @@ namespace OpenMetaverse.Messages.CableBeach
         public bool Online;
         public IPAddress IP;
         public int Port;
-        public Uri Address;
         public UUID MapTextureID;
         public Uri Owner;
         public RegionFlags Flags;
@@ -97,7 +95,6 @@ namespace OpenMetaverse.Messages.CableBeach
             map["online"] = OSD.FromBoolean(Online);
             map["ip"] = MessageUtils.FromIP(IP);
             map["port"] = OSD.FromInteger(Port);
-            map["address"] = OSD.FromUri(Address);
             map["map_texture_id"] = OSD.FromUUID(MapTextureID);
             map["owner"] = OSD.FromUri(Owner);
             map["region_flags"] = OSD.FromInteger((int)Flags);
@@ -117,7 +114,6 @@ namespace OpenMetaverse.Messages.CableBeach
             Online = map["online"].AsBoolean();
             IP = MessageUtils.ToIP(map["ip"]);
             Port = map["port"].AsInteger();
-            Address = map["address"].AsUri();
             MapTextureID = map["map_texture_id"].AsUUID();
             Owner = map["owner"].AsUri();
             Flags = (RegionFlags)map["region_flags"].AsInteger();

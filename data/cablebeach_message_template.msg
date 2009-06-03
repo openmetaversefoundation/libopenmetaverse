@@ -10,7 +10,6 @@
 	online: boolean,
 	ip: binary,
 	port: integer,
-	address: uri,
 	map_texture_id: uuid,
 	owner: uri,
 	region_flags: integer,
@@ -376,6 +375,19 @@
 <-
 {
     id: uuid
+}
+
+%%delete_asset
+
+->
+{
+    id: uuid
+}
+
+<-
+{
+    success: boolean,
+    message: string
 }
 
 ////////////////////////////////////////////////////////////////////////////////
