@@ -79,6 +79,7 @@ namespace OpenMetaverse.Assets
         /// Read the next entry in the tar file.
         /// </summary>
         /// <param name="filePath"></param>
+        /// <param name="entryType"></param>
         /// <returns>the data for the entry.  Returns null if there are no more entries</returns>
         public byte[] ReadEntry(out string filePath, out TarEntryType entryType)
         {
@@ -193,6 +194,8 @@ namespace OpenMetaverse.Assets
         /// Convert octal bytes to a decimal representation
         /// </summary>
         /// <param name="bytes"></param>
+        /// <param name="count"></param>
+        /// <param name="startIndex"></param>
         /// <returns></returns>
         public static int ConvertOctalBytesToDecimal(byte[] bytes, int startIndex, int count)
         {

@@ -2249,16 +2249,13 @@ namespace OpenMetaverse
             
             _Client.Network.SendPacket(take);
         }
-
+        
         /// <summary>
         /// Rez an item from inventory to its previous simulator location
         /// </summary>
         /// <param name="simulator"></param>
-        /// <param name="rotation"></param>
-        /// <param name="position"></param>
         /// <param name="item"></param>
         /// <param name="queryID"></param>
-        /// <param name="requestObjectDetails"></param>
         /// <returns></returns>
         public UUID RequestRestoreRezFromInventory(Simulator simulator, InventoryItem item, UUID queryID)
         {

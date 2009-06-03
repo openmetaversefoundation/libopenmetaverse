@@ -93,7 +93,7 @@ namespace OpenMetaverse
                     // so we'll catch the exception and continue
                     udpSocket.IOControl(SIO_UDP_CONNRESET, new byte[] { 0 }, null);
                 }
-                catch (SocketException e)
+                catch (SocketException)
                 {
                     Logger.DebugLog("UDP SIO_UDP_CONNRESET flag not supported on this platform");
                 }

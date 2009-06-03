@@ -38,9 +38,9 @@ namespace OpenMetaverse.Assets
     /// </summary>
     public class AssetsArchiver
     {
-        /// <value>
-        /// Post a message to the log every x assets as a progress bar
-        /// </value>
+        ///// <value>
+        ///// Post a message to the log every x assets as a progress bar
+        ///// </value>
         //static int LOG_ASSET_LOAD_NOTIFICATION_INTERVAL = 50;
 
         /// <summary>

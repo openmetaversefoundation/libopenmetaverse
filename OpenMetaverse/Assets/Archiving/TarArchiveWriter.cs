@@ -98,8 +98,6 @@ namespace OpenMetaverse.Assets
         /// <summary>
         /// Finish writing the raw tar archive data to a stream.  The stream will be closed on completion.
         /// </summary>
-        /// <param name="s">Stream to which to write the data</param>
-        /// <returns></returns>
         public void Close()
         {
             //m_log.Debug("[TAR ARCHIVE WRITER]: Writing final consecutive 0 blocks");

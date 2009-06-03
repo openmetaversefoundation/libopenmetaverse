@@ -1372,7 +1372,6 @@ namespace OpenMetaverse.Packets
         /// </summary>
         /// <param name="packet">The Packet</param>
         /// <returns>A formatted string of values of the nested items in the Packet object</returns>
-        /// should be made generic enough to decode IMessage objects too.</remarks>
         public string PacketToString(Packet packet)
         {
             StringBuilder result = new StringBuilder();

@@ -588,7 +588,7 @@ namespace OpenMetaverse
         ///
         /// <summary>
         /// Add's a group to the estate Allowed list</summary>
-        /// <param name="userID">Key of Group to Add</param>
+        /// <param name="groupID">Key of Group to Add</param>
         /// <param name="allEstates">Add Group as an allowed group to All estates if true</param>
         public void AddAllowedGroup(UUID groupID, bool allEstates)
         {
@@ -602,7 +602,7 @@ namespace OpenMetaverse
         ///
         /// <summary>
         /// Removes a group from the estate Allowed list</summary>
-        /// <param name="userID">Key of Group to Remove</param>
+        /// <param name="groupID">Key of Group to Remove</param>
         /// <param name="allEstates">Removes Group as an allowed Group from All estates if true</param>
         public void RemoveAllowedGroup(UUID groupID, bool allEstates)
         {
