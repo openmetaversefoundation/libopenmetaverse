@@ -875,7 +875,7 @@ namespace OpenMetaverse
             {
                 packet = Packet.BuildPacket(buffer.Data, ref packetEnd,
                     // Only allocate a buffer for zerodecoding if the packet is zerocoded
-                    ((buffer.Data[0] & Helpers.MSG_ZEROCODED) != 0) ? new byte[4096] : null);
+                    ((buffer.Data[0] & Helpers.MSG_ZEROCODED) != 0) ? new byte[8192] : null);
             }
             catch (MalformedDataException)
             {
