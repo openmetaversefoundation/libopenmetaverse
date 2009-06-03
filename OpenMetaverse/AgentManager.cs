@@ -1674,6 +1674,39 @@ namespace OpenMetaverse
             Client.Network.SendPacket(effect);
         }
 
+        /// <summary>
+        /// Create a particle swirl around a target position
+        /// </summary>
+        /// <param name="globalOffset"><seealso cref="Vector3d"/>Target's global position</param>
+        /// <param name="color"><seealso cref="Color4"/>Color values of beam</param>
+        /// <param name="duration">A float representing the duration the swirl will last</param>
+        /// <param name="effectID"><seealso cref="UUID"/> of the Effect</param>
+        public void SphereEffect(Vector3d globalOffset, Color4 color, float duration, UUID effectID)
+        {
+            ViewerEffectPacket effect = new ViewerEffectPacket();
+
+            effect.AgentData.AgentID = Client.Self.AgentID;
+            effect.AgentData.SessionID = Client.Self.SessionID;
+
+            effect.Effect = new ViewerEffectPacket.EffectBlock[1];
+            effect.Effect[0] = new ViewerEffectPacket.EffectBlock();
+            effect.Effect[0].AgentID = Client.Self.AgentID;
+            effect.Effect[0].Color = color.GetBytes();
+            effect.Effect[0].Duration = duration;
+            effect.Effect[0].ID = effectID;
+            effect.Effect[0].Type = (byte)EffectType.Sphere;
+
+            byte[] typeData = new byte[56];
+            Buffer.BlockCopy(UUID.Zero.GetBytes(), 0, typeData, 0, 16);
+            Buffer.BlockCopy(UUID.Zero.GetBytes(), 0, typeData, 16, 16);
+            Buffer.BlockCopy(globalOffset.GetBytes(), 0, typeData, 32, 24);
+
+            effect.Effect[0].TypeData = typeData;
+
+            Client.Network.SendPacket(effect);
+        }
+
+
         #endregion Viewer Effects
 
         #region Movement Actions
