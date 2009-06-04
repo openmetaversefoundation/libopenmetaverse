@@ -595,7 +595,6 @@ namespace OpenMetaverse
                         folder.ParentUUID = map["parent_id"].AsUUID();
                         folder.PreferredType = (AssetType)map["type_default"].AsInteger();
                         folder.Version = map["version"].AsInteger();
-                        folder.OwnerID = LibraryOwner;
                         folders.Add(folder);
                     }
                 }
@@ -605,6 +604,12 @@ namespace OpenMetaverse
 
         public InventoryFolder[] ParseInventorySkeleton(string key, Hashtable reply)
         {
+            UUID ownerID;
+            if(key.Equals("inventory-skel-lib")
+                ownerID = LibraryOwner;
+            else
+                ownerID = AgentID;
+
             List<InventoryFolder> folders = new List<InventoryFolder>();
 
             if (reply.ContainsKey(key) && reply[key] is ArrayList)
@@ -620,6 +625,8 @@ namespace OpenMetaverse
                         folder.ParentUUID = ParseUUID("parent_id", map);
                         folder.PreferredType = (AssetType)ParseUInt("type_default", map);
                         folder.Version = (int)ParseUInt("version", map);
+                        folder.OwnerID = ownerID;
+
                         folders.Add(folder);
                     }
                 }
