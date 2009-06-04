@@ -595,6 +595,7 @@ namespace OpenMetaverse
                         folder.ParentUUID = map["parent_id"].AsUUID();
                         folder.PreferredType = (AssetType)map["type_default"].AsInteger();
                         folder.Version = map["version"].AsInteger();
+                        folder.OwnerID = LibraryOwner;
                         folders.Add(folder);
                     }
                 }
