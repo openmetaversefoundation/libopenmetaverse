@@ -605,7 +605,7 @@ namespace OpenMetaverse
         public InventoryFolder[] ParseInventorySkeleton(string key, Hashtable reply)
         {
             UUID ownerID;
-            if(key.Equals("inventory-skel-lib")
+            if(key.Equals("inventory-skel-lib"))
                 ownerID = LibraryOwner;
             else
                 ownerID = AgentID;
