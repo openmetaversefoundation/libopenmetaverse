@@ -1137,6 +1137,16 @@ namespace OpenMetaverse.StructuredData
                 return DeserializeJson(Encoding.UTF8.GetString(data));
         }
 
+        public static OSD Deserialize(string data)
+        {
+            if (data.StartsWith(LLSD_BINARY_HEADER))
+                return DeserializeLLSDBinary(Encoding.UTF8.GetBytes(data));
+            else if (data.StartsWith(LLSD_XML_HEADER) || data.StartsWith(LLSD_XML_ALT_HEADER) || data.StartsWith(LLSD_XML_ALT2_HEADER))
+                return DeserializeLLSDXml(data);
+            else
+                return DeserializeJson(data);
+        }
+
         public static OSD Deserialize(Stream stream)
         {
             if (stream.CanSeek)
