@@ -506,7 +506,7 @@ namespace OpenMetaverse
         /// <param name="sim"></param>
         private void AvatarAppearanceHandler(Packet packet, Simulator sim)
         {
-            if (OnAvatarAppearance != null)
+            if (OnAvatarAppearance != null || Client.Settings.AVATAR_TRACKING)
             {
                 AvatarAppearancePacket appearance = (AvatarAppearancePacket)packet;
                 sim.ObjectsAvatars.ForEach(delegate(Avatar av)
@@ -525,8 +525,13 @@ namespace OpenMetaverse
                         Primitive.TextureEntryFace defaultTexture = textureEntry.DefaultTexture;
                         Primitive.TextureEntryFace[] faceTextures = textureEntry.FaceTextures;
 
-                        try { OnAvatarAppearance(appearance.Sender.ID, appearance.Sender.IsTrial, defaultTexture, faceTextures, visualParams); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        av.Textures = textureEntry;
+
+                        if (OnAvatarAppearance != null)
+                        {
+                            try { OnAvatarAppearance(appearance.Sender.ID, appearance.Sender.IsTrial, defaultTexture, faceTextures, visualParams); }
+                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        }
                     }
                 });
             }

@@ -832,7 +832,10 @@ namespace OpenMetaverse
 
                 RebakeLayer((BakeType)i);
             }
-            CachedResponseEvent.WaitOne();
+            if (PendingUploads.Count > 0)
+            {
+                CachedResponseEvent.WaitOne();
+            }
             Client.Assets.OnAssetUploaded -= Assets_OnAssetUploaded;
             SendAgentSetAppearance();
         }
@@ -1269,17 +1272,21 @@ namespace OpenMetaverse
             
             lock (AgentTextures)
             {
+                Client.Assets.OnAssetUploaded += Assets_OnAssetUploaded;
                 for (int i = 0; i < AgentTextures.Length; i++)
-                {    
+                {
                     if(AgentTextures[i] == data.TextureData.TextureID)
                     {
                         // Its one of our baked layers, rebake this one
                         RebakeLayer((TextureIndex)i);
-                    
-                        //Kick the appearance setting as well, this sim probably wants this too a it asked for bakes
-                        SendAgentSetAppearance();
                     }
                 }
+                if (PendingUploads.Count > 0)
+                {
+                    CachedResponseEvent.WaitOne();
+                }
+                Client.Assets.OnAssetUploaded -= Assets_OnAssetUploaded;
+                SendAgentSetAppearance();
             }
         }
 
