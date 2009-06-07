@@ -761,11 +761,10 @@ namespace OpenMetaverse
             options.Add("global-textures");
 
             LoginParams loginParams = new LoginParams();
-            if (Client == null)
-                throw new NullReferenceException("GridClient must be instantiated before calling DefaultLoginParams()");
+            
 
-            loginParams.URI = Client.Settings.LOGIN_SERVER;
-            loginParams.Timeout = Client.Settings.LOGIN_TIMEOUT;
+            loginParams.URI = Settings.LOGIN_SERVER;
+            loginParams.Timeout = Settings.LOGIN_TIMEOUT;
             loginParams.MethodName = "login_to_simulator";
             loginParams.FirstName = firstName;
             loginParams.LastName = lastName;
@@ -895,6 +894,11 @@ namespace OpenMetaverse
 
         #endregion
 
+        #region Settings
+        public int CapsTimeout;
+
+        #endregion
+
         #region Private Methods
 
         private void BeginLogin()
@@ -949,7 +953,7 @@ namespace OpenMetaverse
             ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
             // TODO: At some point, maybe we should check the cert?
 
-            if (Client.Settings.USE_LLSD_LOGIN)
+            if (Settings.USE_LLSD_LOGIN)
             {
                 #region LLSD Based Login
                 
@@ -994,8 +998,9 @@ namespace OpenMetaverse
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(String.Format("Failed to parse login URI {0}, {1}", loginParams.URI, ex.Message),
-                        Helpers.LogLevel.Error, Client);
+                    
+                    Log.Log(String.Format("Failed to parse login URI {0}, {1}", loginParams.URI, ex.Message),
+                        Helpers.LogLevel.Error);
                     return;
                 }
 
@@ -1003,7 +1008,7 @@ namespace OpenMetaverse
                 loginRequest.OnComplete += new CapsClient.CompleteCallback(LoginReplyLLSDHandler);
                 loginRequest.UserData = CurrentContext;
                 UpdateLoginStatus(LoginStatus.ConnectingToLogin, String.Format("Logging in as {0} {1}...", loginParams.FirstName, loginParams.LastName));
-                loginRequest.BeginGetResponse(loginLLSD, OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+                loginRequest.BeginGetResponse(loginLLSD, OSDFormat.Xml, CapsTimeout);
 
                 #endregion
             }
@@ -1083,7 +1088,7 @@ namespace OpenMetaverse
             InternalStatusCode = status;
             InternalLoginMessage = message;
 
-            Logger.DebugLog("Login status: " + status.ToString() + ": " + message, Client);
+            Log.DebugLog("Login status: " + status.ToString() + ": " + message);
 
             // If we reached a login resolution trigger the event
             if (status == LoginStatus.Success || status == LoginStatus.Failed)
@@ -1096,7 +1101,7 @@ namespace OpenMetaverse
             if (OnLogin != null)
             {
                 try { OnLogin(status, message); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -1151,10 +1156,13 @@ namespace OpenMetaverse
                 try
                 {
                     // Networking
-                    Client.Network.CircuitCode = (uint)reply.CircuitCode;
+                    CircuitCode = (uint)reply.CircuitCode;
                     regionX = (uint)reply.RegionX;
                     regionY = (uint)reply.RegionY;
                     simPort = (ushort)reply.SimPort;
+                    _SessionID = reply.SessionID;
+                    _SecureSessionID = reply.SecureSessionID;
+                    _AgentID = reply.AgentID;
                     LoginSeedCapability = reply.SeedCapability;
                 }
                 catch (Exception)
@@ -1237,7 +1245,7 @@ namespace OpenMetaverse
                     // Fire an event for connecting to the grid
                     if (OnConnected != null)
                     {
-                        try { OnConnected(this.Client); }
+                        try { OnConnected(this); }
                         catch (Exception e) { Logger.Log(e.ToString(), Helpers.LogLevel.Error); }
                     }
                 }
@@ -1308,17 +1316,20 @@ namespace OpenMetaverse
                         {
                             // Login succeeded
 
+                            // These parameters are stored in NetworkManager, so instead of registering
+                            // another callback for them we just set the values here
+                            _SessionID = data.SessionID;
+                            _SecureSessionID = data.SecureSessionID;
+                            _AgentID = data.AgentID;
+                            CircuitCode = (uint)data.CircuitCode;
+                            LoginSeedCapability = data.SeedCapability;
+
                             // Fire the login callback
                             if (OnLoginResponse != null)
                             {
                                 try { OnLoginResponse(loginSuccess, redirect, data.Message, data.Reason, data); }
-                                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
+                                catch (Exception ex) { Log.Log(ex.Message, Helpers.LogLevel.Error, ex); }
                             }
-
-                            // These parameters are stored in NetworkManager, so instead of registering
-                            // another callback for them we just set the values here
-                            CircuitCode = (uint)data.CircuitCode;
-                            LoginSeedCapability = data.SeedCapability;
 
                             UpdateLoginStatus(LoginStatus.ConnectingToSim, "Connecting to simulator...");
 
@@ -1338,8 +1349,8 @@ namespace OpenMetaverse
                                     // Fire an event for connecting to the grid
                                     if (OnConnected != null)
                                     {
-                                        try { OnConnected(this.Client); }
-                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                        try { OnConnected(this); }
+                                        catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                                     }
                                 }
                                 else

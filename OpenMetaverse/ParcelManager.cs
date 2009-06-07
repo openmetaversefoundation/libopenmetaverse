@@ -676,14 +676,14 @@ namespace OpenMetaverse
                 OSDMap body = req.Serialize();
 
                 CapsClient capsPost = new CapsClient(url);
-                capsPost.BeginGetResponse(body, OSDFormat.Xml, simulator.Client.Settings.CAPS_TIMEOUT);
+                capsPost.BeginGetResponse(body, OSDFormat.Xml, Settings.CAPS_TIMEOUT);
             }
             else
             {
                 ParcelPropertiesUpdatePacket request = new ParcelPropertiesUpdatePacket();
 
-                request.AgentData.AgentID = simulator.Client.Self.AgentID;
-                request.AgentData.SessionID = simulator.Client.Self.SessionID;
+                request.AgentData.AgentID = simulator.Network.AgentID;
+                request.AgentData.SessionID = simulator.Network.SessionID;
 
                 request.ParcelData.LocalID = this.LocalID;
 
@@ -720,8 +720,8 @@ namespace OpenMetaverse
         public void UpdateOtherCleanTime(Simulator simulator)
         {
             ParcelSetOtherCleanTimePacket request = new ParcelSetOtherCleanTimePacket();
-            request.AgentData.AgentID = simulator.Client.Self.AgentID;
-            request.AgentData.SessionID = simulator.Client.Self.SessionID;
+            request.AgentData.AgentID = simulator.Network.AgentID;
+            request.AgentData.SessionID = simulator.Network.SessionID;
             request.ParcelData.LocalID = this.LocalID;
             request.ParcelData.OtherCleanTime = this.OtherCleanTime;
 

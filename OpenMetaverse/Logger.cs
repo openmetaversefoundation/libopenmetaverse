@@ -184,4 +184,128 @@ namespace OpenMetaverse
             }
         }
     }
+
+    public class LoggerInstance
+    {
+        /// <summary>
+        /// Callback used for client apps to receive log messages from
+        /// the library
+        /// </summary>
+        /// <param name="message">Data being logged</param>
+        /// <param name="level">The severity of the log entry from <seealso cref="Helpers.LogLevel"/></param>
+        public delegate void LogCallback(object message, Helpers.LogLevel level);
+
+        /// <summary>Triggered whenever a message is logged. If this is left
+        /// null, log messages will go to the console</summary>
+        public event LogCallback OnLogMessage;
+
+        /// <summary>log4net logging engine</summary>
+        public ILog LogInstance;
+
+        public LoggerInstance()
+        {
+            LogInstance = LogManager.GetLogger("OpenMetaverse");
+
+            // If error level reporting isn't enabled we assume no logger is configured and initialize a default
+            // ConsoleAppender
+            if (!LogInstance.Logger.IsEnabledFor(log4net.Core.Level.Error))
+            {
+                log4net.Appender.ConsoleAppender appender = new log4net.Appender.ConsoleAppender();
+                appender.Layout = new log4net.Layout.PatternLayout("%timestamp [%thread] %-5level - %message%newline");
+                BasicConfigurator.Configure(appender);
+
+                if(Settings.LOG_LEVEL != Helpers.LogLevel.None)
+                    LogInstance.Info("No log configuration found, defaulting to console logging");
+            }
+        }
+
+        public string _BotName;
+        public string BotName
+        {
+            get { return _BotName; }
+            set { _BotName = value; }
+        }
+
+        public bool _LogNames;
+        public bool LogNames
+        {
+            get { return _LogNames; }
+            set { _LogNames = value; }
+        }
+
+        /// <summary>
+        /// Send a log message to the logging engine
+        /// </summary>
+        /// <param name="message">The log message</param>
+        /// <param name="level">The severity of the log entry</param>
+        public void Log(object message, Helpers.LogLevel level)
+        {
+            Log(message, level, null);
+        }
+
+        /// <summary>
+        /// Send a log message to the logging engine
+        /// </summary>
+        /// <param name="message">The log message</param>
+        /// <param name="level">The severity of the log entry</param>
+        /// <param name="exception">Exception that was raised</param>
+        public void Log(object message, Helpers.LogLevel level, Exception exception)
+        {
+            if (BotName != null && LogNames)
+                message = String.Format("<{0}>: {1}", BotName, message);
+
+            if (OnLogMessage != null)
+                OnLogMessage(message, level);
+
+            switch (level)
+            {
+                case Helpers.LogLevel.Debug:
+                    if (Settings.LOG_LEVEL == Helpers.LogLevel.Debug)
+                        LogInstance.Debug(message, exception);
+                    break;
+                case Helpers.LogLevel.Info:
+                    if (Settings.LOG_LEVEL == Helpers.LogLevel.Debug
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Info)
+                        LogInstance.Info(message, exception);
+                    break;
+                case Helpers.LogLevel.Warning:
+                    if (Settings.LOG_LEVEL == Helpers.LogLevel.Debug
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Info
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Warning)
+                        LogInstance.Warn(message, exception);
+                    break;
+                case Helpers.LogLevel.Error:
+                    if (Settings.LOG_LEVEL == Helpers.LogLevel.Debug
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Info
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Warning
+                        || Settings.LOG_LEVEL == Helpers.LogLevel.Error)
+                        LogInstance.Error(message, exception);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// If the library is compiled with DEBUG defined, an event will be
+        /// fired if an <code>OnLogMessage</code> handler is registered and the
+        /// message will be sent to the logging engine
+        /// </summary>
+        /// <param name="message">The message to log at the DEBUG level to the
+        /// current logging engine</param>
+        [System.Diagnostics.Conditional("DEBUG")]
+        public void DebugLog(object message)
+        {
+            if (Settings.LOG_LEVEL == Helpers.LogLevel.Debug)
+            {
+                if (BotName != null && LogNames)
+                    message = String.Format("<{0}>: {1}", BotName, message);
+
+                if (OnLogMessage != null)
+                    OnLogMessage(message, Helpers.LogLevel.Debug);
+
+                LogInstance.Debug(message);
+            }
+        }
+    }
 }

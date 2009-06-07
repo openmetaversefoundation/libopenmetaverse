@@ -1159,7 +1159,7 @@ namespace OpenMetaverse
             NetworkManager.PacketCallback callback;
 
             Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
-
+            Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
             // Teleport callbacks
             callback = new NetworkManager.PacketCallback(TeleportHandler);
             Client.Network.RegisterCallback(PacketType.TeleportStart, callback);
@@ -1214,6 +1214,13 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.CameraConstraint, new NetworkManager.PacketCallback(CameraConstraintHandler));
             Client.Network.RegisterCallback(PacketType.ScriptSensorReply, new NetworkManager.PacketCallback(ScriptSensorReplyHandler));
             Client.Network.RegisterCallback(PacketType.AvatarSitResponse, new NetworkManager.PacketCallback(AvatarSitResponseHandler));
+        }
+
+        void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
+        {
+            // Send an initial AgentUpdate to complete our movement in to the sim
+            if (Settings.SEND_AGENT_UPDATES)
+                Movement.SendUpdate(true, Client.Network.CurrentSim);
         }
 
         #region Chat and instant messages
@@ -1491,7 +1498,7 @@ namespace OpenMetaverse
                 acceptInvite.SessionID = session_id;
 
                 CapsClient request = new CapsClient(url);
-                request.BeginGetResponse(acceptInvite.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+                request.BeginGetResponse(acceptInvite.Serialize(), OSDFormat.Xml, Settings.CAPS_TIMEOUT);
             }
             else
             {
@@ -1523,7 +1530,7 @@ namespace OpenMetaverse
                 startConference.SessionID = tmp_session_id;
 
                 CapsClient request = new CapsClient(url);
-                request.BeginGetResponse(startConference.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+                request.BeginGetResponse(startConference.Serialize(), OSDFormat.Xml, Settings.CAPS_TIMEOUT);
             }
             else
             {
@@ -1741,7 +1748,7 @@ namespace OpenMetaverse
         /// <returns>true of AgentUpdate was sent</returns>
         public bool Stand()
         {
-            if (Client.Settings.SEND_AGENT_UPDATES)
+            if (Settings.SEND_AGENT_UPDATES)
             {
                 Movement.SitOnGround = false;
                 Movement.StandUp = true;
@@ -1874,7 +1881,7 @@ namespace OpenMetaverse
         /// <returns>true if control flags were set and AgentUpdate was sent to the simulator</returns>
         public bool AutoPilotCancel()
         {
-            if (Client.Settings.SEND_AGENT_UPDATES)
+            if (Settings.SEND_AGENT_UPDATES)
             {
                 Movement.AtPos = true;
                 Movement.SendUpdate();
@@ -2566,22 +2573,6 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Move an agent in to a simulator. This packet is the last packet
-        /// needed to complete the transition in to a new simulator
-        /// </summary>
-        /// <param name="simulator"><seealso cref="T:OpenMetaverse.Simulator"/> Object</param>
-        public void CompleteAgentMovement(Simulator simulator)
-        {
-            CompleteAgentMovementPacket move = new CompleteAgentMovementPacket();
-
-            move.AgentData.AgentID = Client.Self.AgentID;
-            move.AgentData.SessionID = Client.Self.SessionID;
-            move.AgentData.CircuitCode = Client.Network.CircuitCode;
-
-            Client.Network.SendPacket(move, simulator);
-        }
-
-        /// <summary>
         /// Reply to script permissions request
         /// </summary>
         /// <param name="simulator"><seealso cref="T:OpenMetaverse.Simulator"/> Object</param>
@@ -2933,7 +2924,7 @@ namespace OpenMetaverse
         {
             AgentDataUpdatePacket p = (AgentDataUpdatePacket)packet;
 
-            if (p.AgentData.AgentID == simulator.Client.Self.AgentID)
+            if (p.AgentData.AgentID == this.AgentID)
             {
                 firstName = Utils.BytesToString(p.AgentData.FirstName);
                 lastName = Utils.BytesToString(p.AgentData.LastName);
@@ -2992,7 +2983,7 @@ namespace OpenMetaverse
         {
             EstablishAgentCommunicationMessage msg = (EstablishAgentCommunicationMessage)message;
 
-            if (Client.Settings.MULTIPLE_SIMS)
+            if (Settings.MULTIPLE_SIMS)
             {
                 
                 IPEndPoint endPoint = new IPEndPoint(msg.Address, msg.Port);
@@ -3201,7 +3192,7 @@ namespace OpenMetaverse
                             // FIXME: What is this?
                         }
 
-                        if (Client.Settings.SEND_AGENT_UPDATES)
+                        if (Settings.SEND_AGENT_UPDATES)
                         {
                             // We have to manually tell the server to stop playing some animations
                             if (animID == Animations.STANDUP ||
@@ -3524,7 +3515,7 @@ namespace OpenMetaverse
                 req.AgentID = memberID;
 
                 CapsClient request = new CapsClient(url);
-                request.BeginGetResponse(req.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+                request.BeginGetResponse(req.Serialize(), OSDFormat.Xml, Settings.CAPS_TIMEOUT);
             }
             else
             {

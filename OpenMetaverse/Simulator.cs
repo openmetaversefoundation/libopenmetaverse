@@ -232,7 +232,8 @@ namespace OpenMetaverse
 
         /// <summary>A public reference to the client that this Simulator object
         /// is attached to</summary>
-        public GridClient Client;
+        //public GridClient Client;
+        public LoggerInstance Log;
         /// <summary></summary>
         public UUID ID = UUID.Zero;
         /// <summary>The capabilities for this simulator</summary>
@@ -430,7 +431,8 @@ namespace OpenMetaverse
         /// <summary>Sequence number for pause/resume</summary>
         internal int pauseSerial;
 
-        private NetworkManager Network;
+        public NetworkManager Network;
+        public AgentManager Self;
         private Queue<long> InBytes, OutBytes;
         // ACKs that are queued up to be sent to the simulator
         private LocklessQueue<uint> PendingAcks = new LocklessQueue<uint>();
@@ -444,23 +446,34 @@ namespace OpenMetaverse
 
         #endregion Internal/Private Members
 
+        #region Settings
+        public bool SendPings;
+        public int NetworkTickInterval;
+        public int PingInterval;
+        public bool SendAgentUpdates;
+        public int SimulatorTimeout;
+        public bool EnableCaps;
+        #endregion
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="client">Reference to the GridClient object</param>
         /// <param name="address">IPEndPoint of the simulator</param>
         /// <param name="handle">handle of the simulator</param>
-        public Simulator(GridClient client, IPEndPoint address, ulong handle)
+        public Simulator(LoggerInstance log, NetworkManager network, AgentManager self, AssetManager assets, IPEndPoint address, ulong handle)
             : base(address)
         {
-            Client = client;
-
+            //Client = client;
+            Log = log;
+            
             Handle = handle;
-            Estate = new EstateTools(Client);
-            Network = Client.Network;
+            Estate = new EstateTools(log, network, self, assets);
+            Self = self;
+            Network = network;
             PacketArchive = new IncomingPacketIDCollection(Settings.PACKET_ARCHIVE_SIZE);
-            InBytes = new Queue<long>(Client.Settings.STATS_QUEUE_SIZE);
-            OutBytes = new Queue<long>(Client.Settings.STATS_QUEUE_SIZE);
+            InBytes = new Queue<long>(Settings.STATS_QUEUE_SIZE);
+            OutBytes = new Queue<long>(Settings.STATS_QUEUE_SIZE);
         }
 
         /// <summary>
@@ -478,14 +491,13 @@ namespace OpenMetaverse
         /// <summary>
         /// Attempt to connect to this simulator
         /// </summary>
-        /// <param name="moveToSim">Whether to move our agent in to this sim or not</param>
         /// <returns>True if the connection succeeded or connection status is
         /// unknown, false if there was a failure</returns>
-        public bool Connect(bool moveToSim)
+        public bool Connect()
         {
             if (connected)
             {
-                Client.Self.CompleteAgentMovement(this);
+                Network.CompleteAgentMovement(this);
                 return true;
             }
 
@@ -497,16 +509,16 @@ namespace OpenMetaverse
             if (PingTimer != null) PingTimer.Dispose();
 
             // Timer for sending out queued packet acknowledgements
-            AckTimer = new Timer(AckTimer_Elapsed, null, Settings.NETWORK_TICK_INTERVAL, Settings.NETWORK_TICK_INTERVAL);
+            AckTimer = new Timer(AckTimer_Elapsed, null, NetworkTickInterval, NetworkTickInterval);
             // Timer for recording simulator connection statistics
             StatsTimer = new Timer(StatsTimer_Elapsed, null, 1000, 1000);
             // Timer for periodically pinging the simulator
-            if (Client.Settings.SEND_PINGS)
-                PingTimer = new Timer(PingTimer_Elapsed, null, Settings.PING_INTERVAL, Settings.PING_INTERVAL);
+            if (SendPings)
+                PingTimer = new Timer(PingTimer_Elapsed, null, PingInterval, PingInterval);
 
             #endregion Start Timers
 
-            Logger.Log("Connecting to " + this.ToString(), Helpers.LogLevel.Info, Client);
+            Log.Log("Connecting to " + this.ToString(), Helpers.LogLevel.Info);
 
             try
             {
@@ -519,8 +531,8 @@ namespace OpenMetaverse
                 // Send the UseCircuitCode packet to initiate the connection
                 UseCircuitCodePacket use = new UseCircuitCodePacket();
                 use.CircuitCode.Code = Network.CircuitCode;
-                use.CircuitCode.ID = Client.Self.AgentID;
-                use.CircuitCode.SessionID = Client.Self.SessionID;
+                use.CircuitCode.ID = Network.AgentID
+                use.CircuitCode.SessionID = Network.SessionID;
 
                 // Send the initial packet out
                 SendPacket(use);
@@ -528,22 +540,24 @@ namespace OpenMetaverse
                 Stats.ConnectTime = Environment.TickCount;
 
                 // Move our agent in to the sim to complete the connection
-                if (moveToSim) Client.Self.CompleteAgentMovement(this);
+                // if (moveToSim) Network.CompleteAgentMovement(this);
+                // CHANGED: NetworkManager.SetCurrentSim now handles agent movement.
 
-                if (Client.Settings.SEND_AGENT_UPDATES)
-                    Client.Self.Movement.SendUpdate(true, this);
+                // MOVED TO AgentManager
+                //if (SendAgentUpdates)
+                    // Self.Movement.SendUpdate(true, this);
 
-                if (!ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false))
+                if (!ConnectedEvent.WaitOne(SimulatorTimeout, false))
                 {
-                    Logger.Log("Giving up on waiting for RegionHandshake for " + this.ToString(),
-                        Helpers.LogLevel.Warning, Client);
+                    Log.Log("Giving up on waiting for RegionHandshake for " + this.ToString(),
+                        Helpers.LogLevel.Warning);
                 }
 
                 return true;
             }
             catch (Exception e)
             {
-                Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e);
+                Log.Log(e.Message, Helpers.LogLevel.Error, e);
             }
 
             return false;
@@ -555,18 +569,18 @@ namespace OpenMetaverse
             {
                 if (Caps._SeedCapsURI == seedcaps) return;
 
-                Logger.Log("Unexpected change of seed capability", Helpers.LogLevel.Warning, Client);
+                Log.Log("Unexpected change of seed capability", Helpers.LogLevel.Warning);
                 Caps.Disconnect(true);
                 Caps = null;
             }
 
-            if (Client.Settings.ENABLE_CAPS)
+            if (EnableCaps)
             {
                 // Connect to the new CAPS system
                 if (!String.IsNullOrEmpty(seedcaps))
                     Caps = new Caps(this, seedcaps);
                 else
-                    Logger.Log("Setting up a sim without a valid capabilities server!", Helpers.LogLevel.Error, Client);
+                    Log.Log("Setting up a sim without a valid capabilities server!", Helpers.LogLevel.Error);
             }
 
         }
@@ -615,11 +629,11 @@ namespace OpenMetaverse
         public void Pause()
         {
             AgentPausePacket pause = new AgentPausePacket();
-            pause.AgentData.AgentID = Client.Self.AgentID;
-            pause.AgentData.SessionID = Client.Self.SessionID;
+            pause.AgentData.AgentID = Network.AgentID;
+            pause.AgentData.SessionID = Network.SessionID;
             pause.AgentData.SerialNum = (uint)Interlocked.Exchange(ref pauseSerial, pauseSerial + 1);
 
-            Client.Network.SendPacket(pause, this);
+            Network.SendPacket(pause, this);
         }
 
         /// <summary>
@@ -628,11 +642,11 @@ namespace OpenMetaverse
         public void Resume()
         {
             AgentResumePacket resume = new AgentResumePacket();
-            resume.AgentData.AgentID = Client.Self.AgentID;
-            resume.AgentData.SessionID = Client.Self.SessionID;
+            resume.AgentData.AgentID = Network.AgentID;
+            resume.AgentData.SessionID = Network.SessionID;
             resume.AgentData.SerialNum = (uint)Interlocked.Exchange(ref pauseSerial, pauseSerial + 1);
 
-            Client.Network.SendPacket(resume, this);
+            Network.SendPacket(resume, this);
         }
 
         #region Packet Sending
@@ -696,7 +710,7 @@ namespace OpenMetaverse
             NetworkManager.OutgoingPacket outgoingPacket = new NetworkManager.OutgoingPacket(this, buffer);
 
             // Send ACK and logout packets directly, everything else goes through the queue
-            if (Client.Settings.THROTTLE_OUTGOING_PACKETS == false ||
+            if (Settings.THROTTLE_OUTGOING_PACKETS == false ||
                 type == PacketType.PacketAck ||
                 type == PacketType.LogoutRequest)
             {
@@ -859,8 +873,8 @@ namespace OpenMetaverse
             // Check if this packet came from the server we expected it to come from
             if (!remoteEndPoint.Address.Equals(((IPEndPoint)buffer.RemoteEndPoint).Address))
             {
-                Logger.Log("Received " + buffer.DataLength + " bytes of data from unrecognized source " +
-                    ((IPEndPoint)buffer.RemoteEndPoint).ToString(), Helpers.LogLevel.Warning, Client);
+                Log.Log("Received " + buffer.DataLength + " bytes of data from unrecognized source " +
+                    ((IPEndPoint)buffer.RemoteEndPoint).ToString(), Helpers.LogLevel.Warning);
                 return;
             }
 
@@ -886,7 +900,7 @@ namespace OpenMetaverse
             // Fail-safe check
             if (packet == null)
             {
-                Logger.Log("Couldn't build a message from the incoming data", Helpers.LogLevel.Warning, Client);
+                Log.Log("Couldn't build a message from the incoming data", Helpers.LogLevel.Warning);
                 return;
             }
 
@@ -932,7 +946,7 @@ namespace OpenMetaverse
             int pendingAckCount = Interlocked.Increment(ref PendingAckCount);
 
             // Send out ACKs if we have a lot of them
-            if (pendingAckCount >= Client.Settings.MAX_PENDING_ACKS)
+            if (pendingAckCount >= Settings.MAX_PENDING_ACKS)
                 SendAcks();
 
             #endregion ACK Sending
@@ -967,7 +981,7 @@ namespace OpenMetaverse
             Interlocked.Add(ref Stats.SentBytes, bytesSent);
             Interlocked.Increment(ref Stats.SentPackets);
 
-            Client.Network.PacketSent(buffer.Data, bytesSent, this);
+            Network.PacketSent(buffer.Data, bytesSent, this);
         }
 
         /// <summary>
@@ -1026,14 +1040,14 @@ namespace OpenMetaverse
                 {
                     NetworkManager.OutgoingPacket outgoing = array[i];
 
-                    if (outgoing.TickCount != 0 && now - outgoing.TickCount > Client.Settings.RESEND_TIMEOUT)
+                    if (outgoing.TickCount != 0 && now - outgoing.TickCount > Settings.RESEND_TIMEOUT)
                     {
-                        if (outgoing.ResendCount < Client.Settings.MAX_RESEND_COUNT)
+                        if (outgoing.ResendCount < Settings.MAX_RESEND_COUNT)
                         {
-                            if (Client.Settings.LOG_RESENDS)
+                            if (Settings.LOG_RESENDS)
                             {
-                                Logger.DebugLog(String.Format("Resending packet #{0}, {1}ms have passed",
-                                    outgoing.SequenceNumber, now - outgoing.TickCount), Client);
+                                Log.DebugLog(String.Format("Resending packet #{0}, {1}ms have passed",
+                                    outgoing.SequenceNumber, now - outgoing.TickCount));
                             }
 
                             // Set the resent flag
@@ -1072,9 +1086,9 @@ namespace OpenMetaverse
             long recv = Stats.RecvBytes;
             long sent = Stats.SentBytes;
 
-            if (InBytes.Count >= Client.Settings.STATS_QUEUE_SIZE)
+            if (InBytes.Count >= Settings.STATS_QUEUE_SIZE)
                 old_in = InBytes.Dequeue();
-            if (OutBytes.Count >= Client.Settings.STATS_QUEUE_SIZE)
+            if (OutBytes.Count >= Settings.STATS_QUEUE_SIZE)
                 old_out = OutBytes.Dequeue();
 
             InBytes.Enqueue(recv);
@@ -1082,8 +1096,8 @@ namespace OpenMetaverse
 
             if (old_in > 0 && old_out > 0)
             {
-                Stats.IncomingBPS = (int)(recv - old_in) / Client.Settings.STATS_QUEUE_SIZE;
-                Stats.OutgoingBPS = (int)(sent - old_out) / Client.Settings.STATS_QUEUE_SIZE;
+                Stats.IncomingBPS = (int)(recv - old_in) / Settings.STATS_QUEUE_SIZE;
+                Stats.OutgoingBPS = (int)(sent - old_out) / Settings.STATS_QUEUE_SIZE;
                 //Client.Log("Incoming: " + IncomingBPS + " Out: " + OutgoingBPS +
                 //    " Lag: " + LastLag + " Pings: " + ReceivedPongs +
                 //    "/" + SentPings, Helpers.LogLevel.Debug); 

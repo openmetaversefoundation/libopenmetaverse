@@ -94,8 +94,8 @@ namespace OpenMetaverse
 
         public void Disconnect(bool immediate)
         {
-            Logger.Log(String.Format("Caps system for {0} is {1}", Simulator,
-                (immediate ? "aborting" : "disconnecting")), Helpers.LogLevel.Info, Simulator.Client);
+            Simulator.Log.Log(String.Format("Caps system for {0} is {1}", Simulator,
+                (immediate ? "aborting" : "disconnecting")), Helpers.LogLevel.Info);
 
             if (_SeedRequest != null)
                 _SeedRequest.Cancel();
@@ -122,7 +122,7 @@ namespace OpenMetaverse
 
         private void MakeSeedRequest()
         {
-            if (Simulator == null || !Simulator.Client.Network.Connected)
+            if (Simulator == null || !Simulator.Network.Connected)
                 return;
 
             // Create a request list
@@ -172,7 +172,7 @@ namespace OpenMetaverse
 
             _SeedRequest = new CapsClient(new Uri(_SeedCapsURI));
             _SeedRequest.OnComplete += new CapsClient.CompleteCallback(SeedRequestCompleteHandler);
-            _SeedRequest.BeginGetResponse(req, OSDFormat.Xml, Simulator.Client.Settings.CAPS_TIMEOUT);
+            _SeedRequest.BeginGetResponse(req, OSDFormat.Xml, Settings.CAPS_TIMEOUT);
         }
 
         private void SeedRequestCompleteHandler(CapsClient client, OSD result, Exception error)
@@ -188,7 +188,7 @@ namespace OpenMetaverse
 
                 if (_Caps.ContainsKey("EventQueueGet"))
                 {
-                    Logger.DebugLog("Starting event queue for " + Simulator.ToString(), Simulator.Client);
+                    Simulator.Log.DebugLog("Starting event queue for " + Simulator.ToString());
 
                     _EventQueueCap = new EventQueueClient(_Caps["EventQueueGet"]);
                     _EventQueueCap.OnConnected += EventQueueConnectedHandler;
@@ -214,7 +214,7 @@ namespace OpenMetaverse
 
         private void EventQueueConnectedHandler()
         {
-            Simulator.Client.Network.RaiseConnectedEvent(Simulator);
+            Simulator.Network.RaiseConnectedEvent(Simulator);
         }
 
         /// <summary>
@@ -227,10 +227,10 @@ namespace OpenMetaverse
             IMessage message = Messages.MessageUtils.DecodeEvent(eventName, body);
             if (message != null)
             {
-                if (Simulator.Client.Settings.SYNC_PACKETCALLBACKS)
-                    Simulator.Client.Network.CapsEvents.RaiseEvent(eventName, message, Simulator);
+                if (Settings.SYNC_PACKETCALLBACKS)
+                    Simulator.Network.CapsEvents.RaiseEvent(eventName, message, Simulator);
                 else
-                    Simulator.Client.Network.CapsEvents.BeginRaiseEvent(eventName, message, Simulator);
+                    Simulator.Network.CapsEvents.BeginRaiseEvent(eventName, message, Simulator);
             }
             else
             {
@@ -248,9 +248,9 @@ namespace OpenMetaverse
                         incomingPacket.Simulator = Simulator;
                         incomingPacket.Packet = packet;
 
-                        Logger.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler", Simulator.Client);
+                        Simulator.Log.DebugLog("Serializing " + packet.Type.ToString() + " capability with generic handler");
 
-                        Simulator.Client.Network.PacketInbox.Enqueue(incomingPacket);
+                        Simulator.Network.PacketInbox.Enqueue(incomingPacket);
                     }
                     else
                     {

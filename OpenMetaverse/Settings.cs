@@ -51,13 +51,13 @@ namespace OpenMetaverse
         public static string RESOURCE_DIR = "openmetaverse_data";
 
         /// <summary>Login server to connect to</summary>
-        public string LOGIN_SERVER = AGNI_LOGIN_SERVER;
+        public static string LOGIN_SERVER = AGNI_LOGIN_SERVER;
 
         /// <summary>IP Address the client will bind to</summary>
         public static System.Net.IPAddress BIND_ADDR = System.Net.IPAddress.Any;
 
         /// <summary>Use XML-RPC Login or LLSD Login, default is XML-RPC Login</summary>
-        public bool USE_LLSD_LOGIN = false;
+        public static bool USE_LLSD_LOGIN = false;
         #endregion
         #region Inventory
         /// <summary>
@@ -83,22 +83,22 @@ namespace OpenMetaverse
 
         /// <summary>Number of milliseconds before NetworkManager.Logout() will
         /// time out</summary>
-        public int LOGOUT_TIMEOUT = 5 * 1000;
+        public static int LOGOUT_TIMEOUT = 5 * 1000;
 
         /// <summary>Number of milliseconds before a CAPS call will time out</summary>
         /// <remarks>Setting this too low will cause web requests time out and
         /// possibly retry repeatedly</remarks>
-        public int CAPS_TIMEOUT = 60 * 1000;
+        public static int CAPS_TIMEOUT = 60 * 1000;
 
         /// <summary>Number of milliseconds for xml-rpc to timeout</summary>
-        public int LOGIN_TIMEOUT = 60 * 1000;
+        public static int LOGIN_TIMEOUT = 60 * 1000;
 
         /// <summary>Milliseconds before a packet is assumed lost and resent</summary>
-        public int RESEND_TIMEOUT = 4000;
+        public static int RESEND_TIMEOUT = 4000;
 
         /// <summary>Milliseconds without receiving a packet before the 
         /// connection to a simulator is assumed lost</summary>
-        public int SIMULATOR_TIMEOUT = 30 * 1000;
+        public static int SIMULATOR_TIMEOUT = 30 * 1000;
 
         /// <summary>Milliseconds to wait for a simulator info request through
         /// the grid interface</summary>
@@ -134,9 +134,9 @@ namespace OpenMetaverse
         public const int PACKET_ARCHIVE_SIZE = 200;
         /// <summary>Maximum number of queued ACKs to be sent before SendAcks()
         /// is forced</summary>
-        public int MAX_PENDING_ACKS = 10;
+        public static int MAX_PENDING_ACKS = 10;
         /// <summary>Network stats queue length (seconds)</summary>
-        public int STATS_QUEUE_SIZE = 5;
+        public static int STATS_QUEUE_SIZE = 5;
 
         #endregion
         #region Configuration options (mostly booleans)
@@ -149,14 +149,14 @@ namespace OpenMetaverse
         /// overhead, but several calls currently block for a long time and
         /// would need to be rewritten as asynchronous code before this is
         /// feasible</remarks>
-        public bool SYNC_PACKETCALLBACKS = false;
+        public static bool SYNC_PACKETCALLBACKS = false;
 
         /// <summary>Enable/disable storing terrain heightmaps in the 
         /// TerrainManager</summary>
         public bool STORE_LAND_PATCHES = false;
 
         /// <summary>Enable/disable sending periodic camera updates</summary>
-        public bool SEND_AGENT_UPDATES = true;
+        public static bool SEND_AGENT_UPDATES = true;
 
         /// <summary>Enable/disable automatically setting the bandwidth throttle
         /// after connecting to each simulator</summary>
@@ -164,7 +164,7 @@ namespace OpenMetaverse
         /// bandwidth setting in the official client. If you do not set a
         /// throttle your connection will by default be throttled well below
         /// the minimum values and you may experience connection problems</remarks>
-        public bool SEND_AGENT_THROTTLE = true;
+        public static bool SEND_AGENT_THROTTLE = true;
 
         /// <summary>Enable/disable the sending of pings to monitor lag and 
         /// packet loss</summary>
@@ -173,7 +173,7 @@ namespace OpenMetaverse
         /// <summary>Should we connect to multiple sims? This will allow
         /// viewing in to neighboring simulators and sim crossings
         /// (Experimental)</summary>
-        public bool MULTIPLE_SIMS = true;
+        public static bool MULTIPLE_SIMS = true;
 
         /// <summary>If true, all object update packets will be decoded in to
         /// native objects. If false, only updates for our own agent will be
@@ -191,7 +191,7 @@ namespace OpenMetaverse
         public bool ENABLE_CAPS = true;
 
         /// <summary>Whether to decode sim stats</summary>
-        public bool ENABLE_SIMSTATS = true;
+        public static bool ENABLE_SIMSTATS = true;
 
         /// <summary>The capabilities servers are currently designed to
         /// periodically return a 502 error which signals for the client to
@@ -264,10 +264,10 @@ namespace OpenMetaverse
         public int UPLOAD_COST { get { return priceUpload; } }
 
         /// <summary>Maximum number of times to resend a failed packet</summary>
-        public int MAX_RESEND_COUNT = 3;
+        public static int MAX_RESEND_COUNT = 3;
 
         /// <summary>Throttle outgoing packet rate</summary>
-        public bool THROTTLE_OUTGOING_PACKETS = true;
+        public static bool THROTTLE_OUTGOING_PACKETS = true;
 
         #endregion
         #region Texture Pipeline
@@ -304,7 +304,7 @@ namespace OpenMetaverse
         public bool LOG_NAMES = true;
 
         /// <summary>Log packet retransmission info</summary>
-        public bool LOG_RESENDS = true;
+        public static bool LOG_RESENDS = true;
 
         #endregion
         #region Private Fields

@@ -53,8 +53,8 @@ namespace OpenMetaverse
             public Packet Packet;
         }
 
-        /// <summary>Reference to the GridClient object</summary>
-        public GridClient Client;
+        /// <summary>Log to log status information to.</summary>
+        public LoggerInstance Log;
 
         private Dictionary<PacketType, NetworkManager.PacketCallback> _EventTable = 
             new Dictionary<PacketType,NetworkManager.PacketCallback>();
@@ -64,9 +64,9 @@ namespace OpenMetaverse
         /// Default constructor
         /// </summary>
         /// <param name="client"></param>
-        public PacketEventDictionary(GridClient client)
+        public PacketEventDictionary(LoggerInstance log)
         {
-            Client = client;
+            Log = log;
             _ThreadPoolCallback = new WaitCallback(ThreadPoolDelegate);
         }
 
@@ -118,7 +118,7 @@ namespace OpenMetaverse
                 try { callback(packet, simulator); }
                 catch (Exception ex)
                 {
-                    Logger.Log("Default packet event handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
+                    Log.Log("Default packet event handler: " + ex.ToString(), Helpers.LogLevel.Error);
                 }
             }
 
@@ -127,7 +127,7 @@ namespace OpenMetaverse
                 try { callback(packet, simulator); }
                 catch (Exception ex)
                 {
-                    Logger.Log("Packet event handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
+                    Log.Log("Packet event handler: " + ex.ToString(), Helpers.LogLevel.Error);
                 }
 
                 return;
@@ -135,7 +135,7 @@ namespace OpenMetaverse
             
             if (packetType != PacketType.Default && packetType != PacketType.PacketAck)
             {
-                Logger.DebugLog("No handler registered for packet event " + packetType, Client);
+                Log.DebugLog("No handler registered for packet event " + packetType);
             }
         }
 
@@ -177,7 +177,7 @@ namespace OpenMetaverse
 
             if (packetType != PacketType.Default && packetType != PacketType.PacketAck)
             {
-                Logger.DebugLog("No handler registered for packet event " + packetType, Client);
+                Log.DebugLog("No handler registered for packet event " + packetType);
             }
         }
 
@@ -191,7 +191,7 @@ namespace OpenMetaverse
             }
             catch (Exception ex)
             {
-                Logger.Log("Async Packet Event Handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
+                Log.Log("Async Packet Event Handler: " + ex.ToString(), Helpers.LogLevel.Error);
             }
         }
     }
@@ -219,7 +219,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>Reference to the GridClient object</summary>
-        public GridClient Client;
+        public LoggerInstance Log;
 
         private Dictionary<string, Caps.EventQueueCallback> _EventTable =
             new Dictionary<string, Caps.EventQueueCallback>();
@@ -229,9 +229,9 @@ namespace OpenMetaverse
         /// Default constructor
         /// </summary>
         /// <param name="client">Reference to the GridClient object</param>
-        public CapsEventDictionary(GridClient client)
+        public CapsEventDictionary(LoggerInstance log)
         {
-            Client = client;
+            Log = log;
             _ThreadPoolCallback = new WaitCallback(ThreadPoolDelegate);
         }
 
@@ -286,7 +286,7 @@ namespace OpenMetaverse
                 if (callback != null)
                 {
                     try { callback(capsEvent, message, simulator); }
-                    catch (Exception ex) { Logger.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error, Client); }
+                    catch (Exception ex) { Log.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error); }
                 }
             }
 
@@ -294,13 +294,13 @@ namespace OpenMetaverse
             if (_EventTable.TryGetValue(capsEvent, out callback) && callback != null)
             {
                 try { callback(capsEvent, message, simulator); }
-                catch (Exception ex) { Logger.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error, Client); }
+                catch (Exception ex) { Log.Log("CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error); }
 
                 specialHandler = true;
             }
 
             if (!specialHandler)
-                Logger.Log("Unhandled CAPS event " + capsEvent, Helpers.LogLevel.Warning, Client);
+                Log.Log("Unhandled CAPS event " + capsEvent, Helpers.LogLevel.Warning);
         }
 
         /// <summary>
@@ -343,7 +343,7 @@ namespace OpenMetaverse
             }
 
             if (!specialHandler)
-                Logger.Log("Unhandled CAPS event " + capsEvent, Helpers.LogLevel.Warning, Client);
+                Log.Log("Unhandled CAPS event " + capsEvent, Helpers.LogLevel.Warning);
         }
 
         private void ThreadPoolDelegate(Object state)
@@ -356,7 +356,7 @@ namespace OpenMetaverse
             }
             catch (Exception ex)
             {
-                Logger.Log("Async CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
+                Log.Log("Async CAPS Event Handler: " + ex.ToString(), Helpers.LogLevel.Error);
             }
         }
     }

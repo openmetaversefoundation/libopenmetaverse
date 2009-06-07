@@ -40,7 +40,7 @@ using OpenMetaverse.Messages.Linden;
 namespace OpenMetaverse
 {
     /// <summary>
-    /// This exception is thrown whenever a network operation is attempted 
+    /// Thi exception is thrown whenever a network operation is attempted 
     /// without a network connection.
     /// </summary>
     public class NotConnectedException : ApplicationException { }
@@ -137,7 +137,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Assigned by the OnConnected event. Raised when login was a success
         /// </summary>
-        /// <param name="sender">Reference to the GridClient object that called the event</param>
+        /// <param name="sender">Reference to the NetworkManager object that called the event</param>
         public delegate void ConnectedCallback(object sender);
         /// <summary>
         /// Assigned by the OnLogoutReply callback. Raised upone receipt of a LogoutReply packet during logout process.
@@ -251,6 +251,18 @@ namespace OpenMetaverse
             get { return _CurrentSim; }
             set { _CurrentSim = value; }
         }
+
+        /// <summary>Your (client) avatars <seealso cref="UUID"/></summary>
+        /// <remarks>"client", "agent", and "avatar" all represent the same thing</remarks>
+        public UUID AgentID { get { return _AgentID; } }
+
+        /// <summary>Temporary <seealso cref="UUID"/> assigned to this session, used for 
+        /// verifying our identity in packets</summary>
+        public UUID SessionID { get { return _SessionID; } }
+
+        /// <summary>Shared secret <seealso cref="UUID"/> that is never sent over the wire</summary>
+        public UUID SecureSessionID { get { return _SecureSessionID; } }
+
         /// <summary>Shows whether the network layer is logged in to the
         /// grid or not</summary>
         public bool Connected { get { return connected; } }
@@ -273,22 +285,28 @@ namespace OpenMetaverse
         /// <summary>Outgoing packets that are awaiting handling</summary>
         internal BlockingQueue<OutgoingPacket> PacketOutbox = new BlockingQueue<OutgoingPacket>(Settings.PACKET_INBOX_SIZE);
 
-        private GridClient Client;
+        //private GridClient Client;
+        private UUID _AgentID;
+        private UUID _SessionID;
+        private UUID _SecureSessionID;
         private Timer DisconnectTimer;
         private uint _CircuitCode;
         private Simulator _CurrentSim = null;
         private bool connected = false;
-
+        private LoggerInstance Log;
+        private AgentManager Self;
+        private AgentThrottle Throttle;
         /// <summary>
         /// Default constructor
         /// </summary>
         /// <param name="client">Reference to the GridClient object</param>
-        public NetworkManager(GridClient client)
+        public NetworkManager(LoggerInstance log, AgentManager self, AgentThrottle throttle)
         {
-            Client = client;
-
-            PacketEvents = new PacketEventDictionary(client);
-            CapsEvents = new CapsEventDictionary(client);
+            Log = log;
+            Self = self;
+            Throttle = throttle;
+            PacketEvents = new PacketEventDictionary(Log);
+            CapsEvents = new CapsEventDictionary(Log);
 
             // Register internal CAPS callbacks
             RegisterEventCallback("EnableSimulator", new Caps.EventQueueCallback(EnableSimulatorHandler));
@@ -414,7 +432,7 @@ namespace OpenMetaverse
             if (simulator == null)
             {
                 // We're not tracking this sim, create a new Simulator object
-                simulator = new Simulator(Client, endPoint, handle);
+                simulator = new Simulator(Log, this, Self, endPoint, handle);
 
                 // Immediately add this simulator to the list of current sims. It will be removed if the
                 // connection fails
@@ -453,17 +471,17 @@ namespace OpenMetaverse
                             return null;
                         }
                     }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
 
                 // Attempt to establish a connection to the simulator
-                if (simulator.Connect(setDefault))
+                if (simulator.Connect())
                 {
                     if (DisconnectTimer == null)
                     {
                         // Start a timer that checks if we've been disconnected
                         DisconnectTimer = new Timer(new TimerCallback(DisconnectTimer_Elapsed), null,
-                            Client.Settings.SIMULATOR_TIMEOUT, Client.Settings.SIMULATOR_TIMEOUT);
+                            Settings.SIMULATOR_TIMEOUT, Settings.SIMULATOR_TIMEOUT);
                     }
 
                     if (setDefault) SetCurrentSim(simulator, seedcaps);
@@ -472,11 +490,11 @@ namespace OpenMetaverse
                     if (OnSimConnected != null)
                     {
                         try { OnSimConnected(simulator); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                     }
 
                     // If enabled, send an AgentThrottle packet to the server to increase our bandwidth
-                    if (Client.Settings.SEND_AGENT_THROTTLE) Client.Throttle.Set(simulator);
+                    if (Settings.SEND_AGENT_THROTTLE) Throttle.Set(simulator);
 
                     return simulator;
                 }
@@ -492,12 +510,9 @@ namespace OpenMetaverse
                 // We're already connected to this server, but need to set it to the default
                 SetCurrentSim(simulator, seedcaps);
 
-                // Move in to this simulator
-                Client.Self.CompleteAgentMovement(simulator);
-
                 // Send an initial AgentUpdate to complete our movement in to the sim
-                if (Client.Settings.SEND_AGENT_UPDATES)
-                    Client.Self.Movement.SendUpdate(true, simulator);
+                // Self.Movement.SendUpdate(true, simulator);
+                // MOVED TO AgentManager
 
                 return simulator;
             }
@@ -527,7 +542,7 @@ namespace OpenMetaverse
             // Wait for a logout response. If the response is received, shutdown
             // will be fired in the callback. Otherwise we fire it manually with
             // a NetworkTimeout type
-            if (!logoutEvent.WaitOne(Client.Settings.LOGOUT_TIMEOUT, false))
+            if (!logoutEvent.WaitOne(Settings.LOGOUT_TIMEOUT, false))
                 Shutdown(DisconnectType.NetworkTimeout);
 
             OnLogoutReply -= callback;
@@ -546,17 +561,33 @@ namespace OpenMetaverse
             // This will catch a Logout when the client is not logged in
             if (CurrentSim == null || !connected)
             {
-                Logger.Log("Ignoring RequestLogout(), client is already logged out", Helpers.LogLevel.Warning, Client);
+                Log.Log("Ignoring RequestLogout(), client is already logged out", Helpers.LogLevel.Warning);
                 return;
             }
 
-            Logger.Log("Logging out", Helpers.LogLevel.Info, Client);
+            Log.Log("Logging out", Helpers.LogLevel.Info);
 
             // Send a logout request to the current sim
             LogoutRequestPacket logout = new LogoutRequestPacket();
-            logout.AgentData.AgentID = Client.Self.AgentID;
-            logout.AgentData.SessionID = Client.Self.SessionID;
+            logout.AgentData.AgentID = Self.AgentID;
+            logout.AgentData.SessionID = Self.SessionID;
             SendPacket(logout);
+        }
+
+        /// <summary>
+        /// Move an agent in to a simulator. This packet is the last packet
+        /// needed to complete the transition in to a new simulator
+        /// </summary>
+        /// <param name="simulator"><seealso cref="T:OpenMetaverse.Simulator"/> Object</param>
+        public void CompleteAgentMovement(Simulator simulator)
+        {
+            CompleteAgentMovementPacket move = new CompleteAgentMovementPacket();
+
+            move.AgentData.AgentID = AgentID;
+            move.AgentData.SessionID = SessionID;
+            move.AgentData.CircuitCode = CircuitCode;
+
+            SendPacket(move, simulator);
         }
 
         /// <summary>
@@ -574,7 +605,7 @@ namespace OpenMetaverse
                 if (OnSimDisconnected != null)
                 {
                     try { OnSimDisconnected(sim, DisconnectType.NetworkTimeout); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
 
                 lock (Simulators) Simulators.Remove(sim);
@@ -583,7 +614,7 @@ namespace OpenMetaverse
             }
             else
             {
-                Logger.Log("DisconnectSim() called with a null Simulator reference", Helpers.LogLevel.Warning, Client);
+                Log.Log("DisconnectSim() called with a null Simulator reference", Helpers.LogLevel.Warning);
             }
         }
 
@@ -594,7 +625,7 @@ namespace OpenMetaverse
         /// </summary>
         public void Shutdown(DisconnectType type)
         {
-            Logger.Log("NetworkManager shutdown initiated", Helpers.LogLevel.Info, Client);
+            Log.Log("NetworkManager shutdown initiated", Helpers.LogLevel.Info);
 
             // Send a CloseCircuit packet to simulators if we are initiating the disconnect
             bool sendCloseCircuit = (type == DisconnectType.ClientInitiated || type == DisconnectType.NetworkTimeout);
@@ -612,7 +643,7 @@ namespace OpenMetaverse
                         if (OnSimDisconnected != null)
                         {
                             try { OnSimDisconnected(Simulators[i], type); }
-                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                            catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                         }
                     }
                 }
@@ -629,7 +660,7 @@ namespace OpenMetaverse
                 if (OnSimDisconnected != null)
                 {
                     try { OnSimDisconnected(CurrentSim, type); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
             }
 
@@ -643,7 +674,7 @@ namespace OpenMetaverse
             if (OnDisconnected != null)
             {
                 try { OnDisconnected(DisconnectType.ClientInitiated, String.Empty); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -682,7 +713,7 @@ namespace OpenMetaverse
             if (OnEventQueueRunning != null)
             {
                 try { OnEventQueueRunning(simulator); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -742,7 +773,7 @@ namespace OpenMetaverse
 
                         #region Fire callbacks
 
-                        if (Client.Settings.SYNC_PACKETCALLBACKS)
+                        if (Settings.SYNC_PACKETCALLBACKS)
                             PacketEvents.RaiseEvent(packet.Type, packet, simulator);
                         else
                             PacketEvents.BeginRaiseEvent(packet.Type, packet, simulator);
@@ -760,13 +791,16 @@ namespace OpenMetaverse
                 Simulator oldSim = CurrentSim;
                 lock (Simulators) CurrentSim = simulator; // CurrentSim is synchronized against Simulators
 
+                // Move in to this simulator
+                CompleteAgentMovement(simulator);
+
 		        simulator.SetSeedCaps(seedcaps);
 
                 // If the current simulator changed fire the callback
                 if (OnCurrentSimChanged != null && simulator != oldSim)
                 {
                     try { OnCurrentSimChanged(oldSim); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
             }
         }
@@ -783,8 +817,8 @@ namespace OpenMetaverse
             else if (CurrentSim.DisconnectCandidate)
             {
                 // The currently occupied simulator hasn't sent us any traffic in a while, shutdown
-                Logger.Log("Network timeout for the current simulator (" +
-                    CurrentSim.ToString() + "), logging out", Helpers.LogLevel.Warning, Client);
+                Log.Log("Network timeout for the current simulator (" +
+                    CurrentSim.ToString() + "), logging out", Helpers.LogLevel.Warning);
 
                 if (DisconnectTimer != null) DisconnectTimer.Dispose();
                 connected = false;
@@ -831,8 +865,8 @@ namespace OpenMetaverse
                         {
                             // This sim hasn't received any network traffic since the 
                             // timer last elapsed, consider it disconnected
-                            Logger.Log("Network timeout for simulator " + disconnectedSims[i].ToString() +
-                                ", disconnecting", Helpers.LogLevel.Warning, Client);
+                            Log.Log("Network timeout for simulator " + disconnectedSims[i].ToString() +
+                                ", disconnecting", Helpers.LogLevel.Warning);
 
                             DisconnectSim(disconnectedSims[i], true);
                         }
@@ -856,9 +890,9 @@ namespace OpenMetaverse
         {
             LogoutReplyPacket logout = (LogoutReplyPacket)packet;
 
-            if ((logout.AgentData.SessionID == Client.Self.SessionID) && (logout.AgentData.AgentID == Client.Self.AgentID))
+            if ((logout.AgentData.SessionID == SessionID) && (logout.AgentData.AgentID == SeAgentID))
             {
-                Logger.DebugLog("Logout reply received", Client);
+                Log.DebugLog("Logout reply received");
 
                 // Deal with callbacks, if any
                 if (OnLogoutReply != null)
@@ -871,7 +905,7 @@ namespace OpenMetaverse
                     }
 
                     try { OnLogoutReply(itemIDs); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
 
                 // If we are receiving a LogoutReply packet assume this is a client initiated shutdown
@@ -879,7 +913,7 @@ namespace OpenMetaverse
             }
             else
             {
-                Logger.Log("Invalid Session or Agent ID received in Logout Reply... ignoring", Helpers.LogLevel.Warning, Client);
+                Log.Log("Invalid Session or Agent ID received in Logout Reply... ignoring", Helpers.LogLevel.Warning);
             }
         }
 
@@ -910,7 +944,7 @@ namespace OpenMetaverse
 		
 		private void SimStatsHandler(Packet packet, Simulator simulator)
 		{
-			if ( ! Client.Settings.ENABLE_SIMSTATS ) {
+			if ( ! Settings.ENABLE_SIMSTATS ) {
 				return;
 			}
 			SimStatsPacket stats = (SimStatsPacket)packet;
@@ -1036,12 +1070,12 @@ namespace OpenMetaverse
             simulator.ProductSku = Utils.BytesToString(handshake.RegionInfo3.ProductSKU);
             
 
-            Logger.Log("Received a region handshake for " + simulator.ToString(), Helpers.LogLevel.Info, Client);
+            Log.Log("Received a region handshake for " + simulator.ToString(), Helpers.LogLevel.Info);
 
             // Send a RegionHandshakeReply
             RegionHandshakeReplyPacket reply = new RegionHandshakeReplyPacket();
-            reply.AgentData.AgentID = Client.Self.AgentID;
-            reply.AgentData.SessionID = Client.Self.SessionID;
+            reply.AgentData.AgentID = Self.AgentID;
+            reply.AgentData.SessionID = Self.SessionID;
             reply.RegionInfo.Flags = 0;
             SendPacket(reply, simulator);
 
@@ -1052,7 +1086,7 @@ namespace OpenMetaverse
 
         private void EnableSimulatorHandler(string capsKey, IMessage message, Simulator simulator)
         {
-            if (!Client.Settings.MULTIPLE_SIMS) return;
+            if (!Settings.MULTIPLE_SIMS) return;
 
             EnableSimulatorMessage msg = (EnableSimulatorMessage)message;
 
@@ -1068,15 +1102,15 @@ namespace OpenMetaverse
 
                 if (Connect(ip, port, handle, false, null) == null)
                 {
-                    Logger.Log("Unabled to connect to new sim " + ip + ":" + port,
-                        Helpers.LogLevel.Error, Client);
+                    Log.Log("Unabled to connect to new sim " + ip + ":" + port,
+                        Helpers.LogLevel.Error);
                 }
             }
         }
 
         private void DisableSimulatorHandler(Packet packet, Simulator simulator)
         {
-            Logger.DebugLog("Received a DisableSimulator packet from " + simulator + ", shutting it down", Client);
+            Log.DebugLog("Received a DisableSimulator packet from " + simulator + ", shutting it down");
 
             DisconnectSim(simulator, false);
         }
@@ -1089,7 +1123,7 @@ namespace OpenMetaverse
             if (OnDisconnected != null)
             {
                 try { OnDisconnected(DisconnectType.ServerInitiated, message); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
 
             // Shutdown the network layer

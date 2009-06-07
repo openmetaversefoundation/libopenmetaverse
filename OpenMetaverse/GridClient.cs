@@ -107,7 +107,8 @@ namespace OpenMetaverse
         public GridClient()
         {
             // These are order-dependant
-            Network = new NetworkManager(this);
+            LoggerInstance Log = new LoggerInstance();
+            Network = new NetworkManager(Log, ;
             Settings = new Settings(this);
             Parcels = new ParcelManager(this);
             Self = new AgentManager(this);
