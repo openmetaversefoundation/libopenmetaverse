@@ -101,6 +101,23 @@ namespace OpenMetaverse
         Uniform = 0x10
     }
 
+    /// <summary>
+    /// Special values in PayPriceReply. If the price is not one of these
+    /// literal value of the price should be use
+    /// </summary>
+    public enum PayPriceType : int
+    {
+        /// <summary>
+        /// Indicates that this pay option should be hidden
+        /// </summary>
+        Hide = -1,
+        
+        /// <summary>
+        /// Indicates that this pay option should have the default value
+        /// </summary>
+        Default = -2
+    }
+
     #endregion Enums
 
     #region Structs
@@ -220,6 +237,15 @@ namespace OpenMetaverse
         /// on. If this is zero the avatar is not sitting on an object</param>
         public delegate void AvatarSitChanged(Simulator simulator, Avatar avatar, uint sittingOn, uint oldSeat);
 
+        /// <summary>
+        /// Called when we get PayPriceReply packet after calling RequestPayPrice
+        /// </summary>
+        /// <param name="simulator">Simulator the packet was received from</param>
+        /// <param name="objectID">Object <seealso cref="UUID"/></param>
+        /// <param name="defaultPrice">Default pay price for the object, -1 means control should be disabled, -2 it should be empty</param>
+        /// <param name="buttonPrices">Array of 4 prices, -1 means button should be disabled</param>
+        public delegate void PayPriceReply(Simulator simulator, UUID objectID, int defaultPrice, int[] buttonPrices);
+
         #endregion Delegates
 
         #region Events
@@ -283,6 +309,12 @@ namespace OpenMetaverse
         /// </summary>
         public event ObjectPropertiesFamilyCallback OnObjectPropertiesFamily;
 
+        /// <summary>
+        /// This event will be fired when we recieve pay price information
+        /// for the object after having asked for them with RequestPayPrice
+        /// </summary>
+        public event PayPriceReply OnPayPriceReply;
+
         #endregion
 
         /// <summary>Reference to the GridClient object</summary>
@@ -327,6 +359,7 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.KillObject, KillObjectHandler);
             Client.Network.RegisterCallback(PacketType.ObjectPropertiesFamily, ObjectPropertiesFamilyHandler);
             Client.Network.RegisterCallback(PacketType.ObjectProperties, ObjectPropertiesHandler);
+            Client.Network.RegisterCallback(PacketType.PayPriceReply, PayPriceReplyHandler);
 
             // If the callbacks aren't registered there's not point in doing client-side path prediction,
             // so we set it up here
@@ -423,6 +456,23 @@ namespace OpenMetaverse
 
             Client.Network.SendPacket(buy, simulator);
         }
+
+        /// <summary>
+        /// Request prices that should be displayed in pay dialog. This will triggger the simulator
+        /// to send us back a PayPriceReply which can be handled by OnPayPriceReply event
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
+        /// <param name="objectID"><seealso cref="UUID"/> of the object we are requesting pay price</param>
+        public void RequestPayPrice(Simulator simulator, UUID objectID)
+        {
+            RequestPayPricePacket payPriceRequest = new RequestPayPricePacket();
+
+            payPriceRequest.ObjectData = new RequestPayPricePacket.ObjectDataBlock();
+            payPriceRequest.ObjectData.ObjectID = objectID;
+
+            Client.Network.SendPacket(payPriceRequest, simulator);
+        }
+
 
         /// <summary>
         /// Select a single object. This will trigger the simulator to send us back 
@@ -2338,6 +2388,25 @@ namespace OpenMetaverse
             }
 
             FireOnObjectPropertiesFamily(sim, props, requestType);
+        }
+
+        protected void PayPriceReplyHandler(Packet packet, Simulator sim)
+        {
+            if (OnPayPriceReply != null)
+            {
+                PayPriceReplyPacket p = (PayPriceReplyPacket)packet;
+                UUID objectID = p.ObjectData.ObjectID;
+                int defaultPrice = p.ObjectData.DefaultPayPrice;
+                int[] buttonPrices = new int[p.ButtonData.Length];
+
+                for (int i = 0; i < p.ButtonData.Length; i++)
+                {
+                    buttonPrices[i] = p.ButtonData[i].PayButton;
+                }
+
+                try { OnPayPriceReply(sim, objectID, defaultPrice, buttonPrices); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
         }
 
         #endregion Packet Handlers
