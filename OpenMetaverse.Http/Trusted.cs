@@ -39,30 +39,26 @@ namespace OpenMetaverse.Http
 {
     public static class Trusted
     {
-        public static void CreateServerRootCA(string issuer, out byte[] rootKey, out byte[] rootCert)
+        public static void CreateRootCert(string issuer, out byte[] rootCert)
         {
             if (!issuer.StartsWith("CN="))
                 issuer = "CN=" + issuer;
 
-            // Create a temporary file
-            string tempFile = Path.GetTempFileName();
-
-            // Generate a new signing key
+            // Generate a new issuer key
             RSA issuerKey = (RSA)RSA.Create();
 
             // Generate a private key
             PrivateKey key = new PrivateKey();
             key.RSA = issuerKey;
 
-            // Save the private key and load it back into memory
-            key.Save(tempFile);
-            rootKey = File.ReadAllBytes(tempFile);
-            File.Delete(tempFile);
-
             // Serial number MUST be positive
             byte[] sn = Guid.NewGuid().ToByteArray();
             if ((sn[0] & 0x80) == 0x80)
                 sn[0] -= 0x80;
+
+            ExtendedKeyUsageExtension eku = new ExtendedKeyUsageExtension();
+            eku.KeyPurpose.Add("1.3.6.1.5.5.7.3.1"); // Indicates the cert is intended for server auth
+            eku.KeyPurpose.Add("1.3.6.1.5.5.7.3.2"); // Indicates the cert is intended for client auth
 
             // Generate a self-signed certificate
             X509CertificateBuilder cb = new X509CertificateBuilder(3);
@@ -73,23 +69,54 @@ namespace OpenMetaverse.Http
             cb.SubjectName = issuer;
             cb.SubjectPublicKey = issuerKey;
             cb.Hash = "SHA1";
+            cb.Extensions.Add(eku);
 
-            rootCert = cb.Sign(issuerKey);
+            byte[] serverCert = cb.Sign(issuerKey);
+
+            // Generate a PKCS#12 file containing the certificate and private key
+            PKCS12 p12 = new PKCS12();
+            p12.Password = null;
+
+            ArrayList list = new ArrayList(4);
+            // We use a fixed array to avoid endianess issues
+            // (in case some tools requires the ID to be 1).
+            list.Add(new byte[] { 1, 0, 0, 0 });
+            Hashtable attributes = new Hashtable(1);
+            attributes.Add(PKCS9.localKeyId, list);
+
+            p12.AddCertificate(new X509Certificate(serverCert), attributes);
+            p12.AddPkcs8ShroudedKeyBag(issuerKey, attributes);
+
+            rootCert = p12.GetBytes();
         }
 
-        public static byte[] CreateServerCert(string subjectName, byte[] rootKey, byte[] rootCert)
+        public static byte[] CreateSignedCert(string subjectName, byte[] issuerKey, byte[] issuerCert)
+        {
+            // Copy the root key since the PrivateKey constructor will blow away the data
+            byte[] issuerKeyCopy = new byte[issuerKey.Length];
+            Buffer.BlockCopy(issuerKey, 0, issuerKeyCopy, 0, issuerKey.Length);
+
+            // Load the server's private key and certificate
+            PrivateKey pvk = new PrivateKey(issuerKeyCopy, null);
+            RSA issuerKeyRSA = pvk.RSA;
+
+            // Parse the certificate data
+            X509Certificate issuerCertX509 = new X509Certificate(issuerCert);
+
+            return CreateSignedCert(subjectName, issuerKeyRSA, issuerCertX509);
+        }
+
+        public static byte[] CreateSignedCert(string subjectName, RSA issuerKey, X509Certificate issuerCert)
         {
             if (!subjectName.StartsWith("CN="))
                 subjectName = "CN=" + subjectName;
 
-            // Copy the root key since the PrivateKey constructor will blow away the data
-            byte[] rootKeyCopy = new byte[rootKey.Length];
-            Buffer.BlockCopy(rootKey, 0, rootKeyCopy, 0, rootKey.Length);
+            // Generate a new subject key
+            RSA subjectKey = (RSA)RSA.Create();
 
-            // Load the server's private key and certificate
-            PrivateKey pvk = new PrivateKey(rootKeyCopy, null);
-            RSA issuerKey = pvk.RSA;
-            X509Certificate issuerCert = new X509Certificate(rootCert);
+            // Generate a private key
+            PrivateKey key = new PrivateKey();
+            key.RSA = subjectKey;
 
             // Serial number MUST be positive
             byte[] sn = Guid.NewGuid().ToByteArray();
@@ -98,20 +125,22 @@ namespace OpenMetaverse.Http
 
             ExtendedKeyUsageExtension eku = new ExtendedKeyUsageExtension();
             eku.KeyPurpose.Add("1.3.6.1.5.5.7.3.1"); // Indicates the cert is intended for server auth
+            eku.KeyPurpose.Add("1.3.6.1.5.5.7.3.2"); // Indicates the cert is intended for client auth
 
-            // Generate a server certificate signed by the server root CA
+            // Generate a certificate signed by the given issuer
             X509CertificateBuilder cb = new X509CertificateBuilder(3);
             cb.SerialNumber = sn;
             cb.IssuerName = issuerCert.IssuerName;
             cb.NotBefore = DateTime.Now;
             cb.NotAfter = new DateTime(643445675990000000); // 12/31/2039 23:59:59Z
             cb.SubjectName = subjectName;
-            cb.SubjectPublicKey = issuerKey;
+            cb.SubjectPublicKey = subjectKey;
             cb.Hash = "SHA1";
             cb.Extensions.Add(eku);
+
             byte[] serverCert = cb.Sign(issuerKey);
 
-            // Generate a PKCS#12 file for the server containing the private key and certificate
+            // Generate a PKCS#12 file containing the certificate, issuer certificate, and private key
             PKCS12 p12 = new PKCS12();
             p12.Password = null;
 
@@ -124,59 +153,7 @@ namespace OpenMetaverse.Http
 
             p12.AddCertificate(new X509Certificate(serverCert), attributes);
             p12.AddCertificate(issuerCert);
-            p12.AddPkcs8ShroudedKeyBag(issuerKey, attributes);
-
-            return p12.GetBytes();
-        }
-
-        public static byte[] CreateClientCert(string subjectName, byte[] rootKey, byte[] rootCert)
-        {
-            if (!subjectName.StartsWith("CN="))
-                subjectName = "CN=" + subjectName;
-
-            // Copy the root key since the PrivateKey constructor will blow away the data
-            byte[] rootKeyCopy = new byte[rootKey.Length];
-            Buffer.BlockCopy(rootKey, 0, rootKeyCopy, 0, rootKey.Length);
-
-            // Load the server's private key and certificate
-            PrivateKey pvk = new PrivateKey(rootKeyCopy, null);
-            RSA issuerKey = pvk.RSA;
-            X509Certificate issuerCert = new X509Certificate(rootCert);
-
-            // Serial number MUST be positive
-            byte[] sn = Guid.NewGuid().ToByteArray();
-            if ((sn[0] & 0x80) == 0x80)
-                sn[0] -= 0x80;
-
-            ExtendedKeyUsageExtension eku = new ExtendedKeyUsageExtension();
-            eku.KeyPurpose.Add("1.3.6.1.5.5.7.3.2"); // Indicates the cert is intended for client auth
-
-            // Generate a client certificate signed by the server root CA
-            X509CertificateBuilder cb = new X509CertificateBuilder(3);
-            cb.SerialNumber = sn;
-            cb.IssuerName = issuerCert.IssuerName;
-            cb.NotBefore = DateTime.Now;
-            cb.NotAfter = new DateTime(643445675990000000); // 12/31/2039 23:59:59Z
-            cb.SubjectName = subjectName;
-            cb.SubjectPublicKey = issuerKey;
-            cb.Hash = "SHA1";
-            cb.Extensions.Add(eku);
-            byte[] clientCert = cb.Sign(issuerKey);
-
-            // Generate a PKCS#12 file for the client containing the private key and certificate
-            PKCS12 p12 = new PKCS12();
-            p12.Password = null;
-
-            ArrayList list = new ArrayList(4);
-            // We use a fixed array to avoid endianess issues
-            // (in case some tools requires the ID to be 1).
-            list.Add(new byte[] { 1, 0, 0, 0 });
-            Hashtable attributes = new Hashtable(1);
-            attributes.Add(PKCS9.localKeyId, list);
-
-            p12.AddCertificate(new X509Certificate(clientCert), attributes);
-            p12.AddCertificate(issuerCert);
-            p12.AddPkcs8ShroudedKeyBag(issuerKey, attributes);
+            p12.AddPkcs8ShroudedKeyBag(subjectKey, attributes);
 
             return p12.GetBytes();
         }

@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using OpenMetaverse.StructuredData;
@@ -66,6 +67,7 @@ namespace OpenMetaverse.Http
         }
 
         HttpListener server;
+        X509Certificate rootCA;
         bool serverOwned;
         HttpRequestHandler capsHandler;
         ExpiringCache<UUID, CapsRedirector> expiringCaps = new ExpiringCache<UUID, CapsRedirector>();
@@ -81,9 +83,10 @@ namespace OpenMetaverse.Http
 
         public CapsServer(IPAddress address, int port, X509Certificate sslCertificate, X509Certificate rootCA, bool requireClientCertificate)
         {
+            this.rootCA = rootCA;
             serverOwned = true;
             capsHandler = BuildCapsHandler(@"^/caps/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
-            server = HttpListener.Create(log4netLogWriter.Instance, address, port, sslCertificate, rootCA, SslProtocols.Default, requireClientCertificate);
+            server = HttpListener.Create(log4netLogWriter.Instance, address, port, sslCertificate, ClientCertCallback, SslProtocols.Default, requireClientCertificate);
         }
 
         public CapsServer(HttpListener httpServer, string handlerPath)
@@ -257,6 +260,12 @@ namespace OpenMetaverse.Http
             }
 
             response.Send();
+        }
+
+        bool ClientCertCallback(Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            // FIXME: Implement this
+            return true;
         }
 
         HttpRequestHandler BuildCapsHandler(string path)
