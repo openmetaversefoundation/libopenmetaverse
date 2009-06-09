@@ -43,10 +43,10 @@ namespace GridImageUpload
             Settings.LOG_LEVEL = Helpers.LogLevel.None;
             Client.Settings.ALWAYS_DECODE_OBJECTS = false;
             Client.Settings.ALWAYS_REQUEST_OBJECTS = false;
-            Client.Settings.SEND_AGENT_UPDATES = true;
+            Settings.SEND_AGENT_UPDATES = true;
             Client.Settings.OBJECT_TRACKING = false;
             Client.Settings.STORE_LAND_PATCHES = false;
-            Client.Settings.MULTIPLE_SIMS = false;
+            Settings.MULTIPLE_SIMS = false;
             Client.Self.Movement.Camera.Far = 32.0f;
             Client.Throttle.Cloud = 0.0f;
             Client.Throttle.Land = 0.0f;

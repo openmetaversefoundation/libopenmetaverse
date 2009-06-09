@@ -37,7 +37,7 @@ namespace OpenMetaverse.TestClient
 
             byte[] fileData = File.ReadAllBytes(fileName);
 
-            Client.Network.CurrentSim.Estate.UploadTerrain(fileData, fileName);
+            Client.Estate.UploadTerrain(fileData, fileName);
 
             // Wait for upload to complete. Upload request is fired in callback from first request
             if (!WaitForUploadComplete.WaitOne(120000, false))

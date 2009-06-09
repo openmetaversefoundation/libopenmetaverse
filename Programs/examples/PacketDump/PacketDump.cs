@@ -53,7 +53,7 @@ namespace PacketDump
 
             client = new GridClient();
             // Turn off some unnecessary things
-            client.Settings.MULTIPLE_SIMS = false;
+            Settings.MULTIPLE_SIMS = false;
             // Throttle packets that we don't want all the way down
             client.Throttle.Land = 0;
             client.Throttle.Wind = 0;

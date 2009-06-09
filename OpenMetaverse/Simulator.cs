@@ -288,8 +288,6 @@ namespace OpenMetaverse
         /// <summary></summary>
         public bool IsEstateManager;
         /// <summary></summary>
-        public EstateTools Estate;
-        /// <summary></summary>
         public RegionFlags Flags;
         /// <summary></summary>
         public SimAccess Access;
@@ -432,7 +430,6 @@ namespace OpenMetaverse
         internal int pauseSerial;
 
         public NetworkManager Network;
-        public AgentManager Self;
         private Queue<long> InBytes, OutBytes;
         // ACKs that are queued up to be sent to the simulator
         private LocklessQueue<uint> PendingAcks = new LocklessQueue<uint>();
@@ -447,12 +444,12 @@ namespace OpenMetaverse
         #endregion Internal/Private Members
 
         #region Settings
-        public bool SendPings;
-        public int NetworkTickInterval;
-        public int PingInterval;
-        public bool SendAgentUpdates;
-        public int SimulatorTimeout;
-        public bool EnableCaps;
+        //public bool SendPings;
+        //public int NetworkTickInterval;
+        //public int PingInterval;
+        //public bool SendAgentUpdates;
+        //public int SimulatorTimeout;
+        //public bool EnableCaps;
         #endregion
 
         /// <summary>
@@ -461,15 +458,12 @@ namespace OpenMetaverse
         /// <param name="client">Reference to the GridClient object</param>
         /// <param name="address">IPEndPoint of the simulator</param>
         /// <param name="handle">handle of the simulator</param>
-        public Simulator(LoggerInstance log, NetworkManager network, AgentManager self, AssetManager assets, IPEndPoint address, ulong handle)
+        public Simulator(LoggerInstance log, NetworkManager network, IPEndPoint address, ulong handle)
             : base(address)
         {
             //Client = client;
             Log = log;
-            
             Handle = handle;
-            Estate = new EstateTools(log, network, self, assets);
-            Self = self;
             Network = network;
             PacketArchive = new IncomingPacketIDCollection(Settings.PACKET_ARCHIVE_SIZE);
             InBytes = new Queue<long>(Settings.STATS_QUEUE_SIZE);
@@ -491,9 +485,10 @@ namespace OpenMetaverse
         /// <summary>
         /// Attempt to connect to this simulator
         /// </summary>
+        /// <param name="moveToSim">Whether to move our agent in to this sim or not</param>
         /// <returns>True if the connection succeeded or connection status is
         /// unknown, false if there was a failure</returns>
-        public bool Connect()
+        public bool Connect(bool moveToSim)
         {
             if (connected)
             {
@@ -509,12 +504,12 @@ namespace OpenMetaverse
             if (PingTimer != null) PingTimer.Dispose();
 
             // Timer for sending out queued packet acknowledgements
-            AckTimer = new Timer(AckTimer_Elapsed, null, NetworkTickInterval, NetworkTickInterval);
+            AckTimer = new Timer(AckTimer_Elapsed, null, Settings.NETWORK_TICK_INTERVAL, Settings.NETWORK_TICK_INTERVAL);
             // Timer for recording simulator connection statistics
             StatsTimer = new Timer(StatsTimer_Elapsed, null, 1000, 1000);
             // Timer for periodically pinging the simulator
-            if (SendPings)
-                PingTimer = new Timer(PingTimer_Elapsed, null, PingInterval, PingInterval);
+            if (Settings.SEND_PINGS)
+                PingTimer = new Timer(PingTimer_Elapsed, null, Settings.PING_INTERVAL, Settings.PING_INTERVAL);
 
             #endregion Start Timers
 
@@ -531,7 +526,7 @@ namespace OpenMetaverse
                 // Send the UseCircuitCode packet to initiate the connection
                 UseCircuitCodePacket use = new UseCircuitCodePacket();
                 use.CircuitCode.Code = Network.CircuitCode;
-                use.CircuitCode.ID = Network.AgentID
+                use.CircuitCode.ID = Network.AgentID;
                 use.CircuitCode.SessionID = Network.SessionID;
 
                 // Send the initial packet out
@@ -540,14 +535,13 @@ namespace OpenMetaverse
                 Stats.ConnectTime = Environment.TickCount;
 
                 // Move our agent in to the sim to complete the connection
-                // if (moveToSim) Network.CompleteAgentMovement(this);
-                // CHANGED: NetworkManager.SetCurrentSim now handles agent movement.
+                if (moveToSim) Network.CompleteAgentMovement(this);
 
                 // MOVED TO AgentManager
-                //if (SendAgentUpdates)
-                    // Self.Movement.SendUpdate(true, this);
+                //if (Settings.SEND_AGENT_UPDATES)
+                    //Network.Self.Movement.SendUpdate(true, this);
 
-                if (!ConnectedEvent.WaitOne(SimulatorTimeout, false))
+                if (!ConnectedEvent.WaitOne(Settings.SIMULATOR_TIMEOUT, false))
                 {
                     Log.Log("Giving up on waiting for RegionHandshake for " + this.ToString(),
                         Helpers.LogLevel.Warning);
@@ -574,7 +568,7 @@ namespace OpenMetaverse
                 Caps = null;
             }
 
-            if (EnableCaps)
+            if (Settings.ENABLE_CAPS)
             {
                 // Connect to the new CAPS system
                 if (!String.IsNullOrEmpty(seedcaps))

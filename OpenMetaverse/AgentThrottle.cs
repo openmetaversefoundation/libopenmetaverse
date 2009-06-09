@@ -131,7 +131,7 @@ namespace OpenMetaverse
             }
         }
 
-        private GridClient Client;
+        private NetworkManager network;
         private float resend;
         private float land;
         private float wind;
@@ -143,10 +143,18 @@ namespace OpenMetaverse
         /// <summary>
         /// Default constructor, uses a default high total of 1500 KBps (1536000)
         /// </summary>
-        public AgentThrottle(GridClient client)
+        public AgentThrottle(NetworkManager network)
         {
-            Client = client;
+            this.network = network;
+            network.OnSimConnected += new NetworkManager.SimConnectedCallback(network_OnSimConnected);
             Total = 1536000.0f;
+        }
+
+        void network_OnSimConnected(Simulator simulator)
+        {
+            // If enabled, send an AgentThrottle packet to the server to increase our bandwidth
+            if (Settings.SEND_AGENT_THROTTLE)
+                Set(simulator);
         }
 
         /// <summary>
@@ -188,28 +196,19 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Send an AgentThrottle packet to the current server using the 
-        /// current values
-        /// </summary>
-        public void Set()
-        {
-            Set(Client.Network.CurrentSim);
-        }
-
-        /// <summary>
         /// Send an AgentThrottle packet to the specified server using the 
         /// current values
         /// </summary>
         public void Set(Simulator simulator)
         {
             AgentThrottlePacket throttle = new AgentThrottlePacket();
-            throttle.AgentData.AgentID = Client.Self.AgentID;
-            throttle.AgentData.SessionID = Client.Self.SessionID;
-            throttle.AgentData.CircuitCode = Client.Network.CircuitCode;
+            throttle.AgentData.AgentID = network.AgentID;
+            throttle.AgentData.SessionID = network.SessionID;
+            throttle.AgentData.CircuitCode = network.CircuitCode;
             throttle.Throttle.GenCounter = 0;
             throttle.Throttle.Throttles = this.ToBytes();
 
-            Client.Network.SendPacket(throttle, simulator);
+            network.SendPacket(throttle, simulator);
         }
 
         /// <summary>

@@ -1876,9 +1876,9 @@ namespace OpenMetaverse
                 // Make the request
                 CapsClient request = new CapsClient(url);
                 request.OnComplete += CreateItemFromAssetResponse;
-                request.UserData = new object[] { callback, data, _Client.Settings.CAPS_TIMEOUT };
+                request.UserData = new object[] { callback, data, Settings.CAPS_TIMEOUT };
 
-                request.BeginGetResponse(query, OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);
+                request.BeginGetResponse(query, OSDFormat.Xml, Settings.CAPS_TIMEOUT);
             }
             else
             {
@@ -2083,7 +2083,7 @@ namespace OpenMetaverse
                 CapsClient request = new CapsClient(url);
                 request.OnComplete += new CapsClient.CompleteCallback(UploadNotecardAssetResponse);
                 request.UserData = new object[] { new KeyValuePair<NotecardUploadedAssetCallback, byte[]>(callback, data), notecardID };
-                request.BeginGetResponse(query, OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);
+                request.BeginGetResponse(query, OSDFormat.Xml, Settings.CAPS_TIMEOUT);
             }
             else
             {
@@ -2111,7 +2111,7 @@ namespace OpenMetaverse
                 CapsClient request = new CapsClient(url);
                 request.OnComplete += new CapsClient.CompleteCallback(UpdateScriptAgentInventoryResponse);
                 request.UserData = new object[2] { new KeyValuePair<ScriptUpdatedCallback, byte[]>(callback, data), itemID };
-                request.BeginGetResponse(msg.Serialize(), OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);   
+                request.BeginGetResponse(msg.Serialize(), OSDFormat.Xml, Settings.CAPS_TIMEOUT);   
             }
             else
             {
@@ -2322,7 +2322,7 @@ namespace OpenMetaverse
             if (doEffect)
             {
                 _Client.Self.BeamEffect(_Client.Self.AgentID, recipient, Vector3d.Zero,
-                    _Client.Settings.DEFAULT_EFFECT_COLOR, 1f, UUID.Random());
+                    Settings.DEFAULT_EFFECT_COLOR, 1f, UUID.Random());
             }
         }
 
@@ -2373,7 +2373,7 @@ namespace OpenMetaverse
             if (doEffect)
             {
                 _Client.Self.BeamEffect(_Client.Self.AgentID, recipient, Vector3d.Zero,
-                    _Client.Settings.DEFAULT_EFFECT_COLOR, 1f, UUID.Random());
+                    Settings.DEFAULT_EFFECT_COLOR, 1f, UUID.Random());
             }
         }
 
@@ -3733,7 +3733,7 @@ namespace OpenMetaverse
                 CapsClient upload = new CapsClient(new Uri(uploadURL));
                 upload.OnComplete += new CapsClient.CompleteCallback(UploadNotecardAssetResponse);
                 upload.UserData = new object[2] { kvp, (UUID)(((object[])client.UserData)[1]) };
-                upload.BeginGetResponse(itemData, "application/octet-stream", _Client.Settings.CAPS_TIMEOUT);
+                upload.BeginGetResponse(itemData, "application/octet-stream", Settings.CAPS_TIMEOUT);
             }
             else if (status == "complete")
             {
@@ -3785,7 +3785,7 @@ namespace OpenMetaverse
                 CapsClient upload = new CapsClient(new Uri(uploadURL));
                 upload.OnComplete += new CapsClient.CompleteCallback(UpdateScriptAgentInventoryResponse);
                 upload.UserData = new object[2] { kvp, (UUID)(((object[])client.UserData)[1]) };
-                upload.BeginGetResponse(itemData, "application/octet-stream", _Client.Settings.CAPS_TIMEOUT);
+                upload.BeginGetResponse(itemData, "application/octet-stream", Settings.CAPS_TIMEOUT);
             }
             else if (status == "complete" && callback != null)
             {

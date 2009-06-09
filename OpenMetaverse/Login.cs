@@ -895,7 +895,7 @@ namespace OpenMetaverse
         #endregion
 
         #region Settings
-        public int CapsTimeout;
+        //public int CapsTimeout;
 
         #endregion
 
@@ -1008,7 +1008,7 @@ namespace OpenMetaverse
                 loginRequest.OnComplete += new CapsClient.CompleteCallback(LoginReplyLLSDHandler);
                 loginRequest.UserData = CurrentContext;
                 UpdateLoginStatus(LoginStatus.ConnectingToLogin, String.Format("Logging in as {0} {1}...", loginParams.FirstName, loginParams.LastName));
-                loginRequest.BeginGetResponse(loginLLSD, OSDFormat.Xml, CapsTimeout);
+                loginRequest.BeginGetResponse(loginLLSD, OSDFormat.Xml, Settings.CAPS_TIMEOUT);
 
                 #endregion
             }
@@ -1160,9 +1160,9 @@ namespace OpenMetaverse
                     regionX = (uint)reply.RegionX;
                     regionY = (uint)reply.RegionY;
                     simPort = (ushort)reply.SimPort;
-                    _SessionID = reply.SessionID;
-                    _SecureSessionID = reply.SecureSessionID;
-                    _AgentID = reply.AgentID;
+                    SessionID = reply.SessionID;
+                    SecureSessionID = reply.SecureSessionID;
+                    AgentID = reply.AgentID;
                     LoginSeedCapability = reply.SeedCapability;
                 }
                 catch (Exception)
@@ -1318,9 +1318,9 @@ namespace OpenMetaverse
 
                             // These parameters are stored in NetworkManager, so instead of registering
                             // another callback for them we just set the values here
-                            _SessionID = data.SessionID;
-                            _SecureSessionID = data.SecureSessionID;
-                            _AgentID = data.AgentID;
+                            SessionID = data.SessionID;
+                            SecureSessionID = data.SecureSessionID;
+                            AgentID = data.AgentID;
                             CircuitCode = (uint)data.CircuitCode;
                             LoginSeedCapability = data.SeedCapability;
 

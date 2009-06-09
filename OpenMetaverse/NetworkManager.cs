@@ -40,7 +40,7 @@ using OpenMetaverse.Messages.Linden;
 namespace OpenMetaverse
 {
     /// <summary>
-    /// Thi exception is thrown whenever a network operation is attempted 
+    /// This exception is thrown whenever a network operation is attempted 
     /// without a network connection.
     /// </summary>
     public class NotConnectedException : ApplicationException { }
@@ -254,14 +254,27 @@ namespace OpenMetaverse
 
         /// <summary>Your (client) avatars <seealso cref="UUID"/></summary>
         /// <remarks>"client", "agent", and "avatar" all represent the same thing</remarks>
-        public UUID AgentID { get { return _AgentID; } }
+        public UUID AgentID { 
+            get { return _AgentID; }
+            private set { _AgentID = value;
+            Log.DebugLog("SessionID set to " + value);
+            }
+        }
 
         /// <summary>Temporary <seealso cref="UUID"/> assigned to this session, used for 
         /// verifying our identity in packets</summary>
-        public UUID SessionID { get { return _SessionID; } }
+        public UUID SessionID { 
+            get { return _SessionID; }
+            private set { _SessionID = value;
+            Log.DebugLog("SessionID set to " + value);
+            }
+        }
 
         /// <summary>Shared secret <seealso cref="UUID"/> that is never sent over the wire</summary>
-        public UUID SecureSessionID { get { return _SecureSessionID; } }
+        public UUID SecureSessionID { 
+            get { return _SecureSessionID; }
+            private set { _SecureSessionID = value; }
+        }
 
         /// <summary>Shows whether the network layer is logged in to the
         /// grid or not</summary>
@@ -294,17 +307,13 @@ namespace OpenMetaverse
         private Simulator _CurrentSim = null;
         private bool connected = false;
         private LoggerInstance Log;
-        private AgentManager Self;
-        private AgentThrottle Throttle;
         /// <summary>
         /// Default constructor
         /// </summary>
         /// <param name="client">Reference to the GridClient object</param>
-        public NetworkManager(LoggerInstance log, AgentManager self, AgentThrottle throttle)
+        public NetworkManager(LoggerInstance log)
         {
             Log = log;
-            Self = self;
-            Throttle = throttle;
             PacketEvents = new PacketEventDictionary(Log);
             CapsEvents = new CapsEventDictionary(Log);
 
@@ -432,7 +441,7 @@ namespace OpenMetaverse
             if (simulator == null)
             {
                 // We're not tracking this sim, create a new Simulator object
-                simulator = new Simulator(Log, this, Self, endPoint, handle);
+                simulator = new Simulator(Log, this, endPoint, handle);
 
                 // Immediately add this simulator to the list of current sims. It will be removed if the
                 // connection fails
@@ -475,7 +484,7 @@ namespace OpenMetaverse
                 }
 
                 // Attempt to establish a connection to the simulator
-                if (simulator.Connect())
+                if (simulator.Connect(setDefault))
                 {
                     if (DisconnectTimer == null)
                     {
@@ -494,7 +503,8 @@ namespace OpenMetaverse
                     }
 
                     // If enabled, send an AgentThrottle packet to the server to increase our bandwidth
-                    if (Settings.SEND_AGENT_THROTTLE) Throttle.Set(simulator);
+                    // if (Client.Settings.SEND_AGENT_THROTTLE) Client.Throttle.Set(simulator);
+                    // MOVED TO AgentThrottle.
 
                     return simulator;
                 }
@@ -507,11 +517,16 @@ namespace OpenMetaverse
             }
             else if (setDefault)
             {
+                Log.DebugLog("Sim already connected, NetworkManager sending CompleteAgentMovement");
                 // We're already connected to this server, but need to set it to the default
                 SetCurrentSim(simulator, seedcaps);
 
+                // Move in to this simulator
+                CompleteAgentMovement(simulator);
+
                 // Send an initial AgentUpdate to complete our movement in to the sim
-                // Self.Movement.SendUpdate(true, simulator);
+                //if (Settings.SEND_AGENT_UPDATES)
+                    //Self.Movement.SendUpdate(true, simulator);
                 // MOVED TO AgentManager
 
                 return simulator;
@@ -569,8 +584,8 @@ namespace OpenMetaverse
 
             // Send a logout request to the current sim
             LogoutRequestPacket logout = new LogoutRequestPacket();
-            logout.AgentData.AgentID = Self.AgentID;
-            logout.AgentData.SessionID = Self.SessionID;
+            logout.AgentData.AgentID = AgentID;
+            logout.AgentData.SessionID = SessionID;
             SendPacket(logout);
         }
 
@@ -791,9 +806,6 @@ namespace OpenMetaverse
                 Simulator oldSim = CurrentSim;
                 lock (Simulators) CurrentSim = simulator; // CurrentSim is synchronized against Simulators
 
-                // Move in to this simulator
-                CompleteAgentMovement(simulator);
-
 		        simulator.SetSeedCaps(seedcaps);
 
                 // If the current simulator changed fire the callback
@@ -890,7 +902,7 @@ namespace OpenMetaverse
         {
             LogoutReplyPacket logout = (LogoutReplyPacket)packet;
 
-            if ((logout.AgentData.SessionID == SessionID) && (logout.AgentData.AgentID == SeAgentID))
+            if ((logout.AgentData.SessionID == SessionID) && (logout.AgentData.AgentID == AgentID))
             {
                 Log.DebugLog("Logout reply received");
 
@@ -1074,8 +1086,8 @@ namespace OpenMetaverse
 
             // Send a RegionHandshakeReply
             RegionHandshakeReplyPacket reply = new RegionHandshakeReplyPacket();
-            reply.AgentData.AgentID = Self.AgentID;
-            reply.AgentData.SessionID = Self.SessionID;
+            reply.AgentData.AgentID = AgentID;
+            reply.AgentData.SessionID = SessionID;
             reply.RegionInfo.Flags = 0;
             SendPacket(reply, simulator);
 

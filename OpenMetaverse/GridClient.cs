@@ -101,30 +101,31 @@ namespace OpenMetaverse
         /// <summary>Throttling total bandwidth usage, or allocating bandwidth
         /// for specific data stream types</summary>
         public AgentThrottle Throttle;
+        public LoggerInstance Log;
         /// <summary>
         /// Default constructor
         /// </summary>
         public GridClient()
         {
             // These are order-dependant
-            LoggerInstance Log = new LoggerInstance();
-            Network = new NetworkManager(Log, ;
+            Log = new LoggerInstance();
+            Network = new NetworkManager(Log);
             Settings = new Settings(this);
             Parcels = new ParcelManager(this);
             Self = new AgentManager(this);
             Avatars = new AvatarManager(this);
-            Estate = new EstateTools(this);
             Friends = new FriendsManager(this);
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);
             Groups = new GroupManager(this);
             Assets = new AssetManager(this);
+            Estate = new EstateTools(Log, Network, Assets);
             Appearance = new AppearanceManager(this, Assets);
             Inventory = new InventoryManager(this);
             Directory = new DirectoryManager(this);
             Terrain = new TerrainManager(this);
             Sound = new SoundManager(this);
-            Throttle = new AgentThrottle(this);
+            Throttle = new AgentThrottle(Network);
 
             //if (Settings.ENABLE_INVENTORY_STORE)
             //    InventoryStore = new Inventory(Inventory);
@@ -139,6 +140,12 @@ namespace OpenMetaverse
             //        if (Settings.ENABLE_LIBRARY_STORE)
             //            LibraryStore.InitializeFromSkeleton(Inventory.LibrarySkeleton);
             //    };
+
+            Network.RegisterLoginResponseCallback(
+                delegate(bool loginSuccess, bool redirect, string message, string reason, LoginResponseData replyData)
+                {
+                    if (loginSuccess) Log.BotName = replyData.FirstName + " " + replyData.LastName;
+                });
         }
 
         /// <summary>
@@ -148,6 +155,25 @@ namespace OpenMetaverse
         public override string ToString()
         {
             return Self.Name;
+        }
+    }
+
+    public class SimpleClient
+    {
+        public LoggerInstance Log;
+        public NetworkManager Network;
+        public AgentThrottle Throttle;
+        public SimpleClient()
+        {
+            Log = new LoggerInstance();
+            Network = new NetworkManager(Log);
+            Throttle = new AgentThrottle(Network);
+
+            Network.RegisterLoginResponseCallback(
+                delegate(bool loginSuccess, bool redirect, string message, string reason, LoginResponseData replyData)
+                {
+                    if (loginSuccess) Log.BotName = replyData.FirstName + " " + replyData.LastName;
+                });
         }
     }
 }

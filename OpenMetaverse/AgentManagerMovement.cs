@@ -499,7 +499,7 @@ namespace OpenMetaverse
             /// <param name="target">Region coordinates to turn toward</param>
             public bool TurnToward(Vector3 target)
             {
-                if (Client.Settings.SEND_AGENT_UPDATES)
+                if (Settings.SEND_AGENT_UPDATES)
                 {
                     Quaternion parentRot = Quaternion.Identity;
 
@@ -684,7 +684,7 @@ namespace OpenMetaverse
 
             private void UpdateTimer_Elapsed(object obj)
             {
-                if (Client.Network.Connected && Client.Settings.SEND_AGENT_UPDATES)
+                if (Client.Network.Connected && Settings.SEND_AGENT_UPDATES)
                 {
                     //Send an AgentUpdate packet
                     SendUpdate(false, Client.Network.CurrentSim);

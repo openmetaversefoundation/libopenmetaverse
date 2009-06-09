@@ -168,7 +168,7 @@ namespace OpenMetaverse
 
         /// <summary>Enable/disable the sending of pings to monitor lag and 
         /// packet loss</summary>
-        public bool SEND_PINGS = true;
+        public static bool SEND_PINGS = true;
 
         /// <summary>Should we connect to multiple sims? This will allow
         /// viewing in to neighboring simulators and sim crossings
@@ -188,7 +188,7 @@ namespace OpenMetaverse
 
         /// <summary>Whether to establish connections to HTTP capabilities
         /// servers for simulators</summary>
-        public bool ENABLE_CAPS = true;
+        public static bool ENABLE_CAPS = true;
 
         /// <summary>Whether to decode sim stats</summary>
         public static bool ENABLE_SIMSTATS = true;
@@ -257,7 +257,7 @@ namespace OpenMetaverse
         #region Misc
 
         /// <summary>Default color used for viewer particle effects</summary>
-        public Color4 DEFAULT_EFFECT_COLOR = new Color4(255, 0, 0, 255);
+        public static Color4 DEFAULT_EFFECT_COLOR = new Color4(255, 0, 0, 255);
 
         /// <summary>Cost of uploading an asset</summary>
         /// <remarks>Read-only since this value is dynamically fetched at login</remarks>

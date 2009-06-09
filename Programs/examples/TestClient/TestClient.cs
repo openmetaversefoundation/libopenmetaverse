@@ -113,11 +113,10 @@ namespace OpenMetaverse.TestClient
         private void AgentDataUpdateHandler(Packet packet, Simulator sim)
         {
             AgentDataUpdatePacket p = (AgentDataUpdatePacket)packet;
-            if (p.AgentData.AgentID == sim.Client.Self.AgentID)
+            if (p.AgentData.AgentID == Network.AgentID)
             {
                 GroupID = p.AgentData.ActiveGroupID;
-
-                sim.Client.Groups.RequestGroupMembers(GroupID);
+                Groups.RequestGroupMembers(GroupID);
             }
         }
 

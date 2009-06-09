@@ -48,7 +48,6 @@ namespace OpenMetaverse
         //private GridClient Client;
         private LoggerInstance Log;
         private NetworkManager Network;
-        private AgentManager Self;
         private AssetManager Assets;
 
         /// <summary>Textures for each of the four terrain height levels</summary>
@@ -126,14 +125,13 @@ namespace OpenMetaverse
         /// Constructor for EstateTools class
         /// </summary>
         /// <param name="client"></param>
-        public EstateTools(LoggerInstance log, NetworkManager network, AgentManager self, AssetManager assets)
+        public EstateTools(LoggerInstance log, NetworkManager network, AssetManager assets)
         {
             GroundTextures = new GroundTextureSettings();
             GroundTextureLimits = new GroundTextureHeightSettings();
 
             Log = log;
             Network = network;
-            Self = self;
             Assets = assets;
             Network.RegisterCallback(PacketType.LandStatReply, new NetworkManager.PacketCallback(LandStatReplyHandler));
             Network.RegisterCallback(PacketType.EstateOwnerMessage, new NetworkManager.PacketCallback(EstateOwnerMessageHandler));
@@ -229,11 +227,11 @@ namespace OpenMetaverse
         /// <param name="reportType"></param>
         /// <param name="requestFlags"></param>
         /// <param name="filter"></param>
-        public void LandStatRequest(AgentManager Self, int parcelLocalID, LandStatReportType reportType, uint requestFlags, string filter)
+        public void LandStatRequest(int parcelLocalID, LandStatReportType reportType, uint requestFlags, string filter)
         {
             LandStatRequestPacket p = new LandStatRequestPacket();
-            p.AgentData.AgentID = Self.AgentID;
-            p.AgentData.SessionID = Self.SessionID;
+            p.AgentData.AgentID = Network.AgentID;
+            p.AgentData.SessionID = Network.SessionID;
             p.RequestData.Filter = Utils.StringToBytes(filter);
             p.RequestData.ParcelLocalID = parcelLocalID;
             p.RequestData.ReportType = (uint)reportType;
@@ -251,14 +249,14 @@ namespace OpenMetaverse
         public void RequestTopScripts()
         {
             //EstateOwnerMessage("scripts", "");
-            LandStatRequest(Self, 0, LandStatReportType.TopScripts, 0, "");
+            LandStatRequest(0, LandStatReportType.TopScripts, 0, "");
         }
 
         /// <summary>Requests the "Top Colliders" list for the current region</summary>
         public void RequestTopColliders()
         {
             //EstateOwnerMessage("colliders", "");
-            LandStatRequest(Self, 0, LandStatReportType.TopColliders, 0, "");
+            LandStatRequest(0, LandStatReportType.TopColliders, 0, "");
         }
 
         /// <summary>
@@ -274,7 +272,7 @@ namespace OpenMetaverse
         public void SetTerrainVariables(float WaterHeight, float TerrainRaiseLimit,
             float TerrainLowerLimit, bool UseEstateSun, bool FixedSun, float SunPosition)
         {
-            List<string> simVariables = new List<string>();
+            List<string> simVariables = new List<string>(9);
             simVariables.Add(WaterHeight.ToString(Utils.EnUsCulture));
             simVariables.Add(TerrainRaiseLimit.ToString(Utils.EnUsCulture));
             simVariables.Add(TerrainLowerLimit.ToString(Utils.EnUsCulture));
@@ -297,7 +295,7 @@ namespace OpenMetaverse
         {
             if (EstateWide)
             {
-                List<string> param = new List<string>();
+                List<string> param = new List<string>(2);
                 param.Add(flag.ToString());
                 param.Add(Target.ToString());
                 EstateOwnerMessage("estateobjectreturn", param);
@@ -305,8 +303,8 @@ namespace OpenMetaverse
             else
             {
                 SimWideDeletesPacket simDelete = new SimWideDeletesPacket();
-                simDelete.AgentData.AgentID = Self.AgentID;
-                simDelete.AgentData.SessionID = Self.SessionID;
+                simDelete.AgentData.AgentID = Network.AgentID;
+                simDelete.AgentData.SessionID = Network.SessionID;
                 simDelete.DataBlock.TargetID = Target;
                 simDelete.DataBlock.Flags = (uint)flag;
                 Network.SendPacket(simDelete);
@@ -318,7 +316,7 @@ namespace OpenMetaverse
         /// <param name="param"></param>
         public void EstateOwnerMessage(string method, string param)
         {
-            List<string> listParams = new List<string>();
+            List<string> listParams = new List<string>(1);
             listParams.Add(param);
             EstateOwnerMessage(method, listParams);
         }
@@ -331,8 +329,8 @@ namespace OpenMetaverse
         public void EstateOwnerMessage(string method, List<string> listParams)
         {
             EstateOwnerMessagePacket estate = new EstateOwnerMessagePacket();
-            estate.AgentData.AgentID = Self.AgentID;
-            estate.AgentData.SessionID = Self.SessionID;
+            estate.AgentData.AgentID = Network.AgentID;
+            estate.AgentData.SessionID = Network.SessionID;
             estate.AgentData.TransactionID = UUID.Zero;
             estate.MethodData.Invoice = UUID.Random();
             estate.MethodData.Method = Utils.StringToBytes(method);
@@ -360,9 +358,9 @@ namespace OpenMetaverse
         /// <param name="allEstates">Ban user from this estate and all others owned by the estate owner</param>
         public void BanUser(UUID userID, bool allEstates)
         {
-            List<string> listParams = new List<string>();
+            List<string> listParams = new List<string>(3);
             uint flag = allEstates ? (uint)EstateAccessDelta.BanUserAllEstates : (uint)EstateAccessDelta.BanUser;
-            listParams.Add(Self.AgentID.ToString());
+            listParams.Add(Network.AgentID.ToString());
             listParams.Add(flag.ToString());
             listParams.Add(userID.ToString());
             EstateOwnerMessage("estateaccessdelta", listParams);
@@ -373,9 +371,9 @@ namespace OpenMetaverse
         ///  /// <param name="allEstates">Unban user from this estate and all others owned by the estate owner</param>
         public void UnbanUser(UUID userID, bool allEstates)
         {
-            List<string> listParams = new List<string>();
+            List<string> listParams = new List<string>(3);
             uint flag = allEstates ? (uint)EstateAccessDelta.UnbanUserAllEstates : (uint)EstateAccessDelta.UnbanUser;
-            listParams.Add(Self.AgentID.ToString());
+            listParams.Add(Network.AgentID.ToString());
             listParams.Add(flag.ToString());
             listParams.Add(userID.ToString());
             EstateOwnerMessage("estateaccessdelta", listParams);
@@ -384,11 +382,12 @@ namespace OpenMetaverse
         /// <summary>
         /// Send a message dialog to everyone in an entire estate
         /// </summary>
+        /// <param name="name">Name of the avatar sending the message.</param>
         /// <param name="message">Message to send all users in the estate</param>
-        public void EstateMessage(string message)
+        public void EstateMessage(string name, string message)
         {
-            List<string> listParams = new List<string>();
-            listParams.Add(Self.FirstName + " " + Self.LastName);
+            List<string> listParams = new List<string>(2);
+            listParams.Add(name);
             listParams.Add(message);
             EstateOwnerMessage("instantmessage", listParams);
         }
@@ -396,14 +395,15 @@ namespace OpenMetaverse
         /// <summary>
         /// Send a message dialog to everyone in a simulator
         /// </summary>
+        /// <param name="name">Name of the avatar sending the message.</param>
         /// <param name="message">Message to send all users in the simulator</param>
-        public void SimulatorMessage(string message)
+        public void SimulatorMessage(string name, string message)
         {
             List<string> listParams = new List<string>();
             listParams.Add("-1");
             listParams.Add("-1");
-            listParams.Add(Self.AgentID.ToString());
-            listParams.Add(Self.FirstName + " " + Self.LastName);
+            listParams.Add(Network.AgentID.ToString());
+            listParams.Add(name);
             listParams.Add(message);
             EstateOwnerMessage("simulatormessage", listParams);
         }
@@ -414,8 +414,8 @@ namespace OpenMetaverse
         /// <param name="pest">Key of avatar to send home</param>
         public void TeleportHomeUser(UUID pest)
         {
-            List<string> listParams = new List<string>();
-            listParams.Add(Self.AgentID.ToString());
+            List<string> listParams = new List<string>(2);
+            listParams.Add(Network.AgentID.ToString());
             listParams.Add(pest.ToString());
             EstateOwnerMessage("teleporthomeuser", listParams);
         }
@@ -439,7 +439,7 @@ namespace OpenMetaverse
         /// <summary>Estate panel "Region" tab settings</summary>
         public void SetRegionInfo(bool blockTerraform, bool blockFly, bool allowDamage, bool allowLandResell, bool restrictPushing, bool allowParcelJoinDivide, float agentLimit, float objectBonus, bool mature)
         {
-            List<string> listParams = new List<string>();
+            List<string> listParams = new List<string>(9);
             if (blockTerraform) listParams.Add("Y"); else listParams.Add("N");
             if (blockFly) listParams.Add("Y"); else listParams.Add("N");
             if (allowDamage) listParams.Add("Y"); else listParams.Add("N");
@@ -455,7 +455,7 @@ namespace OpenMetaverse
         /// <summary>Estate panel "Debug" tab settings</summary>
         public void SetRegionDebug(bool disableScripts, bool disableCollisions, bool disablePhysics)
         {
-            List<string> listParams = new List<string>();
+            List<string> listParams = new List<string>(3);
             if (disableScripts) listParams.Add("Y"); else listParams.Add("N");
             if (disableCollisions) listParams.Add("Y"); else listParams.Add("N");
             if (disablePhysics) listParams.Add("Y"); else listParams.Add("N");
@@ -469,7 +469,7 @@ namespace OpenMetaverse
         /// <param name="high"></param>
         public void SetRegionTerrain(UUID low, UUID midLow, UUID midHigh, UUID high)
         {
-            List<string> listParams = new List<string>();
+            List<string> listParams = new List<string>(4);
             listParams.Add("0 " + low.ToString());
             listParams.Add("1 " + midLow.ToString());
             listParams.Add("2 " + midHigh.ToString());
@@ -481,7 +481,7 @@ namespace OpenMetaverse
         /// <summary>Used for setting sim terrain texture heights</summary> 
         public void SetRegionTerrainHeights(float lowSW, float highSW, float lowNW, float highNW, float lowSE, float highSE, float lowNE, float highNE)
         {
-            List<string> listParams = new List<string>();
+            List<string> listParams = new List<string>(4);
             listParams.Add("0 " + lowSW.ToString(Utils.EnUsCulture) + " " + highSW.ToString(Utils.EnUsCulture)); //SW low-high 
             listParams.Add("1 " + lowNW.ToString(Utils.EnUsCulture) + " " + highNW.ToString(Utils.EnUsCulture)); //NW low-high 
             listParams.Add("2 " + lowSE.ToString(Utils.EnUsCulture) + " " + highSE.ToString(Utils.EnUsCulture)); //SE low-high 
@@ -494,8 +494,8 @@ namespace OpenMetaverse
         public void RequestCovenant()
         {
             EstateCovenantRequestPacket req = new EstateCovenantRequestPacket();
-            req.AgentData.AgentID = Self.AgentID;
-            req.AgentData.SessionID = Self.SessionID;
+            req.AgentData.AgentID = Network.AgentID;
+            req.AgentData.SessionID = Network.SessionID;
             Network.SendPacket(req);
         }
 
@@ -517,7 +517,7 @@ namespace OpenMetaverse
             Assets.SetPendingAssetUploadData(upload);
 
             // Create and populate a list with commands specific to uploading a raw terrain file
-            List<String> paramList = new List<string>();
+            List<String> paramList = new List<string>(2);
             paramList.Add("upload filename");
             paramList.Add(fileName);
 
@@ -532,8 +532,8 @@ namespace OpenMetaverse
         /// </summary>
         public void TeleportHomeAllUsers()
         {
-            List<string> Params = new List<string>();
-            Params.Add(Self.AgentID.ToString());
+            List<string> Params = new List<string>(1);
+            Params.Add(Network.AgentID.ToString());
             EstateOwnerMessage("teleporthomeallusers", Params);
         }
 
@@ -543,9 +543,9 @@ namespace OpenMetaverse
         /// <param name="allEstates">removes manager to this estate and all others owned by the estate owner</param>
         public void RemoveEstateManager(UUID userID, bool allEstates)
         {
-            List<string> listParams = new List<string>();
+            List<string> listParams = new List<string>(3);
             uint flag = allEstates ? (uint)EstateAccessDelta.RemoveManagerAllEstates : (uint)EstateAccessDelta.RemoveManager;
-            listParams.Add(Self.AgentID.ToString());
+            listParams.Add(Network.AgentID.ToString());
             listParams.Add(flag.ToString());
             listParams.Add(userID.ToString());
             EstateOwnerMessage("estateaccessdelta", listParams);
@@ -557,9 +557,9 @@ namespace OpenMetaverse
         /// <param name="allEstates">Add agent as manager to this estate and all others owned by the estate owner</param>
         public void AddEstateManager(UUID userID, bool allEstates)
         {
-            List<string> listParams = new List<string>();
+            List<string> listParams = new List<string>(3);
             uint flag = allEstates ? (uint)EstateAccessDelta.AddManagerAllEstates : (uint)EstateAccessDelta.AddManager;
-            listParams.Add(Self.AgentID.ToString());
+            listParams.Add(Network.AgentID.ToString());
             listParams.Add(flag.ToString());
             listParams.Add(userID.ToString());
             EstateOwnerMessage("estateaccessdelta", listParams);
@@ -571,9 +571,9 @@ namespace OpenMetaverse
         /// <param name="allEstates">Add agent as an allowed reisdent to All estates if true</param>
         public void AddAllowedUser(UUID userID, bool allEstates)
         {
-            List<string> listParams = new List<string>();
+            List<string> listParams = new List<string>(3);
             uint flag = allEstates ? (uint)EstateAccessDelta.AddAllowedAllEstates : (uint)EstateAccessDelta.AddUserAsAllowed;
-            listParams.Add(Self.AgentID.ToString());
+            listParams.Add(Network.AgentID.ToString());
             listParams.Add(flag.ToString());
             listParams.Add(userID.ToString());
             EstateOwnerMessage("estateaccessdelta", listParams);
@@ -585,9 +585,9 @@ namespace OpenMetaverse
         /// <param name="allEstates">Removes agent as an allowed reisdent from All estates if true</param>
         public void RemoveAllowedUser(UUID userID, bool allEstates)
         {
-            List<string> listParams = new List<string>();
+            List<string> listParams = new List<string>(3);
             uint flag = allEstates ? (uint)EstateAccessDelta.RemoveUserAllowedAllEstates : (uint)EstateAccessDelta.RemoveUserAsAllowed;
-            listParams.Add(Self.AgentID.ToString());
+            listParams.Add(Network.AgentID.ToString());
             listParams.Add(flag.ToString());
             listParams.Add(userID.ToString());
             EstateOwnerMessage("estateaccessdelta", listParams);
@@ -599,9 +599,9 @@ namespace OpenMetaverse
         /// <param name="allEstates">Add Group as an allowed group to All estates if true</param>
         public void AddAllowedGroup(UUID groupID, bool allEstates)
         {
-            List<string> listParams = new List<string>();
+            List<string> listParams = new List<string>(3);
             uint flag = allEstates ? (uint)EstateAccessDelta.AddGroupAllowedAllEstates : (uint)EstateAccessDelta.AddAllowedAllEstates;
-            listParams.Add(Self.AgentID.ToString());
+            listParams.Add(Network.AgentID.ToString());
             listParams.Add(flag.ToString());
             listParams.Add(groupID.ToString());
             EstateOwnerMessage("estateaccessdelta", listParams);
@@ -613,9 +613,9 @@ namespace OpenMetaverse
         /// <param name="allEstates">Removes Group as an allowed Group from All estates if true</param>
         public void RemoveAllowedGroup(UUID groupID, bool allEstates)
         {
-            List<string> listParams = new List<string>();
+            List<string> listParams = new List<string>(3);
             uint flag = allEstates ? (uint)EstateAccessDelta.RemoveGroupAllowedAllEstates : (uint)EstateAccessDelta.RemoveGroupAsAllowed;
-            listParams.Add(Self.AgentID.ToString());
+            listParams.Add(Network.AgentID.ToString());
             listParams.Add(flag.ToString());
             listParams.Add(groupID.ToString());
             EstateOwnerMessage("estateaccessdelta", listParams);

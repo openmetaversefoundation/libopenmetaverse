@@ -19,7 +19,7 @@ namespace groupmanager
         {
             Client = new GridClient();
 
-            Client.Settings.MULTIPLE_SIMS = false;
+            Settings.MULTIPLE_SIMS = false;
 
             // Throttle unnecessary things down
             Client.Throttle.Land = 0;

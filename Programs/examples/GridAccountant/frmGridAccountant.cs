@@ -393,7 +393,7 @@ namespace GridAccountant
 		{
 			Client = new GridClient();
 
-            Client.Settings.MULTIPLE_SIMS = false;
+            Settings.MULTIPLE_SIMS = false;
 
             Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
 
