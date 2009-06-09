@@ -28,11 +28,29 @@ using System;
 
 namespace OpenMetaverse.Messages.CableBeach
 {
-    public static class AvatarServices
+    public static class CableBeachServices
     {
-        public static readonly Uri ASSETS = new Uri("http://openmetaverse.org/services/assets");
-        public static readonly Uri INVENTORY = new Uri("http://openmetaverse.org/services/inventory");
-        public static readonly Uri MAP = new Uri("http://openmetaverse.org/services/map");
+        public const string ASSETS = "http://openmetaverse.org/services/assets";
+        public const string ASSET_CREATE_ASSET = "http://openmetaverse.org/services/assets/create_asset";
+        public const string ASSET_GET_ASSET = "http://openmetaverse.org/services/assets/get_asset";
+        public const string ASSET_GET_ASSET_METADATA = "http://openmetaverse.org/services/assets/get_asset_metadata";
+
+        public const string FILESYSTEM = "http://openmetaverse.org/services/filesystem";
+        public const string FILESYSTEM_CREATE_FILESYSTEM = "http://openmetaverse.org/services/filesystem/create_filesystem";
+        public const string FILESYSTEM_CREATE_OBJECT = "http://openmetaverse.org/services/filesystem/create_object";
+        public const string FILESYSTEM_FETCH_OBJECT = "http://openmetaverse.org/services/filesystem/fetch_object";
+        public const string FILESYSTEM_GET_FILESYSTEM_SKELETON = "http://openmetaverse.org/services/filesystem/get_filesystem_skeleton";
+        public const string FILESYSTEM_PURGE_FOLDER = "http://openmetaverse.org/services/filesystem/purge_folder";
+
+        public const string MAP = "http://openmetaverse.org/services/map";
+        public const string MAP_CREATE_REGION = "http://openmetaverse.org/services/map/create_region";
+        public const string MAP_REGION_INFO = "http://openmetaverse.org/services/map/region_info";
+        public const string MAP_DELETE_REGION = "http://openmetaverse.org/services/map/delete_region";
+        public const string MAP_FETCH_REGION = "http://openmetaverse.org/services/map/fetch_region";
+        public const string MAP_FETCH_REGION_DEFAULT = "http://openmetaverse.org/services/map/fetch_region_default";
+        public const string MAP_REGION_SEARCH = "http://openmetaverse.org/services/map/region_search";
+        public const string MAP_GET_REGION_COUNT = "http://openmetaverse.org/services/map/get_region_count";
+        public const string MAP_REGION_UPDATE = "http://openmetaverse.org/services/map/region_update";
     }
 
     public static class AvatarAttributes

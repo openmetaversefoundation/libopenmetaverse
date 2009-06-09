@@ -430,7 +430,7 @@ namespace OpenMetaverse.Messages.CableBeach
     public class RequestCapabilitiesMessage : IMessage
     {
         public Uri Identity;
-        public string[] Capabilities;
+        public Uri[] Capabilities;
 
         public OSDMap Serialize()
         {
@@ -439,7 +439,7 @@ namespace OpenMetaverse.Messages.CableBeach
 
             OSDArray array = new OSDArray(Capabilities.Length);
             for (int i = 0; i < Capabilities.Length; i++)
-                array.Add(OSD.FromString(Capabilities[i]));
+                array.Add(OSD.FromUri(Capabilities[i]));
             map["capabilities"] = array;
 
             return map;
@@ -450,22 +450,22 @@ namespace OpenMetaverse.Messages.CableBeach
             Identity = map["identity"].AsUri();
 
             OSDArray array = (OSDArray)map["capabilities"];
-            Capabilities = new string[array.Count];
+            Capabilities = new Uri[array.Count];
             for (int i = 0; i < array.Count; i++)
-                Capabilities[i] = array[i].AsString();
+                Capabilities[i] = array[i].AsUri();
         }
     }
 
     public class RequestCapabilitiesReplyMessage : IMessage
     {
-        public Dictionary<string, Uri> Capabilities;
+        public Dictionary<Uri, Uri> Capabilities;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
             OSDMap caps = new OSDMap(Capabilities.Count);
-            foreach (KeyValuePair<string, Uri> entry in Capabilities)
-                caps.Add(entry.Key, OSD.FromUri(entry.Value));
+            foreach (KeyValuePair<Uri, Uri> entry in Capabilities)
+                caps.Add(entry.Key.ToString(), OSD.FromUri(entry.Value));
             map["capabilities"] = caps;
             return map;
         }
@@ -473,9 +473,9 @@ namespace OpenMetaverse.Messages.CableBeach
         public void Deserialize(OSDMap map)
         {
             OSDMap caps = (OSDMap)map["capabilities"];
-            Capabilities = new Dictionary<string, Uri>(caps.Count);
+            Capabilities = new Dictionary<Uri, Uri>(caps.Count);
             foreach (KeyValuePair<string, OSD> entry in caps)
-                Capabilities.Add(entry.Key, entry.Value.AsUri());
+                Capabilities.Add(new Uri(entry.Key), entry.Value.AsUri());
         }
     }
 
@@ -1098,7 +1098,7 @@ namespace OpenMetaverse.Messages.CableBeach
         public IPAddress IP;
         public string ClientVersion;
         public Dictionary<Uri, OSD> Attributes;
-        public Dictionary<Uri, Dictionary<string, Uri>> Services;
+        public Dictionary<Uri, Dictionary<Uri, Uri>> Services;
         public Uri CallbackUri;
 
         public OSDMap Serialize()
@@ -1120,11 +1120,11 @@ namespace OpenMetaverse.Messages.CableBeach
             map["attributes"] = attributes;
 
             OSDMap services = new OSDMap(Services.Count);
-            foreach (KeyValuePair<Uri, Dictionary<string, Uri>> serviceEntry in Services)
+            foreach (KeyValuePair<Uri, Dictionary<Uri, Uri>> serviceEntry in Services)
             {
                 OSDMap service = new OSDMap();
-                foreach (KeyValuePair<string, Uri> entry in serviceEntry.Value)
-                    service.Add(entry.Key, OSD.FromUri(entry.Value));
+                foreach (KeyValuePair<Uri, Uri> entry in serviceEntry.Value)
+                    service.Add(entry.Key.ToString(), OSD.FromUri(entry.Value));
                 services.Add(serviceEntry.Key.ToString(), service);
             }
             map["services"] = services;
@@ -1151,14 +1151,14 @@ namespace OpenMetaverse.Messages.CableBeach
                 Attributes.Add(new Uri(entry.Key), entry.Value);
 
             OSDMap servicesMap = (OSDMap)map["services"];
-            Services = new Dictionary<Uri, Dictionary<string, Uri>>(servicesMap.Count);
-            foreach (KeyValuePair<string, OSD> serviceEntry in servicesMap)
+            Services = new Dictionary<Uri, Dictionary<Uri, Uri>>(servicesMap.Count);
+            foreach (KeyValuePair<Uri, OSD> serviceEntry in servicesMap)
             {
                 OSDMap serviceMap = (OSDMap)serviceEntry.Value;
-                Dictionary<string, Uri> service = new Dictionary<string, Uri>(serviceMap.Count);
+                Dictionary<Uri, Uri> service = new Dictionary<Uri, Uri>(serviceMap.Count);
                 foreach (KeyValuePair<string, OSD> entry in serviceMap)
-                    service.Add(entry.Key, entry.Value.AsUri());
-                Services.Add(new Uri(serviceEntry.Key), service);
+                    service.Add(new Uri(entry.Key), entry.Value.AsUri());
+                Services.Add(serviceEntry.Key, service);
             }
 
             CallbackUri = map["callback_uri"].AsUri();
