@@ -200,7 +200,7 @@ namespace OpenMetaverse
 
         /// <summary>If true, any reference received for a folder or item
         /// the library is not aware of will automatically be fetched</summary>
-        public bool FETCH_MISSING_INVENTORY = true;
+        public static bool FETCH_MISSING_INVENTORY = true;
 
         /// <summary>If true, and <code>SEND_AGENT_UPDATES</code> is true,
         /// AgentUpdate packets will continuously be sent out to give the bot

@@ -146,20 +146,18 @@ namespace OpenMetaverse
 
         private UUID _Owner;
 
-        private GridClient Client;
+        private LoggerInstance Log;
         //private InventoryManager Manager;
         private Dictionary<UUID, InventoryNode> Items = new Dictionary<UUID, InventoryNode>();
 
-        public Inventory(GridClient client, InventoryManager manager)
-            : this(client, manager, client.Self.AgentID) { }
 
-        public Inventory(GridClient client, InventoryManager manager, UUID owner)
+        public Inventory(LoggerInstance log, InventoryManager manager, UUID owner)
         {
-            Client = client;
+            Log = log;
             //Manager = manager;
             _Owner = owner;
             if (owner == UUID.Zero)
-                Logger.Log("Inventory owned by nobody!", Helpers.LogLevel.Warning, Client);
+                Log.Log("Inventory owned by nobody!", Helpers.LogLevel.Warning);
             Items = new Dictionary<UUID, InventoryNode>();
         }
 
@@ -215,10 +213,10 @@ namespace OpenMetaverse
                     // Unfortunately, this breaks the nice unified tree
                     // while we're waiting for the parent's data to come in.
                     // As soon as we get the parent, the tree repairs itself.
-                    Logger.DebugLog("Attempting to update inventory child of " +
-                        item.ParentUUID.ToString() + " when we have no local reference to that folder", Client);
+                    Log.DebugLog("Attempting to update inventory child of " +
+                        item.ParentUUID.ToString() + " when we have no local reference to that folder");
 
-                    if (Client.Settings.FETCH_MISSING_INVENTORY)
+                    if (Settings.FETCH_MISSING_INVENTORY)
                     {
                         // Fetch the parent
                         List<UUID> fetchreq = new List<UUID>(1);
@@ -354,11 +352,11 @@ namespace OpenMetaverse
             }
             catch (Exception e)
             {
-                Logger.Log("Error accessing inventory cache file :" + e.Message, Helpers.LogLevel.Error);
+                Log.Log("Error accessing inventory cache file :" + e.Message, Helpers.LogLevel.Error);
                 return;
             }
 
-            Logger.Log("Read " + item_count.ToString() + " items from inventory cache file", Helpers.LogLevel.Info);
+            Log.Log("Read " + item_count.ToString() + " items from inventory cache file", Helpers.LogLevel.Info);
 
             item_count = 0;
 
@@ -404,7 +402,7 @@ namespace OpenMetaverse
                 del_nodes.Clear();
             }
 
-            Logger.Log("Reassembled " + item_count.ToString() + " items from inventory cache file", Helpers.LogLevel.Info);
+            Log.Log("Reassembled " + item_count.ToString() + " items from inventory cache file", Helpers.LogLevel.Info);
         }
 
         #region Operators
@@ -431,8 +429,8 @@ namespace OpenMetaverse
                 {
                     // Log a warning if there is a UUID mismatch, this will cause problems
                     if (value.UUID != uuid)
-                        Logger.Log("Inventory[uuid]: uuid " + uuid.ToString() + " is not equal to value.UUID " +
-                            value.UUID.ToString(), Helpers.LogLevel.Warning, Client);
+                        Log.Log("Inventory[uuid]: uuid " + uuid.ToString() + " is not equal to value.UUID " +
+                            value.UUID.ToString(), Helpers.LogLevel.Warning);
 
                     UpdateNodeFor(value);
                 }
@@ -456,7 +454,7 @@ namespace OpenMetaverse
             if (OnInventoryObjectUpdated != null)
             {
                 try { OnInventoryObjectUpdated(oldObject, newObject); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -465,7 +463,7 @@ namespace OpenMetaverse
             if (OnInventoryObjectRemoved != null)
             {
                 try { OnInventoryObjectRemoved(obj); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -474,7 +472,7 @@ namespace OpenMetaverse
             if (OnInventoryObjectAdded != null)
             {
                 try { OnInventoryObjectAdded(obj); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 

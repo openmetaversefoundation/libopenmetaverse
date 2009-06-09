@@ -141,7 +141,7 @@ namespace OpenMetaverse
         public InventoryBase(UUID itemID)
         {
             if (itemID == UUID.Zero)
-                Logger.Log("Initializing an InventoryBase with UUID.Zero", Helpers.LogLevel.Warning);
+                _Log.Log("Initializing an InventoryBase with UUID.Zero", Helpers.LogLevel.Warning);
             UUID = itemID;
         }
 
@@ -1011,6 +1011,10 @@ namespace OpenMetaverse
         #endregion String Arrays
 
         private GridClient _Client;
+        private LoggerInstance _Log;
+        private NetworkManager _Network;
+        private AgentManager _Self;
+        private AssetManager _Assets;
         private Inventory _Store;
         //private Random _RandNumbers = new Random();
         private object _CallbacksLock = new object();
@@ -1032,24 +1036,26 @@ namespace OpenMetaverse
         /// Default constructor
         /// </summary>
         /// <param name="client">Reference to the GridClient object</param>
-        public InventoryManager(GridClient client)
+        public InventoryManager(LoggerInstance log, NetworkManager network, AgentManager self, AssetManager assets)
         {
-            _Client = client;
-
-            _Client.Network.RegisterCallback(PacketType.UpdateCreateInventoryItem, new NetworkManager.PacketCallback(UpdateCreateInventoryItemHandler));
-            _Client.Network.RegisterCallback(PacketType.SaveAssetIntoInventory, new NetworkManager.PacketCallback(SaveAssetIntoInventoryHandler));
-            _Client.Network.RegisterCallback(PacketType.BulkUpdateInventory, new NetworkManager.PacketCallback(BulkUpdateInventoryHandler));
-            _Client.Network.RegisterCallback(PacketType.MoveInventoryItem, new NetworkManager.PacketCallback(MoveInventoryItemHandler));
-            _Client.Network.RegisterCallback(PacketType.InventoryDescendents, new NetworkManager.PacketCallback(InventoryDescendentsHandler));
-            _Client.Network.RegisterCallback(PacketType.FetchInventoryReply, new NetworkManager.PacketCallback(FetchInventoryReplyHandler));
-            _Client.Network.RegisterCallback(PacketType.ReplyTaskInventory, new NetworkManager.PacketCallback(ReplyTaskInventoryHandler));
-            _Client.Network.RegisterEventCallback("ScriptRunningReply", new Caps.EventQueueCallback(ScriptRunningReplyMessageHandler));
+            _Log = log;
+            _Network = network;
+            _Self = self;
+            _Assets = assets;
+            _Network.RegisterCallback(PacketType.UpdateCreateInventoryItem, new NetworkManager.PacketCallback(UpdateCreateInventoryItemHandler));
+            _Network.RegisterCallback(PacketType.SaveAssetIntoInventory, new NetworkManager.PacketCallback(SaveAssetIntoInventoryHandler));
+            _Network.RegisterCallback(PacketType.BulkUpdateInventory, new NetworkManager.PacketCallback(BulkUpdateInventoryHandler));
+            _Network.RegisterCallback(PacketType.MoveInventoryItem, new NetworkManager.PacketCallback(MoveInventoryItemHandler));
+            _Network.RegisterCallback(PacketType.InventoryDescendents, new NetworkManager.PacketCallback(InventoryDescendentsHandler));
+            _Network.RegisterCallback(PacketType.FetchInventoryReply, new NetworkManager.PacketCallback(FetchInventoryReplyHandler));
+            _Network.RegisterCallback(PacketType.ReplyTaskInventory, new NetworkManager.PacketCallback(ReplyTaskInventoryHandler));
+            _Network.RegisterEventCallback("ScriptRunningReply", new Caps.EventQueueCallback(ScriptRunningReplyMessageHandler));
 
             // Watch for inventory given to us through instant message
-            _Client.Self.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
+            _Self.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
 
             // Register extra parameters with login and parse the inventory data that comes back
-            _Client.Network.RegisterLoginResponseCallback(
+            _Network.RegisterLoginResponseCallback(
                 new NetworkManager.LoginResponseCallback(Network_OnLoginResponse),
                 new string[] {
                     "inventory-root", "inventory-skeleton", "inventory-lib-root",
@@ -1100,15 +1106,15 @@ namespace OpenMetaverse
         {
             FetchInventoryPacket fetch = new FetchInventoryPacket();
             fetch.AgentData = new FetchInventoryPacket.AgentDataBlock();
-            fetch.AgentData.AgentID = _Client.Self.AgentID;
-            fetch.AgentData.SessionID = _Client.Self.SessionID;
+            fetch.AgentData.AgentID = _Network.AgentID;
+            fetch.AgentData.SessionID = _Network.SessionID;
 
             fetch.InventoryData = new FetchInventoryPacket.InventoryDataBlock[1];
             fetch.InventoryData[0] = new FetchInventoryPacket.InventoryDataBlock();
             fetch.InventoryData[0].ItemID = itemID;
             fetch.InventoryData[0].OwnerID = ownerID;
 
-            _Client.Network.SendPacket(fetch);
+            _Network.SendPacket(fetch);
         }
 
         /// <summary>
@@ -1124,8 +1130,8 @@ namespace OpenMetaverse
 
             FetchInventoryPacket fetch = new FetchInventoryPacket();
             fetch.AgentData = new FetchInventoryPacket.AgentDataBlock();
-            fetch.AgentData.AgentID = _Client.Self.AgentID;
-            fetch.AgentData.SessionID = _Client.Self.SessionID;
+            fetch.AgentData.AgentID = _Network.AgentID;
+            fetch.AgentData.SessionID = _Network.SessionID;
 
             fetch.InventoryData = new FetchInventoryPacket.InventoryDataBlock[itemIDs.Count];
             for (int i = 0; i < itemIDs.Count; i++)
@@ -1135,7 +1141,7 @@ namespace OpenMetaverse
                 fetch.InventoryData[i].OwnerID = ownerIDs[i];
             }
 
-            _Client.Network.SendPacket(fetch);
+            _Network.SendPacket(fetch);
         }
 
         /// <summary>
@@ -1200,8 +1206,8 @@ namespace OpenMetaverse
             InventorySortOrder order)
         {
             FetchInventoryDescendentsPacket fetch = new FetchInventoryDescendentsPacket();
-            fetch.AgentData.AgentID = _Client.Self.AgentID;
-            fetch.AgentData.SessionID = _Client.Self.SessionID;
+            fetch.AgentData.AgentID = _Network.AgentID;
+            fetch.AgentData.SessionID = _Network.SessionID;
 
             fetch.InventoryData.FetchFolders = folders;
             fetch.InventoryData.FetchItems = items;
@@ -1209,7 +1215,7 @@ namespace OpenMetaverse
             fetch.InventoryData.OwnerID = owner;
             fetch.InventoryData.SortOrder = (int)order;
 
-            _Client.Network.SendPacket(fetch);
+            _Network.SendPacket(fetch);
         }
 
         #endregion Fetch
@@ -1229,8 +1235,8 @@ namespace OpenMetaverse
         {
             if (_Store == null)
             {
-                Logger.Log("Inventory is null, FindFolderForType() lookup cannot continue",
-                    Helpers.LogLevel.Error, _Client);
+                _Log.Log("Inventory is null, FindFolderForType() lookup cannot continue",
+                    Helpers.LogLevel.Error);
                 return UUID.Zero;
             }
 
@@ -1395,8 +1401,8 @@ namespace OpenMetaverse
             }
 
             UpdateInventoryFolderPacket move = new UpdateInventoryFolderPacket();
-            move.AgentData.AgentID = _Client.Self.AgentID;
-            move.AgentData.SessionID = _Client.Self.SessionID;
+            move.AgentData.AgentID = _Network.AgentID;
+            move.AgentData.SessionID = _Network.SessionID;
             move.FolderData = new UpdateInventoryFolderPacket.FolderDataBlock[1];
             move.FolderData[0] = new UpdateInventoryFolderPacket.FolderDataBlock();
             move.FolderData[0].FolderID = folderID;
@@ -1404,7 +1410,7 @@ namespace OpenMetaverse
             move.FolderData[0].Name = Utils.StringToBytes(newName);
             move.FolderData[0].Type = -1;
 
-            _Client.Network.SendPacket(move);
+            _Network.SendPacket(move);
         }
 
         /// <summary>
@@ -1425,8 +1431,8 @@ namespace OpenMetaverse
             }
 
             MoveInventoryFolderPacket move = new MoveInventoryFolderPacket();
-            move.AgentData.AgentID = _Client.Self.AgentID;
-            move.AgentData.SessionID = _Client.Self.SessionID;
+            move.AgentData.AgentID = _Network.AgentID;
+            move.AgentData.SessionID = _Network.SessionID;
             move.AgentData.Stamp = false; //FIXME: ??
 
             move.InventoryData = new MoveInventoryFolderPacket.InventoryDataBlock[1];
@@ -1434,7 +1440,7 @@ namespace OpenMetaverse
             move.InventoryData[0].FolderID = folderID;
             move.InventoryData[0].ParentID = newParentID;
             
-            _Client.Network.SendPacket(move);
+            _Network.SendPacket(move);
         }
  
         /// <summary>
@@ -1463,8 +1469,8 @@ namespace OpenMetaverse
 
             //TODO: Test if this truly supports multiple-folder move
             MoveInventoryFolderPacket move = new MoveInventoryFolderPacket();
-            move.AgentData.AgentID = _Client.Self.AgentID;
-            move.AgentData.SessionID = _Client.Self.SessionID;
+            move.AgentData.AgentID = _Network.AgentID;
+            move.AgentData.SessionID = _Network.SessionID;
             move.AgentData.Stamp = false; //FIXME: ??
 
             move.InventoryData = new MoveInventoryFolderPacket.InventoryDataBlock[foldersNewParents.Count];
@@ -1478,7 +1484,7 @@ namespace OpenMetaverse
                 move.InventoryData[index++] = block;
             }
 
-            _Client.Network.SendPacket(move);
+            _Network.SendPacket(move);
         }
 
 
@@ -1511,8 +1517,8 @@ namespace OpenMetaverse
             }
 
             MoveInventoryItemPacket move = new MoveInventoryItemPacket();
-            move.AgentData.AgentID = _Client.Self.AgentID;
-            move.AgentData.SessionID = _Client.Self.SessionID;
+            move.AgentData.AgentID = _Network.AgentID;
+            move.AgentData.SessionID = _Network.SessionID;
             move.AgentData.Stamp = false; //FIXME: ??
 
             move.InventoryData = new MoveInventoryItemPacket.InventoryDataBlock[1];
@@ -1521,7 +1527,7 @@ namespace OpenMetaverse
             move.InventoryData[0].FolderID = folderID;
             move.InventoryData[0].NewName = Utils.StringToBytes(newName);
 
-            _Client.Network.SendPacket(move);
+            _Network.SendPacket(move);
         }
 
         /// <summary>
@@ -1546,8 +1552,8 @@ namespace OpenMetaverse
             }
 
             MoveInventoryItemPacket move = new MoveInventoryItemPacket();
-            move.AgentData.AgentID = _Client.Self.AgentID;
-            move.AgentData.SessionID = _Client.Self.SessionID;
+            move.AgentData.AgentID = _Network.AgentID;
+            move.AgentData.SessionID = _Network.SessionID;
             move.AgentData.Stamp = false; //FIXME: ??
 
             move.InventoryData = new MoveInventoryItemPacket.InventoryDataBlock[itemsNewParents.Count];
@@ -1562,7 +1568,7 @@ namespace OpenMetaverse
                 move.InventoryData[index++] = block;
             }
 
-            _Client.Network.SendPacket(move);
+            _Network.SendPacket(move);
         }
 
         #endregion Move
@@ -1576,10 +1582,10 @@ namespace OpenMetaverse
         public void RemoveDescendants(UUID folder)
         {
             PurgeInventoryDescendentsPacket purge = new PurgeInventoryDescendentsPacket();
-            purge.AgentData.AgentID = _Client.Self.AgentID;
-            purge.AgentData.SessionID = _Client.Self.SessionID;
+            purge.AgentData.AgentID = _Network.AgentID;
+            purge.AgentData.SessionID = _Network.SessionID;
             purge.InventoryData.FolderID = folder;
-            _Client.Network.SendPacket(purge);
+            _Network.SendPacket(purge);
 
             // Update our local copy
             lock (_Store)
@@ -1630,8 +1636,8 @@ namespace OpenMetaverse
                 return;
 
             RemoveInventoryObjectsPacket rem = new RemoveInventoryObjectsPacket();
-            rem.AgentData.AgentID = _Client.Self.AgentID;
-            rem.AgentData.SessionID = _Client.Self.SessionID;
+            rem.AgentData.AgentID = _Network.AgentID;
+            rem.AgentData.SessionID = _Network.SessionID;
 
             if (items == null || items.Count == 0)
             {
@@ -1680,7 +1686,7 @@ namespace OpenMetaverse
                     }
                 }
             }
-            _Client.Network.SendPacket(rem);
+            _Network.SendPacket(rem);
         }
     
         /// <summary>
@@ -1771,8 +1777,8 @@ namespace OpenMetaverse
             InventoryType invType, WearableType wearableType, PermissionMask nextOwnerMask, ItemCreatedCallback callback)
         {
             CreateInventoryItemPacket create = new CreateInventoryItemPacket();
-            create.AgentData.AgentID = _Client.Self.AgentID;
-            create.AgentData.SessionID = _Client.Self.SessionID;
+            create.AgentData.AgentID = _Network.AgentID;
+            create.AgentData.SessionID = _Network.SessionID;
 
             create.InventoryBlock.CallbackID = RegisterItemCreatedCallback(callback);
             create.InventoryBlock.FolderID = parentFolder;
@@ -1784,7 +1790,7 @@ namespace OpenMetaverse
             create.InventoryBlock.Name = Utils.StringToBytes(name);
             create.InventoryBlock.Description = Utils.StringToBytes(description);
 
-            _Client.Network.SendPacket(create);
+            _Network.SendPacket(create);
         }
 
         /// <summary>
@@ -1835,23 +1841,23 @@ namespace OpenMetaverse
             newFolder.ParentUUID = parentID;
             newFolder.PreferredType = preferredType;
             newFolder.Name = name;
-            newFolder.OwnerID = _Client.Self.AgentID;
+            newFolder.OwnerID = _Network.AgentID;
 
             // Update the local store
             try { _Store[newFolder.UUID] = newFolder; }
-            catch (InventoryException ie) { Logger.Log(ie.Message, Helpers.LogLevel.Warning, _Client, ie); }
+            catch (InventoryException ie) { _Log.Log(ie.Message, Helpers.LogLevel.Warning, ie); }
 
             // Create the create folder packet and send it
             CreateInventoryFolderPacket create = new CreateInventoryFolderPacket();
-            create.AgentData.AgentID = _Client.Self.AgentID;
-            create.AgentData.SessionID = _Client.Self.SessionID;
+            create.AgentData.AgentID = _Network.AgentID;
+            create.AgentData.SessionID = _Network.SessionID;
 
             create.FolderData.FolderID = id;
             create.FolderData.ParentID = parentID;
             create.FolderData.Type = (sbyte)preferredType;
             create.FolderData.Name = Utils.StringToBytes(name);
 
-            _Client.Network.SendPacket(create);
+            _Network.SendPacket(create);
 
             return id;
         }
@@ -1859,10 +1865,10 @@ namespace OpenMetaverse
         public void RequestCreateItemFromAsset(byte[] data, string name, string description, AssetType assetType,
             InventoryType invType, UUID folderID, ItemCreatedFromAssetCallback callback)
         {
-            if (_Client.Network.CurrentSim == null || _Client.Network.CurrentSim.Caps == null)
+            if (_Network.CurrentSim == null || _Network.CurrentSim.Caps == null)
                 throw new Exception("NewFileAgentInventory capability is not currently available");
 
-            Uri url = _Client.Network.CurrentSim.Caps.CapabilityURI("NewFileAgentInventory");
+            Uri url = _Network.CurrentSim.Caps.CapabilityURI("NewFileAgentInventory");
 
             if (url != null)
             {
@@ -1899,7 +1905,7 @@ namespace OpenMetaverse
         /// <param name="callback"></param>
         public void RequestCopyItem(UUID item, UUID newParent, string newName, ItemCopiedCallback callback)
         {
-            RequestCopyItem(item, newParent, newName, _Client.Self.AgentID, callback);
+            RequestCopyItem(item, newParent, newName, _Network.AgentID, callback);
         }
 
         /// <summary>
@@ -1942,8 +1948,8 @@ namespace OpenMetaverse
             uint callbackID = RegisterItemsCopiedCallback(callback);
 
             CopyInventoryItemPacket copy = new CopyInventoryItemPacket();
-            copy.AgentData.AgentID = _Client.Self.AgentID;
-            copy.AgentData.SessionID = _Client.Self.SessionID;
+            copy.AgentData.AgentID = _Network.AgentID;
+            copy.AgentData.SessionID = _Network.SessionID;
 
             copy.InventoryData = new CopyInventoryItemPacket.InventoryDataBlock[items.Count];
             for (int i = 0; i < items.Count; ++i)
@@ -1960,7 +1966,7 @@ namespace OpenMetaverse
                     copy.InventoryData[i].NewName = Utils.EmptyBytes;
             }
 
-            _Client.Network.SendPacket(copy);
+            _Network.SendPacket(copy);
         }
 
         /// <summary>
@@ -1974,8 +1980,8 @@ namespace OpenMetaverse
         public void RequestCopyItemFromNotecard(UUID objectID, UUID notecardID, UUID folderID, UUID itemID, ItemCopiedCallback callback)
         {
             CopyInventoryFromNotecardPacket copy = new CopyInventoryFromNotecardPacket();
-            copy.AgentData.AgentID = _Client.Self.AgentID;
-            copy.AgentData.SessionID = _Client.Self.SessionID;
+            copy.AgentData.AgentID = _Network.AgentID;
+            copy.AgentData.SessionID = _Network.SessionID;
 
             copy.NotecardData.ObjectID = objectID;
             copy.NotecardData.NotecardItemID = notecardID;
@@ -1987,7 +1993,7 @@ namespace OpenMetaverse
            
             _ItemCopiedCallbacks[0] = callback; //Notecards always use callback ID 0
 
-            _Client.Network.SendPacket(copy);
+            _Network.SendPacket(copy);
         }
 
         #endregion Copy
@@ -2023,8 +2029,8 @@ namespace OpenMetaverse
         public void RequestUpdateItems(List<InventoryItem> items, UUID transactionID)
         {
             UpdateInventoryItemPacket update = new UpdateInventoryItemPacket();
-            update.AgentData.AgentID = _Client.Self.AgentID;
-            update.AgentData.SessionID = _Client.Self.SessionID;
+            update.AgentData.AgentID = _Network.AgentID;
+            update.AgentData.SessionID = _Network.SessionID;
             update.AgentData.TransactionID = transactionID;
 
             update.InventoryData = new UpdateInventoryItemPacket.InventoryDataBlock[items.Count];
@@ -2058,7 +2064,7 @@ namespace OpenMetaverse
                 update.InventoryData[i] = block;
             }
 
-            _Client.Network.SendPacket(update);
+            _Network.SendPacket(update);
         }
 
         /// <summary>
@@ -2069,10 +2075,10 @@ namespace OpenMetaverse
         /// <param name="callback"></param>
         public void RequestUploadNotecardAsset(byte[] data, UUID notecardID, NotecardUploadedAssetCallback callback)
         {
-            if (_Client.Network.CurrentSim == null || _Client.Network.CurrentSim.Caps == null)
+            if (_Network.CurrentSim == null || _Network.CurrentSim.Caps == null)
                 throw new Exception("UpdateNotecardAgentInventory capability is not currently available");
 
-            Uri url = _Client.Network.CurrentSim.Caps.CapabilityURI("UpdateNotecardAgentInventory");
+            Uri url = _Network.CurrentSim.Caps.CapabilityURI("UpdateNotecardAgentInventory");
 
             if (url != null)
             {
@@ -2100,7 +2106,7 @@ namespace OpenMetaverse
         /// <param name="callback"></param>
         public void RequestUpdateScriptAgentInventory(byte[] data, UUID itemID, bool mono, ScriptUpdatedCallback callback)
         {
-            Uri url = _Client.Network.CurrentSim.Caps.CapabilityURI("UpdateScriptAgent"); 
+            Uri url = _Network.CurrentSim.Caps.CapabilityURI("UpdateScriptAgent"); 
 
             if(url != null)
             {
@@ -2133,7 +2139,7 @@ namespace OpenMetaverse
         public UUID RequestRezFromInventory(Simulator simulator, Quaternion rotation, Vector3 position,
             InventoryItem item)
         {
-            return RequestRezFromInventory(simulator, rotation, position, item, _Client.Self.ActiveGroup,
+            return RequestRezFromInventory(simulator, rotation, position, item.Self.ActiveGroup,
                 UUID.Random(), false);
         }
 
@@ -2167,8 +2173,8 @@ namespace OpenMetaverse
         {
             RezObjectPacket add = new RezObjectPacket();
 
-            add.AgentData.AgentID = _Client.Self.AgentID;
-            add.AgentData.SessionID = _Client.Self.SessionID;
+            add.AgentData.AgentID = _Network.AgentID;
+            add.AgentData.SessionID = _Network.SessionID;
             add.AgentData.GroupID = groupOwner;
 
             add.RezData.FromTaskID = UUID.Zero;
@@ -2205,7 +2211,7 @@ namespace OpenMetaverse
             add.InventoryData.Description = Utils.StringToBytes(item.Description);
             add.InventoryData.CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
 
-            _Client.Network.SendPacket(add, simulator);
+            _Network.SendPacket(add, simulator);
 
             return queryID;
         }
@@ -2217,7 +2223,7 @@ namespace OpenMetaverse
         public void RequestDeRezToInventory(uint objectLocalID)
         {
             RequestDeRezToInventory(objectLocalID, DeRezDestination.AgentInventoryTake, 
-                _Client.Inventory.FindFolderForType(AssetType.Object), UUID.Random());
+                .FindFolderForType(AssetType.Object), UUID.Random());
         }
 
         /// <summary>
@@ -2233,8 +2239,8 @@ namespace OpenMetaverse
         {
             DeRezObjectPacket take = new DeRezObjectPacket();
 
-            take.AgentData.AgentID = _Client.Self.AgentID;
-            take.AgentData.SessionID = _Client.Self.SessionID;
+            take.AgentData.AgentID = _Network.AgentID;
+            take.AgentData.SessionID = _Network.SessionID;
             take.AgentBlock = new DeRezObjectPacket.AgentBlockBlock();
             take.AgentBlock.GroupID = UUID.Zero;
             take.AgentBlock.Destination = (byte)destType;
@@ -2247,7 +2253,7 @@ namespace OpenMetaverse
             take.ObjectData[0] = new DeRezObjectPacket.ObjectDataBlock();
             take.ObjectData[0].ObjectLocalID = objectLocalID;
             
-            _Client.Network.SendPacket(take);
+            _Network.SendPacket(take);
         }
         
         /// <summary>
@@ -2261,8 +2267,8 @@ namespace OpenMetaverse
         {
             RezRestoreToWorldPacket add = new RezRestoreToWorldPacket();
 
-            add.AgentData.AgentID = _Client.Self.AgentID;
-            add.AgentData.SessionID = _Client.Self.SessionID;
+            add.AgentData.AgentID = _Network.AgentID;
+            add.AgentData.SessionID = _Network.SessionID;
 
             add.InventoryData.ItemID = item.UUID;
             add.InventoryData.FolderID = item.ParentUUID;
@@ -2285,7 +2291,7 @@ namespace OpenMetaverse
             add.InventoryData.Description = Utils.StringToBytes(item.Description);
             add.InventoryData.CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
 
-            _Client.Network.SendPacket(add, simulator);
+            _Network.SendPacket(add, simulator);
 
             return queryID;
         }
@@ -2308,20 +2314,20 @@ namespace OpenMetaverse
                 bucket[0] = (byte)assetType;
                 Buffer.BlockCopy(itemID.GetBytes(), 0, bucket, 1, 16);
 
-            _Client.Self.InstantMessage(
-                    _Client.Self.Name,
+            _Self.InstantMessage(
+                    _Self.Name,
                     recipient,
                     itemName,
                     UUID.Random(),
                     InstantMessageDialog.InventoryOffered,
                     InstantMessageOnline.Online,
-                    _Client.Self.SimPosition,
-                    _Client.Network.CurrentSim.ID,
+                    _Self.SimPosition,
+                    _Network.CurrentSim.ID,
                     bucket);
 
             if (doEffect)
             {
-                _Client.Self.BeamEffect(_Client.Self.AgentID, recipient, Vector3d.Zero,
+                _Self.BeamEffect(_Network.AgentID, recipient, Vector3d.Zero,
                     Settings.DEFAULT_EFFECT_COLOR, 1f, UUID.Random());
             }
         }
@@ -2341,10 +2347,10 @@ namespace OpenMetaverse
 
                 List<InventoryItem> folderContents = new List<InventoryItem>();
 
-                _Client.Inventory.FolderContents(folderID, _Client.Self.AgentID, false, true, InventorySortOrder.ByDate, 1000 * 15).ForEach(
+                .FolderContents(folderID, _Network.AgentID, false, true, InventorySortOrder.ByDate, 1000 * 15).ForEach(
                     delegate(InventoryBase ib)
                     {
-                        folderContents.Add(_Client.Inventory.FetchItem(ib.UUID, _Client.Self.AgentID, 1000 * 10));
+                        folderContents.Add(.FetchItem(ib.UUID, _Network.AgentID, 1000 * 10));
                     });
                 bucket = new byte[17 * (folderContents.Count + 1)];
 
@@ -2359,20 +2365,20 @@ namespace OpenMetaverse
                     Buffer.BlockCopy(folderContents[i - 1].UUID.GetBytes(), 0, bucket, i * 17 + 1, 16);
                 }
 
-            _Client.Self.InstantMessage(
-                    _Client.Self.Name,
+            _Self.InstantMessage(
+                    _Self.Name,
                     recipient,
                     folderName,
                     UUID.Random(),
                     InstantMessageDialog.InventoryOffered,
                     InstantMessageOnline.Online,
-                    _Client.Self.SimPosition,
-                    _Client.Network.CurrentSim.ID,
+                    _Self.SimPosition,
+                    _Network.CurrentSim.ID,
                     bucket);
 
             if (doEffect)
             {
-                _Client.Self.BeamEffect(_Client.Self.AgentID, recipient, Vector3d.Zero,
+                _Self.BeamEffect(_Network.AgentID, recipient, Vector3d.Zero,
                     Settings.DEFAULT_EFFECT_COLOR, 1f, UUID.Random());
             }
         }
@@ -2392,8 +2398,8 @@ namespace OpenMetaverse
             UUID transactionID = UUID.Random();
 
             UpdateTaskInventoryPacket update = new UpdateTaskInventoryPacket();
-            update.AgentData.AgentID = _Client.Self.AgentID;
-            update.AgentData.SessionID = _Client.Self.SessionID;
+            update.AgentData.AgentID = _Network.AgentID;
+            update.AgentData.SessionID = _Network.SessionID;
             update.UpdateData.Key = 0;
             update.UpdateData.LocalID = objectLocalID;
 
@@ -2419,7 +2425,7 @@ namespace OpenMetaverse
             update.InventoryData.CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
             update.InventoryData.CRC = ItemCRC(item);
 
-            _Client.Network.SendPacket(update);
+            _Network.SendPacket(update);
 
             return transactionID;
         }
@@ -2470,34 +2476,34 @@ namespace OpenMetaverse
                             }
                         };
 
-                    _Client.Assets.OnXferReceived += xferCallback;
+                    _Assets.OnXferReceived += xferCallback;
 
                     // Start the actual asset xfer
-                    xferID = _Client.Assets.RequestAssetXfer(filename, true, false, UUID.Zero, AssetType.Unknown, true);
+                    xferID = _Assets.RequestAssetXfer(filename, true, false, UUID.Zero, AssetType.Unknown, true);
 
                     if (taskDownloadEvent.WaitOne(timeoutMS, false))
                     {
-                        _Client.Assets.OnXferReceived -= xferCallback;
+                        _Assets.OnXferReceived -= xferCallback;
 
                         string taskList = Utils.BytesToString(assetData);
                         return ParseTaskInventory(taskList);
                     }
                     else
                     {
-                        Logger.Log("Timed out waiting for task inventory download for " + filename, Helpers.LogLevel.Warning, _Client);
-                        _Client.Assets.OnXferReceived -= xferCallback;
+                        _Log.Log("Timed out waiting for task inventory download for " + filename, Helpers.LogLevel.Warning);
+                        _Assets.OnXferReceived -= xferCallback;
                         return null;
                     }
                 }
                 else
                 {
-                    Logger.DebugLog("Task is empty for " + objectLocalID, _Client);
+                    _Log.DebugLog("Task is empty for " + objectLocalID);
                     return null;
                 }
             }
             else
             {
-                Logger.Log("Timed out waiting for task inventory reply for " + objectLocalID, Helpers.LogLevel.Warning, _Client);
+                _Log.Log("Timed out waiting for task inventory reply for " + objectLocalID, Helpers.LogLevel.Warning);
                 OnTaskInventoryReply -= callback;
                 return null;
             }
@@ -2509,7 +2515,7 @@ namespace OpenMetaverse
         /// <param name="objectLocalID"></param>
         public void RequestTaskInventory(uint objectLocalID)
         {
-            RequestTaskInventory(objectLocalID, _Client.Network.CurrentSim);
+            RequestTaskInventory(objectLocalID, _Network.CurrentSim);
         }
 
         /// <summary>
@@ -2520,11 +2526,11 @@ namespace OpenMetaverse
         public void RequestTaskInventory(uint objectLocalID, Simulator simulator)
         {
             RequestTaskInventoryPacket request = new RequestTaskInventoryPacket();
-            request.AgentData.AgentID = _Client.Self.AgentID;
-            request.AgentData.SessionID = _Client.Self.SessionID;
+            request.AgentData.AgentID = _Network.AgentID;
+            request.AgentData.SessionID = _Network.SessionID;
             request.InventoryData.LocalID = objectLocalID;
 
-            _Client.Network.SendPacket(request, simulator);
+            _Network.SendPacket(request, simulator);
         }
         
         /// <summary>
@@ -2537,15 +2543,15 @@ namespace OpenMetaverse
         public void MoveTaskInventory(uint objectLocalID, UUID taskItemID, UUID inventoryFolderID, Simulator simulator)
         {
             MoveTaskInventoryPacket request = new MoveTaskInventoryPacket();
-            request.AgentData.AgentID = _Client.Self.AgentID;
-            request.AgentData.SessionID = _Client.Self.SessionID;
+            request.AgentData.AgentID = _Network.AgentID;
+            request.AgentData.SessionID = _Network.SessionID;
 
             request.AgentData.FolderID = inventoryFolderID;
 
             request.InventoryData.ItemID = taskItemID;
             request.InventoryData.LocalID = objectLocalID;
 
-            _Client.Network.SendPacket(request, simulator);
+            _Network.SendPacket(request, simulator);
         }
         
         /// <summary>
@@ -2557,13 +2563,13 @@ namespace OpenMetaverse
         public void RemoveTaskInventory(uint objectLocalID, UUID taskItemID, Simulator simulator)
         {
             RemoveTaskInventoryPacket remove = new RemoveTaskInventoryPacket();
-            remove.AgentData.AgentID = _Client.Self.AgentID;
-            remove.AgentData.SessionID = _Client.Self.SessionID;
+            remove.AgentData.AgentID = _Network.AgentID;
+            remove.AgentData.SessionID = _Network.SessionID;
 
             remove.InventoryData.ItemID = taskItemID;
             remove.InventoryData.LocalID = objectLocalID;
 
-            _Client.Network.SendPacket(remove, simulator);
+            _Network.SendPacket(remove, simulator);
         }
 
         /// <summary>
@@ -2589,8 +2595,8 @@ namespace OpenMetaverse
             UUID transactionID = UUID.Random();
 
             RezScriptPacket ScriptPacket = new RezScriptPacket();
-            ScriptPacket.AgentData.AgentID = _Client.Self.AgentID;
-            ScriptPacket.AgentData.SessionID = _Client.Self.SessionID;
+            ScriptPacket.AgentData.AgentID = _Network.AgentID;
+            ScriptPacket.AgentData.SessionID = _Network.SessionID;
 
             ScriptPacket.UpdateBlock.ObjectLocalID = objectLocalID;
             ScriptPacket.UpdateBlock.Enabled = enableScript;
@@ -2617,7 +2623,7 @@ namespace OpenMetaverse
             ScriptPacket.InventoryBlock.CreationDate = (int)Utils.DateTimeToUnixTime(item.CreationDate);
             ScriptPacket.InventoryBlock.CRC = ItemCRC(item);
 
-            _Client.Network.SendPacket(ScriptPacket);
+            _Network.SendPacket(ScriptPacket);
 
             return transactionID;
         }
@@ -2634,7 +2640,7 @@ namespace OpenMetaverse
             GetScriptRunningPacket request = new GetScriptRunningPacket();
             request.Script.ObjectID = objectID;
             request.Script.ItemID = scriptID;
-            _Client.Network.SendPacket(request);
+            _Network.SendPacket(request);
         }
 
         /// <summary>
@@ -2646,14 +2652,14 @@ namespace OpenMetaverse
         public void SetScriptRunning(UUID objectID, UUID scriptID, bool running)
         {
             SetScriptRunningPacket request = new SetScriptRunningPacket();
-            request.AgentData.AgentID = _Client.Self.AgentID;
-            request.AgentData.SessionID = _Client.Self.SessionID;
+            request.AgentData.AgentID = _Network.AgentID;
+            request.AgentData.SessionID = _Network.SessionID;
 
             request.Script.Running = running;
             request.Script.ItemID = scriptID;
             request.Script.ObjectID = objectID;
 
-            _Client.Network.SendPacket(request);
+            _Network.SendPacket(request);
         }
 
         #endregion Task
@@ -2670,7 +2676,7 @@ namespace OpenMetaverse
                 _CallbackPos++;
 
                 if (_ItemCreatedCallbacks.ContainsKey(_CallbackPos))
-                    Logger.Log("Overwriting an existing ItemCreatedCallback", Helpers.LogLevel.Warning, _Client);
+                    _Log.Log("Overwriting an existing ItemCreatedCallback", Helpers.LogLevel.Warning);
 
                 _ItemCreatedCallbacks[_CallbackPos] = callback;
 
@@ -2688,7 +2694,7 @@ namespace OpenMetaverse
                 _CallbackPos++;
 
                 if (_ItemCopiedCallbacks.ContainsKey(_CallbackPos))
-                    Logger.Log("Overwriting an existing ItemsCopiedCallback", Helpers.LogLevel.Warning, _Client);
+                    _Log.Log("Overwriting an existing ItemsCopiedCallback", Helpers.LogLevel.Warning);
 
                 _ItemCopiedCallbacks[_CallbackPos] = callback;
 
@@ -3069,7 +3075,7 @@ namespace OpenMetaverse
                                     if (UInt32.TryParse(value, out timestamp))
                                         creationDate = Utils.UnixTimeToDateTime(timestamp);
                                     else
-                                        Logger.Log("Failed to parse creation_date " + value, Helpers.LogLevel.Warning);
+                                        _Log.Log("Failed to parse creation_date " + value, Helpers.LogLevel.Warning);
                                 }
                             }
                         }
@@ -3096,7 +3102,7 @@ namespace OpenMetaverse
                     }
                     else
                     {
-                        Logger.Log("Unrecognized token " + key + " in: " + Environment.NewLine + taskData,
+                        _Log.Log("Unrecognized token " + key + " in: " + Environment.NewLine + taskData,
                             Helpers.LogLevel.Error);
                     }
                 }
@@ -3119,7 +3125,7 @@ namespace OpenMetaverse
             if (result == null)
             {
                 try { callback(false, error.Message, UUID.Zero, UUID.Zero); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 return;
             }
 
@@ -3131,7 +3137,7 @@ namespace OpenMetaverse
             {
                 string uploadURL = contents["uploader"].AsString();
 
-                Logger.DebugLog("CreateItemFromAsset: uploading to " + uploadURL);
+                _Log.DebugLog("CreateItemFromAsset: uploading to " + uploadURL);
 
                 // This makes the assumption that all uploads go to CurrentSim, to avoid
                 // the problem of HttpRequestState not knowing anything about simulators
@@ -3142,24 +3148,24 @@ namespace OpenMetaverse
             }
             else if (status == "complete")
             {
-                Logger.DebugLog("CreateItemFromAsset: completed"); 
+                _Log.DebugLog("CreateItemFromAsset: completed"); 
 
                 if (contents.ContainsKey("new_inventory_item") && contents.ContainsKey("new_asset"))
                 {
                     try { callback(true, String.Empty, contents["new_inventory_item"].AsUUID(), contents["new_asset"].AsUUID()); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
                 else
                 {
                     try { callback(false, "Failed to parse asset and item UUIDs", UUID.Zero, UUID.Zero); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
             }
             else
             {
                 // Failure
                 try { callback(false, status, UUID.Zero, UUID.Zero); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -3169,7 +3175,7 @@ namespace OpenMetaverse
             {
                 SaveAssetIntoInventoryPacket save = (SaveAssetIntoInventoryPacket)packet;
                 try { OnSaveAssetToInventory(save.InventoryData.ItemID, save.InventoryData.NewAssetID); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -3259,16 +3265,16 @@ namespace OpenMetaverse
             }
             else
             {
-                Logger.Log("Don't have a reference to FolderID " + reply.AgentData.FolderID.ToString() +
-                    " or it is not a folder", Helpers.LogLevel.Error, _Client);
+                _Log.Log("Don't have a reference to FolderID " + reply.AgentData.FolderID.ToString() +
+                    " or it is not a folder", Helpers.LogLevel.Error);
                 return;
             }
 
             if (reply.AgentData.Version < parentFolder.Version)
             {
-                Logger.Log("Got an outdated InventoryDescendents packet for folder " + parentFolder.Name +
+                _Log.Log("Got an outdated InventoryDescendents packet for folder " + parentFolder.Name +
                     ", this version = " + reply.AgentData.Version + ", latest version = " + parentFolder.Version,
-                    Helpers.LogLevel.Warning, _Client);
+                    Helpers.LogLevel.Warning);
                 return;
             }
 
@@ -3299,13 +3305,13 @@ namespace OpenMetaverse
                             {
                                 if (search.Level == search.Path.Length - 1)
                                 {
-                                    Logger.DebugLog("Finished path search of " + String.Join("/", search.Path), _Client);
+                                    _Log.DebugLog("Finished path search of " + String.Join("/", search.Path));
 
                                     // This is the last node in the path, fire the callback and clean up
                                     if (OnFindObjectByPath != null)
                                     {
                                         try { OnFindObjectByPath(String.Join("/", search.Path), folderContents[j].UUID); }
-                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                                        catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                                     }
 
                                     // Remove this entry and restart the loop since we are changing the collection size
@@ -3315,8 +3321,8 @@ namespace OpenMetaverse
                                 else
                                 {
                                     // We found a match but it is not the end of the path, request the next level
-                                    Logger.DebugLog(String.Format("Matched level {0}/{1} in a path search of {2}",
-                                        search.Level, search.Path.Length - 1, String.Join("/", search.Path)), _Client);
+                                    _Log.DebugLog(String.Format("Matched level {0}/{1} in a path search of {2}",
+                                        search.Level, search.Path.Length - 1, String.Join("/", search.Path)));
 
                                     search.Folder = folderContents[j].UUID;
                                     search.Level++;
@@ -3337,7 +3343,7 @@ namespace OpenMetaverse
             if (OnFolderUpdated != null)
             {
                 try { OnFolderUpdated(parentFolder.UUID); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -3355,8 +3361,8 @@ namespace OpenMetaverse
             {
                 if (dataBlock.InvType == (sbyte)InventoryType.Folder)
                 {
-                    Logger.Log("Received InventoryFolder in an UpdateCreateInventoryItem packet, this should not happen!",
-                        Helpers.LogLevel.Error, _Client);
+                    _Log.Log("Received InventoryFolder in an UpdateCreateInventoryItem packet, this should not happen!",
+                        Helpers.LogLevel.Error);
                     continue;
                 }
 
@@ -3406,7 +3412,7 @@ namespace OpenMetaverse
                     _ItemCreatedCallbacks.Remove(dataBlock.CallbackID);
 
                     try { createdCallback(true, item); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
 
                 // TODO: Is this callback even triggered when items are copied?
@@ -3417,7 +3423,7 @@ namespace OpenMetaverse
                     _ItemCopiedCallbacks.Remove(dataBlock.CallbackID);
 
                     try { copyCallback(item); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
                 
                 //This is triggered when an item is received from a task
@@ -3425,7 +3431,7 @@ namespace OpenMetaverse
                 {
                     try { OnTaskItemReceived(item.UUID, dataBlock.FolderID, item.CreatorID, item.AssetUUID, 
                         item.InventoryType); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
             }
         }
@@ -3439,10 +3445,10 @@ namespace OpenMetaverse
                 // FIXME: Do something here
                 string newName = Utils.BytesToString(move.InventoryData[i].NewName);
 
-                Logger.Log(String.Format(
+                _Log.Log(String.Format(
                     "MoveInventoryItemHandler: Item {0} is moving to Folder {1} with new name \"{2}\". Someone write this function!",
                     move.InventoryData[i].ItemID.ToString(), move.InventoryData[i].FolderID.ToString(),
-                    newName), Helpers.LogLevel.Warning, _Client);
+                    newName), Helpers.LogLevel.Warning);
             }
         }
 
@@ -3455,7 +3461,7 @@ namespace OpenMetaverse
                 foreach (BulkUpdateInventoryPacket.FolderDataBlock dataBlock in update.FolderData)
                 {
                     if (!_Store.Contains(dataBlock.FolderID))
-                        Logger.Log("Received BulkUpdate for unknown folder: " + dataBlock.FolderID, Helpers.LogLevel.Warning, _Client);
+                        _Log.Log("Received BulkUpdate for unknown folder: " + dataBlock.FolderID, Helpers.LogLevel.Warning);
 
                     InventoryFolder folder = new InventoryFolder(dataBlock.FolderID);
                     folder.Name = Utils.BytesToString(dataBlock.Name);
@@ -3474,7 +3480,7 @@ namespace OpenMetaverse
                     // If we are given a folder of items, the item information might arrive before the folder
                     // (parent) is in the store
                     if (!_Store.Contains(dataBlock.ItemID))
-                        Logger.Log("Received BulkUpdate for unknown item: " + dataBlock.ItemID, Helpers.LogLevel.Warning, _Client);
+                        _Log.Log("Received BulkUpdate for unknown item: " + dataBlock.ItemID, Helpers.LogLevel.Warning);
 
                     InventoryItem item = SafeCreateInventoryItem((InventoryType)dataBlock.InvType, dataBlock.ItemID);
 
@@ -3507,7 +3513,7 @@ namespace OpenMetaverse
                         _ItemCreatedCallbacks.Remove(dataBlock.CallbackID);
 
                         try { callback(true, item); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                        catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                     }
 
                     // Look for an "item copied" callback
@@ -3517,7 +3523,7 @@ namespace OpenMetaverse
                         _ItemCopiedCallbacks.Remove(dataBlock.CallbackID);
 
                         try { copyCallback(item); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                        catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                     }
                 }
             }
@@ -3531,8 +3537,8 @@ namespace OpenMetaverse
             {
                 if (dataBlock.InvType == (sbyte)InventoryType.Folder)
                 {
-                    Logger.Log("Received FetchInventoryReply for an inventory folder, this should not happen!",
-                        Helpers.LogLevel.Error, _Client);
+                    _Log.Log("Received FetchInventoryReply for an inventory folder, this should not happen!",
+                        Helpers.LogLevel.Error);
                     continue;
                 }
 
@@ -3563,7 +3569,7 @@ namespace OpenMetaverse
                 if (OnItemReceived != null)
                 {
                     try { OnItemReceived(item); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
             }
         }
@@ -3579,7 +3585,7 @@ namespace OpenMetaverse
                     OnTaskInventoryReply(reply.InventoryData.TaskID, reply.InventoryData.Serial,
                         Utils.BytesToString(reply.InventoryData.Filename));
                 }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -3606,7 +3612,7 @@ namespace OpenMetaverse
                     }
                     else
                     {
-                        Logger.Log("Malformed inventory offer from agent", Helpers.LogLevel.Warning, _Client);
+                        _Log.Log("Malformed inventory offer from agent", Helpers.LogLevel.Warning);
                         return;
                     }
                 }
@@ -3619,7 +3625,7 @@ namespace OpenMetaverse
                     }
                     else
                     {
-                        Logger.Log("Malformed inventory offer from object", Helpers.LogLevel.Warning, _Client);
+                        _Log.Log("Malformed inventory offer from object", Helpers.LogLevel.Warning);
                         return;
                     }
                 }
@@ -3631,18 +3637,18 @@ namespace OpenMetaverse
                 try
                 {
                     ImprovedInstantMessagePacket imp = new ImprovedInstantMessagePacket();
-                    imp.AgentData.AgentID = _Client.Self.AgentID;
-                    imp.AgentData.SessionID = _Client.Self.SessionID;
+                    imp.AgentData.AgentID = _Network.AgentID;
+                    imp.AgentData.SessionID = _Network.SessionID;
                     imp.MessageBlock.FromGroup = false;
                     imp.MessageBlock.ToAgentID = im.FromAgentID;
                     imp.MessageBlock.Offline = 0;
                     imp.MessageBlock.ID = im.IMSessionID;
                     imp.MessageBlock.Timestamp = 0;
-                    imp.MessageBlock.FromAgentName = Utils.StringToBytes(_Client.Self.Name);
+                    imp.MessageBlock.FromAgentName = Utils.StringToBytes(_Self.Name);
                     imp.MessageBlock.Message = Utils.EmptyBytes;
                     imp.MessageBlock.ParentEstateID = 0;
                     imp.MessageBlock.RegionID = UUID.Zero;
-                    imp.MessageBlock.Position = _Client.Self.SimPosition;
+                    imp.MessageBlock.Position = _Self.SimPosition;
 
                     if (OnObjectOffered(im, type, objectID, fromTask))
                     {
@@ -3681,11 +3687,11 @@ namespace OpenMetaverse
                         imp.MessageBlock.BinaryBucket = Utils.EmptyBytes;
                     }
 
-                    _Client.Network.SendPacket(imp, simulator);
+                    _Network.SendPacket(imp, simulator);
                 }
                 catch (Exception e)
                 {
-                    Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e);
+                    _Log.Log(e.Message, Helpers.LogLevel.Error, e);
                 }
             }
         }
@@ -3695,8 +3701,8 @@ namespace OpenMetaverse
             if (loginSuccess)
             {
                 // Initialize the store here so we know who owns it:
-                _Store = new Inventory(_Client, this, _Client.Self.AgentID);
-                Logger.DebugLog("Setting InventoryRoot to " + replyData.InventoryRoot.ToString(), _Client);
+                _Store = new Inventory(_Log, this, _Network.AgentID);
+                _Log.DebugLog("Setting InventoryRoot to " + replyData.InventoryRoot.ToString());
                 InventoryFolder rootFolder = new InventoryFolder(replyData.InventoryRoot);
                 rootFolder.Name = String.Empty;
                 rootFolder.ParentUUID = UUID.Zero;
@@ -3740,19 +3746,19 @@ namespace OpenMetaverse
                 if (contents.ContainsKey("new_asset"))
                 {
                     try { callback(true, String.Empty, (UUID)(((object[])client.UserData)[1]), contents["new_asset"].AsUUID()); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
                 else
                 {
                     try { callback(false, "Failed to parse asset and item UUIDs", UUID.Zero, UUID.Zero); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
             }
             else
             {
                 // Failure
                 try { callback(false, status, UUID.Zero, UUID.Zero); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -3771,7 +3777,7 @@ namespace OpenMetaverse
             if (result == null)
             {
                 try { callback(false, error.Message, UUID.Zero, UUID.Zero); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 return;
             }
 
@@ -3792,18 +3798,18 @@ namespace OpenMetaverse
                 if (contents.ContainsKey("new_asset"))
                 {
                     try { callback(true, status, (UUID)(((object[])client.UserData)[1]), contents["new_asset"].AsUUID()); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
                 else
                 {
                     try { callback(false, "Failed to parse asset UUID", UUID.Zero, UUID.Zero); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
             }
             else if (callback != null)
             {
                 try { callback(false, status, UUID.Zero, UUID.Zero); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -3813,7 +3819,7 @@ namespace OpenMetaverse
             {
                 ScriptRunningReplyMessage msg = (ScriptRunningReplyMessage) message;
                 try { OnScriptRunning(msg.ObjectID, msg.ItemID, msg.Mono, msg.Running);}
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                catch (Exception e) { _Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
