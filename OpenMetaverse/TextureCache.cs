@@ -40,8 +40,8 @@ namespace OpenMetaverse
         public delegate string ComputeTextureCacheFilenameDelegate(string cacheDir, UUID textureID);
 
         public ComputeTextureCacheFilenameDelegate ComputeTextureCacheFilename = null;
-
-        private GridClient Client;
+        private LoggerInstance Log;
+        private NetworkManager Network;
         private Thread cleanerThread;
         private System.Timers.Timer cleanerTimer;
         private double pruneInterval = 1000 * 60 * 5;
@@ -83,9 +83,10 @@ namespace OpenMetaverse
         /// Default constructor
         /// </summary>
         /// <param name="client">A reference to the GridClient object</param>
-        public TextureCache(GridClient client)
+        public TextureCache(LoggerInstance log, NetworkManager network)
         {
-            Client = client;
+            Log = log;
+            Network = network;
             cleanerTimer = new System.Timers.Timer(pruneInterval);
             cleanerTimer.Elapsed += new System.Timers.ElapsedEventHandler(cleanerTimer_Elapsed);
             if (Operational())
@@ -111,13 +112,13 @@ namespace OpenMetaverse
             }
             try
             {
-                Logger.DebugLog("Reading " + FileName(imageID) + " from texture cache.");
+                Log.DebugLog("Reading " + FileName(imageID) + " from texture cache.");
                 byte[] data = File.ReadAllBytes(FileName(imageID));
                 return data;
             }
             catch (Exception ex)
             {
-                Logger.Log("Failed reading image from cache (" + ex.Message + ")", Helpers.LogLevel.Warning, Client);
+                Log.Log("Failed reading image from cache (" + ex.Message + ")", Helpers.LogLevel.Warning);
                 return null;
             }
         }
@@ -139,7 +140,7 @@ namespace OpenMetaverse
             ImageDownload transfer = new ImageDownload();
             transfer.AssetType = AssetType.Texture;
             transfer.ID = imageID;
-            transfer.Simulator = Client.Network.CurrentSim;
+            transfer.Simulator = Network.CurrentSim;
             transfer.Size = imageData.Length;
             transfer.Success = true;
             transfer.Transferred = imageData.Length;
@@ -155,9 +156,9 @@ namespace OpenMetaverse
         private string FileName(UUID imageID)
         {
             if (ComputeTextureCacheFilename != null) {
-                return ComputeTextureCacheFilename(Client.Settings.TEXTURE_CACHE_DIR, imageID);
+                return ComputeTextureCacheFilename(Settings.TEXTURE_CACHE_DIR, imageID);
             }
-            return Client.Settings.TEXTURE_CACHE_DIR + Path.DirectorySeparatorChar + imageID.ToString();
+            return Settings.TEXTURE_CACHE_DIR + Path.DirectorySeparatorChar + imageID.ToString();
         }
 
         /// <summary>
@@ -175,18 +176,18 @@ namespace OpenMetaverse
 
             try
             {
-                Logger.DebugLog("Saving " + FileName(imageID) + " to texture cache.", Client);
+                Log.DebugLog("Saving " + FileName(imageID) + " to texture cache.");
 
-                if (!Directory.Exists(Client.Settings.TEXTURE_CACHE_DIR))
+                if (!Directory.Exists(Settings.TEXTURE_CACHE_DIR))
                 {
-                    Directory.CreateDirectory(Client.Settings.TEXTURE_CACHE_DIR);
+                    Directory.CreateDirectory(Settings.TEXTURE_CACHE_DIR);
                 }
 
                 File.WriteAllBytes(FileName(imageID), imageData);
             }
             catch (Exception ex)
             {
-                Logger.Log("Failed saving image to cache (" + ex.Message + ")", Helpers.LogLevel.Warning, Client);
+                Log.Log("Failed saving image to cache (" + ex.Message + ")", Helpers.LogLevel.Warning);
                 return false;
             }
 
@@ -231,7 +232,7 @@ namespace OpenMetaverse
         /// </summary>
         public void Clear()
         {
-            string cacheDir = Client.Settings.TEXTURE_CACHE_DIR;
+            string cacheDir = Settings.TEXTURE_CACHE_DIR;
             if (!Directory.Exists(cacheDir))
             {
                 return;
@@ -248,7 +249,7 @@ namespace OpenMetaverse
                 ++num;
             }
 
-            Logger.Log("Wiped out " + num + " files from the cache directory.", Helpers.LogLevel.Debug);
+            Log.Log("Wiped out " + num + " files from the cache directory.", Helpers.LogLevel.Debug);
         }
 
         /// <summary>
@@ -256,7 +257,7 @@ namespace OpenMetaverse
         /// </summary>
         public void Prune()
         {
-            string cacheDir = Client.Settings.TEXTURE_CACHE_DIR;
+            string cacheDir = Settings.TEXTURE_CACHE_DIR;
             if (!Directory.Exists(cacheDir))
             {
                 return;
@@ -267,10 +268,10 @@ namespace OpenMetaverse
 
             long size = GetFileSize(files);
 
-            if (size > Client.Settings.TEXTURE_CACHE_MAX_SIZE)
+            if (size > Settings.TEXTURE_CACHE_MAX_SIZE)
             {
                 Array.Sort(files, new SortFilesByAccesTimeHelper());
-                long targetSize = (long)(Client.Settings.TEXTURE_CACHE_MAX_SIZE * 0.9);
+                long targetSize = (long)(Settings.TEXTURE_CACHE_MAX_SIZE * 0.9);
                 int num = 0;
                 foreach (FileInfo file in files)
                 {
@@ -282,11 +283,11 @@ namespace OpenMetaverse
                         break;
                     }
                 }
-                Logger.Log(num + " files deleted from the cache, cache size now: " + NiceFileSize(size), Helpers.LogLevel.Debug);
+                Log.Log(num + " files deleted from the cache, cache size now: " + NiceFileSize(size), Helpers.LogLevel.Debug);
             }
             else
             {
-                Logger.Log("Cache size is " + NiceFileSize(size) + ", file deletion not needed", Helpers.LogLevel.Debug);
+                Log.Log("Cache size is " + NiceFileSize(size) + ", file deletion not needed", Helpers.LogLevel.Debug);
             }
 
         }
@@ -328,7 +329,7 @@ namespace OpenMetaverse
         /// </summary>
         private bool Operational()
         {
-            return Client.Settings.USE_TEXTURE_CACHE;
+            return Settings.USE_TEXTURE_CACHE;
         }
 
         /// <summary>

@@ -245,13 +245,13 @@ namespace OpenMetaverse
         /// If true, images downloaded from the server will be cached 
         /// in a local directory
         /// </summary>
-        public bool USE_TEXTURE_CACHE = false;
+        public static bool USE_TEXTURE_CACHE = false;
 
         /// <summary>Path to store cached texture data</summary>
-        public string TEXTURE_CACHE_DIR = RESOURCE_DIR + "/cache";
+        public static string TEXTURE_CACHE_DIR = RESOURCE_DIR + "/cache";
 
         /// <summary>Maximum size cached files are allowed to take on disk (bytes)</summary>
-        public long TEXTURE_CACHE_MAX_SIZE = 1024 * 1024 * 1024; // 1GB
+        public static long TEXTURE_CACHE_MAX_SIZE = 1024 * 1024 * 1024; // 1GB
 
         #endregion
         #region Misc
@@ -271,7 +271,7 @@ namespace OpenMetaverse
         /// <summary>The maximum number of concurrent texture downloads allowed</summary>
         /// <remarks>Increasing this number will not necessarily increase texture retrieval times due to
         /// simulator throttles</remarks>
-        public int MAX_CONCURRENT_TEXTURE_DOWNLOADS = 4;
+        public static int MAX_CONCURRENT_TEXTURE_DOWNLOADS = 4;
 
         /// <summary>
         /// The Refresh timer inteval is used to set the delay between checks for stalled texture downloads
@@ -282,7 +282,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Textures taking longer than this value will be flagged as timed out and removed from the pipeline
         /// </summary>
-        public int PIPELINE_REQUEST_TIMEOUT = 45*1000;
+        public static int PIPELINE_REQUEST_TIMEOUT = 45*1000;
         #endregion
 
         #region Logging Configuration

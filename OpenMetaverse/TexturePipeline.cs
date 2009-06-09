@@ -122,7 +122,9 @@ namespace OpenMetaverse
         /// the asset data as it is being re-assembled</summary>
         private readonly Dictionary<UUID, TaskInfo> _Transfers;
         /// <summary>Holds the reference to the <see cref="GridClient"/> client object</summary>
-        private readonly GridClient _Client;
+        private readonly NetworkManager _Network;
+        private readonly AssetManager _Assets;
+        private readonly LoggerInstance _Log;
         /// <summary>Maximum concurrent texture requests allowed at a time</summary>
         private readonly int maxTextureRequests;
         /// <summary>An array of <see cref="AutoResetEvent"/> objects used to manage worker request threads</summary>
@@ -146,11 +148,12 @@ namespace OpenMetaverse
         /// Default constructor, Instantiates a new copy of the TexturePipeline class
         /// </summary>
         /// <param name="client">Reference to the instantiated <see cref="GridClient"/> object</param>
-        public TexturePipeline(GridClient client)
+        public TexturePipeline(LoggerInstance log, NetworkManager network, AssetManager assets)
         {
-            _Client = client;
-
-            maxTextureRequests = client.Settings.MAX_CONCURRENT_TEXTURE_DOWNLOADS;
+            _Log = log;
+            _Network = network;
+            _Assets = assets;
+            maxTextureRequests = Settings.MAX_CONCURRENT_TEXTURE_DOWNLOADS;
 
             resetEvents = new AutoResetEvent[maxTextureRequests];
             threadpoolSlots = new int[maxTextureRequests];
@@ -165,8 +168,8 @@ namespace OpenMetaverse
             }
 
             // Handle client connected and disconnected events
-            client.Network.OnConnected += delegate { Startup(); };
-            client.Network.OnDisconnected += delegate { Shutdown(); };
+            _Network.OnConnected += delegate { Startup(); };
+            _Network.OnDisconnected += delegate { Shutdown(); };
 
             // Instantiate master thread that manages the request pool
             downloadMaster = new Thread(DownloadThread);
@@ -186,9 +189,9 @@ namespace OpenMetaverse
 
             _Running = true;
 
-            _Client.Network.RegisterCallback(PacketType.ImageData, ImageDataHandler);
-            _Client.Network.RegisterCallback(PacketType.ImagePacket, ImagePacketHandler);
-            _Client.Network.RegisterCallback(PacketType.ImageNotInDatabase, ImageNotInDatabaseHandler);
+            _Network.RegisterCallback(PacketType.ImageData, ImageDataHandler);
+            _Network.RegisterCallback(PacketType.ImagePacket, ImagePacketHandler);
+            _Network.RegisterCallback(PacketType.ImageNotInDatabase, ImageNotInDatabaseHandler);
             downloadMaster.Start();
             RefreshDownloadsTimer.Start();
 
@@ -208,9 +211,9 @@ namespace OpenMetaverse
 #endif
             RefreshDownloadsTimer.Stop();
 
-            _Client.Network.UnregisterCallback(PacketType.ImageNotInDatabase, ImageNotInDatabaseHandler);
-            _Client.Network.UnregisterCallback(PacketType.ImageData, ImageDataHandler);
-            _Client.Network.UnregisterCallback(PacketType.ImagePacket, ImagePacketHandler);
+            _Network.UnregisterCallback(PacketType.ImageNotInDatabase, ImageNotInDatabaseHandler);
+            _Network.UnregisterCallback(PacketType.ImageData, ImageDataHandler);
+            _Network.UnregisterCallback(PacketType.ImagePacket, ImagePacketHandler);
             
             lock (_Transfers)
                 _Transfers.Clear();
@@ -305,11 +308,11 @@ namespace OpenMetaverse
 
             if (callback != null)
             {
-                if (_Client.Assets.Cache.HasImage(textureID))
+                if (_Assets.Cache.HasImage(textureID))
                 {
                     ImageDownload image = new ImageDownload();
                     image.ID = textureID;
-                    image.AssetData = _Client.Assets.Cache.GetCachedImageBytes(textureID);
+                    image.AssetData = _Assets.Cache.GetCachedImageBytes(textureID);
                     image.Size = image.AssetData.Length;
                     image.Transferred = image.AssetData.Length;
                     image.ImageType = imageType;
@@ -318,7 +321,7 @@ namespace OpenMetaverse
                     
                     callback(TextureRequestState.Finished, new AssetTexture(image.ID, image.AssetData));
 
-                    _Client.Assets.FireImageProgressEvent(image.ID, image.Transferred, image.Size);
+                    _Assets.FireImageProgressEvent(image.ID, image.Transferred, image.Size);
                 }
                 else
                 {
@@ -401,13 +404,13 @@ namespace OpenMetaverse
                         else
                         {
                             ImageDownload transfer = _Transfers[imageID].Transfer;
-                            transfer.Simulator = _Client.Network.CurrentSim;
+                            transfer.Simulator = _Network.CurrentSim;
                         }
 
                         // Build and send the request packet
                         RequestImagePacket request = new RequestImagePacket();
-                        request.AgentData.AgentID = _Client.Self.AgentID;
-                        request.AgentData.SessionID = _Client.Self.SessionID;
+                        request.AgentData.AgentID = _Network.AgentID;
+                        request.AgentData.SessionID = _Network.SessionID;
                         request.RequestImage = new RequestImagePacket.RequestImageBlock[1];
                         request.RequestImage[0] = new RequestImagePacket.RequestImageBlock();
                         request.RequestImage[0].DiscardLevel = (sbyte)discardLevel;
@@ -416,7 +419,7 @@ namespace OpenMetaverse
                         request.RequestImage[0].Image = imageID;
                         request.RequestImage[0].Type = (byte)type;
 
-                        _Client.Network.SendPacket(request, _Client.Network.CurrentSim);
+                        _Network.SendPacket(request, _Network.CurrentSim);
                     }
                     else
                     {
@@ -442,8 +445,8 @@ namespace OpenMetaverse
                     if (task.State == TextureRequestState.Progress)
                     {
                         RequestImagePacket request = new RequestImagePacket();
-                        request.AgentData.AgentID = _Client.Self.AgentID;
-                        request.AgentData.SessionID = _Client.Self.SessionID;
+                        request.AgentData.AgentID = _Network.AgentID;
+                        request.AgentData.SessionID = _Network.SessionID;
                         request.RequestImage = new RequestImagePacket.RequestImageBlock[1];
                         request.RequestImage[0] = new RequestImagePacket.RequestImageBlock();
                         request.RequestImage[0].DiscardLevel = -1;
@@ -451,12 +454,12 @@ namespace OpenMetaverse
                         request.RequestImage[0].Packet = 0;
                         request.RequestImage[0].Image = textureID;
                         request.RequestImage[0].Type = (byte)task.Type;
-                        _Client.Network.SendPacket(request);
+                        _Network.SendPacket(request);
 
                         foreach(TextureDownloadCallback callback in task.Callbacks)
                             callback(TextureRequestState.Aborted, new AssetTexture(textureID, Utils.EmptyBytes));
 
-                        _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
+                        _Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
 
                         resetEvents[task.RequestSlot].Set();
 
@@ -469,7 +472,7 @@ namespace OpenMetaverse
                         foreach(TextureDownloadCallback callback in task.Callbacks)
                             callback(TextureRequestState.Aborted, new AssetTexture(textureID, Utils.EmptyBytes));
 
-                        _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
+                        _Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
                     }
                 }
             }
@@ -563,7 +566,7 @@ namespace OpenMetaverse
             RequestImage(task.RequestID, task.Type, 1013000.0f, 0, 0);
 
             // don't release this worker slot until texture is downloaded or timeout occurs
-            if (!resetEvents[task.RequestSlot].WaitOne(_Client.Settings.PIPELINE_REQUEST_TIMEOUT, false))
+            if (!resetEvents[task.RequestSlot].WaitOne(Settings.PIPELINE_REQUEST_TIMEOUT, false))
             {
                 // Timed out
                 Logger.Log("Worker " + task.RequestSlot + " Timeout waiting for Texture " + task.RequestID + " to Download Got " + task.Transfer.Transferred + " of " + task.Transfer.Size, Helpers.LogLevel.Warning);
@@ -574,7 +577,7 @@ namespace OpenMetaverse
                     callback(TextureRequestState.Timeout, texture);
                 }
 
-                _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
+                _Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
 
                 lock (_Transfers)
                     _Transfers.Remove(task.RequestID);
@@ -647,8 +650,8 @@ namespace OpenMetaverse
 
                         if (task.Transfer.Size == 0)
                         {
-                            Logger.Log("Timed out while waiting for the image header to download for " +
-                                       task.Transfer.ID, Helpers.LogLevel.Warning, _Client);
+                            _Log.Log("Timed out while waiting for the image header to download for " +
+                                       task.Transfer.ID, Helpers.LogLevel.Warning);
 
                             _Transfers.Remove(task.Transfer.ID);
                             resetEvents[task.RequestSlot].Set(); // free up request slot
@@ -699,11 +702,11 @@ namespace OpenMetaverse
                         task.Transfer.Success = true;
                         _Transfers.Remove(task.Transfer.ID);
                         resetEvents[task.RequestSlot].Set(); // free up request slot
-                        _Client.Assets.Cache.SaveImageToCache(task.RequestID, task.Transfer.AssetData);
+                        _Assets.Cache.SaveImageToCache(task.RequestID, task.Transfer.AssetData);
                         foreach (TextureDownloadCallback callback in task.Callbacks)
                             callback(TextureRequestState.Finished, new AssetTexture(task.RequestID, task.Transfer.AssetData));
 
-                        _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
+                        _Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
                     }
                     else
                     {
@@ -713,7 +716,7 @@ namespace OpenMetaverse
                                 callback(TextureRequestState.Progress,
                                          new AssetTexture(task.RequestID, task.Transfer.AssetData));
                         }
-                        _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred,
+                        _Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred,
                                                                   task.Transfer.Size);
                     }
                 }
@@ -781,12 +784,12 @@ namespace OpenMetaverse
                     _Transfers.Remove(task.RequestID);
                     resetEvents[task.RequestSlot].Set();
 
-                    _Client.Assets.Cache.SaveImageToCache(task.RequestID, task.Transfer.AssetData);
+                    _Assets.Cache.SaveImageToCache(task.RequestID, task.Transfer.AssetData);
 
                     foreach (TextureDownloadCallback callback in task.Callbacks)
                         callback(TextureRequestState.Finished, new AssetTexture(task.RequestID, task.Transfer.AssetData));
 
-                    _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
+                    _Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred, task.Transfer.Size);
                 }
                 else
                 {
@@ -796,7 +799,7 @@ namespace OpenMetaverse
                             callback(TextureRequestState.Progress,
                                       new AssetTexture(task.RequestID, task.Transfer.AssetData));
                     }
-                    _Client.Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred,
+                    _Assets.FireImageProgressEvent(task.RequestID, task.Transfer.Transferred,
                                                               task.Transfer.Size);
                 }
             }

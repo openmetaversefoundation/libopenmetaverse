@@ -349,6 +349,8 @@ namespace OpenMetaverse
         private TexturePipeline Texture;
 
         private GridClient Client;
+        private NetworkManager Network;
+        private LoggerInstance Log;
 
         private Dictionary<UUID, Transfer> Transfers = new Dictionary<UUID, Transfer>();
 
@@ -360,26 +362,27 @@ namespace OpenMetaverse
         /// Default constructor
         /// </summary>
         /// <param name="client">A reference to the GridClient object</param>
-        public AssetManager(GridClient client)
+        public AssetManager(LoggerInstance log, NetworkManager network)
         {
-            Client = client;
-            Cache = new TextureCache(client);
-            Texture = new TexturePipeline(client);
+            Log = log;
+            Network = network;
+            Cache = new TextureCache(log, network);
+            Texture = new TexturePipeline(log, network, this);
 
             // Transfer packets for downloading large assets
-            Client.Network.RegisterCallback(PacketType.TransferInfo, new NetworkManager.PacketCallback(TransferInfoHandler));
-            Client.Network.RegisterCallback(PacketType.TransferPacket, new NetworkManager.PacketCallback(TransferPacketHandler));
+            Network.RegisterCallback(PacketType.TransferInfo, new NetworkManager.PacketCallback(TransferInfoHandler));
+            Network.RegisterCallback(PacketType.TransferPacket, new NetworkManager.PacketCallback(TransferPacketHandler));
 
             // Xfer packets for uploading large assets
-            Client.Network.RegisterCallback(PacketType.RequestXfer, new NetworkManager.PacketCallback(RequestXferHandler));
-            Client.Network.RegisterCallback(PacketType.ConfirmXferPacket, new NetworkManager.PacketCallback(ConfirmXferPacketHandler));
-            Client.Network.RegisterCallback(PacketType.AssetUploadComplete, new NetworkManager.PacketCallback(AssetUploadCompleteHandler));
+            Network.RegisterCallback(PacketType.RequestXfer, new NetworkManager.PacketCallback(RequestXferHandler));
+            Network.RegisterCallback(PacketType.ConfirmXferPacket, new NetworkManager.PacketCallback(ConfirmXferPacketHandler));
+            Network.RegisterCallback(PacketType.AssetUploadComplete, new NetworkManager.PacketCallback(AssetUploadCompleteHandler));
 
             // Xfer packet for downloading misc assets
-            Client.Network.RegisterCallback(PacketType.SendXferPacket, new NetworkManager.PacketCallback(SendXferPacketHandler));
+            Network.RegisterCallback(PacketType.SendXferPacket, new NetworkManager.PacketCallback(SendXferPacketHandler));
 
             // Simulator is responding to a request to download a file
-            Client.Network.RegisterCallback(PacketType.InitiateDownload, new NetworkManager.PacketCallback(InitiateDownloadPacketHandler));
+            Network.RegisterCallback(PacketType.InitiateDownload, new NetworkManager.PacketCallback(InitiateDownloadPacketHandler));
 
         }
 
@@ -399,7 +402,7 @@ namespace OpenMetaverse
             transfer.Priority = 100.0f + (priority ? 1.0f : 0.0f);
             transfer.Channel = ChannelType.Asset;
             transfer.Source = SourceType.Asset;
-            transfer.Simulator = Client.Network.CurrentSim;
+            transfer.Simulator = Network.CurrentSim;
 
             // Add this transfer to the dictionary
             lock (Transfers) Transfers[transfer.ID] = transfer;
@@ -416,7 +419,7 @@ namespace OpenMetaverse
             Buffer.BlockCopy(Utils.IntToBytes((int)type), 0, paramField, 16, 4);
             request.TransferInfo.Params = paramField;
 
-            Client.Network.SendPacket(request, transfer.Simulator);
+            Network.SendPacket(request, transfer.Simulator);
             return transfer.ID;
         }
 
@@ -459,7 +462,7 @@ namespace OpenMetaverse
             request.XferID.VFileID = vFileID;
             request.XferID.VFileType = (short)vFileType;
 
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
 
             return id;
         }
@@ -484,7 +487,7 @@ namespace OpenMetaverse
             transfer.Priority = 100.0f + (priority ? 1.0f : 0.0f);
             transfer.Channel = ChannelType.Asset;
             transfer.Source = SourceType.SimInventoryItem;
-            transfer.Simulator = Client.Network.CurrentSim;
+            transfer.Simulator = Network.CurrentSim;
 
             // Add this transfer to the dictionary
             lock (Transfers) Transfers[transfer.ID] = transfer;
@@ -497,8 +500,8 @@ namespace OpenMetaverse
             request.TransferInfo.TransferID = transfer.ID;
 
             byte[] paramField = new byte[100];
-            Buffer.BlockCopy(Client.Self.AgentID.GetBytes(), 0, paramField, 0, 16);
-            Buffer.BlockCopy(Client.Self.SessionID.GetBytes(), 0, paramField, 16, 16);
+            Buffer.BlockCopy(Network.AgentID.GetBytes(), 0, paramField, 0, 16);
+            Buffer.BlockCopy(Network.SessionID.GetBytes(), 0, paramField, 16, 16);
             Buffer.BlockCopy(ownerID.GetBytes(), 0, paramField, 32, 16);
             Buffer.BlockCopy(taskID.GetBytes(), 0, paramField, 48, 16);
             Buffer.BlockCopy(itemID.GetBytes(), 0, paramField, 64, 16);
@@ -506,7 +509,7 @@ namespace OpenMetaverse
             Buffer.BlockCopy(Utils.IntToBytes((int)type), 0, paramField, 96, 4);
             request.TransferInfo.Params = paramField;
 
-            Client.Network.SendPacket(request, transfer.Simulator);
+            Network.SendPacket(request, transfer.Simulator);
             return transfer.ID;
         }
 
@@ -595,7 +598,7 @@ namespace OpenMetaverse
             AssetUpload upload = new AssetUpload();
             upload.AssetData = data;
             upload.AssetType = type;
-            assetID = UUID.Combine(transactionID, Client.Self.SecureSessionID);
+            assetID = UUID.Combine(transactionID, Network.SecureSessionID);
             upload.AssetID = assetID;
             upload.Size = data.Length;
             upload.XferID = 0;
@@ -610,9 +613,9 @@ namespace OpenMetaverse
 
             if (data.Length + 100 < Settings.MAX_PACKET_SIZE)
             {
-                Logger.Log(
+                Log.Log(
                     String.Format("Beginning asset upload [Single Packet], ID: {0}, AssetID: {1}, Size: {2}",
-                    upload.ID.ToString(), upload.AssetID.ToString(), upload.Size), Helpers.LogLevel.Info, Client);
+                    upload.ID.ToString(), upload.AssetID.ToString(), upload.Size), Helpers.LogLevel.Info);
 
                     Transfers[upload.ID]=upload;         
                 
@@ -622,9 +625,9 @@ namespace OpenMetaverse
             }
             else
             {
-                Logger.Log(
+                Log.Log(
                     String.Format("Beginning asset upload [Multiple Packets], ID: {0}, AssetID: {1}, Size: {2}",
-                    upload.ID.ToString(), upload.AssetID.ToString(), upload.Size), Helpers.LogLevel.Info, Client);
+                    upload.ID.ToString(), upload.AssetID.ToString(), upload.Size), Helpers.LogLevel.Info);
 
                 // Asset is too big, send in multiple packets
                 request.AssetBlock.AssetData = Utils.EmptyBytes;
@@ -646,7 +649,7 @@ namespace OpenMetaverse
                 {
                     WaitingForUploadConfirm = true;
                     PendingUpload = upload;
-                    Client.Network.SendPacket(request);
+                    Network.SendPacket(request);
 
                     return upload.ID;
                 }
@@ -793,7 +796,7 @@ namespace OpenMetaverse
             if (OnImageRecieveProgress != null)
             {
                 try { OnImageRecieveProgress(texureID, transferredBytes, totalBytes); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -836,7 +839,7 @@ namespace OpenMetaverse
                     asset = new AssetLandmark();
                     break;
                 default:
-                    Logger.Log("Unimplemented asset type: " + type, Helpers.LogLevel.Error, Client);
+                    Log.Log("Unimplemented asset type: " + type, Helpers.LogLevel.Error);
                     return null;
             }
 
@@ -898,7 +901,7 @@ namespace OpenMetaverse
                 upload.Transferred += lastlen;
             }
 
-            Client.Network.SendPacket(send);
+            Network.SendPacket(send);
         }
 
         private void SendConfirmXferPacket(ulong xferID, uint packetNum)
@@ -907,7 +910,7 @@ namespace OpenMetaverse
             confirm.XferID.ID = xferID;
             confirm.XferID.Packet = packetNum;
 
-            Client.Network.SendPacket(confirm);
+            Network.SendPacket(confirm);
         }
 
         #endregion Helpers
@@ -935,7 +938,7 @@ namespace OpenMetaverse
                     // will need to become smarter
                     if (download.Status != StatusCode.OK)
                     {
-                        Logger.Log("Transfer failed with status code " + download.Status, Helpers.LogLevel.Warning, Client);
+                        Log.Log("Transfer failed with status code " + download.Status, Helpers.LogLevel.Warning);
 
                         lock (Transfers) Transfers.Remove(download.ID);
 
@@ -944,7 +947,7 @@ namespace OpenMetaverse
 
                         // Fire the event with our transfer that contains Success = false;
                         try { OnAssetReceived(download, null); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                     }
                     else
                     {
@@ -975,16 +978,16 @@ namespace OpenMetaverse
                         }
                         else
                         {
-                            Logger.Log("Received a TransferInfo packet with a SourceType of " + download.Source.ToString() +
+                            Log.Log("Received a TransferInfo packet with a SourceType of " + download.Source.ToString() +
                                 " and a Params field length of " + info.TransferInfo.Params.Length,
-                                Helpers.LogLevel.Warning, Client);
+                                Helpers.LogLevel.Warning);
                         }
                     }
                 }
                 else
                 {
-                    Logger.Log("Received a TransferInfo packet for an asset we didn't request, TransferID: " +
-                        info.TransferInfo.TransferID, Helpers.LogLevel.Warning, Client);
+                    Log.Log("Received a TransferInfo packet for an asset we didn't request, TransferID: " +
+                        info.TransferInfo.TransferID, Helpers.LogLevel.Warning);
                 }
             }
         }
@@ -1001,21 +1004,21 @@ namespace OpenMetaverse
 
                 if (download.Size == 0)
                 {
-                    Logger.DebugLog("TransferPacket received ahead of the transfer header, blocking...", Client);
+                    Log.DebugLog("TransferPacket received ahead of the transfer header, blocking...");
 
                     // We haven't received the header yet, block until it's received or times out
                     download.HeaderReceivedEvent.WaitOne(1000 * 5, false);
 
                     if (download.Size == 0)
                     {
-                        Logger.Log("Timed out while waiting for the asset header to download for " +
-                            download.ID.ToString(), Helpers.LogLevel.Warning, Client);
+                        Log.Log("Timed out while waiting for the asset header to download for " +
+                            download.ID.ToString(), Helpers.LogLevel.Warning);
 
                         // Abort the transfer
                         TransferAbortPacket abort = new TransferAbortPacket();
                         abort.TransferInfo.ChannelType = (int)download.Channel;
                         abort.TransferInfo.TransferID = download.ID;
-                        Client.Network.SendPacket(abort, download.Simulator);
+                        Network.SendPacket(abort, download.Simulator);
 
                         download.Success = false;
                         lock (Transfers) Transfers.Remove(download.ID);
@@ -1024,7 +1027,7 @@ namespace OpenMetaverse
                         if (OnAssetReceived != null)
                         {
                             try { OnAssetReceived(download, null); }
-                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                            catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                         }
 
                         return;
@@ -1041,7 +1044,7 @@ namespace OpenMetaverse
                 }
                 catch (ArgumentException)
                 {
-                    Logger.Log(String.Format("TransferPacket handling failed. TransferData.Data.Length={0}, AssetData.Length={1}, TransferData.Packet={2}",
+                    Log.Log(String.Format("TransferPacket handling failed. TransferData.Data.Length={0}, AssetData.Length={1}, TransferData.Packet={2}",
                         asset.TransferData.Data.Length, download.AssetData.Length, asset.TransferData.Packet), Helpers.LogLevel.Error);
                     return;
                 }
@@ -1053,7 +1056,7 @@ namespace OpenMetaverse
                 // Check if we downloaded the full asset
                 if (download.Transferred >= download.Size)
                 {
-                    Logger.DebugLog("Transfer for asset " + download.AssetID.ToString() + " completed", Client);
+                    Log.DebugLog("Transfer for asset " + download.AssetID.ToString() + " completed");
 
                     download.Success = true;
                     lock (Transfers) Transfers.Remove(download.ID);
@@ -1061,7 +1064,7 @@ namespace OpenMetaverse
                     if (OnAssetReceived != null)
                     {
                         try { OnAssetReceived(download, WrapAsset(download)); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                     }
                 }
             }
@@ -1085,7 +1088,7 @@ namespace OpenMetaverse
                 InitiateDownloadPacket request = (InitiateDownloadPacket)packet;
                 try { OnInitiateDownload(Utils.BytesToString(request.FileData.SimFilename), 
                     Utils.BytesToString(request.FileData.ViewerFilename)); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
             
         }
@@ -1095,7 +1098,7 @@ namespace OpenMetaverse
         private void RequestXferHandler(Packet packet, Simulator simulator)
         {
             if (PendingUpload == null)
-                Logger.Log("Received a RequestXferPacket for an unknown asset upload", Helpers.LogLevel.Warning, Client);
+                Log.Log("Received a RequestXferPacket for an unknown asset upload", Helpers.LogLevel.Warning);
             else
             {
                 AssetUpload upload = PendingUpload;
@@ -1134,7 +1137,7 @@ namespace OpenMetaverse
                 if (OnUploadProgress != null)
                 {
                     try { OnUploadProgress(upload); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
 
                 if (upload.Transferred < upload.Size)
@@ -1181,11 +1184,11 @@ namespace OpenMetaverse
                     lock (Transfers) Transfers.Remove(foundTransfer.Key);
 
                     try { OnAssetUploaded((AssetUpload)foundTransfer.Value); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
                 else
                 {
-                    Logger.Log(String.Format(
+                    Log.Log(String.Format(
                         "Got an AssetUploadComplete on an unrecognized asset, AssetID: {0}, Type: {1}, Success: {2}",
                         complete.AssetBlock.UUID, (AssetType)complete.AssetBlock.Type, complete.AssetBlock.Success),
                         Helpers.LogLevel.Warning);
@@ -1214,13 +1217,13 @@ namespace OpenMetaverse
                 {
                     if (packetNum == download.PacketNum - 1)
                     {
-                        Logger.DebugLog("Resending Xfer download confirmation for packet " + packetNum, Client);
+                        Log.DebugLog("Resending Xfer download confirmation for packet " + packetNum);
                         SendConfirmXferPacket(download.XferID, packetNum);
                     }
                     else
                     {
-                        Logger.Log("Out of order Xfer packet in a download, got " + packetNum + " expecting " + download.PacketNum,
-                            Helpers.LogLevel.Warning, Client);
+                        Log.Log("Out of order Xfer packet in a download, got " + packetNum + " expecting " + download.PacketNum,
+                            Helpers.LogLevel.Warning);
                         // Re-confirm the last packet we actually received
                         SendConfirmXferPacket(download.XferID, download.PacketNum - 1);
                     }
@@ -1236,7 +1239,7 @@ namespace OpenMetaverse
                     download.Size = (bytes[0] + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24));
                     download.AssetData = new byte[download.Size];
 
-                    Logger.DebugLog("Received first packet in an Xfer download of size " + download.Size);
+                    Log.DebugLog("Received first packet in an Xfer download of size " + download.Size);
 
                     Buffer.BlockCopy(xfer.DataPacket.Data, 4, download.AssetData, 0, xfer.DataPacket.Data.Length - 4);
                     download.Transferred += xfer.DataPacket.Data.Length - 4;
@@ -1257,9 +1260,9 @@ namespace OpenMetaverse
                 {
                     // This is the last packet in the transfer
                     if (!String.IsNullOrEmpty(download.Filename))
-                        Logger.DebugLog("Xfer download for asset " + download.Filename + " completed", Client);
+                        Log.DebugLog("Xfer download for asset " + download.Filename + " completed");
                     else
-                        Logger.DebugLog("Xfer download for asset " + download.VFileID.ToString() + " completed", Client);
+                        Log.DebugLog("Xfer download for asset " + download.VFileID.ToString() + " completed");
 
                     download.Success = true;
                     lock (Transfers) Transfers.Remove(download.ID);
@@ -1267,7 +1270,7 @@ namespace OpenMetaverse
                     if (OnXferReceived != null)
                     {
                         try { OnXferReceived(download); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                     }
                 }
             }

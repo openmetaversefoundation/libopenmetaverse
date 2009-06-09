@@ -119,7 +119,7 @@ namespace OpenMetaverse
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);
             Groups = new GroupManager(this);
-            Assets = new AssetManager(this);
+            Assets = new AssetManager(Log, Network);
             Estate = new EstateTools(Log, Network, Assets);
             Appearance = new AppearanceManager(this, Assets);
             Inventory = new InventoryManager(this);
