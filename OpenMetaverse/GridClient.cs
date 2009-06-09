@@ -116,7 +116,7 @@ namespace OpenMetaverse
             Self = new AgentManager(Log, Network, Grid);
             Avatars = new AvatarManager(Log, Network);
             Friends = new FriendsManager(this);
-            Grid = new GridManager(this);
+            Grid = new GridManager(Log, Network);
             Objects = new ObjectManager(Log, Network, Self);
             Groups = new GroupManager(this);
             Assets = new AssetManager(Log, Network);

@@ -250,7 +250,9 @@ namespace OpenMetaverse
         /// <summary>A dictionary of all the regions, indexed by region handle</summary>
         internal Dictionary<ulong, GridRegion> RegionsByHandle = new Dictionary<ulong, GridRegion>();
 
-		private GridClient Client;
+		
+        private LoggerInstance Log;
+        private NetworkManager Network;
         private float sunPhase;
         private Vector3 sunDirection;
         private Vector3 sunAngVelocity;
@@ -259,16 +261,17 @@ namespace OpenMetaverse
         /// Constructor
         /// </summary>
         /// <param name="client">Instance of GridClient object to associate with this GridManager instance</param>
-		public GridManager(GridClient client)
+		public GridManager(LoggerInstance log, NetworkManager network)
 		{
-			Client = client;
+            Log = log;
+            Network = network;
 
-            //Client.Network.RegisterCallback(PacketType.MapLayerReply, MapLayerReplyHandler);
-            Client.Network.RegisterCallback(PacketType.MapBlockReply, MapBlockReplyHandler);
-            Client.Network.RegisterCallback(PacketType.MapItemReply, MapItemReplyHandler);
-            Client.Network.RegisterCallback(PacketType.SimulatorViewerTimeMessage, TimeMessageHandler);
-            Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, CoarseLocationHandler);
-            Client.Network.RegisterCallback(PacketType.RegionIDAndHandleReply, RegionHandleReplyHandler);
+            //Network.RegisterCallback(PacketType.MapLayerReply, MapLayerReplyHandler);
+            Network.RegisterCallback(PacketType.MapBlockReply, MapBlockReplyHandler);
+            Network.RegisterCallback(PacketType.MapItemReply, MapItemReplyHandler);
+            Network.RegisterCallback(PacketType.SimulatorViewerTimeMessage, TimeMessageHandler);
+            Network.RegisterCallback(PacketType.CoarseLocationUpdate, CoarseLocationHandler);
+            Network.RegisterCallback(PacketType.RegionIDAndHandleReply, RegionHandleReplyHandler);
 		}
 
         /// <summary>
@@ -277,7 +280,7 @@ namespace OpenMetaverse
         /// <param name="layer"></param>
         public void RequestMapLayer(GridLayerType layer)
         {
-            Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("MapLayer");
+            Uri url = Network.CurrentSim.Caps.CapabilityURI("MapLayer");
 
             if (url != null)
             {
@@ -299,14 +302,14 @@ namespace OpenMetaverse
         {
             MapNameRequestPacket request = new MapNameRequestPacket();
 
-            request.AgentData.AgentID = Client.Self.AgentID;
-            request.AgentData.SessionID = Client.Self.SessionID;
+            request.AgentData.AgentID = Network.AgentID;
+            request.AgentData.SessionID = Network.SessionID;
             request.AgentData.Flags = (uint)layer;
             request.AgentData.EstateID = 0; // Filled in on the sim
             request.AgentData.Godlike = false; // Filled in on the sim
             request.NameData.Name = Utils.StringToBytes(regionName.ToLower());
 
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
         }
 
         /// <summary>
@@ -323,8 +326,8 @@ namespace OpenMetaverse
         {
             MapBlockRequestPacket request = new MapBlockRequestPacket();
 
-            request.AgentData.AgentID = Client.Self.AgentID;
-            request.AgentData.SessionID = Client.Self.SessionID;
+            request.AgentData.AgentID = Network.AgentID;
+            request.AgentData.SessionID = Network.SessionID;
             request.AgentData.Flags = (uint)layer;
             request.AgentData.Flags |= (uint)(returnNonExistent ? 0x10000 : 0);
             request.AgentData.EstateID = 0; // Filled in at the simulator
@@ -335,7 +338,7 @@ namespace OpenMetaverse
             request.PositionData.MaxX = maxX;
             request.PositionData.MaxY = maxY;
 
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
         }
 
         /// <summary>
@@ -380,8 +383,8 @@ namespace OpenMetaverse
         public void RequestMapItems(ulong regionHandle, GridItemType item, GridLayerType layer)
         {
             MapItemRequestPacket request = new MapItemRequestPacket();
-            request.AgentData.AgentID = Client.Self.AgentID;
-            request.AgentData.SessionID = Client.Self.SessionID;
+            request.AgentData.AgentID = Network.AgentID;
+            request.AgentData.SessionID = Network.SessionID;
             request.AgentData.Flags = (uint)layer;
             request.AgentData.Godlike = false; // Filled in on the sim
             request.AgentData.EstateID = 0; // Filled in on the sim
@@ -389,7 +392,7 @@ namespace OpenMetaverse
             request.RequestData.ItemType = (uint)item;
             request.RequestData.RegionHandle = regionHandle;
 
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
         }
 
         /// <summary>
@@ -409,7 +412,7 @@ namespace OpenMetaverse
             RegionHandleRequestPacket request = new RegionHandleRequestPacket();
             request.RequestBlock = new RegionHandleRequestPacket.RequestBlockBlock();
             request.RequestBlock.RegionID = regionID;
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
         }
 
         /// <summary>
@@ -426,7 +429,7 @@ namespace OpenMetaverse
         {
             if (String.IsNullOrEmpty(name))
             {
-                Logger.Log("GetGridRegion called with a null or empty region name", Helpers.LogLevel.Error, Client);
+                Log.Log("GetGridRegion called with a null or empty region name", Helpers.LogLevel.Error);
                 region = new GridRegion();
                 return false;
             }
@@ -452,7 +455,7 @@ namespace OpenMetaverse
                 OnGridRegion += callback;
 
                 RequestMapRegion(name, layer);
-                regionEvent.WaitOne(Client.Settings.MAP_REQUEST_TIMEOUT, false);
+                regionEvent.WaitOne(Settings.MAP_REQUEST_TIMEOUT, false);
 
                 OnGridRegion -= callback;
 
@@ -464,7 +467,7 @@ namespace OpenMetaverse
                 }
                 else
                 {
-                    Logger.Log("Couldn't find region " + name, Helpers.LogLevel.Warning, Client);
+                    Log.Log("Couldn't find region " + name, Helpers.LogLevel.Warning);
                     region = new GridRegion();
                     return false;
                 }
@@ -490,14 +493,14 @@ namespace OpenMetaverse
                     layer.ImageID = thisLayerData["ImageID"].AsUUID();
 
                     try { OnGridLayer(layer); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
             }
 
             if (body.ContainsKey("MapBlocks"))
             {
                 // TODO: At one point this will become activated
-                Logger.Log("Got MapBlocks through CAPS, please finish this function!", Helpers.LogLevel.Error, Client);
+                Log.Log("Got MapBlocks through CAPS, please finish this function!", Helpers.LogLevel.Error);
             }
         }
 
@@ -536,7 +539,7 @@ namespace OpenMetaverse
                     if (OnGridRegion != null)
                     {
                         try { OnGridRegion(region); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                     }
                 }
             }
@@ -568,33 +571,33 @@ namespace OpenMetaverse
                             break;
                         case GridItemType.Classified:
                             //FIXME:
-                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
+                            Log.Log("FIXME", Helpers.LogLevel.Error);
                             break;
                         case GridItemType.LandForSale:
                             //FIXME:
-                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
+                            Log.Log("FIXME", Helpers.LogLevel.Error);
                             break;
                         case GridItemType.MatureEvent:
                         case GridItemType.PgEvent:
                             //FIXME:
-                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
+                            Log.Log("FIXME", Helpers.LogLevel.Error);
                             break;
                         case GridItemType.Popular:
                             //FIXME:
-                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
+                            Log.Log("FIXME", Helpers.LogLevel.Error);
                             break;
                         case GridItemType.Telehub:
                             //FIXME:
-                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
+                            Log.Log("FIXME", Helpers.LogLevel.Error);
                             break;
                         default:
-                            Logger.Log("Unknown map item type " + type, Helpers.LogLevel.Warning, Client);
+                            Log.Log("Unknown map item type " + type, Helpers.LogLevel.Warning);
                             break;
                     }
                 }
 
                 try { OnGridItems(type, items); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -655,7 +658,7 @@ namespace OpenMetaverse
             if (OnCoarseLocationUpdate != null)
             {
                 try { OnCoarseLocationUpdate(simulator, newEntries, removedEntries); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -665,7 +668,7 @@ namespace OpenMetaverse
             if (OnRegionHandleReply != null)
             {
                 try { OnRegionHandleReply(reply.ReplyBlock.RegionID, reply.ReplyBlock.RegionHandle); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 

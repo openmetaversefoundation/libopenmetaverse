@@ -44,7 +44,7 @@ namespace GridImageUpload
             Settings.ALWAYS_DECODE_OBJECTS = false;
             Settings.ALWAYS_REQUEST_OBJECTS = false;
             Settings.SEND_AGENT_UPDATES = true;
-            Client.Settings.OBJECT_TRACKING = false;
+            Settings.OBJECT_TRACKING = false;
             Settings.STORE_LAND_PATCHES = false;
             Settings.MULTIPLE_SIMS = false;
             Client.Self.Movement.Camera.Far = 32.0f;

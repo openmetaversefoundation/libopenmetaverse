@@ -102,7 +102,7 @@ namespace OpenMetaverse
 
         /// <summary>Milliseconds to wait for a simulator info request through
         /// the grid interface</summary>
-        public int MAP_REQUEST_TIMEOUT = 5 * 1000;
+        public static int MAP_REQUEST_TIMEOUT = 5 * 1000;
 
         /// <summary>Number of milliseconds between sending pings to each sim</summary>
         public const int PING_INTERVAL = 2200;

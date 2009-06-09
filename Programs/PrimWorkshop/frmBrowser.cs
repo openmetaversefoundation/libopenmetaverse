@@ -154,7 +154,7 @@ namespace PrimWorkshop
             Client.Throttle.Texture = 446000.0f;
 
             // FIXME: Write our own avatar tracker so we don't double store prims
-            Client.Settings.OBJECT_TRACKING = false; // We use our own object tracking system
+            Settings.OBJECT_TRACKING = false; // We use our own object tracking system
             Settings.AVATAR_TRACKING = true; //but we want to use the libsl avatar system
 
             Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
