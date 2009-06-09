@@ -228,42 +228,43 @@ namespace OpenMetaverse
         /// <summary></summary>
         public event ClassifiedInfoCallback OnClassifiedInfo;
 
-        private GridClient Client;
-
+        
+        private NetworkManager Network;
+        private LoggerInstance Log;
         /// <summary>
         /// Represents other avatars
         /// </summary>
         /// <param name="client"></param>
-        public AvatarManager(GridClient client)
+        public AvatarManager(LoggerInstance log, NetworkManager network)
         {
-            Client = client;
-
+            Log = log;
+            Network = network;
             // Avatar appearance callback
-            Client.Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
+            Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
 
             // Avatar profile callbacks
-            Client.Network.RegisterCallback(PacketType.AvatarPropertiesReply, new NetworkManager.PacketCallback(AvatarPropertiesHandler));
-            // Client.Network.RegisterCallback(PacketType.AvatarStatisticsReply, new NetworkManager.PacketCallback(AvatarStatisticsHandler));
-            Client.Network.RegisterCallback(PacketType.AvatarInterestsReply, new NetworkManager.PacketCallback(AvatarInterestsHandler));
+            Network.RegisterCallback(PacketType.AvatarPropertiesReply, new NetworkManager.PacketCallback(AvatarPropertiesHandler));
+            // Network.RegisterCallback(PacketType.AvatarStatisticsReply, new NetworkManager.PacketCallback(AvatarStatisticsHandler));
+            Network.RegisterCallback(PacketType.AvatarInterestsReply, new NetworkManager.PacketCallback(AvatarInterestsHandler));
 
             // Avatar group callback
-            Client.Network.RegisterCallback(PacketType.AvatarGroupsReply, new NetworkManager.PacketCallback(AvatarGroupsHandler));
+            Network.RegisterCallback(PacketType.AvatarGroupsReply, new NetworkManager.PacketCallback(AvatarGroupsHandler));
 
             // Viewer effect callback
-            Client.Network.RegisterCallback(PacketType.ViewerEffect, new NetworkManager.PacketCallback(ViewerEffectHandler));
+            Network.RegisterCallback(PacketType.ViewerEffect, new NetworkManager.PacketCallback(ViewerEffectHandler));
 
             // Other callbacks
-            Client.Network.RegisterCallback(PacketType.UUIDNameReply, new NetworkManager.PacketCallback(AvatarNameHandler));
-            Client.Network.RegisterCallback(PacketType.AvatarPickerReply, new NetworkManager.PacketCallback(AvatarPickerReplyHandler));
-	        Client.Network.RegisterCallback(PacketType.AvatarAnimation, new NetworkManager.PacketCallback(AvatarAnimationHandler));
+            Network.RegisterCallback(PacketType.UUIDNameReply, new NetworkManager.PacketCallback(AvatarNameHandler));
+            Network.RegisterCallback(PacketType.AvatarPickerReply, new NetworkManager.PacketCallback(AvatarPickerReplyHandler));
+	        Network.RegisterCallback(PacketType.AvatarAnimation, new NetworkManager.PacketCallback(AvatarAnimationHandler));
 
             // Picks callbacks
-            Client.Network.RegisterCallback(PacketType.AvatarPicksReply, new NetworkManager.PacketCallback(AvatarPicksHandler));
-            Client.Network.RegisterCallback(PacketType.PickInfoReply, new NetworkManager.PacketCallback(PickInfoHandler));
+            Network.RegisterCallback(PacketType.AvatarPicksReply, new NetworkManager.PacketCallback(AvatarPicksHandler));
+            Network.RegisterCallback(PacketType.PickInfoReply, new NetworkManager.PacketCallback(PickInfoHandler));
 
             // Classifieds callbacks
-            Client.Network.RegisterCallback(PacketType.AvatarClassifiedReply, new NetworkManager.PacketCallback(AvatarClassifiedsHandler));
-            Client.Network.RegisterCallback(PacketType.ClassifiedInfoReply, new NetworkManager.PacketCallback(ClassifiedInfoHandler));
+            Network.RegisterCallback(PacketType.AvatarClassifiedReply, new NetworkManager.PacketCallback(AvatarClassifiedsHandler));
+            Network.RegisterCallback(PacketType.ClassifiedInfoReply, new NetworkManager.PacketCallback(ClassifiedInfoHandler));
         }
 
         /// <summary>Tracks the specified avatar on your map</summary>
@@ -271,10 +272,10 @@ namespace OpenMetaverse
         public void TrackAvatar(UUID preyID)
         {
             TrackAgentPacket p = new TrackAgentPacket();
-            p.AgentData.AgentID = Client.Self.AgentID;
-            p.AgentData.SessionID = Client.Self.SessionID;
+            p.AgentData.AgentID = Network.AgentID;
+            p.AgentData.SessionID = Network.SessionID;
             p.TargetData.PreyID = preyID;
-            Client.Network.SendPacket(p);
+            Network.SendPacket(p);
         }
 
         /// <summary>
@@ -288,7 +289,7 @@ namespace OpenMetaverse
             request.UUIDNameBlock[0] = new UUIDNameRequestPacket.UUIDNameBlockBlock();
             request.UUIDNameBlock[0].ID = id;
 
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
         }
 
         /// <summary>
@@ -314,7 +315,7 @@ namespace OpenMetaverse
                     request.UUIDNameBlock[i % m].ID = ids[i];
                 }
 
-                Client.Network.SendPacket(request);
+                Network.SendPacket(request);
             }
 
             // Get any remaining names after left after the full requests
@@ -329,7 +330,7 @@ namespace OpenMetaverse
                     request.UUIDNameBlock[i % m].ID = ids[i];
                 }
 
-                Client.Network.SendPacket(request);
+                Network.SendPacket(request);
             }
         }
 
@@ -341,11 +342,11 @@ namespace OpenMetaverse
         {
             AvatarPropertiesRequestPacket aprp = new AvatarPropertiesRequestPacket();
             
-            aprp.AgentData.AgentID = Client.Self.AgentID;
-            aprp.AgentData.SessionID = Client.Self.SessionID;
+            aprp.AgentData.AgentID = Network.AgentID;
+            aprp.AgentData.SessionID = Network.SessionID;
             aprp.AgentData.AvatarID = avatarid;
 
-            Client.Network.SendPacket(aprp);
+            Network.SendPacket(aprp);
         }
 
         /// <summary>
@@ -357,12 +358,12 @@ namespace OpenMetaverse
         {
             AvatarPickerRequestPacket aprp = new AvatarPickerRequestPacket();
 
-            aprp.AgentData.AgentID = Client.Self.AgentID;
-            aprp.AgentData.SessionID = Client.Self.SessionID;
+            aprp.AgentData.AgentID = Network.AgentID;
+            aprp.AgentData.SessionID = Network.SessionID;
             aprp.AgentData.QueryID = queryID;
             aprp.Data.Name = Utils.StringToBytes(name);
 
-            Client.Network.SendPacket(aprp);
+            Network.SendPacket(aprp);
         }
 
         /// <summary>
@@ -373,8 +374,8 @@ namespace OpenMetaverse
         {
             GenericMessagePacket gmp = new GenericMessagePacket();
 
-            gmp.AgentData.AgentID = Client.Self.AgentID;
-            gmp.AgentData.SessionID = Client.Self.SessionID;
+            gmp.AgentData.AgentID = Network.AgentID;
+            gmp.AgentData.SessionID = Network.SessionID;
             gmp.AgentData.TransactionID = UUID.Zero;
 
             gmp.MethodData.Method = Utils.StringToBytes("avatarpicksrequest");
@@ -383,7 +384,7 @@ namespace OpenMetaverse
             gmp.ParamList[0] = new GenericMessagePacket.ParamListBlock();
             gmp.ParamList[0].Parameter = Utils.StringToBytes(avatarid.ToString());
 
-            Client.Network.SendPacket(gmp);
+            Network.SendPacket(gmp);
         }
 
         /// <summary>
@@ -394,8 +395,8 @@ namespace OpenMetaverse
         {
             GenericMessagePacket gmp = new GenericMessagePacket();
 
-            gmp.AgentData.AgentID = Client.Self.AgentID;
-            gmp.AgentData.SessionID = Client.Self.SessionID;
+            gmp.AgentData.AgentID = Network.AgentID;
+            gmp.AgentData.SessionID = Network.SessionID;
             gmp.AgentData.TransactionID = UUID.Zero;
 
             gmp.MethodData.Method = Utils.StringToBytes("avatarclassifiedsrequest");
@@ -404,7 +405,7 @@ namespace OpenMetaverse
             gmp.ParamList[0] = new GenericMessagePacket.ParamListBlock();
             gmp.ParamList[0].Parameter = Utils.StringToBytes(avatarid.ToString());
 
-            Client.Network.SendPacket(gmp);
+            Network.SendPacket(gmp);
         }
 
         /// <summary>
@@ -416,8 +417,8 @@ namespace OpenMetaverse
         {
             GenericMessagePacket gmp = new GenericMessagePacket();
 
-            gmp.AgentData.AgentID = Client.Self.AgentID;
-            gmp.AgentData.SessionID = Client.Self.SessionID;
+            gmp.AgentData.AgentID = Network.AgentID;
+            gmp.AgentData.SessionID = Network.SessionID;
             gmp.AgentData.TransactionID = UUID.Zero;
 
             gmp.MethodData.Method = Utils.StringToBytes("pickinforequest");
@@ -428,7 +429,7 @@ namespace OpenMetaverse
             gmp.ParamList[1] = new GenericMessagePacket.ParamListBlock();
             gmp.ParamList[1].Parameter = Utils.StringToBytes(pickid.ToString());
 
-            Client.Network.SendPacket(gmp);
+            Network.SendPacket(gmp);
         }
 
         /// <summary>
@@ -440,8 +441,8 @@ namespace OpenMetaverse
         {
             GenericMessagePacket gmp = new GenericMessagePacket();
 
-            gmp.AgentData.AgentID = Client.Self.AgentID;
-            gmp.AgentData.SessionID = Client.Self.SessionID;
+            gmp.AgentData.AgentID = Network.AgentID;
+            gmp.AgentData.SessionID = Network.SessionID;
             gmp.AgentData.TransactionID = UUID.Zero;
 
             gmp.MethodData.Method = Utils.StringToBytes("classifiedinforequest");
@@ -452,7 +453,7 @@ namespace OpenMetaverse
             gmp.ParamList[1] = new GenericMessagePacket.ParamListBlock();
             gmp.ParamList[1].Parameter = Utils.StringToBytes(classifiedid.ToString());
 
-            Client.Network.SendPacket(gmp);
+            Network.SendPacket(gmp);
         }
         #region Packet Handlers
 
@@ -495,7 +496,7 @@ namespace OpenMetaverse
                     signaledAnims.Add(anims.AnimationList[i].AnimID, anims.AnimationList[i].AnimSequenceID);
 
                 try { OnAvatarAnimation(anims.Sender.ID, signaledAnims); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -506,7 +507,7 @@ namespace OpenMetaverse
         /// <param name="sim"></param>
         private void AvatarAppearanceHandler(Packet packet, Simulator sim)
         {
-            if (OnAvatarAppearance != null || Client.Settings.AVATAR_TRACKING)
+            if (OnAvatarAppearance != null || Settings.AVATAR_TRACKING)
             {
                 AvatarAppearancePacket appearance = (AvatarAppearancePacket)packet;
                 sim.ObjectsAvatars.ForEach(delegate(Avatar av)
@@ -530,7 +531,7 @@ namespace OpenMetaverse
                         if (OnAvatarAppearance != null)
                         {
                             try { OnAvatarAppearance(appearance.Sender.ID, appearance.Sender.IsTrial, defaultTexture, faceTextures, visualParams); }
-                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                            catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                         }
                     }
                 });
@@ -617,7 +618,7 @@ namespace OpenMetaverse
                 }
 
                 try { OnAvatarGroups(groups.AgentData.AvatarID, avatarGroups); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -635,7 +636,7 @@ namespace OpenMetaverse
                 }
 
                 try { OnAvatarNameSearch(reply.AgentData.QueryID, avatars); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -666,36 +667,36 @@ namespace OpenMetaverse
                 switch (type)
                 {
                     case EffectType.Text:
-                        Logger.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
-                            Helpers.LogLevel.Warning, Client);
+                        Log.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning);
                         break;
                     case EffectType.Icon:
-                        Logger.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
-                            Helpers.LogLevel.Warning, Client);
+                        Log.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning);
                         break;
                     case EffectType.Connector:
-                        Logger.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
-                            Helpers.LogLevel.Warning, Client);
+                        Log.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning);
                         break;
                     case EffectType.FlexibleObject:
-                        Logger.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
-                            Helpers.LogLevel.Warning, Client);
+                        Log.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning);
                         break;
                     case EffectType.AnimalControls:
-                        Logger.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
-                            Helpers.LogLevel.Warning, Client);
+                        Log.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning);
                         break;
                     case EffectType.AnimationObject:
-                        Logger.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
-                            Helpers.LogLevel.Warning, Client);
+                        Log.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning);
                         break;
                     case EffectType.Cloth:
-                        Logger.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
-                            Helpers.LogLevel.Warning, Client);
+                        Log.Log("Received a ViewerEffect of type " + type.ToString() + ", implement me!",
+                            Helpers.LogLevel.Warning);
                         break;
                     case EffectType.Glow:
-                        Logger.Log("Received a Glow ViewerEffect which is not implemented yet",
-                            Helpers.LogLevel.Warning, Client);
+                        Log.Log("Received a Glow ViewerEffect which is not implemented yet",
+                            Helpers.LogLevel.Warning);
                         break;
                     case EffectType.Beam:
                     case EffectType.Point:
@@ -712,13 +713,13 @@ namespace OpenMetaverse
                                 Vector3d targetPos = new Vector3d(block.TypeData, 32);
 
                                 try { OnEffect(type, sourceAvatar, targetObject, targetPos, block.Duration, block.ID); }
-                                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                             }
                             else
                             {
-                                Logger.Log("Received a " + type.ToString() + 
+                                Log.Log("Received a " + type.ToString() + 
                                     " ViewerEffect with an incorrect TypeData size of " +
-                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning, Client);
+                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning);
                             }
                         }
                         break;
@@ -734,12 +735,12 @@ namespace OpenMetaverse
 
                                 try { OnLookAt(sourceAvatar, targetObject, targetPos, lookAt, block.Duration,
                                     block.ID); }
-                                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                             }
                             else
                             {
-                                Logger.Log("Received a LookAt ViewerEffect with an incorrect TypeData size of " +
-                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning, Client);
+                                Log.Log("Received a LookAt ViewerEffect with an incorrect TypeData size of " +
+                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning);
                             }
                         }
                         break;
@@ -755,17 +756,17 @@ namespace OpenMetaverse
 
                                 try { OnPointAt(sourceAvatar, targetObject, targetPos, pointAt, block.Duration, 
                                     block.ID); }
-                                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                             }
                             else
                             {
-                                Logger.Log("Received a PointAt ViewerEffect with an incorrect TypeData size of " +
-                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning, Client);
+                                Log.Log("Received a PointAt ViewerEffect with an incorrect TypeData size of " +
+                                    block.TypeData.Length + " bytes", Helpers.LogLevel.Warning);
                             }
                         }
                         break;
                     default:
-                        Logger.Log("Received a ViewerEffect with an unknown type " + type, Helpers.LogLevel.Warning, Client);
+                        Log.Log("Received a ViewerEffect with an unknown type " + type, Helpers.LogLevel.Warning);
                         break;
                 }
             }
@@ -789,7 +790,7 @@ namespace OpenMetaverse
             try {
                 OnAvatarPicks(p.AgentData.TargetID, picks);
             } catch (Exception ex) {
-                Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex);
+                Log.Log(ex.Message, Helpers.LogLevel.Error, ex);
             }
         }
 
@@ -821,7 +822,7 @@ namespace OpenMetaverse
             try {
                 OnPickInfo(ret.PickID, ret);
             } catch (Exception ex) {
-                Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex);
+                Log.Log(ex.Message, Helpers.LogLevel.Error, ex);
             }
         }
 
@@ -842,7 +843,7 @@ namespace OpenMetaverse
                 }
 
                 try { OnAvatarClassifieds(p.AgentData.TargetID, classifieds); }
-                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
+                catch (Exception ex) { Log.Log(ex.Message, Helpers.LogLevel.Error, ex); }
             }
         }
 
@@ -867,7 +868,7 @@ namespace OpenMetaverse
                 ret.Catagory = p.Data.Category;
 
                 try { OnClassifiedInfo(ret.ClassifiedID, ret); }
-                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
+                catch (Exception ex) { Log.Log(ex.Message, Helpers.LogLevel.Error, ex); }
             }
         }
 

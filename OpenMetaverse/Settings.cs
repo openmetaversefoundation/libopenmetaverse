@@ -211,7 +211,7 @@ namespace OpenMetaverse
         /// in dictionaries inside <code>Simulator.ObjectAvatars</code>.
         /// If false, a new Avatar or Primitive object will be created
         /// each time an object update packet is received</summary>
-        public bool AVATAR_TRACKING = true;
+        public static bool AVATAR_TRACKING = true;
 
         /// <summary>If true, currently visible avatars will be stored
         /// in dictionaries inside <code>Simulator.ObjectPrimitives</code>.

@@ -114,7 +114,7 @@ namespace OpenMetaverse
             Terrain = new TerrainManager(Log, Network);
             Parcels = new ParcelManager(Log, Network, Terrain);
             Self = new AgentManager(Log, Network, Grid);
-            Avatars = new AvatarManager(this);
+            Avatars = new AvatarManager(Log, Network);
             Friends = new FriendsManager(this);
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);

@@ -2191,7 +2191,7 @@ namespace OpenMetaverse
                     }
                 }
 
-                if (Client.Settings.AVATAR_TRACKING)
+                if (Settings.AVATAR_TRACKING)
                 {
                     lock (simulator.ObjectsAvatars.Dictionary)
                     {
@@ -2640,7 +2640,7 @@ namespace OpenMetaverse
         /// <returns></returns>
         protected Avatar GetAvatar(Simulator simulator, uint localID, UUID fullID)
         {
-            if (Client.Settings.AVATAR_TRACKING)
+            if (Settings.AVATAR_TRACKING)
             {
                 lock (simulator.ObjectsAvatars.Dictionary)
                 {

@@ -155,7 +155,7 @@ namespace PrimWorkshop
 
             // FIXME: Write our own avatar tracker so we don't double store prims
             Client.Settings.OBJECT_TRACKING = false; // We use our own object tracking system
-            Client.Settings.AVATAR_TRACKING = true; //but we want to use the libsl avatar system
+            Settings.AVATAR_TRACKING = true; //but we want to use the libsl avatar system
 
             Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
             Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
