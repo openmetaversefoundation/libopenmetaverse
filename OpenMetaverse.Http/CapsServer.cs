@@ -86,7 +86,7 @@ namespace OpenMetaverse.Http
             this.rootCA = rootCA;
             serverOwned = true;
             capsHandler = BuildCapsHandler(@"^/caps/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
-            server = HttpListener.Create(log4netLogWriter.Instance, address, port, sslCertificate, ClientCertCallback, SslProtocols.Default, requireClientCertificate);
+            server = HttpListener.Create(log4netLogWriter.Instance, address, port, sslCertificate, SslProtocols.Default, requireClientCertificate);
         }
 
         public CapsServer(HttpListener httpServer, string handlerPath)
@@ -260,12 +260,6 @@ namespace OpenMetaverse.Http
             }
 
             response.Send();
-        }
-
-        bool ClientCertCallback(Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
-        {
-            // FIXME: Implement this
-            return true;
         }
 
         HttpRequestHandler BuildCapsHandler(string path)
