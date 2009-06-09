@@ -217,7 +217,7 @@ namespace OpenMetaverse
         /// in dictionaries inside <code>Simulator.ObjectPrimitives</code>.
         /// If false, a new Avatar or Primitive object will be created
         /// each time an object update packet is received</summary>
-        public bool OBJECT_TRACKING = true;
+        public static bool OBJECT_TRACKING = true;
 
         #endregion
         #region Parcel Tracking
