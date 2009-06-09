@@ -143,13 +143,13 @@ namespace PrimWorkshop
             // Initialize the SL client
             Client = new GridClient();
             Settings.MULTIPLE_SIMS = false;
-            Client.Settings.ALWAYS_DECODE_OBJECTS = true;
-            Client.Settings.ALWAYS_REQUEST_OBJECTS = true;
+            Settings.ALWAYS_DECODE_OBJECTS = true;
+            Settings.ALWAYS_REQUEST_OBJECTS = true;
             Settings.SEND_AGENT_UPDATES = true;
             Client.Settings.USE_TEXTURE_CACHE = true;
             //Client.Settings.TEXTURE_CACHE_DIR = Application.StartupPath + System.IO.Path.DirectorySeparatorChar + "cache";
-            Client.Settings.ALWAYS_REQUEST_PARCEL_ACL = false;
-            Client.Settings.ALWAYS_REQUEST_PARCEL_DWELL = false;
+            Settings.ALWAYS_REQUEST_PARCEL_ACL = false;
+            Settings.ALWAYS_REQUEST_PARCEL_DWELL = false;
             // Crank up the throttle on texture downloads
             Client.Throttle.Texture = 446000.0f;
 

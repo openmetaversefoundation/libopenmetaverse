@@ -74,9 +74,9 @@ namespace VoiceTest
             Settings.MULTIPLE_SIMS = false;
             Settings.LOG_LEVEL = Helpers.LogLevel.None;
             Settings.LOG_RESENDS = false;
-            client.Settings.STORE_LAND_PATCHES = true;
-            client.Settings.ALWAYS_DECODE_OBJECTS = true;
-            client.Settings.ALWAYS_REQUEST_OBJECTS = true;
+            Settings.STORE_LAND_PATCHES = true;
+            Settings.ALWAYS_DECODE_OBJECTS = true;
+            Settings.ALWAYS_REQUEST_OBJECTS = true;
             Settings.SEND_AGENT_UPDATES = true;
 
             string loginURI = Settings.LOGIN_SERVER;

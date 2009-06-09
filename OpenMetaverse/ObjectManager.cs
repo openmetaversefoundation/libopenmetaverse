@@ -1370,7 +1370,7 @@ namespace OpenMetaverse
                 #region Relevance check
 
                 // Check if we are interested in this object
-                if (!Client.Settings.ALWAYS_DECODE_OBJECTS)
+                if (!Settings.ALWAYS_DECODE_OBJECTS)
                 {
                     switch (pcode)
                     {
@@ -1780,7 +1780,7 @@ namespace OpenMetaverse
                     uint localid = Utils.BytesToUInt(block.Data, 0);
 
                     // Check if we are interested in this update
-                    if (!Client.Settings.ALWAYS_DECODE_OBJECTS && localid != Client.Self.localID && OnObjectUpdated == null)
+                    if (!Settings.ALWAYS_DECODE_OBJECTS && localid != Client.Self.localID && OnObjectUpdated == null)
                         continue;
 
                     #region Decode update data
@@ -1897,7 +1897,7 @@ namespace OpenMetaverse
 
                     #region Relevance check
 
-                    if (!Client.Settings.ALWAYS_DECODE_OBJECTS)
+                    if (!Settings.ALWAYS_DECODE_OBJECTS)
                     {
                         switch (pcode)
                         {
@@ -2136,7 +2136,7 @@ namespace OpenMetaverse
         /// <param name="simulator">The simulator sending the data</param>
         protected void CachedUpdateHandler(Packet packet, Simulator simulator)
         {
-            if (Client.Settings.ALWAYS_REQUEST_OBJECTS)
+            if (Settings.ALWAYS_REQUEST_OBJECTS)
             {
                 ObjectUpdateCachedPacket update = (ObjectUpdateCachedPacket)packet;
                 List<uint> ids = new List<uint>(update.ObjectData.Length);

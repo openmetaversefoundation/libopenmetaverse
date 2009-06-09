@@ -48,16 +48,18 @@ namespace OpenMetaverse
         public InternalDictionary<ulong, TerrainPatch[]> SimPatches = new InternalDictionary<ulong, TerrainPatch[]>();
         public Vector2[] WindSpeeds = new Vector2[256];
 
-        private GridClient Client;
+        private LoggerInstance Log;
+        private NetworkManager Network;
 
         /// <summary>
         /// Default constructor
         /// </summary>
         /// <param name="client"></param>
-        public TerrainManager(GridClient client)
+        public TerrainManager(LoggerInstance log, NetworkManager network)
         {
-            Client = client;
-            Client.Network.RegisterCallback(PacketType.LayerData, new NetworkManager.PacketCallback(LayerDataHandler));
+            Log = log;
+            Network = network;
+            Network.RegisterCallback(PacketType.LayerData, new NetworkManager.PacketCallback(LayerDataHandler));
         }
 
         /// <summary>
@@ -114,10 +116,10 @@ namespace OpenMetaverse
 
                 if (x >= TerrainCompressor.PATCHES_PER_EDGE || y >= TerrainCompressor.PATCHES_PER_EDGE)
                 {
-                    Logger.Log(String.Format(
+                    Log.Log(String.Format(
                         "Invalid LayerData land packet, x={0}, y={1}, dc_offset={2}, range={3}, quant_wbits={4}, patchids={5}, count={6}",
                         x, y, header.DCOffset, header.Range, header.QuantWBits, header.PatchIDs, count),
-                        Helpers.LogLevel.Warning, Client);
+                        Helpers.LogLevel.Warning);
                     return;
                 }
 
@@ -132,10 +134,10 @@ namespace OpenMetaverse
                 if (OnLandPatch != null)
                 {
                     try { OnLandPatch(simulator, x, y, group.PatchSize, heightmap); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
 
-                if (Client.Settings.STORE_LAND_PATCHES)
+                if (Settings.STORE_LAND_PATCHES)
                 {
                     lock (SimPatches)
                     {
@@ -202,11 +204,11 @@ namespace OpenMetaverse
             switch (type)
             {
                 case TerrainPatch.LayerType.Land:
-                    if (OnLandPatch != null || Client.Settings.STORE_LAND_PATCHES)
+                    if (OnLandPatch != null || Settings.STORE_LAND_PATCHES)
                         DecompressLand(simulator, bitpack, header);
                     break;
                 case TerrainPatch.LayerType.Water:
-                    Logger.Log("Got a Water LayerData packet, implement me!", Helpers.LogLevel.Error, Client);
+                    Log.Log("Got a Water LayerData packet, implement me!", Helpers.LogLevel.Error);
                     break;
                 case TerrainPatch.LayerType.Wind:
                     DecompressWind(simulator, bitpack, header);
@@ -215,7 +217,7 @@ namespace OpenMetaverse
                     DecompressCloud(simulator, bitpack, header);
                     break;
                 default:
-                    Logger.Log("Unrecognized LayerData type " + type.ToString(), Helpers.LogLevel.Warning, Client);
+                    Log.Log("Unrecognized LayerData type " + type.ToString(), Helpers.LogLevel.Warning);
                     break;
             }
         }

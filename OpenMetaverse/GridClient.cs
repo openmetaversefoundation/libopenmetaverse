@@ -110,9 +110,10 @@ namespace OpenMetaverse
             // These are order-dependant
             Log = new LoggerInstance();
             Network = new NetworkManager(Log);
-            Settings = new Settings(this);
-            Parcels = new ParcelManager(this);
-            Self = new AgentManager(this);
+            Settings = new Settings();
+            Terrain = new TerrainManager(Log, Network);
+            Parcels = new ParcelManager(Log, Network, Terrain);
+            Self = new AgentManager(Log, Network, Grid);
             Avatars = new AvatarManager(this);
             Friends = new FriendsManager(this);
             Grid = new GridManager(this);
@@ -123,7 +124,6 @@ namespace OpenMetaverse
             Appearance = new AppearanceManager(this, Assets);
             Inventory = new InventoryManager(this);
             Directory = new DirectoryManager(this);
-            Terrain = new TerrainManager(this);
             Sound = new SoundManager(this);
             Throttle = new AgentThrottle(Network);
 

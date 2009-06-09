@@ -41,11 +41,11 @@ namespace GridImageUpload
 
             // Turn almost everything off since we are only interested in uploading textures
             Settings.LOG_LEVEL = Helpers.LogLevel.None;
-            Client.Settings.ALWAYS_DECODE_OBJECTS = false;
-            Client.Settings.ALWAYS_REQUEST_OBJECTS = false;
+            Settings.ALWAYS_DECODE_OBJECTS = false;
+            Settings.ALWAYS_REQUEST_OBJECTS = false;
             Settings.SEND_AGENT_UPDATES = true;
             Client.Settings.OBJECT_TRACKING = false;
-            Client.Settings.STORE_LAND_PATCHES = false;
+            Settings.STORE_LAND_PATCHES = false;
             Settings.MULTIPLE_SIMS = false;
             Client.Self.Movement.Camera.Far = 32.0f;
             Client.Throttle.Cloud = 0.0f;

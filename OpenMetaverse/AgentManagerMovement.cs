@@ -371,10 +371,10 @@ namespace OpenMetaverse
                 {
                     alwaysRun = value;
                     SetAlwaysRunPacket run = new SetAlwaysRunPacket();
-                    run.AgentData.AgentID = Client.Self.AgentID;
-                    run.AgentData.SessionID = Client.Self.SessionID;
+                    run.AgentData.AgentID = Network.AgentID;
+                    run.AgentData.SessionID = Network.SessionID;
                     run.AgentData.AlwaysRun = alwaysRun;
-                    Client.Network.SendPacket(run);
+                    Network.SendPacket(run);
                 }
             }
             /// <summary>The current value of the agent control flags</summary>
@@ -453,7 +453,6 @@ namespace OpenMetaverse
             #endregion Change tracking
 
             private bool alwaysRun;
-            private GridClient Client;
             private uint agentControls;
             private int duplicateCount;
             private AgentState lastState;
@@ -461,11 +460,16 @@ namespace OpenMetaverse
             private Timer updateTimer;
             private int updateInterval;
             private bool autoResetControls;
+            private NetworkManager Network;
+            private AgentManager Self;
+            private LoggerInstance Log;
 
             /// <summary>Default constructor</summary>
-            public AgentMovement(GridClient client)
+            public AgentMovement(LoggerInstance log, AgentManager self, NetworkManager network)
             {
-                Client = client;
+                Log = log;
+                Network = network;
+                Self = self;
                 Camera = new AgentCamera();
 
                 updateInterval = Settings.DEFAULT_AGENT_UPDATE_INTERVAL;
@@ -482,7 +486,7 @@ namespace OpenMetaverse
             /// or not</param>
             public void UpdateFromHeading(double heading, bool reliable)
             {
-                Camera.Position = Client.Self.SimPosition;
+                Camera.Position = Self.SimPosition;
                 Camera.LookDirection(heading);
                 
                 BodyRotation.Z = (float)Math.Sin(heading / 2.0d);
@@ -503,22 +507,22 @@ namespace OpenMetaverse
                 {
                     Quaternion parentRot = Quaternion.Identity;
 
-                    if (Client.Self.SittingOn > 0)
+                    if (Self.SittingOn > 0)
                     {
-                        if (!Client.Network.CurrentSim.ObjectsPrimitives.ContainsKey(Client.Self.SittingOn))
+                        if (!Network.CurrentSim.ObjectsPrimitives.ContainsKey(Self.SittingOn))
                         {
-                            Logger.Log("Attempted TurnToward but parent prim is not in dictionary", Helpers.LogLevel.Warning, Client);
+                            Log.Log("Attempted TurnToward but parent prim is not in dictionary", Helpers.LogLevel.Warning);
                             return false;
                         }
-                        else parentRot = Client.Network.CurrentSim.ObjectsPrimitives[Client.Self.SittingOn].Rotation;
+                        else parentRot = Network.CurrentSim.ObjectsPrimitives[Self.SittingOn].Rotation;
                     }
 
-                    Quaternion between = Vector3.RotationBetween(Vector3.UnitX, Vector3.Normalize(target - Client.Self.SimPosition));
+                    Quaternion between = Vector3.RotationBetween(Vector3.UnitX, Vector3.Normalize(target - Self.SimPosition));
                     Quaternion rot = between * (Quaternion.Identity / parentRot);
 
                     BodyRotation = rot;
                     HeadRotation = rot;
-                    Camera.LookAt(Client.Self.SimPosition, target);
+                    Camera.LookAt(Self.SimPosition, target);
 
                     SendUpdate();
 
@@ -526,7 +530,7 @@ namespace OpenMetaverse
                 }
                 else
                 {
-                    Logger.Log("Attempted TurnToward but agent updates are disabled", Helpers.LogLevel.Warning, Client);
+                    Log.Log("Attempted TurnToward but agent updates are disabled", Helpers.LogLevel.Warning);
                     return false;
                 }
             }
@@ -537,7 +541,7 @@ namespace OpenMetaverse
             /// </summary>
             public void SendUpdate()
             {
-                SendUpdate(false, Client.Network.CurrentSim);
+                SendUpdate(false, Network.CurrentSim);
             }
 
             /// <summary>
@@ -548,7 +552,7 @@ namespace OpenMetaverse
             /// of this packet</param>
             public void SendUpdate(bool reliable)
             {
-                SendUpdate(reliable, Client.Network.CurrentSim);
+                SendUpdate(reliable, Network.CurrentSim);
             }
 
             /// <summary>
@@ -583,7 +587,7 @@ namespace OpenMetaverse
                     duplicateCount = 0;
                 }
 
-                if (Client.Settings.DISABLE_AGENT_UPDATE_DUPLICATE_CHECK || duplicateCount < 10)
+                if (Settings.DISABLE_AGENT_UPDATE_DUPLICATE_CHECK || duplicateCount < 10)
                 {
                     // Store the current state to do duplicate checking
                     LastHeadRotation = HeadRotation;
@@ -599,8 +603,8 @@ namespace OpenMetaverse
                     AgentUpdatePacket update = new AgentUpdatePacket();
                     update.Header.Reliable = reliable;
 
-                    update.AgentData.AgentID = Client.Self.AgentID;
-                    update.AgentData.SessionID = Client.Self.SessionID;
+                    update.AgentData.AgentID = Network.AgentID;
+                    update.AgentData.SessionID = Network.SessionID;
                     update.AgentData.HeadRotation = HeadRotation;
                     update.AgentData.BodyRotation = BodyRotation;
                     update.AgentData.CameraAtAxis = yAxis;
@@ -612,7 +616,7 @@ namespace OpenMetaverse
                     update.AgentData.ControlFlags = agentControls;
                     update.AgentData.Flags = (byte)Flags;
 
-                    Client.Network.SendPacket(update, simulator);
+                    Network.SendPacket(update, simulator);
 
                     if (autoResetControls) {
                         ResetControlFlags();
@@ -642,8 +646,8 @@ namespace OpenMetaverse
             {
                 AgentUpdatePacket update = new AgentUpdatePacket();
 
-                update.AgentData.AgentID = Client.Self.AgentID;
-                update.AgentData.SessionID = Client.Self.SessionID;
+                update.AgentData.AgentID = Network.AgentID;
+                update.AgentData.SessionID = Network.SessionID;
                 update.AgentData.BodyRotation = bodyRotation;
                 update.AgentData.HeadRotation = headRotation;
                 update.AgentData.CameraCenter = position;
@@ -657,7 +661,7 @@ namespace OpenMetaverse
 
                 update.Header.Reliable = reliable;
 
-                Client.Network.SendPacket(update);
+                Network.SendPacket(update);
             }
 
             private bool GetControlFlag(ControlFlags flag)
@@ -684,10 +688,10 @@ namespace OpenMetaverse
 
             private void UpdateTimer_Elapsed(object obj)
             {
-                if (Client.Network.Connected && Settings.SEND_AGENT_UPDATES)
+                if (Network.Connected && Settings.SEND_AGENT_UPDATES)
                 {
                     //Send an AgentUpdate packet
-                    SendUpdate(false, Client.Network.CurrentSim);
+                    SendUpdate(false, Network.CurrentSim);
                 }
             }
         }

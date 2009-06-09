@@ -79,7 +79,7 @@ namespace OpenMetaverse
 
         /// <summary>Number of milliseconds before a teleport attempt will time
         /// out</summary>
-        public int TELEPORT_TIMEOUT = 40 * 1000;
+        public static int TELEPORT_TIMEOUT = 40 * 1000;
 
         /// <summary>Number of milliseconds before NetworkManager.Logout() will
         /// time out</summary>
@@ -153,7 +153,7 @@ namespace OpenMetaverse
 
         /// <summary>Enable/disable storing terrain heightmaps in the 
         /// TerrainManager</summary>
-        public bool STORE_LAND_PATCHES = false;
+        public static bool STORE_LAND_PATCHES = false;
 
         /// <summary>Enable/disable sending periodic camera updates</summary>
         public static bool SEND_AGENT_UPDATES = true;
@@ -180,11 +180,11 @@ namespace OpenMetaverse
         /// decoded. Registering an event handler will force objects for that
         /// type to always be decoded. If this is disabled the object tracking
         /// will have missing or partial prim and avatar information</summary>
-        public bool ALWAYS_DECODE_OBJECTS = true;
+        public static bool ALWAYS_DECODE_OBJECTS = true;
 
         /// <summary>If true, when a cached object check is received from the
         /// server the full object info will automatically be requested</summary>
-        public bool ALWAYS_REQUEST_OBJECTS = true;
+        public static bool ALWAYS_REQUEST_OBJECTS = true;
 
         /// <summary>Whether to establish connections to HTTP capabilities
         /// servers for simulators</summary>
@@ -205,7 +205,7 @@ namespace OpenMetaverse
         /// <summary>If true, and <code>SEND_AGENT_UPDATES</code> is true,
         /// AgentUpdate packets will continuously be sent out to give the bot
         /// smoother movement and autopiloting</summary>
-        public bool DISABLE_AGENT_UPDATE_DUPLICATE_CHECK = true;
+        public static bool DISABLE_AGENT_UPDATE_DUPLICATE_CHECK = true;
 
         /// <summary>If true, currently visible avatars will be stored
         /// in dictionaries inside <code>Simulator.ObjectAvatars</code>.
@@ -224,19 +224,19 @@ namespace OpenMetaverse
 
         /// <summary>If true, parcel details will be stored in the 
         /// <code>Simulator.Parcels</code> dictionary as they are received</summary>
-        public bool PARCEL_TRACKING = true;
+        public static bool PARCEL_TRACKING = true;
 
         /// <summary>
         /// If true, an incoming parcel properties reply will automatically send
         /// a request for the parcel access list
         /// </summary>
-        public bool ALWAYS_REQUEST_PARCEL_ACL = true;
+        public static bool ALWAYS_REQUEST_PARCEL_ACL = true;
 
         /// <summary>
         /// if true, an incoming parcel properties reply will automatically send 
         /// a request for the traffic count.
         /// </summary>
-        public bool ALWAYS_REQUEST_PARCEL_DWELL = true;
+        public static bool ALWAYS_REQUEST_PARCEL_DWELL = true;
 
         #endregion
         #region Texture Cache
@@ -258,10 +258,6 @@ namespace OpenMetaverse
 
         /// <summary>Default color used for viewer particle effects</summary>
         public static Color4 DEFAULT_EFFECT_COLOR = new Color4(255, 0, 0, 255);
-
-        /// <summary>Cost of uploading an asset</summary>
-        /// <remarks>Read-only since this value is dynamically fetched at login</remarks>
-        public int UPLOAD_COST { get { return priceUpload; } }
 
         /// <summary>Maximum number of times to resend a failed packet</summary>
         public static int MAX_RESEND_COUNT = 3;
@@ -307,34 +303,10 @@ namespace OpenMetaverse
         public static bool LOG_RESENDS = true;
 
         #endregion
-        #region Private Fields
-
-        private GridClient Client;
-        private int priceUpload = 0;
-
         /// <summary>Constructor</summary>
-        /// <param name="client">Reference to a GridClient object</param>
-        public Settings(GridClient client)
+        public Settings()
         {
-            Client = client;
-            Client.Network.RegisterCallback(Packets.PacketType.EconomyData, new NetworkManager.PacketCallback(EconomyDataHandler));
+            
         }
-
-        #endregion
-        #region Packet Callbacks
-
-        /// <summary>
-        /// Gets the cost of uploading an asset to the grid
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void EconomyDataHandler(Packet packet, Simulator simulator)
-        {
-            EconomyDataPacket econ = (EconomyDataPacket)packet;
-
-            priceUpload = econ.Info.PriceUpload;
-        }
-
-        #endregion
     }
 }

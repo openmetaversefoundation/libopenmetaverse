@@ -80,7 +80,7 @@ namespace Heightmap
         {
             Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
             // Only needed so we can do lookups with TerrainHeightAtPoint
-            Client.Settings.STORE_LAND_PATCHES = true;
+            Settings.STORE_LAND_PATCHES = true;
 
             LoginParams loginParams = Client.Network.DefaultLoginParams(FirstName, LastName, Password, "Heightmap",
                 "1.0.0");

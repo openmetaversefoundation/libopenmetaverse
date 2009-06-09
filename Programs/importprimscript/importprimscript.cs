@@ -72,8 +72,8 @@ namespace importprimscript
             Settings.MULTIPLE_SIMS = false;
             Settings.SEND_AGENT_UPDATES = true;
             Settings.LOG_LEVEL = Helpers.LogLevel.None;
-            Client.Settings.ALWAYS_REQUEST_OBJECTS = true;
-            Client.Settings.ALWAYS_DECODE_OBJECTS = true;
+            Settings.ALWAYS_REQUEST_OBJECTS = true;
+            Settings.ALWAYS_DECODE_OBJECTS = true;
             Settings.THROTTLE_OUTGOING_PACKETS = false;
             Client.Throttle.Land = 0;
             Client.Throttle.Wind = 0;
