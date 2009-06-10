@@ -1152,13 +1152,13 @@ namespace OpenMetaverse.Messages.CableBeach
 
             OSDMap servicesMap = (OSDMap)map["services"];
             Services = new Dictionary<Uri, Dictionary<Uri, Uri>>(servicesMap.Count);
-            foreach (KeyValuePair<Uri, OSD> serviceEntry in servicesMap)
+            foreach (KeyValuePair<string, OSD> serviceEntry in servicesMap)
             {
                 OSDMap serviceMap = (OSDMap)serviceEntry.Value;
                 Dictionary<Uri, Uri> service = new Dictionary<Uri, Uri>(serviceMap.Count);
                 foreach (KeyValuePair<string, OSD> entry in serviceMap)
                     service.Add(new Uri(entry.Key), entry.Value.AsUri());
-                Services.Add(serviceEntry.Key, service);
+                Services.Add(new Uri(serviceEntry.Key), service);
             }
 
             CallbackUri = map["callback_uri"].AsUri();

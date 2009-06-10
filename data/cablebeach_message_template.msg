@@ -108,7 +108,7 @@
 ->
 {
     identity: uri,
-    capabilities: [ string, ... ]
+    capabilities: [ uri, ... ]
 }
 
 <-
