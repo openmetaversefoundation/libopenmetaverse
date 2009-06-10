@@ -123,7 +123,7 @@ namespace OpenMetaverse
             Estate = new EstateTools(Log, Network, Assets);
             Appearance = new AppearanceManager(this, Assets);
             Inventory = new InventoryManager(Log, Network, Self, Assets);
-            Directory = new DirectoryManager(this);
+            Directory = new DirectoryManager(Log, Network);
             Sound = new SoundManager(this);
             Throttle = new AgentThrottle(Network);
 

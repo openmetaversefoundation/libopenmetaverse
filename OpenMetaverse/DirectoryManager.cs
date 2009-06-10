@@ -346,22 +346,23 @@ namespace OpenMetaverse
         // Event Details
         public event EventInfoCallback OnEventInfo;
 
-        private GridClient Client;
+        private NetworkManager Network;
+        private LoggerInstance Log;
 
-
-        public DirectoryManager(GridClient client)
+        public DirectoryManager(LoggerInstance log, NetworkManager network)
         {
-            Client = client;
+            Network = network;
+            Log = log;
 
-            Client.Network.RegisterCallback(PacketType.DirClassifiedReply, new NetworkManager.PacketCallback(DirClassifiedReplyHandler));
-            Client.Network.RegisterCallback(PacketType.DirLandReply, new NetworkManager.PacketCallback(DirLandReplyHandler));
-            Client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(DirPeopleReplyHandler));
-            Client.Network.RegisterCallback(PacketType.DirGroupsReply, new NetworkManager.PacketCallback(DirGroupsReplyHandler));
+            Network.RegisterCallback(PacketType.DirClassifiedReply, new NetworkManager.PacketCallback(DirClassifiedReplyHandler));
+            Network.RegisterCallback(PacketType.DirLandReply, new NetworkManager.PacketCallback(DirLandReplyHandler));
+            Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(DirPeopleReplyHandler));
+            Network.RegisterCallback(PacketType.DirGroupsReply, new NetworkManager.PacketCallback(DirGroupsReplyHandler));
             // Deprecated as of viewer 1.2.3
-            Client.Network.RegisterCallback(PacketType.PlacesReply, new NetworkManager.PacketCallback(PlacesReplyHandler));
-            Client.Network.RegisterEventCallback("PlacesReply", PlacesReplyEventHandler);
-            Client.Network.RegisterCallback(PacketType.DirEventsReply, new NetworkManager.PacketCallback(EventsReplyHandler));
-            Client.Network.RegisterCallback(PacketType.EventInfoReply, new NetworkManager.PacketCallback(EventInfoReplyHandler));    
+            Network.RegisterCallback(PacketType.PlacesReply, new NetworkManager.PacketCallback(PlacesReplyHandler));
+            Network.RegisterEventCallback("PlacesReply", PlacesReplyEventHandler);
+            Network.RegisterCallback(PacketType.DirEventsReply, new NetworkManager.PacketCallback(EventsReplyHandler));
+            Network.RegisterCallback(PacketType.EventInfoReply, new NetworkManager.PacketCallback(EventInfoReplyHandler));    
 
         }
 
@@ -370,14 +371,14 @@ namespace OpenMetaverse
             DirClassifiedQueryPacket query = new DirClassifiedQueryPacket();
             UUID queryID = UUID.Random();
 
-            query.AgentData.AgentID = Client.Self.AgentID;
-            query.AgentData.SessionID = Client.Self.SessionID;
+            query.AgentData.AgentID = Network.AgentID;
+            query.AgentData.SessionID = Network.SessionID;
             query.QueryData.Category = (uint)categories;
             query.QueryData.QueryFlags = (uint)(mature ? 0 : 2);
             query.QueryData.QueryID = queryID;
             query.QueryData.QueryText = Utils.StringToBytes(searchText);
 
-            Client.Network.SendPacket(query);
+            Network.SendPacket(query);
 
             return queryID;
         }
@@ -450,8 +451,8 @@ namespace OpenMetaverse
             UUID queryID = UUID.Random();
 
             DirLandQueryPacket query = new DirLandQueryPacket();
-            query.AgentData.AgentID = Client.Self.AgentID;
-            query.AgentData.SessionID = Client.Self.SessionID;
+            query.AgentData.AgentID = Network.AgentID;
+            query.AgentData.SessionID = Network.SessionID;
             query.QueryData.Area = areaLimit;
             query.QueryData.Price = priceLimit;
             query.QueryData.QueryStart = queryStart;
@@ -459,7 +460,7 @@ namespace OpenMetaverse
             query.QueryData.QueryFlags = (uint)findFlags;
             query.QueryData.QueryID = queryID;
 
-            Client.Network.SendPacket(query);
+            Network.SendPacket(query);
 
             return queryID;
         }
@@ -486,13 +487,13 @@ namespace OpenMetaverse
         public UUID StartGroupSearch(DirFindFlags findFlags, string searchText, int queryStart, UUID queryID)
         {
             DirFindQueryPacket find = new DirFindQueryPacket();
-            find.AgentData.AgentID = Client.Self.AgentID;
-            find.AgentData.SessionID = Client.Self.SessionID;
+            find.AgentData.AgentID = Network.AgentID;
+            find.AgentData.SessionID = Network.SessionID;
             find.QueryData.QueryFlags = (uint)findFlags;
             find.QueryData.QueryText = Utils.StringToBytes(searchText);
             find.QueryData.QueryID = queryID;
             find.QueryData.QueryStart = queryStart;
-            Client.Network.SendPacket(find);
+            Network.SendPacket(find);
             return queryID;
         }
 
@@ -504,14 +505,14 @@ namespace OpenMetaverse
         public UUID StartPeopleSearch(DirFindFlags findFlags, string searchText, int queryStart, UUID queryID)
         {
             DirFindQueryPacket find = new DirFindQueryPacket();
-            find.AgentData.AgentID = Client.Self.AgentID;
-            find.AgentData.SessionID = Client.Self.SessionID;
+            find.AgentData.AgentID = Network.AgentID;
+            find.AgentData.SessionID = Network.SessionID;
             find.QueryData.QueryFlags = (uint)findFlags;
             find.QueryData.QueryText = Utils.StringToBytes(searchText);
             find.QueryData.QueryID = queryID;
             find.QueryData.QueryStart = queryStart;
 
-            Client.Network.SendPacket(find);
+            Network.SendPacket(find);
 
             return queryID;
         }
@@ -564,8 +565,8 @@ namespace OpenMetaverse
         public UUID StartPlacesSearch(DirFindFlags findFlags, ParcelCategory searchCategory, string searchText, string simulatorName, UUID groupID, UUID transactionID)
         {
             PlacesQueryPacket find = new PlacesQueryPacket();
-            find.AgentData.AgentID = Client.Self.AgentID;
-            find.AgentData.SessionID = Client.Self.SessionID;
+            find.AgentData.AgentID = Network.AgentID;
+            find.AgentData.SessionID = Network.SessionID;
             find.AgentData.QueryID = groupID;
 
             find.TransactionData.TransactionID = transactionID;
@@ -575,7 +576,7 @@ namespace OpenMetaverse
             find.QueryData.Category = (sbyte)searchCategory;
             find.QueryData.SimName = Utils.StringToBytes(simulatorName);
             
-            Client.Network.SendPacket(find);
+            Network.SendPacket(find);
             return transactionID;
         }
 
@@ -616,15 +617,15 @@ namespace OpenMetaverse
         public UUID StartEventsSearch(string searchText, bool showMature, string eventDay, uint queryStart, EventCategories category, UUID queryID)
         {
             DirFindQueryPacket find = new DirFindQueryPacket();
-            find.AgentData.AgentID = Client.Self.AgentID;
-            find.AgentData.SessionID = Client.Self.SessionID;
+            find.AgentData.AgentID = Network.AgentID;
+            find.AgentData.SessionID = Network.SessionID;
             
             find.QueryData.QueryID = queryID;
             find.QueryData.QueryText = Utils.StringToBytes(eventDay + "|" + (int)category + "|" + searchText);
             find.QueryData.QueryFlags = showMature ? (uint)32 : (uint)8224;
             find.QueryData.QueryStart = (int)queryStart;
 
-            Client.Network.SendPacket(find);
+            Network.SendPacket(find);
             return queryID;
         }
 
@@ -633,12 +634,12 @@ namespace OpenMetaverse
         public void EventInfoRequest(uint eventID)
         {
             EventInfoRequestPacket find = new EventInfoRequestPacket();
-            find.AgentData.AgentID = Client.Self.AgentID;
-            find.AgentData.SessionID = Client.Self.SessionID;
+            find.AgentData.AgentID = Network.AgentID;
+            find.AgentData.SessionID = Network.SessionID;
 
             find.EventData.EventID = eventID;
 
-            Client.Network.SendPacket(find);
+            Network.SendPacket(find);
         }
 
         #region Blocking Functions
@@ -695,7 +696,7 @@ namespace OpenMetaverse
                 }
 
                 try { OnClassifiedReply(classifieds); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -721,7 +722,7 @@ namespace OpenMetaverse
                 }
 
                 try { OnDirLandReply(parcelsForSale); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -740,7 +741,7 @@ namespace OpenMetaverse
                     matches.Add(searchData);
                 }
                 try { OnDirPeopleReply(peopleReply.QueryData.QueryID, matches); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -759,7 +760,7 @@ namespace OpenMetaverse
                     matches.Add(groupsData);
                 }
                 try { OnDirGroupsReply(groupsReply.QueryData.QueryID, matches); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -790,7 +791,7 @@ namespace OpenMetaverse
                 }
 
                 try { OnPlacesReply(replyMessage.TransactionID, places); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -821,7 +822,7 @@ namespace OpenMetaverse
                     places.Add(place);
                 }
                 try { OnPlacesReply(placesReply.TransactionData.TransactionID, places); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -845,7 +846,7 @@ namespace OpenMetaverse
                 }
 
                 try { OnEventsReply(eventsReply.QueryData.QueryID, matches); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
         
@@ -870,7 +871,7 @@ namespace OpenMetaverse
                 evinfo.GlobalPos = eventReply.EventData.GlobalPos;
 
                 try { OnEventInfo(evinfo); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 

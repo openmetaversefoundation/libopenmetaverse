@@ -141,7 +141,7 @@ namespace OpenMetaverse
         public InventoryBase(UUID itemID)
         {
             if (itemID == UUID.Zero)
-                _Log.Log("Initializing an InventoryBase with UUID.Zero", Helpers.LogLevel.Warning);
+                Logger.Log("Initializing an InventoryBase with UUID.Zero", Helpers.LogLevel.Warning);
             UUID = itemID;
         }
 
@@ -1010,11 +1010,10 @@ namespace OpenMetaverse
 
         #endregion String Arrays
 
-        private GridClient _Client;
-        private LoggerInstance _Log;
         private NetworkManager _Network;
-        private AgentManager _Self;
+        private LoggerInstance _Log;
         private AssetManager _Assets;
+        private AgentManager _Self;
         private Inventory _Store;
         //private Random _RandNumbers = new Random();
         private object _CallbacksLock = new object();
@@ -1040,8 +1039,9 @@ namespace OpenMetaverse
         {
             _Log = log;
             _Network = network;
-            _Self = self;
             _Assets = assets;
+            _Self = self;
+
             _Network.RegisterCallback(PacketType.UpdateCreateInventoryItem, new NetworkManager.PacketCallback(UpdateCreateInventoryItemHandler));
             _Network.RegisterCallback(PacketType.SaveAssetIntoInventory, new NetworkManager.PacketCallback(SaveAssetIntoInventoryHandler));
             _Network.RegisterCallback(PacketType.BulkUpdateInventory, new NetworkManager.PacketCallback(BulkUpdateInventoryHandler));
@@ -2139,7 +2139,7 @@ namespace OpenMetaverse
         public UUID RequestRezFromInventory(Simulator simulator, Quaternion rotation, Vector3 position,
             InventoryItem item)
         {
-            return RequestRezFromInventory(simulator, rotation, position, item.Self.ActiveGroup,
+            return RequestRezFromInventory(simulator, rotation, position, item, _Self.ActiveGroup,
                 UUID.Random(), false);
         }
 
@@ -2223,7 +2223,7 @@ namespace OpenMetaverse
         public void RequestDeRezToInventory(uint objectLocalID)
         {
             RequestDeRezToInventory(objectLocalID, DeRezDestination.AgentInventoryTake, 
-                .FindFolderForType(AssetType.Object), UUID.Random());
+                FindFolderForType(AssetType.Object), UUID.Random());
         }
 
         /// <summary>
@@ -2347,10 +2347,10 @@ namespace OpenMetaverse
 
                 List<InventoryItem> folderContents = new List<InventoryItem>();
 
-                .FolderContents(folderID, _Network.AgentID, false, true, InventorySortOrder.ByDate, 1000 * 15).ForEach(
+                FolderContents(folderID, _Network.AgentID, false, true, InventorySortOrder.ByDate, 1000 * 15).ForEach(
                     delegate(InventoryBase ib)
                     {
-                        folderContents.Add(.FetchItem(ib.UUID, _Network.AgentID, 1000 * 10));
+                        folderContents.Add(FetchItem(ib.UUID, _Network.AgentID, 1000 * 10));
                     });
                 bucket = new byte[17 * (folderContents.Count + 1)];
 
@@ -3075,7 +3075,7 @@ namespace OpenMetaverse
                                     if (UInt32.TryParse(value, out timestamp))
                                         creationDate = Utils.UnixTimeToDateTime(timestamp);
                                     else
-                                        _Log.Log("Failed to parse creation_date " + value, Helpers.LogLevel.Warning);
+                                        Logger.Log("Failed to parse creation_date " + value, Helpers.LogLevel.Warning);
                                 }
                             }
                         }
@@ -3102,7 +3102,7 @@ namespace OpenMetaverse
                     }
                     else
                     {
-                        _Log.Log("Unrecognized token " + key + " in: " + Environment.NewLine + taskData,
+                        Logger.Log("Unrecognized token " + key + " in: " + Environment.NewLine + taskData,
                             Helpers.LogLevel.Error);
                     }
                 }
