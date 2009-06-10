@@ -75,17 +75,19 @@ namespace OpenMetaverse
 
     public sealed class ExpiringCache<TKey, TValue>
     {
+        const double CACHE_PURGE_HZ = 1.0;
+        const int MAX_LOCK_WAIT = 5000; // milliseconds
+
         #region Private fields
 
         /// <summary>For thread safety</summary>
-        ReaderWriterLock readWriteLock = new ReaderWriterLock();
-        const double CACHE_PURGE_HZ = 1.0;
-        const int MAX_LOCK_WAIT = 5000; // milliseconds
+        object syncRoot = new object();
+        /// <summary>For thread safety</summary>
+        object isPurging = new object();
 
         Dictionary<TimedCacheKey<TKey>, TValue> timedStorage = new Dictionary<TimedCacheKey<TKey>, TValue>();
         Dictionary<TKey, TimedCacheKey<TKey>> timedStorageIndex = new Dictionary<TKey, TimedCacheKey<TKey>>();
         private System.Timers.Timer timer = new System.Timers.Timer(TimeSpan.FromSeconds(CACHE_PURGE_HZ).TotalMilliseconds);
-        object isPurging = new object();
 
         #endregion
 
@@ -103,18 +105,8 @@ namespace OpenMetaverse
 
         public bool Add(TKey key, TValue value, DateTime expiration)
         {
-            // Synchronise access to storage structures. A read lock may
-            // already be acquired before this method is called.
-            bool LockUpgraded = readWriteLock.IsReaderLockHeld;
-            LockCookie lc = new LockCookie();
-            if (LockUpgraded)
-            {
-                lc = readWriteLock.UpgradeToWriterLock(MAX_LOCK_WAIT);
-            }
-            else
-            {
-                readWriteLock.AcquireWriterLock(MAX_LOCK_WAIT);
-            }
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
             try
             {
                 // This is the actual adding of the key
@@ -130,34 +122,13 @@ namespace OpenMetaverse
                     return true;
                 }
             }
-            finally
-            {
-                // Restore lock state
-                if (LockUpgraded)
-                {
-                    readWriteLock.DowngradeFromWriterLock(ref lc);
-                }
-                else
-                {
-                    readWriteLock.ReleaseWriterLock();
-                }
-            }
+            finally { Monitor.Exit(syncRoot); }
         }
 
         public bool Add(TKey key, TValue value, TimeSpan slidingExpiration)
         {
-            // Synchronise access to storage structures. A read lock may
-            // already be acquired before this method is called.
-            bool LockUpgraded = readWriteLock.IsReaderLockHeld;
-            LockCookie lc = new LockCookie();
-            if (LockUpgraded)
-            {
-                lc = readWriteLock.UpgradeToWriterLock(MAX_LOCK_WAIT);
-            }
-            else
-            {
-                readWriteLock.AcquireWriterLock(MAX_LOCK_WAIT);
-            }
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
             try
             {
                 // This is the actual adding of the key
@@ -173,23 +144,13 @@ namespace OpenMetaverse
                     return true;
                 }
             }
-            finally
-            {
-                // Restore lock state
-                if (LockUpgraded)
-                {
-                    readWriteLock.DowngradeFromWriterLock(ref lc);
-                }
-                else
-                {
-                    readWriteLock.ReleaseWriterLock();
-                }
-            }
+            finally { Monitor.Exit(syncRoot); }
         }
 
         public bool AddOrUpdate(TKey key, TValue value, DateTime expiration)
         {
-            readWriteLock.AcquireReaderLock(MAX_LOCK_WAIT);
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
             try
             {
                 if (Contains(key))
@@ -203,12 +164,13 @@ namespace OpenMetaverse
                     return true;
                 }
             }
-            finally { readWriteLock.ReleaseReaderLock(); }
+            finally { Monitor.Exit(syncRoot); }
         }
 
         public bool AddOrUpdate(TKey key, TValue value, TimeSpan slidingExpiration)
         {
-            readWriteLock.AcquireReaderLock(MAX_LOCK_WAIT);
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
             try
             {
                 if (Contains(key))
@@ -222,28 +184,30 @@ namespace OpenMetaverse
                     return true;
                 }
             }
-            finally { readWriteLock.ReleaseReaderLock(); }
+            finally { Monitor.Exit(syncRoot); }
         }
 
         public void Clear()
         {
-            readWriteLock.AcquireWriterLock(MAX_LOCK_WAIT);
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
             try
             {
                 timedStorage.Clear();
                 timedStorageIndex.Clear();
             }
-            finally { readWriteLock.ReleaseWriterLock(); }
+            finally { Monitor.Exit(syncRoot); }
         }
 
         public bool Contains(TKey key)
         {
-            readWriteLock.AcquireReaderLock(MAX_LOCK_WAIT);
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
             try
             {
                 return timedStorageIndex.ContainsKey(key);
             }
-            finally { readWriteLock.ReleaseReaderLock(); }
+            finally { Monitor.Exit(syncRoot); }
         }
 
         public int Count
@@ -259,7 +223,8 @@ namespace OpenMetaverse
             get
             {
                 TValue o;
-                readWriteLock.AcquireWriterLock(MAX_LOCK_WAIT);
+                if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                    throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
                 try
                 {
                     if (timedStorageIndex.ContainsKey(key))
@@ -276,7 +241,7 @@ namespace OpenMetaverse
                         throw new ArgumentException("Key not found in the cache");
                     }
                 }
-                finally { readWriteLock.ReleaseWriterLock(); }
+                finally { Monitor.Exit(syncRoot); }
             }
         }
 
@@ -298,7 +263,8 @@ namespace OpenMetaverse
 
         public bool Remove(TKey key)
         {
-            readWriteLock.AcquireWriterLock(MAX_LOCK_WAIT);
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
             try
             {
                 if (timedStorageIndex.ContainsKey(key))
@@ -312,14 +278,15 @@ namespace OpenMetaverse
                     return false;
                 }
             }
-            finally { readWriteLock.ReleaseWriterLock(); }
+            finally { Monitor.Exit(syncRoot); }
         }
 
         public bool TryGetValue(TKey key, out TValue value)
         {
             TValue o;
 
-            readWriteLock.AcquireWriterLock(MAX_LOCK_WAIT);
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
             try
             {
                 if (timedStorageIndex.ContainsKey(key))
@@ -332,42 +299,17 @@ namespace OpenMetaverse
                     value = o;
                     return true;
                 }
-                else
-                {
-                    value = default(TValue);
-                    return false;
-                }
             }
-            finally { readWriteLock.ReleaseReaderLock(); }
-        }
+            finally { Monitor.Exit(syncRoot); }
 
-        /// <summary>
-        /// Enumerates over all of the stored values without updating access times
-        /// </summary>
-        /// <param name="action">Action to perform on all of the elements</param>
-        public void ForEach(Action<TValue> action)
-        {
-            readWriteLock.AcquireReaderLock(MAX_LOCK_WAIT);
-            try
-            {
-                foreach (TValue value in timedStorage.Values)
-                    action(value);
-            }
-            finally { readWriteLock.ReleaseReaderLock(); }
+            value = default(TValue);
+            return false;
         }
 
         public bool Update(TKey key, TValue value)
         {
-            // Synchronise access to storage structures. A read lock may
-            // already be acquired before this method is called.
-            LockCookie lc = new LockCookie();
-            bool lockUpgrade = readWriteLock.IsReaderLockHeld;
-
-            if (lockUpgrade)
-                lc = readWriteLock.UpgradeToWriterLock(MAX_LOCK_WAIT);
-            else
-                readWriteLock.AcquireWriterLock(MAX_LOCK_WAIT);
-
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
             try
             {
                 if (timedStorageIndex.ContainsKey(key))
@@ -382,28 +324,13 @@ namespace OpenMetaverse
                     return false;
                 }
             }
-            finally
-            {
-                // Restore lock state
-                if (lockUpgrade)
-                    readWriteLock.DowngradeFromWriterLock(ref lc);
-                else
-                    readWriteLock.ReleaseWriterLock();
-            }
+            finally { Monitor.Exit(syncRoot); }
         }
 
         public bool Update(TKey key, TValue value, DateTime expiration)
         {
-            // Synchronise access to storage structures. A read lock may
-            // already be acquired before this method is called.
-            LockCookie lc = new LockCookie();
-            bool lockUpgrade = readWriteLock.IsReaderLockHeld;
-            
-            if (lockUpgrade)
-                lc = readWriteLock.UpgradeToWriterLock(MAX_LOCK_WAIT);
-            else
-                readWriteLock.AcquireWriterLock(MAX_LOCK_WAIT);
-
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
             try
             {
                 if (timedStorageIndex.ContainsKey(key))
@@ -421,28 +348,13 @@ namespace OpenMetaverse
                 timedStorageIndex.Add(key, internalKey);
                 return true;
             }
-            finally
-            {
-                // Restore lock state
-                if (lockUpgrade)
-                    readWriteLock.DowngradeFromWriterLock(ref lc);
-                else
-                    readWriteLock.ReleaseWriterLock();
-            }
+            finally { Monitor.Exit(syncRoot); }
         }
 
         public bool Update(TKey key, TValue value, TimeSpan slidingExpiration)
         {
-            // Synchronise access to storage structures. A read lock may
-            // already be acquired before this method is called.
-            LockCookie lc = new LockCookie();
-            bool lockUpgrade = readWriteLock.IsReaderLockHeld;
-            
-            if (lockUpgrade)
-                lc = readWriteLock.UpgradeToWriterLock(MAX_LOCK_WAIT);
-            else
-                readWriteLock.AcquireWriterLock(MAX_LOCK_WAIT);
-
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
             try
             {
                 if (timedStorageIndex.ContainsKey(key))
@@ -460,14 +372,7 @@ namespace OpenMetaverse
                 timedStorageIndex.Add(key, internalKey);
                 return true;
             }
-            finally
-            {
-                // Restore lock state
-                if (lockUpgrade)
-                    readWriteLock.DowngradeFromWriterLock(ref lc);
-                else
-                    readWriteLock.ReleaseWriterLock();
-            }
+            finally { Monitor.Exit(syncRoot); }
         }
 
         public void CopyTo(Array array, int startIndex)
@@ -482,7 +387,8 @@ namespace OpenMetaverse
             if (Count > array.Length - startIndex) { throw new ArgumentException("There is not enough space from startIndex to the end of the array to accomodate all items in the cache."); }
 
             // Copy the data to the array (in a thread-safe manner)
-            readWriteLock.AcquireReaderLock(MAX_LOCK_WAIT);
+            if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
             try
             {
                 foreach (object o in timedStorage)
@@ -491,7 +397,7 @@ namespace OpenMetaverse
                     startIndex++;
                 }
             }
-            finally { readWriteLock.ReleaseReaderLock(); }
+            finally { Monitor.Exit(syncRoot); }
         }
 
         #endregion
@@ -503,20 +409,16 @@ namespace OpenMetaverse
         /// </summary>
         private void PurgeCache(object sender, System.Timers.ElapsedEventArgs e)
         {
-            // Note: This implementation runs with low priority. If the cache lock
-            // is heavily contended (many threads) the purge will take a long time
-            // to obtain the lock it needs and may never be run.
-            Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
-
             // Only let one thread purge at once - a buildup could cause a crash
             // This could cause the purge to be delayed while there are lots of read/write ops 
             // happening on the cache
             if (!Monitor.TryEnter(isPurging))
                 return;
-
             try
             {
-                readWriteLock.AcquireWriterLock(MAX_LOCK_WAIT);
+                // If we fail to acquire a lock on the synchronization root after MAX_LOCK_WAIT, skip this purge cycle
+                if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
+                    return;
                 try
                 {
                     List<object> expiredItems = new List<object>();
@@ -541,14 +443,7 @@ namespace OpenMetaverse
                         timedStorage.Remove(timedKey);
                     }
                 }
-                catch (ApplicationException)
-                {
-                    // Unable to obtain write lock to the timed cache storage object
-                }
-                finally
-                {
-                    readWriteLock.ReleaseWriterLock();
-                }
+                finally { Monitor.Exit(syncRoot); }
             }
             finally { Monitor.Exit(isPurging); }
         }
