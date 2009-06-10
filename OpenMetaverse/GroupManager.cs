@@ -574,7 +574,9 @@ namespace OpenMetaverse
         #endregion Events
 
         /// <summary>A reference to the current <seealso cref="GridClient"/> instance</summary>
-        private GridClient Client;
+        private LoggerInstance Log;
+        private NetworkManager Network;
+        private AgentManager Self;
         /// <summary>Currently-active group members requests</summary>
         private List<UUID> GroupMembersRequests;
         /// <summary>Currently-active group roles requests</summary>
@@ -593,9 +595,11 @@ namespace OpenMetaverse
         /// Group Management Routines, Methods and Packet Handlers
         /// </summary>
         /// <param name="client">A reference to the current <seealso cref="GridClient"/> instance</param>
-        public GroupManager(GridClient client)
+        public GroupManager(LoggerInstance log, NetworkManager network, AgentManager self)
         {
-            Client = client;
+            Log = log;
+            Network = network;
+            Self = self;
 
             GroupMembersCaches = new InternalDictionary<UUID, Dictionary<UUID, GroupMember>>();
             GroupMembersRequests = new List<UUID>();
@@ -605,22 +609,22 @@ namespace OpenMetaverse
             GroupRolesMembersRequests = new List<UUID>();
             GroupName2KeyCache  = new InternalDictionary<UUID, string>();
 
-            Client.Network.RegisterEventCallback("AgentGroupDataUpdate", new Caps.EventQueueCallback(AgentGroupDataUpdateHandler));
-            Client.Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(AgentDropGroupHandler));
-            Client.Network.RegisterCallback(PacketType.GroupTitlesReply, new NetworkManager.PacketCallback(GroupTitlesHandler));
-            Client.Network.RegisterCallback(PacketType.GroupProfileReply, new NetworkManager.PacketCallback(GroupProfileHandler));
-            Client.Network.RegisterCallback(PacketType.GroupMembersReply, new NetworkManager.PacketCallback(GroupMembersHandler));
-            Client.Network.RegisterCallback(PacketType.GroupRoleDataReply, new NetworkManager.PacketCallback(GroupRoleDataHandler));
-            Client.Network.RegisterCallback(PacketType.GroupRoleMembersReply, new NetworkManager.PacketCallback(GroupRoleMembersHandler));
-            Client.Network.RegisterCallback(PacketType.GroupActiveProposalItemReply, new NetworkManager.PacketCallback(GroupActiveProposalItemHandler));
-            Client.Network.RegisterCallback(PacketType.GroupVoteHistoryItemReply, new NetworkManager.PacketCallback(GroupVoteHistoryItemHandler));
-            Client.Network.RegisterCallback(PacketType.GroupAccountSummaryReply, new NetworkManager.PacketCallback(GroupAccountSummaryHandler));
-            Client.Network.RegisterCallback(PacketType.CreateGroupReply, new NetworkManager.PacketCallback(CreateGroupReplyHandler));
-            Client.Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupReplyHandler));
-            Client.Network.RegisterCallback(PacketType.LeaveGroupReply, new NetworkManager.PacketCallback(LeaveGroupReplyHandler));
-            Client.Network.RegisterCallback(PacketType.UUIDGroupNameReply, new NetworkManager.PacketCallback(UUIDGroupNameReplyHandler));
-            Client.Network.RegisterCallback(PacketType.EjectGroupMemberReply, new NetworkManager.PacketCallback(EjectGroupMemberReplyHandler));
-            Client.Network.RegisterCallback(PacketType.GroupNoticesListReply, new NetworkManager.PacketCallback(GroupNoticesListReplyHandler));
+            Network.RegisterEventCallback("AgentGroupDataUpdate", new Caps.EventQueueCallback(AgentGroupDataUpdateHandler));
+            Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(AgentDropGroupHandler));
+            Network.RegisterCallback(PacketType.GroupTitlesReply, new NetworkManager.PacketCallback(GroupTitlesHandler));
+            Network.RegisterCallback(PacketType.GroupProfileReply, new NetworkManager.PacketCallback(GroupProfileHandler));
+            Network.RegisterCallback(PacketType.GroupMembersReply, new NetworkManager.PacketCallback(GroupMembersHandler));
+            Network.RegisterCallback(PacketType.GroupRoleDataReply, new NetworkManager.PacketCallback(GroupRoleDataHandler));
+            Network.RegisterCallback(PacketType.GroupRoleMembersReply, new NetworkManager.PacketCallback(GroupRoleMembersHandler));
+            Network.RegisterCallback(PacketType.GroupActiveProposalItemReply, new NetworkManager.PacketCallback(GroupActiveProposalItemHandler));
+            Network.RegisterCallback(PacketType.GroupVoteHistoryItemReply, new NetworkManager.PacketCallback(GroupVoteHistoryItemHandler));
+            Network.RegisterCallback(PacketType.GroupAccountSummaryReply, new NetworkManager.PacketCallback(GroupAccountSummaryHandler));
+            Network.RegisterCallback(PacketType.CreateGroupReply, new NetworkManager.PacketCallback(CreateGroupReplyHandler));
+            Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupReplyHandler));
+            Network.RegisterCallback(PacketType.LeaveGroupReply, new NetworkManager.PacketCallback(LeaveGroupReplyHandler));
+            Network.RegisterCallback(PacketType.UUIDGroupNameReply, new NetworkManager.PacketCallback(UUIDGroupNameReplyHandler));
+            Network.RegisterCallback(PacketType.EjectGroupMemberReply, new NetworkManager.PacketCallback(EjectGroupMemberReplyHandler));
+            Network.RegisterCallback(PacketType.GroupNoticesListReply, new NetworkManager.PacketCallback(GroupNoticesListReplyHandler));
         }
 
         /// <summary>
@@ -632,10 +636,10 @@ namespace OpenMetaverse
         {
             AgentDataUpdateRequestPacket request = new AgentDataUpdateRequestPacket();
 
-            request.AgentData.AgentID = Client.Self.AgentID;
-            request.AgentData.SessionID = Client.Self.SessionID;
+            request.AgentData.AgentID = Network.AgentID;
+            request.AgentData.SessionID = Network.SessionID;
             
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
         }
 
         /// <summary>
@@ -654,7 +658,7 @@ namespace OpenMetaverse
                     {
                            
                         try { OnGroupNames(groupNames); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                     }
                 }
             
@@ -665,7 +669,7 @@ namespace OpenMetaverse
                     block[0] = new UUIDGroupNameRequestPacket.UUIDNameBlockBlock();
                     block[0].ID = groupID;
                     req.UUIDNameBlock = block;
-                    Client.Network.SendPacket(req);
+                    Network.SendPacket(req);
                 }
         }
 
@@ -697,13 +701,13 @@ namespace OpenMetaverse
                 }
 
                 req.UUIDNameBlock = block;
-                Client.Network.SendPacket(req);
+                Network.SendPacket(req);
             }
 
             // fire handler from cache
             if(groupNames.Count > 0 && OnGroupNames != null)
                 try { OnGroupNames(groupNames); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
         }
 
         /// <summary>Lookup group profile data such as name, enrollment, founder, logo, etc</summary>
@@ -713,11 +717,11 @@ namespace OpenMetaverse
         {
             GroupProfileRequestPacket request = new GroupProfileRequestPacket();
 
-            request.AgentData.AgentID = Client.Self.AgentID;
-            request.AgentData.SessionID = Client.Self.SessionID;
+            request.AgentData.AgentID = Network.AgentID;
+            request.AgentData.SessionID = Network.SessionID;
             request.GroupData.GroupID = group;
 
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
         }
 
         /// <summary>Request a list of group members.</summary>
@@ -731,12 +735,12 @@ namespace OpenMetaverse
 
             GroupMembersRequestPacket request = new GroupMembersRequestPacket();
 
-            request.AgentData.AgentID = Client.Self.AgentID;
-            request.AgentData.SessionID = Client.Self.SessionID;
+            request.AgentData.AgentID = Network.AgentID;
+            request.AgentData.SessionID = Network.SessionID;
             request.GroupData.GroupID = group;
             request.GroupData.RequestID = requestID;
 
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
             return requestID;
         }
 
@@ -751,12 +755,12 @@ namespace OpenMetaverse
 
             GroupRoleDataRequestPacket request = new GroupRoleDataRequestPacket();
 
-            request.AgentData.AgentID = Client.Self.AgentID;
-            request.AgentData.SessionID = Client.Self.SessionID;
+            request.AgentData.AgentID = Network.AgentID;
+            request.AgentData.SessionID = Network.SessionID;
             request.GroupData.GroupID = group;
             request.GroupData.RequestID = requestID;
 
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
             return requestID;
         }
 
@@ -770,11 +774,11 @@ namespace OpenMetaverse
             lock (GroupRolesRequests) GroupRolesMembersRequests.Add(requestID);
 
             GroupRoleMembersRequestPacket request = new GroupRoleMembersRequestPacket();
-            request.AgentData.AgentID = Client.Self.AgentID;
-            request.AgentData.SessionID = Client.Self.SessionID;
+            request.AgentData.AgentID = Network.AgentID;
+            request.AgentData.SessionID = Network.SessionID;
             request.GroupData.GroupID = group;
             request.GroupData.RequestID = requestID;
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
             return requestID;
         }
 
@@ -788,12 +792,12 @@ namespace OpenMetaverse
 
             GroupTitlesRequestPacket request = new GroupTitlesRequestPacket();
 
-            request.AgentData.AgentID = Client.Self.AgentID;
-            request.AgentData.SessionID = Client.Self.SessionID;
+            request.AgentData.AgentID = Network.AgentID;
+            request.AgentData.SessionID = Network.SessionID;
             request.AgentData.GroupID = group;
             request.AgentData.RequestID = requestID;
 
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
             return requestID;
         }
 
@@ -805,13 +809,13 @@ namespace OpenMetaverse
         public void RequestGroupAccountSummary(UUID group, int intervalDays, int currentInterval)
         {
             GroupAccountSummaryRequestPacket p = new GroupAccountSummaryRequestPacket();
-            p.AgentData.AgentID = Client.Self.AgentID;
-            p.AgentData.SessionID = Client.Self.SessionID;
+            p.AgentData.AgentID = Network.AgentID;
+            p.AgentData.SessionID = Network.SessionID;
             p.AgentData.GroupID = group;
             p.MoneyData.RequestID = UUID.Random();
             p.MoneyData.CurrentInterval = currentInterval;
             p.MoneyData.IntervalDays = intervalDays;
-            Client.Network.SendPacket(p);
+            Network.SendPacket(p);
         }
 
         /// <summary>Invites a user to a group</summary>
@@ -823,8 +827,8 @@ namespace OpenMetaverse
             InviteGroupRequestPacket igp = new InviteGroupRequestPacket();
 
             igp.AgentData = new InviteGroupRequestPacket.AgentDataBlock();
-            igp.AgentData.AgentID = Client.Self.AgentID;
-            igp.AgentData.SessionID = Client.Self.SessionID;
+            igp.AgentData.AgentID = Network.AgentID;
+            igp.AgentData.SessionID = Network.SessionID;
 
             igp.GroupData = new InviteGroupRequestPacket.GroupDataBlock();
             igp.GroupData.GroupID = group;
@@ -838,7 +842,7 @@ namespace OpenMetaverse
                 igp.InviteData[i].RoleID = roles[i];
             }
 
-            Client.Network.SendPacket(igp);
+            Network.SendPacket(igp);
         }
 
         /// <summary>Set a group as the current active group</summary>
@@ -846,11 +850,11 @@ namespace OpenMetaverse
         public void ActivateGroup(UUID id)
         {
             ActivateGroupPacket activate = new ActivateGroupPacket();
-            activate.AgentData.AgentID = Client.Self.AgentID;
-            activate.AgentData.SessionID = Client.Self.SessionID;
+            activate.AgentData.AgentID = Network.AgentID;
+            activate.AgentData.SessionID = Network.SessionID;
             activate.AgentData.GroupID = id;
 
-            Client.Network.SendPacket(activate);
+            Network.SendPacket(activate);
         }
 
         /// <summary>Change the role that determines your active title</summary>
@@ -859,12 +863,12 @@ namespace OpenMetaverse
         public void ActivateTitle(UUID group, UUID role)
         {
             GroupTitleUpdatePacket gtu = new GroupTitleUpdatePacket();
-            gtu.AgentData.AgentID = Client.Self.AgentID;
-            gtu.AgentData.SessionID = Client.Self.SessionID;
+            gtu.AgentData.AgentID = Network.AgentID;
+            gtu.AgentData.SessionID = Network.SessionID;
             gtu.AgentData.TitleRoleID = role;
             gtu.AgentData.GroupID = group;
 
-            Client.Network.SendPacket(gtu);
+            Network.SendPacket(gtu);
         }
 
         /// <summary>Set this avatar's tier contribution</summary>
@@ -873,12 +877,12 @@ namespace OpenMetaverse
         public void SetGroupContribution(UUID group, int contribution)
         {
             SetGroupContributionPacket sgp = new SetGroupContributionPacket();
-            sgp.AgentData.AgentID = Client.Self.AgentID;
-            sgp.AgentData.SessionID = Client.Self.SessionID;
+            sgp.AgentData.AgentID = Network.AgentID;
+            sgp.AgentData.SessionID = Network.SessionID;
             sgp.Data.GroupID = group;
             sgp.Data.Contribution = contribution;
 
-            Client.Network.SendPacket(sgp);
+            Network.SendPacket(sgp);
         }
 
         /// <summary>Request to join a group</summary>
@@ -887,12 +891,12 @@ namespace OpenMetaverse
         public void RequestJoinGroup(UUID id)
         {
             JoinGroupRequestPacket join = new JoinGroupRequestPacket();
-            join.AgentData.AgentID = Client.Self.AgentID;
-            join.AgentData.SessionID = Client.Self.SessionID;
+            join.AgentData.AgentID = Network.AgentID;
+            join.AgentData.SessionID = Network.SessionID;
 
             join.GroupData.GroupID = id;
 
-            Client.Network.SendPacket(join);
+            Network.SendPacket(join);
         }
 
         /// <summary>
@@ -905,8 +909,8 @@ namespace OpenMetaverse
         {
             OpenMetaverse.Packets.CreateGroupRequestPacket cgrp = new CreateGroupRequestPacket();
             cgrp.AgentData = new CreateGroupRequestPacket.AgentDataBlock();
-            cgrp.AgentData.AgentID = Client.Self.AgentID;
-            cgrp.AgentData.SessionID = Client.Self.SessionID;
+            cgrp.AgentData.AgentID = Network.AgentID;
+            cgrp.AgentData.SessionID = Network.SessionID;
 
             cgrp.GroupData = new CreateGroupRequestPacket.GroupDataBlock();
             cgrp.GroupData.AllowPublish = group.AllowPublish;
@@ -918,7 +922,7 @@ namespace OpenMetaverse
             cgrp.GroupData.OpenEnrollment = group.OpenEnrollment;
             cgrp.GroupData.ShowInList = group.ShowInList;
 
-            Client.Network.SendPacket(cgrp);
+            Network.SendPacket(cgrp);
         }
 
         /// <summary>Update a group's profile and other information</summary>
@@ -928,8 +932,8 @@ namespace OpenMetaverse
         {
             OpenMetaverse.Packets.UpdateGroupInfoPacket cgrp = new UpdateGroupInfoPacket();
             cgrp.AgentData = new UpdateGroupInfoPacket.AgentDataBlock();
-            cgrp.AgentData.AgentID = Client.Self.AgentID;
-            cgrp.AgentData.SessionID = Client.Self.SessionID;
+            cgrp.AgentData.AgentID = Network.AgentID;
+            cgrp.AgentData.SessionID = Network.SessionID;
             
             cgrp.GroupData = new UpdateGroupInfoPacket.GroupDataBlock();
             cgrp.GroupData.GroupID = id;
@@ -941,7 +945,7 @@ namespace OpenMetaverse
             cgrp.GroupData.OpenEnrollment = group.OpenEnrollment;
             cgrp.GroupData.ShowInList = group.ShowInList;
             
-            Client.Network.SendPacket(cgrp);
+            Network.SendPacket(cgrp);
         }
 
         /// <summary>Eject a user from a group</summary>
@@ -951,8 +955,8 @@ namespace OpenMetaverse
         {
             OpenMetaverse.Packets.EjectGroupMemberRequestPacket eject = new EjectGroupMemberRequestPacket();
             eject.AgentData = new EjectGroupMemberRequestPacket.AgentDataBlock();
-            eject.AgentData.AgentID = Client.Self.AgentID;
-            eject.AgentData.SessionID = Client.Self.SessionID;
+            eject.AgentData.AgentID = Network.AgentID;
+            eject.AgentData.SessionID = Network.SessionID;
             
             eject.GroupData = new EjectGroupMemberRequestPacket.GroupDataBlock();
             eject.GroupData.GroupID = group;
@@ -961,7 +965,7 @@ namespace OpenMetaverse
             eject.EjectData[0] = new EjectGroupMemberRequestPacket.EjectDataBlock();
             eject.EjectData[0].EjecteeID = member;
             
-            Client.Network.SendPacket(eject);
+            Network.SendPacket(eject);
         }
 
         /// <summary>Update role information</summary>
@@ -969,8 +973,8 @@ namespace OpenMetaverse
         public void UpdateRole(GroupRole role)
         {
             OpenMetaverse.Packets.GroupRoleUpdatePacket gru = new GroupRoleUpdatePacket();
-            gru.AgentData.AgentID = Client.Self.AgentID;
-            gru.AgentData.SessionID = Client.Self.SessionID;
+            gru.AgentData.AgentID = Network.AgentID;
+            gru.AgentData.SessionID = Network.SessionID;
             gru.AgentData.GroupID = role.GroupID;
             gru.RoleData = new GroupRoleUpdatePacket.RoleDataBlock[1];
             gru.RoleData[0] = new GroupRoleUpdatePacket.RoleDataBlock();
@@ -980,7 +984,7 @@ namespace OpenMetaverse
             gru.RoleData[0].RoleID = role.ID;
             gru.RoleData[0].Title = Utils.StringToBytes(role.Title);
             gru.RoleData[0].UpdateType = (byte)GroupRoleUpdate.UpdateAll;
-            Client.Network.SendPacket(gru);
+            Network.SendPacket(gru);
         }
 
         /// <summary>Create a new group role</summary>
@@ -989,8 +993,8 @@ namespace OpenMetaverse
         public void CreateRole(UUID group, GroupRole role)
         {
             OpenMetaverse.Packets.GroupRoleUpdatePacket gru = new GroupRoleUpdatePacket();
-            gru.AgentData.AgentID = Client.Self.AgentID;
-            gru.AgentData.SessionID = Client.Self.SessionID;
+            gru.AgentData.AgentID = Network.AgentID;
+            gru.AgentData.SessionID = Network.SessionID;
             gru.AgentData.GroupID = group;
             gru.RoleData = new GroupRoleUpdatePacket.RoleDataBlock[1];
             gru.RoleData[0].Name = Utils.StringToBytes(role.Name);
@@ -998,7 +1002,7 @@ namespace OpenMetaverse
             gru.RoleData[0].Powers = (ulong)role.Powers;
             gru.RoleData[0].Title = Utils.StringToBytes(role.Title);
             gru.RoleData[0].UpdateType = (byte)GroupRoleUpdate.Create;
-            Client.Network.SendPacket(gru);
+            Network.SendPacket(gru);
         }
 
         /// <summary>Remove an avatar from a role</summary>
@@ -1008,8 +1012,8 @@ namespace OpenMetaverse
         public void RemoveFromRole(UUID group, UUID role, UUID member)
         {
             OpenMetaverse.Packets.GroupRoleChangesPacket grc = new GroupRoleChangesPacket();
-            grc.AgentData.AgentID = Client.Self.AgentID;
-            grc.AgentData.SessionID = Client.Self.SessionID;
+            grc.AgentData.AgentID = Network.AgentID;
+            grc.AgentData.SessionID = Network.SessionID;
             grc.AgentData.GroupID = group;
             grc.RoleChange = new GroupRoleChangesPacket.RoleChangeBlock[1];
             grc.RoleChange[0] = new GroupRoleChangesPacket.RoleChangeBlock();
@@ -1018,7 +1022,7 @@ namespace OpenMetaverse
             grc.RoleChange[0].RoleID = role;
             //1 = Remove From Role TODO: this should be in an enum
             grc.RoleChange[0].Change = 1;
-            Client.Network.SendPacket(grc);
+            Network.SendPacket(grc);
         }
 
         /// <summary>Assign an avatar to a role</summary>
@@ -1028,8 +1032,8 @@ namespace OpenMetaverse
         public void AddToRole(UUID group, UUID role, UUID member)
         {
             OpenMetaverse.Packets.GroupRoleChangesPacket grc = new GroupRoleChangesPacket();
-            grc.AgentData.AgentID = Client.Self.AgentID;
-            grc.AgentData.SessionID = Client.Self.SessionID;
+            grc.AgentData.AgentID = Network.AgentID;
+            grc.AgentData.SessionID = Network.SessionID;
             grc.AgentData.GroupID = group;
             grc.RoleChange = new GroupRoleChangesPacket.RoleChangeBlock[1];
             grc.RoleChange[0] = new GroupRoleChangesPacket.RoleChangeBlock();
@@ -1038,7 +1042,7 @@ namespace OpenMetaverse
             grc.RoleChange[0].RoleID = role;
             //0 = Add to Role TODO: this should be in an enum
             grc.RoleChange[0].Change = 0;
-            Client.Network.SendPacket(grc);
+            Network.SendPacket(grc);
         }
 
         /// <summary>Request the group notices list</summary>
@@ -1046,10 +1050,10 @@ namespace OpenMetaverse
         public void RequestGroupNoticeList(UUID group)
         {
             OpenMetaverse.Packets.GroupNoticesListRequestPacket gnl = new GroupNoticesListRequestPacket();
-            gnl.AgentData.AgentID = Client.Self.AgentID;
-            gnl.AgentData.SessionID = Client.Self.SessionID;
+            gnl.AgentData.AgentID = Network.AgentID;
+            gnl.AgentData.SessionID = Network.SessionID;
             gnl.Data.GroupID = group;
-            Client.Network.SendPacket(gnl);
+            Network.SendPacket(gnl);
         }
 
         /// <summary>Request a group notice by key</summary>
@@ -1057,10 +1061,10 @@ namespace OpenMetaverse
         public void RequestGroupNotice(UUID noticeID)
         {
             OpenMetaverse.Packets.GroupNoticeRequestPacket gnr = new GroupNoticeRequestPacket();
-            gnr.AgentData.AgentID = Client.Self.AgentID;
-            gnr.AgentData.SessionID = Client.Self.SessionID;
+            gnr.AgentData.AgentID = Network.AgentID;
+            gnr.AgentData.SessionID = Network.SessionID;
             gnr.Data.GroupNoticeID = noticeID;
-            Client.Network.SendPacket(gnr);
+            Network.SendPacket(gnr);
         }
 
 
@@ -1081,7 +1085,7 @@ namespace OpenMetaverse
                 if (OnGroupNoticesList != null)
                 {
                     try { OnGroupNoticesList(reply.AgentData.GroupID, notice); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 } 
             } 
         }
@@ -1091,7 +1095,7 @@ namespace OpenMetaverse
         /// <param name="notice"><code>GroupNotice</code> structure containing notice data</param>
         public void SendGroupNotice(UUID group, GroupNotice notice)
         {
-            Client.Self.InstantMessage(Client.Self.Name, group, notice.Subject + "|" + notice.Message,
+            Self.InstantMessage(Self.Name, group, notice.Subject + "|" + notice.Message,
                 UUID.Zero, InstantMessageDialog.GroupNotice, InstantMessageOnline.Online, 
                 Vector3.Zero, UUID.Zero, notice.SerializeAttachment());
         }
@@ -1102,14 +1106,14 @@ namespace OpenMetaverse
         public void StartProposal(UUID group, GroupProposal prop)
         {
             StartGroupProposalPacket p = new StartGroupProposalPacket();
-            p.AgentData.AgentID = Client.Self.AgentID;
-            p.AgentData.SessionID = Client.Self.SessionID;
+            p.AgentData.AgentID = Network.AgentID;
+            p.AgentData.SessionID = Network.SessionID;
             p.ProposalData.GroupID = group;
             p.ProposalData.ProposalText = Utils.StringToBytes(prop.VoteText);
             p.ProposalData.Quorum = prop.Quorum;
             p.ProposalData.Majority = prop.Majority;
             p.ProposalData.Duration = prop.Duration;
-            Client.Network.SendPacket(p);
+            Network.SendPacket(p);
         }
 
         /// <summary>Request to leave a group</summary>
@@ -1118,10 +1122,10 @@ namespace OpenMetaverse
         public void LeaveGroup(UUID groupID)
         {
             LeaveGroupRequestPacket p = new LeaveGroupRequestPacket();
-            p.AgentData.AgentID = Client.Self.AgentID;
-            p.AgentData.SessionID = Client.Self.SessionID;
+            p.AgentData.AgentID = Network.AgentID;
+            p.AgentData.SessionID = Network.SessionID;
             p.GroupData.GroupID = groupID;
-            Client.Network.SendPacket(p);
+            Network.SendPacket(p);
         }
 
         #region Packet Handlers
@@ -1155,7 +1159,7 @@ namespace OpenMetaverse
                 }
 
                 try { OnCurrentGroups(currentGroups); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -1189,7 +1193,7 @@ namespace OpenMetaverse
         //        }
 
         //        try { OnCurrentGroups(currentGroups); }
-        //        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+        //        catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
         //    }
         //}
 
@@ -1222,7 +1226,7 @@ namespace OpenMetaverse
         //        }
 
         //        try { OnCurrentGroups(currentGroups); }
-        //        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+        //        catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
         //    }
         //}
 
@@ -1231,7 +1235,7 @@ namespace OpenMetaverse
             if (OnGroupDropped != null)
             {
                 try { OnGroupDropped(((AgentDropGroupPacket)packet).AgentData.GroupID); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -1260,7 +1264,7 @@ namespace OpenMetaverse
                 group.ShowInList = profile.GroupData.ShowInList;
 
                 try { OnGroupProfile(group); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -1283,7 +1287,7 @@ namespace OpenMetaverse
                 }
 
                 try { OnGroupTitles(groupTitleCache); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -1329,7 +1333,7 @@ namespace OpenMetaverse
             if (OnGroupMembers != null && groupMemberCache != null && groupMemberCache.Count >= members.GroupData.MemberCount)
             {
                 try { OnGroupMembers(groupMemberCache); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -1374,7 +1378,7 @@ namespace OpenMetaverse
             if (OnGroupRoles != null && groupRoleCache != null && groupRoleCache.Count >= roles.GroupData.RoleCount)
             {
                 try { OnGroupRoles(groupRoleCache); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -1414,7 +1418,7 @@ namespace OpenMetaverse
             }
             catch (Exception e)
             {
-                Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e);
+                Log.Log(e.Message, Helpers.LogLevel.Error, e);
             }
 
             //Client.DebugLog("Pairs Ratio: " + groupRoleMemberCache.Count + "/" + members.AgentData.TotalPairs);
@@ -1423,7 +1427,7 @@ namespace OpenMetaverse
             if (OnGroupRolesMembers != null && groupRoleMemberCache != null && groupRoleMemberCache.Count >= members.AgentData.TotalPairs)
             {
                 try { OnGroupRolesMembers(groupRoleMemberCache); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -1469,7 +1473,7 @@ namespace OpenMetaverse
                 account.TotalDebits = summary.MoneyData.TotalDebits;
 
                 try { OnGroupAccountSummary(account); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -1482,7 +1486,7 @@ namespace OpenMetaverse
                 string message = Utils.BytesToString(reply.ReplyData.Message);
 
                 try { OnGroupCreated(reply.ReplyData.GroupID, reply.ReplyData.Success, message); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -1493,7 +1497,7 @@ namespace OpenMetaverse
                 JoinGroupReplyPacket reply = (JoinGroupReplyPacket)packet;
 
                 try { OnGroupJoined(reply.GroupData.GroupID, reply.GroupData.Success); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -1504,7 +1508,7 @@ namespace OpenMetaverse
                 LeaveGroupReplyPacket reply = (LeaveGroupReplyPacket)packet;
 
                 try { OnGroupLeft(reply.GroupData.GroupID, reply.GroupData.Success); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -1525,7 +1529,7 @@ namespace OpenMetaverse
             if (OnGroupNames != null)
             {    
                 try { OnGroupNames(groupNames); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -1545,7 +1549,7 @@ namespace OpenMetaverse
             if(OnGroupMemberEjected != null)
             {
                 try { OnGroupMemberEjected(reply.GroupData.GroupID, reply.EjectData.Success); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 

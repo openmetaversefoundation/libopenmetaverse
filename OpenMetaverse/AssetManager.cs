@@ -348,7 +348,6 @@ namespace OpenMetaverse
 
         private TexturePipeline Texture;
 
-        private GridClient Client;
         private NetworkManager Network;
         private LoggerInstance Log;
 

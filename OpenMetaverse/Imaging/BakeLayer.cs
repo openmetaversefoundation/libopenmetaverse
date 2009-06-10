@@ -49,7 +49,7 @@ namespace OpenMetaverse.Imaging
         public AppearanceManager.BakeType BakeType { get { return _bakeType; } }
 
         /// <summary>Reference to the GridClient object</summary>
-        protected GridClient _client;
+        protected LoggerInstance _log;
         /// <summary>Finald baked texture</summary>
         protected AssetTexture _bakedTexture;
         /// <summary>Appearance parameters the drive the baking process</summary>
@@ -74,9 +74,9 @@ namespace OpenMetaverse.Imaging
         /// composed of</param>
         /// <param name="paramValues">Appearance parameters the drive the 
         /// baking process</param>
-        public Baker(GridClient client, AppearanceManager.BakeType bakeType, int textureCount, Dictionary<int, float> paramValues)
+        public Baker(LoggerInstance log, AppearanceManager.BakeType bakeType, int textureCount, Dictionary<int, float> paramValues)
         {
-            _client = client;
+            _log = log;
             _bakeType = bakeType;
             _textureCount = textureCount;
 
@@ -120,13 +120,13 @@ namespace OpenMetaverse.Imaging
                     }
                     catch (Exception e)
                     {
-                        Logger.Log(String.Format("AddTexture({0}, {1})", index, texture.AssetID), Helpers.LogLevel.Error, e);
+                        _log.Log(String.Format("AddTexture({0}, {1})", index, texture.AssetID), Helpers.LogLevel.Error, e);
                         return false;
                     }
                 }
 
                 _textures.Add(index, texture);
-                Logger.DebugLog(String.Format("Added texture {0} (ID: {1}) to bake {2}", index, texture.AssetID, _bakeType), _client);
+                _log.DebugLog(String.Format("Added texture {0} (ID: {1}) to bake {2}", index, texture.AssetID, _bakeType));
             }
 
             if (_textures.Count >= _textureCount)
@@ -142,7 +142,7 @@ namespace OpenMetaverse.Imaging
 
         public bool MissingTexture(AppearanceManager.TextureIndex index)
         {
-            Logger.DebugLog(String.Format("Missing texture {0} in bake {1}", index, _bakeType), _client);
+            _log.DebugLog(String.Format("Missing texture {0} in bake {1}", index, _bakeType));
             _textureCount--;
 
             if (_textures.Count >= _textureCount)
@@ -179,12 +179,12 @@ namespace OpenMetaverse.Imaging
 
                 if (eyelashes != null)
                 {
-                    Logger.DebugLog("Loaded head_alpha.tga, baking in eyelashes");
+                    _log.DebugLog("Loaded head_alpha.tga, baking in eyelashes");
                     DrawLayer(eyelashes, true);
                 }
                 else
                 {
-                    Logger.Log("head_alpha.tga resource not found, skipping eyelashes", Helpers.LogLevel.Info);
+                    _log.Log("head_alpha.tga resource not found, skipping eyelashes", Helpers.LogLevel.Info);
                 }
             }
             else if (_bakeType == AppearanceManager.BakeType.Skirt)
@@ -199,7 +199,7 @@ namespace OpenMetaverse.Imaging
                 }
                 catch
                 {
-                    Logger.Log("Unable to determine skirt color from visual params", Helpers.LogLevel.Warning, _client);
+                    _log.Log("Unable to determine skirt color from visual params", Helpers.LogLevel.Warning);
                 }
 
                 InitBakedLayerColor((byte)(skirtRed * 255.0f), (byte)(skirtGreen * 255.0f), (byte)(skirtBlue * 255.0f));

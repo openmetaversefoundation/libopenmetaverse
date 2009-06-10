@@ -300,7 +300,11 @@ namespace OpenMetaverse
 
         #endregion Events
 
-        private GridClient Client;
+        private LoggerInstance Log;
+        private NetworkManager Network;
+        private InventoryManager Inventory;
+        private AgentManager Self;
+        private AvatarManager Avatars;
         /// <summary>
         /// A dictionary of key/value pairs containing known friends of this avatar. 
         /// 
@@ -322,21 +326,25 @@ namespace OpenMetaverse
         /// Internal constructor
         /// </summary>
         /// <param name="client">A reference to the GridClient Object</param>
-        internal FriendsManager(GridClient client)
+        internal FriendsManager(LoggerInstance log, NetworkManager network, InventoryManager inventory, AgentManager self, AvatarManager avatars)
         {
-            Client = client;
+            Log = log;
+            Network = network;
+            Inventory = inventory;
+            Self = self;
+            Avatars = avatars;
 
-            Client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnect);
-            Client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(Avatars_OnAvatarNames);
-            Client.Self.OnInstantMessage += new AgentManager.InstantMessageCallback(MainAvatar_InstantMessage);
+            Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnect);
+            Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(Avatars_OnAvatarNames);
+            Self.OnInstantMessage += new AgentManager.InstantMessageCallback(MainAvatar_InstantMessage);
 
-            Client.Network.RegisterCallback(PacketType.OnlineNotification, OnlineNotificationHandler);
-            Client.Network.RegisterCallback(PacketType.OfflineNotification, OfflineNotificationHandler);
-            Client.Network.RegisterCallback(PacketType.ChangeUserRights, ChangeUserRightsHandler);
-            Client.Network.RegisterCallback(PacketType.TerminateFriendship, TerminateFriendshipHandler);
-            Client.Network.RegisterCallback(PacketType.FindAgent, OnFindAgentReplyHandler);
+            Network.RegisterCallback(PacketType.OnlineNotification, OnlineNotificationHandler);
+            Network.RegisterCallback(PacketType.OfflineNotification, OfflineNotificationHandler);
+            Network.RegisterCallback(PacketType.ChangeUserRights, ChangeUserRightsHandler);
+            Network.RegisterCallback(PacketType.TerminateFriendship, TerminateFriendshipHandler);
+            Network.RegisterCallback(PacketType.FindAgent, OnFindAgentReplyHandler);
 
-            Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse),
+            Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse),
                 new string[] { "buddy-list" });
         }
         #region Public Methods
@@ -348,17 +356,17 @@ namespace OpenMetaverse
         /// <param name="imSessionID">imSessionID of the friendship request message</param>
         public void AcceptFriendship(UUID fromAgentID, UUID imSessionID)
         {
-            UUID callingCardFolder = Client.Inventory.FindFolderForType(AssetType.CallingCard);
+            UUID callingCardFolder = Inventory.FindFolderForType(AssetType.CallingCard);
 
             AcceptFriendshipPacket request = new AcceptFriendshipPacket();
-            request.AgentData.AgentID = Client.Self.AgentID;
-            request.AgentData.SessionID = Client.Self.SessionID;
+            request.AgentData.AgentID = Self.AgentID;
+            request.AgentData.SessionID = Self.SessionID;
             request.TransactionBlock.TransactionID = imSessionID;
             request.FolderData = new AcceptFriendshipPacket.FolderDataBlock[1];
             request.FolderData[0] = new AcceptFriendshipPacket.FolderDataBlock();
             request.FolderData[0].FolderID = callingCardFolder;
 
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
 
             FriendInfo friend = new FriendInfo(fromAgentID, FriendRights.CanSeeOnline, 
                 FriendRights.CanSeeOnline);
@@ -369,7 +377,7 @@ namespace OpenMetaverse
             if (FriendRequests.ContainsKey(fromAgentID))
                 FriendRequests.Remove(fromAgentID);
 
-            Client.Avatars.RequestAvatarName(fromAgentID);
+            Avatars.RequestAvatarName(fromAgentID);
         }
 
         /// <summary>
@@ -380,10 +388,10 @@ namespace OpenMetaverse
         public void DeclineFriendship(UUID fromAgentID, UUID imSessionID)
         {
             DeclineFriendshipPacket request = new DeclineFriendshipPacket();
-            request.AgentData.AgentID = Client.Self.AgentID;
-            request.AgentData.SessionID = Client.Self.SessionID;
+            request.AgentData.AgentID = Self.AgentID;
+            request.AgentData.SessionID = Self.SessionID;
             request.TransactionBlock.TransactionID = imSessionID;
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
 
             if (FriendRequests.ContainsKey(fromAgentID))
                 FriendRequests.Remove(fromAgentID);
@@ -406,15 +414,15 @@ namespace OpenMetaverse
         public void OfferFriendship(UUID agentID, string message)
         {
             // HACK: folder id stored as "message"
-            UUID callingCardFolder = Client.Inventory.FindFolderForType(AssetType.CallingCard);
-            Client.Self.InstantMessage(Client.Self.Name,
+            UUID callingCardFolder = Inventory.FindFolderForType(AssetType.CallingCard);
+            Self.InstantMessage(Self.Name,
                 agentID,
                 callingCardFolder.ToString(),
                 UUID.Random(),
                 InstantMessageDialog.FriendshipOffered,
                 InstantMessageOnline.Online,
-                Client.Self.SimPosition,
-                Client.Network.CurrentSim.ID,
+                Self.SimPosition,
+                Network.CurrentSim.ID,
                 Utils.StringToBytes(message));
         }
 
@@ -428,11 +436,11 @@ namespace OpenMetaverse
             if (FriendList.ContainsKey(agentID))
             {
                 TerminateFriendshipPacket request = new TerminateFriendshipPacket();
-                request.AgentData.AgentID = Client.Self.AgentID;
-                request.AgentData.SessionID = Client.Self.SessionID;
+                request.AgentData.AgentID = Self.AgentID;
+                request.AgentData.SessionID = Self.SessionID;
                 request.ExBlock.OtherID = agentID;
 
-                Client.Network.SendPacket(request);
+                Network.SendPacket(request);
 
                 if (FriendList.ContainsKey(agentID))
                     FriendList.Remove(agentID);
@@ -470,14 +478,14 @@ namespace OpenMetaverse
         public void GrantRights(UUID friendID, FriendRights rights)
         {
             GrantUserRightsPacket request = new GrantUserRightsPacket();
-            request.AgentData.AgentID = Client.Self.AgentID;
-            request.AgentData.SessionID = Client.Self.SessionID;
+            request.AgentData.AgentID = Self.AgentID;
+            request.AgentData.SessionID = Self.SessionID;
             request.Rights = new GrantUserRightsPacket.RightsBlock[1];
             request.Rights[0] = new GrantUserRightsPacket.RightsBlock();
             request.Rights[0].AgentRelated = friendID;
             request.Rights[0].RelatedRights = (int)rights;
 
-            Client.Network.SendPacket(request);
+            Network.SendPacket(request);
         }
 
         /// <summary>
@@ -488,10 +496,10 @@ namespace OpenMetaverse
         public void MapFriend(UUID friendID)
         {
             FindAgentPacket stalk = new FindAgentPacket();
-            stalk.AgentBlock.Hunter = Client.Self.AgentID;
+            stalk.AgentBlock.Hunter = Self.AgentID;
             stalk.AgentBlock.Prey = friendID;
 
-            Client.Network.SendPacket(stalk);
+            Network.SendPacket(stalk);
         }
 
         /// <summary>
@@ -501,11 +509,11 @@ namespace OpenMetaverse
         public void TrackFriend(UUID friendID)
         {
             TrackAgentPacket stalk = new TrackAgentPacket();
-            stalk.AgentData.AgentID = Client.Self.AgentID;
-            stalk.AgentData.SessionID = Client.Self.SessionID;
+            stalk.AgentData.AgentID = Self.AgentID;
+            stalk.AgentData.SessionID = Self.SessionID;
             stalk.TargetData.PreyID = friendID;
 
-            Client.Network.SendPacket(stalk);
+            Network.SendPacket(stalk);
         }
 
         #endregion
@@ -531,7 +539,7 @@ namespace OpenMetaverse
                     }
                 );
 
-                Client.Avatars.RequestAvatarNames(names);
+                Avatars.RequestAvatarNames(names);
             }
         }
 
@@ -560,7 +568,7 @@ namespace OpenMetaverse
             if (newNames.Count > 0 && OnFriendNamesReceived != null)
             {
                 try { OnFriendNamesReceived(newNames); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
         #endregion
@@ -599,7 +607,7 @@ namespace OpenMetaverse
                     if (OnFriendOnline != null && doNotify)
                     {
                         try { OnFriendOnline(friend); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                     }
                 }
             }
@@ -629,7 +637,7 @@ namespace OpenMetaverse
                     if (OnFriendOffline != null)
                     {
                         try { OnFriendOffline(friend); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                     }
                 }
             }
@@ -658,10 +666,10 @@ namespace OpenMetaverse
                         if (OnFriendRights != null)
                         {
                             try { OnFriendRights(friend); }
-                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                            catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                         }
                     }
-                    else if (block.AgentRelated == Client.Self.AgentID)
+                    else if (block.AgentRelated == Self.AgentID)
                     {
                         if (FriendList.TryGetValue(rights.AgentData.AgentID, out friend))
                         {
@@ -669,7 +677,7 @@ namespace OpenMetaverse
                             if (OnFriendRights != null)
                             {
                                 try { OnFriendRights(friend); }
-                                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                             }
                         }
                     }
@@ -695,7 +703,7 @@ namespace OpenMetaverse
             Vector3 xyz = new Vector3(x, y, 0f);
 
             try { OnFriendFound(prey, regionHandle, xyz); }
-            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -718,7 +726,7 @@ namespace OpenMetaverse
                         FriendRequests.Add(im.FromAgentID, im.IMSessionID);
 
                     try { OnFriendshipOffered(im.FromAgentID, im.FromAgentName, im.IMSessionID); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
             }
             else if (im.Dialog == InstantMessageDialog.FriendshipAccepted)
@@ -731,7 +739,7 @@ namespace OpenMetaverse
                 if (OnFriendshipResponse != null)
                 {
                     try { OnFriendshipResponse(im.FromAgentID, im.FromAgentName, true); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
             }
             else if (im.Dialog == InstantMessageDialog.FriendshipDeclined)
@@ -739,7 +747,7 @@ namespace OpenMetaverse
                 if (OnFriendshipResponse != null)
                 {
                     try { OnFriendshipResponse(im.FromAgentID, im.FromAgentName, false); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
             }
         }

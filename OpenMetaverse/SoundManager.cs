@@ -33,7 +33,9 @@ namespace OpenMetaverse
 
     public class SoundManager
     {
-        public readonly GridClient Client;
+        private readonly NetworkManager Network;
+        private readonly LoggerInstance Log;
+        private readonly AgentManager Self;
 
         public delegate void AttachSoundCallback(UUID soundID, UUID ownerID, UUID objectID, float gain, SoundFlags flags);
         public delegate void AttachedSoundGainChangeCallback(UUID objectID, float gain);
@@ -45,14 +47,16 @@ namespace OpenMetaverse
         public event SoundTriggerCallback OnSoundTrigger;
         public event PreloadSoundCallback OnPreloadSound;
 
-        public SoundManager(GridClient client)
+        public SoundManager(LoggerInstance log, NetworkManager network, AgentManager self)
         {
-            Client = client;
+            Network = network;
+            Log = log;
+            Self = self;
 
-            Client.Network.RegisterCallback(PacketType.AttachedSound, new NetworkManager.PacketCallback(AttachedSoundHandler));
-            Client.Network.RegisterCallback(PacketType.AttachedSoundGainChange, new NetworkManager.PacketCallback(AttachedSoundGainChangeHandler));
-            Client.Network.RegisterCallback(PacketType.PreloadSound, new NetworkManager.PacketCallback(PreloadSoundHandler));
-            Client.Network.RegisterCallback(PacketType.SoundTrigger, new NetworkManager.PacketCallback(SoundTriggerHandler));
+            Network.RegisterCallback(PacketType.AttachedSound, new NetworkManager.PacketCallback(AttachedSoundHandler));
+            Network.RegisterCallback(PacketType.AttachedSoundGainChange, new NetworkManager.PacketCallback(AttachedSoundGainChangeHandler));
+            Network.RegisterCallback(PacketType.PreloadSound, new NetworkManager.PacketCallback(PreloadSoundHandler));
+            Network.RegisterCallback(PacketType.SoundTrigger, new NetworkManager.PacketCallback(SoundTriggerHandler));
         }
 
         #region public methods
@@ -63,7 +67,7 @@ namespace OpenMetaverse
         /// <param name="soundID">UUID of the sound to be played</param>
         public void SoundTrigger(UUID soundID)
         {
-            SoundTrigger(soundID, Client.Self.SimPosition, 1.0f);
+            SoundTrigger(soundID, Self.SimPosition, 1.0f);
         }
 
         /// <summary>
@@ -73,7 +77,7 @@ namespace OpenMetaverse
         /// <param name="position">position for the sound to be played at. Normally the avatar.</param>
         public void SoundTrigger(UUID soundID, Vector3 position)
         {
-            SoundTrigger(soundID, Client.Self.SimPosition, 1.0f);
+            SoundTrigger(soundID, Self.SimPosition, 1.0f);
         }
 
         /// <summary>
@@ -84,7 +88,7 @@ namespace OpenMetaverse
         /// <param name="gain">volume of the sound, from 0.0 to 1.0</param>
         public void SoundTrigger(UUID soundID, Vector3 position, float gain)
         {
-            SoundTrigger(soundID, Client.Network.CurrentSim.Handle, position, 1.0f);
+            SoundTrigger(soundID, Network.CurrentSim.Handle, position, 1.0f);
         }
         /// <summary>
         /// Plays a sound in the specified sim
@@ -116,7 +120,7 @@ namespace OpenMetaverse
             soundtrigger.SoundData.Handle = handle;
             soundtrigger.SoundData.Position = position;
             soundtrigger.SoundData.Gain = gain;
-            Client.Network.SendPacket(soundtrigger);
+            Network.SendPacket(soundtrigger);
         }
 
         #endregion
@@ -127,7 +131,7 @@ namespace OpenMetaverse
             if (OnAttachSound != null)
             {
                 try { OnAttachSound(sound.DataBlock.SoundID, sound.DataBlock.OwnerID, sound.DataBlock.ObjectID, sound.DataBlock.Gain, (SoundFlags)sound.DataBlock.Flags); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -137,7 +141,7 @@ namespace OpenMetaverse
             if (OnAttachSoundGainChange != null)
             {
                 try { OnAttachSoundGainChange(change.DataBlock.ObjectID, change.DataBlock.Gain); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
 
@@ -152,7 +156,7 @@ namespace OpenMetaverse
                     {
                         OnPreloadSound(data.SoundID, data.OwnerID, data.ObjectID);
                     }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
             }
         }
@@ -174,7 +178,7 @@ namespace OpenMetaverse
                         trigger.SoundData.Position
                      );
                 }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
             }
         }
         #endregion

@@ -115,16 +115,16 @@ namespace OpenMetaverse
             Parcels = new ParcelManager(Log, Network, Terrain);
             Self = new AgentManager(Log, Network, Grid);
             Avatars = new AvatarManager(Log, Network);
-            Friends = new FriendsManager(this);
+            Friends = new FriendsManager(Log, Network, Inventory, Self, Avatars);
             Grid = new GridManager(Log, Network);
             Objects = new ObjectManager(Log, Network, Self);
-            Groups = new GroupManager(this);
+            Groups = new GroupManager(Log, Network, Self);
             Assets = new AssetManager(Log, Network);
             Estate = new EstateTools(Log, Network, Assets);
-            Appearance = new AppearanceManager(this, Assets);
+            Appearance = new AppearanceManager(Log, Network, Inventory, Assets, Objects, Self);
             Inventory = new InventoryManager(Log, Network, Self, Assets);
             Directory = new DirectoryManager(Log, Network);
-            Sound = new SoundManager(this);
+            Sound = new SoundManager(Log, Network, Self);
             Throttle = new AgentThrottle(Network);
 
             //if (Settings.ENABLE_INVENTORY_STORE)

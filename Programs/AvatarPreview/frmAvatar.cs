@@ -303,7 +303,7 @@ namespace AvatarPreview
 
                 // Compute the head bake
                 Baker baker = new Baker(
-                    _client, AppearanceManager.BakeType.Head, textureCount, paramValues);
+                    _client.Log, AppearanceManager.BakeType.Head, textureCount, paramValues);
 
                 foreach (KeyValuePair<AppearanceManager.TextureIndex, AssetTexture> kvp in layers)
                     baker.AddTexture(kvp.Key, kvp.Value, false);
@@ -355,7 +355,7 @@ namespace AvatarPreview
 
                 // Compute the upper body bake
                 Baker baker = new Baker(
-                    _client, AppearanceManager.BakeType.UpperBody, textureCount, paramValues);
+                    _client.Log, AppearanceManager.BakeType.UpperBody, textureCount, paramValues);
 
                 foreach (KeyValuePair<AppearanceManager.TextureIndex, AssetTexture> kvp in layers)
                     baker.AddTexture(kvp.Key, kvp.Value, false);
@@ -407,7 +407,7 @@ namespace AvatarPreview
 
                 // Compute the lower body bake
                 Baker baker = new Baker(
-                    _client, AppearanceManager.BakeType.LowerBody, textureCount, paramValues);
+                    _client.Log, AppearanceManager.BakeType.LowerBody, textureCount, paramValues);
 
                 foreach (KeyValuePair<AppearanceManager.TextureIndex, AssetTexture> kvp in layers)
                     baker.AddTexture(kvp.Key, kvp.Value, false);
