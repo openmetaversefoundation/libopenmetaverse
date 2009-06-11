@@ -46,7 +46,7 @@ namespace GridImageUpload
             Settings.SEND_AGENT_UPDATES = true;
             Settings.OBJECT_TRACKING = false;
             Settings.STORE_LAND_PATCHES = false;
-            Settings.MULTIPLE_SIMS = false;
+            Client.Settings.MULTIPLE_SIMS = false;
             Client.Self.Movement.Camera.Far = 32.0f;
             Client.Throttle.Cloud = 0.0f;
             Client.Throttle.Land = 0.0f;

@@ -51,13 +51,13 @@ namespace OpenMetaverse
         public static string RESOURCE_DIR = "openmetaverse_data";
 
         /// <summary>Login server to connect to</summary>
-        public static string LOGIN_SERVER = AGNI_LOGIN_SERVER;
+        public string LOGIN_SERVER = AGNI_LOGIN_SERVER;
 
         /// <summary>IP Address the client will bind to</summary>
         public static System.Net.IPAddress BIND_ADDR = System.Net.IPAddress.Any;
 
         /// <summary>Use XML-RPC Login or LLSD Login, default is XML-RPC Login</summary>
-        public static bool USE_LLSD_LOGIN = false;
+        public bool USE_LLSD_LOGIN = false;
         #endregion
         #region Inventory
         /// <summary>
@@ -83,22 +83,22 @@ namespace OpenMetaverse
 
         /// <summary>Number of milliseconds before NetworkManager.Logout() will
         /// time out</summary>
-        public static int LOGOUT_TIMEOUT = 5 * 1000;
+        public int LOGOUT_TIMEOUT = 5 * 1000;
 
         /// <summary>Number of milliseconds before a CAPS call will time out</summary>
         /// <remarks>Setting this too low will cause web requests time out and
         /// possibly retry repeatedly</remarks>
-        public static int CAPS_TIMEOUT = 60 * 1000;
+        public int CAPS_TIMEOUT = 60 * 1000;
 
         /// <summary>Number of milliseconds for xml-rpc to timeout</summary>
-        public static int LOGIN_TIMEOUT = 60 * 1000;
+        public int LOGIN_TIMEOUT = 60 * 1000;
 
         /// <summary>Milliseconds before a packet is assumed lost and resent</summary>
-        public static int RESEND_TIMEOUT = 4000;
+        public int RESEND_TIMEOUT = 4000;
 
         /// <summary>Milliseconds without receiving a packet before the 
         /// connection to a simulator is assumed lost</summary>
-        public static int SIMULATOR_TIMEOUT = 30 * 1000;
+        public int SIMULATOR_TIMEOUT = 30 * 1000;
 
         /// <summary>Milliseconds to wait for a simulator info request through
         /// the grid interface</summary>
@@ -134,9 +134,9 @@ namespace OpenMetaverse
         public const int PACKET_ARCHIVE_SIZE = 200;
         /// <summary>Maximum number of queued ACKs to be sent before SendAcks()
         /// is forced</summary>
-        public static int MAX_PENDING_ACKS = 10;
+        public int MAX_PENDING_ACKS = 10;
         /// <summary>Network stats queue length (seconds)</summary>
-        public static int STATS_QUEUE_SIZE = 5;
+        public int STATS_QUEUE_SIZE = 5;
 
         #endregion
         #region Configuration options (mostly booleans)
@@ -149,7 +149,7 @@ namespace OpenMetaverse
         /// overhead, but several calls currently block for a long time and
         /// would need to be rewritten as asynchronous code before this is
         /// feasible</remarks>
-        public static bool SYNC_PACKETCALLBACKS = false;
+        public bool SYNC_PACKETCALLBACKS = false;
 
         /// <summary>Enable/disable storing terrain heightmaps in the 
         /// TerrainManager</summary>
@@ -168,12 +168,12 @@ namespace OpenMetaverse
 
         /// <summary>Enable/disable the sending of pings to monitor lag and 
         /// packet loss</summary>
-        public static bool SEND_PINGS = true;
+        public bool SEND_PINGS = true;
 
         /// <summary>Should we connect to multiple sims? This will allow
         /// viewing in to neighboring simulators and sim crossings
         /// (Experimental)</summary>
-        public static bool MULTIPLE_SIMS = true;
+        public bool MULTIPLE_SIMS = true;
 
         /// <summary>If true, all object update packets will be decoded in to
         /// native objects. If false, only updates for our own agent will be
@@ -188,10 +188,10 @@ namespace OpenMetaverse
 
         /// <summary>Whether to establish connections to HTTP capabilities
         /// servers for simulators</summary>
-        public static bool ENABLE_CAPS = true;
+        public bool ENABLE_CAPS = true;
 
         /// <summary>Whether to decode sim stats</summary>
-        public static bool ENABLE_SIMSTATS = true;
+        public bool ENABLE_SIMSTATS = true;
 
         /// <summary>The capabilities servers are currently designed to
         /// periodically return a 502 error which signals for the client to
@@ -260,10 +260,10 @@ namespace OpenMetaverse
         public static Color4 DEFAULT_EFFECT_COLOR = new Color4(255, 0, 0, 255);
 
         /// <summary>Maximum number of times to resend a failed packet</summary>
-        public static int MAX_RESEND_COUNT = 3;
+        public int MAX_RESEND_COUNT = 3;
 
         /// <summary>Throttle outgoing packet rate</summary>
-        public static bool THROTTLE_OUTGOING_PACKETS = true;
+        public bool THROTTLE_OUTGOING_PACKETS = true;
 
         #endregion
         #region Texture Pipeline
@@ -300,13 +300,37 @@ namespace OpenMetaverse
         public bool LOG_NAMES = true;
 
         /// <summary>Log packet retransmission info</summary>
-        public static bool LOG_RESENDS = true;
+        public bool LOG_RESENDS = true;
 
         #endregion
+
+        public GridClient Client;
         /// <summary>Constructor</summary>
-        public Settings()
+        public Settings(GridClient client)
         {
-            
+            Client = client;
+            apply();
+        }
+        public void apply()
+        {
+            // Apply NetworkManager settings:
+            Client.Network.SimulatorTimeout = SIMULATOR_TIMEOUT;
+            Client.Network.LogoutTimeout = LOGOUT_TIMEOUT;
+            Client.Network.SyncPacketCallbacks = SYNC_PACKETCALLBACKS;
+            Client.Network.EnableSimStats = ENABLE_SIMSTATS;
+            Client.Network.MultipleSims = MULTIPLE_SIMS;
+            Client.Network.EnableCaps = ENABLE_CAPS;
+            Client.Network.ThrottleOutgoingPackets = THROTTLE_OUTGOING_PACKETS;
+            Client.Network.MaxPendingAcks = MAX_PENDING_ACKS;
+            Client.Network.ResendTimeout = RESEND_TIMEOUT;
+            Client.Network.MaxResendCount = MAX_RESEND_COUNT;
+            Client.Network.LogResends = LOG_RESENDS;
+            Client.Network.StatsQueueSize = STATS_QUEUE_SIZE;
+            Client.Network.SendPings = SEND_PINGS;
+            Client.Network.CapsTimeout = CAPS_TIMEOUT;
+            Client.Network.LoginTimeout = LOGIN_TIMEOUT;
+            Client.Network.LoginServer = LOGIN_SERVER;
+            Client.Network.UseLLSDLogin = USE_LLSD_LOGIN;
         }
     }
 }

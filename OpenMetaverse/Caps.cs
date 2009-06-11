@@ -172,7 +172,7 @@ namespace OpenMetaverse
 
             _SeedRequest = new CapsClient(new Uri(_SeedCapsURI));
             _SeedRequest.OnComplete += new CapsClient.CompleteCallback(SeedRequestCompleteHandler);
-            _SeedRequest.BeginGetResponse(req, OSDFormat.Xml, Settings.CAPS_TIMEOUT);
+            _SeedRequest.BeginGetResponse(req, OSDFormat.Xml, Simulator.Network.CapsTimeout);
         }
 
         private void SeedRequestCompleteHandler(CapsClient client, OSD result, Exception error)
@@ -227,7 +227,7 @@ namespace OpenMetaverse
             IMessage message = Messages.MessageUtils.DecodeEvent(eventName, body);
             if (message != null)
             {
-                if (Settings.SYNC_PACKETCALLBACKS)
+                if (Simulator.Network.SyncPacketCallbacks)
                     Simulator.Network.CapsEvents.RaiseEvent(eventName, message, Simulator);
                 else
                     Simulator.Network.CapsEvents.BeginRaiseEvent(eventName, message, Simulator);

@@ -69,12 +69,12 @@ namespace importprimscript
 
             // Optimize the connection for our purposes
             Client.Self.Movement.Camera.Far = 64f;
-            Settings.MULTIPLE_SIMS = false;
+            Client.Settings.MULTIPLE_SIMS = false;
             Settings.SEND_AGENT_UPDATES = true;
             Settings.LOG_LEVEL = Helpers.LogLevel.None;
             Settings.ALWAYS_REQUEST_OBJECTS = true;
             Settings.ALWAYS_DECODE_OBJECTS = true;
-            Settings.THROTTLE_OUTGOING_PACKETS = false;
+            Client.Settings.THROTTLE_OUTGOING_PACKETS = false;
             Client.Throttle.Land = 0;
             Client.Throttle.Wind = 0;
             Client.Throttle.Cloud = 0;

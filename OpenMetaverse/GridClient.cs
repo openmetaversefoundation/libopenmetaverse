@@ -110,7 +110,7 @@ namespace OpenMetaverse
             // These are order-dependant
             Log = new LoggerInstance();
             Network = new NetworkManager(Log);
-            Settings = new Settings();
+            Settings = new Settings(this);
             Terrain = new TerrainManager(Log, Network);
             Parcels = new ParcelManager(Log, Network, Terrain);
             Self = new AgentManager(Log, Network, Grid);

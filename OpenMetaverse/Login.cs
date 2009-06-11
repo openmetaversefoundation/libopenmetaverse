@@ -726,7 +726,23 @@ namespace OpenMetaverse
         private Dictionary<LoginResponseCallback, string[]> CallbackOptions = new Dictionary<LoginResponseCallback, string[]>();
         /// <summary>A list of packets obtained during the login process which networkmanager will log but not process</summary>
         private readonly List<string> UDPBlacklist = new List<string>();
+
+        // Default settings values:
+        private string _LoginServer = Settings.AGNI_LOGIN_SERVER;
+        private int _LoginTimeout = 60 * 1000;
+        private bool _UseLLSDLogin = false;
         #endregion
+
+        #region Settings
+        /// <summary>Login server to connect to</summary>
+        public string LoginServer { get { return _LoginServer; } set { _LoginServer = value; } }
+
+        /// <summary>Number of milliseconds for xml-rpc to timeout</summary>
+        public int LoginTimeout { get { return _LoginTimeout; } set { _LoginTimeout = value; } }
+
+        /// <summary>Use XML-RPC Login or LLSD Login, default is XML-RPC Login</summary>
+        public bool UseLLSDLogin { get { return _UseLLSDLogin; } set { _UseLLSDLogin = value; } }
+        #endregion Settings
 
         #region Public Methods
 
@@ -763,8 +779,8 @@ namespace OpenMetaverse
             LoginParams loginParams = new LoginParams();
             
 
-            loginParams.URI = Settings.LOGIN_SERVER;
-            loginParams.Timeout = Settings.LOGIN_TIMEOUT;
+            loginParams.URI = LoginServer;
+            loginParams.Timeout = LoginTimeout;
             loginParams.MethodName = "login_to_simulator";
             loginParams.FirstName = firstName;
             loginParams.LastName = lastName;
@@ -953,7 +969,7 @@ namespace OpenMetaverse
             ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
             // TODO: At some point, maybe we should check the cert?
 
-            if (Settings.USE_LLSD_LOGIN)
+            if (UseLLSDLogin)
             {
                 #region LLSD Based Login
                 
@@ -1008,7 +1024,7 @@ namespace OpenMetaverse
                 loginRequest.OnComplete += new CapsClient.CompleteCallback(LoginReplyLLSDHandler);
                 loginRequest.UserData = CurrentContext;
                 UpdateLoginStatus(LoginStatus.ConnectingToLogin, String.Format("Logging in as {0} {1}...", loginParams.FirstName, loginParams.LastName));
-                loginRequest.BeginGetResponse(loginLLSD, OSDFormat.Xml, Settings.CAPS_TIMEOUT);
+                loginRequest.BeginGetResponse(loginLLSD, OSDFormat.Xml, CapsTimeout);
 
                 #endregion
             }

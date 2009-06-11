@@ -286,6 +286,66 @@ namespace OpenMetaverse
 
         #endregion Properties
 
+        #region Settings
+        /// <summary>Milliseconds without receiving a packet before the 
+        /// connection to a simulator is assumed lost</summary>
+        public int SimulatorTimeout { get { return _SimulatorTimeout; } set { _SimulatorTimeout = value; } }
+        
+        /// <summary>Number of milliseconds before NetworkManager.Logout() will
+        /// time out</summary>
+        public int LogoutTimeout { get { return _LogoutTimeout; } set { _LogoutTimeout = value; } }
+        
+        /// <summary>Enable to process packets synchronously, where all of the
+        /// callbacks for each packet must return before the next packet is
+        /// processed</summary>
+        /// <remarks>This is an experimental feature and is not completely
+        /// reliable yet. Ideally it would reduce context switches and thread
+        /// overhead, but several calls currently block for a long time and
+        /// would need to be rewritten as asynchronous code before this is
+        /// feasible</remarks>
+        public bool SyncPacketCallbacks { get { return _SyncPacketCallbacks; } set { _SyncPacketCallbacks = value; } }
+        
+        /// <summary>Whether to decode sim stats</summary>
+        public bool EnableSimStats { get { return _EnableSimStats; } set { _EnableSimStats = value; } }
+
+        /// <summary>Should we connect to multiple sims? This will allow
+        /// viewing in to neighboring simulators and sim crossings
+        /// (Experimental)</summary>
+        public bool MultipleSims { get { return _MultipleSims; } set { _MultipleSims = value; } }
+
+        /// <summary>Whether to establish connections to HTTP capabilities
+        /// servers for simulators</summary>
+        public bool EnableCaps { get { return _EnableCaps; } set { _EnableCaps = value; } }
+
+        /// <summary>Throttle outgoing packet rate</summary>
+        public bool ThrottleOutgoingPackets { get { return _ThrottleOutgoingPackets; } set { _ThrottleOutgoingPackets = value; } }
+
+        /// <summary>Maximum number of queued ACKs to be sent before SendAcks()
+        /// is forced</summary>
+        public int MaxPendingAcks { get { return _MaxPendingAcks; } set { _MaxPendingAcks = value; } }
+
+        /// <summary>Milliseconds before a packet is assumed lost and resent</summary>
+        public int ResendTimeout { get { return _ResendTimeout; } set { _ResendTimeout = value; } }
+
+        /// <summary>Maximum number of times to resend a failed packet</summary>
+        public int MaxResendCount { get { return _MaxResendCount; } set { _MaxResendCount = value; } }
+
+        /// <summary>Log packet retransmission info</summary>
+        public bool LogResends { get { return _LogResends; } set { _LogResends = value; } }
+
+        /// <summary>Network stats queue length (seconds)</summary>
+        public int StatsQueueSize { get { return _StatsQueueSize; } set { _StatsQueueSize = value; } }
+        
+        /// <summary>Enable/disable the sending of pings to monitor lag and 
+        /// packet loss</summary>
+        public bool SendPings { get { return _SendPings; } set { _SendPings = value; } }
+
+        /// <summary>Number of milliseconds before a CAPS call will time out</summary>
+        /// <remarks>Setting this too low will cause web requests time out and
+        /// possibly retry repeatedly</remarks>
+        public int CapsTimeout { get { return _CapsTimeout; } set { _CapsTimeout = value; } }
+        #endregion Settings
+
         /// <summary>All of the simulators we are currently connected to</summary>
         public List<Simulator> Simulators = new List<Simulator>();
 
@@ -307,6 +367,23 @@ namespace OpenMetaverse
         private Simulator _CurrentSim = null;
         private bool connected = false;
         private LoggerInstance Log;
+
+        // Settings defaults:
+        private int _SimulatorTimeout = 30 * 1000;
+        private int _LogoutTimeout = 5 * 1000;
+        private bool _SyncPacketCallbacks = false;
+        private bool _EnableSimStats = true;
+        private bool _MultipleSims = true;
+        private bool _EnableCaps = true;
+        private bool _ThrottleOutgoingPackets = true;
+        private int _MaxPendingAcks = 10;
+        private int _ResendTimeout = 4000;
+        private int _MaxResendCount = 3;
+        private bool _LogResends = true;
+        private int _StatsQueueSize = 5;
+        private bool _SendPings = true;
+        private int _CapsTimeout = 60 * 1000;
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -490,7 +567,7 @@ namespace OpenMetaverse
                     {
                         // Start a timer that checks if we've been disconnected
                         DisconnectTimer = new Timer(new TimerCallback(DisconnectTimer_Elapsed), null,
-                            Settings.SIMULATOR_TIMEOUT, Settings.SIMULATOR_TIMEOUT);
+                            SimulatorTimeout, SimulatorTimeout);
                     }
 
                     if (setDefault) SetCurrentSim(simulator, seedcaps);
@@ -541,7 +618,7 @@ namespace OpenMetaverse
 
         /// <summary>
         /// Initiate a blocking logout request. This will return when the logout
-        /// handshake has completed or when <code>Settings.LOGOUT_TIMEOUT</code>
+        /// handshake has completed or when <code>LogoutTimeout</code>
         /// has expired and the network layer is manually shut down
         /// </summary>
         public void Logout()
@@ -557,7 +634,7 @@ namespace OpenMetaverse
             // Wait for a logout response. If the response is received, shutdown
             // will be fired in the callback. Otherwise we fire it manually with
             // a NetworkTimeout type
-            if (!logoutEvent.WaitOne(Settings.LOGOUT_TIMEOUT, false))
+            if (!logoutEvent.WaitOne(LogoutTimeout, false))
                 Shutdown(DisconnectType.NetworkTimeout);
 
             OnLogoutReply -= callback;
@@ -788,7 +865,7 @@ namespace OpenMetaverse
 
                         #region Fire callbacks
 
-                        if (Settings.SYNC_PACKETCALLBACKS)
+                        if (SyncPacketCallbacks)
                             PacketEvents.RaiseEvent(packet.Type, packet, simulator);
                         else
                             PacketEvents.BeginRaiseEvent(packet.Type, packet, simulator);
@@ -956,7 +1033,7 @@ namespace OpenMetaverse
 		
 		private void SimStatsHandler(Packet packet, Simulator simulator)
 		{
-			if ( ! Settings.ENABLE_SIMSTATS ) {
+			if ( ! EnableSimStats ) {
 				return;
 			}
 			SimStatsPacket stats = (SimStatsPacket)packet;
@@ -1098,7 +1175,7 @@ namespace OpenMetaverse
 
         private void EnableSimulatorHandler(string capsKey, IMessage message, Simulator simulator)
         {
-            if (!Settings.MULTIPLE_SIMS) return;
+            if (!MultipleSims) return;
 
             EnableSimulatorMessage msg = (EnableSimulatorMessage)message;
 

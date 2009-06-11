@@ -466,8 +466,8 @@ namespace OpenMetaverse
             Handle = handle;
             Network = network;
             PacketArchive = new IncomingPacketIDCollection(Settings.PACKET_ARCHIVE_SIZE);
-            InBytes = new Queue<long>(Settings.STATS_QUEUE_SIZE);
-            OutBytes = new Queue<long>(Settings.STATS_QUEUE_SIZE);
+            InBytes = new Queue<long>(Network.StatsQueueSize);
+            OutBytes = new Queue<long>(Network.StatsQueueSize);
         }
 
         /// <summary>
@@ -508,7 +508,7 @@ namespace OpenMetaverse
             // Timer for recording simulator connection statistics
             StatsTimer = new Timer(StatsTimer_Elapsed, null, 1000, 1000);
             // Timer for periodically pinging the simulator
-            if (Settings.SEND_PINGS)
+            if (Network.SendPings)
                 PingTimer = new Timer(PingTimer_Elapsed, null, Settings.PING_INTERVAL, Settings.PING_INTERVAL);
 
             #endregion Start Timers
@@ -541,7 +541,7 @@ namespace OpenMetaverse
                 //if (Settings.SEND_AGENT_UPDATES)
                     //Network.Self.Movement.SendUpdate(true, this);
 
-                if (!ConnectedEvent.WaitOne(Settings.SIMULATOR_TIMEOUT, false))
+                if (!ConnectedEvent.WaitOne(Network.SimulatorTimeout, false))
                 {
                     Log.Log("Giving up on waiting for RegionHandshake for " + this.ToString(),
                         Helpers.LogLevel.Warning);
@@ -568,7 +568,7 @@ namespace OpenMetaverse
                 Caps = null;
             }
 
-            if (Settings.ENABLE_CAPS)
+            if (Network.EnableCaps)
             {
                 // Connect to the new CAPS system
                 if (!String.IsNullOrEmpty(seedcaps))
@@ -704,7 +704,7 @@ namespace OpenMetaverse
             NetworkManager.OutgoingPacket outgoingPacket = new NetworkManager.OutgoingPacket(this, buffer);
 
             // Send ACK and logout packets directly, everything else goes through the queue
-            if (Settings.THROTTLE_OUTGOING_PACKETS == false ||
+            if (Network.ThrottleOutgoingPackets == false ||
                 type == PacketType.PacketAck ||
                 type == PacketType.LogoutRequest)
             {
@@ -940,7 +940,7 @@ namespace OpenMetaverse
             int pendingAckCount = Interlocked.Increment(ref PendingAckCount);
 
             // Send out ACKs if we have a lot of them
-            if (pendingAckCount >= Settings.MAX_PENDING_ACKS)
+            if (pendingAckCount >= Network.MaxPendingAcks)
                 SendAcks();
 
             #endregion ACK Sending
@@ -1034,11 +1034,11 @@ namespace OpenMetaverse
                 {
                     NetworkManager.OutgoingPacket outgoing = array[i];
 
-                    if (outgoing.TickCount != 0 && now - outgoing.TickCount > Settings.RESEND_TIMEOUT)
+                    if (outgoing.TickCount != 0 && now - outgoing.TickCount > Network.ResendTimeout)
                     {
-                        if (outgoing.ResendCount < Settings.MAX_RESEND_COUNT)
+                        if (outgoing.ResendCount < Network.MaxResendCount)
                         {
-                            if (Settings.LOG_RESENDS)
+                            if (Network.LogResends)
                             {
                                 Log.DebugLog(String.Format("Resending packet #{0}, {1}ms have passed",
                                     outgoing.SequenceNumber, now - outgoing.TickCount));
@@ -1080,9 +1080,9 @@ namespace OpenMetaverse
             long recv = Stats.RecvBytes;
             long sent = Stats.SentBytes;
 
-            if (InBytes.Count >= Settings.STATS_QUEUE_SIZE)
+            if (InBytes.Count >= Network.StatsQueueSize)
                 old_in = InBytes.Dequeue();
-            if (OutBytes.Count >= Settings.STATS_QUEUE_SIZE)
+            if (OutBytes.Count >= Network.StatsQueueSize)
                 old_out = OutBytes.Dequeue();
 
             InBytes.Enqueue(recv);
@@ -1090,8 +1090,8 @@ namespace OpenMetaverse
 
             if (old_in > 0 && old_out > 0)
             {
-                Stats.IncomingBPS = (int)(recv - old_in) / Settings.STATS_QUEUE_SIZE;
-                Stats.OutgoingBPS = (int)(sent - old_out) / Settings.STATS_QUEUE_SIZE;
+                Stats.IncomingBPS = (int)(recv - old_in) / Network.StatsQueueSize;
+                Stats.OutgoingBPS = (int)(sent - old_out) / Network.StatsQueueSize;
                 //Client.Log("Incoming: " + IncomingBPS + " Out: " + OutgoingBPS +
                 //    " Lag: " + LastLag + " Pings: " + ReceivedPongs +
                 //    "/" + SentPings, Helpers.LogLevel.Debug); 

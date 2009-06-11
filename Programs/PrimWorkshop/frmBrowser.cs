@@ -142,7 +142,7 @@ namespace PrimWorkshop
 
             // Initialize the SL client
             Client = new GridClient();
-            Settings.MULTIPLE_SIMS = false;
+            Client.Settings.MULTIPLE_SIMS = false;
             Settings.ALWAYS_DECODE_OBJECTS = true;
             Settings.ALWAYS_REQUEST_OBJECTS = true;
             Settings.SEND_AGENT_UPDATES = true;

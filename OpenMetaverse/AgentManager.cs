@@ -1518,7 +1518,7 @@ namespace OpenMetaverse
                 acceptInvite.SessionID = session_id;
 
                 CapsClient request = new CapsClient(url);
-                request.BeginGetResponse(acceptInvite.Serialize(), OSDFormat.Xml, Settings.CAPS_TIMEOUT);
+                request.BeginGetResponse(acceptInvite.Serialize(), OSDFormat.Xml, Network.CapsTimeout);
             }
             else
             {
@@ -1550,7 +1550,7 @@ namespace OpenMetaverse
                 startConference.SessionID = tmp_session_id;
 
                 CapsClient request = new CapsClient(url);
-                request.BeginGetResponse(startConference.Serialize(), OSDFormat.Xml, Settings.CAPS_TIMEOUT);
+                request.BeginGetResponse(startConference.Serialize(), OSDFormat.Xml, Network.CapsTimeout);
             }
             else
             {
@@ -3003,7 +3003,7 @@ namespace OpenMetaverse
         {
             EstablishAgentCommunicationMessage msg = (EstablishAgentCommunicationMessage)message;
 
-            if (Settings.MULTIPLE_SIMS)
+            if (Network.MultipleSims)
             {
                 
                 IPEndPoint endPoint = new IPEndPoint(msg.Address, msg.Port);
@@ -3535,7 +3535,7 @@ namespace OpenMetaverse
                 req.AgentID = memberID;
 
                 CapsClient request = new CapsClient(url);
-                request.BeginGetResponse(req.Serialize(), OSDFormat.Xml, Settings.CAPS_TIMEOUT);
+                request.BeginGetResponse(req.Serialize(), OSDFormat.Xml, Network.CapsTimeout);
             }
             else
             {

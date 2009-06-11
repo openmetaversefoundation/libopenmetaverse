@@ -676,7 +676,7 @@ namespace OpenMetaverse
                 OSDMap body = req.Serialize();
 
                 CapsClient capsPost = new CapsClient(url);
-                capsPost.BeginGetResponse(body, OSDFormat.Xml, Settings.CAPS_TIMEOUT);
+                capsPost.BeginGetResponse(body, OSDFormat.Xml, simulator.Network.CapsTimeout);
             }
             else
             {
