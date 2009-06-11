@@ -3385,7 +3385,7 @@ namespace OpenMetaverse
         {
             ChatterBoxSessionAgentListUpdatesMessage msg = (ChatterBoxSessionAgentListUpdatesMessage)message;
 
-            lock (GroupChatSessions)
+            lock (GroupChatSessions.Dictionary)
                 if (!GroupChatSessions.ContainsKey(msg.SessionID))
                     GroupChatSessions.Add(msg.SessionID, new List<ChatSessionMember>());
 
@@ -3410,11 +3410,11 @@ namespace OpenMetaverse
                             fndMbr.AvatarKey = msg.Updates[i].AgentID;
 
                             lock (GroupChatSessions.Dictionary)
-                                GroupChatSessions[sessionID].Add(fndMbr);
+                                GroupChatSessions[msg.SessionID].Add(fndMbr);
 
                             if (OnChatSessionMemberAdded != null)
                             {
-                                try { OnChatSessionMemberAdded(sessionID, fndMbr.AvatarKey); }
+                                try { OnChatSessionMemberAdded(msg.SessionID, fndMbr.AvatarKey); }
                                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                             }
                         }
@@ -3423,17 +3423,17 @@ namespace OpenMetaverse
                     {
                         if (fndMbr.AvatarKey != UUID.Zero)
                             lock (GroupChatSessions.Dictionary)
-                                GroupChatSessions[sessionID].Remove(fndMbr);
+                                GroupChatSessions[msg.SessionID].Remove(fndMbr);
 
                         if (OnChatSessionMemberLeft != null)
                         {
-                            try { OnChatSessionMemberLeft(sessionID, msg.Updates[i].AgentID); }
+                            try { OnChatSessionMemberLeft(msg.SessionID, msg.Updates[i].AgentID); }
                             catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                         }
 
                         if (msg.Updates[i].AgentID == Client.Self.AgentID)
                         {
-                            try { OnGroupChatLeft(sessionID); }
+                            try { OnGroupChatLeft(msg.SessionID); }
                             catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                         }
                     }
