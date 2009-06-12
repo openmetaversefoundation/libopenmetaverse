@@ -51,6 +51,12 @@ namespace OpenMetaverse.Messages.CableBeach
         public const string MAP_REGION_SEARCH = "http://openmetaverse.org/services/map/region_search";
         public const string MAP_GET_REGION_COUNT = "http://openmetaverse.org/services/map/get_region_count";
         public const string MAP_REGION_UPDATE = "http://openmetaverse.org/services/map/region_update";
+
+        public const string SIMULATOR = "http://openmetaverse.org/services/simulator";
+        public const string SIMULATOR_ENABLE_CLIENT = "http://openmetaverse.org/services/simulator/enable_client";
+        public const string SIMULATOR_CLOSE_AGENT_CONNECTION = "http://openmetaverse.org/services/simulator/close_agent_connection";
+        public const string SIMULATOR_CHILD_AGENT_UPDATE = "http://openmetaverse.org/services/simulator/child_agent_update";
+        public const string SIMULATOR_NEIGHBOR_UPDATE = "http://openmetaverse.org/services/simulator/neighbor_update";
     }
 
     public static class AvatarAttributes
