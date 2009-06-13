@@ -622,6 +622,50 @@ namespace OpenMetaverse.Messages.CableBeach
         }
     }
 
+    public class CreateAssetMessage : IMessage
+    {
+        public MetadataBlock Metadata;
+        public string Base64Data;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["metadata"] = Metadata.Serialize();
+            map["data"] = OSD.FromString(Base64Data);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDMap metadata = (OSDMap)map["metadata"];
+
+            if (metadata.ContainsKey("components"))
+                Metadata = new MetadataJPEG2000();
+            else
+                Metadata = new MetadataDefault();
+
+            Metadata.Deserialize(metadata);
+            Base64Data = map["base64_data"].AsString();
+        }
+    }
+
+    public class CreateAssetReplyMessage : IMessage
+    {
+        public UUID ID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["id"] = OSD.FromUUID(ID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            ID = map["id"].AsUUID();
+        }
+    }
+
     #endregion Asset Messages
 
     #region Inventory Messages

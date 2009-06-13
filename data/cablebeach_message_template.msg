@@ -357,16 +357,13 @@
 
 &create =
 {
-    content_type: string,
-    temporary: boolean,
+    metadata: metadata,
     base64_data: string
 }
 
 &create =
 {
-    id: uuid,
-    content_type: string,
-    temporary: boolean,
+    metadata: metadata,
     base64_data: string
 }
 
