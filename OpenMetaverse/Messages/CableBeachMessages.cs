@@ -651,18 +651,21 @@ namespace OpenMetaverse.Messages.CableBeach
 
     public class CreateAssetReplyMessage : IMessage
     {
-        public UUID ID;
+        public UUID AssetID;
+        public Uri AssetUri;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
-            map["id"] = OSD.FromUUID(ID);
+            map["asset_uri"] = OSD.FromUri(AssetUri);
+            map["asset_id"] = OSD.FromUUID(AssetID);
             return map;
         }
 
         public void Deserialize(OSDMap map)
         {
-            ID = map["id"].AsUUID();
+            AssetUri = map["asset_uri"].AsUri();
+            AssetID = map["asset_id"].AsUUID();
         }
     }
 

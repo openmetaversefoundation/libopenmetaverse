@@ -371,7 +371,8 @@
 
 <-
 {
-    id: uuid
+    asset_uri: uri,
+    asset_id: uuid
 }
 
 %%delete_asset
