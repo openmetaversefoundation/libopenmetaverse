@@ -126,7 +126,7 @@ namespace OpenMetaverse
     public abstract class InventoryBase : ISerializable
     {
         /// <summary><seealso cref="OpenMetaverse.UUID"/> of item/folder</summary>
-        public readonly UUID UUID;
+        public UUID UUID;
         /// <summary><seealso cref="OpenMetaverse.UUID"/> of parent folder</summary>
         public UUID ParentUUID;
         /// <summary>Name of item/folder</summary>

@@ -25,6 +25,8 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using OpenMetaverse;
 
 namespace OpenMetaverse.Assets
@@ -39,6 +41,12 @@ namespace OpenMetaverse.Assets
 
         /// <summary>A text string containing the raw contents of the notecard</summary>
         public string Text = null;
+
+        /// <summary>A text string containing main text of the notecard</summary>
+        public string BodyText = null;
+
+        /// <summary>List of <see cref="OpenMetaverse.InventoryItem"/>s embedded on the notecard</summary>
+        public List<InventoryItem> EmbeddedItems = null;
 
         /// <summary>Construct an Asset of type Notecard</summary>
         public AssetNotecard() { }
@@ -57,10 +65,10 @@ namespace OpenMetaverse.Assets
         /// <summary>
         /// Construct an Asset object of type Notecard
         /// </summary>
-        /// <param name="text">A text string containing the raw contents of the notecard</param>
+        /// <param name="text">A text string containing the main body text of the notecard</param>
         public AssetNotecard(string text)
         {
-            Text = text;
+            BodyText = text;
             Encode();
         }
 
@@ -69,11 +77,12 @@ namespace OpenMetaverse.Assets
         /// </summary>
         public override void Encode()
         {
-            string temp = "Linden text version 2\n{\nLLEmbeddedItems version 1\n{\ncount 0\n}\nText length ";
-            temp += Text.Length + "\n";
-            temp += Text;
-            temp += "}";
-            AssetData = Utils.StringToBytes(temp);
+            // TODO: encode embedded inventory items
+            Text = "Linden text version 2\n{\nLLEmbeddedItems version 1\n{\ncount 0\n}\nText length ";
+            Text += BodyText.Length + "\n";
+            Text += BodyText;
+            Text += "}";
+            AssetData = Utils.StringToBytes(Text);
         }
 
         /// <summary>
@@ -83,7 +92,205 @@ namespace OpenMetaverse.Assets
         public override bool Decode()
         {
             Text = Utils.BytesToString(AssetData);
-            return true;
+            EmbeddedItems = new List<InventoryItem>();
+            BodyText = string.Empty;
+
+            try
+            {
+                string[] lines = Text.Split(new Char[] { '\n' } );
+                int i = 0;
+                Match m;
+
+                // Version
+                if (!(m = Regex.Match(lines[i++], @"Linden text version\s+(\d+)")).Success)
+                    throw new Exception("could not determine version");
+                int notecardVersion = int.Parse(m.Groups[1].Value);
+                if (notecardVersion < 1 || notecardVersion > 2)
+                    throw new Exception("unsuported version");
+                if (!(m = Regex.Match(lines[i++], @"\s*{$")).Success)
+                    throw new Exception("wrong format");
+
+                // Embedded items header
+                if (!(m = Regex.Match(lines[i++], @"LLEmbeddedItems version\s+(\d+)")).Success)
+                    throw new Exception("could not determine embedded items version version");
+                if (m.Groups[1].Value != "1")
+                    throw new Exception("unsuported embedded item version");
+                if (!(m = Regex.Match(lines[i++], @"\s*{$")).Success)
+                    throw new Exception("wrong format");
+
+                // Item count
+                if (!(m = Regex.Match(lines[i++], @"count\s+(\d+)")).Success)
+                    throw new Exception("wrong format");
+                int count = int.Parse(m.Groups[1].Value);
+
+                // Decode individual items
+                for (int n = 0; n < count; n++)
+                {
+                    if (!(m = Regex.Match(lines[i++], @"\s*{$")).Success)
+                        throw new Exception("wrong format");
+
+                    // Index
+                    if (!(m = Regex.Match(lines[i++], @"ext char index\s+(\d+)")).Success)
+                        throw new Exception("missing ext char index");
+                    int index = int.Parse(m.Groups[1].Value);
+
+                    // Inventory item
+                    if (!(m = Regex.Match(lines[i++], @"inv_item\s+0")).Success)
+                        throw new Exception("missing inv item");
+
+                    // Item itself
+                    InventoryItem embedded = new InventoryItem(UUID.Zero);
+                    while (true)
+                    {
+                        if (!(m = Regex.Match(lines[i++], @"([^\s]+)(\s+)?(.*)?")).Success)
+                            throw new Exception("wrong format");
+                        string key = m.Groups[1].Value;
+                        string val = m.Groups[3].Value;
+                        System.Console.WriteLine(key);
+                        if (key == "{")
+                            continue;
+                        if (key == "}")
+                            break;
+                        else if (key == "permissions")
+                        {
+                            uint baseMask = 0;
+                            uint ownerMask = 0;
+                            uint groupMask = 0;
+                            uint everyoneMask = 0;
+                            uint nextOwnerMask = 0;
+
+                            while (true)
+                            {
+                                if (!(m = Regex.Match(lines[i++], @"([^\s]+)(\s+)?([^\s]+)?")).Success)
+                                    throw new Exception("wrong format");
+                                string pkey = m.Groups[1].Value;
+                                string pval = m.Groups[3].Value;
+
+                                if (pkey == "{")
+                                    continue;
+                                if (pkey == "}")
+                                    break;
+                                else if (pkey == "creator_id")
+                                {
+                                    embedded.CreatorID = new UUID(pval);
+                                }
+                                else if (pkey == "owner_id")
+                                {
+                                    embedded.OwnerID = new UUID(pval);
+                                }
+                                else if (pkey == "group_id")
+                                {
+                                    embedded.GroupID = new UUID(pval);
+                                }
+                                else if (pkey == "base_mask")
+                                {
+                                    baseMask = uint.Parse(pval, System.Globalization.NumberStyles.AllowHexSpecifier);
+                                }
+                                else if (pkey == "owner_mask")
+                                {
+                                    ownerMask = uint.Parse(pval, System.Globalization.NumberStyles.AllowHexSpecifier);
+                                }
+                                else if (pkey == "group_mask")
+                                {
+                                    groupMask = uint.Parse(pval, System.Globalization.NumberStyles.AllowHexSpecifier);
+                                }
+                                else if (pkey == "everyone_mask")
+                                {
+                                    everyoneMask = uint.Parse(pval, System.Globalization.NumberStyles.AllowHexSpecifier);
+                                }
+                                else if (pkey == "next_owner_mask")
+                                {
+                                    nextOwnerMask = uint.Parse(pval, System.Globalization.NumberStyles.AllowHexSpecifier);
+                                }
+                            }
+                            embedded.Permissions = new Permissions(baseMask, everyoneMask, groupMask, nextOwnerMask, ownerMask);
+                        }
+                        else if (key == "sale_info")
+                        {
+                            while (true)
+                            {
+                                if (!(m = Regex.Match(lines[i++], @"([^\s]+)(\s+)?([^\s]+)?")).Success)
+                                    throw new Exception("wrong format");
+                                string pkey = m.Groups[1].Value;
+                                string pval = m.Groups[3].Value;
+
+                                if (pkey == "{")
+                                    continue;
+                                if (pkey == "}")
+                                    break;
+                                else if (pkey == "sale_price")
+                                {
+                                    embedded.SalePrice = int.Parse(pval);
+                                }
+                                else if (pkey == "sale_type")
+                                {
+                                    embedded.SaleType = Utils.StringToSaleType(pval);
+                                }
+                            }
+                        }
+                        else if (key == "item_id")
+                        {
+                            embedded.UUID = new UUID(val);
+                        }
+                        else if (key == "parent_id")
+                        {
+                            embedded.ParentUUID = new UUID(val);
+                        }
+                        else if (key == "asset_id")
+                        {
+                            embedded.AssetUUID = new UUID(val);
+                        }
+                        else if (key == "type")
+                        {
+                            embedded.AssetType = Utils.StringToAssetType(val);
+                        }
+                        else if (key == "inv_type")
+                        {
+                            embedded.InventoryType = Utils.StringToInventoryType(val);
+                        }
+                        else if (key == "flags")
+                        {
+                            embedded.Flags = uint.Parse(val, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        }
+                        else if (key == "name")
+                        {
+                            embedded.Name = val.Remove(val.LastIndexOf("|"));
+                        }
+                        else if (key == "desc")
+                        {
+                            embedded.Description = val.Remove(val.LastIndexOf("|"));
+                        }
+                        else if (key == "creation_date")
+                        {
+                            embedded.CreationDate = Utils.UnixTimeToDateTime(int.Parse(val));
+                        }
+                    }
+                    EmbeddedItems.Add(embedded);
+
+                    if (!(m = Regex.Match(lines[i++], @"\s*}$")).Success)
+                        throw new Exception("wrong format");
+
+                }
+
+                // Text size
+                if (!(m = Regex.Match(lines[i++], @"\s*}$")).Success)
+                    throw new Exception("wrong format");
+                if (!(m = Regex.Match(lines[i++], @"Text length\s+(\d+)")).Success)
+                    throw new Exception("could not determine text length");
+
+                // Read the rest of the notecard
+                while (i < lines.Length)
+                {
+                    BodyText += lines[i++] + "\n";
+                }
+                BodyText = BodyText.Remove(BodyText.LastIndexOf("}"));
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Decoding notecard asset failed: " + ex.Message, Helpers.LogLevel.Error);
+                return false;
+            }
         }
     }
 }
