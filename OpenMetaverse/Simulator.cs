@@ -491,17 +491,16 @@ namespace OpenMetaverse
 
             #region Start Timers
 
-            // Destroy the timers
-            if (AckTimer != null) AckTimer.Dispose();
-            if (StatsTimer != null) StatsTimer.Dispose();
-            if (PingTimer != null) PingTimer.Dispose();
-
             // Timer for sending out queued packet acknowledgements
-            AckTimer = new Timer(AckTimer_Elapsed, null, Settings.NETWORK_TICK_INTERVAL, Settings.NETWORK_TICK_INTERVAL);
+            if (AckTimer == null)
+                AckTimer = new Timer(AckTimer_Elapsed, null, Settings.NETWORK_TICK_INTERVAL, Timeout.Infinite);
+
             // Timer for recording simulator connection statistics
-            StatsTimer = new Timer(StatsTimer_Elapsed, null, 1000, 1000);
+            if (StatsTimer == null)
+                StatsTimer = new Timer(StatsTimer_Elapsed, null, 1000, 1000);
+
             // Timer for periodically pinging the simulator
-            if (Client.Settings.SEND_PINGS)
+            if (PingTimer == null && Client.Settings.SEND_PINGS)
                 PingTimer = new Timer(PingTimer_Elapsed, null, Settings.PING_INTERVAL, Settings.PING_INTERVAL);
 
             #endregion Start Timers
@@ -1037,21 +1036,22 @@ namespace OpenMetaverse
                     {
                         if (outgoing.ResendCount < Client.Settings.MAX_RESEND_COUNT)
                         {
+                            // The TickCount will be set to the current time when the packet
+                            // is actually sent out again
+                            outgoing.TickCount = 0;
+
+                            // Set the resent flag
+                            outgoing.Buffer.Data[0] = (byte)(outgoing.Buffer.Data[0] | Helpers.MSG_RESENT);
+
+                            // Stats tracking
+                            Interlocked.Increment(ref outgoing.ResendCount);
+                            Interlocked.Increment(ref Stats.ResentPackets);
+
                             if (Client.Settings.LOG_RESENDS)
                             {
                                 Logger.DebugLog(String.Format("Resending packet #{0}, {1}ms have passed",
                                     outgoing.SequenceNumber, now - outgoing.TickCount), Client);
                             }
-
-                            // Set the resent flag
-                            outgoing.Buffer.Data[0] = (byte)(outgoing.Buffer.Data[0] | Helpers.MSG_RESENT);
-
-                            // The TickCount will be set to the current time when the packet
-                            // is actually sent out again
-                            outgoing.TickCount = 0;
-
-                            Interlocked.Increment(ref outgoing.ResendCount);
-                            Interlocked.Increment(ref Stats.ResentPackets);
 
                             SendPacketFinal(outgoing);
                         }
@@ -1071,6 +1071,9 @@ namespace OpenMetaverse
         {
             SendAcks();
             ResendUnacked();
+
+            // Start the ACK handling functions again after NETWORK_TICK_INTERVAL milliseconds
+            AckTimer.Change(Settings.NETWORK_TICK_INTERVAL, Timeout.Infinite);
         }
 
         private void StatsTimer_Elapsed(object obj)
