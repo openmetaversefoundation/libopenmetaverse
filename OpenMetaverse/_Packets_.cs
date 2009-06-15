@@ -2021,9 +2021,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             TestBlock1.FromBytes(bytes, ref i);
-            if(NeighborBlock.Length < 4) {
+            if(NeighborBlock == null || NeighborBlock.Length != 4) {
                 NeighborBlock = new NeighborBlockBlock[4];
-                for(int j = 0; j < 4; j++) NeighborBlock[j] = new NeighborBlockBlock();
+                for(int j = 0; j < 4; j++)
+                { NeighborBlock[j] = new NeighborBlockBlock(); }
             }
             for (int j = 0; j < 4; j++)
             { NeighborBlock[j].FromBytes(bytes, ref i); }
@@ -2039,9 +2040,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             TestBlock1.FromBytes(bytes, ref i);
-            if(NeighborBlock.Length < 4) {
+            if(NeighborBlock == null || NeighborBlock.Length != 4) {
                 NeighborBlock = new NeighborBlockBlock[4];
-                for(int j = 0; j < 4; j++) NeighborBlock[j] = new NeighborBlockBlock();
+                for(int j = 0; j < 4; j++)
+                { NeighborBlock[j] = new NeighborBlockBlock(); }
             }
             for (int j = 0; j < 4; j++)
             { NeighborBlock[j].FromBytes(bytes, ref i); }
@@ -2312,7 +2314,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 10;
             Header.Reliable = true;
             TelehubBlock = new TelehubBlockBlock();
-            SpawnPointBlock = new SpawnPointBlockBlock[0];
+            SpawnPointBlock = null;
         }
 
         public TelehubInfoPacket(byte[] bytes, ref int i) : this()
@@ -2331,9 +2333,10 @@ namespace OpenMetaverse.Packets
             }
             TelehubBlock.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(SpawnPointBlock.Length < count) {
+            if(SpawnPointBlock == null || SpawnPointBlock.Length != -1) {
                 SpawnPointBlock = new SpawnPointBlockBlock[count];
-                for(int j = 0; j < count; j++) SpawnPointBlock[j] = new SpawnPointBlockBlock();
+                for(int j = 0; j < count; j++)
+                { SpawnPointBlock[j] = new SpawnPointBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { SpawnPointBlock[j].FromBytes(bytes, ref i); }
@@ -2350,9 +2353,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             TelehubBlock.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(SpawnPointBlock.Length < count) {
+            if(SpawnPointBlock == null || SpawnPointBlock.Length != count) {
                 SpawnPointBlock = new SpawnPointBlockBlock[count];
-                for(int j = 0; j < count; j++) SpawnPointBlock[j] = new SpawnPointBlockBlock();
+                for(int j = 0; j < count; j++)
+                { SpawnPointBlock[j] = new SpawnPointBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { SpawnPointBlock[j].FromBytes(bytes, ref i); }
@@ -2979,7 +2983,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 28;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            Data = new DataBlock[0];
+            Data = null;
         }
 
         public AvatarPickerReplyPacket(byte[] bytes, ref int i) : this()
@@ -2998,9 +3002,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != -1) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -3017,9 +3022,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != count) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -3575,7 +3581,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             TransactionData = new TransactionDataBlock();
-            QueryData = new QueryDataBlock[0];
+            QueryData = null;
         }
 
         public PlacesReplyPacket(byte[] bytes, ref int i) : this()
@@ -3595,9 +3601,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             TransactionData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryData.Length < count) {
+            if(QueryData == null || QueryData.Length != -1) {
                 QueryData = new QueryDataBlock[count];
-                for(int j = 0; j < count; j++) QueryData[j] = new QueryDataBlock();
+                for(int j = 0; j < count; j++)
+                { QueryData[j] = new QueryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryData[j].FromBytes(bytes, ref i); }
@@ -3615,9 +3622,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             TransactionData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryData.Length < count) {
+            if(QueryData == null || QueryData.Length != count) {
                 QueryData = new QueryDataBlock[count];
-                for(int j = 0; j < count; j++) QueryData[j] = new QueryDataBlock();
+                for(int j = 0; j < count; j++)
+                { QueryData[j] = new QueryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryData[j].FromBytes(bytes, ref i); }
@@ -4306,9 +4314,9 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            QueryData = new QueryDataBlock[0];
-            QueryReplies = new QueryRepliesBlock[0];
-            StatusData = new StatusDataBlock[0];
+            QueryData = null;
+            QueryReplies = null;
+            StatusData = null;
         }
 
         public DirPlacesReplyPacket(byte[] bytes, ref int i) : this()
@@ -4327,23 +4335,26 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryData.Length < count) {
+            if(QueryData == null || QueryData.Length != -1) {
                 QueryData = new QueryDataBlock[count];
-                for(int j = 0; j < count; j++) QueryData[j] = new QueryDataBlock();
+                for(int j = 0; j < count; j++)
+                { QueryData[j] = new QueryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(QueryReplies.Length < count) {
+            if(QueryReplies == null || QueryReplies.Length != -1) {
                 QueryReplies = new QueryRepliesBlock[count];
-                for(int j = 0; j < count; j++) QueryReplies[j] = new QueryRepliesBlock();
+                for(int j = 0; j < count; j++)
+                { QueryReplies[j] = new QueryRepliesBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryReplies[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(StatusData.Length < count) {
+            if(StatusData == null || StatusData.Length != -1) {
                 StatusData = new StatusDataBlock[count];
-                for(int j = 0; j < count; j++) StatusData[j] = new StatusDataBlock();
+                for(int j = 0; j < count; j++)
+                { StatusData[j] = new StatusDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { StatusData[j].FromBytes(bytes, ref i); }
@@ -4360,23 +4371,26 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryData.Length < count) {
+            if(QueryData == null || QueryData.Length != count) {
                 QueryData = new QueryDataBlock[count];
-                for(int j = 0; j < count; j++) QueryData[j] = new QueryDataBlock();
+                for(int j = 0; j < count; j++)
+                { QueryData[j] = new QueryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(QueryReplies.Length < count) {
+            if(QueryReplies == null || QueryReplies.Length != count) {
                 QueryReplies = new QueryRepliesBlock[count];
-                for(int j = 0; j < count; j++) QueryReplies[j] = new QueryRepliesBlock();
+                for(int j = 0; j < count; j++)
+                { QueryReplies[j] = new QueryRepliesBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryReplies[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(StatusData.Length < count) {
+            if(StatusData == null || StatusData.Length != count) {
                 StatusData = new StatusDataBlock[count];
-                for(int j = 0; j < count; j++) StatusData[j] = new StatusDataBlock();
+                for(int j = 0; j < count; j++)
+                { StatusData[j] = new StatusDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { StatusData[j].FromBytes(bytes, ref i); }
@@ -4705,7 +4719,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
-            QueryReplies = new QueryRepliesBlock[0];
+            QueryReplies = null;
         }
 
         public DirPeopleReplyPacket(byte[] bytes, ref int i) : this()
@@ -4725,9 +4739,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             QueryData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryReplies.Length < count) {
+            if(QueryReplies == null || QueryReplies.Length != -1) {
                 QueryReplies = new QueryRepliesBlock[count];
-                for(int j = 0; j < count; j++) QueryReplies[j] = new QueryRepliesBlock();
+                for(int j = 0; j < count; j++)
+                { QueryReplies[j] = new QueryRepliesBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryReplies[j].FromBytes(bytes, ref i); }
@@ -4745,9 +4760,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             QueryData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryReplies.Length < count) {
+            if(QueryReplies == null || QueryReplies.Length != count) {
                 QueryReplies = new QueryRepliesBlock[count];
-                for(int j = 0; j < count; j++) QueryReplies[j] = new QueryRepliesBlock();
+                for(int j = 0; j < count; j++)
+                { QueryReplies[j] = new QueryRepliesBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryReplies[j].FromBytes(bytes, ref i); }
@@ -5063,8 +5079,8 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
-            QueryReplies = new QueryRepliesBlock[0];
-            StatusData = new StatusDataBlock[0];
+            QueryReplies = null;
+            StatusData = null;
         }
 
         public DirEventsReplyPacket(byte[] bytes, ref int i) : this()
@@ -5084,16 +5100,18 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             QueryData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryReplies.Length < count) {
+            if(QueryReplies == null || QueryReplies.Length != -1) {
                 QueryReplies = new QueryRepliesBlock[count];
-                for(int j = 0; j < count; j++) QueryReplies[j] = new QueryRepliesBlock();
+                for(int j = 0; j < count; j++)
+                { QueryReplies[j] = new QueryRepliesBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryReplies[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(StatusData.Length < count) {
+            if(StatusData == null || StatusData.Length != -1) {
                 StatusData = new StatusDataBlock[count];
-                for(int j = 0; j < count; j++) StatusData[j] = new StatusDataBlock();
+                for(int j = 0; j < count; j++)
+                { StatusData[j] = new StatusDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { StatusData[j].FromBytes(bytes, ref i); }
@@ -5111,16 +5129,18 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             QueryData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryReplies.Length < count) {
+            if(QueryReplies == null || QueryReplies.Length != count) {
                 QueryReplies = new QueryRepliesBlock[count];
-                for(int j = 0; j < count; j++) QueryReplies[j] = new QueryRepliesBlock();
+                for(int j = 0; j < count; j++)
+                { QueryReplies[j] = new QueryRepliesBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryReplies[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(StatusData.Length < count) {
+            if(StatusData == null || StatusData.Length != count) {
                 StatusData = new StatusDataBlock[count];
-                for(int j = 0; j < count; j++) StatusData[j] = new StatusDataBlock();
+                for(int j = 0; j < count; j++)
+                { StatusData[j] = new StatusDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { StatusData[j].FromBytes(bytes, ref i); }
@@ -5397,7 +5417,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
-            QueryReplies = new QueryRepliesBlock[0];
+            QueryReplies = null;
         }
 
         public DirGroupsReplyPacket(byte[] bytes, ref int i) : this()
@@ -5417,9 +5437,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             QueryData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryReplies.Length < count) {
+            if(QueryReplies == null || QueryReplies.Length != -1) {
                 QueryReplies = new QueryRepliesBlock[count];
-                for(int j = 0; j < count; j++) QueryReplies[j] = new QueryRepliesBlock();
+                for(int j = 0; j < count; j++)
+                { QueryReplies[j] = new QueryRepliesBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryReplies[j].FromBytes(bytes, ref i); }
@@ -5437,9 +5458,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             QueryData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryReplies.Length < count) {
+            if(QueryReplies == null || QueryReplies.Length != count) {
                 QueryReplies = new QueryRepliesBlock[count];
-                for(int j = 0; j < count; j++) QueryReplies[j] = new QueryRepliesBlock();
+                for(int j = 0; j < count; j++)
+                { QueryReplies[j] = new QueryRepliesBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryReplies[j].FromBytes(bytes, ref i); }
@@ -5929,8 +5951,8 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
-            QueryReplies = new QueryRepliesBlock[0];
-            StatusData = new StatusDataBlock[0];
+            QueryReplies = null;
+            StatusData = null;
         }
 
         public DirClassifiedReplyPacket(byte[] bytes, ref int i) : this()
@@ -5950,16 +5972,18 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             QueryData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryReplies.Length < count) {
+            if(QueryReplies == null || QueryReplies.Length != -1) {
                 QueryReplies = new QueryRepliesBlock[count];
-                for(int j = 0; j < count; j++) QueryReplies[j] = new QueryRepliesBlock();
+                for(int j = 0; j < count; j++)
+                { QueryReplies[j] = new QueryRepliesBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryReplies[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(StatusData.Length < count) {
+            if(StatusData == null || StatusData.Length != -1) {
                 StatusData = new StatusDataBlock[count];
-                for(int j = 0; j < count; j++) StatusData[j] = new StatusDataBlock();
+                for(int j = 0; j < count; j++)
+                { StatusData[j] = new StatusDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { StatusData[j].FromBytes(bytes, ref i); }
@@ -5977,16 +6001,18 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             QueryData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryReplies.Length < count) {
+            if(QueryReplies == null || QueryReplies.Length != count) {
                 QueryReplies = new QueryRepliesBlock[count];
-                for(int j = 0; j < count; j++) QueryReplies[j] = new QueryRepliesBlock();
+                for(int j = 0; j < count; j++)
+                { QueryReplies[j] = new QueryRepliesBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryReplies[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(StatusData.Length < count) {
+            if(StatusData == null || StatusData.Length != count) {
                 StatusData = new StatusDataBlock[count];
-                for(int j = 0; j < count; j++) StatusData[j] = new StatusDataBlock();
+                for(int j = 0; j < count; j++)
+                { StatusData[j] = new StatusDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { StatusData[j].FromBytes(bytes, ref i); }
@@ -6218,7 +6244,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 42;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            Data = new DataBlock[0];
+            Data = null;
         }
 
         public AvatarClassifiedReplyPacket(byte[] bytes, ref int i) : this()
@@ -6237,9 +6263,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != -1) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -6256,9 +6283,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != count) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -7645,7 +7673,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
-            QueryReplies = new QueryRepliesBlock[0];
+            QueryReplies = null;
         }
 
         public DirLandReplyPacket(byte[] bytes, ref int i) : this()
@@ -7665,9 +7693,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             QueryData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryReplies.Length < count) {
+            if(QueryReplies == null || QueryReplies.Length != -1) {
                 QueryReplies = new QueryRepliesBlock[count];
-                for(int j = 0; j < count; j++) QueryReplies[j] = new QueryRepliesBlock();
+                for(int j = 0; j < count; j++)
+                { QueryReplies[j] = new QueryRepliesBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryReplies[j].FromBytes(bytes, ref i); }
@@ -7685,9 +7714,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             QueryData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryReplies.Length < count) {
+            if(QueryReplies == null || QueryReplies.Length != count) {
                 QueryReplies = new QueryRepliesBlock[count];
-                for(int j = 0; j < count; j++) QueryReplies[j] = new QueryRepliesBlock();
+                for(int j = 0; j < count; j++)
+                { QueryReplies[j] = new QueryRepliesBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryReplies[j].FromBytes(bytes, ref i); }
@@ -8102,7 +8132,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             QueryData = new QueryDataBlock();
-            QueryReplies = new QueryRepliesBlock[0];
+            QueryReplies = null;
         }
 
         public DirPopularReplyPacket(byte[] bytes, ref int i) : this()
@@ -8122,9 +8152,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             QueryData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryReplies.Length < count) {
+            if(QueryReplies == null || QueryReplies.Length != -1) {
                 QueryReplies = new QueryRepliesBlock[count];
-                for(int j = 0; j < count; j++) QueryReplies[j] = new QueryRepliesBlock();
+                for(int j = 0; j < count; j++)
+                { QueryReplies[j] = new QueryRepliesBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryReplies[j].FromBytes(bytes, ref i); }
@@ -8142,9 +8173,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             QueryData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(QueryReplies.Length < count) {
+            if(QueryReplies == null || QueryReplies.Length != count) {
                 QueryReplies = new QueryRepliesBlock[count];
-                for(int j = 0; j < count; j++) QueryReplies[j] = new QueryRepliesBlock();
+                for(int j = 0; j < count; j++)
+                { QueryReplies[j] = new QueryRepliesBlock(); }
             }
             for (int j = 0; j < count; j++)
             { QueryReplies[j].FromBytes(bytes, ref i); }
@@ -8862,7 +8894,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 57;
             Header.Reliable = true;
             Header.Zerocoded = true;
-            Data = new DataBlock[0];
+            Data = null;
         }
 
         public ParcelObjectOwnersReplyPacket(byte[] bytes, ref int i) : this()
@@ -8880,9 +8912,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != -1) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -8898,9 +8931,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != count) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -9289,7 +9323,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 59;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            Data = new DataBlock[0];
+            Data = null;
         }
 
         public GroupNoticesListReplyPacket(byte[] bytes, ref int i) : this()
@@ -9308,9 +9342,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != -1) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -9327,9 +9362,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != count) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -10631,7 +10667,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             Info = new InfoBlock();
-            TargetData = new TargetDataBlock[0];
+            TargetData = null;
         }
 
         public StartLurePacket(byte[] bytes, ref int i) : this()
@@ -10651,9 +10687,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             Info.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(TargetData.Length < count) {
+            if(TargetData == null || TargetData.Length != -1) {
                 TargetData = new TargetDataBlock[count];
-                for(int j = 0; j < count; j++) TargetData[j] = new TargetDataBlock();
+                for(int j = 0; j < count; j++)
+                { TargetData[j] = new TargetDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { TargetData[j].FromBytes(bytes, ref i); }
@@ -10671,9 +10708,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             Info.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(TargetData.Length < count) {
+            if(TargetData == null || TargetData.Length != count) {
                 TargetData = new TargetDataBlock[count];
-                for(int j = 0; j < count; j++) TargetData[j] = new TargetDataBlock();
+                for(int j = 0; j < count; j++)
+                { TargetData[j] = new TargetDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { TargetData[j].FromBytes(bytes, ref i); }
@@ -11258,7 +11296,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 74;
             Header.Reliable = true;
             Info = new InfoBlock();
-            AlertInfo = new AlertInfoBlock[0];
+            AlertInfo = null;
         }
 
         public TeleportFailedPacket(byte[] bytes, ref int i) : this()
@@ -11277,9 +11315,10 @@ namespace OpenMetaverse.Packets
             }
             Info.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(AlertInfo.Length < count) {
+            if(AlertInfo == null || AlertInfo.Length != -1) {
                 AlertInfo = new AlertInfoBlock[count];
-                for(int j = 0; j < count; j++) AlertInfo[j] = new AlertInfoBlock();
+                for(int j = 0; j < count; j++)
+                { AlertInfo[j] = new AlertInfoBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AlertInfo[j].FromBytes(bytes, ref i); }
@@ -11296,9 +11335,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             Info.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(AlertInfo.Length < count) {
+            if(AlertInfo == null || AlertInfo.Length != count) {
                 AlertInfo = new AlertInfoBlock[count];
-                for(int j = 0; j < count; j++) AlertInfo[j] = new AlertInfoBlock();
+                for(int j = 0; j < count; j++)
+                { AlertInfo[j] = new AlertInfoBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AlertInfo[j].FromBytes(bytes, ref i); }
@@ -11488,7 +11528,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 75;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public UndoPacket(byte[] bytes, ref int i) : this()
@@ -11507,9 +11547,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -11526,9 +11567,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -11718,7 +11760,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 76;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public RedoPacket(byte[] bytes, ref int i) : this()
@@ -11737,9 +11779,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -11756,9 +11799,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -13101,9 +13145,9 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            WearableData = new WearableDataBlock[0];
+            WearableData = null;
             ObjectData = new ObjectDataBlock();
-            VisualParam = new VisualParamBlock[0];
+            VisualParam = null;
         }
 
         public AgentSetAppearancePacket(byte[] bytes, ref int i) : this()
@@ -13122,17 +13166,19 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(WearableData.Length < count) {
+            if(WearableData == null || WearableData.Length != -1) {
                 WearableData = new WearableDataBlock[count];
-                for(int j = 0; j < count; j++) WearableData[j] = new WearableDataBlock();
+                for(int j = 0; j < count; j++)
+                { WearableData[j] = new WearableDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { WearableData[j].FromBytes(bytes, ref i); }
             ObjectData.FromBytes(bytes, ref i);
             count = (int)bytes[i++];
-            if(VisualParam.Length < count) {
+            if(VisualParam == null || VisualParam.Length != -1) {
                 VisualParam = new VisualParamBlock[count];
-                for(int j = 0; j < count; j++) VisualParam[j] = new VisualParamBlock();
+                for(int j = 0; j < count; j++)
+                { VisualParam[j] = new VisualParamBlock(); }
             }
             for (int j = 0; j < count; j++)
             { VisualParam[j].FromBytes(bytes, ref i); }
@@ -13149,17 +13195,19 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(WearableData.Length < count) {
+            if(WearableData == null || WearableData.Length != count) {
                 WearableData = new WearableDataBlock[count];
-                for(int j = 0; j < count; j++) WearableData[j] = new WearableDataBlock();
+                for(int j = 0; j < count; j++)
+                { WearableData[j] = new WearableDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { WearableData[j].FromBytes(bytes, ref i); }
             ObjectData.FromBytes(bytes, ref i);
             count = (int)bytes[i++];
-            if(VisualParam.Length < count) {
+            if(VisualParam == null || VisualParam.Length != count) {
                 VisualParam = new VisualParamBlock[count];
-                for(int j = 0; j < count; j++) VisualParam[j] = new VisualParamBlock();
+                for(int j = 0; j < count; j++)
+                { VisualParam[j] = new VisualParamBlock(); }
             }
             for (int j = 0; j < count; j++)
             { VisualParam[j].FromBytes(bytes, ref i); }
@@ -13801,7 +13849,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectDeletePacket(byte[] bytes, ref int i) : this()
@@ -13820,9 +13868,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -13839,9 +13888,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -14076,7 +14126,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             SharedData = new SharedDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectDuplicatePacket(byte[] bytes, ref int i) : this()
@@ -14096,9 +14146,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             SharedData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -14116,9 +14167,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             SharedData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -14337,7 +14389,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectDuplicateOnRayPacket(byte[] bytes, ref int i) : this()
@@ -14356,9 +14408,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -14375,9 +14428,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -14568,7 +14622,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectScalePacket(byte[] bytes, ref int i) : this()
@@ -14587,9 +14641,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -14606,9 +14661,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -14799,7 +14855,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectRotationPacket(byte[] bytes, ref int i) : this()
@@ -14818,9 +14874,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -14837,9 +14894,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -15160,7 +15218,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectClickActionPacket(byte[] bytes, ref int i) : this()
@@ -15179,9 +15237,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -15198,9 +15257,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -15425,7 +15485,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectImagePacket(byte[] bytes, ref int i) : this()
@@ -15444,9 +15504,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -15463,9 +15524,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -15656,7 +15718,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectMaterialPacket(byte[] bytes, ref int i) : this()
@@ -15675,9 +15737,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -15694,9 +15757,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -15943,7 +16007,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectShapePacket(byte[] bytes, ref int i) : this()
@@ -15962,9 +16026,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -15981,9 +16046,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -16200,7 +16266,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectExtraParamsPacket(byte[] bytes, ref int i) : this()
@@ -16219,9 +16285,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -16238,9 +16305,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -16475,7 +16543,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             HeaderData = new HeaderDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectOwnerPacket(byte[] bytes, ref int i) : this()
@@ -16495,9 +16563,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             HeaderData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -16515,9 +16584,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             HeaderData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -16712,7 +16782,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectGroupPacket(byte[] bytes, ref int i) : this()
@@ -16731,9 +16801,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -16750,9 +16821,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -16952,7 +17024,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectBuyPacket(byte[] bytes, ref int i) : this()
@@ -16971,9 +17043,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -16990,9 +17063,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -17511,7 +17585,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             HeaderData = new HeaderDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectPermissionsPacket(byte[] bytes, ref int i) : this()
@@ -17531,9 +17605,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             HeaderData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -17551,9 +17626,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             HeaderData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -17751,7 +17827,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectSaleInfoPacket(byte[] bytes, ref int i) : this()
@@ -17770,9 +17846,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -17789,9 +17866,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -17998,7 +18076,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectNamePacket(byte[] bytes, ref int i) : this()
@@ -18017,9 +18095,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -18036,9 +18115,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -18245,7 +18325,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectDescriptionPacket(byte[] bytes, ref int i) : this()
@@ -18264,9 +18344,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -18283,9 +18364,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -18476,7 +18558,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectCategoryPacket(byte[] bytes, ref int i) : this()
@@ -18495,9 +18577,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -18514,9 +18597,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -18704,7 +18788,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectSelectPacket(byte[] bytes, ref int i) : this()
@@ -18723,9 +18807,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -18742,9 +18827,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -18932,7 +19018,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectDeselectPacket(byte[] bytes, ref int i) : this()
@@ -18951,9 +19037,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -18970,9 +19057,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -19166,7 +19254,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectAttachPacket(byte[] bytes, ref int i) : this()
@@ -19185,9 +19273,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -19204,9 +19293,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -19393,7 +19483,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 113;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectDetachPacket(byte[] bytes, ref int i) : this()
@@ -19412,9 +19502,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -19431,9 +19522,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -19620,7 +19712,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 114;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectDropPacket(byte[] bytes, ref int i) : this()
@@ -19639,9 +19731,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -19658,9 +19751,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -19847,7 +19941,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 115;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectLinkPacket(byte[] bytes, ref int i) : this()
@@ -19866,9 +19960,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -19885,9 +19980,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -20074,7 +20170,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 116;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectDelinkPacket(byte[] bytes, ref int i) : this()
@@ -20093,9 +20189,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -20112,9 +20209,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -20361,7 +20459,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock();
-            SurfaceInfo = new SurfaceInfoBlock[0];
+            SurfaceInfo = null;
         }
 
         public ObjectGrabPacket(byte[] bytes, ref int i) : this()
@@ -20381,9 +20479,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             ObjectData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(SurfaceInfo.Length < count) {
+            if(SurfaceInfo == null || SurfaceInfo.Length != -1) {
                 SurfaceInfo = new SurfaceInfoBlock[count];
-                for(int j = 0; j < count; j++) SurfaceInfo[j] = new SurfaceInfoBlock();
+                for(int j = 0; j < count; j++)
+                { SurfaceInfo[j] = new SurfaceInfoBlock(); }
             }
             for (int j = 0; j < count; j++)
             { SurfaceInfo[j].FromBytes(bytes, ref i); }
@@ -20401,9 +20500,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             ObjectData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(SurfaceInfo.Length < count) {
+            if(SurfaceInfo == null || SurfaceInfo.Length != count) {
                 SurfaceInfo = new SurfaceInfoBlock[count];
-                for(int j = 0; j < count; j++) SurfaceInfo[j] = new SurfaceInfoBlock();
+                for(int j = 0; j < count; j++)
+                { SurfaceInfo[j] = new SurfaceInfoBlock(); }
             }
             for (int j = 0; j < count; j++)
             { SurfaceInfo[j].FromBytes(bytes, ref i); }
@@ -20660,7 +20760,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock();
-            SurfaceInfo = new SurfaceInfoBlock[0];
+            SurfaceInfo = null;
         }
 
         public ObjectGrabUpdatePacket(byte[] bytes, ref int i) : this()
@@ -20680,9 +20780,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             ObjectData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(SurfaceInfo.Length < count) {
+            if(SurfaceInfo == null || SurfaceInfo.Length != -1) {
                 SurfaceInfo = new SurfaceInfoBlock[count];
-                for(int j = 0; j < count; j++) SurfaceInfo[j] = new SurfaceInfoBlock();
+                for(int j = 0; j < count; j++)
+                { SurfaceInfo[j] = new SurfaceInfoBlock(); }
             }
             for (int j = 0; j < count; j++)
             { SurfaceInfo[j].FromBytes(bytes, ref i); }
@@ -20700,9 +20801,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             ObjectData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(SurfaceInfo.Length < count) {
+            if(SurfaceInfo == null || SurfaceInfo.Length != count) {
                 SurfaceInfo = new SurfaceInfoBlock[count];
-                for(int j = 0; j < count; j++) SurfaceInfo[j] = new SurfaceInfoBlock();
+                for(int j = 0; j < count; j++)
+                { SurfaceInfo[j] = new SurfaceInfoBlock(); }
             }
             for (int j = 0; j < count; j++)
             { SurfaceInfo[j].FromBytes(bytes, ref i); }
@@ -20949,7 +21051,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             ObjectData = new ObjectDataBlock();
-            SurfaceInfo = new SurfaceInfoBlock[0];
+            SurfaceInfo = null;
         }
 
         public ObjectDeGrabPacket(byte[] bytes, ref int i) : this()
@@ -20969,9 +21071,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             ObjectData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(SurfaceInfo.Length < count) {
+            if(SurfaceInfo == null || SurfaceInfo.Length != -1) {
                 SurfaceInfo = new SurfaceInfoBlock[count];
-                for(int j = 0; j < count; j++) SurfaceInfo[j] = new SurfaceInfoBlock();
+                for(int j = 0; j < count; j++)
+                { SurfaceInfo[j] = new SurfaceInfoBlock(); }
             }
             for (int j = 0; j < count; j++)
             { SurfaceInfo[j].FromBytes(bytes, ref i); }
@@ -20989,9 +21092,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             ObjectData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(SurfaceInfo.Length < count) {
+            if(SurfaceInfo == null || SurfaceInfo.Length != count) {
                 SurfaceInfo = new SurfaceInfoBlock[count];
-                for(int j = 0; j < count; j++) SurfaceInfo[j] = new SurfaceInfoBlock();
+                for(int j = 0; j < count; j++)
+                { SurfaceInfo[j] = new SurfaceInfoBlock(); }
             }
             for (int j = 0; j < count; j++)
             { SurfaceInfo[j].FromBytes(bytes, ref i); }
@@ -21670,7 +21774,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectExportSelectedPacket(byte[] bytes, ref int i) : this()
@@ -21689,9 +21793,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -21708,9 +21813,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -22001,8 +22107,8 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ModifyBlock = new ModifyBlockBlock();
-            ParcelData = new ParcelDataBlock[0];
-            ModifyBlockExtended = new ModifyBlockExtendedBlock[0];
+            ParcelData = null;
+            ModifyBlockExtended = null;
         }
 
         public ModifyLandPacket(byte[] bytes, ref int i) : this()
@@ -22022,16 +22128,18 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             ModifyBlock.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ParcelData.Length < count) {
+            if(ParcelData == null || ParcelData.Length != -1) {
                 ParcelData = new ParcelDataBlock[count];
-                for(int j = 0; j < count; j++) ParcelData[j] = new ParcelDataBlock();
+                for(int j = 0; j < count; j++)
+                { ParcelData[j] = new ParcelDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ParcelData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(ModifyBlockExtended.Length < count) {
+            if(ModifyBlockExtended == null || ModifyBlockExtended.Length != -1) {
                 ModifyBlockExtended = new ModifyBlockExtendedBlock[count];
-                for(int j = 0; j < count; j++) ModifyBlockExtended[j] = new ModifyBlockExtendedBlock();
+                for(int j = 0; j < count; j++)
+                { ModifyBlockExtended[j] = new ModifyBlockExtendedBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ModifyBlockExtended[j].FromBytes(bytes, ref i); }
@@ -22049,16 +22157,18 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             ModifyBlock.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ParcelData.Length < count) {
+            if(ParcelData == null || ParcelData.Length != count) {
                 ParcelData = new ParcelDataBlock[count];
-                for(int j = 0; j < count; j++) ParcelData[j] = new ParcelDataBlock();
+                for(int j = 0; j < count; j++)
+                { ParcelData[j] = new ParcelDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ParcelData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(ModifyBlockExtended.Length < count) {
+            if(ModifyBlockExtended == null || ModifyBlockExtended.Length != count) {
                 ModifyBlockExtended = new ModifyBlockExtendedBlock[count];
-                for(int j = 0; j < count; j++) ModifyBlockExtended[j] = new ModifyBlockExtendedBlock();
+                for(int j = 0; j < count; j++)
+                { ModifyBlockExtended[j] = new ModifyBlockExtendedBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ModifyBlockExtended[j].FromBytes(bytes, ref i); }
@@ -23350,7 +23460,7 @@ namespace OpenMetaverse.Packets
             DownloadTotals = new DownloadTotalsBlock();
             NetStats = new NetStatsBlock[2];
             FailStats = new FailStatsBlock();
-            MiscStats = new MiscStatsBlock[0];
+            MiscStats = null;
         }
 
         public ViewerStatsPacket(byte[] bytes, ref int i) : this()
@@ -23369,17 +23479,19 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             DownloadTotals.FromBytes(bytes, ref i);
-            if(NetStats.Length < 2) {
+            if(NetStats == null || NetStats.Length != 2) {
                 NetStats = new NetStatsBlock[2];
-                for(int j = 0; j < 2; j++) NetStats[j] = new NetStatsBlock();
+                for(int j = 0; j < 2; j++)
+                { NetStats[j] = new NetStatsBlock(); }
             }
             for (int j = 0; j < 2; j++)
             { NetStats[j].FromBytes(bytes, ref i); }
             FailStats.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(MiscStats.Length < count) {
+            if(MiscStats == null || MiscStats.Length != -1) {
                 MiscStats = new MiscStatsBlock[count];
-                for(int j = 0; j < count; j++) MiscStats[j] = new MiscStatsBlock();
+                for(int j = 0; j < count; j++)
+                { MiscStats[j] = new MiscStatsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { MiscStats[j].FromBytes(bytes, ref i); }
@@ -23396,17 +23508,19 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             DownloadTotals.FromBytes(bytes, ref i);
-            if(NetStats.Length < 2) {
+            if(NetStats == null || NetStats.Length != 2) {
                 NetStats = new NetStatsBlock[2];
-                for(int j = 0; j < 2; j++) NetStats[j] = new NetStatsBlock();
+                for(int j = 0; j < 2; j++)
+                { NetStats[j] = new NetStatsBlock(); }
             }
             for (int j = 0; j < 2; j++)
             { NetStats[j].FromBytes(bytes, ref i); }
             FailStats.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(MiscStats.Length < count) {
+            if(MiscStats == null || MiscStats.Length != count) {
                 MiscStats = new MiscStatsBlock[count];
-                for(int j = 0; j < count; j++) MiscStats[j] = new MiscStatsBlock();
+                for(int j = 0; j < count; j++)
+                { MiscStats[j] = new MiscStatsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { MiscStats[j].FromBytes(bytes, ref i); }
@@ -24068,7 +24182,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 134;
             Header.Reliable = true;
             AlertData = new AlertDataBlock();
-            AlertInfo = new AlertInfoBlock[0];
+            AlertInfo = null;
         }
 
         public AlertMessagePacket(byte[] bytes, ref int i) : this()
@@ -24087,9 +24201,10 @@ namespace OpenMetaverse.Packets
             }
             AlertData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(AlertInfo.Length < count) {
+            if(AlertInfo == null || AlertInfo.Length != -1) {
                 AlertInfo = new AlertInfoBlock[count];
-                for(int j = 0; j < count; j++) AlertInfo[j] = new AlertInfoBlock();
+                for(int j = 0; j < count; j++)
+                { AlertInfo[j] = new AlertInfoBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AlertInfo[j].FromBytes(bytes, ref i); }
@@ -24106,9 +24221,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AlertData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(AlertInfo.Length < count) {
+            if(AlertInfo == null || AlertInfo.Length != count) {
                 AlertInfo = new AlertInfoBlock[count];
-                for(int j = 0; j < count; j++) AlertInfo[j] = new AlertInfoBlock();
+                for(int j = 0; j < count; j++)
+                { AlertInfo[j] = new AlertInfoBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AlertInfo[j].FromBytes(bytes, ref i); }
@@ -24439,7 +24555,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 136;
             Header.Reliable = true;
             Header.Zerocoded = true;
-            MeanCollision = new MeanCollisionBlock[0];
+            MeanCollision = null;
         }
 
         public MeanCollisionAlertPacket(byte[] bytes, ref int i) : this()
@@ -24457,9 +24573,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(MeanCollision.Length < count) {
+            if(MeanCollision == null || MeanCollision.Length != -1) {
                 MeanCollision = new MeanCollisionBlock[count];
-                for(int j = 0; j < count; j++) MeanCollision[j] = new MeanCollisionBlock();
+                for(int j = 0; j < count; j++)
+                { MeanCollision[j] = new MeanCollisionBlock(); }
             }
             for (int j = 0; j < count; j++)
             { MeanCollision[j].FromBytes(bytes, ref i); }
@@ -24475,9 +24592,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(MeanCollision.Length < count) {
+            if(MeanCollision == null || MeanCollision.Length != count) {
                 MeanCollision = new MeanCollisionBlock[count];
-                for(int j = 0; j < count; j++) MeanCollision[j] = new MeanCollisionBlock();
+                for(int j = 0; j < count; j++)
+                { MeanCollision[j] = new MeanCollisionBlock(); }
             }
             for (int j = 0; j < count; j++)
             { MeanCollision[j].FromBytes(bytes, ref i); }
@@ -25095,7 +25213,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 140;
             Header.Reliable = true;
             Region = new RegionBlock();
-            Stat = new StatBlock[0];
+            Stat = null;
             PidStat = new PidStatBlock();
         }
 
@@ -25115,9 +25233,10 @@ namespace OpenMetaverse.Packets
             }
             Region.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Stat.Length < count) {
+            if(Stat == null || Stat.Length != -1) {
                 Stat = new StatBlock[count];
-                for(int j = 0; j < count; j++) Stat[j] = new StatBlock();
+                for(int j = 0; j < count; j++)
+                { Stat[j] = new StatBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Stat[j].FromBytes(bytes, ref i); }
@@ -25135,9 +25254,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             Region.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Stat.Length < count) {
+            if(Stat == null || Stat.Length != count) {
                 Stat = new StatBlock[count];
-                for(int j = 0; j < count; j++) Stat[j] = new StatBlock();
+                for(int j = 0; j < count; j++)
+                { Stat[j] = new StatBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Stat[j].FromBytes(bytes, ref i); }
@@ -27537,7 +27657,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             Sender = new SenderBlock();
             ObjectData = new ObjectDataBlock();
-            VisualParam = new VisualParamBlock[0];
+            VisualParam = null;
         }
 
         public AvatarAppearancePacket(byte[] bytes, ref int i) : this()
@@ -27557,9 +27677,10 @@ namespace OpenMetaverse.Packets
             Sender.FromBytes(bytes, ref i);
             ObjectData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(VisualParam.Length < count) {
+            if(VisualParam == null || VisualParam.Length != -1) {
                 VisualParam = new VisualParamBlock[count];
-                for(int j = 0; j < count; j++) VisualParam[j] = new VisualParamBlock();
+                for(int j = 0; j < count; j++)
+                { VisualParam[j] = new VisualParamBlock(); }
             }
             for (int j = 0; j < count; j++)
             { VisualParam[j].FromBytes(bytes, ref i); }
@@ -27577,9 +27698,10 @@ namespace OpenMetaverse.Packets
             Sender.FromBytes(bytes, ref i);
             ObjectData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(VisualParam.Length < count) {
+            if(VisualParam == null || VisualParam.Length != count) {
                 VisualParam = new VisualParamBlock[count];
-                for(int j = 0; j < count; j++) VisualParam[j] = new VisualParamBlock();
+                for(int j = 0; j < count; j++)
+                { VisualParam[j] = new VisualParamBlock(); }
             }
             for (int j = 0; j < count; j++)
             { VisualParam[j].FromBytes(bytes, ref i); }
@@ -27770,7 +27892,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 159;
             Header.Reliable = true;
             ObjectData = new ObjectDataBlock();
-            CameraProperty = new CameraPropertyBlock[0];
+            CameraProperty = null;
         }
 
         public SetFollowCamPropertiesPacket(byte[] bytes, ref int i) : this()
@@ -27789,9 +27911,10 @@ namespace OpenMetaverse.Packets
             }
             ObjectData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(CameraProperty.Length < count) {
+            if(CameraProperty == null || CameraProperty.Length != -1) {
                 CameraProperty = new CameraPropertyBlock[count];
-                for(int j = 0; j < count; j++) CameraProperty[j] = new CameraPropertyBlock();
+                for(int j = 0; j < count; j++)
+                { CameraProperty[j] = new CameraPropertyBlock(); }
             }
             for (int j = 0; j < count; j++)
             { CameraProperty[j].FromBytes(bytes, ref i); }
@@ -27808,9 +27931,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             ObjectData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(CameraProperty.Length < count) {
+            if(CameraProperty == null || CameraProperty.Length != count) {
                 CameraProperty = new CameraPropertyBlock[count];
-                for(int j = 0; j < count; j++) CameraProperty[j] = new CameraPropertyBlock();
+                for(int j = 0; j < count; j++)
+                { CameraProperty[j] = new CameraPropertyBlock(); }
             }
             for (int j = 0; j < count; j++)
             { CameraProperty[j].FromBytes(bytes, ref i); }
@@ -28219,7 +28343,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 162;
             Header.Reliable = true;
             ObjectData = new ObjectDataBlock();
-            ButtonData = new ButtonDataBlock[0];
+            ButtonData = null;
         }
 
         public PayPriceReplyPacket(byte[] bytes, ref int i) : this()
@@ -28238,9 +28362,10 @@ namespace OpenMetaverse.Packets
             }
             ObjectData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ButtonData.Length < count) {
+            if(ButtonData == null || ButtonData.Length != -1) {
                 ButtonData = new ButtonDataBlock[count];
-                for(int j = 0; j < count; j++) ButtonData[j] = new ButtonDataBlock();
+                for(int j = 0; j < count; j++)
+                { ButtonData[j] = new ButtonDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ButtonData[j].FromBytes(bytes, ref i); }
@@ -28257,9 +28382,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             ObjectData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ButtonData.Length < count) {
+            if(ButtonData == null || ButtonData.Length != count) {
                 ButtonData = new ButtonDataBlock[count];
-                for(int j = 0; j < count; j++) ButtonData[j] = new ButtonDataBlock();
+                for(int j = 0; j < count; j++)
+                { ButtonData[j] = new ButtonDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ButtonData[j].FromBytes(bytes, ref i); }
@@ -29883,7 +30009,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            GroupData = new GroupDataBlock[0];
+            GroupData = null;
             NewGroupData = new NewGroupDataBlock();
         }
 
@@ -29903,9 +30029,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(GroupData.Length < count) {
+            if(GroupData == null || GroupData.Length != -1) {
                 GroupData = new GroupDataBlock[count];
-                for(int j = 0; j < count; j++) GroupData[j] = new GroupDataBlock();
+                for(int j = 0; j < count; j++)
+                { GroupData[j] = new GroupDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { GroupData[j].FromBytes(bytes, ref i); }
@@ -29923,9 +30050,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(GroupData.Length < count) {
+            if(GroupData == null || GroupData.Length != count) {
                 GroupData = new GroupDataBlock[count];
-                for(int j = 0; j < count; j++) GroupData[j] = new GroupDataBlock();
+                for(int j = 0; j < count; j++)
+                { GroupData[j] = new GroupDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { GroupData[j].FromBytes(bytes, ref i); }
@@ -30875,7 +31003,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 178;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            Data = new DataBlock[0];
+            Data = null;
         }
 
         public AvatarPicksReplyPacket(byte[] bytes, ref int i) : this()
@@ -30894,9 +31022,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != -1) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -30913,9 +31042,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != count) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -33005,7 +33135,7 @@ namespace OpenMetaverse.Packets
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 189;
             Header.Reliable = true;
-            Data = new DataBlock[0];
+            Data = null;
         }
 
         public ScriptControlChangePacket(byte[] bytes, ref int i) : this()
@@ -33023,9 +33153,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != -1) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -33041,9 +33172,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != count) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -33317,7 +33449,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             Data = new DataBlock();
-            Buttons = new ButtonsBlock[0];
+            Buttons = null;
         }
 
         public ScriptDialogPacket(byte[] bytes, ref int i) : this()
@@ -33336,9 +33468,10 @@ namespace OpenMetaverse.Packets
             }
             Data.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Buttons.Length < count) {
+            if(Buttons == null || Buttons.Length != -1) {
                 Buttons = new ButtonsBlock[count];
-                for(int j = 0; j < count; j++) Buttons[j] = new ButtonsBlock();
+                for(int j = 0; j < count; j++)
+                { Buttons[j] = new ButtonsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Buttons[j].FromBytes(bytes, ref i); }
@@ -33355,9 +33488,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             Data.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Buttons.Length < count) {
+            if(Buttons == null || Buttons.Length != count) {
                 Buttons = new ButtonsBlock[count];
-                for(int j = 0; j < count; j++) Buttons[j] = new ButtonsBlock();
+                for(int j = 0; j < count; j++)
+                { Buttons[j] = new ButtonsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Buttons[j].FromBytes(bytes, ref i); }
@@ -34978,8 +35112,8 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ParcelData = new ParcelDataBlock();
-            TaskIDs = new TaskIDsBlock[0];
-            OwnerIDs = new OwnerIDsBlock[0];
+            TaskIDs = null;
+            OwnerIDs = null;
         }
 
         public ParcelReturnObjectsPacket(byte[] bytes, ref int i) : this()
@@ -34999,16 +35133,18 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             ParcelData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(TaskIDs.Length < count) {
+            if(TaskIDs == null || TaskIDs.Length != -1) {
                 TaskIDs = new TaskIDsBlock[count];
-                for(int j = 0; j < count; j++) TaskIDs[j] = new TaskIDsBlock();
+                for(int j = 0; j < count; j++)
+                { TaskIDs[j] = new TaskIDsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { TaskIDs[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(OwnerIDs.Length < count) {
+            if(OwnerIDs == null || OwnerIDs.Length != -1) {
                 OwnerIDs = new OwnerIDsBlock[count];
-                for(int j = 0; j < count; j++) OwnerIDs[j] = new OwnerIDsBlock();
+                for(int j = 0; j < count; j++)
+                { OwnerIDs[j] = new OwnerIDsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { OwnerIDs[j].FromBytes(bytes, ref i); }
@@ -35026,16 +35162,18 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             ParcelData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(TaskIDs.Length < count) {
+            if(TaskIDs == null || TaskIDs.Length != count) {
                 TaskIDs = new TaskIDsBlock[count];
-                for(int j = 0; j < count; j++) TaskIDs[j] = new TaskIDsBlock();
+                for(int j = 0; j < count; j++)
+                { TaskIDs[j] = new TaskIDsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { TaskIDs[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(OwnerIDs.Length < count) {
+            if(OwnerIDs == null || OwnerIDs.Length != count) {
                 OwnerIDs = new OwnerIDsBlock[count];
-                for(int j = 0; j < count; j++) OwnerIDs[j] = new OwnerIDsBlock();
+                for(int j = 0; j < count; j++)
+                { OwnerIDs[j] = new OwnerIDsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { OwnerIDs[j].FromBytes(bytes, ref i); }
@@ -35497,8 +35635,8 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ParcelData = new ParcelDataBlock();
-            TaskIDs = new TaskIDsBlock[0];
-            OwnerIDs = new OwnerIDsBlock[0];
+            TaskIDs = null;
+            OwnerIDs = null;
         }
 
         public ParcelDisableObjectsPacket(byte[] bytes, ref int i) : this()
@@ -35518,16 +35656,18 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             ParcelData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(TaskIDs.Length < count) {
+            if(TaskIDs == null || TaskIDs.Length != -1) {
                 TaskIDs = new TaskIDsBlock[count];
-                for(int j = 0; j < count; j++) TaskIDs[j] = new TaskIDsBlock();
+                for(int j = 0; j < count; j++)
+                { TaskIDs[j] = new TaskIDsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { TaskIDs[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(OwnerIDs.Length < count) {
+            if(OwnerIDs == null || OwnerIDs.Length != -1) {
                 OwnerIDs = new OwnerIDsBlock[count];
-                for(int j = 0; j < count; j++) OwnerIDs[j] = new OwnerIDsBlock();
+                for(int j = 0; j < count; j++)
+                { OwnerIDs[j] = new OwnerIDsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { OwnerIDs[j].FromBytes(bytes, ref i); }
@@ -35545,16 +35685,18 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             ParcelData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(TaskIDs.Length < count) {
+            if(TaskIDs == null || TaskIDs.Length != count) {
                 TaskIDs = new TaskIDsBlock[count];
-                for(int j = 0; j < count; j++) TaskIDs[j] = new TaskIDsBlock();
+                for(int j = 0; j < count; j++)
+                { TaskIDs[j] = new TaskIDsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { TaskIDs[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(OwnerIDs.Length < count) {
+            if(OwnerIDs == null || OwnerIDs.Length != count) {
                 OwnerIDs = new OwnerIDsBlock[count];
-                for(int j = 0; j < count; j++) OwnerIDs[j] = new OwnerIDsBlock();
+                for(int j = 0; j < count; j++)
+                { OwnerIDs[j] = new OwnerIDsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { OwnerIDs[j].FromBytes(bytes, ref i); }
@@ -35812,7 +35954,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             ParcelData = new ParcelDataBlock();
-            ReturnIDs = new ReturnIDsBlock[0];
+            ReturnIDs = null;
         }
 
         public ParcelSelectObjectsPacket(byte[] bytes, ref int i) : this()
@@ -35832,9 +35974,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             ParcelData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ReturnIDs.Length < count) {
+            if(ReturnIDs == null || ReturnIDs.Length != -1) {
                 ReturnIDs = new ReturnIDsBlock[count];
-                for(int j = 0; j < count; j++) ReturnIDs[j] = new ReturnIDsBlock();
+                for(int j = 0; j < count; j++)
+                { ReturnIDs[j] = new ReturnIDsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ReturnIDs[j].FromBytes(bytes, ref i); }
@@ -35852,9 +35995,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             ParcelData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ReturnIDs.Length < count) {
+            if(ReturnIDs == null || ReturnIDs.Length != count) {
                 ReturnIDs = new ReturnIDsBlock[count];
-                for(int j = 0; j < count; j++) ReturnIDs[j] = new ReturnIDsBlock();
+                for(int j = 0; j < count; j++)
+                { ReturnIDs[j] = new ReturnIDsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ReturnIDs[j].FromBytes(bytes, ref i); }
@@ -36292,7 +36436,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 205;
             Header.Reliable = true;
             _Header = new HeaderBlock();
-            Data = new DataBlock[0];
+            Data = null;
         }
 
         public ForceObjectSelectPacket(byte[] bytes, ref int i) : this()
@@ -36311,9 +36455,10 @@ namespace OpenMetaverse.Packets
             }
             _Header.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != -1) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -36330,9 +36475,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             _Header.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != count) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -37056,7 +37202,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             Data = new DataBlock();
-            ParcelData = new ParcelDataBlock[0];
+            ParcelData = null;
         }
 
         public ParcelClaimPacket(byte[] bytes, ref int i) : this()
@@ -37076,9 +37222,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             Data.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ParcelData.Length < count) {
+            if(ParcelData == null || ParcelData.Length != -1) {
                 ParcelData = new ParcelDataBlock[count];
-                for(int j = 0; j < count; j++) ParcelData[j] = new ParcelDataBlock();
+                for(int j = 0; j < count; j++)
+                { ParcelData[j] = new ParcelDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ParcelData[j].FromBytes(bytes, ref i); }
@@ -37096,9 +37243,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             Data.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ParcelData.Length < count) {
+            if(ParcelData == null || ParcelData.Length != count) {
                 ParcelData = new ParcelDataBlock[count];
-                for(int j = 0; j < count; j++) ParcelData[j] = new ParcelDataBlock();
+                for(int j = 0; j < count; j++)
+                { ParcelData[j] = new ParcelDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ParcelData[j].FromBytes(bytes, ref i); }
@@ -38346,7 +38494,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             Data = new DataBlock();
-            List = new ListBlock[0];
+            List = null;
         }
 
         public ParcelAccessListReplyPacket(byte[] bytes, ref int i) : this()
@@ -38365,9 +38513,10 @@ namespace OpenMetaverse.Packets
             }
             Data.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(List.Length < count) {
+            if(List == null || List.Length != -1) {
                 List = new ListBlock[count];
-                for(int j = 0; j < count; j++) List[j] = new ListBlock();
+                for(int j = 0; j < count; j++)
+                { List[j] = new ListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { List[j].FromBytes(bytes, ref i); }
@@ -38384,9 +38533,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             Data.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(List.Length < count) {
+            if(List == null || List.Length != count) {
                 List = new ListBlock[count];
-                for(int j = 0; j < count; j++) List[j] = new ListBlock();
+                for(int j = 0; j < count; j++)
+                { List[j] = new ListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { List[j].FromBytes(bytes, ref i); }
@@ -38633,7 +38783,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             Data = new DataBlock();
-            List = new ListBlock[0];
+            List = null;
         }
 
         public ParcelAccessListUpdatePacket(byte[] bytes, ref int i) : this()
@@ -38653,9 +38803,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             Data.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(List.Length < count) {
+            if(List == null || List.Length != -1) {
                 List = new ListBlock[count];
-                for(int j = 0; j < count; j++) List[j] = new ListBlock();
+                for(int j = 0; j < count; j++)
+                { List[j] = new ListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { List[j].FromBytes(bytes, ref i); }
@@ -38673,9 +38824,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             Data.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(List.Length < count) {
+            if(List == null || List.Length != count) {
                 List = new ListBlock[count];
-                for(int j = 0; j < count; j++) List[j] = new ListBlock();
+                for(int j = 0; j < count; j++)
+                { List[j] = new ListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { List[j].FromBytes(bytes, ref i); }
@@ -39467,7 +39619,7 @@ namespace OpenMetaverse.Packets
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 235;
             Header.Reliable = true;
-            UUIDNameBlock = new UUIDNameBlockBlock[0];
+            UUIDNameBlock = null;
         }
 
         public UUIDNameRequestPacket(byte[] bytes, ref int i) : this()
@@ -39485,9 +39637,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(UUIDNameBlock.Length < count) {
+            if(UUIDNameBlock == null || UUIDNameBlock.Length != -1) {
                 UUIDNameBlock = new UUIDNameBlockBlock[count];
-                for(int j = 0; j < count; j++) UUIDNameBlock[j] = new UUIDNameBlockBlock();
+                for(int j = 0; j < count; j++)
+                { UUIDNameBlock[j] = new UUIDNameBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { UUIDNameBlock[j].FromBytes(bytes, ref i); }
@@ -39503,9 +39656,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(UUIDNameBlock.Length < count) {
+            if(UUIDNameBlock == null || UUIDNameBlock.Length != count) {
                 UUIDNameBlock = new UUIDNameBlockBlock[count];
-                for(int j = 0; j < count; j++) UUIDNameBlock[j] = new UUIDNameBlockBlock();
+                for(int j = 0; j < count; j++)
+                { UUIDNameBlock[j] = new UUIDNameBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { UUIDNameBlock[j].FromBytes(bytes, ref i); }
@@ -39680,7 +39834,7 @@ namespace OpenMetaverse.Packets
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 236;
             Header.Reliable = true;
-            UUIDNameBlock = new UUIDNameBlockBlock[0];
+            UUIDNameBlock = null;
         }
 
         public UUIDNameReplyPacket(byte[] bytes, ref int i) : this()
@@ -39698,9 +39852,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(UUIDNameBlock.Length < count) {
+            if(UUIDNameBlock == null || UUIDNameBlock.Length != -1) {
                 UUIDNameBlock = new UUIDNameBlockBlock[count];
-                for(int j = 0; j < count; j++) UUIDNameBlock[j] = new UUIDNameBlockBlock();
+                for(int j = 0; j < count; j++)
+                { UUIDNameBlock[j] = new UUIDNameBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { UUIDNameBlock[j].FromBytes(bytes, ref i); }
@@ -39716,9 +39871,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(UUIDNameBlock.Length < count) {
+            if(UUIDNameBlock == null || UUIDNameBlock.Length != count) {
                 UUIDNameBlock = new UUIDNameBlockBlock[count];
-                for(int j = 0; j < count; j++) UUIDNameBlock[j] = new UUIDNameBlockBlock();
+                for(int j = 0; j < count; j++)
+                { UUIDNameBlock[j] = new UUIDNameBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { UUIDNameBlock[j].FromBytes(bytes, ref i); }
@@ -39857,7 +40013,7 @@ namespace OpenMetaverse.Packets
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 237;
             Header.Reliable = true;
-            UUIDNameBlock = new UUIDNameBlockBlock[0];
+            UUIDNameBlock = null;
         }
 
         public UUIDGroupNameRequestPacket(byte[] bytes, ref int i) : this()
@@ -39875,9 +40031,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(UUIDNameBlock.Length < count) {
+            if(UUIDNameBlock == null || UUIDNameBlock.Length != -1) {
                 UUIDNameBlock = new UUIDNameBlockBlock[count];
-                for(int j = 0; j < count; j++) UUIDNameBlock[j] = new UUIDNameBlockBlock();
+                for(int j = 0; j < count; j++)
+                { UUIDNameBlock[j] = new UUIDNameBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { UUIDNameBlock[j].FromBytes(bytes, ref i); }
@@ -39893,9 +40050,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(UUIDNameBlock.Length < count) {
+            if(UUIDNameBlock == null || UUIDNameBlock.Length != count) {
                 UUIDNameBlock = new UUIDNameBlockBlock[count];
-                for(int j = 0; j < count; j++) UUIDNameBlock[j] = new UUIDNameBlockBlock();
+                for(int j = 0; j < count; j++)
+                { UUIDNameBlock[j] = new UUIDNameBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { UUIDNameBlock[j].FromBytes(bytes, ref i); }
@@ -40053,7 +40211,7 @@ namespace OpenMetaverse.Packets
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 238;
             Header.Reliable = true;
-            UUIDNameBlock = new UUIDNameBlockBlock[0];
+            UUIDNameBlock = null;
         }
 
         public UUIDGroupNameReplyPacket(byte[] bytes, ref int i) : this()
@@ -40071,9 +40229,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(UUIDNameBlock.Length < count) {
+            if(UUIDNameBlock == null || UUIDNameBlock.Length != -1) {
                 UUIDNameBlock = new UUIDNameBlockBlock[count];
-                for(int j = 0; j < count; j++) UUIDNameBlock[j] = new UUIDNameBlockBlock();
+                for(int j = 0; j < count; j++)
+                { UUIDNameBlock[j] = new UUIDNameBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { UUIDNameBlock[j].FromBytes(bytes, ref i); }
@@ -40089,9 +40248,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(UUIDNameBlock.Length < count) {
+            if(UUIDNameBlock == null || UUIDNameBlock.Length != count) {
                 UUIDNameBlock = new UUIDNameBlockBlock[count];
-                for(int j = 0; j < count; j++) UUIDNameBlock[j] = new UUIDNameBlockBlock();
+                for(int j = 0; j < count; j++)
+                { UUIDNameBlock[j] = new UUIDNameBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { UUIDNameBlock[j].FromBytes(bytes, ref i); }
@@ -41257,7 +41417,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             Requester = new RequesterBlock();
-            SensedData = new SensedDataBlock[0];
+            SensedData = null;
         }
 
         public ScriptSensorReplyPacket(byte[] bytes, ref int i) : this()
@@ -41276,9 +41436,10 @@ namespace OpenMetaverse.Packets
             }
             Requester.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(SensedData.Length < count) {
+            if(SensedData == null || SensedData.Length != -1) {
                 SensedData = new SensedDataBlock[count];
-                for(int j = 0; j < count; j++) SensedData[j] = new SensedDataBlock();
+                for(int j = 0; j < count; j++)
+                { SensedData[j] = new SensedDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { SensedData[j].FromBytes(bytes, ref i); }
@@ -41295,9 +41456,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             Requester.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(SensedData.Length < count) {
+            if(SensedData == null || SensedData.Length != count) {
                 SensedData = new SensedDataBlock[count];
-                for(int j = 0; j < count; j++) SensedData[j] = new SensedDataBlock();
+                for(int j = 0; j < count; j++)
+                { SensedData[j] = new SensedDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { SensedData[j].FromBytes(bytes, ref i); }
@@ -41946,7 +42108,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            InventoryData = new InventoryDataBlock[0];
+            InventoryData = null;
         }
 
         public LogoutReplyPacket(byte[] bytes, ref int i) : this()
@@ -41965,9 +42127,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != -1) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -41984,9 +42147,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != count) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -42532,7 +42696,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 256;
             Header.Reliable = true;
             AgentBlock = new AgentBlockBlock();
-            LocationBlock = new LocationBlockBlock[0];
+            LocationBlock = null;
         }
 
         public FindAgentPacket(byte[] bytes, ref int i) : this()
@@ -42551,9 +42715,10 @@ namespace OpenMetaverse.Packets
             }
             AgentBlock.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(LocationBlock.Length < count) {
+            if(LocationBlock == null || LocationBlock.Length != -1) {
                 LocationBlock = new LocationBlockBlock[count];
-                for(int j = 0; j < count; j++) LocationBlock[j] = new LocationBlockBlock();
+                for(int j = 0; j < count; j++)
+                { LocationBlock[j] = new LocationBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { LocationBlock[j].FromBytes(bytes, ref i); }
@@ -42570,9 +42735,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentBlock.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(LocationBlock.Length < count) {
+            if(LocationBlock == null || LocationBlock.Length != count) {
                 LocationBlock = new LocationBlockBlock[count];
-                for(int j = 0; j < count; j++) LocationBlock[j] = new LocationBlockBlock();
+                for(int j = 0; j < count; j++)
+                { LocationBlock[j] = new LocationBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { LocationBlock[j].FromBytes(bytes, ref i); }
@@ -43163,7 +43329,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MethodData = new MethodDataBlock();
-            ParamList = new ParamListBlock[0];
+            ParamList = null;
         }
 
         public GodlikeMessagePacket(byte[] bytes, ref int i) : this()
@@ -43183,9 +43349,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             MethodData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ParamList.Length < count) {
+            if(ParamList == null || ParamList.Length != -1) {
                 ParamList = new ParamListBlock[count];
-                for(int j = 0; j < count; j++) ParamList[j] = new ParamListBlock();
+                for(int j = 0; j < count; j++)
+                { ParamList[j] = new ParamListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ParamList[j].FromBytes(bytes, ref i); }
@@ -43203,9 +43370,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             MethodData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ParamList.Length < count) {
+            if(ParamList == null || ParamList.Length != count) {
                 ParamList = new ParamListBlock[count];
-                for(int j = 0; j < count; j++) ParamList[j] = new ParamListBlock();
+                for(int j = 0; j < count; j++)
+                { ParamList[j] = new ParamListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ParamList[j].FromBytes(bytes, ref i); }
@@ -43476,7 +43644,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MethodData = new MethodDataBlock();
-            ParamList = new ParamListBlock[0];
+            ParamList = null;
         }
 
         public EstateOwnerMessagePacket(byte[] bytes, ref int i) : this()
@@ -43496,9 +43664,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             MethodData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ParamList.Length < count) {
+            if(ParamList == null || ParamList.Length != -1) {
                 ParamList = new ParamListBlock[count];
-                for(int j = 0; j < count; j++) ParamList[j] = new ParamListBlock();
+                for(int j = 0; j < count; j++)
+                { ParamList[j] = new ParamListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ParamList[j].FromBytes(bytes, ref i); }
@@ -43516,9 +43685,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             MethodData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ParamList.Length < count) {
+            if(ParamList == null || ParamList.Length != count) {
                 ParamList = new ParamListBlock[count];
-                for(int j = 0; j < count; j++) ParamList[j] = new ParamListBlock();
+                for(int j = 0; j < count; j++)
+                { ParamList[j] = new ParamListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ParamList[j].FromBytes(bytes, ref i); }
@@ -43789,7 +43959,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MethodData = new MethodDataBlock();
-            ParamList = new ParamListBlock[0];
+            ParamList = null;
         }
 
         public GenericMessagePacket(byte[] bytes, ref int i) : this()
@@ -43809,9 +43979,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             MethodData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ParamList.Length < count) {
+            if(ParamList == null || ParamList.Length != -1) {
                 ParamList = new ParamListBlock[count];
-                for(int j = 0; j < count; j++) ParamList[j] = new ParamListBlock();
+                for(int j = 0; j < count; j++)
+                { ParamList[j] = new ParamListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ParamList[j].FromBytes(bytes, ref i); }
@@ -43829,9 +44000,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             MethodData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ParamList.Length < count) {
+            if(ParamList == null || ParamList.Length != count) {
                 ParamList = new ParamListBlock[count];
-                for(int j = 0; j < count; j++) ParamList[j] = new ParamListBlock();
+                for(int j = 0; j < count; j++)
+                { ParamList[j] = new ParamListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ParamList[j].FromBytes(bytes, ref i); }
@@ -44591,7 +44763,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             NotecardData = new NotecardDataBlock();
-            InventoryData = new InventoryDataBlock[0];
+            InventoryData = null;
         }
 
         public CopyInventoryFromNotecardPacket(byte[] bytes, ref int i) : this()
@@ -44611,9 +44783,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             NotecardData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != -1) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -44631,9 +44804,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             NotecardData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != count) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -44921,7 +45095,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            InventoryData = new InventoryDataBlock[0];
+            InventoryData = null;
         }
 
         public UpdateInventoryItemPacket(byte[] bytes, ref int i) : this()
@@ -44940,9 +45114,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != -1) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -44959,9 +45134,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != count) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -45245,7 +45421,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            InventoryData = new InventoryDataBlock[0];
+            InventoryData = null;
         }
 
         public UpdateCreateInventoryItemPacket(byte[] bytes, ref int i) : this()
@@ -45264,9 +45440,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != -1) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -45283,9 +45460,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != count) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -45498,7 +45676,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            InventoryData = new InventoryDataBlock[0];
+            InventoryData = null;
         }
 
         public MoveInventoryItemPacket(byte[] bytes, ref int i) : this()
@@ -45517,9 +45695,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != -1) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -45536,9 +45715,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != count) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -45754,7 +45934,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            InventoryData = new InventoryDataBlock[0];
+            InventoryData = null;
         }
 
         public CopyInventoryItemPacket(byte[] bytes, ref int i) : this()
@@ -45773,9 +45953,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != -1) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -45792,9 +45973,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != count) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -45981,7 +46163,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 270;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            InventoryData = new InventoryDataBlock[0];
+            InventoryData = null;
         }
 
         public RemoveInventoryItemPacket(byte[] bytes, ref int i) : this()
@@ -46000,9 +46182,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != -1) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -46019,9 +46202,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != count) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -46211,7 +46395,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 271;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            InventoryData = new InventoryDataBlock[0];
+            InventoryData = null;
         }
 
         public ChangeInventoryItemFlagsPacket(byte[] bytes, ref int i) : this()
@@ -46230,9 +46414,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != -1) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -46249,9 +46434,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != count) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -46806,7 +46992,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 274;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            FolderData = new FolderDataBlock[0];
+            FolderData = null;
         }
 
         public UpdateInventoryFolderPacket(byte[] bytes, ref int i) : this()
@@ -46825,9 +47011,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(FolderData.Length < count) {
+            if(FolderData == null || FolderData.Length != -1) {
                 FolderData = new FolderDataBlock[count];
-                for(int j = 0; j < count; j++) FolderData[j] = new FolderDataBlock();
+                for(int j = 0; j < count; j++)
+                { FolderData[j] = new FolderDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { FolderData[j].FromBytes(bytes, ref i); }
@@ -46844,9 +47031,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(FolderData.Length < count) {
+            if(FolderData == null || FolderData.Length != count) {
                 FolderData = new FolderDataBlock[count];
-                for(int j = 0; j < count; j++) FolderData[j] = new FolderDataBlock();
+                for(int j = 0; j < count; j++)
+                { FolderData[j] = new FolderDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { FolderData[j].FromBytes(bytes, ref i); }
@@ -47040,7 +47228,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            InventoryData = new InventoryDataBlock[0];
+            InventoryData = null;
         }
 
         public MoveInventoryFolderPacket(byte[] bytes, ref int i) : this()
@@ -47059,9 +47247,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != -1) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -47078,9 +47267,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != count) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -47267,7 +47457,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 276;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            FolderData = new FolderDataBlock[0];
+            FolderData = null;
         }
 
         public RemoveInventoryFolderPacket(byte[] bytes, ref int i) : this()
@@ -47286,9 +47476,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(FolderData.Length < count) {
+            if(FolderData == null || FolderData.Length != -1) {
                 FolderData = new FolderDataBlock[count];
-                for(int j = 0; j < count; j++) FolderData[j] = new FolderDataBlock();
+                for(int j = 0; j < count; j++)
+                { FolderData[j] = new FolderDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { FolderData[j].FromBytes(bytes, ref i); }
@@ -47305,9 +47496,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(FolderData.Length < count) {
+            if(FolderData == null || FolderData.Length != count) {
                 FolderData = new FolderDataBlock[count];
-                for(int j = 0; j < count; j++) FolderData[j] = new FolderDataBlock();
+                for(int j = 0; j < count; j++)
+                { FolderData[j] = new FolderDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { FolderData[j].FromBytes(bytes, ref i); }
@@ -47832,8 +48024,8 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            FolderData = new FolderDataBlock[0];
-            ItemData = new ItemDataBlock[0];
+            FolderData = null;
+            ItemData = null;
         }
 
         public InventoryDescendentsPacket(byte[] bytes, ref int i) : this()
@@ -47852,16 +48044,18 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(FolderData.Length < count) {
+            if(FolderData == null || FolderData.Length != -1) {
                 FolderData = new FolderDataBlock[count];
-                for(int j = 0; j < count; j++) FolderData[j] = new FolderDataBlock();
+                for(int j = 0; j < count; j++)
+                { FolderData[j] = new FolderDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { FolderData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(ItemData.Length < count) {
+            if(ItemData == null || ItemData.Length != -1) {
                 ItemData = new ItemDataBlock[count];
-                for(int j = 0; j < count; j++) ItemData[j] = new ItemDataBlock();
+                for(int j = 0; j < count; j++)
+                { ItemData[j] = new ItemDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ItemData[j].FromBytes(bytes, ref i); }
@@ -47878,16 +48072,18 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(FolderData.Length < count) {
+            if(FolderData == null || FolderData.Length != count) {
                 FolderData = new FolderDataBlock[count];
-                for(int j = 0; j < count; j++) FolderData[j] = new FolderDataBlock();
+                for(int j = 0; j < count; j++)
+                { FolderData[j] = new FolderDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { FolderData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(ItemData.Length < count) {
+            if(ItemData == null || ItemData.Length != count) {
                 ItemData = new ItemDataBlock[count];
-                for(int j = 0; j < count; j++) ItemData[j] = new ItemDataBlock();
+                for(int j = 0; j < count; j++)
+                { ItemData[j] = new ItemDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ItemData[j].FromBytes(bytes, ref i); }
@@ -48100,7 +48296,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            InventoryData = new InventoryDataBlock[0];
+            InventoryData = null;
         }
 
         public FetchInventoryPacket(byte[] bytes, ref int i) : this()
@@ -48119,9 +48315,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != -1) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -48138,9 +48335,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != count) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -48415,7 +48613,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            InventoryData = new InventoryDataBlock[0];
+            InventoryData = null;
         }
 
         public FetchInventoryReplyPacket(byte[] bytes, ref int i) : this()
@@ -48434,9 +48632,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != -1) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -48453,9 +48652,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != count) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -48802,8 +49002,8 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            FolderData = new FolderDataBlock[0];
-            ItemData = new ItemDataBlock[0];
+            FolderData = null;
+            ItemData = null;
         }
 
         public BulkUpdateInventoryPacket(byte[] bytes, ref int i) : this()
@@ -48822,16 +49022,18 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(FolderData.Length < count) {
+            if(FolderData == null || FolderData.Length != -1) {
                 FolderData = new FolderDataBlock[count];
-                for(int j = 0; j < count; j++) FolderData[j] = new FolderDataBlock();
+                for(int j = 0; j < count; j++)
+                { FolderData[j] = new FolderDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { FolderData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(ItemData.Length < count) {
+            if(ItemData == null || ItemData.Length != -1) {
                 ItemData = new ItemDataBlock[count];
-                for(int j = 0; j < count; j++) ItemData[j] = new ItemDataBlock();
+                for(int j = 0; j < count; j++)
+                { ItemData[j] = new ItemDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ItemData[j].FromBytes(bytes, ref i); }
@@ -48848,16 +49050,18 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(FolderData.Length < count) {
+            if(FolderData == null || FolderData.Length != count) {
                 FolderData = new FolderDataBlock[count];
-                for(int j = 0; j < count; j++) FolderData[j] = new FolderDataBlock();
+                for(int j = 0; j < count; j++)
+                { FolderData[j] = new FolderDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { FolderData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(ItemData.Length < count) {
+            if(ItemData == null || ItemData.Length != count) {
                 ItemData = new ItemDataBlock[count];
-                for(int j = 0; j < count; j++) ItemData[j] = new ItemDataBlock();
+                for(int j = 0; j < count; j++)
+                { ItemData[j] = new ItemDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ItemData[j].FromBytes(bytes, ref i); }
@@ -49344,8 +49548,8 @@ namespace OpenMetaverse.Packets
             Header.ID = 284;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            FolderData = new FolderDataBlock[0];
-            ItemData = new ItemDataBlock[0];
+            FolderData = null;
+            ItemData = null;
         }
 
         public RemoveInventoryObjectsPacket(byte[] bytes, ref int i) : this()
@@ -49364,16 +49568,18 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(FolderData.Length < count) {
+            if(FolderData == null || FolderData.Length != -1) {
                 FolderData = new FolderDataBlock[count];
-                for(int j = 0; j < count; j++) FolderData[j] = new FolderDataBlock();
+                for(int j = 0; j < count; j++)
+                { FolderData[j] = new FolderDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { FolderData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(ItemData.Length < count) {
+            if(ItemData == null || ItemData.Length != -1) {
                 ItemData = new ItemDataBlock[count];
-                for(int j = 0; j < count; j++) ItemData[j] = new ItemDataBlock();
+                for(int j = 0; j < count; j++)
+                { ItemData[j] = new ItemDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ItemData[j].FromBytes(bytes, ref i); }
@@ -49390,16 +49596,18 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(FolderData.Length < count) {
+            if(FolderData == null || FolderData.Length != count) {
                 FolderData = new FolderDataBlock[count];
-                for(int j = 0; j < count; j++) FolderData[j] = new FolderDataBlock();
+                for(int j = 0; j < count; j++)
+                { FolderData[j] = new FolderDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { FolderData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(ItemData.Length < count) {
+            if(ItemData == null || ItemData.Length != count) {
                 ItemData = new ItemDataBlock[count];
-                for(int j = 0; j < count; j++) ItemData[j] = new ItemDataBlock();
+                for(int j = 0; j < count; j++)
+                { ItemData[j] = new ItemDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ItemData[j].FromBytes(bytes, ref i); }
@@ -50745,7 +50953,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             AgentBlock = new AgentBlockBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public DeRezObjectPacket(byte[] bytes, ref int i) : this()
@@ -50765,9 +50973,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             AgentBlock.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -50785,9 +50994,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             AgentBlock.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -51545,7 +51755,7 @@ namespace OpenMetaverse.Packets
             AgentData = new AgentDataBlock();
             RezData = new RezDataBlock();
             NotecardData = new NotecardDataBlock();
-            InventoryData = new InventoryDataBlock[0];
+            InventoryData = null;
         }
 
         public RezObjectFromNotecardPacket(byte[] bytes, ref int i) : this()
@@ -51566,9 +51776,10 @@ namespace OpenMetaverse.Packets
             RezData.FromBytes(bytes, ref i);
             NotecardData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != -1) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -51587,9 +51798,10 @@ namespace OpenMetaverse.Packets
             RezData.FromBytes(bytes, ref i);
             NotecardData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InventoryData.Length < count) {
+            if(InventoryData == null || InventoryData.Length != count) {
                 InventoryData = new InventoryDataBlock[count];
-                for(int j = 0; j < count; j++) InventoryData[j] = new InventoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { InventoryData[j] = new InventoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InventoryData[j].FromBytes(bytes, ref i); }
@@ -51825,7 +52037,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             TransactionBlock = new TransactionBlockBlock();
-            FolderData = new FolderDataBlock[0];
+            FolderData = null;
         }
 
         public AcceptFriendshipPacket(byte[] bytes, ref int i) : this()
@@ -51845,9 +52057,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             TransactionBlock.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(FolderData.Length < count) {
+            if(FolderData == null || FolderData.Length != -1) {
                 FolderData = new FolderDataBlock[count];
-                for(int j = 0; j < count; j++) FolderData[j] = new FolderDataBlock();
+                for(int j = 0; j < count; j++)
+                { FolderData[j] = new FolderDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { FolderData[j].FromBytes(bytes, ref i); }
@@ -51865,9 +52078,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             TransactionBlock.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(FolderData.Length < count) {
+            if(FolderData == null || FolderData.Length != count) {
                 FolderData = new FolderDataBlock[count];
-                for(int j = 0; j < count; j++) FolderData[j] = new FolderDataBlock();
+                for(int j = 0; j < count; j++)
+                { FolderData[j] = new FolderDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { FolderData[j].FromBytes(bytes, ref i); }
@@ -52693,7 +52907,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             TransactionBlock = new TransactionBlockBlock();
-            FolderData = new FolderDataBlock[0];
+            FolderData = null;
         }
 
         public AcceptCallingCardPacket(byte[] bytes, ref int i) : this()
@@ -52713,9 +52927,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             TransactionBlock.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(FolderData.Length < count) {
+            if(FolderData == null || FolderData.Length != -1) {
                 FolderData = new FolderDataBlock[count];
-                for(int j = 0; j < count; j++) FolderData[j] = new FolderDataBlock();
+                for(int j = 0; j < count; j++)
+                { FolderData[j] = new FolderDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { FolderData[j].FromBytes(bytes, ref i); }
@@ -52733,9 +52948,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             TransactionBlock.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(FolderData.Length < count) {
+            if(FolderData == null || FolderData.Length != count) {
                 FolderData = new FolderDataBlock[count];
-                for(int j = 0; j < count; j++) FolderData[j] = new FolderDataBlock();
+                for(int j = 0; j < count; j++)
+                { FolderData[j] = new FolderDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { FolderData[j].FromBytes(bytes, ref i); }
@@ -54756,7 +54972,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 316;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            Data = new DataBlock[0];
+            Data = null;
         }
 
         public ActivateGesturesPacket(byte[] bytes, ref int i) : this()
@@ -54775,9 +54991,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != -1) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -54794,9 +55011,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != count) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -54989,7 +55207,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 317;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            Data = new DataBlock[0];
+            Data = null;
         }
 
         public DeactivateGesturesPacket(byte[] bytes, ref int i) : this()
@@ -55008,9 +55226,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != -1) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -55027,9 +55246,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != count) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -55460,7 +55680,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 320;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            Rights = new RightsBlock[0];
+            Rights = null;
         }
 
         public GrantUserRightsPacket(byte[] bytes, ref int i) : this()
@@ -55479,9 +55699,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Rights.Length < count) {
+            if(Rights == null || Rights.Length != -1) {
                 Rights = new RightsBlock[count];
-                for(int j = 0; j < count; j++) Rights[j] = new RightsBlock();
+                for(int j = 0; j < count; j++)
+                { Rights[j] = new RightsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Rights[j].FromBytes(bytes, ref i); }
@@ -55498,9 +55719,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Rights.Length < count) {
+            if(Rights == null || Rights.Length != count) {
                 Rights = new RightsBlock[count];
-                for(int j = 0; j < count; j++) Rights[j] = new RightsBlock();
+                for(int j = 0; j < count; j++)
+                { Rights[j] = new RightsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Rights[j].FromBytes(bytes, ref i); }
@@ -55687,7 +55909,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 321;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            Rights = new RightsBlock[0];
+            Rights = null;
         }
 
         public ChangeUserRightsPacket(byte[] bytes, ref int i) : this()
@@ -55706,9 +55928,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Rights.Length < count) {
+            if(Rights == null || Rights.Length != -1) {
                 Rights = new RightsBlock[count];
-                for(int j = 0; j < count; j++) Rights[j] = new RightsBlock();
+                for(int j = 0; j < count; j++)
+                { Rights[j] = new RightsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Rights[j].FromBytes(bytes, ref i); }
@@ -55725,9 +55948,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Rights.Length < count) {
+            if(Rights == null || Rights.Length != count) {
                 Rights = new RightsBlock[count];
-                for(int j = 0; j < count; j++) Rights[j] = new RightsBlock();
+                for(int j = 0; j < count; j++)
+                { Rights[j] = new RightsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Rights[j].FromBytes(bytes, ref i); }
@@ -55870,7 +56094,7 @@ namespace OpenMetaverse.Packets
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 322;
             Header.Reliable = true;
-            AgentBlock = new AgentBlockBlock[0];
+            AgentBlock = null;
         }
 
         public OnlineNotificationPacket(byte[] bytes, ref int i) : this()
@@ -55888,9 +56112,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(AgentBlock.Length < count) {
+            if(AgentBlock == null || AgentBlock.Length != -1) {
                 AgentBlock = new AgentBlockBlock[count];
-                for(int j = 0; j < count; j++) AgentBlock[j] = new AgentBlockBlock();
+                for(int j = 0; j < count; j++)
+                { AgentBlock[j] = new AgentBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AgentBlock[j].FromBytes(bytes, ref i); }
@@ -55906,9 +56131,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(AgentBlock.Length < count) {
+            if(AgentBlock == null || AgentBlock.Length != count) {
                 AgentBlock = new AgentBlockBlock[count];
-                for(int j = 0; j < count; j++) AgentBlock[j] = new AgentBlockBlock();
+                for(int j = 0; j < count; j++)
+                { AgentBlock[j] = new AgentBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AgentBlock[j].FromBytes(bytes, ref i); }
@@ -56047,7 +56273,7 @@ namespace OpenMetaverse.Packets
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 323;
             Header.Reliable = true;
-            AgentBlock = new AgentBlockBlock[0];
+            AgentBlock = null;
         }
 
         public OfflineNotificationPacket(byte[] bytes, ref int i) : this()
@@ -56065,9 +56291,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(AgentBlock.Length < count) {
+            if(AgentBlock == null || AgentBlock.Length != -1) {
                 AgentBlock = new AgentBlockBlock[count];
-                for(int j = 0; j < count; j++) AgentBlock[j] = new AgentBlockBlock();
+                for(int j = 0; j < count; j++)
+                { AgentBlock[j] = new AgentBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AgentBlock[j].FromBytes(bytes, ref i); }
@@ -56083,9 +56310,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(AgentBlock.Length < count) {
+            if(AgentBlock == null || AgentBlock.Length != count) {
                 AgentBlock = new AgentBlockBlock[count];
-                for(int j = 0; j < count; j++) AgentBlock[j] = new AgentBlockBlock();
+                for(int j = 0; j < count; j++)
+                { AgentBlock[j] = new AgentBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AgentBlock[j].FromBytes(bytes, ref i); }
@@ -57307,7 +57535,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 342;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            RoleChange = new RoleChangeBlock[0];
+            RoleChange = null;
         }
 
         public GroupRoleChangesPacket(byte[] bytes, ref int i) : this()
@@ -57326,9 +57554,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(RoleChange.Length < count) {
+            if(RoleChange == null || RoleChange.Length != -1) {
                 RoleChange = new RoleChangeBlock[count];
-                for(int j = 0; j < count; j++) RoleChange[j] = new RoleChangeBlock();
+                for(int j = 0; j < count; j++)
+                { RoleChange[j] = new RoleChangeBlock(); }
             }
             for (int j = 0; j < count; j++)
             { RoleChange[j].FromBytes(bytes, ref i); }
@@ -57345,9 +57574,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(RoleChange.Length < count) {
+            if(RoleChange == null || RoleChange.Length != count) {
                 RoleChange = new RoleChangeBlock[count];
-                for(int j = 0; j < count; j++) RoleChange[j] = new RoleChangeBlock();
+                for(int j = 0; j < count; j++)
+                { RoleChange[j] = new RoleChangeBlock(); }
             }
             for (int j = 0; j < count; j++)
             { RoleChange[j].FromBytes(bytes, ref i); }
@@ -57894,7 +58124,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
-            EjectData = new EjectDataBlock[0];
+            EjectData = null;
         }
 
         public EjectGroupMemberRequestPacket(byte[] bytes, ref int i) : this()
@@ -57914,9 +58144,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             GroupData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(EjectData.Length < count) {
+            if(EjectData == null || EjectData.Length != -1) {
                 EjectData = new EjectDataBlock[count];
-                for(int j = 0; j < count; j++) EjectData[j] = new EjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { EjectData[j] = new EjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { EjectData[j].FromBytes(bytes, ref i); }
@@ -57934,9 +58165,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             GroupData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(EjectData.Length < count) {
+            if(EjectData == null || EjectData.Length != count) {
                 EjectData = new EjectDataBlock[count];
-                for(int j = 0; j < count; j++) EjectData[j] = new EjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { EjectData[j] = new EjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { EjectData[j].FromBytes(bytes, ref i); }
@@ -58690,7 +58922,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
-            InviteData = new InviteDataBlock[0];
+            InviteData = null;
         }
 
         public InviteGroupRequestPacket(byte[] bytes, ref int i) : this()
@@ -58710,9 +58942,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             GroupData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InviteData.Length < count) {
+            if(InviteData == null || InviteData.Length != -1) {
                 InviteData = new InviteDataBlock[count];
-                for(int j = 0; j < count; j++) InviteData[j] = new InviteDataBlock();
+                for(int j = 0; j < count; j++)
+                { InviteData[j] = new InviteDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InviteData[j].FromBytes(bytes, ref i); }
@@ -58730,9 +58963,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             GroupData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(InviteData.Length < count) {
+            if(InviteData == null || InviteData.Length != count) {
                 InviteData = new InviteDataBlock[count];
-                for(int j = 0; j < count; j++) InviteData[j] = new InviteDataBlock();
+                for(int j = 0; j < count; j++)
+                { InviteData[j] = new InviteDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { InviteData[j].FromBytes(bytes, ref i); }
@@ -60014,7 +60248,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MoneyData = new MoneyDataBlock();
-            HistoryData = new HistoryDataBlock[0];
+            HistoryData = null;
         }
 
         public GroupAccountDetailsReplyPacket(byte[] bytes, ref int i) : this()
@@ -60034,9 +60268,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             MoneyData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(HistoryData.Length < count) {
+            if(HistoryData == null || HistoryData.Length != -1) {
                 HistoryData = new HistoryDataBlock[count];
-                for(int j = 0; j < count; j++) HistoryData[j] = new HistoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { HistoryData[j] = new HistoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { HistoryData[j].FromBytes(bytes, ref i); }
@@ -60054,9 +60289,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             MoneyData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(HistoryData.Length < count) {
+            if(HistoryData == null || HistoryData.Length != count) {
                 HistoryData = new HistoryDataBlock[count];
-                for(int j = 0; j < count; j++) HistoryData[j] = new HistoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { HistoryData[j] = new HistoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { HistoryData[j].FromBytes(bytes, ref i); }
@@ -60539,7 +60775,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             MoneyData = new MoneyDataBlock();
-            HistoryData = new HistoryDataBlock[0];
+            HistoryData = null;
         }
 
         public GroupAccountTransactionsReplyPacket(byte[] bytes, ref int i) : this()
@@ -60559,9 +60795,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             MoneyData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(HistoryData.Length < count) {
+            if(HistoryData == null || HistoryData.Length != -1) {
                 HistoryData = new HistoryDataBlock[count];
-                for(int j = 0; j < count; j++) HistoryData[j] = new HistoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { HistoryData[j] = new HistoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { HistoryData[j].FromBytes(bytes, ref i); }
@@ -60579,9 +60816,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             MoneyData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(HistoryData.Length < count) {
+            if(HistoryData == null || HistoryData.Length != count) {
                 HistoryData = new HistoryDataBlock[count];
-                for(int j = 0; j < count; j++) HistoryData[j] = new HistoryDataBlock();
+                for(int j = 0; j < count; j++)
+                { HistoryData[j] = new HistoryDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { HistoryData[j].FromBytes(bytes, ref i); }
@@ -61120,7 +61358,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             TransactionData = new TransactionDataBlock();
-            ProposalData = new ProposalDataBlock[0];
+            ProposalData = null;
         }
 
         public GroupActiveProposalItemReplyPacket(byte[] bytes, ref int i) : this()
@@ -61140,9 +61378,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             TransactionData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ProposalData.Length < count) {
+            if(ProposalData == null || ProposalData.Length != -1) {
                 ProposalData = new ProposalDataBlock[count];
-                for(int j = 0; j < count; j++) ProposalData[j] = new ProposalDataBlock();
+                for(int j = 0; j < count; j++)
+                { ProposalData[j] = new ProposalDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ProposalData[j].FromBytes(bytes, ref i); }
@@ -61160,9 +61399,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             TransactionData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ProposalData.Length < count) {
+            if(ProposalData == null || ProposalData.Length != count) {
                 ProposalData = new ProposalDataBlock[count];
-                for(int j = 0; j < count; j++) ProposalData[j] = new ProposalDataBlock();
+                for(int j = 0; j < count; j++)
+                { ProposalData[j] = new ProposalDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ProposalData[j].FromBytes(bytes, ref i); }
@@ -61779,7 +62019,7 @@ namespace OpenMetaverse.Packets
             AgentData = new AgentDataBlock();
             TransactionData = new TransactionDataBlock();
             HistoryItemData = new HistoryItemDataBlock();
-            VoteItem = new VoteItemBlock[0];
+            VoteItem = null;
         }
 
         public GroupVoteHistoryItemReplyPacket(byte[] bytes, ref int i) : this()
@@ -61800,9 +62040,10 @@ namespace OpenMetaverse.Packets
             TransactionData.FromBytes(bytes, ref i);
             HistoryItemData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(VoteItem.Length < count) {
+            if(VoteItem == null || VoteItem.Length != -1) {
                 VoteItem = new VoteItemBlock[count];
-                for(int j = 0; j < count; j++) VoteItem[j] = new VoteItemBlock();
+                for(int j = 0; j < count; j++)
+                { VoteItem[j] = new VoteItemBlock(); }
             }
             for (int j = 0; j < count; j++)
             { VoteItem[j].FromBytes(bytes, ref i); }
@@ -61821,9 +62062,10 @@ namespace OpenMetaverse.Packets
             TransactionData.FromBytes(bytes, ref i);
             HistoryItemData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(VoteItem.Length < count) {
+            if(VoteItem == null || VoteItem.Length != count) {
                 VoteItem = new VoteItemBlock[count];
-                for(int j = 0; j < count; j++) VoteItem[j] = new VoteItemBlock();
+                for(int j = 0; j < count; j++)
+                { VoteItem[j] = new VoteItemBlock(); }
             }
             for (int j = 0; j < count; j++)
             { VoteItem[j].FromBytes(bytes, ref i); }
@@ -62639,7 +62881,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
-            MemberData = new MemberDataBlock[0];
+            MemberData = null;
         }
 
         public GroupMembersReplyPacket(byte[] bytes, ref int i) : this()
@@ -62659,9 +62901,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             GroupData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(MemberData.Length < count) {
+            if(MemberData == null || MemberData.Length != -1) {
                 MemberData = new MemberDataBlock[count];
-                for(int j = 0; j < count; j++) MemberData[j] = new MemberDataBlock();
+                for(int j = 0; j < count; j++)
+                { MemberData[j] = new MemberDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { MemberData[j].FromBytes(bytes, ref i); }
@@ -62679,9 +62922,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             GroupData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(MemberData.Length < count) {
+            if(MemberData == null || MemberData.Length != count) {
                 MemberData = new MemberDataBlock[count];
-                for(int j = 0; j < count; j++) MemberData[j] = new MemberDataBlock();
+                for(int j = 0; j < count; j++)
+                { MemberData[j] = new MemberDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { MemberData[j].FromBytes(bytes, ref i); }
@@ -63624,7 +63868,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             GroupData = new GroupDataBlock();
-            RoleData = new RoleDataBlock[0];
+            RoleData = null;
         }
 
         public GroupRoleDataReplyPacket(byte[] bytes, ref int i) : this()
@@ -63644,9 +63888,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             GroupData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(RoleData.Length < count) {
+            if(RoleData == null || RoleData.Length != -1) {
                 RoleData = new RoleDataBlock[count];
-                for(int j = 0; j < count; j++) RoleData[j] = new RoleDataBlock();
+                for(int j = 0; j < count; j++)
+                { RoleData[j] = new RoleDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { RoleData[j].FromBytes(bytes, ref i); }
@@ -63664,9 +63909,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             GroupData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(RoleData.Length < count) {
+            if(RoleData == null || RoleData.Length != count) {
                 RoleData = new RoleDataBlock[count];
-                for(int j = 0; j < count; j++) RoleData[j] = new RoleDataBlock();
+                for(int j = 0; j < count; j++)
+                { RoleData[j] = new RoleDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { RoleData[j].FromBytes(bytes, ref i); }
@@ -64028,7 +64274,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 374;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            MemberData = new MemberDataBlock[0];
+            MemberData = null;
         }
 
         public GroupRoleMembersReplyPacket(byte[] bytes, ref int i) : this()
@@ -64047,9 +64293,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(MemberData.Length < count) {
+            if(MemberData == null || MemberData.Length != -1) {
                 MemberData = new MemberDataBlock[count];
-                for(int j = 0; j < count; j++) MemberData[j] = new MemberDataBlock();
+                for(int j = 0; j < count; j++)
+                { MemberData[j] = new MemberDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { MemberData[j].FromBytes(bytes, ref i); }
@@ -64066,9 +64313,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(MemberData.Length < count) {
+            if(MemberData == null || MemberData.Length != count) {
                 MemberData = new MemberDataBlock[count];
-                for(int j = 0; j < count; j++) MemberData[j] = new MemberDataBlock();
+                for(int j = 0; j < count; j++)
+                { MemberData[j] = new MemberDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { MemberData[j].FromBytes(bytes, ref i); }
@@ -64401,7 +64649,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            GroupData = new GroupDataBlock[0];
+            GroupData = null;
         }
 
         public GroupTitlesReplyPacket(byte[] bytes, ref int i) : this()
@@ -64420,9 +64668,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(GroupData.Length < count) {
+            if(GroupData == null || GroupData.Length != -1) {
                 GroupData = new GroupDataBlock[count];
-                for(int j = 0; j < count; j++) GroupData[j] = new GroupDataBlock();
+                for(int j = 0; j < count; j++)
+                { GroupData[j] = new GroupDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { GroupData[j].FromBytes(bytes, ref i); }
@@ -64439,9 +64688,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(GroupData.Length < count) {
+            if(GroupData == null || GroupData.Length != count) {
                 GroupData = new GroupDataBlock[count];
-                for(int j = 0; j < count; j++) GroupData[j] = new GroupDataBlock();
+                for(int j = 0; j < count; j++)
+                { GroupData[j] = new GroupDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { GroupData[j].FromBytes(bytes, ref i); }
@@ -64810,7 +65060,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 378;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            RoleData = new RoleDataBlock[0];
+            RoleData = null;
         }
 
         public GroupRoleUpdatePacket(byte[] bytes, ref int i) : this()
@@ -64829,9 +65079,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(RoleData.Length < count) {
+            if(RoleData == null || RoleData.Length != -1) {
                 RoleData = new RoleDataBlock[count];
-                for(int j = 0; j < count; j++) RoleData[j] = new RoleDataBlock();
+                for(int j = 0; j < count; j++)
+                { RoleData[j] = new RoleDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { RoleData[j].FromBytes(bytes, ref i); }
@@ -64848,9 +65099,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(RoleData.Length < count) {
+            if(RoleData == null || RoleData.Length != count) {
                 RoleData = new RoleDataBlock[count];
-                for(int j = 0; j < count; j++) RoleData[j] = new RoleDataBlock();
+                for(int j = 0; j < count; j++)
+                { RoleData[j] = new RoleDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { RoleData[j].FromBytes(bytes, ref i); }
@@ -65408,7 +65660,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            WearableData = new WearableDataBlock[0];
+            WearableData = null;
         }
 
         public AgentWearablesUpdatePacket(byte[] bytes, ref int i) : this()
@@ -65427,9 +65679,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(WearableData.Length < count) {
+            if(WearableData == null || WearableData.Length != -1) {
                 WearableData = new WearableDataBlock[count];
-                for(int j = 0; j < count; j++) WearableData[j] = new WearableDataBlock();
+                for(int j = 0; j < count; j++)
+                { WearableData[j] = new WearableDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { WearableData[j].FromBytes(bytes, ref i); }
@@ -65446,9 +65699,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(WearableData.Length < count) {
+            if(WearableData == null || WearableData.Length != count) {
                 WearableData = new WearableDataBlock[count];
-                for(int j = 0; j < count; j++) WearableData[j] = new WearableDataBlock();
+                for(int j = 0; j < count; j++)
+                { WearableData[j] = new WearableDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { WearableData[j].FromBytes(bytes, ref i); }
@@ -65639,7 +65893,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            WearableData = new WearableDataBlock[0];
+            WearableData = null;
         }
 
         public AgentIsNowWearingPacket(byte[] bytes, ref int i) : this()
@@ -65658,9 +65912,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(WearableData.Length < count) {
+            if(WearableData == null || WearableData.Length != -1) {
                 WearableData = new WearableDataBlock[count];
-                for(int j = 0; j < count; j++) WearableData[j] = new WearableDataBlock();
+                for(int j = 0; j < count; j++)
+                { WearableData[j] = new WearableDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { WearableData[j].FromBytes(bytes, ref i); }
@@ -65677,9 +65932,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(WearableData.Length < count) {
+            if(WearableData == null || WearableData.Length != count) {
                 WearableData = new WearableDataBlock[count];
-                for(int j = 0; j < count; j++) WearableData[j] = new WearableDataBlock();
+                for(int j = 0; j < count; j++)
+                { WearableData[j] = new WearableDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { WearableData[j].FromBytes(bytes, ref i); }
@@ -65872,7 +66128,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 384;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            WearableData = new WearableDataBlock[0];
+            WearableData = null;
         }
 
         public AgentCachedTexturePacket(byte[] bytes, ref int i) : this()
@@ -65891,9 +66147,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(WearableData.Length < count) {
+            if(WearableData == null || WearableData.Length != -1) {
                 WearableData = new WearableDataBlock[count];
-                for(int j = 0; j < count; j++) WearableData[j] = new WearableDataBlock();
+                for(int j = 0; j < count; j++)
+                { WearableData[j] = new WearableDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { WearableData[j].FromBytes(bytes, ref i); }
@@ -65910,9 +66167,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(WearableData.Length < count) {
+            if(WearableData == null || WearableData.Length != count) {
                 WearableData = new WearableDataBlock[count];
-                for(int j = 0; j < count; j++) WearableData[j] = new WearableDataBlock();
+                for(int j = 0; j < count; j++)
+                { WearableData[j] = new WearableDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { WearableData[j].FromBytes(bytes, ref i); }
@@ -66124,7 +66382,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 385;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            WearableData = new WearableDataBlock[0];
+            WearableData = null;
         }
 
         public AgentCachedTextureResponsePacket(byte[] bytes, ref int i) : this()
@@ -66143,9 +66401,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(WearableData.Length < count) {
+            if(WearableData == null || WearableData.Length != -1) {
                 WearableData = new WearableDataBlock[count];
-                for(int j = 0; j < count; j++) WearableData[j] = new WearableDataBlock();
+                for(int j = 0; j < count; j++)
+                { WearableData[j] = new WearableDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { WearableData[j].FromBytes(bytes, ref i); }
@@ -66162,9 +66421,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(WearableData.Length < count) {
+            if(WearableData == null || WearableData.Length != count) {
                 WearableData = new WearableDataBlock[count];
-                for(int j = 0; j < count; j++) WearableData[j] = new WearableDataBlock();
+                for(int j = 0; j < count; j++)
+                { WearableData[j] = new WearableDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { WearableData[j].FromBytes(bytes, ref i); }
@@ -66635,7 +66895,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 388;
             Header.Reliable = true;
             Header.Zerocoded = true;
-            AgentGroupData = new AgentGroupDataBlock[0];
+            AgentGroupData = null;
         }
 
         public GroupDataUpdatePacket(byte[] bytes, ref int i) : this()
@@ -66653,9 +66913,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(AgentGroupData.Length < count) {
+            if(AgentGroupData == null || AgentGroupData.Length != -1) {
                 AgentGroupData = new AgentGroupDataBlock[count];
-                for(int j = 0; j < count; j++) AgentGroupData[j] = new AgentGroupDataBlock();
+                for(int j = 0; j < count; j++)
+                { AgentGroupData[j] = new AgentGroupDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AgentGroupData[j].FromBytes(bytes, ref i); }
@@ -66671,9 +66932,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(AgentGroupData.Length < count) {
+            if(AgentGroupData == null || AgentGroupData.Length != count) {
                 AgentGroupData = new AgentGroupDataBlock[count];
-                for(int j = 0; j < count; j++) AgentGroupData[j] = new AgentGroupDataBlock();
+                for(int j = 0; j < count; j++)
+                { AgentGroupData[j] = new AgentGroupDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AgentGroupData[j].FromBytes(bytes, ref i); }
@@ -66885,7 +67147,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            GroupData = new GroupDataBlock[0];
+            GroupData = null;
         }
 
         public AgentGroupDataUpdatePacket(byte[] bytes, ref int i) : this()
@@ -66904,9 +67166,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(GroupData.Length < count) {
+            if(GroupData == null || GroupData.Length != -1) {
                 GroupData = new GroupDataBlock[count];
-                for(int j = 0; j < count; j++) GroupData[j] = new GroupDataBlock();
+                for(int j = 0; j < count; j++)
+                { GroupData[j] = new GroupDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { GroupData[j].FromBytes(bytes, ref i); }
@@ -66923,9 +67186,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(GroupData.Length < count) {
+            if(GroupData == null || GroupData.Length != count) {
                 GroupData = new GroupDataBlock[count];
-                for(int j = 0; j < count; j++) GroupData[j] = new GroupDataBlock();
+                for(int j = 0; j < count; j++)
+                { GroupData[j] = new GroupDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { GroupData[j].FromBytes(bytes, ref i); }
@@ -67835,7 +68099,7 @@ namespace OpenMetaverse.Packets
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
             HeaderData = new HeaderDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public RezMultipleAttachmentsFromInvPacket(byte[] bytes, ref int i) : this()
@@ -67855,9 +68119,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             HeaderData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -67875,9 +68140,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             HeaderData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -68226,7 +68492,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             HeaderData = new HeaderDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public CreateNewOutfitAttachmentsPacket(byte[] bytes, ref int i) : this()
@@ -68246,9 +68512,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             HeaderData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -68266,9 +68533,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             HeaderData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -69170,7 +69438,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             MethodData = new MethodDataBlock();
-            ParamList = new ParamListBlock[0];
+            ParamList = null;
         }
 
         public SystemMessagePacket(byte[] bytes, ref int i) : this()
@@ -69189,9 +69457,10 @@ namespace OpenMetaverse.Packets
             }
             MethodData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ParamList.Length < count) {
+            if(ParamList == null || ParamList.Length != -1) {
                 ParamList = new ParamListBlock[count];
-                for(int j = 0; j < count; j++) ParamList[j] = new ParamListBlock();
+                for(int j = 0; j < count; j++)
+                { ParamList[j] = new ParamListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ParamList[j].FromBytes(bytes, ref i); }
@@ -69208,9 +69477,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             MethodData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ParamList.Length < count) {
+            if(ParamList == null || ParamList.Length != count) {
                 ParamList = new ParamListBlock[count];
-                for(int j = 0; j < count; j++) ParamList[j] = new ParamListBlock();
+                for(int j = 0; j < count; j++)
+                { ParamList[j] = new ParamListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ParamList[j].FromBytes(bytes, ref i); }
@@ -69532,7 +69802,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 406;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            LayerData = new LayerDataBlock[0];
+            LayerData = null;
         }
 
         public MapLayerReplyPacket(byte[] bytes, ref int i) : this()
@@ -69551,9 +69821,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(LayerData.Length < count) {
+            if(LayerData == null || LayerData.Length != -1) {
                 LayerData = new LayerDataBlock[count];
-                for(int j = 0; j < count; j++) LayerData[j] = new LayerDataBlock();
+                for(int j = 0; j < count; j++)
+                { LayerData[j] = new LayerDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { LayerData[j].FromBytes(bytes, ref i); }
@@ -69570,9 +69841,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(LayerData.Length < count) {
+            if(LayerData == null || LayerData.Length != count) {
                 LayerData = new LayerDataBlock[count];
-                for(int j = 0; j < count; j++) LayerData[j] = new LayerDataBlock();
+                for(int j = 0; j < count; j++)
+                { LayerData[j] = new LayerDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { LayerData[j].FromBytes(bytes, ref i); }
@@ -70163,7 +70435,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 409;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            Data = new DataBlock[0];
+            Data = null;
         }
 
         public MapBlockReplyPacket(byte[] bytes, ref int i) : this()
@@ -70182,9 +70454,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != -1) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -70201,9 +70474,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != count) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -70633,7 +70907,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
             RequestData = new RequestDataBlock();
-            Data = new DataBlock[0];
+            Data = null;
         }
 
         public MapItemReplyPacket(byte[] bytes, ref int i) : this()
@@ -70653,9 +70927,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             RequestData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != -1) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -70673,9 +70948,10 @@ namespace OpenMetaverse.Packets
             AgentData.FromBytes(bytes, ref i);
             RequestData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Data.Length < count) {
+            if(Data == null || Data.Length != count) {
                 Data = new DataBlock[count];
-                for(int j = 0; j < count; j++) Data[j] = new DataBlock();
+                for(int j = 0; j < count; j++)
+                { Data[j] = new DataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Data[j].FromBytes(bytes, ref i); }
@@ -71655,7 +71931,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 422;
             Header.Reliable = true;
             RequestData = new RequestDataBlock();
-            ReportData = new ReportDataBlock[0];
+            ReportData = null;
         }
 
         public LandStatReplyPacket(byte[] bytes, ref int i) : this()
@@ -71674,9 +71950,10 @@ namespace OpenMetaverse.Packets
             }
             RequestData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ReportData.Length < count) {
+            if(ReportData == null || ReportData.Length != -1) {
                 ReportData = new ReportDataBlock[count];
-                for(int j = 0; j < count; j++) ReportData[j] = new ReportDataBlock();
+                for(int j = 0; j < count; j++)
+                { ReportData[j] = new ReportDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ReportData[j].FromBytes(bytes, ref i); }
@@ -71693,9 +71970,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             RequestData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ReportData.Length < count) {
+            if(ReportData == null || ReportData.Length != count) {
                 ReportData = new ReportDataBlock[count];
-                for(int j = 0; j < count; j++) ReportData[j] = new ReportDataBlock();
+                for(int j = 0; j < count; j++)
+                { ReportData[j] = new ReportDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ReportData[j].FromBytes(bytes, ref i); }
@@ -72117,7 +72395,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 424;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectIncludeInSearchPacket(byte[] bytes, ref int i) : this()
@@ -72136,9 +72414,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -72155,9 +72434,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -72549,7 +72829,7 @@ namespace OpenMetaverse.Packets
             Header.Frequency = PacketFrequency.Low;
             Header.ID = 65531;
             Header.Reliable = true;
-            Packets = new PacketsBlock[0];
+            Packets = null;
         }
 
         public PacketAckPacket(byte[] bytes, ref int i) : this()
@@ -72567,9 +72847,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(Packets.Length < count) {
+            if(Packets == null || Packets.Length != -1) {
                 Packets = new PacketsBlock[count];
-                for(int j = 0; j < count; j++) Packets[j] = new PacketsBlock();
+                for(int j = 0; j < count; j++)
+                { Packets[j] = new PacketsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Packets[j].FromBytes(bytes, ref i); }
@@ -72585,9 +72866,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(Packets.Length < count) {
+            if(Packets == null || Packets.Length != count) {
                 Packets = new PacketsBlock[count];
-                for(int j = 0; j < count; j++) Packets[j] = new PacketsBlock();
+                for(int j = 0; j < count; j++)
+                { Packets[j] = new PacketsBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Packets[j].FromBytes(bytes, ref i); }
@@ -73226,7 +73508,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public MultipleObjectUpdatePacket(byte[] bytes, ref int i) : this()
@@ -73245,9 +73527,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -73264,9 +73547,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -73457,7 +73741,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public RequestMultipleObjectsPacket(byte[] bytes, ref int i) : this()
@@ -73476,9 +73760,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -73495,9 +73780,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -73688,7 +73974,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectPositionPacket(byte[] bytes, ref int i) : this()
@@ -73707,9 +73993,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -73726,9 +74013,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -74126,9 +74414,9 @@ namespace OpenMetaverse.Packets
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 6;
             Header.Reliable = true;
-            Location = new LocationBlock[0];
+            Location = null;
             Index = new IndexBlock();
-            AgentData = new AgentDataBlock[0];
+            AgentData = null;
         }
 
         public CoarseLocationUpdatePacket(byte[] bytes, ref int i) : this()
@@ -74146,17 +74434,19 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(Location.Length < count) {
+            if(Location == null || Location.Length != -1) {
                 Location = new LocationBlock[count];
-                for(int j = 0; j < count; j++) Location[j] = new LocationBlock();
+                for(int j = 0; j < count; j++)
+                { Location[j] = new LocationBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Location[j].FromBytes(bytes, ref i); }
             Index.FromBytes(bytes, ref i);
             count = (int)bytes[i++];
-            if(AgentData.Length < count) {
+            if(AgentData == null || AgentData.Length != -1) {
                 AgentData = new AgentDataBlock[count];
-                for(int j = 0; j < count; j++) AgentData[j] = new AgentDataBlock();
+                for(int j = 0; j < count; j++)
+                { AgentData[j] = new AgentDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AgentData[j].FromBytes(bytes, ref i); }
@@ -74172,17 +74462,19 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(Location.Length < count) {
+            if(Location == null || Location.Length != count) {
                 Location = new LocationBlock[count];
-                for(int j = 0; j < count; j++) Location[j] = new LocationBlock();
+                for(int j = 0; j < count; j++)
+                { Location[j] = new LocationBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Location[j].FromBytes(bytes, ref i); }
             Index.FromBytes(bytes, ref i);
             count = (int)bytes[i++];
-            if(AgentData.Length < count) {
+            if(AgentData == null || AgentData.Length != count) {
                 AgentData = new AgentDataBlock[count];
-                for(int j = 0; j < count; j++) AgentData[j] = new AgentDataBlock();
+                for(int j = 0; j < count; j++)
+                { AgentData[j] = new AgentDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AgentData[j].FromBytes(bytes, ref i); }
@@ -74776,7 +75068,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 9;
             Header.Reliable = true;
             Header.Zerocoded = true;
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectPropertiesPacket(byte[] bytes, ref int i) : this()
@@ -74794,9 +75086,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -74812,9 +75105,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -75558,7 +75852,7 @@ namespace OpenMetaverse.Packets
             Header.Frequency = PacketFrequency.Medium;
             Header.ID = 15;
             Header.Reliable = true;
-            DataBlock = new DataBlockBlock[0];
+            DataBlock = null;
         }
 
         public PreloadSoundPacket(byte[] bytes, ref int i) : this()
@@ -75576,9 +75870,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(DataBlock.Length < count) {
+            if(DataBlock == null || DataBlock.Length != -1) {
                 DataBlock = new DataBlockBlock[count];
-                for(int j = 0; j < count; j++) DataBlock[j] = new DataBlockBlock();
+                for(int j = 0; j < count; j++)
+                { DataBlock[j] = new DataBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { DataBlock[j].FromBytes(bytes, ref i); }
@@ -75594,9 +75889,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(DataBlock.Length < count) {
+            if(DataBlock == null || DataBlock.Length != count) {
                 DataBlock = new DataBlockBlock[count];
-                for(int j = 0; j < count; j++) DataBlock[j] = new DataBlockBlock();
+                for(int j = 0; j < count; j++)
+                { DataBlock[j] = new DataBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { DataBlock[j].FromBytes(bytes, ref i); }
@@ -75812,7 +76108,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            Effect = new EffectBlock[0];
+            Effect = null;
         }
 
         public ViewerEffectPacket(byte[] bytes, ref int i) : this()
@@ -75831,9 +76127,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Effect.Length < count) {
+            if(Effect == null || Effect.Length != -1) {
                 Effect = new EffectBlock[count];
-                for(int j = 0; j < count; j++) Effect[j] = new EffectBlock();
+                for(int j = 0; j < count; j++)
+                { Effect[j] = new EffectBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Effect[j].FromBytes(bytes, ref i); }
@@ -75850,9 +76147,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(Effect.Length < count) {
+            if(Effect == null || Effect.Length != count) {
                 Effect = new EffectBlock[count];
-                for(int j = 0; j < count; j++) Effect[j] = new EffectBlock();
+                for(int j = 0; j < count; j++)
+                { Effect[j] = new EffectBlock(); }
             }
             for (int j = 0; j < count; j++)
             { Effect[j].FromBytes(bytes, ref i); }
@@ -76469,8 +76767,8 @@ namespace OpenMetaverse.Packets
             Header.ID = 5;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            AnimationList = new AnimationListBlock[0];
-            PhysicalAvatarEventList = new PhysicalAvatarEventListBlock[0];
+            AnimationList = null;
+            PhysicalAvatarEventList = null;
         }
 
         public AgentAnimationPacket(byte[] bytes, ref int i) : this()
@@ -76489,16 +76787,18 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(AnimationList.Length < count) {
+            if(AnimationList == null || AnimationList.Length != -1) {
                 AnimationList = new AnimationListBlock[count];
-                for(int j = 0; j < count; j++) AnimationList[j] = new AnimationListBlock();
+                for(int j = 0; j < count; j++)
+                { AnimationList[j] = new AnimationListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AnimationList[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(PhysicalAvatarEventList.Length < count) {
+            if(PhysicalAvatarEventList == null || PhysicalAvatarEventList.Length != -1) {
                 PhysicalAvatarEventList = new PhysicalAvatarEventListBlock[count];
-                for(int j = 0; j < count; j++) PhysicalAvatarEventList[j] = new PhysicalAvatarEventListBlock();
+                for(int j = 0; j < count; j++)
+                { PhysicalAvatarEventList[j] = new PhysicalAvatarEventListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { PhysicalAvatarEventList[j].FromBytes(bytes, ref i); }
@@ -76515,16 +76815,18 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(AnimationList.Length < count) {
+            if(AnimationList == null || AnimationList.Length != count) {
                 AnimationList = new AnimationListBlock[count];
-                for(int j = 0; j < count; j++) AnimationList[j] = new AnimationListBlock();
+                for(int j = 0; j < count; j++)
+                { AnimationList[j] = new AnimationListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AnimationList[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(PhysicalAvatarEventList.Length < count) {
+            if(PhysicalAvatarEventList == null || PhysicalAvatarEventList.Length != count) {
                 PhysicalAvatarEventList = new PhysicalAvatarEventListBlock[count];
-                for(int j = 0; j < count; j++) PhysicalAvatarEventList[j] = new PhysicalAvatarEventListBlock();
+                for(int j = 0; j < count; j++)
+                { PhysicalAvatarEventList[j] = new PhysicalAvatarEventListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { PhysicalAvatarEventList[j].FromBytes(bytes, ref i); }
@@ -77022,7 +77324,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 8;
             Header.Reliable = true;
             AgentData = new AgentDataBlock();
-            RequestImage = new RequestImageBlock[0];
+            RequestImage = null;
         }
 
         public RequestImagePacket(byte[] bytes, ref int i) : this()
@@ -77041,9 +77343,10 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(RequestImage.Length < count) {
+            if(RequestImage == null || RequestImage.Length != -1) {
                 RequestImage = new RequestImageBlock[count];
-                for(int j = 0; j < count; j++) RequestImage[j] = new RequestImageBlock();
+                for(int j = 0; j < count; j++)
+                { RequestImage[j] = new RequestImageBlock(); }
             }
             for (int j = 0; j < count; j++)
             { RequestImage[j].FromBytes(bytes, ref i); }
@@ -77060,9 +77363,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(RequestImage.Length < count) {
+            if(RequestImage == null || RequestImage.Length != count) {
                 RequestImage = new RequestImageBlock[count];
-                for(int j = 0; j < count; j++) RequestImage[j] = new RequestImageBlock();
+                for(int j = 0; j < count; j++)
+                { RequestImage[j] = new RequestImageBlock(); }
             }
             for (int j = 0; j < count; j++)
             { RequestImage[j].FromBytes(bytes, ref i); }
@@ -78056,7 +78360,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             RegionData = new RegionDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectUpdatePacket(byte[] bytes, ref int i) : this()
@@ -78075,9 +78379,10 @@ namespace OpenMetaverse.Packets
             }
             RegionData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -78094,9 +78399,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             RegionData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -78304,7 +78610,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 13;
             Header.Reliable = true;
             RegionData = new RegionDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectUpdateCompressedPacket(byte[] bytes, ref int i) : this()
@@ -78323,9 +78629,10 @@ namespace OpenMetaverse.Packets
             }
             RegionData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -78342,9 +78649,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             RegionData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -78538,7 +78846,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 14;
             Header.Reliable = true;
             RegionData = new RegionDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ObjectUpdateCachedPacket(byte[] bytes, ref int i) : this()
@@ -78557,9 +78865,10 @@ namespace OpenMetaverse.Packets
             }
             RegionData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -78576,9 +78885,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             RegionData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -78800,7 +79110,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 15;
             Header.Reliable = true;
             RegionData = new RegionDataBlock();
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public ImprovedTerseObjectUpdatePacket(byte[] bytes, ref int i) : this()
@@ -78819,9 +79129,10 @@ namespace OpenMetaverse.Packets
             }
             RegionData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -78838,9 +79149,10 @@ namespace OpenMetaverse.Packets
             Header = header;
             RegionData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -78983,7 +79295,7 @@ namespace OpenMetaverse.Packets
             Header.Frequency = PacketFrequency.High;
             Header.ID = 16;
             Header.Reliable = true;
-            ObjectData = new ObjectDataBlock[0];
+            ObjectData = null;
         }
 
         public KillObjectPacket(byte[] bytes, ref int i) : this()
@@ -79001,9 +79313,10 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != -1) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -79019,9 +79332,10 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             int count = (int)bytes[i++];
-            if(ObjectData.Length < count) {
+            if(ObjectData == null || ObjectData.Length != count) {
                 ObjectData = new ObjectDataBlock[count];
-                for(int j = 0; j < count; j++) ObjectData[j] = new ObjectDataBlock();
+                for(int j = 0; j < count; j++)
+                { ObjectData[j] = new ObjectDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { ObjectData[j].FromBytes(bytes, ref i); }
@@ -79732,9 +80046,9 @@ namespace OpenMetaverse.Packets
             Header.ID = 20;
             Header.Reliable = true;
             Sender = new SenderBlock();
-            AnimationList = new AnimationListBlock[0];
-            AnimationSourceList = new AnimationSourceListBlock[0];
-            PhysicalAvatarEventList = new PhysicalAvatarEventListBlock[0];
+            AnimationList = null;
+            AnimationSourceList = null;
+            PhysicalAvatarEventList = null;
         }
 
         public AvatarAnimationPacket(byte[] bytes, ref int i) : this()
@@ -79753,23 +80067,26 @@ namespace OpenMetaverse.Packets
             }
             Sender.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(AnimationList.Length < count) {
+            if(AnimationList == null || AnimationList.Length != -1) {
                 AnimationList = new AnimationListBlock[count];
-                for(int j = 0; j < count; j++) AnimationList[j] = new AnimationListBlock();
+                for(int j = 0; j < count; j++)
+                { AnimationList[j] = new AnimationListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AnimationList[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(AnimationSourceList.Length < count) {
+            if(AnimationSourceList == null || AnimationSourceList.Length != -1) {
                 AnimationSourceList = new AnimationSourceListBlock[count];
-                for(int j = 0; j < count; j++) AnimationSourceList[j] = new AnimationSourceListBlock();
+                for(int j = 0; j < count; j++)
+                { AnimationSourceList[j] = new AnimationSourceListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AnimationSourceList[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(PhysicalAvatarEventList.Length < count) {
+            if(PhysicalAvatarEventList == null || PhysicalAvatarEventList.Length != -1) {
                 PhysicalAvatarEventList = new PhysicalAvatarEventListBlock[count];
-                for(int j = 0; j < count; j++) PhysicalAvatarEventList[j] = new PhysicalAvatarEventListBlock();
+                for(int j = 0; j < count; j++)
+                { PhysicalAvatarEventList[j] = new PhysicalAvatarEventListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { PhysicalAvatarEventList[j].FromBytes(bytes, ref i); }
@@ -79786,23 +80103,26 @@ namespace OpenMetaverse.Packets
             Header = header;
             Sender.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(AnimationList.Length < count) {
+            if(AnimationList == null || AnimationList.Length != count) {
                 AnimationList = new AnimationListBlock[count];
-                for(int j = 0; j < count; j++) AnimationList[j] = new AnimationListBlock();
+                for(int j = 0; j < count; j++)
+                { AnimationList[j] = new AnimationListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AnimationList[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(AnimationSourceList.Length < count) {
+            if(AnimationSourceList == null || AnimationSourceList.Length != count) {
                 AnimationSourceList = new AnimationSourceListBlock[count];
-                for(int j = 0; j < count; j++) AnimationSourceList[j] = new AnimationSourceListBlock();
+                for(int j = 0; j < count; j++)
+                { AnimationSourceList[j] = new AnimationSourceListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AnimationSourceList[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(PhysicalAvatarEventList.Length < count) {
+            if(PhysicalAvatarEventList == null || PhysicalAvatarEventList.Length != count) {
                 PhysicalAvatarEventList = new PhysicalAvatarEventListBlock[count];
-                for(int j = 0; j < count; j++) PhysicalAvatarEventList[j] = new PhysicalAvatarEventListBlock();
+                for(int j = 0; j < count; j++)
+                { PhysicalAvatarEventList[j] = new PhysicalAvatarEventListBlock(); }
             }
             for (int j = 0; j < count; j++)
             { PhysicalAvatarEventList[j].FromBytes(bytes, ref i); }
@@ -80985,11 +81305,11 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
-            GroupData = new GroupDataBlock[0];
-            AnimationData = new AnimationDataBlock[0];
-            GranterBlock = new GranterBlockBlock[0];
-            NVPairData = new NVPairDataBlock[0];
-            VisualParam = new VisualParamBlock[0];
+            GroupData = null;
+            AnimationData = null;
+            GranterBlock = null;
+            NVPairData = null;
+            VisualParam = null;
         }
 
         public ChildAgentUpdatePacket(byte[] bytes, ref int i) : this()
@@ -81008,37 +81328,42 @@ namespace OpenMetaverse.Packets
             }
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(GroupData.Length < count) {
+            if(GroupData == null || GroupData.Length != -1) {
                 GroupData = new GroupDataBlock[count];
-                for(int j = 0; j < count; j++) GroupData[j] = new GroupDataBlock();
+                for(int j = 0; j < count; j++)
+                { GroupData[j] = new GroupDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { GroupData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(AnimationData.Length < count) {
+            if(AnimationData == null || AnimationData.Length != -1) {
                 AnimationData = new AnimationDataBlock[count];
-                for(int j = 0; j < count; j++) AnimationData[j] = new AnimationDataBlock();
+                for(int j = 0; j < count; j++)
+                { AnimationData[j] = new AnimationDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AnimationData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(GranterBlock.Length < count) {
+            if(GranterBlock == null || GranterBlock.Length != -1) {
                 GranterBlock = new GranterBlockBlock[count];
-                for(int j = 0; j < count; j++) GranterBlock[j] = new GranterBlockBlock();
+                for(int j = 0; j < count; j++)
+                { GranterBlock[j] = new GranterBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { GranterBlock[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(NVPairData.Length < count) {
+            if(NVPairData == null || NVPairData.Length != -1) {
                 NVPairData = new NVPairDataBlock[count];
-                for(int j = 0; j < count; j++) NVPairData[j] = new NVPairDataBlock();
+                for(int j = 0; j < count; j++)
+                { NVPairData[j] = new NVPairDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { NVPairData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(VisualParam.Length < count) {
+            if(VisualParam == null || VisualParam.Length != -1) {
                 VisualParam = new VisualParamBlock[count];
-                for(int j = 0; j < count; j++) VisualParam[j] = new VisualParamBlock();
+                for(int j = 0; j < count; j++)
+                { VisualParam[j] = new VisualParamBlock(); }
             }
             for (int j = 0; j < count; j++)
             { VisualParam[j].FromBytes(bytes, ref i); }
@@ -81055,37 +81380,42 @@ namespace OpenMetaverse.Packets
             Header = header;
             AgentData.FromBytes(bytes, ref i);
             int count = (int)bytes[i++];
-            if(GroupData.Length < count) {
+            if(GroupData == null || GroupData.Length != count) {
                 GroupData = new GroupDataBlock[count];
-                for(int j = 0; j < count; j++) GroupData[j] = new GroupDataBlock();
+                for(int j = 0; j < count; j++)
+                { GroupData[j] = new GroupDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { GroupData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(AnimationData.Length < count) {
+            if(AnimationData == null || AnimationData.Length != count) {
                 AnimationData = new AnimationDataBlock[count];
-                for(int j = 0; j < count; j++) AnimationData[j] = new AnimationDataBlock();
+                for(int j = 0; j < count; j++)
+                { AnimationData[j] = new AnimationDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { AnimationData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(GranterBlock.Length < count) {
+            if(GranterBlock == null || GranterBlock.Length != count) {
                 GranterBlock = new GranterBlockBlock[count];
-                for(int j = 0; j < count; j++) GranterBlock[j] = new GranterBlockBlock();
+                for(int j = 0; j < count; j++)
+                { GranterBlock[j] = new GranterBlockBlock(); }
             }
             for (int j = 0; j < count; j++)
             { GranterBlock[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(NVPairData.Length < count) {
+            if(NVPairData == null || NVPairData.Length != count) {
                 NVPairData = new NVPairDataBlock[count];
-                for(int j = 0; j < count; j++) NVPairData[j] = new NVPairDataBlock();
+                for(int j = 0; j < count; j++)
+                { NVPairData[j] = new NVPairDataBlock(); }
             }
             for (int j = 0; j < count; j++)
             { NVPairData[j].FromBytes(bytes, ref i); }
             count = (int)bytes[i++];
-            if(VisualParam.Length < count) {
+            if(VisualParam == null || VisualParam.Length != count) {
                 VisualParam = new VisualParamBlock[count];
-                for(int j = 0; j < count; j++) VisualParam[j] = new VisualParamBlock();
+                for(int j = 0; j < count; j++)
+                { VisualParam[j] = new VisualParamBlock(); }
             }
             for (int j = 0; j < count; j++)
             { VisualParam[j].FromBytes(bytes, ref i); }

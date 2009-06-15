@@ -649,7 +649,14 @@ namespace OpenMetaverse
 
             if (packet.HasVariableBlocks)
             {
-                byte[][] datas = packet.ToBytesMultiple();
+                byte[][] datas;
+                try { datas = packet.ToBytesMultiple(); }
+                catch (NullReferenceException)
+                {
+                    Logger.Log("Failed to serialize " + packet.Type + " packet to one or more payloads due to a missing block or field. StackTrace: " +
+                        Environment.StackTrace, Helpers.LogLevel.Error);
+                    return;
+                }
                 int packetCount = datas.Length;
 
                 if (packetCount > 1)

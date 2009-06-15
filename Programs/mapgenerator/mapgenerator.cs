@@ -490,7 +490,7 @@ namespace mapgenerator
                 else if (block.Count == -1)
                 {
                     // Variable count block
-                    writer.WriteLine("            " + sanitizedName + " = new " + block.Name + "Block[0];");
+                    writer.WriteLine("            " + sanitizedName + " = null;");
                 }
                 else
                 {
@@ -539,9 +539,10 @@ namespace mapgenerator
                     {
                         writer.WriteLine("            count = (int)bytes[i++];");
                     }
-                    writer.WriteLine("            if(" + sanitizedName + ".Length < count) {");
+                    writer.WriteLine("            if(" + sanitizedName + " == null || " + sanitizedName + ".Length != " + block.Count + ") {");
                     writer.WriteLine("                " + sanitizedName + " = new " + block.Name + "Block[count];");
-                    writer.WriteLine("                for(int j = 0; j < count; j++) " + sanitizedName + "[j] = new " + block.Name + "Block();");
+                    writer.WriteLine("                for(int j = 0; j < count; j++)");
+                    writer.WriteLine("                { " + sanitizedName + "[j] = new " + block.Name + "Block(); }");
                     writer.WriteLine("            }");
                     writer.WriteLine("            for (int j = 0; j < count; j++)");
                     writer.WriteLine("            { " + sanitizedName + "[j].FromBytes(bytes, ref i); }");
@@ -549,9 +550,10 @@ namespace mapgenerator
                 else
                 {
                     // Multiple count block
-                    writer.WriteLine("            if(" + sanitizedName + ".Length < " + block.Count + ") {");
+                    writer.WriteLine("            if(" + sanitizedName + " == null || " + sanitizedName + ".Length != " + block.Count + ") {");
                     writer.WriteLine("                " + sanitizedName + " = new " + block.Name + "Block[" + block.Count + "];");
-                    writer.WriteLine("                for(int j = 0; j < " + block.Count + "; j++) " + sanitizedName + "[j] = new " + block.Name + "Block();");
+                    writer.WriteLine("                for(int j = 0; j < " + block.Count + "; j++)");
+                    writer.WriteLine("                { " + sanitizedName + "[j] = new " + block.Name + "Block(); }");
                     writer.WriteLine("            }");
                     writer.WriteLine("            for (int j = 0; j < " + block.Count + "; j++)");
                     writer.WriteLine("            { " + sanitizedName + "[j].FromBytes(bytes, ref i); }");
@@ -594,9 +596,10 @@ namespace mapgenerator
                     {
                         writer.WriteLine("            count = (int)bytes[i++];");
                     }
-                    writer.WriteLine("            if(" + sanitizedName + ".Length < count) {");
+                    writer.WriteLine("            if(" + sanitizedName + " == null || " + sanitizedName + ".Length != count) {");
                     writer.WriteLine("                " + sanitizedName + " = new " + block.Name + "Block[count];");
-                    writer.WriteLine("                for(int j = 0; j < count; j++) " + sanitizedName + "[j] = new " + block.Name + "Block();");
+                    writer.WriteLine("                for(int j = 0; j < count; j++)");
+                    writer.WriteLine("                { " + sanitizedName + "[j] = new " + block.Name + "Block(); }");
                     writer.WriteLine("            }");
                     writer.WriteLine("            for (int j = 0; j < count; j++)");
                     writer.WriteLine("            { " + sanitizedName + "[j].FromBytes(bytes, ref i); }");
@@ -604,9 +607,10 @@ namespace mapgenerator
                 else
                 {
                     // Multiple count block
-                    writer.WriteLine("            if(" + sanitizedName + ".Length < " + block.Count + ") {");
+                    writer.WriteLine("            if(" + sanitizedName + " == null || " + sanitizedName + ".Length != " + block.Count + ") {");
                     writer.WriteLine("                " + sanitizedName + " = new " + block.Name + "Block[" + block.Count + "];");
-                    writer.WriteLine("                for(int j = 0; j < " + block.Count + "; j++) " + sanitizedName + "[j] = new " + block.Name + "Block();");
+                    writer.WriteLine("                for(int j = 0; j < " + block.Count + "; j++)");
+                    writer.WriteLine("                { " + sanitizedName + "[j] = new " + block.Name + "Block(); }");
                     writer.WriteLine("            }");
                     writer.WriteLine("            for (int j = 0; j < " + block.Count + "; j++)");
                     writer.WriteLine("            { " + sanitizedName + "[j].FromBytes(bytes, ref i); }");
