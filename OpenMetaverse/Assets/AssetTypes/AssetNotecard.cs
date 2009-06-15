@@ -146,7 +146,6 @@ namespace OpenMetaverse.Assets
                             throw new Exception("wrong format");
                         string key = m.Groups[1].Value;
                         string val = m.Groups[3].Value;
-                        System.Console.WriteLine(key);
                         if (key == "{")
                             continue;
                         if (key == "}")
