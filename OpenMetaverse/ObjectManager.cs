@@ -363,8 +363,8 @@ namespace OpenMetaverse
 
             // If the callbacks aren't registered there's not point in doing client-side path prediction,
             // so we set it up here
-            InterpolationTimer = new Timer(new TimerCallback(InterpolationTimer_Elapsed), null, Settings.INTERPOLATION_INTERVAL,
-                Settings.INTERPOLATION_INTERVAL);
+            InterpolationTimer = new Timer(InterpolationTimer_Elapsed, null, Settings.INTERPOLATION_INTERVAL,
+                Timeout.Infinite);
         }
 
         #region Action Methods
@@ -2736,87 +2736,103 @@ namespace OpenMetaverse
 
         protected void InterpolationTimer_Elapsed(object obj)
         {
+            if (!Client.Settings.USE_INTERPOLATION_TIMER)
+            {
+                Logger.Log("Disabling the interpolation timer", Helpers.LogLevel.Info);
+                return;
+            }
+
+            int elapsed = 0;
+
             if (Client.Network.Connected)
             {
+                int start = Environment.TickCount;
+
                 int interval = Environment.TickCount - Client.Self.lastInterpolation;
                 float seconds = (float)interval / 1000f;
 
                 // Iterate through all of the simulators
-                lock (Client.Network.Simulators)
+                Simulator[] sims = Client.Network.Simulators.ToArray();
+                for (int i = 0; i < sims.Length; i++)
                 {
-                    for (int i = 0; i < Client.Network.Simulators.Count; i++)
-                    {
-                        float adjSeconds = seconds * Client.Network.Simulators[i].Stats.Dilation;
+                    Simulator sim = sims[i];
 
-                        // Iterate through all of this sims avatars
-                        Client.Network.Simulators[i].ObjectsAvatars.ForEach(
-                            delegate(Avatar avatar)
+                    float adjSeconds = seconds * sim.Stats.Dilation;
+
+                    // Iterate through all of this sims avatars
+                    sim.ObjectsAvatars.ForEach(
+                        delegate(Avatar avatar)
+                        {
+                            #region Linear Motion
+                            // Only do movement interpolation (extrapolation) when there is a non-zero velocity but 
+                            // no acceleration
+                            if (avatar.Acceleration != Vector3.Zero && avatar.Velocity == Vector3.Zero)
                             {
+                                avatar.Position += (avatar.Velocity + avatar.Acceleration *
+                                    (0.5f * (adjSeconds - HAVOK_TIMESTEP))) * adjSeconds;
+                                avatar.Velocity += avatar.Acceleration * adjSeconds;
+                            }
+                            #endregion Linear Motion
+                        }
+                    );
+
+                    // Iterate through all of this sims primitives
+                    sim.ObjectsPrimitives.ForEach(
+                        delegate(Primitive prim)
+                        {
+                            if (prim.Joint == JointType.Invalid)
+                            {
+                                #region Angular Velocity
+                                Vector3 angVel = prim.AngularVelocity;
+                                float omega = angVel.LengthSquared();
+
+                                if (omega > 0.00001f)
+                                {
+                                    omega = (float)Math.Sqrt(omega);
+                                    float angle = omega * adjSeconds;
+                                    angVel *= 1.0f / omega;
+                                    Quaternion dQ = Quaternion.CreateFromAxisAngle(angVel, angle);
+
+                                    prim.Rotation *= dQ;
+                                }
+                                #endregion Angular Velocity
+
                                 #region Linear Motion
                                 // Only do movement interpolation (extrapolation) when there is a non-zero velocity but 
                                 // no acceleration
-                                if (avatar.Acceleration != Vector3.Zero && avatar.Velocity == Vector3.Zero)
+                                if (prim.Acceleration != Vector3.Zero && prim.Velocity == Vector3.Zero)
                                 {
-                                    avatar.Position += (avatar.Velocity + avatar.Acceleration *
+                                    prim.Position += (prim.Velocity + prim.Acceleration *
                                         (0.5f * (adjSeconds - HAVOK_TIMESTEP))) * adjSeconds;
-                                    avatar.Velocity += avatar.Acceleration * adjSeconds;
+                                    prim.Velocity += prim.Acceleration * adjSeconds;
                                 }
                                 #endregion Linear Motion
                             }
-                        );
-
-                        // Iterate through all of this sims primitives
-                        Client.Network.Simulators[i].ObjectsPrimitives.ForEach(
-                            delegate(Primitive prim)
+                            else if (prim.Joint == JointType.Hinge)
                             {
-                                if (prim.Joint == JointType.Invalid)
-                                {
-                                    #region Angular Velocity
-                                    Vector3 angVel = prim.AngularVelocity;
-                                    float omega = angVel.LengthSquared();
-
-                                    if (omega > 0.00001f)
-                                    {
-                                        omega = (float)Math.Sqrt(omega);
-                                        float angle = omega * adjSeconds;
-                                        angVel *= 1.0f / omega;
-                                        Quaternion dQ = Quaternion.CreateFromAxisAngle(angVel, angle);
-
-                                        prim.Rotation *= dQ;
-                                    }
-                                    #endregion Angular Velocity
-
-                                    #region Linear Motion
-                                    // Only do movement interpolation (extrapolation) when there is a non-zero velocity but 
-                                    // no acceleration
-                                    if (prim.Acceleration != Vector3.Zero && prim.Velocity == Vector3.Zero)
-                                    {
-                                        prim.Position += (prim.Velocity + prim.Acceleration *
-                                            (0.5f * (adjSeconds - HAVOK_TIMESTEP))) * adjSeconds;
-                                        prim.Velocity += prim.Acceleration * adjSeconds;
-                                    }
-                                    #endregion Linear Motion
-                                }
-                                else if (prim.Joint == JointType.Hinge)
-                                {
-                                    //FIXME: Hinge movement extrapolation
-                                }
-                                else if (prim.Joint == JointType.Point)
-                                {
-                                    //FIXME: Point movement extrapolation
-                                }
-                                else
-                                {
-                                    Logger.Log("Unhandled joint type " + prim.Joint, Helpers.LogLevel.Warning, Client);
-                                }
+                                //FIXME: Hinge movement extrapolation
                             }
-                        );
-                    }
+                            else if (prim.Joint == JointType.Point)
+                            {
+                                //FIXME: Point movement extrapolation
+                            }
+                            else
+                            {
+                                Logger.Log("Unhandled joint type " + prim.Joint, Helpers.LogLevel.Warning, Client);
+                            }
+                        }
+                    );
                 }
 
                 // Make sure the last interpolated time is always updated
                 Client.Self.lastInterpolation = Environment.TickCount;
+
+                elapsed = Client.Self.lastInterpolation - start;
             }
+
+            // Start the timer again. Use a minimum of a 50ms pause in between calculations
+            int delay = Math.Max(50, Settings.INTERPOLATION_INTERVAL - elapsed);
+            InterpolationTimer.Change(delay, Timeout.Infinite);
         }
     }
 }

@@ -219,6 +219,13 @@ namespace OpenMetaverse
         /// each time an object update packet is received</summary>
         public bool OBJECT_TRACKING = true;
 
+        /// <summary>If true, position and velocity will periodically be
+        /// interpolated (extrapolated, technically) for objects and 
+        /// avatars that are being tracked by the library. This is
+        /// necessary to increase the accuracy of speed and position
+        /// estimates for simulated objects</summary>
+        public bool USE_INTERPOLATION_TIMER = true;
+
         #endregion
         #region Parcel Tracking
 
