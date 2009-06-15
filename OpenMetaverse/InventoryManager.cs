@@ -720,7 +720,12 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="itemID">UUID of the folder</param>
         public InventoryFolder(UUID itemID)
-            : base(itemID) { }
+            : base(itemID) 
+        {
+            PreferredType = AssetType.Unknown;
+            Version = 1;
+            DescendentCount = 0;
+        }
 
         /// <summary>
         /// 
