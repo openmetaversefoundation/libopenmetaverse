@@ -631,7 +631,7 @@ namespace OpenMetaverse.Messages.CableBeach
         {
             OSDMap map = new OSDMap();
             map["metadata"] = Metadata.Serialize();
-            map["data"] = OSD.FromString(Base64Data);
+            map["base64_data"] = OSD.FromString(Base64Data);
             return map;
         }
 
