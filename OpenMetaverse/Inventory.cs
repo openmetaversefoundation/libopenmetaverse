@@ -248,8 +248,7 @@ namespace OpenMetaverse
 
                     itemNode.Parent = itemParent;
 
-                    if (item != itemNode.Data)
-                        FireOnInventoryObjectUpdated(itemNode.Data, item);
+                    FireOnInventoryObjectUpdated(itemNode.Data, item);
 
                     itemNode.Data = item;
                 }

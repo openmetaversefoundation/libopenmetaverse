@@ -1395,6 +1395,7 @@ namespace OpenMetaverse
                 {
                     InventoryBase inv = Store[folderID];
                     inv.Name = newName;
+                    inv.ParentUUID = newparentID;
                     _Store.UpdateNodeFor(inv);
                 }
             }
@@ -1510,6 +1511,7 @@ namespace OpenMetaverse
                     if (_Store.Contains(itemID))
                     {
                         InventoryBase inv = _Store[itemID];
+                        inv.Name = newName;
                         inv.ParentUUID = folderID;
                         _Store.UpdateNodeFor(inv);
                     }
