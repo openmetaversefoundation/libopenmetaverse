@@ -49,6 +49,11 @@ namespace OpenMetaverse.Http
         protected bool _Running;
         protected HttpWebRequest _Request;
 
+        /// <summary>Number of times we've received an unknown CAPS exception in series.</summary>
+        private int _errorCount;
+        /// <summary>For exponential backoff on error.</summary>
+        private static Random _random = new Random();
+
         public EventQueueClient(Uri eventQueueLocation)
         {
             _Address = eventQueueLocation;
@@ -104,6 +109,7 @@ namespace OpenMetaverse.Http
 
             if (responseData != null)
             {
+                _errorCount = 0;
                 // Got a response
                 OSDMap result = OSDParser.DeserializeLLSDXml(responseData) as OSDMap;
 
@@ -154,6 +160,8 @@ namespace OpenMetaverse.Http
                 }
                 else
                 {
+                    ++_errorCount;
+
                     // Try to log a meaningful error message
                     if (code != HttpStatusCode.OK)
                     {
@@ -162,7 +170,7 @@ namespace OpenMetaverse.Http
                     }
                     else if (error.InnerException != null)
                     {
-                        Logger.Log.WarnFormat("Unrecognized caps exception from {0}: {1}",
+                        Logger.Log.WarnFormat("Unrecognized internal caps exception from {0}: {1}",
                             _Address, error.InnerException.Message);
                     }
                     else
@@ -176,6 +184,8 @@ namespace OpenMetaverse.Http
             }
             else
             {
+                ++_errorCount;
+
                 Logger.Log.Warn("No response from the event queue but no reported error either");
             }
 
@@ -191,6 +201,9 @@ namespace OpenMetaverse.Http
                 osdRequest["done"] = OSD.FromBoolean(_Dead);
 
                 byte[] postData = OSDParser.SerializeLLSDXmlBytes(osdRequest);
+
+                if (_errorCount > 0) // Exponentially back off, so we don't hammer the CPU
+                    Thread.Sleep(_random.Next(500 + (int)Math.Pow(2, _errorCount)));
 
                 // Resume the connection. The event handler for the connection opening
                 // just sets class _Request variable to the current HttpWebRequest
