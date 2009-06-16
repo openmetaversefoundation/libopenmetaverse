@@ -191,8 +191,6 @@ namespace OpenMetaverse
             _Client.Network.RegisterCallback(PacketType.ImageNotInDatabase, ImageNotInDatabaseHandler);
             downloadMaster.Start();
             RefreshDownloadsTimer.Start();
-
-            
         }
 
         /// <summary>
@@ -224,59 +222,58 @@ namespace OpenMetaverse
 
         private void RefreshDownloadsTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-                lock (_Transfers)
+            lock (_Transfers)
+            {
+                foreach (TaskInfo transfer in _Transfers.Values)
                 {
-                    foreach (TaskInfo transfer in _Transfers.Values)
+                    if (transfer.State == TextureRequestState.Progress)
                     {
-                        if (transfer.State == TextureRequestState.Progress)
+                        ImageDownload download = transfer.Transfer;
+
+                        uint packet = 0;
+
+                        if (download.PacketsSeen != null && download.PacketsSeen.Count > 0)
                         {
-                            ImageDownload download = transfer.Transfer;
-
-                            uint packet = 0;
-
-                            if (download.PacketsSeen != null && download.PacketsSeen.Count > 0)
+                            lock (download.PacketsSeen)
                             {
-                                lock (download.PacketsSeen)
+                                bool first = true;
+                                foreach (KeyValuePair<ushort, ushort> packetSeen in download.PacketsSeen)
                                 {
-                                    bool first = true;
-                                    foreach (KeyValuePair<ushort, ushort> packetSeen in download.PacketsSeen)
+                                    if (first)
                                     {
-                                        if (first)
-                                        {
-                                            // Initially set this to the earliest packet received in the transfer
-                                            packet = packetSeen.Value;
-                                            first = false;
-                                        }
-                                        else
-                                        {
-                                            ++packet;
+                                        // Initially set this to the earliest packet received in the transfer
+                                        packet = packetSeen.Value;
+                                        first = false;
+                                    }
+                                    else
+                                    {
+                                        ++packet;
 
-                                            // If there is a missing packet in the list, break and request the download
-                                            // resume here
-                                            if (packetSeen.Value != packet)
-                                            {
-                                                --packet;
-                                                break;
-                                            }
+                                        // If there is a missing packet in the list, break and request the download
+                                        // resume here
+                                        if (packetSeen.Value != packet)
+                                        {
+                                            --packet;
+                                            break;
                                         }
                                     }
-
-                                    ++packet;
                                 }
-                            }
 
-                            if (download.TimeSinceLastPacket > 5000)
-                            {
-                                if (download.DiscardLevel > 0)
-                                {
-                                    --download.DiscardLevel;
-                                }
-                                download.TimeSinceLastPacket = 0;
-                                RequestImage(download.ID, download.ImageType, download.Priority, download.DiscardLevel, packet);
+                                ++packet;
                             }
+                        }
+
+                        if (download.TimeSinceLastPacket > 5000)
+                        {
+                            // We're not receiving data for this texture fast enough, bump up the priority by 5%
+                            download.Priority *= 1.05f;
+
+                            download.TimeSinceLastPacket = 0;
+                            RequestImage(download.ID, download.ImageType, download.Priority, download.DiscardLevel, packet);
                         }
                     }
                 }
+            }
         }
 
         /// <summary>
@@ -380,27 +377,25 @@ namespace OpenMetaverse
             }
             else
             {
-
                 lock (_Transfers)
                 {
-                    if (_Transfers.ContainsKey(imageID))
+                    TaskInfo task;
+                    if (_Transfers.TryGetValue(imageID, out task))
                     {
-                        if (_Transfers[imageID].Transfer.Simulator != null)
+                        if (task.Transfer.Simulator != null)
                         {
                             // Already downloading, just updating the priority
-                            TaskInfo task = _Transfers[imageID];
-                            
                             float percentComplete = (task.Transfer.Transferred / (float)task.Transfer.Size) * 100f;
                             if (Single.IsNaN(percentComplete))
                                 percentComplete = 0f;
 
-                            if (percentComplete > 0)
-                                Logger.DebugLog(String.Format("Updating priority on image transfer {0}, {1}% complete",
-                                                              imageID, Math.Round(percentComplete, 2)));
+                            if (percentComplete > 0f)
+                                Logger.DebugLog(String.Format("Updating priority on image transfer {0} to {1}, {2}% complete",
+                                                              imageID, task.Transfer.Priority, Math.Round(percentComplete, 2)));
                         }
                         else
                         {
-                            ImageDownload transfer = _Transfers[imageID].Transfer;
+                            ImageDownload transfer = task.Transfer;
                             transfer.Simulator = _Client.Network.CurrentSim;
                         }
 
@@ -434,10 +429,9 @@ namespace OpenMetaverse
         {
             lock (_Transfers)
             {
-                if (_Transfers.ContainsKey(textureID))
+                TaskInfo task;
+                if (_Transfers.TryGetValue(textureID, out task))
                 {
-                    TaskInfo task = _Transfers[textureID];
-
                     // this means we've actually got the request assigned to the threadpool
                     if (task.State == TextureRequestState.Progress)
                     {
@@ -566,7 +560,8 @@ namespace OpenMetaverse
             if (!resetEvents[task.RequestSlot].WaitOne(_Client.Settings.PIPELINE_REQUEST_TIMEOUT, false))
             {
                 // Timed out
-                Logger.Log("Worker " + task.RequestSlot + " Timeout waiting for Texture " + task.RequestID + " to Download Got " + task.Transfer.Transferred + " of " + task.Transfer.Size, Helpers.LogLevel.Warning);
+                Logger.Log("Worker " + task.RequestSlot + " timeout waiting for texture " + task.RequestID + " to download got " +
+                    task.Transfer.Transferred + " of " + task.Transfer.Size, Helpers.LogLevel.Warning);
 
                 AssetTexture texture = new AssetTexture(task.RequestID, task.Transfer.AssetData);
                 foreach (TextureDownloadCallback callback in task.Callbacks)
@@ -628,22 +623,16 @@ namespace OpenMetaverse
         private void ImagePacketHandler(Packet packet, Simulator simulator)
         {
             ImagePacketPacket image = (ImagePacketPacket)packet;
-            TaskInfo task = null;
 
             lock (_Transfers)
             {
-                if (_Transfers.ContainsKey(image.ImageID.ID))
-                {
-                    task = _Transfers[image.ImageID.ID];
-                }
-
-
-                if (task != null)
+                TaskInfo task;
+                if (_Transfers.TryGetValue(image.ImageID.ID, out task))
                 {
                     if (task.Transfer.Size == 0)
                     {
                         // We haven't received the header yet, block until it's received or times out
-                        task.Transfer.HeaderReceivedEvent.WaitOne(1000*5, false);
+                        task.Transfer.HeaderReceivedEvent.WaitOne(1000 * 5, false);
 
                         if (task.Transfer.Size == 0)
                         {
