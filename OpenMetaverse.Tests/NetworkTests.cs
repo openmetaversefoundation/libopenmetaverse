@@ -50,7 +50,7 @@ namespace OpenMetaverse.Tests
         {
             Client = new GridClient();
             // Sim can't sent ObjectUpdate until it knows where your camera is:
-            Settings.SEND_AGENT_UPDATES = true; 
+            Client.Settings.SEND_AGENT_UPDATES = true; 
             Client.Self.Movement.Fly = true;
             // Register callbacks
             Client.Network.RegisterCallback(PacketType.ObjectUpdate, new NetworkManager.PacketCallback(ObjectUpdateHandler));

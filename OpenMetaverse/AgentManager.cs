@@ -1114,7 +1114,23 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>The price of uploading a texture/sound/animation asset.</summary>
+        public int PriceUpload {
+            get { return priceUpload; }
+        }
+
         #endregion Properties
+
+        #region Settings
+        /// <summary>Number of milliseconds before a teleport attempt will time
+        /// out</summary>
+        public int TeleportTimeout { get { return teleportTimeout; } set { teleportTimeout = value; } }
+        private int teleportTimeout = 40 * 1000;
+
+        /// <summary>Enable/disable sending periodic camera updates</summary>
+        public bool SendAgentUpdates { get { return sendAgentUpdates; } set { sendAgentUpdates = value; } }
+        private bool sendAgentUpdates = true;
+        #endregion Settings
 
         internal uint localID;
         internal Vector3 relativePosition;
@@ -1227,7 +1243,7 @@ namespace OpenMetaverse
         void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
         {
             // Send an initial AgentUpdate to complete our movement in to the sim
-            if (Settings.SEND_AGENT_UPDATES)
+            if (SendAgentUpdates)
                 Movement.SendUpdate(true, Network.CurrentSim);
         }
 
@@ -1768,7 +1784,7 @@ namespace OpenMetaverse
         /// <returns>true of AgentUpdate was sent</returns>
         public bool Stand()
         {
-            if (Settings.SEND_AGENT_UPDATES)
+            if (SendAgentUpdates)
             {
                 Movement.SitOnGround = false;
                 Movement.StandUp = true;
@@ -1901,7 +1917,7 @@ namespace OpenMetaverse
         /// <returns>true if control flags were set and AgentUpdate was sent to the simulator</returns>
         public bool AutoPilotCancel()
         {
-            if (Settings.SEND_AGENT_UPDATES)
+            if (SendAgentUpdates)
             {
                 Movement.AtPos = true;
                 Movement.SendUpdate();
@@ -2268,7 +2284,7 @@ namespace OpenMetaverse
             p.Info.LandmarkID = landmark;
             Network.SendPacket(p);
 
-            teleportEvent.WaitOne(Settings.TELEPORT_TIMEOUT, false);
+            teleportEvent.WaitOne(TeleportTimeout, false);
 
             if (teleportStat == TeleportStatus.None ||
                 teleportStat == TeleportStatus.Start ||
@@ -2379,7 +2395,7 @@ namespace OpenMetaverse
 
             RequestTeleport(regionHandle, position, lookAt);
 
-            teleportEvent.WaitOne(Settings.TELEPORT_TIMEOUT, false);
+            teleportEvent.WaitOne(TeleportTimeout, false);
 
             if (teleportStat == TeleportStatus.None ||
                 teleportStat == TeleportStatus.Start ||
@@ -3212,7 +3228,7 @@ namespace OpenMetaverse
                             // FIXME: What is this?
                         }
 
-                        if (Settings.SEND_AGENT_UPDATES)
+                        if (SendAgentUpdates)
                         {
                             // We have to manually tell the server to stop playing some animations
                             if (animID == Animations.STANDUP ||

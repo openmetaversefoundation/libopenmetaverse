@@ -45,6 +45,13 @@ namespace OpenMetaverse
         /// <summary></summary>
         public event LandPatchCallback OnLandPatch;
 
+        #region Settings
+        /// <summary>Enable/disable storing terrain heightmaps in the 
+        /// TerrainManager</summary>
+        public bool StoreLandPatches { get { return storeLandPatches; } set { storeLandPatches = value;  } }
+        private bool storeLandPatches = false;
+        #endregion Settings
+
         public InternalDictionary<ulong, TerrainPatch[]> SimPatches = new InternalDictionary<ulong, TerrainPatch[]>();
         public Vector2[] WindSpeeds = new Vector2[256];
 
@@ -137,7 +144,7 @@ namespace OpenMetaverse
                     catch (Exception e) { Log.Log(e.Message, Helpers.LogLevel.Error, e); }
                 }
 
-                if (Settings.STORE_LAND_PATCHES)
+                if (StoreLandPatches)
                 {
                     lock (SimPatches)
                     {
@@ -204,7 +211,7 @@ namespace OpenMetaverse
             switch (type)
             {
                 case TerrainPatch.LayerType.Land:
-                    if (OnLandPatch != null || Settings.STORE_LAND_PATCHES)
+                    if (OnLandPatch != null || StoreLandPatches)
                         DecompressLand(simulator, bitpack, header);
                     break;
                 case TerrainPatch.LayerType.Water:

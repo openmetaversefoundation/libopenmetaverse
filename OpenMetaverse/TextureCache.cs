@@ -42,6 +42,7 @@ namespace OpenMetaverse
         public ComputeTextureCacheFilenameDelegate ComputeTextureCacheFilename = null;
         private LoggerInstance Log;
         private NetworkManager Network;
+        private AssetManager Assets;
         private Thread cleanerThread;
         private System.Timers.Timer cleanerTimer;
         private double pruneInterval = 1000 * 60 * 5;
@@ -83,10 +84,11 @@ namespace OpenMetaverse
         /// Default constructor
         /// </summary>
         /// <param name="client">A reference to the GridClient object</param>
-        public TextureCache(LoggerInstance log, NetworkManager network)
+        public TextureCache(LoggerInstance log, NetworkManager network, AssetManager assets)
         {
             Log = log;
             Network = network;
+            Assets = assets;
             cleanerTimer = new System.Timers.Timer(pruneInterval);
             cleanerTimer.Elapsed += new System.Timers.ElapsedEventHandler(cleanerTimer_Elapsed);
             if (Operational())
@@ -156,9 +158,9 @@ namespace OpenMetaverse
         private string FileName(UUID imageID)
         {
             if (ComputeTextureCacheFilename != null) {
-                return ComputeTextureCacheFilename(Settings.TEXTURE_CACHE_DIR, imageID);
+                return ComputeTextureCacheFilename(Assets.TextureCacheDir, imageID);
             }
-            return Settings.TEXTURE_CACHE_DIR + Path.DirectorySeparatorChar + imageID.ToString();
+            return Assets.TextureCacheDir + Path.DirectorySeparatorChar + imageID.ToString();
         }
 
         /// <summary>
@@ -178,9 +180,9 @@ namespace OpenMetaverse
             {
                 Log.DebugLog("Saving " + FileName(imageID) + " to texture cache.");
 
-                if (!Directory.Exists(Settings.TEXTURE_CACHE_DIR))
+                if (!Directory.Exists(Assets.TextureCacheDir))
                 {
-                    Directory.CreateDirectory(Settings.TEXTURE_CACHE_DIR);
+                    Directory.CreateDirectory(Assets.TextureCacheDir);
                 }
 
                 File.WriteAllBytes(FileName(imageID), imageData);
@@ -232,7 +234,7 @@ namespace OpenMetaverse
         /// </summary>
         public void Clear()
         {
-            string cacheDir = Settings.TEXTURE_CACHE_DIR;
+            string cacheDir = Assets.TextureCacheDir;
             if (!Directory.Exists(cacheDir))
             {
                 return;
@@ -257,7 +259,7 @@ namespace OpenMetaverse
         /// </summary>
         public void Prune()
         {
-            string cacheDir = Settings.TEXTURE_CACHE_DIR;
+            string cacheDir = Assets.TextureCacheDir;
             if (!Directory.Exists(cacheDir))
             {
                 return;
@@ -268,10 +270,10 @@ namespace OpenMetaverse
 
             long size = GetFileSize(files);
 
-            if (size > Settings.TEXTURE_CACHE_MAX_SIZE)
+            if (size > Assets.TextureCacheMaxSize)
             {
                 Array.Sort(files, new SortFilesByAccesTimeHelper());
-                long targetSize = (long)(Settings.TEXTURE_CACHE_MAX_SIZE * 0.9);
+                long targetSize = (long)(Assets.TextureCacheMaxSize * 0.9);
                 int num = 0;
                 foreach (FileInfo file in files)
                 {
@@ -329,7 +331,7 @@ namespace OpenMetaverse
         /// </summary>
         private bool Operational()
         {
-            return Settings.USE_TEXTURE_CACHE;
+            return Assets.UseTextureCache;
         }
 
         /// <summary>

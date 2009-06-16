@@ -285,6 +285,35 @@ namespace OpenMetaverse
 
         #endregion
 
+        #region Settings
+        /// <summary>If true, all object update packets will be decoded in to
+        /// native objects. If false, only updates for our own agent will be
+        /// decoded. Registering an event handler will force objects for that
+        /// type to always be decoded. If this is disabled the object tracking
+        /// will have missing or partial prim and avatar information</summary>
+        public bool AlwaysDecodeObjects { get { return alwaysDecodeObjects; } set { alwaysDecodeObjects = value; } }
+        private bool alwaysDecodeObjects = true;
+
+        /// <summary>If true, when a cached object check is received from the
+        /// server the full object info will automatically be requested</summary>
+        public bool AlwaysRequestObjects { get { return alwaysRequestObjects; } set { alwaysRequestObjects = value; } }
+        private bool alwaysRequestObjects = true;
+
+        /// <summary>If true, currently visible avatars will be stored
+        /// in dictionaries inside <code>Simulator.ObjectAvatars</code>.
+        /// If false, a new Avatar or Primitive object will be created
+        /// each time an object update packet is received</summary>
+        public bool AvatarTracking { get { return avatarTracking; } set { avatarTracking = value; } }
+        private bool avatarTracking = true;
+
+        /// <summary>If true, currently visible avatars will be stored
+        /// in dictionaries inside <code>Simulator.ObjectPrimitives</code>.
+        /// If false, a new Avatar or Primitive object will be created
+        /// each time an object update packet is received</summary>
+        public bool ObjectTracking { get { return objectTracking; } set { objectTracking = value; } }
+        private bool objectTracking = true;
+        #endregion Settings
+
         /// <summary>Reference to the GridClient object</summary>
         protected LoggerInstance Log;
         protected NetworkManager Network;
@@ -1370,7 +1399,7 @@ namespace OpenMetaverse
                 #region Relevance check
 
                 // Check if we are interested in this object
-                if (!Settings.ALWAYS_DECODE_OBJECTS)
+                if (!AlwaysDecodeObjects)
                 {
                     switch (pcode)
                     {
@@ -1780,7 +1809,7 @@ namespace OpenMetaverse
                     uint localid = Utils.BytesToUInt(block.Data, 0);
 
                     // Check if we are interested in this update
-                    if (!Settings.ALWAYS_DECODE_OBJECTS && localid != Self.localID && OnObjectUpdated == null)
+                    if (!AlwaysDecodeObjects && localid != Self.localID && OnObjectUpdated == null)
                         continue;
 
                     #region Decode update data
@@ -1897,7 +1926,7 @@ namespace OpenMetaverse
 
                     #region Relevance check
 
-                    if (!Settings.ALWAYS_DECODE_OBJECTS)
+                    if (!AlwaysDecodeObjects)
                     {
                         switch (pcode)
                         {
@@ -2136,7 +2165,7 @@ namespace OpenMetaverse
         /// <param name="simulator">The simulator sending the data</param>
         protected void CachedUpdateHandler(Packet packet, Simulator simulator)
         {
-            if (Settings.ALWAYS_REQUEST_OBJECTS)
+            if (AlwaysRequestObjects)
             {
                 ObjectUpdateCachedPacket update = (ObjectUpdateCachedPacket)packet;
                 List<uint> ids = new List<uint>(update.ObjectData.Length);
@@ -2170,7 +2199,7 @@ namespace OpenMetaverse
                 List<uint> removeAvatars = new List<uint>();
                 List<uint> removePrims = new List<uint>();
 
-                if (Settings.OBJECT_TRACKING)
+                if (ObjectTracking)
                 {
                     uint localID;
                     for (int i = 0; i < kill.ObjectData.Length; i++)
@@ -2191,7 +2220,7 @@ namespace OpenMetaverse
                     }
                 }
 
-                if (Settings.AVATAR_TRACKING)
+                if (AvatarTracking)
                 {
                     lock (simulator.ObjectsAvatars.Dictionary)
                     {
@@ -2276,7 +2305,7 @@ namespace OpenMetaverse
                 for (int j = 0; j < numTextures; ++j)
                     props.TextureIDs[j] = new UUID(objectData.TextureID, j * 16);
 
-                if (Settings.OBJECT_TRACKING)
+                if (ObjectTracking)
                 {
                     Primitive findPrim = sim.ObjectsPrimitives.Find(
                         delegate(Primitive prim) { return prim.ID == props.ObjectID; });
@@ -2318,7 +2347,7 @@ namespace OpenMetaverse
             props.Permissions.NextOwnerMask = (PermissionMask)op.ObjectData.NextOwnerMask;
             props.Permissions.OwnerMask = (PermissionMask)op.ObjectData.OwnerMask;
 
-            if (Settings.OBJECT_TRACKING)
+            if (ObjectTracking)
             {
                 Primitive findPrim = sim.ObjectsPrimitives.Find(
                         delegate(Primitive prim) { return prim.ID == op.ObjectData.ObjectID; });
@@ -2602,7 +2631,7 @@ namespace OpenMetaverse
         /// <returns></returns>
         protected Primitive GetPrimitive(Simulator simulator, uint localID, UUID fullID)
         {
-            if (Settings.OBJECT_TRACKING)
+            if (ObjectTracking)
             {
                 lock (simulator.ObjectsPrimitives.Dictionary)
                 {
@@ -2640,7 +2669,7 @@ namespace OpenMetaverse
         /// <returns></returns>
         protected Avatar GetAvatar(Simulator simulator, uint localID, UUID fullID)
         {
-            if (Settings.AVATAR_TRACKING)
+            if (AvatarTracking)
             {
                 lock (simulator.ObjectsAvatars.Dictionary)
                 {

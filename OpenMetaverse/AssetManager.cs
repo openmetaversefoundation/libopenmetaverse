@@ -343,6 +343,35 @@ namespace OpenMetaverse
         public event ImageReceiveProgressCallback OnImageRecieveProgress;
         #endregion Events
 
+        #region Settings
+        /// <summary>
+        /// If true, images downloaded from the server will be cached 
+        /// in a local directory
+        /// </summary>
+        public bool UseTextureCache { get { return useTextureCache; } set { useTextureCache = value; } }
+        private bool useTextureCache = false;
+
+        /// <summary>Path to store cached texture data</summary>
+        public string TextureCacheDir { get { return textureCacheDir; } set { textureCacheDir = value; } }
+        private string textureCacheDir = Settings.RESOURCE_DIR + "/cache";
+
+        /// <summary>Maximum size cached files are allowed to take on disk (bytes)</summary>
+        public long TextureCacheMaxSize { get { return textureCacheMaxSize; } set { textureCacheMaxSize = value; } }
+        private long textureCacheMaxSize = 1024 * 1024 * 1024; // 1 GB
+
+        /// <summary>The maximum number of concurrent texture downloads allowed</summary>
+        /// <remarks>Increasing this number will not necessarily increase texture retrieval times due to
+        /// simulator throttles</remarks>
+        public int MaxConcurrentTextureDownloads { get { return maxConcurrentTextureDownloads; } set { maxConcurrentTextureDownloads = value; } }
+        private int maxConcurrentTextureDownloads = 4;
+
+        /// <summary>
+        /// Textures taking longer than this value will be flagged as timed out and removed from the pipeline
+        /// </summary>
+        public int PipelineRequestTimeout { get { return pipelineRequestTimeout; } set { pipelineRequestTimeout = value; } }
+        private int pipelineRequestTimeout = 45 * 1000;
+        #endregion Settings
+
         /// <summary>Texture download cache</summary>
         public TextureCache Cache;
 
@@ -365,7 +394,7 @@ namespace OpenMetaverse
         {
             Log = log;
             Network = network;
-            Cache = new TextureCache(log, network);
+            Cache = new TextureCache(log, network, this);
             Texture = new TexturePipeline(log, network, this);
 
             // Transfer packets for downloading large assets

@@ -228,7 +228,14 @@ namespace OpenMetaverse
         /// <summary></summary>
         public event ClassifiedInfoCallback OnClassifiedInfo;
 
-        
+        #region Settings
+        /// <summary>
+        /// If we receive an AvatarAppearance packet, update stored Avatar instances.
+        /// </summary>
+        public bool UpdateAvatarAppearance { get { return updateAvatarAppearance; } set { updateAvatarAppearance = value; } }
+        private bool updateAvatarAppearance;
+        #endregion Settings
+
         private NetworkManager Network;
         private LoggerInstance Log;
         /// <summary>
@@ -507,7 +514,7 @@ namespace OpenMetaverse
         /// <param name="sim"></param>
         private void AvatarAppearanceHandler(Packet packet, Simulator sim)
         {
-            if (OnAvatarAppearance != null || Settings.AVATAR_TRACKING)
+            if (OnAvatarAppearance != null || UpdateAvatarAppearance)
             {
                 AvatarAppearancePacket appearance = (AvatarAppearancePacket)packet;
                 sim.ObjectsAvatars.ForEach(delegate(Avatar av)

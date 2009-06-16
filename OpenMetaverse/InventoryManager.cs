@@ -1031,6 +1031,18 @@ namespace OpenMetaverse
 
         #endregion Properties
 
+        #region Settings
+        /// <summary>If true, any reference received for a folder or item
+        /// the library is not aware of will automatically be fetched</summary>
+        /// <remarks>Broken, FetchItem does not work for folder UUIDs.</remarks>
+        public bool FetchMissingInventory { get { return fetchMissingInventory; } set { fetchMissingInventory = value; } }
+        private bool fetchMissingInventory = true;
+
+        /// <summary>Default color used for viewer particle effects</summary>
+        public Color4 DefaultEffectColor { get { return defaultEffectColor; } set { defaultEffectColor = value; } }
+        private Color4 defaultEffectColor = new Color4(255, 0, 0, 255);
+        #endregion Settings
+
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -2328,7 +2340,7 @@ namespace OpenMetaverse
             if (doEffect)
             {
                 _Self.BeamEffect(_Network.AgentID, recipient, Vector3d.Zero,
-                    Settings.DEFAULT_EFFECT_COLOR, 1f, UUID.Random());
+                    DefaultEffectColor, 1f, UUID.Random());
             }
         }
 
@@ -2379,7 +2391,7 @@ namespace OpenMetaverse
             if (doEffect)
             {
                 _Self.BeamEffect(_Network.AgentID, recipient, Vector3d.Zero,
-                    Settings.DEFAULT_EFFECT_COLOR, 1f, UUID.Random());
+                    DefaultEffectColor, 1f, UUID.Random());
             }
         }
 

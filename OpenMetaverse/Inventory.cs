@@ -147,14 +147,14 @@ namespace OpenMetaverse
         private UUID _Owner;
 
         private LoggerInstance Log;
-        //private InventoryManager Manager;
+        private InventoryManager Manager;
         private Dictionary<UUID, InventoryNode> Items = new Dictionary<UUID, InventoryNode>();
 
 
         public Inventory(LoggerInstance log, InventoryManager manager, UUID owner)
         {
             Log = log;
-            //Manager = manager;
+            Manager = manager;
             _Owner = owner;
             if (owner == UUID.Zero)
                 Log.Log("Inventory owned by nobody!", Helpers.LogLevel.Warning);
@@ -216,7 +216,7 @@ namespace OpenMetaverse
                     Log.DebugLog("Attempting to update inventory child of " +
                         item.ParentUUID.ToString() + " when we have no local reference to that folder");
 
-                    if (Settings.FETCH_MISSING_INVENTORY)
+                    if (Manager.FetchMissingInventory)
                     {
                         // Fetch the parent
                         List<UUID> fetchreq = new List<UUID>(1);

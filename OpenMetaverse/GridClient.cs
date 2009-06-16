@@ -110,7 +110,6 @@ namespace OpenMetaverse
             // These are order-dependant
             Log = new LoggerInstance();
             Network = new NetworkManager(Log);
-            Settings = new Settings(this);
             Terrain = new TerrainManager(Log, Network);
             Parcels = new ParcelManager(Log, Network, Terrain);
             Self = new AgentManager(Log, Network, Grid);
@@ -127,6 +126,7 @@ namespace OpenMetaverse
             Sound = new SoundManager(Log, Network, Self);
             Throttle = new AgentThrottle(Network);
 
+            Settings = new Settings(this);
             //if (Settings.ENABLE_INVENTORY_STORE)
             //    InventoryStore = new Inventory(Inventory);
             //if (Settings.ENABLE_LIBRARY_STORE)

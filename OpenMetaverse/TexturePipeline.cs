@@ -49,7 +49,7 @@ namespace OpenMetaverse
         Progress,
         /// <summary>A request that has received all packets back from the simulator</summary>
         Finished,
-        /// <summary>A request that has taken longer than <seealso cref="Settings.PIPELINE_REQUEST_TIMEOUT"/>
+        /// <summary>A request that has taken longer than <seealso cref="AssetManager.PipelineRequestTimeout"/>
         /// to download OR the initial packet containing the packet information was never received</summary>
         Timeout,
         /// <summary>The texture request was aborted by request of the agent</summary>
@@ -153,7 +153,7 @@ namespace OpenMetaverse
             _Log = log;
             _Network = network;
             _Assets = assets;
-            maxTextureRequests = Settings.MAX_CONCURRENT_TEXTURE_DOWNLOADS;
+            maxTextureRequests = _Assets.MaxConcurrentTextureDownloads;
 
             resetEvents = new AutoResetEvent[maxTextureRequests];
             threadpoolSlots = new int[maxTextureRequests];
@@ -566,7 +566,7 @@ namespace OpenMetaverse
             RequestImage(task.RequestID, task.Type, 1013000.0f, 0, 0);
 
             // don't release this worker slot until texture is downloaded or timeout occurs
-            if (!resetEvents[task.RequestSlot].WaitOne(Settings.PIPELINE_REQUEST_TIMEOUT, false))
+            if (!resetEvents[task.RequestSlot].WaitOne(_Assets.PipelineRequestTimeout, false))
             {
                 // Timed out
                 Logger.Log("Worker " + task.RequestSlot + " Timeout waiting for Texture " + task.RequestID + " to Download Got " + task.Transfer.Transferred + " of " + task.Transfer.Size, Helpers.LogLevel.Warning);

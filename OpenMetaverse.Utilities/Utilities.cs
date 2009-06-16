@@ -71,7 +71,7 @@ namespace OpenMetaverse.Utilities
         /// <returns></returns>
         public static bool Shoot(GridClient client)
         {
-            if (Settings.SEND_AGENT_UPDATES)
+            if (client.Settings.SEND_AGENT_UPDATES)
             {
                 client.Self.Movement.Mouselook = true;
                 client.Self.Movement.MLButtonDown = true;

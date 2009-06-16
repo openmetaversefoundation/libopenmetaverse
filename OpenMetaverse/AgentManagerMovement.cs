@@ -150,6 +150,14 @@ namespace OpenMetaverse
 
         #endregion AgentUpdate Constants
 
+        #region Settings
+        /// <summary>If true, and <code>SEND_AGENT_UPDATES</code> is true,
+        /// AgentUpdate packets will continuously be sent out to give the bot
+        /// smoother movement and autopiloting</summary>
+        public bool DisableAgentUpdateDuplicateCheck { get { return disableAgentUpdateDuplicateCheck; } set { disableAgentUpdateDuplicateCheck = value; } }
+        private bool disableAgentUpdateDuplicateCheck = true;
+        #endregion Settings
+
         /// <summary> 
         /// Agent movement and camera control
         /// 
@@ -503,7 +511,7 @@ namespace OpenMetaverse
             /// <param name="target">Region coordinates to turn toward</param>
             public bool TurnToward(Vector3 target)
             {
-                if (Settings.SEND_AGENT_UPDATES)
+                if (Self.SendAgentUpdates)
                 {
                     Quaternion parentRot = Quaternion.Identity;
 
@@ -587,7 +595,7 @@ namespace OpenMetaverse
                     duplicateCount = 0;
                 }
 
-                if (Settings.DISABLE_AGENT_UPDATE_DUPLICATE_CHECK || duplicateCount < 10)
+                if (Self.DisableAgentUpdateDuplicateCheck || duplicateCount < 10)
                 {
                     // Store the current state to do duplicate checking
                     LastHeadRotation = HeadRotation;
@@ -688,7 +696,7 @@ namespace OpenMetaverse
 
             private void UpdateTimer_Elapsed(object obj)
             {
-                if (Network.Connected && Settings.SEND_AGENT_UPDATES)
+                if (Network.Connected && Self.SendAgentUpdates)
                 {
                     //Send an AgentUpdate packet
                     SendUpdate(false, Network.CurrentSim);

@@ -131,6 +131,17 @@ namespace OpenMetaverse
             }
         }
 
+        #region Settings
+        /// <summary>Enable/disable automatically setting the bandwidth throttle
+        /// after connecting to each simulator</summary>
+        /// <remarks>The default throttle uses the equivalent of the maximum
+        /// bandwidth setting in the official client. If you do not set a
+        /// throttle your connection will by default be throttled well below
+        /// the minimum values and you may experience connection problems</remarks>
+        public bool SendAgentThrottle { get { return sendAgentThrottle; } set { sendAgentThrottle = value; } }
+        private bool sendAgentThrottle = true;
+        #endregion Settings
+
         private NetworkManager network;
         private float resend;
         private float land;
@@ -153,7 +164,7 @@ namespace OpenMetaverse
         void network_OnSimConnected(Simulator simulator)
         {
             // If enabled, send an AgentThrottle packet to the server to increase our bandwidth
-            if (Settings.SEND_AGENT_THROTTLE)
+            if (SendAgentThrottle)
                 Set(simulator);
         }
 

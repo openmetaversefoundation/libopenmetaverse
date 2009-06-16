@@ -870,6 +870,27 @@ namespace OpenMetaverse
 
         #endregion Events
 
+        #region Settings
+        /// <summary>If true, parcel details will be stored in the 
+        /// <code>Simulator.Parcels</code> dictionary as they are received</summary>
+        public bool ParcelTracking { get { return parcelTracking; } set { parcelTracking = value; } }
+        private bool parcelTracking = true;
+
+        /// <summary>
+        /// If true, an incoming parcel properties reply will automatically send
+        /// a request for the parcel access list
+        /// </summary>
+        public bool AlwaysRequestParcelACL { get { return alwaysRequestParcelACL; } set { alwaysRequestParcelACL = value; } }
+        private bool alwaysRequestParcelACL = true;
+
+        /// <summary>
+        /// if true, an incoming parcel properties reply will automatically send 
+        /// a request for the traffic count.
+        /// </summary>
+        public bool AlwaysRequestParcelDwell { get { return alwaysRequestParcelDwell; } set { alwaysRequestParcelDwell = value; } }
+        private bool alwaysRequestParcelDwell = true;
+        #endregion Settings
+
         private NetworkManager Network;
         private LoggerInstance Log;
         private TerrainManager Terrain;
@@ -1457,7 +1478,7 @@ namespace OpenMetaverse
 
         private void ParcelDwellReplyHandler(Packet packet, Simulator simulator)
         {
-            if (OnParcelDwell != null || Settings.ALWAYS_REQUEST_PARCEL_DWELL == true)
+            if (OnParcelDwell != null || AlwaysRequestParcelDwell == true)
             {
                 ParcelDwellReplyPacket dwell = (ParcelDwellReplyPacket)packet;
 
@@ -1515,7 +1536,7 @@ namespace OpenMetaverse
         /// <param name="simulator">Object representing simulator</param>
         private void ParcelPropertiesReplyHandler(string capsKey, IMessage message, Simulator simulator)
         {
-            if (OnParcelProperties != null || Settings.PARCEL_TRACKING == true)
+            if (OnParcelProperties != null || ParcelTracking == true)
             {
                 ParcelPropertiesMessage msg = (ParcelPropertiesMessage)message;
                 
@@ -1576,7 +1597,7 @@ namespace OpenMetaverse
                 parcel.ObscureMedia = msg.ObscureMedia;
                 parcel.ObscureMusic = msg.ObscureMusic;
 
-                if (Settings.PARCEL_TRACKING)
+                if (ParcelTracking)
                 {
                     lock (simulator.Parcels.Dictionary)
                         simulator.Parcels.Dictionary[parcel.LocalID] = parcel;
@@ -1610,12 +1631,12 @@ namespace OpenMetaverse
                     WaitForSimParcel.Set();
 
                 // auto request acl, will be stored in parcel tracking dictionary if enabled
-                if (Settings.ALWAYS_REQUEST_PARCEL_ACL)
+                if (AlwaysRequestParcelACL)
                     AccessListRequest(simulator, parcel.LocalID,
                         AccessList.Both, sequenceID);
 
                 // auto request dwell, will be stored in parcel tracking dictionary if enables
-                if (Settings.ALWAYS_REQUEST_PARCEL_DWELL)
+                if (AlwaysRequestParcelDwell)
                     DwellRequest(simulator, parcel.LocalID);
 
                 // Fire the callback for parcel properties being received
@@ -1641,7 +1662,7 @@ namespace OpenMetaverse
         /// <param name="simulator"></param>
         protected void ParcelAccessListReplyHandler(Packet packet, Simulator simulator)
         {
-            if (OnAccessListReply != null || Settings.ALWAYS_REQUEST_PARCEL_ACL == true)
+            if (OnAccessListReply != null || AlwaysRequestParcelACL == true)
             {
                 ParcelAccessListReplyPacket reply = (ParcelAccessListReplyPacket)packet;
 

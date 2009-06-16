@@ -236,6 +236,13 @@ namespace OpenMetaverse
 
         #endregion Events
 
+        #region Settings
+        /// <summary>Milliseconds to wait for a simulator info request through
+        /// the grid interface</summary>
+        public int MapRequestTimeout { get { return mapRequestTimeout; } set { mapRequestTimeout = value; } }
+        private int mapRequestTimeout = 5 * 1000;
+        #endregion Settings
+
         /// <summary>Unknown</summary>
         public float SunPhase { get { return sunPhase; } }
 		/// <summary>Current direction of the sun</summary>
@@ -455,7 +462,7 @@ namespace OpenMetaverse
                 OnGridRegion += callback;
 
                 RequestMapRegion(name, layer);
-                regionEvent.WaitOne(Settings.MAP_REQUEST_TIMEOUT, false);
+                regionEvent.WaitOne(MapRequestTimeout, false);
 
                 OnGridRegion -= callback;
 

@@ -79,7 +79,7 @@ namespace OpenMetaverse
 
         /// <summary>Number of milliseconds before a teleport attempt will time
         /// out</summary>
-        public static int TELEPORT_TIMEOUT = 40 * 1000;
+        public int TELEPORT_TIMEOUT = 40 * 1000;
 
         /// <summary>Number of milliseconds before NetworkManager.Logout() will
         /// time out</summary>
@@ -102,7 +102,7 @@ namespace OpenMetaverse
 
         /// <summary>Milliseconds to wait for a simulator info request through
         /// the grid interface</summary>
-        public static int MAP_REQUEST_TIMEOUT = 5 * 1000;
+        public int MAP_REQUEST_TIMEOUT = 5 * 1000;
 
         /// <summary>Number of milliseconds between sending pings to each sim</summary>
         public const int PING_INTERVAL = 2200;
@@ -153,10 +153,10 @@ namespace OpenMetaverse
 
         /// <summary>Enable/disable storing terrain heightmaps in the 
         /// TerrainManager</summary>
-        public static bool STORE_LAND_PATCHES = false;
+        public bool STORE_LAND_PATCHES = false;
 
         /// <summary>Enable/disable sending periodic camera updates</summary>
-        public static bool SEND_AGENT_UPDATES = true;
+        public bool SEND_AGENT_UPDATES = true;
 
         /// <summary>Enable/disable automatically setting the bandwidth throttle
         /// after connecting to each simulator</summary>
@@ -164,7 +164,7 @@ namespace OpenMetaverse
         /// bandwidth setting in the official client. If you do not set a
         /// throttle your connection will by default be throttled well below
         /// the minimum values and you may experience connection problems</remarks>
-        public static bool SEND_AGENT_THROTTLE = true;
+        public bool SEND_AGENT_THROTTLE = true;
 
         /// <summary>Enable/disable the sending of pings to monitor lag and 
         /// packet loss</summary>
@@ -180,11 +180,11 @@ namespace OpenMetaverse
         /// decoded. Registering an event handler will force objects for that
         /// type to always be decoded. If this is disabled the object tracking
         /// will have missing or partial prim and avatar information</summary>
-        public static bool ALWAYS_DECODE_OBJECTS = true;
+        public bool ALWAYS_DECODE_OBJECTS = true;
 
         /// <summary>If true, when a cached object check is received from the
         /// server the full object info will automatically be requested</summary>
-        public static bool ALWAYS_REQUEST_OBJECTS = true;
+        public bool ALWAYS_REQUEST_OBJECTS = true;
 
         /// <summary>Whether to establish connections to HTTP capabilities
         /// servers for simulators</summary>
@@ -200,43 +200,43 @@ namespace OpenMetaverse
 
         /// <summary>If true, any reference received for a folder or item
         /// the library is not aware of will automatically be fetched</summary>
-        public static bool FETCH_MISSING_INVENTORY = true;
+        public bool FETCH_MISSING_INVENTORY = true;
 
         /// <summary>If true, and <code>SEND_AGENT_UPDATES</code> is true,
         /// AgentUpdate packets will continuously be sent out to give the bot
         /// smoother movement and autopiloting</summary>
-        public static bool DISABLE_AGENT_UPDATE_DUPLICATE_CHECK = true;
+        public bool DISABLE_AGENT_UPDATE_DUPLICATE_CHECK = true;
 
         /// <summary>If true, currently visible avatars will be stored
         /// in dictionaries inside <code>Simulator.ObjectAvatars</code>.
         /// If false, a new Avatar or Primitive object will be created
         /// each time an object update packet is received</summary>
-        public static bool AVATAR_TRACKING = true;
+        public bool AVATAR_TRACKING = true;
 
         /// <summary>If true, currently visible avatars will be stored
         /// in dictionaries inside <code>Simulator.ObjectPrimitives</code>.
         /// If false, a new Avatar or Primitive object will be created
         /// each time an object update packet is received</summary>
-        public static bool OBJECT_TRACKING = true;
+        public bool OBJECT_TRACKING = true;
 
         #endregion
         #region Parcel Tracking
 
         /// <summary>If true, parcel details will be stored in the 
         /// <code>Simulator.Parcels</code> dictionary as they are received</summary>
-        public static bool PARCEL_TRACKING = true;
+        public bool PARCEL_TRACKING = true;
 
         /// <summary>
         /// If true, an incoming parcel properties reply will automatically send
         /// a request for the parcel access list
         /// </summary>
-        public static bool ALWAYS_REQUEST_PARCEL_ACL = true;
+        public bool ALWAYS_REQUEST_PARCEL_ACL = true;
 
         /// <summary>
         /// if true, an incoming parcel properties reply will automatically send 
         /// a request for the traffic count.
         /// </summary>
-        public static bool ALWAYS_REQUEST_PARCEL_DWELL = true;
+        public bool ALWAYS_REQUEST_PARCEL_DWELL = true;
 
         #endregion
         #region Texture Cache
@@ -245,19 +245,19 @@ namespace OpenMetaverse
         /// If true, images downloaded from the server will be cached 
         /// in a local directory
         /// </summary>
-        public static bool USE_TEXTURE_CACHE = false;
+        public bool USE_TEXTURE_CACHE = false;
 
         /// <summary>Path to store cached texture data</summary>
-        public static string TEXTURE_CACHE_DIR = RESOURCE_DIR + "/cache";
+        public string TEXTURE_CACHE_DIR = RESOURCE_DIR + "/cache";
 
         /// <summary>Maximum size cached files are allowed to take on disk (bytes)</summary>
-        public static long TEXTURE_CACHE_MAX_SIZE = 1024 * 1024 * 1024; // 1GB
+        public long TEXTURE_CACHE_MAX_SIZE = 1024 * 1024 * 1024; // 1GB
 
         #endregion
         #region Misc
 
         /// <summary>Default color used for viewer particle effects</summary>
-        public static Color4 DEFAULT_EFFECT_COLOR = new Color4(255, 0, 0, 255);
+        public Color4 DEFAULT_EFFECT_COLOR = new Color4(255, 0, 0, 255);
 
         /// <summary>Maximum number of times to resend a failed packet</summary>
         public int MAX_RESEND_COUNT = 3;
@@ -271,7 +271,7 @@ namespace OpenMetaverse
         /// <summary>The maximum number of concurrent texture downloads allowed</summary>
         /// <remarks>Increasing this number will not necessarily increase texture retrieval times due to
         /// simulator throttles</remarks>
-        public static int MAX_CONCURRENT_TEXTURE_DOWNLOADS = 4;
+        public int MAX_CONCURRENT_TEXTURE_DOWNLOADS = 4;
 
         /// <summary>
         /// The Refresh timer inteval is used to set the delay between checks for stalled texture downloads
@@ -282,7 +282,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Textures taking longer than this value will be flagged as timed out and removed from the pipeline
         /// </summary>
-        public static int PIPELINE_REQUEST_TIMEOUT = 45*1000;
+        public int PIPELINE_REQUEST_TIMEOUT = 45*1000;
         #endregion
 
         #region Logging Configuration
@@ -331,6 +331,28 @@ namespace OpenMetaverse
             Client.Network.LoginTimeout = LOGIN_TIMEOUT;
             Client.Network.LoginServer = LOGIN_SERVER;
             Client.Network.UseLLSDLogin = USE_LLSD_LOGIN;
+
+            Client.Self.TeleportTimeout = TELEPORT_TIMEOUT;
+            Client.Self.SendAgentUpdates = SEND_AGENT_UPDATES;
+            Client.Self.DisableAgentUpdateDuplicateCheck = DISABLE_AGENT_UPDATE_DUPLICATE_CHECK;
+            Client.Grid.MapRequestTimeout = MAP_REQUEST_TIMEOUT;
+            Client.Terrain.StoreLandPatches = STORE_LAND_PATCHES;
+            Client.Objects.AvatarTracking = AVATAR_TRACKING;
+            Client.Objects.ObjectTracking = OBJECT_TRACKING;
+            Client.Objects.AlwaysDecodeObjects = ALWAYS_DECODE_OBJECTS;
+            Client.Objects.AlwaysRequestObjects = ALWAYS_REQUEST_OBJECTS;
+            Client.Parcels.ParcelTracking = PARCEL_TRACKING;
+            Client.Parcels.AlwaysRequestParcelACL = ALWAYS_REQUEST_PARCEL_ACL;
+            Client.Parcels.AlwaysRequestParcelDwell = ALWAYS_REQUEST_PARCEL_DWELL;
+            Client.Assets.UseTextureCache = USE_TEXTURE_CACHE;
+            Client.Assets.TextureCacheDir = TEXTURE_CACHE_DIR;
+            Client.Assets.TextureCacheMaxSize = TEXTURE_CACHE_MAX_SIZE;
+            Client.Assets.MaxConcurrentTextureDownloads = MAX_CONCURRENT_TEXTURE_DOWNLOADS;
+            Client.Assets.PipelineRequestTimeout = PIPELINE_REQUEST_TIMEOUT;
+            Client.Avatars.UpdateAvatarAppearance = AVATAR_TRACKING;
+            Client.Inventory.FetchMissingInventory = FETCH_MISSING_INVENTORY;
+            Client.Inventory.DefaultEffectColor = DEFAULT_EFFECT_COLOR;
+            Client.Throttle.SendAgentThrottle = SEND_AGENT_THROTTLE;
         }
     }
 }
