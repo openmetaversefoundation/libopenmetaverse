@@ -230,38 +230,10 @@ namespace OpenMetaverse
                     {
                         ImageDownload download = transfer.Transfer;
 
-                        uint packet = 0;
-
+                        // Find the first missing packet in the download
+                        ushort packet = 0;
                         if (download.PacketsSeen != null && download.PacketsSeen.Count > 0)
-                        {
-                            lock (download.PacketsSeen)
-                            {
-                                bool first = true;
-                                foreach (KeyValuePair<ushort, ushort> packetSeen in download.PacketsSeen)
-                                {
-                                    if (first)
-                                    {
-                                        // Initially set this to the earliest packet received in the transfer
-                                        packet = packetSeen.Value;
-                                        first = false;
-                                    }
-                                    else
-                                    {
-                                        ++packet;
-
-                                        // If there is a missing packet in the list, break and request the download
-                                        // resume here
-                                        if (packetSeen.Value != packet)
-                                        {
-                                            --packet;
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                ++packet;
-                            }
-                        }
+                            packet = GetFirstMissingPacket(download.PacketsSeen);
 
                         if (download.TimeSinceLastPacket > 5000)
                         {
@@ -523,9 +495,6 @@ namespace OpenMetaverse
                     {
                         nextTask.State = TextureRequestState.Started;
                         nextTask.RequestSlot = slot;
-                        // WTF?
-                        //nextTask.Transfer = new ImageDownload();
-                        //nextTask.Transfer.ID = nextTask.RequestID;
 
                         //Logger.DebugLog(String.Format("Sending Worker thread new download request {0}", slot));
                         ThreadPool.QueueUserWorkItem(TextureRequestDoWork, nextTask);
@@ -554,11 +523,18 @@ namespace OpenMetaverse
 #if DEBUG_TIMING
             task.NetworkTime = DateTime.UtcNow;
 #endif
-            // start the timeout timer
-            resetEvents[task.RequestSlot].Reset();
-            RequestImage(task.RequestID, task.Type, 1013000.0f, 0, 0);
+            // Find the first missing packet in the download
+            ushort packet = 0;
+            if (task.Transfer.PacketsSeen != null && task.Transfer.PacketsSeen.Count > 0)
+                packet = GetFirstMissingPacket(task.Transfer.PacketsSeen);
 
-            // don't release this worker slot until texture is downloaded or timeout occurs
+            // Start the timeout timer
+            resetEvents[task.RequestSlot].Reset();
+
+            // Request the texture
+            RequestImage(task.RequestID, task.Type, task.Transfer.Priority, task.Transfer.DiscardLevel, packet);
+
+            // Don't release this worker slot until texture is downloaded or timeout occurs
             if (!resetEvents[task.RequestSlot].WaitOne(_Client.Settings.PIPELINE_REQUEST_TIMEOUT, false))
             {
                 // Timed out
@@ -577,9 +553,44 @@ namespace OpenMetaverse
                     _Transfers.Remove(task.RequestID);
             }
 
-            // free up this download slot
+            // Free up this download slot
             lock (lockerObject)
                 threadpoolSlots[task.RequestSlot] = -1;
+        }
+
+        private ushort GetFirstMissingPacket(SortedList<ushort, ushort> packetsSeen)
+        {
+            ushort packet = 0;
+
+            lock (packetsSeen)
+            {
+                bool first = true;
+                foreach (KeyValuePair<ushort, ushort> packetSeen in packetsSeen)
+                {
+                    if (first)
+                    {
+                        // Initially set this to the earliest packet received in the transfer
+                        packet = packetSeen.Value;
+                        first = false;
+                    }
+                    else
+                    {
+                        ++packet;
+
+                        // If there is a missing packet in the list, break and request the download
+                        // resume here
+                        if (packetSeen.Value != packet)
+                        {
+                            --packet;
+                            break;
+                        }
+                    }
+                }
+
+                ++packet;
+            }
+
+            return packet;
         }
 
         #region Raw Packet Handlers
