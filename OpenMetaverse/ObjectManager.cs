@@ -363,8 +363,11 @@ namespace OpenMetaverse
 
             // If the callbacks aren't registered there's not point in doing client-side path prediction,
             // so we set it up here
-            InterpolationTimer = new Timer(InterpolationTimer_Elapsed, null, Settings.INTERPOLATION_INTERVAL,
-                Timeout.Infinite);
+            if (Client.Settings.USE_INTERPOLATION_TIMER)
+            {
+                InterpolationTimer = new Timer(InterpolationTimer_Elapsed, null, Settings.INTERPOLATION_INTERVAL,
+                    Timeout.Infinite);
+            }
         }
 
         #region Action Methods
@@ -2736,12 +2739,6 @@ namespace OpenMetaverse
 
         protected void InterpolationTimer_Elapsed(object obj)
         {
-            if (!Client.Settings.USE_INTERPOLATION_TIMER)
-            {
-                Logger.Log("Disabling the interpolation timer", Helpers.LogLevel.Info);
-                return;
-            }
-
             int elapsed = 0;
 
             if (Client.Network.Connected)
