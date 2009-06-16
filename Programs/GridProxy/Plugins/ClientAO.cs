@@ -551,6 +551,8 @@ public class ClientAO : ProxyPlugin
         animate.AnimationList[0].AnimID = animationuuid;
         animate.AnimationList[0].StartAnim = run;
 
+        animate.PhysicalAvatarEventList = new AgentAnimationPacket.PhysicalAvatarEventListBlock[0];
+
         //SayToUser("anim " + animname(animationuuid) + " " + run);
         proxy.InjectPacket(animate, Direction.Outgoing);
     }

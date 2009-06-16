@@ -2209,6 +2209,9 @@ namespace OpenMetaverse
                 i++;
             }
 
+            // TODO: Implement support for this
+            animate.PhysicalAvatarEventList = new AgentAnimationPacket.PhysicalAvatarEventListBlock[0];
+
             Client.Network.SendPacket(animate);
         }
 
