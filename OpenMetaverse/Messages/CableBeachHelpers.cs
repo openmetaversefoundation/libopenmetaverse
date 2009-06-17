@@ -5,124 +5,179 @@ namespace OpenMetaverse.Messages.CableBeach
 {
     public static class CableBeachUtils
     {
+        // The following section is based on the table at https://wiki.secondlife.com/wiki/Asset_System
+
         #region SL / file extension / content-type conversions
 
-        public static string SLAssetTypeToContentType(int assetType)
+        public static string SLAssetTypeToContentType(AssetType assetType)
         {
             switch (assetType)
             {
-                case 0:
-                    return "image/jp2";
-                case 1:
+                case AssetType.Texture:
+                    return "image/x-j2c";
+                case AssetType.Sound:
                     return "application/ogg";
-                case 2:
-                    return "application/x-metaverse-callingcard";
-                case 3:
-                    return "application/x-metaverse-landmark";
-                case 5:
-                    return "application/x-metaverse-clothing";
-                case 6:
-                    return "application/x-metaverse-primitive";
-                case 7:
-                    return "application/x-metaverse-notecard";
-                case 8:
-                    return "application/x-metaverse-folder";
-                case 10:
-                    return "application/x-metaverse-lsl";
-                case 11:
-                    return "application/x-metaverse-lso";
-                case 12:
+                case AssetType.CallingCard:
+                    return "application/vnd.ll.callingcard";
+                case AssetType.Landmark:
+                    return "application/vnd.ll.landmark";
+                case AssetType.Clothing:
+                    return "application/vnd.ll.clothing";
+                case AssetType.Object:
+                    return "application/vnd.ll.primitive";
+                case AssetType.Notecard:
+                    return "application/vnd.ll.notecard";
+                case AssetType.Folder:
+                    return "application/vnd.ll.folder";
+                case AssetType.RootFolder:
+                    return "application/vnd.ll.rootfolder";
+                case AssetType.LSLText:
+                    return "application/vnd.ll.lsltext";
+                case AssetType.LSLBytecode:
+                    return "application/vnd.ll.lslbyte";
+                case AssetType.TextureTGA:
+                case AssetType.ImageTGA:
                     return "image/tga";
-                case 13:
-                    return "application/x-metaverse-bodypart";
-                case 17:
+                case AssetType.Bodypart:
+                    return "application/vnd.ll.bodypart";
+                case AssetType.TrashFolder:
+                    return "application/vnd.ll.trashfolder";
+                case AssetType.SnapshotFolder:
+                    return "application/vnd.ll.snapshotfolder";
+                case AssetType.LostAndFoundFolder:
+                    return "application/vnd.ll.lostandfoundfolder";
+                case AssetType.SoundWAV:
                     return "audio/x-wav";
-                case 19:
+                case AssetType.ImageJPEG:
                     return "image/jpeg";
-                case 20:
-                    return "application/x-metaverse-animation";
-                case 21:
-                    return "application/x-metaverse-gesture";
-                case 22:
-                    return "application/x-metaverse-simstate";
+                case AssetType.Animation:
+                    return "application/vnd.ll.animation";
+                case AssetType.Gesture:
+                    return "application/vnd.ll.gesture";
+                case AssetType.Simstate:
+                case AssetType.Unknown:
                 default:
                     return "application/octet-stream";
             }
         }
 
-        public static int ContentTypeToSLAssetType(string contentType)
+        public static AssetType ContentTypeToSLAssetType(string contentType)
         {
             switch (contentType)
             {
+                case "image/x-j2c":
                 case "image/jp2":
-                    return 0;
+                    return AssetType.Texture;
                 case "application/ogg":
-                    return 1;
+                    return AssetType.Sound;
+                case "application/vnd.ll.callingcard":
                 case "application/x-metaverse-callingcard":
-                    return 2;
+                    return AssetType.CallingCard;
+                case "application/vnd.ll.landmark":
                 case "application/x-metaverse-landmark":
-                    return 3;
+                    return AssetType.Landmark;
+                case "application/vnd.ll.clothing":
                 case "application/x-metaverse-clothing":
-                    return 5;
+                    return AssetType.Clothing;
+                case "application/vnd.ll.primitive":
                 case "application/x-metaverse-primitive":
-                    return 6;
+                    return AssetType.Object;
+                case "application/vnd.ll.notecard":
                 case "application/x-metaverse-notecard":
-                    return 7;
+                    return AssetType.Notecard;
+                case "application/vnd.ll.folder":
+                    return AssetType.Folder;
+                case "application/vnd.ll.rootfolder":
+                    return AssetType.RootFolder;
+                case "application/vnd.ll.lsltext":
                 case "application/x-metaverse-lsl":
-                    return 10;
+                    return AssetType.LSLText;
+                case "application/vnd.ll.lslbyte":
                 case "application/x-metaverse-lso":
-                    return 11;
+                    return AssetType.LSLBytecode;
                 case "image/tga":
-                    return 12;
+                    // Note that AssetType.TextureTGA will be converted to AssetType.ImageTGA
+                    return AssetType.ImageTGA;
+                case "application/vnd.ll.bodypart":
                 case "application/x-metaverse-bodypart":
-                    return 13;
+                    return AssetType.Bodypart;
+                case "application/vnd.ll.trashfolder":
+                    return AssetType.TrashFolder;
+                case "application/vnd.ll.snapshotfolder":
+                    return AssetType.SnapshotFolder;
+                case "application/vnd.ll.lostandfoundfolder":
+                    return AssetType.LostAndFoundFolder;
                 case "audio/x-wav":
-                    return 17;
+                    return AssetType.SoundWAV;
                 case "image/jpeg":
-                    return 19;
+                    return AssetType.ImageJPEG;
+                case "application/vnd.ll.animation":
                 case "application/x-metaverse-animation":
-                    return 20;
+                    return AssetType.Animation;
+                case "application/vnd.ll.gesture":
                 case "application/x-metaverse-gesture":
-                    return 21;
+                    return AssetType.Gesture;
                 case "application/x-metaverse-simstate":
-                    return 22;
+                    return AssetType.Simstate;
+                case "application/octet-stream":
                 default:
-                    return -1;
+                    return AssetType.Unknown;
             }
         }
 
-        public static int ContentTypeToSLInvType(string contentType)
+        public static InventoryType ContentTypeToSLInvType(string contentType)
         {
             switch (contentType)
             {
+                case "image/x-j2c":
                 case "image/jp2":
                 case "image/tga":
                 case "image/jpeg":
-                    return (int)InventoryType.Texture;
+                    return InventoryType.Texture;
                 case "application/ogg":
                 case "audio/x-wav":
-                    return (int)InventoryType.Sound;
+                    return InventoryType.Sound;
+                case "application/vnd.ll.callingcard":
                 case "application/x-metaverse-callingcard":
-                    return (int)InventoryType.CallingCard;
+                    return InventoryType.CallingCard;
+                case "application/vnd.ll.landmark":
                 case "application/x-metaverse-landmark":
-                    return (int)InventoryType.Landmark;
+                    return InventoryType.Landmark;
+                case "application/vnd.ll.clothing":
                 case "application/x-metaverse-clothing":
+                case "application/vnd.ll.bodypart":
                 case "application/x-metaverse-bodypart":
-                    return (int)InventoryType.Wearable;
+                    return InventoryType.Wearable;
+                case "application/vnd.ll.primitive":
                 case "application/x-metaverse-primitive":
-                    return (int)InventoryType.Object;
+                    return InventoryType.Object;
+                case "application/vnd.ll.notecard":
                 case "application/x-metaverse-notecard":
-                    return (int)InventoryType.Notecard;
+                    return InventoryType.Notecard;
+                case "application/vnd.ll.folder":
+                    return InventoryType.Folder;
+                case "application/vnd.ll.rootfolder":
+                    return InventoryType.RootCategory;
+                case "application/vnd.ll.lsltext":
                 case "application/x-metaverse-lsl":
+                case "application/vnd.ll.lslbyte":
                 case "application/x-metaverse-lso":
-                    return (int)InventoryType.LSL;
+                    return InventoryType.LSL;
+                case "application/vnd.ll.trashfolder":
+                case "application/vnd.ll.snapshotfolder":
+                case "application/vnd.ll.lostandfoundfolder":
+                    return InventoryType.Folder;
+                case "application/vnd.ll.animation":
                 case "application/x-metaverse-animation":
-                    return (int)InventoryType.Animation;
+                    return InventoryType.Animation;
+                case "application/vnd.ll.gesture":
                 case "application/x-metaverse-gesture":
-                    return (int)InventoryType.Gesture;
+                    return InventoryType.Gesture;
                 case "application/x-metaverse-simstate":
+                    return InventoryType.Snapshot;
+                case "application/octet-stream":
                 default:
-                    return (int)InventoryType.Unknown;
+                    return InventoryType.Unknown;
             }
         }
 
@@ -130,40 +185,62 @@ namespace OpenMetaverse.Messages.CableBeach
         {
             switch (contentType)
             {
+                case "image/x-j2c":
                 case "image/jp2":
                     return "texture";
                 case "application/ogg":
                     return "ogg";
+                case "application/vnd.ll.callingcard":
                 case "application/x-metaverse-callingcard":
                     return "callingcard";
+                case "application/vnd.ll.landmark":
                 case "application/x-metaverse-landmark":
                     return "landmark";
+                case "application/vnd.ll.clothing":
                 case "application/x-metaverse-clothing":
                     return "clothing";
+                case "application/vnd.ll.primitive":
                 case "application/x-metaverse-primitive":
                     return "primitive";
+                case "application/vnd.ll.notecard":
                 case "application/x-metaverse-notecard":
                     return "notecard";
+                case "application/vnd.ll.folder":
+                    return "folder";
+                case "application/vnd.ll.rootfolder":
+                    return "rootfolder";
+                case "application/vnd.ll.lsltext":
                 case "application/x-metaverse-lsl":
-                    return "lsl";
+                    return "lsltext";
+                case "application/vnd.ll.lslbyte":
                 case "application/x-metaverse-lso":
-                    return "lso";
+                    return "lslbyte";
                 case "image/tga":
                     return "tga";
+                case "application/vnd.ll.bodypart":
                 case "application/x-metaverse-bodypart":
                     return "bodypart";
+                case "application/vnd.ll.trashfolder":
+                    return "trashfolder";
+                case "application/vnd.ll.snapshotfolder":
+                    return "snapshotfolder";
+                case "application/vnd.ll.lostandfoundfolder":
+                    return "lostandfoundfolder";
                 case "audio/x-wav":
                     return "wav";
                 case "image/jpeg":
                     return "jpg";
+                case "application/vnd.ll.animation":
                 case "application/x-metaverse-animation":
-                    return "animation";
+                    return "animatn";
+                case "application/vnd.ll.gesture":
                 case "application/x-metaverse-gesture":
                     return "gesture";
                 case "application/x-metaverse-simstate":
                     return "simstate";
+                case "application/octet-stream":
                 default:
-                    return "bin";
+                    return "binary";
             }
         }
 
@@ -172,45 +249,46 @@ namespace OpenMetaverse.Messages.CableBeach
             switch (extension)
             {
                 case "texture":
-                case "jp2":
-                case "j2c":
-                    return "image/jp2";
-                case "sound":
+                    return "image/x-j2c";
                 case "ogg":
                     return "application/ogg";
                 case "callingcard":
-                    return "application/x-metaverse-callingcard";
+                    return "application/vnd.ll.callingcard";
                 case "landmark":
-                    return "application/x-metaverse-landmark";
+                    return "application/vnd.ll.landmark";
                 case "clothing":
-                    return "application/x-metaverse-clothing";
+                    return "application/vnd.ll.clothing";
                 case "primitive":
-                    return "application/x-metaverse-primitive";
+                    return "application/vnd.ll.primitive";
                 case "notecard":
-                    return "application/x-metaverse-notecard";
-                case "lsl":
-                    return "application/x-metaverse-lsl";
-                case "lso":
-                    return "application/x-metaverse-lso";
+                    return "application/vnd.ll.notecard";
+                case "folder":
+                    return "application/vnd.ll.folder";
+                case "rootfolder":
+                    return "application/vnd.ll.rootfolder";
+                case "lsltext":
+                    return "application/vnd.ll.lsltext";
+                case "lslbyte":
+                    return "application/vnd.ll.lslbyte";
                 case "tga":
                     return "image/tga";
                 case "bodypart":
-                    return "application/x-metaverse-bodypart";
+                    return "application/vnd.ll.bodypart";
+                case "trashfolder":
+                    return "application/vnd.ll.trashfolder";
+                case "snapshotfolder":
+                    return "application/vnd.ll.snapshotfolder";
+                case "lostandfoundfolder":
+                    return "application/vnd.ll.lostandfoundfolder";
                 case "wav":
                     return "audio/x-wav";
                 case "jpg":
-                case "jpeg":
                     return "image/jpeg";
-                case "animation":
-                    return "application/x-metaverse-animation";
+                case "animatn":
+                    return "application/vnd.ll.animation";
                 case "gesture":
-                    return "application/x-metaverse-gesture";
-                case "simstate":
-                    return "application/x-metaverse-simstate";
-                case "txt":
-                    return "text/plain";
-                case "xml":
-                    return "application/xml";
+                    return "application/vnd.ll.gesture";
+                case "binary":
                 default:
                     return "application/octet-stream";
             }

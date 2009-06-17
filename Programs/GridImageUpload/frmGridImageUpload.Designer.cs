@@ -49,6 +49,7 @@ namespace GridImageUpload
             this.label6 = new System.Windows.Forms.Label();
             this.chkLossless = new System.Windows.Forms.CheckBox();
             this.cmdUpload = new System.Windows.Forms.Button();
+            this.cmdSave = new System.Windows.Forms.Button();
             this.grpLogin.SuspendLayout();
             this.grpUpload.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picPreview)).BeginInit();
@@ -144,6 +145,7 @@ namespace GridImageUpload
             // 
             // grpUpload
             // 
+            this.grpUpload.Controls.Add(this.cmdSave);
             this.grpUpload.Controls.Add(this.txtAssetID);
             this.grpUpload.Controls.Add(this.label4);
             this.grpUpload.Controls.Add(this.lblSize);
@@ -166,7 +168,7 @@ namespace GridImageUpload
             this.txtAssetID.Name = "txtAssetID";
             this.txtAssetID.ReadOnly = true;
             this.txtAssetID.Size = new System.Drawing.Size(280, 20);
-            this.txtAssetID.TabIndex = 9;
+            this.txtAssetID.TabIndex = 10;
             this.txtAssetID.TabStop = false;
             // 
             // label4
@@ -204,9 +206,9 @@ namespace GridImageUpload
             // 
             // cmdLoad
             // 
-            this.cmdLoad.Location = new System.Drawing.Point(160, 136);
+            this.cmdLoad.Location = new System.Drawing.Point(86, 136);
             this.cmdLoad.Name = "cmdLoad";
-            this.cmdLoad.Size = new System.Drawing.Size(102, 24);
+            this.cmdLoad.Size = new System.Drawing.Size(91, 24);
             this.cmdLoad.TabIndex = 7;
             this.cmdLoad.Text = "Load Texture";
             this.cmdLoad.UseVisualStyleBackColor = true;
@@ -242,13 +244,24 @@ namespace GridImageUpload
             // cmdUpload
             // 
             this.cmdUpload.Enabled = false;
-            this.cmdUpload.Location = new System.Drawing.Point(268, 136);
+            this.cmdUpload.Location = new System.Drawing.Point(280, 136);
             this.cmdUpload.Name = "cmdUpload";
-            this.cmdUpload.Size = new System.Drawing.Size(103, 24);
-            this.cmdUpload.TabIndex = 8;
+            this.cmdUpload.Size = new System.Drawing.Size(91, 24);
+            this.cmdUpload.TabIndex = 9;
             this.cmdUpload.Text = "Upload Texture";
             this.cmdUpload.UseVisualStyleBackColor = true;
             this.cmdUpload.Click += new System.EventHandler(this.cmdUpload_Click);
+            // 
+            // cmdSave
+            // 
+            this.cmdSave.Enabled = false;
+            this.cmdSave.Location = new System.Drawing.Point(183, 136);
+            this.cmdSave.Name = "cmdSave";
+            this.cmdSave.Size = new System.Drawing.Size(91, 24);
+            this.cmdSave.TabIndex = 8;
+            this.cmdSave.Text = "Save Texture";
+            this.cmdSave.UseVisualStyleBackColor = true;
+            this.cmdSave.Click += new System.EventHandler(this.cmdSave_Click);
             // 
             // frmGridImageUpload
             // 
@@ -295,6 +308,7 @@ namespace GridImageUpload
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ComboBox cboLoginURL;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Button cmdSave;
     }
 }
 

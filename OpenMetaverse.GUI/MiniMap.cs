@@ -24,11 +24,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-using OpenMetaverse.Imaging;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using OpenMetaverse.Imaging;
+using OpenMetaverse.Assets;
 
 namespace OpenMetaverse.GUI
 {
@@ -102,7 +103,6 @@ namespace OpenMetaverse.GUI
         private void InitializeClient(GridClient client)
         {
             _Client = client;
-            _Client.Assets.OnImageReceived += new AssetManager.ImageReceivedCallback(Assets_OnImageReceived);
             _Client.Grid.OnCoarseLocationUpdate += new GridManager.CoarseLocationUpdateCallback(Grid_OnCoarseLocationUpdate);
             _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
         }
@@ -126,9 +126,8 @@ namespace OpenMetaverse.GUI
 
                 int i = 0;
 
-                lock (_Client.Network.CurrentSim.AvatarPositions.Dictionary)
-                {
-                    foreach (KeyValuePair<UUID, Vector3> coarse in _Client.Network.CurrentSim.AvatarPositions.Dictionary)
+                _Client.Network.CurrentSim.AvatarPositions.ForEach(
+                    delegate(KeyValuePair<UUID, Vector3> coarse)
                     {
                         int x = (int)coarse.Value.X;
                         int y = 255 - (int)coarse.Value.Y;
@@ -174,8 +173,8 @@ namespace OpenMetaverse.GUI
                             }
                         }
                         i++;
-                    };
-                }
+                    }
+                );
 
                 g.DrawImage(bmp, 0, 0);
                 this.Image = bmp;
@@ -195,15 +194,6 @@ namespace OpenMetaverse.GUI
             _MousePosition = e.Location;
         }
 
-        void Assets_OnImageReceived(ImageDownload image, AssetTexture asset)
-        {
-            if (asset.AssetID == _MapImageID)
-            {
-                ManagedImage nullImage;
-                OpenJPEG.DecodeToImage(asset.AssetData, out nullImage, out _MapLayer);
-            }
-        }
-
         void Grid_OnCoarseLocationUpdate(Simulator sim, List<UUID> newEntries, List<UUID> removedEntries)
         {
             UpdateMiniMap(sim);
@@ -217,7 +207,14 @@ namespace OpenMetaverse.GUI
                 SetMapLayer(null);
 
                 _MapImageID = region.MapImageID;
-                Client.Assets.RequestImage(_MapImageID, ImageType.Baked);
+                ManagedImage nullImage;
+
+                Client.Assets.RequestImage(_MapImageID, ImageType.Baked, 
+                    delegate(TextureRequestState state, AssetTexture asset)
+                        {
+                            if(state == TextureRequestState.Finished)
+                                OpenJPEG.DecodeToImage(asset.AssetData, out nullImage, out _MapLayer);
+                        });
             }
         }       
 

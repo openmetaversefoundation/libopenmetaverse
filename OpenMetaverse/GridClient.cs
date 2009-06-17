@@ -75,6 +75,8 @@ namespace OpenMetaverse
         public AgentManager Self;
         /// <summary>Other avatars subsystem</summary>
         public AvatarManager Avatars;
+        /// <summary>Estate subsystem</summary>
+        public EstateTools Estate;
         /// <summary>Friends list subsystem</summary>
         public FriendsManager Friends;
         /// <summary>Grid (aka simulator group) subsystem</summary>
@@ -110,6 +112,7 @@ namespace OpenMetaverse
             Parcels = new ParcelManager(this);
             Self = new AgentManager(this);
             Avatars = new AvatarManager(this);
+            Estate = new EstateTools(this);
             Friends = new FriendsManager(this);
             Grid = new GridManager(this);
             Objects = new ObjectManager(this);

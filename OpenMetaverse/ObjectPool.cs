@@ -10,14 +10,8 @@ namespace OpenMetaverse
     {
         /// <summary>Size of the byte array used to store raw packet data</summary>
         public const int BUFFER_SIZE = 4096;
-        /// <summary>Size of the temporary buffer for zerodecoding and 
-        /// zeroencoding this packet</summary>
-        public const int ZERO_BUFFER_SIZE = 4096;
         /// <summary>Raw packet data buffer</summary>
         public readonly byte[] Data;
-        /// <summary>Temporary buffer used for zerodecoding and zeroencoding
-        /// this packet</summary>
-        public readonly byte[] ZeroData;
         /// <summary>Length of the data to transmit</summary>
         public int DataLength;
         /// <summary>EndPoint of the remote host</summary>
@@ -29,9 +23,8 @@ namespace OpenMetaverse
         public UDPPacketBuffer()
         {
             Data = new byte[UDPPacketBuffer.BUFFER_SIZE];
-            ZeroData = new byte[UDPPacketBuffer.ZERO_BUFFER_SIZE];
             // Will be modified later by BeginReceiveFrom()
-            RemoteEndPoint = (EndPoint)new IPEndPoint(Settings.BIND_ADDR, 0);
+            RemoteEndPoint = new IPEndPoint(Settings.BIND_ADDR, 0);
         }
 
         /// <summary>
@@ -41,8 +34,18 @@ namespace OpenMetaverse
         public UDPPacketBuffer(IPEndPoint endPoint)
         {
             Data = new byte[UDPPacketBuffer.BUFFER_SIZE];
-            ZeroData = new byte[UDPPacketBuffer.ZERO_BUFFER_SIZE];
-            RemoteEndPoint = (EndPoint)endPoint;
+            RemoteEndPoint = endPoint;
+        }
+
+        /// <summary>
+        /// Create an allocated UDP packet buffer for sending a packet
+        /// </summary>
+        /// <param name="endPoint">EndPoint of the remote host</param>
+        /// <param name="bufferSize">Size of the buffer to allocate for packet data</param>
+        public UDPPacketBuffer(IPEndPoint endPoint, int bufferSize)
+        {
+            Data = new byte[bufferSize];
+            RemoteEndPoint = endPoint;
         }
     }
 

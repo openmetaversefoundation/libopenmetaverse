@@ -451,37 +451,17 @@ namespace OpenMetaverse.Tests
             Assert.AreEqual(OSDType.Binary, array[0].Type);
             tempBinary = (OSDBinary)array[0];
             byte[] testData1 = {114, 97, 110, 100, 111, 109};
-            TestBinary(tempBinary, testData1);
+            TestHelper.TestBinary(tempBinary, testData1);
 
             Assert.AreEqual(OSDType.Binary, array[1].Type);
             tempBinary = (OSDBinary)array[1];
             byte[] testData2 = {116, 104, 101, 32, 113, 117, 105, 99, 107, 32, 98, 
                                 114, 111, 119, 110, 32, 102, 111, 120};
-            TestBinary(tempBinary, testData2);
+            TestHelper.TestBinary(tempBinary, testData2);
 
             Assert.AreEqual(OSDType.Binary, array[1].Type);
             tempBinary = (OSDBinary)array[2];
             Assert.AreEqual(0, tempBinary.AsBinary().Length);
-        }
-
-        /// <summary>
-        /// Asserts that the contents of the SDBinary match the values and length
-        /// of the supplied byte array
-        /// </summary>
-        /// <param name="inBinary"></param>
-        /// <param name="inExpected"></param>
-        private void TestBinary(OSDBinary inBinary, byte[] inExpected)
-        {
-            byte[] binary = inBinary.AsBinary();
-            Assert.AreEqual(inExpected.Length, binary.Length);
-            for (int i = 0; i < inExpected.Length; i++)
-            {
-                if (inExpected[i] != binary[i])
-                {
-                    Assert.Fail("Expected " + inExpected[i].ToString() + " at position " + i.ToString() +
-                        " but saw " + binary[i].ToString());
-                }
-            }
         }
 
         /// <summary>
@@ -611,6 +591,28 @@ namespace OpenMetaverse.Tests
             array = (OSDArray)tempSD;
             Assert.AreEqual(3, array.Count);
         }
+    }
 
+    internal static class TestHelper
+    {
+        /// <summary>
+        /// Asserts that the contents of the SDBinary match the values and length
+        /// of the supplied byte array
+        /// </summary>
+        /// <param name="inBinary"></param>
+        /// <param name="inExpected"></param>
+        internal static void TestBinary(OSDBinary inBinary, byte[] inExpected)
+        {
+            byte[] binary = inBinary.AsBinary();
+            Assert.AreEqual(inExpected.Length, binary.Length);
+            for (int i = 0; i < inExpected.Length; i++)
+            {
+                if (inExpected[i] != binary[i])
+                {
+                    Assert.Fail("Expected " + inExpected[i].ToString() + " at position " + i.ToString() +
+                        " but saw " + binary[i].ToString());
+                }
+            }
+        }
     }
 }

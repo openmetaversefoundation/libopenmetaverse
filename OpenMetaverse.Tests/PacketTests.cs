@@ -90,5 +90,96 @@ namespace OpenMetaverse.Tests
             Assert.IsFalse(packet.Header.Resent, "Resent: Failed to set the flag back to false");
             Assert.IsFalse(packet.Header.Zerocoded, "Zerocoded: Failed to set the flag back to false");
         }
+
+        [Test]
+        public void ToBytesMultiple()
+        {
+            UUID testID = UUID.Random();
+
+            DirPlacesReplyPacket bigPacket = new DirPlacesReplyPacket();
+            bigPacket.Header.Zerocoded = false;
+            bigPacket.Header.Sequence = 42;
+            bigPacket.Header.AppendedAcks = true;
+            bigPacket.Header.AckList = new uint[50];
+            for (int i = 0; i < bigPacket.Header.AckList.Length; i++) { bigPacket.Header.AckList[i] = (uint)i; }
+            bigPacket.AgentData.AgentID = testID;
+            bigPacket.QueryData = new DirPlacesReplyPacket.QueryDataBlock[100];
+            for (int i = 0; i < bigPacket.QueryData.Length; i++)
+            {
+                bigPacket.QueryData[i] = new DirPlacesReplyPacket.QueryDataBlock();
+                bigPacket.QueryData[i].QueryID = testID;
+            }
+            bigPacket.QueryReplies = new DirPlacesReplyPacket.QueryRepliesBlock[100];
+            for (int i = 0; i < bigPacket.QueryReplies.Length; i++)
+            {
+                bigPacket.QueryReplies[i] = new DirPlacesReplyPacket.QueryRepliesBlock();
+                bigPacket.QueryReplies[i].Auction = (i & 1) == 0;
+                bigPacket.QueryReplies[i].Dwell = (float)i;
+                bigPacket.QueryReplies[i].ForSale = (i & 1) == 0;
+                bigPacket.QueryReplies[i].Name = Utils.StringToBytes("DirPlacesReply Test String");
+                bigPacket.QueryReplies[i].ParcelID = testID;
+            }
+            bigPacket.StatusData = new DirPlacesReplyPacket.StatusDataBlock[100];
+            for (int i = 0; i < bigPacket.StatusData.Length; i++)
+            {
+                bigPacket.StatusData[i] = new DirPlacesReplyPacket.StatusDataBlock();
+                bigPacket.StatusData[i].Status = (uint)i;
+            }
+
+            byte[][] splitPackets = bigPacket.ToBytesMultiple();
+
+            int queryDataCount = 0;
+            int queryRepliesCount = 0;
+            int statusDataCount = 0;
+            for (int i = 0; i < splitPackets.Length; i++)
+            {
+                byte[] packetData = splitPackets[i];
+                int len = packetData.Length - 1;
+                DirPlacesReplyPacket packet = (DirPlacesReplyPacket)Packet.BuildPacket(packetData, ref len, packetData);
+
+                Assert.IsTrue(packet.AgentData.AgentID == bigPacket.AgentData.AgentID);
+
+                for (int j = 0; j < packet.QueryReplies.Length; j++)
+                {
+                    Assert.IsTrue(packet.QueryReplies[j].Dwell == (float)(queryRepliesCount + j),
+                        "Expected Dwell of " + (float)(queryRepliesCount + j) + " but got " + packet.QueryReplies[j].Dwell);
+                    Assert.IsTrue(packet.QueryReplies[j].ParcelID == testID);
+                }
+
+                queryDataCount += packet.QueryData.Length;
+                queryRepliesCount += packet.QueryReplies.Length;
+                statusDataCount += packet.StatusData.Length;
+            }
+
+            Assert.IsTrue(queryDataCount == bigPacket.QueryData.Length);
+            Assert.IsTrue(queryRepliesCount == bigPacket.QueryData.Length);
+            Assert.IsTrue(statusDataCount == bigPacket.StatusData.Length);
+        }
+
+        [Test]
+        public void TickCountResolution()
+        {
+            float minResolution = Single.MaxValue;
+            float maxResolution = Single.MinValue;
+
+            // Measure the resolution of Environment.TickCount
+            float tickCountResolution = 0f;
+            for (int i = 0; i < 10; i++)
+            {
+                int start = Environment.TickCount;
+                int now = start;
+                while (now == start)
+                    now = Environment.TickCount;
+
+                float resolution = (float)(now - start);
+                tickCountResolution += tickCountResolution * 0.1f;
+                minResolution = Math.Min(minResolution, resolution);
+                maxResolution = Math.Max(maxResolution, resolution);
+            }
+
+            Console.WriteLine("Average Environment.TickCount resolution: " + tickCountResolution + "ms");
+            Assert.Less(maxResolution - minResolution, 10f, "Environment.TickCount resolution fluctuated between " +
+                minResolution + "ms and " + maxResolution + "ms");
+        }
     }
 }

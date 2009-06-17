@@ -15,7 +15,7 @@ namespace Baker
 			int pixelFormatSize = Image.GetPixelFormatSize(alpha.PixelFormat) / 8;
 			int stride = width * pixelFormatSize;
 			byte[] data = new byte[stride * height];
-			GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+			//GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
 			IntPtr pointer = Marshal.UnsafeAddrOfPinnedArrayElement(data, 0);
 			Bitmap modified = new Bitmap(width, height, stride, alpha.PixelFormat, pointer);
 			
@@ -50,7 +50,7 @@ namespace Baker
 			int pixelFormatSize = Image.GetPixelFormatSize(source.PixelFormat) / 8;
 			int stride = width * pixelFormatSize;
 			byte[] data = new byte[stride * height];
-			GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+			//GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
 			IntPtr pointer = Marshal.UnsafeAddrOfPinnedArrayElement(data, 0);
 			Bitmap modified = new Bitmap(width, height, stride, source.PixelFormat, pointer);
 			

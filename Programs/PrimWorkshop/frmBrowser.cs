@@ -13,6 +13,7 @@ using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Imaging;
 using OpenMetaverse.Rendering;
+using OpenMetaverse.Assets;
 
 namespace PrimWorkshop
 {
@@ -35,7 +36,6 @@ namespace PrimWorkshop
         int TotalPrims;
 
         // Textures
-        TexturePipeline TextureDownloader;
         Dictionary<UUID, TextureInfo> Textures = new Dictionary<UUID, TextureInfo>();
 
         // Terrain
@@ -51,7 +51,7 @@ namespace PrimWorkshop
 
         //
         Vector3 PivotPosition = Vector3.Zero;
-        bool Pivoting = false;
+        private bool Pivoting;
         Point LastPivot;
 
         //
@@ -147,7 +147,7 @@ namespace PrimWorkshop
             Client.Settings.ALWAYS_REQUEST_OBJECTS = true;
             Client.Settings.SEND_AGENT_UPDATES = true;
             Client.Settings.USE_TEXTURE_CACHE = true;
-            Client.Settings.TEXTURE_CACHE_DIR = Application.StartupPath + System.IO.Path.DirectorySeparatorChar + "cache";
+            //Client.Settings.TEXTURE_CACHE_DIR = Application.StartupPath + System.IO.Path.DirectorySeparatorChar + "cache";
             Client.Settings.ALWAYS_REQUEST_PARCEL_ACL = false;
             Client.Settings.ALWAYS_REQUEST_PARCEL_DWELL = false;
             // Crank up the throttle on texture downloads
@@ -166,13 +166,7 @@ namespace PrimWorkshop
             Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
             Client.Parcels.OnSimParcelsDownloaded += new ParcelManager.SimParcelsDownloaded(Parcels_OnSimParcelsDownloaded);
 
-            // Initialize the texture download pipeline
-            if (TextureDownloader != null)
-                TextureDownloader.Shutdown();
-            TextureDownloader = new TexturePipeline(Client, 10);
-            TextureDownloader.OnDownloadFinished += new TexturePipeline.DownloadFinishedCallback(TextureDownloader_OnDownloadFinished);
-            TextureDownloader.OnDownloadProgress += new TexturePipeline.DownloadProgressCallback(TextureDownloader_OnDownloadProgress);
-
+            Client.Assets.OnImageRecieveProgress += new AssetManager.ImageReceiveProgressCallback(Assets_OnImageRecieveProgress);
             // Initialize the camera object
             InitCamera();
 
@@ -196,6 +190,7 @@ namespace PrimWorkshop
             Gl.glLightfv(Gl.GL_LIGHT0, Gl.GL_SPECULAR, specularLight);
             */
         }
+
 
         private void InitOpenGL()
         {
@@ -701,7 +696,8 @@ namespace PrimWorkshop
                     // Determine the total height of the object
                     float minHeight = Single.MaxValue;
                     float maxHeight = Single.MinValue;
-                    float totalHeight = 0f;
+
+                    //float totalHeight = 0f;
 
                     for (int i = 0; i < primList.Count; i++)
                     {
@@ -719,7 +715,7 @@ namespace PrimWorkshop
                         if (bottom < minHeight) minHeight = bottom;
                     }
 
-                    totalHeight = maxHeight - minHeight;
+                    //totalHeight = maxHeight - minHeight;
 
                     // Create a progress bar for the import process
                     ProgressBar prog = new ProgressBar();
@@ -976,7 +972,7 @@ namespace PrimWorkshop
                         if (!Textures.ContainsKey(teFace.TextureID))
                         {
                             // We haven't constructed this image in OpenGL yet, get ahold of it
-                            TextureDownloader.RequestTexture(teFace.TextureID, ImageType.Normal);
+                            Client.Assets.RequestImage(teFace.TextureID, ImageType.Normal, TextureDownloader_OnDownloadFinished);
                         }
                     }
                 }
@@ -1235,15 +1231,15 @@ namespace PrimWorkshop
             }
         }
 
-        int[] CubeMapDefines = new int[]
-        {
-            Gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
-            Gl.GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB,
-            Gl.GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB,
-            Gl.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB,
-            Gl.GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB,
-            Gl.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB
-        };
+        //int[] CubeMapDefines = new int[]
+        //{
+        //    Gl.GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
+        //    Gl.GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB,
+        //    Gl.GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB,
+        //    Gl.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB,
+        //    Gl.GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB,
+        //    Gl.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB
+        //};
 
         private void RenderPrims()
         {
@@ -1401,19 +1397,23 @@ StartRender:
 
         #region Texture Downloading
 
-        private void TextureDownloader_OnDownloadFinished(UUID id, bool success)
+        private void TextureDownloader_OnDownloadFinished(TextureRequestState state, AssetTexture asset)
         {
             bool alpha = false;
             ManagedImage imgData = null;
             byte[] raw = null;
+            
+            bool success = (state == TextureRequestState.Finished);
+
+            UUID id = asset.AssetID;
 
             try
             {
                 // Load the image off the disk
                 if (success)
                 {
-                    ImageDownload download = TextureDownloader.GetTextureToRender(id);
-                    if (OpenJPEG.DecodeToImage(download.AssetData, out imgData))
+                    //ImageDownload download = TextureDownloader.GetTextureToRender(id);
+                    if (OpenJPEG.DecodeToImage(asset.AssetData, out imgData))
                     {
                         raw = imgData.ExportRaw();
 
@@ -1489,13 +1489,13 @@ StartRender:
                 Console.WriteLine(ex);
             }
         }
-
-        private void TextureDownloader_OnDownloadProgress(UUID image, int recieved, int total)
+        
+        private void Assets_OnImageRecieveProgress(UUID imageID, int recieved, int total)
         {
             lock (DownloadList)
             {
                 GlacialComponents.Controls.GLItem item;
-                if (DownloadList.TryGetValue(image, out item))
+                if (DownloadList.TryGetValue(imageID, out item))
                 {
                     // Update an existing item
                     BeginInvoke(
@@ -1519,10 +1519,10 @@ StartRender:
 
                     // List item
                     item = new GlacialComponents.Controls.GLItem();
-                    item.SubItems[0].Text = image.ToString();
+                    item.SubItems[0].Text = imageID.ToString();
                     item.SubItems[1].Control = prog;
 
-                    DownloadList[image] = item;
+                    DownloadList[imageID] = item;
 
                     BeginInvoke(
                         (MethodInvoker)delegate()
@@ -1613,10 +1613,6 @@ StartRender:
 
             // Set the login button back to login state
             cmdLogin.Text = "Login";
-
-            // Shutdown the texture downloader
-            if (TextureDownloader != null)
-                TextureDownloader.Shutdown();
 
             // Enable input controls
             txtFirst.Enabled = txtLast.Enabled = txtPass.Enabled = true;

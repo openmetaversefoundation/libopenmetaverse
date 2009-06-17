@@ -51,12 +51,6 @@ namespace OpenMetaverse.TestClient
             {
                 return String.Format("Unable to find Parcel {0} in Parcels Dictionary, Did you run parcelinfo to populate the dictionary first?", args[0]);
             }
-        }
-
-        void Parcels_OnPrimOwnersListReply(Simulator simulator, List<ParcelManager.ParcelPrimOwners> primOwners)
-        {
-            throw new Exception("The method or operation is not implemented.");
-        }
-        
+        }        
     }
 }

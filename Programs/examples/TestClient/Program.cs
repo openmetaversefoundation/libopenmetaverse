@@ -16,14 +16,13 @@ namespace OpenMetaverse.TestClient
         private static void Usage()
         {
             Console.WriteLine("Usage: " + Environment.NewLine +
-                    "TestClient.exe --first firstname --last lastname --pass password [--loginuri=\"uri\"] [--startpos \"sim/x/y/z\"] [--master \"master name\"] [--masterkey \"master uuid\"] [--gettextures] [--scriptfile \"filename\"]");
+                    "TestClient.exe [--first firstname --last lastname --pass password] [--file userlist.txt] [--loginuri=\"uri\"] [--startpos \"sim/x/y/z\"] [--master \"master name\"] [--masterkey \"master uuid\"] [--gettextures] [--scriptfile \"filename\"]");
         }
 
         static void Main(string[] args)
         {
             Arguments arguments = new Arguments(args);
 
-            ClientManager manager;
             List<LoginDetails> accounts = new List<LoginDetails>();
             LoginDetails account;
             bool groupCommands = false;
@@ -149,13 +148,13 @@ namespace OpenMetaverse.TestClient
             }
 
             // Login the accounts and run the input loop
-            manager = new ClientManager(accounts, getTextures);
+            ClientManager.Instance.Start(accounts, getTextures);
 
             if (!String.IsNullOrEmpty(scriptFile))
-                manager.DoCommandAll("script " + scriptFile, UUID.Zero);
+                ClientManager.Instance.DoCommandAll("script " + scriptFile, UUID.Zero);
 
             // Then Run the ClientManager normally
-            manager.Run();
+            ClientManager.Instance.Run();
         }
     }
 }

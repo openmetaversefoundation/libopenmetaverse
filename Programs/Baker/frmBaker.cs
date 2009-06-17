@@ -35,7 +35,7 @@ namespace Baker
                 AlphaMask = LoadTGAClass.LoadTGA(stream);
                 stream.Close();
 
-                ManagedImage managedImage = new ManagedImage(AlphaMask);
+                //ManagedImage managedImage = new ManagedImage(AlphaMask);
 
                 // FIXME: Operate on ManagedImage instead of Bitmap
                 pic1.Image = Oven.ModifyAlphaMask(AlphaMask, (byte)scrollWeight.Value, 0.0f);
@@ -59,28 +59,6 @@ namespace Baker
         private void cmdLoadSkin_Click(object sender, EventArgs e)
         {
 
-        }
-
-        private void cmdLoadShirt_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog dialog = new OpenFileDialog();
-            
-
-
-            //dialog.Filter = "JPEG2000 (*.jp2,*.j2c,*.j2k)|";
-            //if (dialog.ShowDialog() == DialogResult.OK)
-            //{
-            //    try
-            //    {
-            //        byte[] j2kdata = File.ReadAllBytes(dialog.FileName);
-            //        Image image = OpenJPEGNet.OpenJPEG.DecodeToImage(j2kdata);
-            //        pic1.Image = image;
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        MessageBox.Show(ex.Message);
-            //    }
-            //}
         }
 
         private void cboMask_SelectedIndexChanged(object sender, EventArgs e)

@@ -30,6 +30,7 @@ using System.IO;
 using System.Reflection;
 using System.Drawing;
 using System.Drawing.Imaging;
+using OpenMetaverse.Assets;
 
 namespace OpenMetaverse.Imaging
 {
@@ -163,10 +164,7 @@ namespace OpenMetaverse.Imaging
             if (_bakeType == AppearanceManager.BakeType.Eyes)
             {
                 InitBakedLayerColor(255, 255, 255);
-                if (!DrawLayer(AppearanceManager.TextureIndex.EyesIris))
-                {
-                    Logger.Log("Missing texture for EYES - unable to bake layer", Helpers.LogLevel.Warning, _client);
-                }
+                DrawLayer(AppearanceManager.TextureIndex.EyesIris);
             }
             else if (_bakeType == AppearanceManager.BakeType.Head)
             {
@@ -225,6 +223,11 @@ namespace OpenMetaverse.Imaging
                 DrawLayer(AppearanceManager.TextureIndex.LowerShoes);
                 DrawLayer(AppearanceManager.TextureIndex.LowerPants);
                 DrawLayer(AppearanceManager.TextureIndex.LowerJacket);
+            }
+            else if (_bakeType == AppearanceManager.BakeType.Hair)
+            {
+                InitBakedLayerColor(255, 255, 255);
+                DrawLayer(AppearanceManager.TextureIndex.Hair);
             }
 
             _bakedTexture.Encode();
@@ -450,6 +453,9 @@ namespace OpenMetaverse.Imaging
 
                 case AppearanceManager.TextureIndex.Skirt:
                     return AppearanceManager.BakeType.Skirt;
+
+                case AppearanceManager.TextureIndex.Hair:
+                    return AppearanceManager.BakeType.Hair;
 
                 default:
                     return AppearanceManager.BakeType.Unknown;

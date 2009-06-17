@@ -52,6 +52,8 @@ public class Analyst : ProxyPlugin
     private Dictionary<PacketType, Dictionary<BlockField, object>> modifiedPackets = new Dictionary<PacketType, Dictionary<BlockField, object>>();
     private Assembly openmvAssembly;
     private StreamWriter output;
+    
+    private PacketDecoder DecodePacket = new PacketDecoder();
 
     public Analyst(ProxyFrame frame)
     {
@@ -415,9 +417,9 @@ public class Analyst : ProxyPlugin
                     return;
                 }
 
-                packet.Header.Flags |= Helpers.MSG_RELIABLE;
+                packet.Header.Reliable = true;
                 //if (protocolManager.Command(name).Encoded)
-                //	packet.Header.Flags |= Helpers.MSG_ZEROCODED;
+                //	packet.Header.Zerocoded = true;
                 proxy.InjectPacket(packet, direction);
 
                 SayToUser("injected " + words[1]);
@@ -827,7 +829,7 @@ public class Analyst : ProxyPlugin
     // LogPacket: dump a packet to the console
     private void LogPacket(Packet packet, IPEndPoint endPoint, Direction direction)
     {
-        string packetText = Helpers.PacketToString(packet);
+        string packetText = DecodePacket.PacketToString(packet);
 
         if (logGrep == null || (logGrep != null && Regex.IsMatch(packetText, logGrep)))
         {
@@ -836,7 +838,7 @@ public class Analyst : ProxyPlugin
                 , direction == Direction.Incoming ? "<--" : "-->"
                 , endPoint
                 , packet.Header.Sequence
-                , InterpretOptions(packet.Header.Flags)
+                , InterpretOptions(packet.Header)
                 , Environment.NewLine
                 , packetText
                 );
@@ -849,16 +851,16 @@ public class Analyst : ProxyPlugin
     }
 
     // InterpretOptions: produce a string representing a packet's header options
-    private static string InterpretOptions(byte options)
+    private static string InterpretOptions(Header header)
     {
         return "["
-             + ((options & Helpers.MSG_APPENDED_ACKS) != 0 ? "Ack" : "   ")
+             + (header.AppendedAcks ? "Ack" : "   ")
              + " "
-             + ((options & Helpers.MSG_RESENT) != 0 ? "Res" : "   ")
+             + (header.Resent ? "Res" : "   ")
              + " "
-             + ((options & Helpers.MSG_RELIABLE) != 0 ? "Rel" : "   ")
+             + (header.Reliable ? "Rel" : "   ")
              + " "
-             + ((options & Helpers.MSG_ZEROCODED) != 0 ? "Zer" : "   ")
+             + (header.Zerocoded ? "Zer" : "   ")
              + "]"
              ;
     }

@@ -30,7 +30,7 @@ using System.Net;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-
+using System.Text.RegularExpressions;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
@@ -43,6 +43,7 @@ using OpenMetaverse.StructuredData;
 using OpenMetaverse.Interfaces;
 using System.Xml;
 using Nwc.XmlRpc;
+using Logger = OpenMetaverse.Logger;
 
 namespace WinGridProxy
 {
@@ -56,6 +57,7 @@ namespace WinGridProxy
 
         ProxyManager proxy;
 
+        private PacketDecoder DecodePacket = new PacketDecoder();
 
         private int PacketCounter;
 
@@ -73,11 +75,17 @@ namespace WinGridProxy
         {
             InitializeComponent();
 
+            Logger.Log("WinGridProxy ready", Helpers.LogLevel.Info);
+
+            if (FireEventAppender.Instance != null)
+            {
+                FireEventAppender.Instance.MessageLoggedEvent += new MessageLoggedEventHandler(Instance_MessageLoggedEvent);
+            }
+
             // populate the listen box with IPs
             IPHostEntry iphostentry = Dns.GetHostByName(Dns.GetHostName());
-            foreach(IPAddress address in iphostentry.AddressList)
+            foreach (IPAddress address in iphostentry.AddressList)
                 comboBoxListenAddress.Items.Add(address.ToString());
-
 
             ProxyManager.OnPacketLog += ProxyManager_OnPacketLog;
             ProxyManager.OnMessageLog += ProxyManager_OnMessageLog;
@@ -117,7 +125,7 @@ namespace WinGridProxy
             {
 
                 ListViewItem foundCap = FindListViewItem(listViewMessageFilters, req.Info.CapType, false);
-                
+
                 if (foundCap == null)
                 {
                     ListViewItem addedItem = listViewMessageFilters.Items.Add(new ListViewItem(req.Info.CapType, new ListViewGroup("EventQueue Messages")));
@@ -181,7 +189,7 @@ namespace WinGridProxy
                 PacketCounter++;
 
                 string loginType = (request is XmlRpcRequest) ? "Login Request" : "Login Response";
-                ListViewItem session = new ListViewItem(new string[] { PacketCounter.ToString(), "HTTPS", loginType, request.ToString().Length.ToString(), comboBoxLoginURL.Text, "xml-rpc"});
+                ListViewItem session = new ListViewItem(new string[] { PacketCounter.ToString(), "HTTPS", loginType, request.ToString().Length.ToString(), comboBoxLoginURL.Text, "xml-rpc" });
                 session.Tag = request;
                 session.ImageIndex = (request is XmlRpcRequest) ? 1 : 0;
 
@@ -213,8 +221,8 @@ namespace WinGridProxy
                     PacketsOutBytes += packet.Length;
                 }
 
-                
-                ListViewItem session = new ListViewItem(new string[] { PacketCounter.ToString(), "UDP", packet.Type.ToString(), packet.Length.ToString(), endpoint.ToString(), "binary udp"});
+
+                ListViewItem session = new ListViewItem(new string[] { PacketCounter.ToString(), "UDP", packet.Type.ToString(), packet.Length.ToString(), endpoint.ToString(), "binary udp" });
                 session.Tag = packet;
                 session.ImageIndex = (direction == Direction.Incoming) ? 0 : 1;
                 listViewSessions.Items.Add(session);
@@ -243,7 +251,7 @@ namespace WinGridProxy
 
                     int size = 0;
                     string cType = String.Empty;
-                    if(req.RawRequest != null)
+                    if (req.RawRequest != null)
                     {
                         size += req.RawRequest.Length;
                         cType = req.RequestHeaders.Get("Content-Type"); //req.RequestHeaders["Content-Type"];
@@ -311,7 +319,7 @@ namespace WinGridProxy
 
                 // enable any gui elements
                 toolStripDropDownButton5.Enabled =
-                grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = true;
+                toolStripMenuItemPlugins.Enabled = grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = true;
                 button1.Text = "Stop Proxy";
 
                 if (enableStatisticsToolStripMenuItem.Checked && !timer1.Enabled)
@@ -321,7 +329,7 @@ namespace WinGridProxy
             {
                 // stop the proxy
                 proxy.Stop();
-                grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = false;
+                toolStripMenuItemPlugins.Enabled = grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = false;
                 button1.Text = "Start Proxy";
                 comboBoxListenAddress.Enabled = textBoxProxyPort.Enabled = comboBoxLoginURL.Enabled = true;
 
@@ -349,7 +357,41 @@ namespace WinGridProxy
                 tabControl1.SelectTab("tabPageInspect");
                 object tag = e.Item.Tag;
 
-                if (tag is XmlRpcRequest)
+                if (tag is string && tag.ToString().StartsWith("Packet Type:"))
+                {
+                    Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(tag.ToString()));
+                    var ei = e.Item;
+                    if (e.Item.ImageIndex == 1) // sent item
+                    {
+                        richTextBoxDecodedRequest.Text = String.Format("{0}", tag);
+                        richTextBoxRawRequest.Text = String.Format("{0}", tag);
+                        richTextBoxNotationRequest.Text = "No Notation decoding for String items";
+                        treeViewXMLRequest.Nodes.Clear();
+                        hexBoxRequest.ByteProvider = data;
+
+                        richTextBoxDecodedResponse.Text = "No Data";
+                        richTextBoxRawResponse.Text = "No Data";
+                        richTextBoxNotationResponse.Text = "No Data";
+                        treeViewXmlResponse.Nodes.Clear();
+                        hexBoxResponse.ByteProvider = null;
+                    }
+                    else
+                    {
+                        richTextBoxDecodedRequest.Text = "No Data";
+                        richTextBoxRawRequest.Text = "No Data";
+                        richTextBoxNotationRequest.Text = "No Notation decoding for String items";
+                        treeViewXMLRequest.Nodes.Clear();
+                        hexBoxRequest.ByteProvider = null;
+
+                        richTextBoxDecodedResponse.Text = String.Format("{0}", tag);
+                        richTextBoxRawResponse.Text = String.Format("{0}", tag);
+                        richTextBoxNotationResponse.Text = "No Notation decoding for String items";
+                        treeViewXmlResponse.Nodes.Clear();
+                        hexBoxResponse.ByteProvider = data;
+                    }
+                }
+
+                else if (tag is XmlRpcRequest)
                 {
                     XmlRpcRequest requestData = (XmlRpcRequest)tag;
 
@@ -406,8 +448,8 @@ namespace WinGridProxy
                         richTextBoxDecodedRequest.Text = String.Empty;
                         richTextBoxRawRequest.Text = String.Empty;
                         hexBoxRequest.ByteProvider = null;
-                    } 
-                    else 
+                    }
+                    else
                     {
                         richTextBoxDecodedRequest.Text = TagToString(tag, listViewSessions.FocusedItem.SubItems[2].Text);
                         richTextBoxRawRequest.Text = TagToString(tag, listViewSessions.FocusedItem.SubItems[2].Text);
@@ -418,7 +460,7 @@ namespace WinGridProxy
                         richTextBoxRawResponse.Text = String.Empty;
                         hexBoxResponse.ByteProvider = null;
                     }
-                    
+
                 }
                 else if (tag is CapsRequest)
                 {
@@ -623,15 +665,6 @@ namespace WinGridProxy
             }
         }
 
-        //private void sessionSelectAllProtocol_Click(object sender, EventArgs e)
-        //{
-        //    foreach (ListViewItem item in listViewSessions.Items)
-        //    {
-        //        if (item.SubItems[1].Text.Equals(toolStripMenuItemSelectProtocol.Tag) && !item.Selected)
-        //            item.Selected = true;
-        //    }
-        //}
-
         // stop capturing selected filters
         private void filterDisableByPacketName_CheckedChanged(object sender, EventArgs e)
         {
@@ -666,7 +699,6 @@ namespace WinGridProxy
 
                 enableDisableFilterByNameToolStripMenuItem.Text = String.Format("Capture {0} {1}", listViewSessions.FocusedItem.SubItems[2].Text, strPacketOrMessage);
                 toolStripMenuItemSelectPacketName.Tag = enableDisableFilterByNameToolStripMenuItem.Tag = listViewSessions.FocusedItem.SubItems[2].Text;
-
 
                 toolStripMenuItemSelectPacketName.Text = String.Format("All {0} {1}", listViewSessions.FocusedItem.SubItems[2].Text, strPacketOrMessage);
 
@@ -715,7 +747,6 @@ namespace WinGridProxy
                 toolStripMenuSessionsRemove.Enabled =
                         selectToolStripMenuItem2.Enabled = false;
             }
-
         }
 
         private void findSessions_Click(object sender, EventArgs e)
@@ -733,7 +764,6 @@ namespace WinGridProxy
                 sThread.Name = "Search";
                 sThread.Start();
             }
-
         }
 
         // Enable Inject button if box contains text
@@ -760,6 +790,23 @@ namespace WinGridProxy
             if (openFileDialog2.ShowDialog() == DialogResult.OK)
             {
                 RestoreSavedSettings(openFileDialog2.FileName);
+                if (listViewSessions.Items.Count > 0)
+                {
+                    if (MessageBox.Show("Would you like to apply these settings to the currention session list?", "Apply Filter", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == System.Windows.Forms.DialogResult.Yes)
+                    {
+                        listViewSessions.BeginUpdate();
+                        foreach (ListViewItem item in listViewSessions.Items)
+                        {
+                            ListViewItem found = FindListViewItem(listViewPacketFilters, item.SubItems[2].Text, false);
+                            if (found == null)
+                                found = FindListViewItem(listViewMessageFilters, item.SubItems[2].Text, false);
+
+                            if (found != null && !found.Checked)
+                                listViewSessions.Items.Remove(item);
+                        }
+                        listViewSessions.EndUpdate();
+                    }
+                }
             }
         }
 
@@ -772,7 +819,6 @@ namespace WinGridProxy
         {
             proxy.AddUDPDelegate(packetTypeFromName(e.Item.Text), e.Item.Checked);
         }
-
 
         private void checkBoxCheckallCaps_CheckedChanged(object sender, EventArgs e)
         {
@@ -799,15 +845,13 @@ namespace WinGridProxy
 
         private void saveSessionArchiveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Stream myStream;
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                if ((myStream = saveFileDialog1.OpenFile()) != null)
+                OSDMap map = new OSDMap(1);
+                OSDArray sessionArray = new OSDArray();
+                foreach (ListViewItem item in listViewSessions.Items)
                 {
-                    StreamWriter wText = new StreamWriter(myStream);
-                    OSDMap map = new OSDMap(1);
-                    OSDArray sessionArray = new OSDArray();
-                    foreach (ListViewItem item in listViewSessions.Items)
+                    if (item.Tag is Packet || item.Tag is IMessage || item.Tag is String || item.Tag is CapsRequest)
                     {
                         OSDMap session = new OSDMap();
                         session["name"] = OSD.FromString(item.Name);
@@ -818,33 +862,44 @@ namespace WinGridProxy
                         session["size"] = OSD.FromString(item.SubItems[3].Text);
                         session["host"] = OSD.FromString(item.SubItems[4].Text);
 
-
-
-                        try
+                        if (item.Tag is Packet)
                         {
-                            session["tag"] = OSD.FromBinary((byte[])item.Tag);
+                            session["tag"] = OSD.FromBinary(Utils.StringToBytes(DecodePacket.PacketToString((Packet)item.Tag)));
                         }
-                        catch (Exception ex)
+                        else if (item.Tag is IMessage)
                         {
-                            Console.WriteLine(ex.Message + ": " + ex.StackTrace);
-                            session["tag"] = OSD.FromBinary(Utils.EmptyBytes);
+                            IMessage m = (IMessage)item.Tag;
+                            session["tag"] = OSD.FromBinary(Utils.StringToBytes(m.Serialize().ToString()));
+                        }
+                        else if (item.Tag is System.String)
+                        {
+                            session["tag"] = OSD.FromBinary(Utils.StringToBytes(Tag.ToString()));
+                        }
+                        else
+                        {
+                            // we intentionally don't save login requests or responses
+                            session["tag"] = OSD.FromBinary(Utils.StringToBytes("Encoding disabled for this item type"));
                         }
 
                         sessionArray.Add(session);
                     }
+                }
 
-                    map["sessions"] = sessionArray;
-                    wText.Write(map.ToString());
-                    wText.Flush();
+                map["sessions"] = sessionArray;
 
-                    myStream.Close();
+                try
+                {
+                    File.WriteAllText(saveFileDialog1.FileName, map.ToString());
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Exception occurred trying to save session archive: " + ex);
                 }
             }
         }
 
         private void loadSessionArchiveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 OSD osd = OSDParser.DeserializeLLSDNotation(File.ReadAllText(openFileDialog1.FileName));
@@ -862,9 +917,10 @@ namespace WinGridProxy
                         session["packet"].AsString(),
                         session["size"].AsString(),
                         session["host"].AsString()}));
-
+                    var id = addedItem.SubItems[1];
                     addedItem.ImageIndex = session["image_index"].AsInteger();
-                    addedItem.Tag = LitJson.JsonMapper.ToObject(Utils.BytesToString(session["tag"].AsBinary(), 0, session["tag"].AsBinary().Length));
+                    addedItem.BackColor = Color.GhostWhite; // give imported items a different color
+                    addedItem.Tag = Utils.BytesToString(session["tag"].AsBinary());
                 }
 
                 listViewSessions.EndUpdate();
@@ -875,7 +931,6 @@ namespace WinGridProxy
         private void listViewFilterSorter_ColumnClick(object sender, ColumnClickEventArgs e)
         {
             ListView lv = (ListView)sender;
-            //this.listViewPacketFilters.ListViewItemSorter = new ListViewItemComparer(e.Column);
             ListViewItemComparer columnSorter = new ListViewItemComparer();
             columnSorter.column = e.Column;
 
@@ -889,7 +944,7 @@ namespace WinGridProxy
 
         private void exitToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            // warn if connected!
+            // TODO: warn if client is connected!
             this.Close();
         }
 
@@ -931,7 +986,6 @@ namespace WinGridProxy
 
                         foreach (FieldInfo nestedField in nestedArrayObject.GetType().GetFields())
                         {
-                            //var nt = nestedField.GetValue(nestedArrayObject).GetType().Name;
                             if (nestedField.FieldType.IsEnum)
                             {
                                 result.AppendFormat("{0, 30}: {1} {2} ({3})" + System.Environment.NewLine,
@@ -947,7 +1001,7 @@ namespace WinGridProxy
                             }
                             else
                             {
-                                result.AppendFormat("{0, 30}: {1} ({2})" + System.Environment.NewLine,
+                                result.AppendFormat("{0, 30}: {1} ({2})" + Environment.NewLine,
                                  nestedField.Name,
                                  nestedField.GetValue(nestedArrayObject),
                                  nestedField.GetValue(nestedArrayObject).GetType().Name);
@@ -959,7 +1013,7 @@ namespace WinGridProxy
                 {
                     if (messageField.FieldType.IsEnum)
                     {
-                        result.AppendFormat("{0, 30}: {1} {2} ({3})" + System.Environment.NewLine,
+                        result.AppendFormat("{0, 30}: {1} {2} ({3})" + Environment.NewLine,
                             messageField.Name,
                             Enum.Format(messageField.GetValue(message).GetType(),
                             messageField.GetValue(message), "D"),
@@ -977,141 +1031,6 @@ namespace WinGridProxy
                 }
             }
 
-            return result.ToString();
-        }
-
-        private static string InterpretOptions(byte options)
-        {
-            return "["
-                 + ((options & Helpers.MSG_APPENDED_ACKS) != 0 ? "Ack" : "   ")
-                 + " "
-                 + ((options & Helpers.MSG_RESENT) != 0 ? "Res" : "   ")
-                 + " "
-                 + ((options & Helpers.MSG_RELIABLE) != 0 ? "Rel" : "   ")
-                 + " "
-                 + ((options & Helpers.MSG_ZEROCODED) != 0 ? "Zer" : "   ")
-                 + "]"
-                 ;
-        }
-
-        /// <summary>
-        /// Creates a formatted string containing the values of a Packet
-        /// </summary>
-        /// <param name="packet">The Packet</param>
-        /// <returns>A formatted string of values of the nested items in the Packet object</returns>
-        public static string PacketToString(Packet packet)
-        {
-            StringBuilder result = new StringBuilder();
-
-            result.AppendFormat("Packet Type: {0}" + System.Environment.NewLine, packet.Type);
-            result.AppendLine("[Packet Header]");
-            // payload
-            result.AppendFormat("Sequence: {0}" + System.Environment.NewLine, packet.Header.Sequence);
-            result.AppendFormat(" Options: {0}" + System.Environment.NewLine, InterpretOptions(packet.Header.Flags));
-            result.AppendLine();
-
-            result.AppendLine("[Packet Payload]");
-            foreach (FieldInfo packetField in packet.GetType().GetFields())
-            {
-                object packetDataObject = packetField.GetValue(packet);
-
-                result.AppendFormat("-- {0,20} --" + System.Environment.NewLine, packetField.Name);
-                foreach (FieldInfo packetValueField in packetField.GetValue(packet).GetType().GetFields())
-                {
-                    result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
-                        packetValueField.Name, packetValueField.GetValue(packetDataObject));
-                }
-
-                // handle blocks that are arrays
-                if (packetDataObject.GetType().IsArray)
-                {
-                    foreach (object nestedArrayRecord in packetDataObject as Array)
-                    {
-                        foreach (FieldInfo packetArrayField in nestedArrayRecord.GetType().GetFields())
-                        {
-                            if (packetArrayField.GetValue(nestedArrayRecord).GetType() == typeof(System.Byte[]))
-                            {
-                                result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
-                                    packetArrayField.Name,
-                                    new Color4((byte[])packetArrayField.GetValue(nestedArrayRecord), 0, false).ToString());
-                            }
-                            else
-                            {
-                                result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
-                                    packetArrayField.Name, packetArrayField.GetValue(nestedArrayRecord));
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // handle non array data blocks
-                    foreach (PropertyInfo packetPropertyField in packetField.GetValue(packet).GetType().GetProperties())
-                    {
-                        // Handle fields named "Data" specifically, this is generally binary data, we'll display it as hex values
-                        if (packetPropertyField.PropertyType.Equals(typeof(System.Byte[]))
-                            && packetPropertyField.Name.Equals("Data"))
-                        {
-                            result.AppendFormat("{0}" + System.Environment.NewLine,
-                                Utils.BytesToHexString((byte[])packetPropertyField.GetValue(packetDataObject, null),
-                                packetPropertyField.Name));
-                        }
-                        // decode bytes into strings
-                        else if (packetPropertyField.PropertyType.Equals(typeof(System.Byte[])))
-                        {
-                            // Handle TextureEntry fields specifically
-                            if (packetPropertyField.Name.Equals("TextureEntry"))
-                            {
-                                byte[] tebytes = (byte[])packetPropertyField.GetValue(packetDataObject, null);
-
-                                Primitive.TextureEntry te = new Primitive.TextureEntry(tebytes, 0, tebytes.Length);
-                                result.AppendFormat("{0,30}:\n{1}", packetPropertyField.Name, te.ToString());
-                            }
-                            else
-                            {
-                                // Decode the BinaryBucket
-                                if (packetPropertyField.Name.Equals("BinaryBucket"))
-                                {
-                                    byte[] bytes = (byte[])packetPropertyField.GetValue(packetDataObject, null);
-                                    string bbDecoded = String.Empty;
-                                    if (bytes.Length == 1)
-                                    {
-                                        bbDecoded = String.Format("{0}", bytes[0]);
-                                    } 
-                                    else if (bytes.Length == 17)
-                                    {
-                                        bbDecoded = String.Format("{0} {1} ({2})", new UUID(bytes, 1).ToString(), bytes[0], (AssetType)bytes[0]);
-                                    }
-                                    else
-                                    {
-                                        bbDecoded = Utils.BytesToString(bytes);
-                                    }
-
-                                    result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
-                                        packetPropertyField.Name,
-                                        bbDecoded);
-                                }
-                                else
-                                {
-                                    result.AppendFormat("{0,30}: {1}" + System.Environment.NewLine,
-                                        packetPropertyField.Name,
-                                        Utils.BytesToString((byte[])packetPropertyField.GetValue(packetDataObject, null)));
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // this seems to be limited to the length property, since all others have been previously handled
-                            if (packetPropertyField.Name != "Length")
-                            {
-                                result.AppendFormat("{0,30}: {1} [{2}]" + System.Environment.NewLine,
-                                    packetPropertyField.Name, packetPropertyField.GetValue(packetDataObject, null),
-                                    packetPropertyField.GetType());
-                            }
-                        }
-                    }
-                }
-            }
             return result.ToString();
         }
 
@@ -1215,6 +1134,7 @@ namespace WinGridProxy
                     try
                     {
                         pType = packetTypeFromName(name);
+
                         ListViewItem found = listViewPacketFilters.FindItemWithText(name);
                         if (!String.IsNullOrEmpty(name) && found == null)
                         {
@@ -1308,8 +1228,7 @@ namespace WinGridProxy
             else if (tag is Packet)
             {
                 Packet packet = (Packet)tag;
-
-                return PacketToString(packet);
+                return DecodePacket.PacketToString(packet);
             }
             else if (tag is CapsRequest)
             {
@@ -1451,7 +1370,6 @@ namespace WinGridProxy
 
         private void EditToolStripButton_DropDownOpening(object sender, EventArgs e)
         {
-
             if (listViewSessions.Items.Count > 0)
             {
                 toolStripMenuSessionsRemove.Enabled =
@@ -1533,10 +1451,69 @@ namespace WinGridProxy
 
         private void autoColorizeToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
             if (colorDialog1.ShowDialog() == DialogResult.OK)
             {
                 //listview.BackColor = colorDialog1.Color;
+            }
+        }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            FormPluginManager pluginManager = new FormPluginManager(proxy.Proxy);
+            pluginManager.ShowDialog();
+        }
+
+        void Instance_MessageLoggedEvent(object sender, MessageLoggedEventArgs e)
+        {
+            if (this.IsDisposed || this.Disposing)
+                return;
+
+            if (InvokeRequired)
+            {
+                BeginInvoke(new MethodInvoker(delegate()
+                {
+                    Instance_MessageLoggedEvent(sender, e);
+                }));
+            }
+            else
+            {
+                string s = String.Format("{0} [{1}] {2} {3}", e.LoggingEvent.TimeStamp, e.LoggingEvent.Level,
+                    e.LoggingEvent.RenderedMessage, e.LoggingEvent.ExceptionObject);
+                richTextBoxDebugLog.AppendText(s + "\n");
+            }
+        }
+
+        private void richTextBoxDecodedRequest_TextChanged(object sender, EventArgs e)
+        {
+            RichTextBox m_rtb = (RichTextBox)sender;
+            Regex typesRegex = new Regex(@"\[(?<Type>\w+|\w+\[\])\]|\((?<Enum>.*)\)|\s-- (?<Header>\w+|\w+ \[\]) --\s|(?<BlockSep>\s\*\*\*\s)|(?<Tag>\s<\w+>\s|\s<\/\w+>\s)|(?<BlockCounter>\s\w+\[\d+\]\s)", RegexOptions.ExplicitCapture);
+
+            MatchCollection matches = typesRegex.Matches(m_rtb.Text);
+            foreach (Match match in matches)
+            {
+                m_rtb.SelectionStart = match.Index + 1;
+                m_rtb.SelectionLength = match.Length - 2;
+                m_rtb.SelectionFont = new Font(m_rtb.Font.FontFamily, m_rtb.Font.Size, FontStyle.Bold);
+
+                if (!String.IsNullOrEmpty(match.Groups["Type"].Value))
+                    m_rtb.SelectionColor = Color.Blue;
+                else if (!String.IsNullOrEmpty(match.Groups["Enum"].Value))
+                    m_rtb.SelectionColor = Color.FromArgb(43, 145, 175);
+                else if (!String.IsNullOrEmpty(match.Groups["Header"].Value))
+                {
+                    m_rtb.SelectionColor = Color.Green;
+                    m_rtb.SelectionBackColor = Color.LightSteelBlue;
+                }
+                else if (!String.IsNullOrEmpty(match.Groups["BlockSep"].Value))
+                    m_rtb.SelectionColor = Color.Gold;
+                else if (!String.IsNullOrEmpty(match.Groups["Tag"].Value))
+                {
+                    m_rtb.SelectionColor = Color.White;
+                    m_rtb.SelectionBackColor = Color.Black;
+                }
+                else if (!String.IsNullOrEmpty(match.Groups["BlockCounter"].Value))
+                    m_rtb.SelectionColor = Color.Green;
+
             }
         }
     }

@@ -30,11 +30,12 @@ using OpenMetaverse.Packets;
 
 namespace OpenMetaverse
 {
+
     public class SoundManager
     {
         public readonly GridClient Client;
 
-        public delegate void AttachSoundCallback(UUID soundID, UUID ownerID, UUID objectID, float gain, byte flags);
+        public delegate void AttachSoundCallback(UUID soundID, UUID ownerID, UUID objectID, float gain, SoundFlags flags);
         public delegate void AttachedSoundGainChangeCallback(UUID objectID, float gain);
         public delegate void SoundTriggerCallback(UUID soundID, UUID ownerID, UUID objectID, UUID parentID, float gain, ulong regionHandle, Vector3 position);
         public delegate void PreloadSoundCallback(UUID soundID, UUID ownerID, UUID objectID);
@@ -125,7 +126,7 @@ namespace OpenMetaverse
             AttachedSoundPacket sound = (AttachedSoundPacket)packet;
             if (OnAttachSound != null)
             {
-                try { OnAttachSound(sound.DataBlock.SoundID, sound.DataBlock.OwnerID, sound.DataBlock.ObjectID, sound.DataBlock.Gain, sound.DataBlock.Flags); }
+                try { OnAttachSound(sound.DataBlock.SoundID, sound.DataBlock.OwnerID, sound.DataBlock.ObjectID, sound.DataBlock.Gain, (SoundFlags)sound.DataBlock.Flags); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }

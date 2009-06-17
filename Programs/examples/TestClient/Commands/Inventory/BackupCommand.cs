@@ -9,6 +9,7 @@ using System.Xml.Serialization;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 using OpenMetaverse.TestClient;
+using OpenMetaverse.Assets;
 
 namespace OpenMetaverse.TestClient
 {
@@ -118,7 +119,6 @@ namespace OpenMetaverse.TestClient
 
         public override string Execute(string[] args, UUID fromAgentID)
         {
-            StringBuilder sbResult = new StringBuilder();
 
             if (args.Length == 1 && args[0] == "status")
             {
@@ -250,7 +250,6 @@ namespace OpenMetaverse.TestClient
         /// <param name="sPathSoFar">path so far, in the form @"c:\here" -- this needs to be "clean" for the current filesystem</param>
         private void BackupFolder(InventoryNode folder, string sPathSoFar)
         {
-            StringBuilder sbRequests = new StringBuilder();
 
             // FIXME:
             //Client.Inventory.RequestFolderContents(folder.Data.UUID, Client.Self.AgentID, true, true, false, 

@@ -93,29 +93,26 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Holds a simulator reference and an encoded packet, these structs are put in
+        /// Holds a simulator reference and a serialized packet, these structs are put in
         /// the packet outbox for sending
         /// </summary>
         public class OutgoingPacket
         {
             /// <summary>Reference to the simulator this packet is destined for</summary>
-            public Simulator Simulator;
-            /// <summary>Packet that needs to be processed</summary>
-            public Packet Packet;
-            /// <summary>True if the sequence number needs to be set, otherwise false</summary>
-            public bool SetSequence;
+            public readonly Simulator Simulator;
+            /// <summary>Packet that needs to be sent</summary>
+            public readonly UDPPacketBuffer Buffer;
+            /// <summary>Sequence number of the wrapped packet</summary>
+            public uint SequenceNumber;
             /// <summary>Number of times this packet has been resent</summary>
             public int ResendCount;
             /// <summary>Environment.TickCount when this packet was last sent over the wire</summary>
             public int TickCount;
 
-            public OutgoingPacket(Simulator simulator, Packet packet, bool setSequence)
+            public OutgoingPacket(Simulator simulator, UDPPacketBuffer buffer)
             {
                 Simulator = simulator;
-                Packet = packet;
-                SetSequence = setSequence;
-                ResendCount = 0;
-                TickCount = 0;
+                Buffer = buffer;
             }
         }
 
@@ -367,7 +364,7 @@ namespace OpenMetaverse
         public void SendPacket(Packet packet)
         {
             if (CurrentSim != null && CurrentSim.Connected)
-                CurrentSim.SendPacket(packet, true);
+                CurrentSim.SendPacket(packet);
         }
 
         /// <summary>
@@ -378,7 +375,7 @@ namespace OpenMetaverse
         public void SendPacket(Packet packet, Simulator simulator)
         {
             if (simulator != null)
-                simulator.SendPacket(packet, true);
+                simulator.SendPacket(packet);
         }
 
         /// <summary>
@@ -692,8 +689,9 @@ namespace OpenMetaverse
         private void OutgoingPacketHandler()
         {
             OutgoingPacket outgoingPacket = null;
-            Simulator simulator = null;
-            Packet packet = null;
+            Simulator simulator;
+            
+            // FIXME: This is kind of ridiculous. Port the HTB code from Simian over ASAP!
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
 
             while (connected)
@@ -701,8 +699,7 @@ namespace OpenMetaverse
                 if (PacketOutbox.Dequeue(100, ref outgoingPacket))
                 {
                     simulator = outgoingPacket.Simulator;
-                    packet = outgoingPacket.Packet;
-
+                    
                     // Very primitive rate limiting, keeps a fixed buffer of time between each packet
                     stopwatch.Stop();
                     if (stopwatch.ElapsedMilliseconds < 10)
@@ -711,7 +708,7 @@ namespace OpenMetaverse
                         Thread.Sleep(10 - (int)stopwatch.ElapsedMilliseconds);
                     }
 
-                    simulator.SendPacketUnqueued(outgoingPacket);
+                    simulator.SendPacketFinal(outgoingPacket);
                     stopwatch.Start();
                 }
             }
@@ -741,72 +738,6 @@ namespace OpenMetaverse
                             Logger.Log(String.Format("Discarding Blacklisted packet {0} from {1}", 
                                 packet.Type, simulator.IPEndPoint), Helpers.LogLevel.Warning);
                             return;
-                        }
-
-                        // Skip the ACK handling on packets synthesized from CAPS messages
-                        if (packet.Header.Sequence != 0)
-                        {
-                            #region ACK accounting
-                            // TODO: Replace PacketArchive Queue<> with something more efficient
-
-                            // Check the archives to see whether we already received this packet
-                            lock (simulator.PacketArchive)
-                            {
-                                if (simulator.PacketArchive.Contains(packet.Header.Sequence))
-                                {
-                                    if (packet.Header.Resent)
-                                    {
-                                        Logger.DebugLog("Received resent packet #" + packet.Header.Sequence, Client);
-                                    }
-                                    else
-                                    {
-                                        Logger.Log(String.Format("Received a duplicate of packet #{0}, current type: {1}",
-                                            packet.Header.Sequence, packet.Type), Helpers.LogLevel.Warning, Client);
-                                    }
-
-                                    // Avoid firing a callback twice for the same packet
-                                    continue;
-                                }
-                                else
-                                {
-                                    // Keep the PacketArchive size within a certain capacity
-                                    while (simulator.PacketArchive.Count >= Settings.PACKET_ARCHIVE_SIZE)
-                                    {
-                                        simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
-                                        simulator.PacketArchive.Dequeue(); simulator.PacketArchive.Dequeue();
-                                    }
-
-                                    simulator.PacketArchive.Enqueue(packet.Header.Sequence);
-                                }
-                            }
-
-                            #endregion ACK accounting
-
-                            #region ACK handling
-
-                            // Handle appended ACKs
-                            if (packet.Header.AppendedAcks)
-                            {
-                                lock (simulator.NeedAck)
-                                {
-                                    for (int i = 0; i < packet.Header.AckList.Length; i++)
-                                        simulator.NeedAck.Remove(packet.Header.AckList[i]);
-                                }
-                            }
-
-                            // Handle PacketAck packets
-                            if (packet.Type == PacketType.PacketAck)
-                            {
-                                PacketAckPacket ackPacket = (PacketAckPacket)packet;
-
-                                lock (simulator.NeedAck)
-                                {
-                                    for (int i = 0; i < ackPacket.Packets.Length; i++)
-                                        simulator.NeedAck.Remove(ackPacket.Packets[i].ID);
-                                }
-                            }
-
-                            #endregion ACK handling
                         }
 
                         #region Fire callbacks
@@ -1095,6 +1026,15 @@ namespace OpenMetaverse
             simulator.Flags = (RegionFlags)handshake.RegionInfo.RegionFlags;
             simulator.BillableFactor = handshake.RegionInfo.BillableFactor;
             simulator.Access = (SimAccess)handshake.RegionInfo.SimAccess;
+
+
+            simulator.RegionID = handshake.RegionInfo2.RegionID;
+            simulator.ColoLocation = Utils.BytesToString(handshake.RegionInfo3.ColoName);
+            simulator.CPUClass = handshake.RegionInfo3.CPUClassID;
+            simulator.CPURatio = handshake.RegionInfo3.CPURatio;
+            simulator.ProductName = Utils.BytesToString(handshake.RegionInfo3.ProductName);
+            simulator.ProductSku = Utils.BytesToString(handshake.RegionInfo3.ProductSKU);
+            
 
             Logger.Log("Received a region handshake for " + simulator.ToString(), Helpers.LogLevel.Info, Client);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, openmetaverse.org
+ * Copyright (c) 2007-2009, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -39,7 +39,7 @@ namespace OpenMetaverse.GUI
     public class FriendList : ListView
     {
         private GridClient _Client;
-        private ColumnSorter _ColumnSorter = new ColumnSorter();
+        private ListColumnSorter _ColumnSorter = new ListColumnSorter();
 
         public delegate void FriendDoubleClickCallback(FriendInfo friend);
 
@@ -182,31 +182,6 @@ namespace OpenMetaverse.GUI
         private void Network_OnLogin(LoginStatus login, string message)
         {
             if (login == LoginStatus.Success) RefreshFriends();
-        }
-
-        private class ColumnSorter : IComparer
-        {
-            public bool Ascending = true;
-            public int SortColumn = 0;
-
-            public int Compare(object a, object b)
-            {
-                ListViewItem itemA = (ListViewItem)a;
-                ListViewItem itemB = (ListViewItem)b;
-
-                if (SortColumn == 1)
-                {
-                    string onlineA = itemA.SubItems.Count < 2 ? string.Empty : itemA.SubItems[1].Text;
-                    string onlineB = itemB.SubItems.Count < 2 ? string.Empty : itemB.SubItems[1].Text;
-                    if (Ascending) return string.Compare(onlineA + itemA.Text, onlineB + itemB.Text);
-                    else return -string.Compare(onlineA + itemA.Text, onlineB + itemB.Text);
-                }
-                else
-                {
-                    if (Ascending) return string.Compare(itemA.Text, itemB.Text);
-                    else return -string.Compare(itemA.Text, itemB.Text);
-                }
-            }
         }
 
     }

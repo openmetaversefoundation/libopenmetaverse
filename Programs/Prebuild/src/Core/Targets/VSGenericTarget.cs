@@ -249,6 +249,10 @@ namespace Prebuild.Core.Targets
 
 				foreach (ConfigurationNode conf in project.Configurations)
 				{
+                    string compilerDefines = conf.Options["CompilerDefines"].ToString();
+                    if (compilerDefines != String.Empty) compilerDefines += ";";
+                    compilerDefines += "VISUAL_STUDIO";
+
 					ps.Write("  <PropertyGroup ");
 					ps.WriteLine("Condition=\" '$(Configuration)|$(Platform)' == '{0}|AnyCPU' \">", conf.Name);
 					ps.WriteLine("    <AllowUnsafeBlocks>{0}</AllowUnsafeBlocks>", conf.Options["AllowUnsafe"]);
@@ -256,7 +260,7 @@ namespace Prebuild.Core.Targets
 					ps.WriteLine("    <CheckForOverflowUnderflow>{0}</CheckForOverflowUnderflow>", conf.Options["CheckUnderflowOverflow"]);
 					ps.WriteLine("    <ConfigurationOverrideFile>");
 					ps.WriteLine("    </ConfigurationOverrideFile>");
-					ps.WriteLine("    <DefineConstants>{0}</DefineConstants>", conf.Options["CompilerDefines"]);
+					ps.WriteLine("    <DefineConstants>{0}</DefineConstants>", compilerDefines);
 					ps.WriteLine("    <DocumentationFile>{0}</DocumentationFile>", Helper.NormalizePath(conf.Options["XmlDocFile"].ToString()));
 					ps.WriteLine("    <DebugSymbols>{0}</DebugSymbols>", conf.Options["DebugInformation"]);
 					ps.WriteLine("    <FileAlignment>{0}</FileAlignment>", conf.Options["FileAlignment"]);

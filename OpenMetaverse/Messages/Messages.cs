@@ -64,18 +64,18 @@ namespace OpenMetaverse.Messages
             return new Dictionary<string, string>(0);
         }
 
-        public static Dictionary<string, Uri> ToDictionaryUri(OSD osd)
+        public static Dictionary<Uri, Uri> ToDictionaryUri(OSD osd)
         {
             if (osd.Type == OSDType.Map)
             {
                 OSDMap map = (OSDMap)osd;
-                Dictionary<string, Uri> dict = new Dictionary<string, Uri>(map.Count);
+                Dictionary<Uri, Uri> dict = new Dictionary<Uri, Uri>(map.Count);
                 foreach (KeyValuePair<string, OSD> entry in map)
-                    dict.Add(entry.Key, entry.Value.AsUri());
+                    dict.Add(new Uri(entry.Key), entry.Value.AsUri());
                 return dict;
             }
 
-            return new Dictionary<string, Uri>(0);
+            return new Dictionary<Uri, Uri>(0);
         }
 
         public static OSDMap FromDictionaryString(Dictionary<string, string> dict)
@@ -91,13 +91,13 @@ namespace OpenMetaverse.Messages
             return new OSDMap(0);
         }
 
-        public static OSDMap FromDictionaryUri(Dictionary<string, Uri> dict)
+        public static OSDMap FromDictionaryUri(Dictionary<Uri, Uri> dict)
         {
             if (dict != null)
             {
                 OSDMap map = new OSDMap(dict.Count);
-                foreach (KeyValuePair<string, Uri> entry in dict)
-                    map.Add(entry.Key, OSD.FromUri(entry.Value));
+                foreach (KeyValuePair<Uri, Uri> entry in dict)
+                    map.Add(entry.Key.ToString(), OSD.FromUri(entry.Value));
                 return map;
             }
 

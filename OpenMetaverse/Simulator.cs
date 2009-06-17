@@ -137,13 +137,13 @@ namespace OpenMetaverse
         public struct SimStats
         {
             /// <summary>Total number of packets sent by this simulator to this agent</summary>
-            public ulong SentPackets;
+            public long SentPackets;
             /// <summary>Total number of packets received by this simulator to this agent</summary>
-            public ulong RecvPackets;
+            public long RecvPackets;
             /// <summary>Total number of bytes sent by this simulator to this agent</summary>
-            public ulong SentBytes;
+            public long SentBytes;
             /// <summary>Total number of bytes received by this simulator to this agent</summary>
-            public ulong RecvBytes;
+            public long RecvBytes;
             /// <summary>Time in seconds agent has been connected to simulator</summary>
             public int ConnectTime;
             /// <summary>Total number of packets that have been resent</summary>
@@ -298,7 +298,47 @@ namespace OpenMetaverse
         /// connection to the simulator, calculated by the simulator itself
         /// and the library</summary>
         public SimStats Stats;
-
+        /// <summary>The regions Unique ID</summary>
+        public UUID RegionID = UUID.Zero;
+        /// <summary>The physical data center the simulator is located</summary>
+        /// <remarks>Known values are:
+        /// <list type="table">
+        /// <item>Dallas</item>
+        /// <item>Chandler</item>
+        /// <item>SF</item>
+        /// </list>
+        /// </remarks>
+        public string ColoLocation;
+        /// <summary>The CPU Class of the simulator</summary>
+        /// <remarks>Most full mainland/estate sims appear to be 5,
+        /// Homesteads and Openspace appear to be 501</remarks>
+        public int CPUClass;
+        /// <summary>The number of regions sharing the same CPU as this one</summary>
+        /// <remarks>"Full Sims" appear to be 1, Homesteads appear to be 4</remarks>
+        public int CPURatio;
+        /// <summary>The billing product name</summary>
+        /// <remarks>Known values are:
+        /// <list type="table">
+        /// <item>Mainland / Full Region (Sku: 023)</item>
+        /// <item>Estate / Full Region (Sku: 024)</item>
+        /// <item>Estate / Openspace (Sku: 027)</item>
+        /// <item>Estate / Homestead (Sku: 029)</item>
+        /// <item>Mainland / Homestead (Sku: 129) (Linden Owned)</item>
+        /// </list>
+        /// </remarks>
+        public string ProductName;
+        /// <summary>The billing product SKU</summary>
+        /// <remarks>Known values are:
+        /// <list type="table">
+        /// <item>023 Mainland / Full Region</item>
+        /// <item>024 Estate / Full Region</item>
+        /// <item>027 Estate / Openspace</item>
+        /// <item>029 Estate / Homestead</item>
+        /// <item>129 Mainland / Homestead (Linden Owned)</item>
+        /// </list>
+        /// </remarks>
+        public string ProductSku;
+            
         /// <summary>Provides access to two thread-safe dictionaries containing
         /// avatars and primitives found in this simulator</summary>
         //public ObjectTracker Objects = new ObjectTracker();
@@ -384,16 +424,17 @@ namespace OpenMetaverse
         internal UUID preyID = UUID.Zero;
         /// <summary>Sequence numbers of packets we've received
         /// (for duplicate checking)</summary>
-        internal Queue<uint> PacketArchive;
+        internal IncomingPacketIDCollection PacketArchive;
         /// <summary>Packets we sent out that need ACKs from the simulator</summary>
         internal SortedDictionary<uint, NetworkManager.OutgoingPacket> NeedAck = new SortedDictionary<uint, NetworkManager.OutgoingPacket>();
         /// <summary>Sequence number for pause/resume</summary>
         internal int pauseSerial;
 
         private NetworkManager Network;
-        private Queue<ulong> InBytes, OutBytes;
+        private Queue<long> InBytes, OutBytes;
         // ACKs that are queued up to be sent to the simulator
-        private SortedList<uint, uint> PendingAcks = new SortedList<uint, uint>();
+        private LocklessQueue<uint> PendingAcks = new LocklessQueue<uint>();
+        private int PendingAckCount = 0;
         private Timer AckTimer;
         private Timer PingTimer;
         private Timer StatsTimer;
@@ -417,9 +458,9 @@ namespace OpenMetaverse
             Handle = handle;
             Estate = new EstateTools(Client);
             Network = Client.Network;
-            PacketArchive = new Queue<uint>(Settings.PACKET_ARCHIVE_SIZE);
-            InBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
-            OutBytes = new Queue<ulong>(Client.Settings.STATS_QUEUE_SIZE);
+            PacketArchive = new IncomingPacketIDCollection(Settings.PACKET_ARCHIVE_SIZE);
+            InBytes = new Queue<long>(Client.Settings.STATS_QUEUE_SIZE);
+            OutBytes = new Queue<long>(Client.Settings.STATS_QUEUE_SIZE);
         }
 
         /// <summary>
@@ -450,17 +491,16 @@ namespace OpenMetaverse
 
             #region Start Timers
 
-            // Destroy the timers
-            if (AckTimer != null) AckTimer.Dispose();
-            if (StatsTimer != null) StatsTimer.Dispose();
-            if (PingTimer != null) PingTimer.Dispose();
-
             // Timer for sending out queued packet acknowledgements
-            AckTimer = new Timer(AckTimer_Elapsed, null, Settings.NETWORK_TICK_INTERVAL, Settings.NETWORK_TICK_INTERVAL);
+            if (AckTimer == null)
+                AckTimer = new Timer(AckTimer_Elapsed, null, Settings.NETWORK_TICK_INTERVAL, Timeout.Infinite);
+
             // Timer for recording simulator connection statistics
-            StatsTimer = new Timer(StatsTimer_Elapsed, null, 1000, 1000);
+            if (StatsTimer == null)
+                StatsTimer = new Timer(StatsTimer_Elapsed, null, 1000, 1000);
+
             // Timer for periodically pinging the simulator
-            if (Client.Settings.SEND_PINGS)
+            if (PingTimer == null && Client.Settings.SEND_PINGS)
                 PingTimer = new Timer(PingTimer_Elapsed, null, Settings.PING_INTERVAL, Settings.PING_INTERVAL);
 
             #endregion Start Timers
@@ -482,7 +522,7 @@ namespace OpenMetaverse
                 use.CircuitCode.SessionID = Client.Self.SessionID;
 
                 // Send the initial packet out
-                SendPacket(use, true);
+                SendPacket(use);
 
                 Stats.ConnectTime = Environment.TickCount;
 
@@ -594,180 +634,141 @@ namespace OpenMetaverse
             Client.Network.SendPacket(resume, this);
         }
 
-        /// <summary>
-        /// Sends a packet
-        /// </summary>
-        /// <param name="packet">Packet to be sent</param>
-        /// <param name="setSequence">True to set the sequence number, false to
-        /// leave it as is</param>
-        public void SendPacket(Packet packet, bool setSequence)
-        {
-            SendPacket(new NetworkManager.OutgoingPacket(this, packet, setSequence));
-        }
+        #region Packet Sending
 
         /// <summary>
         /// Sends a packet
         /// </summary>
-        /// <param name="outgoingPacket">Packet to be sent</param>
-        public void SendPacket(NetworkManager.OutgoingPacket outgoingPacket)
+        /// <param name="packet">Packet to be sent</param>
+        public void SendPacket(Packet packet)
         {
-            // Send ACK and logout packets directly, everything else goes through the queue
-            if (outgoingPacket.Packet.Type == PacketType.PacketAck ||
-                outgoingPacket.Packet.Header.AppendedAcks ||
-                Client.Settings.THROTTLE_OUTGOING_PACKETS == false ||
-                outgoingPacket.Packet.Type == PacketType.LogoutRequest)
+            // DEBUG: This can go away after we are sure nothing in the library is trying to do this
+            if (packet.Header.AppendedAcks || (packet.Header.AckList != null && packet.Header.AckList.Length > 0))
+                Logger.Log("Attempting to send packet " + packet.Type + " with ACKs appended before serialization", Helpers.LogLevel.Error);
+
+            if (packet.HasVariableBlocks)
             {
-                SendPacketUnqueued(outgoingPacket);
+                byte[][] datas;
+                try { datas = packet.ToBytesMultiple(); }
+                catch (NullReferenceException)
+                {
+                    Logger.Log("Failed to serialize " + packet.Type + " packet to one or more payloads due to a missing block or field. StackTrace: " +
+                        Environment.StackTrace, Helpers.LogLevel.Error);
+                    return;
+                }
+                int packetCount = datas.Length;
+
+                if (packetCount > 1)
+                    Logger.DebugLog("Split " + packet.Type + " packet into " + packetCount + " packets");
+
+                for (int i = 0; i < packetCount; i++)
+                {
+                    byte[] data = datas[i];
+                    SendPacketData(data, data.Length, packet.Type, packet.Header.Zerocoded);
+                }
+            }
+            else
+            {
+                byte[] data = packet.ToBytes();
+                SendPacketData(data, data.Length, packet.Type, packet.Header.Zerocoded);
+            }
+        }
+
+        public void SendPacketData(byte[] data, int dataLength, PacketType type, bool doZerocode)
+        {
+            UDPPacketBuffer buffer = new UDPPacketBuffer(remoteEndPoint, Packet.MTU);
+
+            // Zerocode if needed
+            if (doZerocode)
+            {
+                try { dataLength = Helpers.ZeroEncode(data, dataLength, buffer.Data); }
+                catch (IndexOutOfRangeException)
+                {
+                    // The packet grew larger than Packet.MTU bytes while zerocoding.
+                    // Remove the MSG_ZEROCODED flag and send the unencoded data
+                    // instead
+                    data[0] = (byte)(data[0] & ~Helpers.MSG_ZEROCODED);
+                    Buffer.BlockCopy(data, 0, buffer.Data, 0, dataLength);
+                }
+            }
+            else
+            {
+                Buffer.BlockCopy(data, 0, buffer.Data, 0, dataLength);
+            }
+            buffer.DataLength = dataLength;
+
+            #region Queue or Send
+
+            NetworkManager.OutgoingPacket outgoingPacket = new NetworkManager.OutgoingPacket(this, buffer);
+
+            // Send ACK and logout packets directly, everything else goes through the queue
+            if (Client.Settings.THROTTLE_OUTGOING_PACKETS == false ||
+                type == PacketType.PacketAck ||
+                type == PacketType.LogoutRequest)
+            {
+                SendPacketFinal(outgoingPacket);
             }
             else
             {
                 Network.PacketOutbox.Enqueue(outgoingPacket);
             }
+
+            #endregion Queue or Send
         }
 
-        /// <summary>
-        /// Sends a packet directly to the simulator without queuing
-        /// </summary>
-        /// <param name="outgoingPacket">Packet to be sent</param>
-        public void SendPacketUnqueued(NetworkManager.OutgoingPacket outgoingPacket)
+        internal void SendPacketFinal(NetworkManager.OutgoingPacket outgoingPacket)
         {
-            Packet packet = outgoingPacket.Packet;
-            byte[] buffer;
-            int bytes;
+            UDPPacketBuffer buffer = outgoingPacket.Buffer;
+            byte flags = buffer.Data[0];
+            bool isResend = (flags & Helpers.MSG_RESENT) != 0;
+            bool isReliable = (flags & Helpers.MSG_RELIABLE) != 0;
 
-            // Set sequence implies that this is not a resent packet
-            if (outgoingPacket.SetSequence)
+            // Keep track of when this packet was sent out (right now)
+            outgoingPacket.TickCount = Environment.TickCount;
+
+            #region ACK Appending
+
+            int dataLength = buffer.DataLength;
+
+            // Keep appending ACKs until there is no room left in the packet or there are
+            // no more ACKs to append
+            uint ackCount = 0;
+            uint ack;
+            while (dataLength + 5 < Packet.MTU && PendingAcks.Dequeue(out ack))
             {
-                // Reset to zero if we've hit the upper sequence number limit
-                Interlocked.CompareExchange(ref Sequence, 0, Settings.MAX_SEQUENCE);
-                // Increment and fetch the current sequence number
-                packet.Header.Sequence = (uint)Interlocked.Increment(ref Sequence);
+                Utils.UIntToBytesBig(ack, buffer.Data, dataLength);
+                dataLength += 4;
+                ++ackCount;
+            }
 
-                if (packet.Header.Reliable)
+            if (ackCount > 0)
+            {
+                // Set the last byte of the packet equal to the number of appended ACKs
+                buffer.Data[dataLength++] = (byte)ackCount;
+                // Set the appended ACKs flag on this packet
+                buffer.Data[0] = (byte)(buffer.Data[0] | Helpers.MSG_APPENDED_ACKS);
+            }
+
+            buffer.DataLength = dataLength;
+
+            #endregion ACK Appending
+
+            if (!isResend)
+            {
+                // Not a resend, assign a new sequence number
+                uint sequenceNumber = (uint)Interlocked.Increment(ref Sequence);
+                Utils.UIntToBytesBig(sequenceNumber, buffer.Data, 1);
+                outgoingPacket.SequenceNumber = sequenceNumber;
+
+                if (isReliable)
                 {
-                    // Keep track of when this packet was sent out (right now)
-                    outgoingPacket.TickCount = Environment.TickCount;
-
                     // Add this packet to the list of ACK responses we are waiting on from the server
-                    lock (NeedAck) NeedAck[packet.Header.Sequence] = outgoingPacket;
-
-                    if (!packet.Header.Resent)
-                    {
-                        // This packet is not a resend, check if the conditions are favorable
-                        // to ACK appending
-                        if (packet.Type != PacketType.PacketAck &&
-                            packet.Type != PacketType.LogoutRequest)
-                        {
-                            lock (PendingAcks)
-                            {
-                                if (PendingAcks.Count > 0 &&
-                                    PendingAcks.Count < Client.Settings.MAX_APPENDED_ACKS)
-                                {
-                                    // Append all of the queued up outgoing ACKs to this packet
-                                    packet.Header.AckList = new uint[PendingAcks.Count];
-
-                                    for (int i = 0; i < PendingAcks.Count; i++)
-                                        packet.Header.AckList[i] = PendingAcks.Values[i];
-
-                                    PendingAcks.Clear();
-                                    packet.Header.AppendedAcks = true;
-                                }
-                            }
-                        }
-                    }
-                }
-                else if (packet.Header.AckList.Length > 0)
-                {
-                    // Sanity check for ACKS appended on an unreliable packet, this is bad form
-                    Logger.Log("Sending appended ACKs on an unreliable packet", Helpers.LogLevel.Warning);
+                    lock (NeedAck) NeedAck[sequenceNumber] = outgoingPacket;
                 }
             }
 
-            if (packet.Header.Resent)
-            {
-                // This packet has already been sent out once, strip any appended ACKs
-                // off it and reinsert them into the outgoing ACK queue under the 
-                // assumption that this packet will continually be rejected from the
-                // server or that the appended ACKs are possibly making the delivery fail
-                if (packet.Header.AckList.Length > 0)
-                {
-                    Logger.DebugLog(String.Format("Purging ACKs from packet #{0} ({1}) which will be resent.",
-                        packet.Header.Sequence, packet.GetType()));
-
-                    lock (PendingAcks)
-                    {
-                        foreach (uint sequence in packet.Header.AckList)
-                        {
-                            if (!PendingAcks.ContainsKey(sequence))
-                                PendingAcks[sequence] = sequence;
-                        }
-                    }
-
-                    packet.Header.AppendedAcks = false;
-                    packet.Header.AckList = new uint[0];
-                }
-            }
-
-            // Serialize the packet
-            buffer = packet.ToBytes();
-            bytes = buffer.Length;
-            Stats.SentBytes += (ulong)bytes;
-            ++Stats.SentPackets;
-
-            UDPPacketBuffer buf = new UDPPacketBuffer(remoteEndPoint);
-
-            // Zerocode if needed
-            if (packet.Header.Zerocoded)
-                bytes = Helpers.ZeroEncode(buffer, bytes, buf.Data);
-            else
-                Buffer.BlockCopy(buffer, 0, buf.Data, 0, bytes);
-
-            buf.DataLength = bytes;
-
-            AsyncBeginSend(buf);
-        }
-
-        /// <summary>
-        /// Send a raw byte array payload as a packet
-        /// </summary>
-        /// <param name="payload">The packet payload</param>
-        /// <param name="setSequence">Whether the second, third, and fourth bytes
-        /// should be modified to the current stream sequence number</param>
-        public void SendPacketUnqueued(byte[] payload, bool setSequence)
-        {
-            try
-            {
-                if (setSequence && payload.Length > 3)
-                {
-                    uint sequence = (uint)Interlocked.Increment(ref Sequence);
-
-                    payload[1] = (byte)(sequence >> 16);
-                    payload[2] = (byte)(sequence >> 8);
-                    payload[3] = (byte)(sequence % 256);
-                }
-
-                Stats.SentBytes += (ulong)payload.Length;
-                ++Stats.SentPackets;
-
-                UDPPacketBuffer buf = new UDPPacketBuffer(remoteEndPoint);
-                Buffer.BlockCopy(payload, 0, buf.Data, 0, payload.Length);
-                buf.DataLength = payload.Length;
-
-                AsyncBeginSend(buf);
-            }
-            catch (SocketException)
-            {
-                Logger.Log("Tried to send a " + payload.Length +
-                    " byte payload on a closed socket, shutting down " + this.ToString(),
-                    Helpers.LogLevel.Info, Client);
-
-                Network.DisconnectSim(this, false);
-                return;
-            }
-            catch (Exception e)
-            {
-                Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e);
-            }
+            // Put the UDP payload on the wire
+            AsyncBeginSend(buffer);
         }
 
         /// <summary>
@@ -795,9 +796,11 @@ namespace OpenMetaverse
             ping.PingID.PingID = Stats.LastPingID++;
             ping.PingID.OldestUnacked = oldestUnacked;
             ping.Header.Reliable = false;
-            SendPacket(ping, true);
+            SendPacket(ping);
             Stats.LastPingSent = Environment.TickCount;
         }
+
+        #endregion Packet Sending
 
         /// <summary>
         /// Returns Simulator Name as a String
@@ -876,7 +879,9 @@ namespace OpenMetaverse
 
             try
             {
-                packet = Packet.BuildPacket(buffer.Data, ref packetEnd, buffer.ZeroData);
+                packet = Packet.BuildPacket(buffer.Data, ref packetEnd,
+                    // Only allocate a buffer for zerodecoding if the packet is zerocoded
+                    ((buffer.Data[0] & Helpers.MSG_ZEROCODED) != 0) ? new byte[8192] : null);
             }
             catch (MalformedDataException)
             {
@@ -891,30 +896,65 @@ namespace OpenMetaverse
                 return;
             }
 
-            Stats.RecvBytes += (ulong)buffer.DataLength;
-            ++Stats.RecvPackets;
+            Interlocked.Add(ref Stats.RecvBytes, buffer.DataLength);
+            Interlocked.Increment(ref Stats.RecvPackets);
 
             #endregion Packet Decoding
 
-            #region Reliable Handling
+            if (packet.Header.Resent)
+                Interlocked.Increment(ref Stats.ReceivedResends);
 
-            if (packet.Header.Reliable)
+            #region ACK Receiving
+
+            // Handle appended ACKs
+            if (packet.Header.AppendedAcks && packet.Header.AckList != null)
             {
-                // Add this packet to the list of ACKs that need to be sent out
-                lock (PendingAcks)
+                lock (NeedAck)
                 {
-                    uint sequence = (uint)packet.Header.Sequence;
-                    if (!PendingAcks.ContainsKey(sequence)) PendingAcks[sequence] = sequence;
+                    for (int i = 0; i < packet.Header.AckList.Length; i++)
+                        NeedAck.Remove(packet.Header.AckList[i]);
                 }
-
-                // Send out ACKs if we have a lot of them
-                if (PendingAcks.Count >= Client.Settings.MAX_PENDING_ACKS)
-                    SendAcks();
-
-                if (packet.Header.Resent) ++Stats.ReceivedResends;
             }
 
-            #endregion Reliable Handling
+            // Handle PacketAck packets
+            if (packet.Type == PacketType.PacketAck)
+            {
+                PacketAckPacket ackPacket = (PacketAckPacket)packet;
+
+                lock (NeedAck)
+                {
+                    for (int i = 0; i < ackPacket.Packets.Length; i++)
+                        NeedAck.Remove(ackPacket.Packets[i].ID);
+                }
+            }
+
+            #endregion ACK Receiving
+
+            #region ACK Sending
+
+            // Add this packet to the list of ACKs that need to be sent out
+            uint sequence = (uint)packet.Header.Sequence;
+            PendingAcks.Enqueue(sequence);
+            int pendingAckCount = Interlocked.Increment(ref PendingAckCount);
+
+            // Send out ACKs if we have a lot of them
+            if (pendingAckCount >= Client.Settings.MAX_PENDING_ACKS)
+                SendAcks();
+
+            #endregion ACK Sending
+
+            // Check the archive of received packet IDs to see whether we already received this packet
+            if (packet.Header.Reliable && !PacketArchive.TryEnqueue(packet.Header.Sequence))
+            {
+                if (packet.Header.Resent)
+                    Logger.DebugLog("Received a resend of already processed packet #" + packet.Header.Sequence + ", type: " + packet.Type);
+                else
+                    Logger.Log("Received a duplicate (not marked as resend) of packet #" + packet.Header.Sequence + ", type: " + packet.Type,
+                        Helpers.LogLevel.Warning);
+
+                // Avoid firing a callback twice for the same packet
+                return;
+            }
 
             #region Inbox Insertion
 
@@ -922,7 +962,6 @@ namespace OpenMetaverse
             incomingPacket.Simulator = this;
             incomingPacket.Packet = packet;
 
-            // TODO: Prioritize the queue
             Network.PacketInbox.Enqueue(incomingPacket);
 
             #endregion Inbox Insertion
@@ -930,6 +969,10 @@ namespace OpenMetaverse
 
         protected override void PacketSent(UDPPacketBuffer buffer, int bytesSent)
         {
+            // Stats tracking
+            Interlocked.Add(ref Stats.SentBytes, bytesSent);
+            Interlocked.Increment(ref Stats.SentPackets);
+
             Client.Network.PacketSent(buffer.Data, bytesSent, this);
         }
 
@@ -938,30 +981,31 @@ namespace OpenMetaverse
         /// </summary>
         private void SendAcks()
         {
-            lock (PendingAcks)
+            uint ack;
+
+            if (PendingAcks.Dequeue(out ack))
             {
-                if (PendingAcks.Count > 0)
+                Interlocked.Decrement(ref PendingAckCount);
+
+                List<PacketAckPacket.PacketsBlock> blocks = new List<PacketAckPacket.PacketsBlock>();
+                PacketAckPacket.PacketsBlock block = new PacketAckPacket.PacketsBlock();
+                block.ID = ack;
+                blocks.Add(block);
+
+                while (PendingAcks.Dequeue(out ack))
                 {
-                    if (PendingAcks.Count > 250)
-                    {
-                        Logger.Log("Too many ACKs queued up!", Helpers.LogLevel.Error, Client);
-                        return;
-                    }
+                    Interlocked.Decrement(ref PendingAckCount);
 
-                    PacketAckPacket acks = new PacketAckPacket();
-                    acks.Header.Reliable = false;
-                    acks.Packets = new PacketAckPacket.PacketsBlock[PendingAcks.Count];
-
-                    for (int i = 0; i < PendingAcks.Count; i++)
-                    {
-                        acks.Packets[i] = new PacketAckPacket.PacketsBlock();
-                        acks.Packets[i].ID = PendingAcks.Values[i];
-                    }
-
-                    SendPacket(acks, true);
-
-                    PendingAcks.Clear();
+                    block = new PacketAckPacket.PacketsBlock();
+                    block.ID = ack;
+                    blocks.Add(block);
                 }
+
+                PacketAckPacket packet = new PacketAckPacket();
+                packet.Header.Reliable = false;
+                packet.Packets = blocks.ToArray();
+
+                SendPacket(packet);
             }
         }
 
@@ -992,30 +1036,31 @@ namespace OpenMetaverse
                     {
                         if (outgoing.ResendCount < Client.Settings.MAX_RESEND_COUNT)
                         {
-                            if (Client.Settings.LOG_RESENDS)
-                            {
-                                Logger.DebugLog(String.Format("Resending packet #{0} ({1}), {2}ms have passed",
-                                    outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(),
-                                    now - outgoing.TickCount), Client);
-                            }
-
                             // The TickCount will be set to the current time when the packet
                             // is actually sent out again
                             outgoing.TickCount = 0;
-                            outgoing.SetSequence = false;
-                            outgoing.Packet.Header.Resent = true;
-                            ++outgoing.ResendCount;
 
-                            ++Stats.ResentPackets;
+                            // Set the resent flag
+                            outgoing.Buffer.Data[0] = (byte)(outgoing.Buffer.Data[0] | Helpers.MSG_RESENT);
 
-                            SendPacket(outgoing);
+                            // Stats tracking
+                            Interlocked.Increment(ref outgoing.ResendCount);
+                            Interlocked.Increment(ref Stats.ResentPackets);
+
+                            if (Client.Settings.LOG_RESENDS)
+                            {
+                                Logger.DebugLog(String.Format("Resending packet #{0}, {1}ms have passed",
+                                    outgoing.SequenceNumber, now - outgoing.TickCount), Client);
+                            }
+
+                            SendPacketFinal(outgoing);
                         }
                         else
                         {
-                            Logger.DebugLog(String.Format("Dropping packet #{0} ({1}) after {2} failed attempts",
-                                outgoing.Packet.Header.Sequence, outgoing.Packet.GetType(), outgoing.ResendCount));
+                            Logger.DebugLog(String.Format("Dropping packet #{0} after {1} failed attempts",
+                                outgoing.SequenceNumber, outgoing.ResendCount));
 
-                            lock (NeedAck) NeedAck.Remove(outgoing.Packet.Header.Sequence);
+                            lock (NeedAck) NeedAck.Remove(outgoing.SequenceNumber);
                         }
                     }
                 }
@@ -1026,24 +1071,29 @@ namespace OpenMetaverse
         {
             SendAcks();
             ResendUnacked();
+
+            // Start the ACK handling functions again after NETWORK_TICK_INTERVAL milliseconds
+            AckTimer.Change(Settings.NETWORK_TICK_INTERVAL, Timeout.Infinite);
         }
 
         private void StatsTimer_Elapsed(object obj)
         {
-            ulong old_in = 0, old_out = 0;
+            long old_in = 0, old_out = 0;
+            long recv = Stats.RecvBytes;
+            long sent = Stats.SentBytes;
 
             if (InBytes.Count >= Client.Settings.STATS_QUEUE_SIZE)
                 old_in = InBytes.Dequeue();
             if (OutBytes.Count >= Client.Settings.STATS_QUEUE_SIZE)
                 old_out = OutBytes.Dequeue();
 
-            InBytes.Enqueue(Stats.RecvBytes);
-            OutBytes.Enqueue(Stats.SentBytes);
+            InBytes.Enqueue(recv);
+            OutBytes.Enqueue(sent);
 
             if (old_in > 0 && old_out > 0)
             {
-                Stats.IncomingBPS = (int)(Stats.RecvBytes - old_in) / Client.Settings.STATS_QUEUE_SIZE;
-                Stats.OutgoingBPS = (int)(Stats.SentBytes - old_out) / Client.Settings.STATS_QUEUE_SIZE;
+                Stats.IncomingBPS = (int)(recv - old_in) / Client.Settings.STATS_QUEUE_SIZE;
+                Stats.OutgoingBPS = (int)(sent - old_out) / Client.Settings.STATS_QUEUE_SIZE;
                 //Client.Log("Incoming: " + IncomingBPS + " Out: " + OutgoingBPS +
                 //    " Lag: " + LastLag + " Pings: " + ReceivedPongs +
                 //    "/" + SentPings, Helpers.LogLevel.Debug); 
@@ -1053,7 +1103,44 @@ namespace OpenMetaverse
         private void PingTimer_Elapsed(object obj)
         {
             SendPing();
-            Stats.SentPings++;
+            Interlocked.Increment(ref Stats.SentPings);
+        }
+    }
+
+    public sealed class IncomingPacketIDCollection
+    {
+        readonly uint[] Items;
+        HashSet<uint> hashSet;
+        int first;
+        int next;
+        int capacity;
+
+        public IncomingPacketIDCollection(int capacity)
+        {
+            this.capacity = capacity;
+            Items = new uint[capacity];
+            hashSet = new HashSet<uint>();
+        }
+
+        public bool TryEnqueue(uint ack)
+        {
+            lock (hashSet)
+            {
+                if (hashSet.Add(ack))
+                {
+                    Items[next] = ack;
+                    next = (next + 1) % capacity;
+                    if (next == first)
+                    {
+                        hashSet.Remove(Items[first]);
+                        first = (first + 1) % capacity;
+                    }
+
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -1119,7 +1119,7 @@ namespace OpenMetaverse
 
             public override int GetHashCode()
             {
-                int hashCode = DefaultTexture.GetHashCode();
+                int hashCode = DefaultTexture != null ? DefaultTexture.GetHashCode() : 0;
                 for (int i = 0; i < FaceTextures.Length; i++)
                 {
                     if (FaceTextures[i] != null)

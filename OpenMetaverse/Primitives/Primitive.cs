@@ -267,7 +267,11 @@ namespace OpenMetaverse
         /// <summary></summary>
         Plane = 3,
         /// <summary></summary>
-        Cylinder = 4
+        Cylinder = 4,
+        /// <summary></summary>
+        Invert = 64,
+        /// <summary></summary>
+        Mirror = 128
     }
 
     /// <summary>
@@ -875,7 +879,29 @@ namespace OpenMetaverse
         public class SculptData
         {
             public UUID SculptTexture;
-            public SculptType Type;
+            private byte type;
+
+            public SculptType Type
+            {
+                get { return (SculptType)(type & 7); }
+                set { type = (byte)value; }
+            }
+
+            /// <summary>
+            /// Render inside out (inverts the normals).
+            /// </summary>
+            public bool Invert
+            {
+                get { return ((type & (byte)SculptType.Invert) != 0); }
+            }
+
+            /// <summary>
+            /// Render an X axis mirror of the sculpty.
+            /// </summary>
+            public bool Mirror
+            {
+                get { return ((type & (byte)SculptType.Mirror) != 0); }
+            }            
 
             /// <summary>
             /// Default constructor
@@ -894,12 +920,12 @@ namespace OpenMetaverse
                 if (data.Length >= 17)
                 {
                     SculptTexture = new UUID(data, pos);
-                    Type = (SculptType)data[pos + 16];
+                    type = data[pos + 16];
                 }
                 else
                 {
                     SculptTexture = UUID.Zero;
-                    Type = SculptType.None;
+                    type = (byte)SculptType.None;
                 }
             }
 
@@ -918,7 +944,7 @@ namespace OpenMetaverse
                 OSDMap map = new OSDMap();
 
                 map["texture"] = OSD.FromUUID(SculptTexture);
-                map["type"] = OSD.FromInteger((int)Type);
+                map["type"] = OSD.FromInteger(type);
 
                 return map;
             }
@@ -932,7 +958,7 @@ namespace OpenMetaverse
                     OSDMap map = (OSDMap)osd;
 
                     sculpt.SculptTexture = map["texture"].AsUUID();
-                    sculpt.Type = (SculptType)map["type"].AsInteger();
+                    sculpt.type = (byte)map["type"].AsInteger();
                 }
 
                 return sculpt;
@@ -940,7 +966,7 @@ namespace OpenMetaverse
 
             public override int GetHashCode()
             {
-                return SculptTexture.GetHashCode() ^ Type.GetHashCode();
+                return SculptTexture.GetHashCode() ^ type.GetHashCode();
             }
         }
 
@@ -1293,8 +1319,16 @@ namespace OpenMetaverse
             volume["profile"] = profile;
 
             OSDMap prim = new OSDMap(9);
-            prim["name"] = OSD.FromString(Properties.Name);
-            prim["description"] = OSD.FromString(Properties.Description);
+            if (Properties != null)
+            {
+                prim["name"] = OSD.FromString(Properties.Name);
+                prim["description"] = OSD.FromString(Properties.Description);
+            }
+            else
+            {
+                prim["name"] = OSD.FromString("Object");
+                prim["description"] = OSD.FromString(String.Empty);
+            }
             prim["phantom"] = OSD.FromBoolean(((Flags & PrimFlags.Phantom) != 0));
             prim["physical"] = OSD.FromBoolean(((Flags & PrimFlags.Physics) != 0));
             prim["position"] = OSD.FromVector3(Position);

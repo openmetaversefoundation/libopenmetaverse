@@ -28,6 +28,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using OpenMetaverse.Packets;
+using OpenMetaverse.Interfaces;
+using OpenMetaverse.Messages.Linden;
 
 namespace OpenMetaverse
 {
@@ -224,7 +226,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Response to a "Places" Search
+        /// Response to a "Places" Search, e.g. My Land, Group Land, etc.
         /// Note: This is not DirPlacesReply
         /// </summary>
         public struct PlacesSearchData
@@ -355,7 +357,9 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.DirLandReply, new NetworkManager.PacketCallback(DirLandReplyHandler));
             Client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(DirPeopleReplyHandler));
             Client.Network.RegisterCallback(PacketType.DirGroupsReply, new NetworkManager.PacketCallback(DirGroupsReplyHandler));
+            // Deprecated as of viewer 1.2.3
             Client.Network.RegisterCallback(PacketType.PlacesReply, new NetworkManager.PacketCallback(PlacesReplyHandler));
+            Client.Network.RegisterEventCallback("PlacesReply", PlacesReplyEventHandler);
             Client.Network.RegisterCallback(PacketType.DirEventsReply, new NetworkManager.PacketCallback(EventsReplyHandler));
             Client.Network.RegisterCallback(PacketType.EventInfoReply, new NetworkManager.PacketCallback(EventInfoReplyHandler));    
 
@@ -755,6 +759,37 @@ namespace OpenMetaverse
                     matches.Add(groupsData);
                 }
                 try { OnDirGroupsReply(groupsReply.QueryData.QueryID, matches); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
+        }
+
+        private void PlacesReplyEventHandler(string capsKey, IMessage message, Simulator simulator)
+        {
+            if(OnPlacesReply != null)
+            {
+                PlacesReplyMessage replyMessage = (PlacesReplyMessage) message;
+                List<PlacesSearchData> places = new List<PlacesSearchData>();
+                
+                for(int i = 0; i < replyMessage.QueryDataBlocks.Length; i++)
+                {
+                    PlacesSearchData place = new PlacesSearchData();
+                    place.ActualArea = replyMessage.QueryDataBlocks[i].ActualArea;
+                    place.BillableArea = replyMessage.QueryDataBlocks[i].BillableArea;
+                    place.Desc = replyMessage.QueryDataBlocks[i].Description;
+                    place.Dwell = replyMessage.QueryDataBlocks[i].Dwell;
+                    place.Flags = (byte)replyMessage.QueryDataBlocks[i].Flags;
+                    place.GlobalX = replyMessage.QueryDataBlocks[i].GlobalX;
+                    place.GlobalY = replyMessage.QueryDataBlocks[i].GlobalY;
+                    place.GlobalZ = replyMessage.QueryDataBlocks[i].GlobalZ;
+                    place.Name = replyMessage.QueryDataBlocks[i].Name;
+                    place.OwnerID = replyMessage.QueryDataBlocks[i].OwnerID;
+                    place.Price = replyMessage.QueryDataBlocks[i].Price;
+                    place.SimName = replyMessage.QueryDataBlocks[i].SimName;
+                    place.SnapshotID = replyMessage.QueryDataBlocks[i].SnapShotID;
+                    places.Add(place);
+                }
+
+                try { OnPlacesReply(replyMessage.TransactionID, places); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }

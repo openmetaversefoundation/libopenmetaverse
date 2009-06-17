@@ -85,10 +85,9 @@ namespace OpenMetaverse
         /// time out</summary>
         public int LOGOUT_TIMEOUT = 5 * 1000;
 
-        /// <summary>Number of milliseconds before a CAPS call will time out 
-        /// and try again</summary>
-        /// <remarks>Setting this too low will cause web requests to repeatedly
-        /// time out and retry</remarks>
+        /// <summary>Number of milliseconds before a CAPS call will time out</summary>
+        /// <remarks>Setting this too low will cause web requests time out and
+        /// possibly retry repeatedly</remarks>
         public int CAPS_TIMEOUT = 60 * 1000;
 
         /// <summary>Number of milliseconds for xml-rpc to timeout</summary>
@@ -122,8 +121,6 @@ namespace OpenMetaverse
         #endregion
         #region Sizes
 
-        private int max_pending_acks = 10;
-
         /// <summary>The initial size of the packet inbox, where packets are
         /// stored before processing</summary>
         public const int PACKET_INBOX_SIZE = 100;
@@ -137,22 +134,7 @@ namespace OpenMetaverse
         public const int PACKET_ARCHIVE_SIZE = 200;
         /// <summary>Maximum number of queued ACKs to be sent before SendAcks()
         /// is forced</summary>
-        public int MAX_PENDING_ACKS
-        {
-            get { return max_pending_acks; }
-            set
-            {
-                // We can't safely fit more than 375 ACKs in 1500 bytes
-                if (value > 375)
-                    throw new ArgumentOutOfRangeException("Too many ACKs to fit in a single packet");
-                else if (value < 1)
-                    throw new ArgumentOutOfRangeException("Cannot send a non-positive number of ACKs");
-
-                max_pending_acks = value;
-            }
-        }
-        /// <summary>Maximum number of ACKs to append to a packet</summary>
-        public int MAX_APPENDED_ACKS = 10;
+        public int MAX_PENDING_ACKS = 10;
         /// <summary>Network stats queue length (seconds)</summary>
         public int STATS_QUEUE_SIZE = 5;
 
@@ -237,6 +219,13 @@ namespace OpenMetaverse
         /// each time an object update packet is received</summary>
         public bool OBJECT_TRACKING = true;
 
+        /// <summary>If true, position and velocity will periodically be
+        /// interpolated (extrapolated, technically) for objects and 
+        /// avatars that are being tracked by the library. This is
+        /// necessary to increase the accuracy of speed and position
+        /// estimates for simulated objects</summary>
+        public bool USE_INTERPOLATION_TIMER = true;
+
         #endregion
         #region Parcel Tracking
 
@@ -288,6 +277,25 @@ namespace OpenMetaverse
         public bool THROTTLE_OUTGOING_PACKETS = true;
 
         #endregion
+        #region Texture Pipeline
+
+        /// <summary>The maximum number of concurrent texture downloads allowed</summary>
+        /// <remarks>Increasing this number will not necessarily increase texture retrieval times due to
+        /// simulator throttles</remarks>
+        public int MAX_CONCURRENT_TEXTURE_DOWNLOADS = 4;
+
+        /// <summary>
+        /// The Refresh timer inteval is used to set the delay between checks for stalled texture downloads
+        /// </summary>
+        /// <remarks>This is a static variable which applies to all instances</remarks>
+        public static float PIPELINE_REFRESH_INTERVAL = 500.0f;
+
+        /// <summary>
+        /// Textures taking longer than this value will be flagged as timed out and removed from the pipeline
+        /// </summary>
+        public int PIPELINE_REQUEST_TIMEOUT = 45*1000;
+        #endregion
+
         #region Logging Configuration
 
         /// <summary>

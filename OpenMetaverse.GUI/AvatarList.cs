@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, openmetaverse.org
+ * Copyright (c) 2007-2009, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -35,37 +35,26 @@ namespace OpenMetaverse.GUI
 {
 
     /// <summary>
-    /// Contains any available information for an avatar in the simulator.
-    /// A null value for .Avatar indicates coarse data for an avatar outside of visible range.
-    /// </summary>
-    public class TrackedAvatar
-    {
-        /// <summary>Assigned if the avatar is within visible range</summary>
-        public Avatar Avatar = null;
-
-        /// <summary>Last known coarse location of avatar</summary>
-        public Vector3 CoarseLocation;
-
-        /// <summary>Avatar ID</summary>
-        public UUID ID;
-
-        /// <summary>ListViewItem associated with this avatar</summary>
-        public ListViewItem ListViewItem;
-
-        /// <summary>Populated by RequestAvatarName if avatar is not visible</summary>
-        public string Name = "(Loading...)";
-    }
-
-    /// <summary>
     /// ListView GUI component for viewing a client's nearby avatars list
     /// </summary>
     public class AvatarList : ListView
     {
         private GridClient _Client;
-        private ColumnSorter _ColumnSorter = new ColumnSorter();
+        private ListColumnSorter _ColumnSorter = new ListColumnSorter();
+        private ContextMenu _ContextMenu;
+        private UUID _SelectedAvatarID;
 
         private DoubleDictionary<uint, UUID, TrackedAvatar> _TrackedAvatars = new DoubleDictionary<uint, UUID, TrackedAvatar>();
         private Dictionary<UUID, TrackedAvatar> _UntrackedAvatars = new Dictionary<UUID, TrackedAvatar>();
+
+        /// <summary>
+        /// Gets or sets the context menu associated with this control
+        /// </summary>
+        public ContextMenu Menu
+        {
+            get { return _ContextMenu; }
+            set { _ContextMenu = value; }
+        }
 
         public delegate void AvatarDoubleClickCallback(TrackedAvatar trackedAvatar);
 
@@ -98,11 +87,17 @@ namespace OpenMetaverse.GUI
             this.Sorting = SortOrder.Ascending;
             this.ListViewItemSorter = _ColumnSorter;
 
+            EventHandler clickHandler = new EventHandler(defaultMenuItem_Click);
+            _ContextMenu = new ContextMenu();
+            _ContextMenu.MenuItems.Add("Walk To", clickHandler);
+            _ContextMenu.MenuItems.Add("Teleport To", clickHandler);
+
             this.DoubleBuffered = true;
             this.ListViewItemSorter = _ColumnSorter;
             this.View = View.Details;
             this.ColumnClick += new ColumnClickEventHandler(AvatarList_ColumnClick);
             this.DoubleClick += new EventHandler(AvatarList_DoubleClick);
+            this.MouseClick += new MouseEventHandler(AvatarList_MouseClick);
         }
 
         /// <summary>
@@ -276,7 +271,32 @@ namespace OpenMetaverse.GUI
             }
         }
 
-        private void AvatarList_ColumnClick(object sender, ColumnClickEventArgs e)
+        private void defaultMenuItem_Click(object sender, EventArgs e)
+        {
+            MenuItem menuItem = (MenuItem)sender;
+
+            switch (menuItem.Text)
+            {
+                case "Walk To":
+                    {
+                        Vector3 pos;
+                        if (Client.Network.CurrentSim.AvatarPositions.TryGetValue(_SelectedAvatarID, out pos))
+                            Client.Self.AutoPilotLocal((int)pos.X, (int)pos.Y, pos.Z);
+
+                        break;
+                    }
+                case "Teleport To":
+                    {
+                        Vector3 pos;
+                        if (Client.Network.CurrentSim.AvatarPositions.TryGetValue(_SelectedAvatarID, out pos))
+                            Client.Self.Teleport(Client.Network.CurrentSim.Name, pos);
+
+                        break;
+                    }
+            }
+        }
+
+        void AvatarList_ColumnClick(object sender, ColumnClickEventArgs e)
         {
             _ColumnSorter.SortColumn = e.Column;
             if ((_ColumnSorter.Ascending = (this.Sorting == SortOrder.Ascending))) this.Sorting = SortOrder.Descending;
@@ -284,7 +304,7 @@ namespace OpenMetaverse.GUI
             this.ListViewItemSorter = _ColumnSorter;
         }
 
-        private void AvatarList_DoubleClick(object sender, EventArgs e)
+        void AvatarList_DoubleClick(object sender, EventArgs e)
         {
             if (OnAvatarDoubleClick != null)
             {
@@ -302,7 +322,16 @@ namespace OpenMetaverse.GUI
             }
         }
 
-        private void Avatars_OnAvatarAppearance(UUID avatarID, bool isTrial, Primitive.TextureEntryFace defaultTexture, Primitive.TextureEntryFace[] faceTextures, List<byte> visualParams)
+        void AvatarList_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right && this.SelectedItems.Count > 0)
+            {
+                _SelectedAvatarID = new UUID(this.SelectedItems[0].Name);
+                _ContextMenu.Show(this, e.Location);
+            }
+        }
+
+        void Avatars_OnAvatarAppearance(UUID avatarID, bool isTrial, Primitive.TextureEntryFace defaultTexture, Primitive.TextureEntryFace[] faceTextures, List<byte> visualParams)
         {
             if (visualParams.Count > 31)
             {
@@ -325,7 +354,7 @@ namespace OpenMetaverse.GUI
             }
         }
 
-        private void Avatars_OnAvatarNames(Dictionary<UUID, string> names)
+        void Avatars_OnAvatarNames(Dictionary<UUID, string> names)
         {
             lock (_UntrackedAvatars)
             {
@@ -345,12 +374,12 @@ namespace OpenMetaverse.GUI
             }
         }
 
-        private void Grid_OnCoarseLocationUpdate(Simulator sim, List<UUID> newEntries, List<UUID> removedEntries)
+        void Grid_OnCoarseLocationUpdate(Simulator sim, List<UUID> newEntries, List<UUID> removedEntries)
         {
             UpdateCoarseInfo(sim, newEntries, removedEntries);
         }
 
-        private void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
+        void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
         {
             lock (_TrackedAvatars)
                 _TrackedAvatars.Clear();
@@ -361,12 +390,12 @@ namespace OpenMetaverse.GUI
             ClearItems();
         }
 
-        private void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
+        void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
         {
             UpdateAvatar(avatar);
         }
 
-        private void Objects_OnObjectKilled(Simulator simulator, uint objectID)
+        void Objects_OnObjectKilled(Simulator simulator, uint objectID)
         {
             lock (_TrackedAvatars)
             {
@@ -374,7 +403,7 @@ namespace OpenMetaverse.GUI
             }
         }
 
-        private void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
+        void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
         {
             lock (_TrackedAvatars)
             {
@@ -387,39 +416,28 @@ namespace OpenMetaverse.GUI
             }
         }
 
-        private class ColumnSorter : IComparer
-        {
-            public bool Ascending = true;
-            public int SortColumn = 0;
+    }
 
-            public int Compare(object a, object b)
-            {
-                ListViewItem itemA = (ListViewItem)a;
-                ListViewItem itemB = (ListViewItem)b;
+    /// <summary>
+    /// Contains any available information for an avatar in the simulator.
+    /// A null value for .Avatar indicates coarse data for an avatar outside of visible range.
+    /// </summary>
+    public class TrackedAvatar
+    {
+        /// <summary>Assigned if the avatar is within visible range</summary>
+        public Avatar Avatar = null;
 
-                if (SortColumn == 1)
-                {
-                    int valueA = itemB.SubItems.Count > 1 ? int.Parse(itemA.SubItems[1].Text.Replace("m", "").Replace("--", "0")) : 0;
-                    int valueB = itemB.SubItems.Count > 1 ? int.Parse(itemB.SubItems[1].Text.Replace("m", "").Replace("--", "0")) : 0;
-                    if (Ascending)
-                    {
-                        if (valueA == valueB) return 0;
-                        return valueA < valueB ? -1 : 1;
-                    }
-                    else
-                    {
-                        if (valueA == valueB) return 0;
-                        return valueA < valueB ? 1 : -1;
-                    }
-                }
-                else
-                {
-                    if (Ascending) return string.Compare(itemA.Text, itemB.Text);
-                    else return -string.Compare(itemA.Text, itemB.Text);
-                }
-            }
-        }
+        /// <summary>Last known coarse location of avatar</summary>
+        public Vector3 CoarseLocation;
 
+        /// <summary>Avatar ID</summary>
+        public UUID ID;
+
+        /// <summary>ListViewItem associated with this avatar</summary>
+        public ListViewItem ListViewItem;
+
+        /// <summary>Populated by RequestAvatarName if avatar is not visible</summary>
+        public string Name = "(Loading...)";
     }
 
 }

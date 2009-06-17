@@ -93,6 +93,7 @@ namespace groupmanager
             this.cmdCancel = new System.Windows.Forms.Button();
             this.cmdOK = new System.Windows.Forms.Button();
             this.cmdRefresh = new System.Windows.Forms.Button();
+            this.labelInsigniaProgress = new System.Windows.Forms.Label();
             this.tabs.SuspendLayout();
             this.tabGeneral.SuspendLayout();
             this.grpPreferences.SuspendLayout();
@@ -124,6 +125,7 @@ namespace groupmanager
             // 
             // tabGeneral
             // 
+            this.tabGeneral.Controls.Add(this.labelInsigniaProgress);
             this.tabGeneral.Controls.Add(this.grpPreferences);
             this.tabGeneral.Controls.Add(this.lstMembers);
             this.tabGeneral.Controls.Add(this.txtCharter);
@@ -716,6 +718,15 @@ namespace groupmanager
             this.cmdRefresh.Text = "Refresh from server";
             this.cmdRefresh.UseVisualStyleBackColor = true;
             // 
+            // labelInsigniaProgress
+            // 
+            this.labelInsigniaProgress.AutoSize = true;
+            this.labelInsigniaProgress.Location = new System.Drawing.Point(23, 149);
+            this.labelInsigniaProgress.Name = "labelInsigniaProgress";
+            this.labelInsigniaProgress.Size = new System.Drawing.Size(54, 13);
+            this.labelInsigniaProgress.TabIndex = 7;
+            this.labelInsigniaProgress.Text = "Loading...";
+            // 
             // frmGroupInfo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -824,6 +835,7 @@ namespace groupmanager
         private System.Windows.Forms.TextBox txtDetails;
         private System.Windows.Forms.TabPage tabSales;
         private System.Windows.Forms.TextBox txtSales;
+        private System.Windows.Forms.Label labelInsigniaProgress;
 
     }
 }

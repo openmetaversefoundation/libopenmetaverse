@@ -52,22 +52,19 @@ namespace OpenMetaverse.Tests
             Client.Self.Movement.Fly = true;
             // Register callbacks
             Client.Network.RegisterCallback(PacketType.ObjectUpdate, new NetworkManager.PacketCallback(ObjectUpdateHandler));
-            //Client.Self.OnTeleport += new MainAvatar.TeleportCallback(OnTeleportHandler);
+            //Client.Self.OnTeleport += new MainAvatar.TeleportCallback(OnTeleportHandler)
+        }
 
+        [TestFixtureSetUp]
+        public void Init()
+        {
+            Console.Write("Logging in Testing Anvil...");
             // Connect to the grid
             string startLoc = NetworkManager.StartLocation("Hooper", 179, 18, 32);
             Assert.IsTrue(Client.Network.Login("Testing", "Anvil", "testinganvil", "Unit Test Framework", startLoc,
-                "contact@OpenMetaverse.org"));
-        }
+                "contact@OpenMetaverse.org"), "Client failed to login, reason: " + Client.Network.LoginMessage);
+            Console.WriteLine("Done");
 
-        ~NetworkTests()
-        {
-            Client.Network.Logout();
-        }
-
-        [SetUp]
-        public void Init()
-        {
             Assert.IsTrue(Client.Network.Connected, "Client is not connected to the grid");
 
             //int start = Environment.TickCount;
@@ -180,10 +177,12 @@ namespace OpenMetaverse.Tests
             //CurrentRegionHandle = update.RegionData.RegionHandle;
         }
 
-        [TearDown]
+        [TestFixtureTearDown]
         public void Shutdown()
         {
+            Console.Write("Logging out...");
             Client.Network.Logout();
+            Console.WriteLine("Done");
         }
     }
 }

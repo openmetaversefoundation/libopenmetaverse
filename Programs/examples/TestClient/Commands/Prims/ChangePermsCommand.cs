@@ -7,11 +7,10 @@ namespace OpenMetaverse.TestClient
     public class ChangePermsCommand : Command
     {
         AutoResetEvent GotPermissionsEvent = new AutoResetEvent(false);
-        UUID SelectedObject = UUID.Zero;
         Dictionary<UUID, Primitive> Objects = new Dictionary<UUID, Primitive>();
         PermissionMask Perms = PermissionMask.None;
-        bool PermsSent = false;
-        int PermCount = 0;
+        private bool PermsSent;
+        private int PermCount;
 
         public ChangePermsCommand(TestClient testClient)
         {

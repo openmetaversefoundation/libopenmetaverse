@@ -7,7 +7,6 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
 {
     public class ChangeDirectoryCommand : Command
     {
-        private InventoryManager Manager;
         private OpenMetaverse.Inventory Inventory;
 
         public ChangeDirectoryCommand(TestClient client)
@@ -18,7 +17,6 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
         }
         public override string Execute(string[] args, UUID fromAgentID)
         {
-            Manager = Client.Inventory;
             Inventory = Client.Inventory.Store;
 
             if (args.Length > 1)

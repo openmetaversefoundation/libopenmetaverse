@@ -31,6 +31,7 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormWinGridProxy));
             this.panelProxyConfig = new System.Windows.Forms.Panel();
+            this.comboBoxListenAddress = new System.Windows.Forms.ComboBox();
             this.comboBoxLoginURL = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -79,6 +80,7 @@
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPageSummary = new System.Windows.Forms.TabPage();
+            this.richTextBoxDebugLog = new System.Windows.Forms.RichTextBox();
             this.panelStats = new System.Windows.Forms.Panel();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.labelPacketsTotal = new System.Windows.Forms.Label();
@@ -157,6 +159,8 @@
             this.saveOptionsOnExitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startProxyOnStartupToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripMenuItemPlugins = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator14 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.EditToolStripButton = new System.Windows.Forms.ToolStripDropDownButton();
             this.copyToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
@@ -222,7 +226,6 @@
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.autoColorizeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
-            this.comboBoxListenAddress = new System.Windows.Forms.ComboBox();
             this.panelProxyConfig.SuspendLayout();
             this.panelMainWindow.SuspendLayout();
             this.splitContainerSessionsTabs.Panel1.SuspendLayout();
@@ -281,6 +284,15 @@
             this.panelProxyConfig.Name = "panelProxyConfig";
             this.panelProxyConfig.Size = new System.Drawing.Size(1070, 32);
             this.panelProxyConfig.TabIndex = 0;
+            // 
+            // comboBoxListenAddress
+            // 
+            this.comboBoxListenAddress.FormattingEnabled = true;
+            this.comboBoxListenAddress.Location = new System.Drawing.Point(98, 6);
+            this.comboBoxListenAddress.Name = "comboBoxListenAddress";
+            this.comboBoxListenAddress.Size = new System.Drawing.Size(139, 21);
+            this.comboBoxListenAddress.TabIndex = 7;
+            this.comboBoxListenAddress.Text = "127.0.0.1";
             // 
             // comboBoxLoginURL
             // 
@@ -677,6 +689,7 @@
             // 
             // tabPageSummary
             // 
+            this.tabPageSummary.Controls.Add(this.richTextBoxDebugLog);
             this.tabPageSummary.Controls.Add(this.panelStats);
             this.tabPageSummary.Location = new System.Drawing.Point(4, 28);
             this.tabPageSummary.Name = "tabPageSummary";
@@ -685,6 +698,22 @@
             this.tabPageSummary.TabIndex = 0;
             this.tabPageSummary.Text = "Summary";
             this.tabPageSummary.UseVisualStyleBackColor = true;
+            // 
+            // richTextBoxDebugLog
+            // 
+            this.richTextBoxDebugLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                        | System.Windows.Forms.AnchorStyles.Left)
+                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.richTextBoxDebugLog.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            this.richTextBoxDebugLog.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.richTextBoxDebugLog.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.richTextBoxDebugLog.Location = new System.Drawing.Point(6, 101);
+            this.richTextBoxDebugLog.Name = "richTextBoxDebugLog";
+            this.richTextBoxDebugLog.ReadOnly = true;
+            this.richTextBoxDebugLog.ShowSelectionMargin = true;
+            this.richTextBoxDebugLog.Size = new System.Drawing.Size(592, 289);
+            this.richTextBoxDebugLog.TabIndex = 3;
+            this.richTextBoxDebugLog.Text = "";
             // 
             // panelStats
             // 
@@ -1053,6 +1082,7 @@
             this.richTextBoxDecodedRequest.Size = new System.Drawing.Size(591, 143);
             this.richTextBoxDecodedRequest.TabIndex = 0;
             this.richTextBoxDecodedRequest.Text = "";
+            this.richTextBoxDecodedRequest.TextChanged += new System.EventHandler(this.richTextBoxDecodedRequest_TextChanged);
             // 
             // tabPageRawRequest
             // 
@@ -1205,6 +1235,7 @@
             this.richTextBoxDecodedResponse.Size = new System.Drawing.Size(591, 176);
             this.richTextBoxDecodedResponse.TabIndex = 0;
             this.richTextBoxDecodedResponse.Text = "";
+            this.richTextBoxDecodedResponse.TextChanged += new System.EventHandler(this.richTextBoxDecodedRequest_TextChanged);
             // 
             // tabPageInspectorRAWResponse
             // 
@@ -1335,6 +1366,7 @@
             // 
             // radioButtonViewer
             // 
+            this.radioButtonViewer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.radioButtonViewer.AutoSize = true;
             this.radioButtonViewer.Location = new System.Drawing.Point(397, 370);
             this.radioButtonViewer.Name = "radioButtonViewer";
@@ -1345,6 +1377,7 @@
             // 
             // radioButtonSimulator
             // 
+            this.radioButtonSimulator.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.radioButtonSimulator.AutoSize = true;
             this.radioButtonSimulator.Checked = true;
             this.radioButtonSimulator.Location = new System.Drawing.Point(283, 370);
@@ -1438,6 +1471,8 @@
             this.toolStripSeparator8,
             this.settingsToolStripMenuItem,
             this.toolStripSeparator9,
+            this.toolStripMenuItemPlugins,
+            this.toolStripSeparator14,
             this.exitToolStripMenuItem1});
             this.toolStripFileMenu.Image = ((System.Drawing.Image)(resources.GetObject("toolStripFileMenu.Image")));
             this.toolStripFileMenu.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -1530,6 +1565,19 @@
             // 
             this.toolStripSeparator9.Name = "toolStripSeparator9";
             this.toolStripSeparator9.Size = new System.Drawing.Size(184, 6);
+            // 
+            // toolStripMenuItemPlugins
+            // 
+            this.toolStripMenuItemPlugins.Enabled = false;
+            this.toolStripMenuItemPlugins.Name = "toolStripMenuItemPlugins";
+            this.toolStripMenuItemPlugins.Size = new System.Drawing.Size(187, 22);
+            this.toolStripMenuItemPlugins.Text = "Plugins";
+            this.toolStripMenuItemPlugins.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
+            // 
+            // toolStripSeparator14
+            // 
+            this.toolStripSeparator14.Name = "toolStripSeparator14";
+            this.toolStripSeparator14.Size = new System.Drawing.Size(184, 6);
             // 
             // exitToolStripMenuItem1
             // 
@@ -2022,15 +2070,6 @@
             this.autoColorizeToolStripMenuItem.Text = "Auto Colorize";
             this.autoColorizeToolStripMenuItem.Click += new System.EventHandler(this.autoColorizeToolStripMenuItem_Click);
             // 
-            // comboBoxListenAddress
-            // 
-            this.comboBoxListenAddress.FormattingEnabled = true;
-            this.comboBoxListenAddress.Location = new System.Drawing.Point(98, 6);
-            this.comboBoxListenAddress.Name = "comboBoxListenAddress";
-            this.comboBoxListenAddress.Size = new System.Drawing.Size(139, 21);
-            this.comboBoxListenAddress.TabIndex = 7;
-            this.comboBoxListenAddress.Text = "127.0.0.1";
-            // 
             // FormWinGridProxy
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2298,6 +2337,9 @@
         private System.Windows.Forms.ColorDialog colorDialog1;
         private System.Windows.Forms.ColumnHeader columnHeaderContentType;
         private System.Windows.Forms.ComboBox comboBoxListenAddress;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemPlugins;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;
+        private System.Windows.Forms.RichTextBox richTextBoxDebugLog;
     }
 }
 

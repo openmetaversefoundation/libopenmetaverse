@@ -92,6 +92,9 @@ namespace OpenMetaverse
         private static readonly System.Security.Cryptography.SHA1 SHA1Builder =
             new System.Security.Cryptography.SHA1CryptoServiceProvider();
 
+        private static readonly System.Security.Cryptography.SHA256 SHA256Builder =
+            new System.Security.Cryptography.SHA256Managed();
+
         /// <summary>Provide a single instance of a random number generator
         /// to avoid making duplicate copies and handle thread safety</summary>
         private static readonly Random RNG = new Random();
@@ -286,10 +289,10 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Compute the SHA-1 hash for a byte array
+        /// Compute the SHA1 hash for a byte array
         /// </summary>
         /// <param name="data">Byte array to compute the hash for</param>
-        /// <returns>SHA-1 hash of the input data</returns>
+        /// <returns>SHA1 hash of the input data</returns>
         public static byte[] SHA1(byte[] data)
         {
             lock (SHA1Builder)
@@ -305,6 +308,34 @@ namespace OpenMetaverse
         {
             StringBuilder digest = new StringBuilder(40);
             byte[] hash = SHA1(Encoding.UTF8.GetBytes(value));
+
+            // Convert the hash to a hex string
+            foreach (byte b in hash)
+                digest.AppendFormat(Utils.EnUsCulture, "{0:x2}", b);
+
+            return digest.ToString();
+        }
+
+        /// <summary>
+        /// Compute the SHA256 hash for a byte array
+        /// </summary>
+        /// <param name="data">Byte array to compute the hash for</param>
+        /// <returns>SHA256 hash of the input data</returns>
+        public static byte[] SHA256(byte[] data)
+        {
+            lock (SHA256Builder)
+                return SHA256Builder.ComputeHash(data);
+        }
+
+        /// <summary>
+        /// Calculate the SHA256 hash of a given string
+        /// </summary>
+        /// <param name="value">The string to hash</param>
+        /// <returns>The SHA256 hash as a string</returns>
+        public static string SHA256String(string value)
+        {
+            StringBuilder digest = new StringBuilder(64);
+            byte[] hash = SHA256(Encoding.UTF8.GetBytes(value));
 
             // Convert the hash to a hex string
             foreach (byte b in hash)

@@ -47,17 +47,12 @@ namespace OpenMetaverse.Imaging
         /// Defines the beginning and ending file positions of a layer in an
         /// LRCP-progression JPEG2000 file
         /// </summary>
+        [System.Diagnostics.DebuggerDisplay("Start = {Start} End = {End} Size = {Start - End}")]
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct J2KLayerInfo
         {
             public int Start;
             public int End;
-
-            public int Size { get { return End - Start; } }
-
-            public override string ToString()
-            {
-                return String.Format("Start: {0} End: {1} Size: {2}", Start, End, Size);
-            }
         }
 
         /// <summary>
@@ -85,6 +80,7 @@ namespace OpenMetaverse.Imaging
         /// <summary>
         /// Information about a single packet in a JPEG2000 stream
         /// </summary>
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
         private struct MarshalledPacket
         {
             /// <summary>Packet start position</summary>

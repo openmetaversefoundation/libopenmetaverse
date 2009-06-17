@@ -36,121 +36,34 @@ namespace OpenMetaverse.TestClient
         }
     }
 
-    // WOW WHAT A HACK!
-    public static class ClientManagerRef
+    public sealed class ClientManager
     {
-        public static ClientManager ClientManager;
-    }
+        const string VERSION = "1.0.0";
 
-    public class ClientManager
-    {
+        class Singleton { internal static readonly ClientManager Instance = new ClientManager(); }
+        public static ClientManager Instance { get { return Singleton.Instance; } }
+
         public Dictionary<UUID, TestClient> Clients = new Dictionary<UUID, TestClient>();
         public Dictionary<Simulator, Dictionary<uint, Primitive>> SimPrims = new Dictionary<Simulator, Dictionary<uint, Primitive>>();
 
         public bool Running = true;
         public bool GetTextures = false;
+        public volatile int PendingLogins = 0;
 
-        string version = "1.0.0";
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accounts"></param>
-        public ClientManager(List<LoginDetails> accounts, bool getTextures)
+        ClientManager()
         {
-            ClientManagerRef.ClientManager = this;
+        }
 
+        public void Start(List<LoginDetails> accounts, bool getTextures)
+        {
             GetTextures = getTextures;
 
             foreach (LoginDetails account in accounts)
                 Login(account);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="account"></param>
-        /// <returns></returns>
-        public TestClient Login(LoginDetails account)
-        {
-            // Check if this client is already logged in
-            foreach (TestClient c in Clients.Values)
-            {
-                if (c.Self.FirstName == account.FirstName && c.Self.LastName == account.LastName)
-                {
-                    Logout(c);
-                    break;
-                }
-            }
-
-            TestClient client = new TestClient(this);
-
-            // Optimize the throttle
-            client.Throttle.Wind = 0;
-            client.Throttle.Cloud = 0;
-            client.Throttle.Land = 1000000;
-            client.Throttle.Task = 1000000;
-
-            client.GroupCommands = account.GroupCommands;
-			client.MasterName = account.MasterName;
-            client.MasterKey = account.MasterKey;
-            client.AllowObjectMaster = client.MasterKey != UUID.Zero; // Require UUID for object master.
-
-            LoginParams loginParams = client.Network.DefaultLoginParams(
-                    account.FirstName, account.LastName, account.Password, "TestClient", version);
-
-            if (!String.IsNullOrEmpty(account.StartLocation))
-                loginParams.Start = account.StartLocation;
-
-            if (!String.IsNullOrEmpty(account.URI))
-                loginParams.URI = account.URI;
-            
-            if (client.Network.Login(loginParams))
-            {
-                Clients[client.Self.AgentID] = client;
-
-                if (client.MasterKey == UUID.Zero)
-                {
-                    UUID query = UUID.Random();
-                    DirectoryManager.DirPeopleReplyCallback peopleDirCallback =
-                        delegate(UUID queryID, List<DirectoryManager.AgentSearchData> matchedPeople)
-                        {
-                            if (queryID == query)
-                            {
-                                if (matchedPeople.Count != 1)
-                                {
-                                    Logger.Log("Unable to resolve master key from " + client.MasterName, Helpers.LogLevel.Warning);
-                                }
-                                else
-                                {
-                                    client.MasterKey = matchedPeople[0].AgentID;
-                                    Logger.Log("Master key resolved to " + client.MasterKey, Helpers.LogLevel.Info);
-                                }
-                            }
-                        };
-
-                    client.Directory.OnDirPeopleReply += peopleDirCallback;
-                    client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, client.MasterName, 0, query);
-                }
-
-                Logger.Log("Logged in " + client.ToString(), Helpers.LogLevel.Info);
-            }
-            else
-            {
-                Logger.Log("Failed to login " + account.FirstName + " " + account.LastName + ": " +
-                    client.Network.LoginMessage, Helpers.LogLevel.Warning);
-            }
-
-            return client;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="args"></param>
-        /// <returns></returns>
         public TestClient Login(string[] args)
         {
-            
             if (args.Length < 3)
             {
                 Console.WriteLine("Usage: login firstname lastname password [simname] [login server url]");
@@ -164,20 +77,32 @@ namespace OpenMetaverse.TestClient
             if (args.Length > 3)
             {
                 // If it looks like a full starting position was specified, parse it
-                if( args[3].IndexOf('/') >= 0 )
-                { 
-                    char sep = '/';
-                    string[] startbits = args[3].Split(sep);
-                    account.StartLocation = NetworkManager.StartLocation(startbits[0], Int32.Parse(startbits[1]),
-                            Int32.Parse(startbits[2]), Int32.Parse(startbits[3]));
+                if (args[3].StartsWith("http"))
+                {
+                    account.URI = args[3];
                 }
-                // Otherwise, use the center of the named region
                 else
-                    account.StartLocation = NetworkManager.StartLocation(args[3], 128, 128, 40);
+                {
+                    if (args[3].IndexOf('/') >= 0)
+                    {
+                        char sep = '/';
+                        string[] startbits = args[3].Split(sep);
+                        try
+                        {
+                            account.StartLocation = NetworkManager.StartLocation(startbits[0], Int32.Parse(startbits[1]),
+                              Int32.Parse(startbits[2]), Int32.Parse(startbits[3]));
+                        }
+                        catch (FormatException) { }
+                    }
+
+                    // Otherwise, use the center of the named region
+                    if (account.StartLocation == null)
+                        account.StartLocation = NetworkManager.StartLocation(args[3], 128, 128, 40);
+                }
             }
 
             if (args.Length > 4)
-                if(args[4].StartsWith("http://"))
+                if (args[4].StartsWith("http"))
                     account.URI = args[4];
 
             if (string.IsNullOrEmpty(account.URI))
@@ -185,6 +110,89 @@ namespace OpenMetaverse.TestClient
             Logger.Log("Using login URI " + account.URI, Helpers.LogLevel.Info);
 
             return Login(account);
+        }
+
+        public TestClient Login(LoginDetails account)
+        {
+            // Check if this client is already logged in
+            foreach (TestClient c in Clients.Values)
+            {
+                if (c.Self.FirstName == account.FirstName && c.Self.LastName == account.LastName)
+                {
+                    Logout(c);
+                    break;
+                }
+            }
+
+            ++PendingLogins;
+
+            TestClient client = new TestClient(this);
+            client.Network.OnLogin +=
+                delegate(LoginStatus login, string message)
+                {
+                    Logger.Log(String.Format("Login {0}: {1}", login, message), Helpers.LogLevel.Info, client);
+
+                    if (login == LoginStatus.Success)
+                    {
+                        Clients[client.Self.AgentID] = client;
+
+                        if (client.MasterKey == UUID.Zero)
+                        {
+                            UUID query = UUID.Random();
+                            DirectoryManager.DirPeopleReplyCallback peopleDirCallback =
+                                delegate(UUID queryID, List<DirectoryManager.AgentSearchData> matchedPeople)
+                                {
+                                    if (queryID == query)
+                                    {
+                                        if (matchedPeople.Count != 1)
+                                        {
+                                            Logger.Log("Unable to resolve master key from " + client.MasterName, Helpers.LogLevel.Warning);
+                                        }
+                                        else
+                                        {
+                                            client.MasterKey = matchedPeople[0].AgentID;
+                                            Logger.Log("Master key resolved to " + client.MasterKey, Helpers.LogLevel.Info);
+                                        }
+                                    }
+                                };
+
+                            client.Directory.OnDirPeopleReply += peopleDirCallback;
+                            client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, client.MasterName, 0, query);
+                        }
+
+                        Logger.Log("Logged in " + client.ToString(), Helpers.LogLevel.Info);
+                        --PendingLogins;
+                    }
+                    else if (login == LoginStatus.Failed)
+                    {
+                        Logger.Log("Failed to login " + account.FirstName + " " + account.LastName + ": " +
+                            client.Network.LoginMessage, Helpers.LogLevel.Warning);
+                        --PendingLogins;
+                    }
+                };
+
+            // Optimize the throttle
+            client.Throttle.Wind = 0;
+            client.Throttle.Cloud = 0;
+            client.Throttle.Land = 1000000;
+            client.Throttle.Task = 1000000;
+
+            client.GroupCommands = account.GroupCommands;
+			client.MasterName = account.MasterName;
+            client.MasterKey = account.MasterKey;
+            client.AllowObjectMaster = client.MasterKey != UUID.Zero; // Require UUID for object master.
+
+            LoginParams loginParams = client.Network.DefaultLoginParams(
+                    account.FirstName, account.LastName, account.Password, "TestClient", VERSION);
+
+            if (!String.IsNullOrEmpty(account.StartLocation))
+                loginParams.Start = account.StartLocation;
+
+            if (!String.IsNullOrEmpty(account.URI))
+                loginParams.URI = account.URI;
+
+            client.Network.BeginLogin(loginParams);
+            return client;
         }
 
         /// <summary>
@@ -273,6 +281,19 @@ namespace OpenMetaverse.TestClient
                 // No reason to pass this to all bots, and we also want to allow it when there are no bots
                 ScriptCommand command = new ScriptCommand(null);
                 Logger.Log(command.Execute(args, UUID.Zero), Helpers.LogLevel.Info);
+            }
+            else if (firstToken == "waitforlogin")
+            {
+                // Special exception to allow this to run before any bots have logged in
+                if (ClientManager.Instance.PendingLogins > 0)
+                {
+                    WaitForLoginCommand command = new WaitForLoginCommand(null);
+                    Logger.Log(command.Execute(args, UUID.Zero), Helpers.LogLevel.Info);
+                }
+                else
+                {
+                    Logger.Log("No pending logins", Helpers.LogLevel.Info);
+                }
             }
             else
             {

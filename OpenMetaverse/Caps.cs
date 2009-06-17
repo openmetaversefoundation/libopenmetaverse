@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using System.Threading;
 using OpenMetaverse.Packets;
@@ -50,7 +51,6 @@ namespace OpenMetaverse
         /// <param name="message">Decoded event data</param>
         /// <param name="simulator">The simulator that generated the event</param>
         //public delegate void EventQueueCallback(string message, StructuredData.OSD body, Simulator simulator);
-
 
         public delegate void EventQueueCallback(string capsKey, IMessage message, Simulator simulator);
 
@@ -78,7 +78,6 @@ namespace OpenMetaverse
                     return false;
             }
         }
-
 
         /// <summary>
         /// Default constructor
@@ -146,6 +145,7 @@ namespace OpenMetaverse
             req.Add("NewFileAgentInventory");
             req.Add("ParcelPropertiesUpdate");
             req.Add("ParcelVoiceInfoRequest");
+            req.Add("ProductInfoRequest");
             req.Add("ProvisionVoiceAccountRequest");
             req.Add("RemoteParcelRequest");
             req.Add("RequestTextureDownload");
@@ -169,9 +169,10 @@ namespace OpenMetaverse
             req.Add("ViewerStartAuction");
             req.Add("ViewerStats");
 
+
             _SeedRequest = new CapsClient(new Uri(_SeedCapsURI));
             _SeedRequest.OnComplete += new CapsClient.CompleteCallback(SeedRequestCompleteHandler);
-            _SeedRequest.BeginGetResponse(req);
+            _SeedRequest.BeginGetResponse(req, OSDFormat.Xml, Simulator.Client.Settings.CAPS_TIMEOUT);
         }
 
         private void SeedRequestCompleteHandler(CapsClient client, OSD result, Exception error)
@@ -194,6 +195,15 @@ namespace OpenMetaverse
                     _EventQueueCap.OnEvent += EventQueueEventHandler;
                     _EventQueueCap.Start();
                 }
+            }
+            else if (
+                error != null &&
+                error is WebException &&
+                ((WebException)error).Response != null &&
+                ((HttpWebResponse)((WebException)error).Response).StatusCode == HttpStatusCode.NotFound)
+            {
+                // 404 error
+                Logger.Log("Seed capability returned a 404, capability system is aborting", Helpers.LogLevel.Error);
             }
             else
             {

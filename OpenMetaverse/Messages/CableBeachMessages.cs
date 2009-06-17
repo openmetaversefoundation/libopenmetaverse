@@ -43,12 +43,11 @@ namespace OpenMetaverse.Messages.CableBeach
         public bool Online;
         public IPAddress IP;
         public int Port;
-        public Uri Address;
         public UUID MapTextureID;
         public Uri Owner;
         public RegionFlags Flags;
         public int AgentCount;
-        public Dictionary<string, Uri> Capabilities;
+        public Dictionary<Uri, Uri> Capabilities;
         public float WaterHeight;
         public Vector3 DefaultPosition;
         public Vector3 DefaultLookAt;
@@ -96,7 +95,6 @@ namespace OpenMetaverse.Messages.CableBeach
             map["online"] = OSD.FromBoolean(Online);
             map["ip"] = MessageUtils.FromIP(IP);
             map["port"] = OSD.FromInteger(Port);
-            map["address"] = OSD.FromUri(Address);
             map["map_texture_id"] = OSD.FromUUID(MapTextureID);
             map["owner"] = OSD.FromUri(Owner);
             map["region_flags"] = OSD.FromInteger((int)Flags);
@@ -116,7 +114,6 @@ namespace OpenMetaverse.Messages.CableBeach
             Online = map["online"].AsBoolean();
             IP = MessageUtils.ToIP(map["ip"]);
             Port = map["port"].AsInteger();
-            Address = map["address"].AsUri();
             MapTextureID = map["map_texture_id"].AsUUID();
             Owner = map["owner"].AsUri();
             Flags = (RegionFlags)map["region_flags"].AsInteger();
@@ -160,14 +157,12 @@ namespace OpenMetaverse.Messages.CableBeach
     {
         public bool Success;
         public string Message;
-        public UUID SimulationKey;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
             map["success"] = OSD.FromBoolean(Success);
             map["message"] = OSD.FromString(Message);
-            map["simulation_key"] = OSD.FromUUID(SimulationKey);
             return map;
         }
 
@@ -175,27 +170,23 @@ namespace OpenMetaverse.Messages.CableBeach
         {
             Success = map["success"].AsBoolean();
             Message = map["message"].AsString();
-            SimulationKey = map["simulation_key"].AsUUID();
         }
     }
 
     public class DeleteRegionMessage : IMessage
     {
         public UUID ID;
-        public UUID SimulationKey;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
             map["id"] = OSD.FromUUID(ID);
-            map["simulation_key"] = OSD.FromUUID(SimulationKey);
             return map;
         }
 
         public void Deserialize(OSDMap map)
         {
             ID = map["id"].AsUUID();
-            SimulationKey = map["simulation_key"].AsUUID();
         }
     }
 
@@ -222,13 +213,11 @@ namespace OpenMetaverse.Messages.CableBeach
     public class RegionUpdateMessage : IMessage
     {
         public RegionInfo Region;
-        public UUID SimulationKey;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
             map["region"] = Region.Serialize();
-            map["simulation_key"] = OSD.FromUUID(SimulationKey);
             return map;
         }
 
@@ -236,7 +225,6 @@ namespace OpenMetaverse.Messages.CableBeach
         {
             Region = new RegionInfo();
             Region.Deserialize((OSDMap)map["region"]);
-            SimulationKey = map["simulation_key"].AsUUID();
         }
     }
 
@@ -442,7 +430,7 @@ namespace OpenMetaverse.Messages.CableBeach
     public class RequestCapabilitiesMessage : IMessage
     {
         public Uri Identity;
-        public string[] Capabilities;
+        public Uri[] Capabilities;
 
         public OSDMap Serialize()
         {
@@ -451,7 +439,7 @@ namespace OpenMetaverse.Messages.CableBeach
 
             OSDArray array = new OSDArray(Capabilities.Length);
             for (int i = 0; i < Capabilities.Length; i++)
-                array.Add(OSD.FromString(Capabilities[i]));
+                array.Add(OSD.FromUri(Capabilities[i]));
             map["capabilities"] = array;
 
             return map;
@@ -462,22 +450,22 @@ namespace OpenMetaverse.Messages.CableBeach
             Identity = map["identity"].AsUri();
 
             OSDArray array = (OSDArray)map["capabilities"];
-            Capabilities = new string[array.Count];
+            Capabilities = new Uri[array.Count];
             for (int i = 0; i < array.Count; i++)
-                Capabilities[i] = array[i].AsString();
+                Capabilities[i] = array[i].AsUri();
         }
     }
 
     public class RequestCapabilitiesReplyMessage : IMessage
     {
-        public Dictionary<string, Uri> Capabilities;
+        public Dictionary<Uri, Uri> Capabilities;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
             OSDMap caps = new OSDMap(Capabilities.Count);
-            foreach (KeyValuePair<string, Uri> entry in Capabilities)
-                caps.Add(entry.Key, OSD.FromUri(entry.Value));
+            foreach (KeyValuePair<Uri, Uri> entry in Capabilities)
+                caps.Add(entry.Key.ToString(), OSD.FromUri(entry.Value));
             map["capabilities"] = caps;
             return map;
         }
@@ -485,15 +473,332 @@ namespace OpenMetaverse.Messages.CableBeach
         public void Deserialize(OSDMap map)
         {
             OSDMap caps = (OSDMap)map["capabilities"];
-            Capabilities = new Dictionary<string, Uri>(caps.Count);
+            Capabilities = new Dictionary<Uri, Uri>(caps.Count);
             foreach (KeyValuePair<string, OSD> entry in caps)
-                Capabilities.Add(entry.Key, entry.Value.AsUri());
+                Capabilities.Add(new Uri(entry.Key), entry.Value.AsUri());
         }
     }
 
     #endregion Identity Messages
 
+    #region Asset Messages
+
+    public abstract class MetadataBlock
+    {
+        public UUID ID;
+        public string Name;
+        public string Description;
+        public DateTime CreationDate;
+        public string ContentType;
+        public byte[] SHA256;
+        public bool Temporary;
+        public Dictionary<string, Uri> Methods;
+
+        public abstract OSDMap Serialize();
+        public abstract void Deserialize(OSDMap map);
+    }
+
+    public class MetadataDefault : MetadataBlock
+    {
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["id"] = OSD.FromUUID(ID);
+            map["name"] = OSD.FromString(Name);
+            map["description"] = OSD.FromString(Description);
+            map["creation_date"] = OSD.FromDate(CreationDate);
+            map["content_type"] = OSD.FromString(ContentType);
+            map["sha256"] = OSD.FromBinary(SHA256);
+            map["temporary"] = OSD.FromBoolean(Temporary);
+            OSDMap methodsMap = new OSDMap(Methods.Count);
+            foreach (KeyValuePair<string, Uri> entry in Methods)
+                methodsMap.Add(entry.Key, OSD.FromUri(entry.Value));
+            map["methods"] = methodsMap;
+            return map;
+        }
+
+        public override void Deserialize(OSDMap map)
+        {
+            ID = map["id"].AsUUID();
+            Name = map["name"].AsString();
+            Description = map["description"].AsString();
+            CreationDate = map["creation_date"].AsDate();
+            ContentType = map["content_type"].AsString();
+            SHA256 = map["sha256"].AsBinary();
+            Temporary = map["temporary"].AsBoolean();
+            OSDMap methodsMap = map["methods"] as OSDMap;
+            if (methodsMap != null)
+            {
+                Methods = new Dictionary<string, Uri>(methodsMap.Count);
+                foreach (KeyValuePair<string, OSD> entry in methodsMap)
+                    Methods.Add(entry.Key, entry.Value.AsUri());
+            }
+            else
+            {
+                Methods = new Dictionary<string, Uri>(0);
+            }
+        }
+    }
+
+    public class MetadataJPEG2000 : MetadataBlock
+    {
+        public int Components;
+        public int[] LayerEnds;
+
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["id"] = OSD.FromUUID(ID);
+            map["name"] = OSD.FromString(Name);
+            map["description"] = OSD.FromString(Description);
+            map["creation_date"] = OSD.FromDate(CreationDate);
+            map["content_type"] = OSD.FromString(ContentType);
+            map["sha256"] = OSD.FromBinary(SHA256);
+            map["temporary"] = OSD.FromBoolean(Temporary);
+            OSDMap methodsMap = new OSDMap(Methods.Count);
+            foreach (KeyValuePair<string, Uri> entry in Methods)
+                methodsMap.Add(entry.Key, OSD.FromUri(entry.Value));
+            map["methods"] = methodsMap;
+            map["components"] = OSD.FromInteger(Components);
+            OSDArray layerEndsArray = new OSDArray(LayerEnds.Length);
+            for (int i = 0; i < LayerEnds.Length; i++)
+                layerEndsArray.Add(OSD.FromInteger(LayerEnds[i]));
+            map["layer_ends"] = layerEndsArray;
+            return map;
+        }
+
+        public override void Deserialize(OSDMap map)
+        {
+            ID = map["id"].AsUUID();
+            Name = map["name"].AsString();
+            Description = map["description"].AsString();
+            CreationDate = map["creation_date"].AsDate();
+            ContentType = map["content_type"].AsString();
+            SHA256 = map["sha256"].AsBinary();
+            Temporary = map["temporary"].AsBoolean();
+            OSDMap methodsMap = map["methods"] as OSDMap;
+            if (methodsMap != null)
+            {
+                Methods = new Dictionary<string, Uri>(methodsMap.Count);
+                foreach (KeyValuePair<string, OSD> entry in methodsMap)
+                    Methods.Add(entry.Key, entry.Value.AsUri());
+            }
+            else
+            {
+                Methods = new Dictionary<string, Uri>(0);
+            }
+            Components = map["components"].AsInteger();
+            OSDArray layerEndsArray = map["layer_ends"] as OSDArray;
+            if (layerEndsArray != null)
+            {
+                LayerEnds = new int[layerEndsArray.Count];
+                for (int i = 0; i < layerEndsArray.Count; i++)
+                    LayerEnds[i] = layerEndsArray[i].AsInteger();
+            }
+            else
+            {
+                LayerEnds = new int[0];
+            }
+        }
+    }
+
+    public class GetAssetMetadataMessage : IMessage
+    {
+        public MetadataBlock Metadata;
+
+        public OSDMap Serialize()
+        {
+            return Metadata.Serialize();
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("components"))
+                Metadata = new MetadataJPEG2000();
+            else
+                Metadata = new MetadataDefault();
+
+            Metadata.Deserialize(map);
+        }
+    }
+
+    public class CreateAssetMessage : IMessage
+    {
+        public MetadataBlock Metadata;
+        public string Base64Data;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["metadata"] = Metadata.Serialize();
+            map["base64_data"] = OSD.FromString(Base64Data);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDMap metadata = (OSDMap)map["metadata"];
+
+            if (metadata.ContainsKey("components"))
+                Metadata = new MetadataJPEG2000();
+            else
+                Metadata = new MetadataDefault();
+
+            Metadata.Deserialize(metadata);
+            Base64Data = map["base64_data"].AsString();
+        }
+    }
+
+    public class CreateAssetReplyMessage : IMessage
+    {
+        public UUID AssetID;
+        public Uri AssetUri;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["asset_uri"] = OSD.FromUri(AssetUri);
+            map["asset_id"] = OSD.FromUUID(AssetID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            AssetUri = map["asset_uri"].AsUri();
+            AssetID = map["asset_id"].AsUUID();
+        }
+    }
+
+    #endregion Asset Messages
+
     #region Inventory Messages
+
+    public abstract class InventoryBlock
+    {
+        public UUID ID;
+        public UUID ParentID;
+        public string Name;
+        public UUID OwnerID;
+
+        public abstract OSDMap Serialize();
+        public abstract void Deserialize(OSDMap map);
+    }
+
+    public class InventoryBlockItem : InventoryBlock
+    {
+        public UUID AssetID;
+        public string ContentType;
+        public UUID CreatorID;
+        public UUID GroupID;
+        public string Description;
+        public bool GroupOwned;
+        public uint PermsBase;
+        public uint PermsEveryone;
+        public uint PermsGroup;
+        public uint PermsNext;
+        public uint PermsOwner;
+        public int SalePrice;
+        public SaleType SaleType;
+        public uint Flags;
+        public DateTime CreationDate;
+
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["id"] = OSD.FromUUID(ID);
+            map["parent_id"] = OSD.FromUUID(ParentID);
+            map["name"] = OSD.FromString(Name);
+            map["owner_id"] = OSD.FromUUID(OwnerID);
+            map["asset_id"] = OSD.FromUUID(AssetID);
+            map["content_type"] = OSD.FromString(ContentType);
+            map["creator_id"] = OSD.FromUUID(CreatorID);
+            map["group_id"] = OSD.FromUUID(GroupID);
+            map["description"] = OSD.FromString(Description);
+            map["group_owned"] = OSD.FromBoolean(GroupOwned);
+            map["perms_base"] = OSD.FromUInteger(PermsBase);
+            map["perms_everyone"] = OSD.FromUInteger(PermsEveryone);
+            map["perms_group"] = OSD.FromUInteger(PermsGroup);
+            map["perms_next"] = OSD.FromUInteger(PermsNext);
+            map["perms_owner"] = OSD.FromUInteger(PermsOwner);
+            map["sale_price"] = OSD.FromInteger(SalePrice);
+            map["sale_type"] = OSD.FromInteger((byte)SaleType);
+            map["flags"] = OSD.FromInteger((int)Flags);
+            map["creation_date"] = OSD.FromInteger((int)Utils.DateTimeToUnixTime(CreationDate));
+            return map;
+        }
+
+        public override void Deserialize(OSDMap map)
+        {
+            ID = map["id"].AsUUID();
+            ParentID = map["parent_id"].AsUUID();
+            Name = map["name"].AsString();
+            OwnerID = map["owner_id"].AsUUID();
+            AssetID = map["asset_id"].AsUUID();
+            ContentType = map["content_type"].AsString();
+            CreatorID = map["creator_id"].AsUUID();
+            GroupID = map["group_id"].AsUUID();
+            Description = map["description"].AsString();
+            GroupOwned = map["group_owned"].AsBoolean();
+            PermsBase = map["perms_base"].AsUInteger();
+            PermsEveryone = map["perms_everyone"].AsUInteger();
+            PermsGroup = map["perms_group"].AsUInteger();
+            PermsNext = map["perms_next"].AsUInteger();
+            PermsOwner = map["perms_owner"].AsUInteger();
+        }
+    }
+
+    public class InventoryBlockFolder : InventoryBlock
+    {
+        public string PreferredContentType;
+        public int Version;
+        public InventoryBlock[] Children;
+
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["id"] = OSD.FromUUID(ID);
+            map["parent_id"] = OSD.FromUUID(ParentID);
+            map["name"] = OSD.FromString(Name);
+            map["owner_id"] = OSD.FromUUID(OwnerID);
+            map["preferred_content_type"] = OSD.FromString(PreferredContentType);
+            map["version"] = OSD.FromInteger(Version);
+            if (Children != null)
+            {
+                OSDArray array = new OSDArray(Children.Length);
+                for (int i = 0; i < Children.Length; i++)
+                    array.Add(Children[i].Serialize());
+                map["children"] = array;
+            }
+            else
+            {
+                map["children"] = new OSDArray(0);
+            }
+            return map;
+        }
+
+        public override void Deserialize(OSDMap map)
+        {
+            ID = map["id"].AsUUID();
+            ParentID = map["parent_id"].AsUUID();
+            Name = map["name"].AsString();
+            OwnerID = map["owner_id"].AsUUID();
+            PreferredContentType = map["preferred_content_type"].AsString();
+            Version = map["version"].AsInteger();
+            OSDArray array = (OSDArray)map["children"];
+            Children = new InventoryBlock[array.Count];
+            for (int i = 0; i < array.Count; i++)
+            {
+                OSDMap childMap = (OSDMap)array[i];
+                InventoryBlock obj;
+                if (childMap.ContainsKey("asset_id"))
+                    obj = new InventoryBlockItem();
+                else
+                    obj = new InventoryBlockFolder();
+                obj.Deserialize(childMap);
+                Children[i] = obj;
+            }
+        }
+    }
 
     public class CreateInventoryMessage : IMessage
     {
@@ -532,195 +837,44 @@ namespace OpenMetaverse.Messages.CableBeach
         }
     }
 
-    public class CreateFolderMessage : IMessage
+    public class CreateObjectMessage : IMessage
     {
         public Uri Identity;
-        public UUID FolderID;
-        public UUID ParentID;
-        public string Name;
-        public string PreferredContentType;
+        public InventoryBlock Object;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
             map["identity"] = OSD.FromUri(Identity);
-            map["folder_id"] = OSD.FromUUID(FolderID);
-            map["parent_id"] = OSD.FromUUID(ParentID);
-            map["name"] = OSD.FromString(Name);
-            map["preferred_content_type"] = OSD.FromString(PreferredContentType);
+            map["object"] = Object.Serialize();
             return map;
         }
 
         public void Deserialize(OSDMap map)
         {
             Identity = map["identity"].AsUri();
-            FolderID = map["folder_id"].AsUUID();
-            ParentID = map["parent_id"].AsUUID();
-            Name = map["name"].AsString();
-            PreferredContentType = map["preferred_content_type"].AsString();
+            OSDMap objMap = (OSDMap)map["object"];
+            if (objMap.ContainsKey("asset_id"))
+                Object = new InventoryBlockItem();
+            else
+                Object = new InventoryBlockFolder();
+            Object.Deserialize(objMap);
         }
     }
 
-    public class CreateFolderReplyMessage : IMessage
-    {
-        public UUID FolderID;
-
-        public OSDMap Serialize()
-        {
-            OSDMap map = new OSDMap();
-            map["folder_id"] = OSD.FromUUID(FolderID);
-            return map;
-        }
-
-        public void Deserialize(OSDMap map)
-        {
-            FolderID = map["folder_id"].AsUUID();
-        }
-    }
-
-    public class CreateItemMessage : IMessage
-    {
-        public Uri Identity;
-        public UUID ItemID;
-        public string Name;
-        public string Description;
-        public string ContentType;
-        public UUID AssetID;
-        public UUID ParentID;
-
-        public OSDMap Serialize()
-        {
-            OSDMap map = new OSDMap();
-            map["identity"] = OSD.FromUri(Identity);
-            map["item_id"] = OSD.FromUUID(ItemID);
-            map["name"] = OSD.FromString(Name);
-            map["description"] = OSD.FromString(Description);
-            map["content_type"] = OSD.FromString(ContentType);
-            map["asset_id"] = OSD.FromUUID(AssetID);
-            map["parent_id"] = OSD.FromUUID(ParentID);
-            return map;
-        }
-
-        public void Deserialize(OSDMap map)
-        {
-            Identity = map["identity"].AsUri();
-            ItemID = map["item_id"].AsUUID();
-            Name = map["name"].AsString();
-            Description = map["description"].AsString();
-            ContentType = map["content_type"].AsString();
-            AssetID = map["asset_id"].AsUUID();
-            ParentID = map["parent_id"].AsUUID();
-        }
-    }
-
-    public class CreateItemReplyMessage : IMessage
-    {
-        public UUID ItemID;
-
-        public OSDMap Serialize()
-        {
-            OSDMap map = new OSDMap();
-            map["item_id"] = OSD.FromUUID(ItemID);
-            return map;
-        }
-
-        public void Deserialize(OSDMap map)
-        {
-            ItemID = map["item_id"].AsUUID();
-        }
-    }
-
-    public class MoveItemMessage : IMessage
-    {
-        public Uri Identity;
-        public UUID ItemID;
-        public string Name;
-        public string Description;
-        public string ContentType;
-        public UUID AssetID;
-        public UUID ParentID;
-
-        public OSDMap Serialize()
-        {
-            OSDMap map = new OSDMap();
-            map["identity"] = OSD.FromUri(Identity);
-            map["item_id"] = OSD.FromUUID(ItemID);
-            map["name"] = OSD.FromString(Name);
-            map["description"] = OSD.FromString(Description);
-            map["content_type"] = OSD.FromString(ContentType);
-            map["asset_id"] = OSD.FromUUID(AssetID);
-            map["parent_id"] = OSD.FromUUID(ParentID);
-            return map;
-        }
-
-        public void Deserialize(OSDMap map)
-        {
-            Identity = map["identity"].AsUri();
-            ItemID = map["item_id"].AsUUID();
-            Name = map["name"].AsString();
-            Description = map["description"].AsString();
-            ContentType = map["content_type"].AsString();
-            AssetID = map["asset_id"].AsUUID();
-            ParentID = map["parent_id"].AsUUID();
-        }
-    }
-
-    public class MoveItemReplyMessage : IMessage
-    {
-        public UUID ItemID;
-
-        public OSDMap Serialize()
-        {
-            OSDMap map = new OSDMap();
-            map["item_id"] = OSD.FromUUID(ItemID);
-            return map;
-        }
-
-        public void Deserialize(OSDMap map)
-        {
-            ItemID = map["item_id"].AsUUID();
-        }
-    }
-
-    public class UpdateItemMessage : IMessage
-    {
-        public Uri Identity;
-        public string Name;
-        public string Description;
-        public string ContentType;
-        public UUID AssetID;
-
-        public OSDMap Serialize()
-        {
-            OSDMap map = new OSDMap();
-            map["identity"] = OSD.FromUri(Identity);
-            map["name"] = OSD.FromString(Name);
-            map["description"] = OSD.FromString(Description);
-            map["content_type"] = OSD.FromString(ContentType);
-            map["asset_id"] = OSD.FromUUID(AssetID);
-            return map;
-        }
-
-        public void Deserialize(OSDMap map)
-        {
-            Identity = map["identity"].AsUri();
-            Name = map["name"].AsString();
-            Description = map["description"].AsString();
-            ContentType = map["content_type"].AsString();
-            AssetID = map["asset_id"].AsUUID();
-        }
-    }
-
-    public class UpdateItemReplyMessage : IMessage
+    public class CreateObjectReplyMessage : IMessage
     {
         public bool Success;
         public string Message;
+        public InventoryBlock Object;
 
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
             map["success"] = OSD.FromBoolean(Success);
             map["message"] = OSD.FromString(Message);
+            if (Object != null)
+                map["object"] = Object.Serialize();
             return map;
         }
 
@@ -728,6 +882,20 @@ namespace OpenMetaverse.Messages.CableBeach
         {
             Success = map["success"].AsBoolean();
             Message = map["message"].AsString();
+            OSDMap objMap = map["object"] as OSDMap;
+            if (objMap != null)
+            {
+                if (objMap.ContainsKey("asset_id"))
+                    Object = new InventoryBlockItem();
+                else
+                    Object = new InventoryBlockFolder();
+
+                Object.Deserialize(objMap);
+            }
+            else
+            {
+                Object = null;
+            }
         }
     }
 
@@ -751,134 +919,11 @@ namespace OpenMetaverse.Messages.CableBeach
         }
     }
 
-    public interface InventoryObject
-    {
-        OSDMap Serialize();
-        void Deserialize(OSDMap map);
-    }
-
-    public class InventoryObjectItem : InventoryObject
-    {
-        public UUID ID;
-        public UUID ParentID;
-        public string Name;
-        public UUID OwnerID;
-        public UUID AssetID;
-        public string ContentType;
-        public UUID CreatorID;
-        public UUID GroupID;
-        public string Description;
-        public bool GroupOwned;
-        public uint PermsBase;
-        public uint PermsEveryone;
-        public uint PermsGroup;
-        public uint PermsNext;
-        public uint PermsOwner;
-        public int SalePrice;
-        public SaleType SaleType;
-        public uint Flags;
-        public DateTime CreationDate;
-
-        public OSDMap Serialize()
-        {
-            OSDMap map = new OSDMap();
-            map["id"] = OSD.FromUUID(ID);
-            map["parent_id"] = OSD.FromUUID(ParentID);
-            map["name"] = OSD.FromString(Name);
-            map["owner_id"] = OSD.FromUUID(OwnerID);
-            map["asset_id"] = OSD.FromUUID(AssetID);
-            map["content_type"] = OSD.FromString(ContentType);
-            map["creator_id"] = OSD.FromUUID(CreatorID);
-            map["group_id"] = OSD.FromUUID(GroupID);
-            map["description"] = OSD.FromString(Description);
-            map["group_owned"] = OSD.FromBoolean(GroupOwned);
-            map["perms_base"] = OSD.FromUInteger(PermsBase);
-            map["perms_everyone"] = OSD.FromUInteger(PermsEveryone);
-            map["perms_group"] = OSD.FromUInteger(PermsGroup);
-            map["perms_next"] = OSD.FromUInteger(PermsNext);
-            map["perms_owner"] = OSD.FromUInteger(PermsOwner);
-            map["sale_price"] = OSD.FromInteger(SalePrice);
-            map["sale_type"] = OSD.FromInteger((byte)SaleType);
-            map["flags"] = OSD.FromInteger((int)Flags);
-            map["creation_date"] = OSD.FromInteger((int)Utils.DateTimeToUnixTime(CreationDate));
-            return map;
-        }
-
-        public void Deserialize(OSDMap map)
-        {
-            ID = map["id"].AsUUID();
-            ParentID = map["parent_id"].AsUUID();
-            Name = map["name"].AsString();
-            OwnerID = map["owner_id"].AsUUID();
-            AssetID = map["asset_id"].AsUUID();
-            ContentType = map["content_type"].AsString();
-            CreatorID = map["creator_id"].AsUUID();
-            GroupID = map["group_id"].AsUUID();
-            Description = map["description"].AsString();
-            GroupOwned = map["group_owned"].AsBoolean();
-            PermsBase = map["perms_base"].AsUInteger();
-            PermsEveryone = map["perms_everyone"].AsUInteger();
-            PermsGroup = map["perms_group"].AsUInteger();
-            PermsNext = map["perms_next"].AsUInteger();
-            PermsOwner = map["perms_owner"].AsUInteger();
-        }
-    }
-
-    public class InventoryObjectFolder : InventoryObject
-    {
-        public UUID ID;
-        public UUID ParentID;
-        public string Name;
-        public UUID OwnerID;
-        public string PreferredContentType;
-        public int Version;
-        public InventoryObject[] Children;
-
-        public OSDMap Serialize()
-        {
-            OSDMap map = new OSDMap();
-            map["id"] = OSD.FromUUID(ID);
-            map["parent_id"] = OSD.FromUUID(ParentID);
-            map["name"] = OSD.FromString(Name);
-            map["owner_id"] = OSD.FromUUID(OwnerID);
-            map["preferred_content_type"] = OSD.FromString(PreferredContentType);
-            map["version"] = OSD.FromInteger(Version);
-            OSDArray array = new OSDArray(Children.Length);
-            for (int i = 0; i < Children.Length; i++)
-                array.Add(Children[i].Serialize());
-            map["children"] = array;
-            return map;
-        }
-
-        public void Deserialize(OSDMap map)
-        {
-            ID = map["id"].AsUUID();
-            ParentID = map["parent_id"].AsUUID();
-            Name = map["name"].AsString();
-            OwnerID = map["owner_id"].AsUUID();
-            PreferredContentType = map["preferred_content_type"].AsString();
-            Version = map["version"].AsInteger();
-            OSDArray array = (OSDArray)map["children"];
-            Children = new InventoryObject[array.Count];
-            for (int i = 0; i < array.Count; i++)
-            {
-                OSDMap childMap = (OSDMap)array[i];
-                InventoryObject obj;
-                if (childMap.ContainsKey("asset_id"))
-                    obj = new InventoryObjectItem();
-                else
-                    obj = new InventoryObjectFolder();
-                obj.Deserialize(childMap);
-                Children[i] = obj;
-            }
-        }
-    }
-
     public class FetchObjectReplyMessage : IMessage
     {
         public bool Success;
         public string Message;
-        public InventoryObject Object;
+        public InventoryBlock Object;
 
         public OSDMap Serialize()
         {
@@ -898,9 +943,9 @@ namespace OpenMetaverse.Messages.CableBeach
             if (objMap != null)
             {
                 if (objMap.ContainsKey("asset_id"))
-                    Object = new InventoryObjectItem();
+                    Object = new InventoryBlockItem();
                 else
-                    Object = new InventoryObjectFolder();
+                    Object = new InventoryBlockFolder();
 
                 Object.Deserialize(objMap);
             }
@@ -908,6 +953,46 @@ namespace OpenMetaverse.Messages.CableBeach
             {
                 Object = null;
             }
+        }
+    }
+
+    public class PurgeFolderMessage : IMessage
+    {
+        public Uri Identity;
+        public UUID FolderID;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["identity"] = OSD.FromUri(Identity);
+            map["folder_id"] = OSD.FromUUID(FolderID);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Identity = map["identity"].AsUri();
+            FolderID = map["folder_id"].AsUUID();
+        }
+    }
+
+    public class PurgeFolderReplyMessage : IMessage
+    {
+        public bool Success;
+        public string Message;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["success"] = OSD.FromBoolean(Success);
+            map["message"] = OSD.FromString(Message);
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            Success = map["success"].AsBoolean();
+            Message = map["message"].AsString();
         }
     }
 
@@ -1060,7 +1145,7 @@ namespace OpenMetaverse.Messages.CableBeach
         public IPAddress IP;
         public string ClientVersion;
         public Dictionary<Uri, OSD> Attributes;
-        public Dictionary<Uri, Dictionary<string, Uri>> Services;
+        public Dictionary<Uri, Dictionary<Uri, Uri>> Services;
         public Uri CallbackUri;
 
         public OSDMap Serialize()
@@ -1082,11 +1167,11 @@ namespace OpenMetaverse.Messages.CableBeach
             map["attributes"] = attributes;
 
             OSDMap services = new OSDMap(Services.Count);
-            foreach (KeyValuePair<Uri, Dictionary<string, Uri>> serviceEntry in Services)
+            foreach (KeyValuePair<Uri, Dictionary<Uri, Uri>> serviceEntry in Services)
             {
                 OSDMap service = new OSDMap();
-                foreach (KeyValuePair<string, Uri> entry in serviceEntry.Value)
-                    service.Add(entry.Key, OSD.FromUri(entry.Value));
+                foreach (KeyValuePair<Uri, Uri> entry in serviceEntry.Value)
+                    service.Add(entry.Key.ToString(), OSD.FromUri(entry.Value));
                 services.Add(serviceEntry.Key.ToString(), service);
             }
             map["services"] = services;
@@ -1113,13 +1198,13 @@ namespace OpenMetaverse.Messages.CableBeach
                 Attributes.Add(new Uri(entry.Key), entry.Value);
 
             OSDMap servicesMap = (OSDMap)map["services"];
-            Services = new Dictionary<Uri, Dictionary<string, Uri>>(servicesMap.Count);
+            Services = new Dictionary<Uri, Dictionary<Uri, Uri>>(servicesMap.Count);
             foreach (KeyValuePair<string, OSD> serviceEntry in servicesMap)
             {
                 OSDMap serviceMap = (OSDMap)serviceEntry.Value;
-                Dictionary<string, Uri> service = new Dictionary<string, Uri>(serviceMap.Count);
+                Dictionary<Uri, Uri> service = new Dictionary<Uri, Uri>(serviceMap.Count);
                 foreach (KeyValuePair<string, OSD> entry in serviceMap)
-                    service.Add(entry.Key, entry.Value.AsUri());
+                    service.Add(new Uri(entry.Key), entry.Value.AsUri());
                 Services.Add(new Uri(serviceEntry.Key), service);
             }
 

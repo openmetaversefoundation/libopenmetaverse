@@ -25,6 +25,7 @@
  */
 
 using System;
+using System.Net;
 using System.Text;
 
 namespace OpenMetaverse
@@ -326,6 +327,12 @@ namespace OpenMetaverse
             dest[pos + 1] = (byte)((value >> 8) % 256);
         }
 
+        public static void UInt16ToBytesBig(ushort value, byte[] dest, int pos)
+        {
+            dest[pos] = (byte)((value >> 8) % 256);
+            dest[pos + 1] = (byte)(value % 256);
+        }
+
         /// <summary>
         /// Convert an integer to a byte array in little endian format
         /// </summary>
@@ -384,6 +391,14 @@ namespace OpenMetaverse
             dest[pos + 1] = (byte)((value >> 8) % 256);
             dest[pos + 2] = (byte)((value >> 16) % 256);
             dest[pos + 3] = (byte)((value >> 24) % 256);
+        }
+
+        public static void UIntToBytesBig(uint value, byte[] dest, int pos)
+        {
+            dest[pos] = (byte)((value >> 24) % 256);
+            dest[pos + 1] = (byte)((value >> 16) % 256);
+            dest[pos + 2] = (byte)((value >> 8) % 256);
+            dest[pos + 3] = (byte)(value % 256);
         }
 
         /// <summary>
@@ -1023,6 +1038,33 @@ namespace OpenMetaverse
         public static byte SwapWords(byte value)
         {
             return (byte)(((value & 0xF0) >> 4) | ((value & 0x0F) << 4));
+        }
+
+        /// <summary>
+        /// Attempts to convert a string representation of a hostname or IP
+        /// address to a <seealso cref="System.Net.IPAddress"/>
+        /// </summary>
+        /// <param name="hostname">Hostname to convert to an IPAddress</param>
+        /// <returns>Converted IP address object, or null if the conversion
+        /// failed</returns>
+        public static IPAddress HostnameToIPv4(string hostname)
+        {
+            // Is it already a valid IP?
+            IPAddress ip;
+            if (IPAddress.TryParse(hostname, out ip))
+                return ip;
+
+            IPAddress[] hosts = Dns.GetHostEntry(hostname).AddressList;
+
+            for (int i = 0; i < hosts.Length; i++)
+            {
+                IPAddress host = hosts[i];
+
+                if (host.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                    return host;
+            }
+
+            return null;
         }
 
         #endregion Miscellaneous

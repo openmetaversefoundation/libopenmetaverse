@@ -84,15 +84,15 @@ namespace GridImageUpload
 
         private void LoadImage()
         {
-            if (FileName == null || FileName == "")
+            if (String.IsNullOrEmpty(FileName))
                 return;
 
-            string lowfilename = FileName.ToLower();
+            string extension = System.IO.Path.GetExtension(FileName).ToLower();
             Bitmap bitmap = null;
 
             try
             {
-                if (lowfilename.EndsWith(".jp2") || lowfilename.EndsWith(".j2c"))
+                if (extension == ".jp2" || extension == ".j2c")
                 {
                     Image image;
                     ManagedImage managedImage;
@@ -107,7 +107,7 @@ namespace GridImageUpload
                 }
                 else
                 {
-                    if (lowfilename.EndsWith(".tga"))
+                    if (extension == ".tga")
                         bitmap = LoadTGAClass.LoadTGA(FileName);
                     else
                         bitmap = (Bitmap)System.Drawing.Image.FromFile(FileName);
@@ -170,6 +170,7 @@ namespace GridImageUpload
             catch (Exception ex)
             {
                 UploadData = null;
+                cmdSave.Enabled = false;
                 cmdUpload.Enabled = false;
                 MessageBox.Show(ex.ToString(), "SL Image Upload", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -178,7 +179,33 @@ namespace GridImageUpload
             picPreview.Image = bitmap;
             lblSize.Text = Math.Round((double)UploadData.Length / 1024.0d, 2) + "KB";
             prgUpload.Maximum = UploadData.Length;
+
+            cmdSave.Enabled = true;
             if (Client.Network.Connected) cmdUpload.Enabled = true;
+        }
+
+        private void SaveImage()
+        {
+            if (String.IsNullOrEmpty(FileName))
+                return;
+
+            if (UploadData != null)
+            {
+                try
+                {
+                    System.IO.File.WriteAllBytes(FileName, UploadData);
+                    MessageBox.Show("Saved " + UploadData.Length + " bytes to " + FileName);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to save " + FileName + ": " + ex.Message, Application.ProductName,
+                        MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                }
+            }
+            else
+            {
+                MessageBox.Show("No image data loaded", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
         }
 
         private void cmdConnect_Click(object sender, EventArgs e)
@@ -187,15 +214,11 @@ namespace GridImageUpload
             {
                 cmdConnect.Text = "Disconnect";
                 cboLoginURL.Enabled = txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = false;
-                LoginParams lp = new LoginParams();
-                lp.FirstName = txtFirstName.Text;
-                lp.LastName = txtLastName.Text;
-                lp.Password = txtPassword.Text;
+                LoginParams lp = Client.Network.DefaultLoginParams(txtFirstName.Text, txtLastName.Text, txtPassword.Text,
+                    "GridImageUpload", Application.ProductVersion);
                 lp.URI = cboLoginURL.Text;
-                lp.Start = "last";
                 cmdConnect.Enabled = false;
                 Client.Network.BeginLogin(lp);
-                return;
             }
             else
             {
@@ -250,6 +273,18 @@ namespace GridImageUpload
             }
         }
 
+        private void cmdSave_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.Filter = "JPEG2000 File (*.j2c)|*.j2c;";
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                FileName = dialog.FileName;
+                SaveImage();
+            }
+        }
+
         private void cmdUpload_Click(object sender, EventArgs e)
         {
             SendToID = UUID.Zero;
@@ -297,6 +332,7 @@ namespace GridImageUpload
             {
                 prgUpload.Value = 0;
                 cmdLoad.Enabled = false;
+                cmdSave.Enabled = false;
                 cmdUpload.Enabled = false;
                 grpLogin.Enabled = false;
 
@@ -304,16 +340,6 @@ namespace GridImageUpload
 
                 Client.Inventory.RequestCreateItemFromAsset(UploadData, name, "Uploaded with SL Image Upload", AssetType.Texture,
                     InventoryType.Texture, Client.Inventory.FindFolderForType(AssetType.Texture),
-
-                    delegate(CapsClient client, long bytesReceived, long bytesSent, long totalBytesToReceive, long totalBytesToSend)
-                    {
-                        if (bytesSent > 0)
-                        {
-                            Transferred = (int)bytesSent;
-                            BeginInvoke((MethodInvoker)delegate() { SetProgress(); });
-                        }
-                    },
-
                     delegate(bool success, string status, UUID itemID, UUID assetID)
                     {
                         if (this.InvokeRequired)
@@ -382,6 +408,7 @@ namespace GridImageUpload
         private void EnableControls()
         {
             cmdLoad.Enabled = true;
+            cmdSave.Enabled = true;
             cmdUpload.Enabled = true;
             grpLogin.Enabled = true;
         }

@@ -176,12 +176,6 @@ namespace VoiceTest
             EventQueueRunningEvent.Set();
         }
 
-        static void client_OnLogMessage(string message, Helpers.LogLevel level)
-        {
-            if (level == Helpers.LogLevel.Warning || level == Helpers.LogLevel.Error)
-                Console.WriteLine(level.ToString() + ": " + message);
-        }
-
         static void voice_OnProvisionAccount(string username, string password)
         {
             VoiceAccount = username;

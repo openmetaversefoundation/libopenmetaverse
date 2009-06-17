@@ -674,15 +674,12 @@ namespace OpenMetaverse
                 //body["user_look_at"] = ulat;
 
                 OSDMap body = req.Serialize();
-                byte[] postData = StructuredData.OSDParser.SerializeLLSDXmlBytes(body);
 
                 CapsClient capsPost = new CapsClient(url);
-                capsPost.BeginGetResponse(postData);
-
+                capsPost.BeginGetResponse(body, OSDFormat.Xml, simulator.Client.Settings.CAPS_TIMEOUT);
             }
             else
             {
-
                 ParcelPropertiesUpdatePacket request = new ParcelPropertiesUpdatePacket();
 
                 request.AgentData.AgentID = simulator.Client.Self.AgentID;
@@ -709,7 +706,7 @@ namespace OpenMetaverse
                 request.ParcelData.UserLocation = this.UserLocation;
                 request.ParcelData.UserLookAt = this.UserLookAt;
 
-                simulator.SendPacket(request, true);
+                simulator.SendPacket(request);
             }
 
             UpdateOtherCleanTime(simulator);
@@ -728,7 +725,7 @@ namespace OpenMetaverse
             request.ParcelData.LocalID = this.LocalID;
             request.ParcelData.OtherCleanTime = this.OtherCleanTime;
 
-            simulator.SendPacket(request, true);
+            simulator.SendPacket(request);
         }
     }
 

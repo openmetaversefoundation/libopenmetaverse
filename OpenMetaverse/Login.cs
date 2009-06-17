@@ -88,8 +88,7 @@ namespace OpenMetaverse
         public string Password;
         /// <summary>The agents starting location once logged in</summary>
         /// <remarks>Either "last", "home", or a string encoded URI 
-        /// containing the simulator name and x/y/z coordinates e.g: uri:hooper&128&152&17</remarks>
-        /// <seealso cref="M:StartLocation"/>
+        /// containing the simulator name and x/y/z coordinates e.g: uri:hooper&amp;128&amp;152&amp;17</remarks>
         public string Start;
         /// <summary>A string containing the client software channel information</summary>
         /// <example>Second Life Release</example>
@@ -118,6 +117,10 @@ namespace OpenMetaverse
         public string ReadCritical;
         /// <summary>An array of string sent to the login server to enable various options</summary>
         public string[] Options;
+
+        /// <summary>A randomly generated ID to distinguish between login attempts. This value is only used
+        /// internally in the library and is never sent over the wire</summary>
+        internal UUID LoginID;
     }
 
     public struct BuddyListEntry
@@ -294,6 +297,7 @@ namespace OpenMetaverse
                 SecureSessionID = ParseUUID("secure_session_id", reply);
                 FirstName = ParseString("first_name", reply).Trim('"');
                 LastName = ParseString("last_name", reply).Trim('"');
+                // "first_login" for brand new accounts
                 StartLocation = ParseString("start_location", reply);
                 AgentAccess = ParseString("agent_access", reply);
                 LookAt = ParseVector3("look_at", reply);
@@ -304,6 +308,15 @@ namespace OpenMetaverse
                 {
                     Login = (string)reply["login"];
                     Success = Login == "true";
+
+                    // Parse redirect options
+                    if (Login == "indeterminate")
+                    {
+                        NextUrl = ParseString("next_url", reply);
+                        NextDuration = (int)ParseUInt("next_duration", reply);
+                        NextMethod = ParseString("next_method", reply);
+                        NextOptions = (string[])((ArrayList)reply["next_options"]).ToArray(typeof(string));
+                    }
                 }
             }
             catch (Exception e)
@@ -315,24 +328,28 @@ namespace OpenMetaverse
 
             // Home
             OSDMap home = null;
-            OSD osdHome = OSDParser.DeserializeLLSDNotation(reply["home"].ToString());
-
-            if (osdHome.Type == OSDType.Map)
+            if (reply.ContainsKey("home"))
             {
-                home = (OSDMap)osdHome;
+                OSD osdHome = OSDParser.DeserializeLLSDNotation(reply["home"].ToString());
 
-                OSD homeRegion;
-                if (home.TryGetValue("region_handle", out homeRegion) && homeRegion.Type == OSDType.Array)
+                if (osdHome.Type == OSDType.Map)
                 {
-                    OSDArray homeArray = (OSDArray)homeRegion;
-                    if (homeArray.Count == 2)
-                        HomeRegion = Utils.UIntsToLong((uint)homeArray[0].AsInteger(), (uint)homeArray[1].AsInteger());
-                    else
-                        HomeRegion = 0;
-                }
+                    home = (OSDMap) osdHome;
 
-                HomePosition = ParseVector3("position", home);
-                HomeLookAt = ParseVector3("look_at", home);
+                    OSD homeRegion;
+                    if (home.TryGetValue("region_handle", out homeRegion) && homeRegion.Type == OSDType.Array)
+                    {
+                        OSDArray homeArray = (OSDArray) homeRegion;
+                        if (homeArray.Count == 2)
+                            HomeRegion = Utils.UIntsToLong((uint) homeArray[0].AsInteger(),
+                                                           (uint) homeArray[1].AsInteger());
+                        else
+                            HomeRegion = 0;
+                    }
+
+                    HomePosition = ParseVector3("position", home);
+                    HomeLookAt = ParseVector3("look_at", home);
+                }
             }
             else
             {
@@ -389,233 +406,13 @@ namespace OpenMetaverse
             }
         }
 
-        public void ToXmlRpc(XmlWriter writer)
-        {
-            writer.WriteStartElement("methodResponse");
-            {
-                writer.WriteStartElement("params");
-                writer.WriteStartElement("param");
-                writer.WriteStartElement("value");
-                writer.WriteStartElement("struct");
-                {
-                    if (Success)
-                    {
-                        // session_id
-                        WriteXmlRpcStringMember(writer, false, "session_id", SessionID.ToString());
-
-                        // ui-config
-                        WriteXmlRpcArrayStart(writer, "ui-config");
-                        WriteXmlRpcStringMember(writer, true, "allow_first_life", "Y");
-                        WriteXmlRpcArrayEnd(writer);
-
-                        // inventory-lib-owner
-                        WriteXmlRpcArrayStart(writer, "inventory-lib-owner");
-                        WriteXmlRpcStringMember(writer, true, "agent_id", LibraryOwner.ToString());
-                        WriteXmlRpcArrayEnd(writer);
-
-                        // start_location
-                        WriteXmlRpcStringMember(writer, false, "start_location", StartLocation);
-
-                        // seconds_since_epoch
-                        WriteXmlRpcIntMember(writer, false, "seconds_since_epoch", (uint)SecondsSinceEpoch);
-
-                        // event_categories (TODO)
-                        WriteXmlRpcArrayStart(writer, "event_categories");
-                        WriteXmlRpcCategory(writer, "Default Event Category", 20);
-                        WriteXmlRpcArrayEnd(writer);
-
-                        // tutorial_setting (TODO)
-                        WriteXmlRpcArrayStart(writer, "tutorial_setting");
-                        WriteXmlRpcTutorialSetting(writer, "http://127.0.0.1/tutorial/");
-                        WriteXmlRpcArrayEnd(writer);
-
-                        // classified_categories (TODO)
-                        WriteXmlRpcArrayStart(writer, "classified_categories");
-                        WriteXmlRpcCategory(writer, "Default Classified Category", 1);
-                        WriteXmlRpcArrayEnd(writer);
-
-                        // inventory-root
-                        WriteXmlRpcArrayStart(writer, "inventory-root");
-                        WriteXmlRpcStringMember(writer, true, "folder_id", InventoryRoot.ToString());
-                        WriteXmlRpcArrayEnd(writer);
-
-                        // sim_port
-                        WriteXmlRpcIntMember(writer, false, "sim_port", (uint)SimPort);
-
-                        // agent_id
-                        WriteXmlRpcStringMember(writer, false, "agent_id", AgentID.ToString());
-
-                        // agent_access
-                        WriteXmlRpcStringMember(writer, false, "agent_access", AgentAccess);
-
-                        // inventory-skeleton
-                        WriteXmlRpcArrayStart(writer, "inventory-skeleton");
-                        if (InventorySkeleton != null)
-                        {
-                            for (int i = 0; i < InventorySkeleton.Length; i++)
-                            {
-                                WriteXmlRpcInventoryItem(writer, InventorySkeleton[i].Name, InventorySkeleton[i].ParentUUID,
-                                    (uint)InventorySkeleton[i].Version, (uint)InventorySkeleton[i].PreferredType,InventorySkeleton[i].UUID);
-                            }
-                        }
-                        else
-                        {
-                            WriteXmlRpcInventoryItem(writer, "Inventory", UUID.Zero, 1, (uint)AssetType.Folder, InventoryRoot);
-                        }
-                        WriteXmlRpcArrayEnd(writer);
-
-                        // buddy-list
-                        WriteXmlRpcArrayStart(writer, "buddy-list");
-                        if (BuddyList != null)
-                        {
-                            for (int i = 0; i < BuddyList.Length; i++)
-                            {
-                                WriteXmlRpcBuddy(writer, (uint)BuddyList[i].buddy_rights_given, 
-                                    (uint)BuddyList[i].buddy_rights_has, UUID.Parse(BuddyList[i].buddy_id));
-                            }
-                        }
-                        else
-                        {
-                            //WriteXmlRpcBuddy(writer, 0, 0, UUID.Random());
-                        }
-                        WriteXmlRpcArrayEnd(writer);
-
-                        // first_name
-                        WriteXmlRpcStringMember(writer, false, "first_name", FirstName);
-
-                        // global-textures
-                        WriteXmlRpcArrayStart(writer, "global-textures");
-                        writer.WriteStartElement("value");
-                        writer.WriteStartElement("struct");
-                        {
-                            WriteXmlRpcStringMember(writer, false, "sun_texture_id", "cce0f112-878f-4586-a2e2-a8f104bba271");
-                            WriteXmlRpcStringMember(writer, false, "cloud_texture_id", "fc4b9f0b-d008-45c6-96a4-01dd947ac621");
-                            WriteXmlRpcStringMember(writer, false, "moon_texture_id", "d07f6eed-b96a-47cd-b51d-400ad4a1c428");
-                        }
-                        writer.WriteEndElement();
-                        writer.WriteEndElement();
-                        WriteXmlRpcArrayEnd(writer);
-
-                        // inventory-skel-lib
-                        WriteXmlRpcArrayStart(writer, "inventory-skel-lib");
-                        if (LibrarySkeleton != null)
-                        {
-                            for (int i = 0; i < LibrarySkeleton.Length; i++)
-                            {
-                                WriteXmlRpcInventoryItem(writer, LibrarySkeleton[i].Name, LibrarySkeleton[i].ParentUUID,
-                                    (uint)LibrarySkeleton[i].Version, (uint)LibrarySkeleton[i].PreferredType, LibrarySkeleton[i].UUID);
-                            }
-                        }
-                        else
-                        {
-                            WriteXmlRpcInventoryItem(writer, "Library", UUID.Zero, 1, (uint)AssetType.Folder, LibraryRoot);
-                        }
-                        WriteXmlRpcArrayEnd(writer);
-
-                        // seed_capability
-                        WriteXmlRpcStringMember(writer, false, "seed_capability", SeedCapability);
-
-                        // gestures
-                        WriteXmlRpcArrayStart(writer, "gestures");
-                        WriteXmlRpcGesture(writer, UUID.Random(), UUID.Random());
-                        WriteXmlRpcArrayEnd(writer);
-
-                        // sim_ip
-                        WriteXmlRpcStringMember(writer, false, "sim_ip", SimIP.ToString());
-
-                        // inventory-lib-root
-                        WriteXmlRpcArrayStart(writer, "inventory-lib-root");
-                        WriteXmlRpcStringMember(writer, true, "folder_id", LibraryRoot.ToString());
-                        WriteXmlRpcArrayEnd(writer);
-
-                        // login-flags
-                        WriteXmlRpcArrayStart(writer, "login-flags");
-                        writer.WriteStartElement("value");
-                        writer.WriteStartElement("struct");
-                        {
-                            WriteXmlRpcStringMember(writer, false, "gendered", "Y");
-                            WriteXmlRpcStringMember(writer, false, "stipend_since_login", "N");
-                            WriteXmlRpcStringMember(writer, false, "ever_logged_in", "Y");
-                            if (DateTime.Now.IsDaylightSavingTime())
-                                WriteXmlRpcStringMember(writer, false, "daylight_savings", "Y");
-                            else
-                                WriteXmlRpcStringMember(writer, false, "daylight_savings", "N");
-                        }
-                        writer.WriteEndElement();
-                        writer.WriteEndElement();
-                        WriteXmlRpcArrayEnd(writer);
-
-                        // inventory_host
-                        WriteXmlRpcStringMember(writer, false, "inventory_host", IPAddress.Loopback.ToString());
-
-                        // home
-                        OSDArray homeRegionHandle = new OSDArray(2);
-                        uint homeRegionX, homeRegionY;
-                        Utils.LongToUInts(HomeRegion, out homeRegionX, out homeRegionY);
-                        homeRegionHandle.Add(OSD.FromReal((double)homeRegionX));
-                        homeRegionHandle.Add(OSD.FromReal((double)homeRegionY));
-
-                        OSDMap home = new OSDMap(3);
-                        home["region_handle"] = homeRegionHandle;
-                        home["position"] = OSD.FromVector3(HomePosition);
-                        home["look_at"] = OSD.FromVector3(HomeLookAt);
-
-                        WriteXmlRpcStringMember(writer, false, "home", OSDParser.SerializeLLSDNotation(home));
-
-                        // message
-                        WriteXmlRpcStringMember(writer, false, "message", Message);
-
-                        // look_at
-                        string lookAt = OSDParser.SerializeLLSDNotation(OSD.FromVector3(LookAt));
-                        WriteXmlRpcStringMember(writer, false, "look_at", lookAt);
-
-                        // login
-                        WriteXmlRpcStringMember(writer, false, "login", "true");
-
-                        // event_notifications
-                        WriteXmlRpcArrayStart(writer, "event_notifications");
-                        WriteXmlRpcArrayEnd(writer);
-
-                        // secure_session_id
-                        WriteXmlRpcStringMember(writer, false, "secure_session_id", SecureSessionID.ToString());
-
-                        // region_x
-                        WriteXmlRpcIntMember(writer, false, "region_x", (uint)RegionX);
-
-                        // last_name
-                        WriteXmlRpcStringMember(writer, false, "last_name", LastName);
-
-                        // region_y
-                        WriteXmlRpcIntMember(writer, false, "region_y", (uint)RegionY);
-
-                        // circuit_code
-                        WriteXmlRpcIntMember(writer, false, "circuit_code", (uint)CircuitCode);
-
-                        // initial-outfit
-                        WriteXmlRpcArrayStart(writer, "initial-outfit");
-                        WriteXmlRpcArrayEnd(writer);
-                    }
-                    else
-                    {
-                        // Login failure
-                    }
-                }
-                writer.WriteEndElement();
-                writer.WriteEndElement();
-                writer.WriteEndElement();
-                writer.WriteEndElement();
-            }
-            writer.WriteEndElement();
-            writer.Close();
-        }
-
         #region Parsing Helpers
 
         public static uint ParseUInt(string key, OSDMap reply)
         {
             OSD osd;
             if (reply.TryGetValue(key, out osd))
-                return (uint)osd.AsInteger();
+                return osd.AsUInteger();
             else
                 return 0;
         }
@@ -665,7 +462,7 @@ namespace OpenMetaverse
         public static string ParseString(string key, Hashtable reply)
         {
             if (reply.ContainsKey(key))
-                return (string)reply[key];
+                    return String.Format("{0}", reply[key]);
 
             return String.Empty;
         }
@@ -807,6 +604,12 @@ namespace OpenMetaverse
 
         public InventoryFolder[] ParseInventorySkeleton(string key, Hashtable reply)
         {
+            UUID ownerID;
+            if(key.Equals("inventory-skel-lib"))
+                ownerID = LibraryOwner;
+            else
+                ownerID = AgentID;
+
             List<InventoryFolder> folders = new List<InventoryFolder>();
 
             if (reply.ContainsKey(key) && reply[key] is ArrayList)
@@ -822,6 +625,8 @@ namespace OpenMetaverse
                         folder.ParentUUID = ParseUUID("parent_id", map);
                         folder.PreferredType = (AssetType)ParseUInt("type_default", map);
                         folder.Version = (int)ParseUInt("version", map);
+                        folder.OwnerID = ownerID;
+
                         folders.Add(folder);
                     }
                 }
@@ -831,161 +636,6 @@ namespace OpenMetaverse
         }
 
         #endregion Parsing Helpers
-
-        #region XmlRpc Serializing Helpers
-
-        public static void WriteXmlRpcStringMember(XmlWriter writer, bool wrapWithValueStruct, string name, string value)
-        {
-            if (wrapWithValueStruct)
-            {
-                writer.WriteStartElement("value");
-                writer.WriteStartElement("struct");
-            }
-            writer.WriteStartElement("member");
-            {
-                writer.WriteElementString("name", name);
-                writer.WriteStartElement("value");
-                {
-                    writer.WriteElementString("string", value);
-                }
-                writer.WriteEndElement();
-            }
-            writer.WriteEndElement();
-            if (wrapWithValueStruct)
-            {
-                writer.WriteEndElement();
-                writer.WriteEndElement();
-            }
-        }
-
-        public static void WriteXmlRpcIntMember(XmlWriter writer, bool wrapWithValueStruct, string name, uint value)
-        {
-            if (wrapWithValueStruct)
-            {
-                writer.WriteStartElement("value");
-                writer.WriteStartElement("struct");
-            }
-            writer.WriteStartElement("member");
-            {
-                writer.WriteElementString("name", name);
-                writer.WriteStartElement("value");
-                {
-                    writer.WriteElementString("i4", value.ToString());
-                }
-                writer.WriteEndElement();
-            }
-            writer.WriteEndElement();
-            if (wrapWithValueStruct)
-            {
-                writer.WriteEndElement();
-                writer.WriteEndElement();
-            }
-        }
-
-        public static void WriteXmlRpcArrayStart(XmlWriter writer, string name)
-        {
-            writer.WriteStartElement("member");
-            writer.WriteElementString("name", name);
-            writer.WriteStartElement("value");
-            writer.WriteStartElement("array");
-            writer.WriteStartElement("data");
-        }
-
-        public static void WriteXmlRpcArrayEnd(XmlWriter writer)
-        {
-            writer.WriteEndElement();
-            writer.WriteEndElement();
-            writer.WriteEndElement();
-            writer.WriteEndElement();
-        }
-
-        public static void WriteXmlRpcEmptyValueStruct(XmlWriter writer)
-        {
-            writer.WriteStartElement("value");
-            writer.WriteStartElement("struct");
-            writer.WriteEndElement();
-            writer.WriteEndElement();
-        }
-
-        public static void WriteXmlRpcCategory(XmlWriter writer, string name, uint id)
-        {
-            writer.WriteStartElement("value");
-            writer.WriteStartElement("struct");
-            {
-                WriteXmlRpcStringMember(writer, false, "category_name", name);
-                WriteXmlRpcIntMember(writer, false, "category_id", id);
-            }
-            writer.WriteEndElement();
-            writer.WriteEndElement();
-        }
-
-        public static void WriteXmlRpcInventoryItem(XmlWriter writer, string name, UUID parentID,
-            uint version, uint typeDefault, UUID folderID)
-        {
-            writer.WriteStartElement("value");
-            writer.WriteStartElement("struct");
-            {
-                WriteXmlRpcStringMember(writer, false, "name", name);
-                WriteXmlRpcStringMember(writer, false, "parent_id", parentID.ToString());
-                WriteXmlRpcIntMember(writer, false, "version", version);
-                WriteXmlRpcIntMember(writer, false, "type_default", typeDefault);
-                WriteXmlRpcStringMember(writer, false, "folder_id", folderID.ToString());
-            }
-            writer.WriteEndElement();
-            writer.WriteEndElement();
-        }
-
-        public static void WriteXmlRpcBuddy(XmlWriter writer, uint rightsHas, uint rightsGiven, UUID buddyID)
-        {
-            writer.WriteStartElement("value");
-            writer.WriteStartElement("struct");
-            {
-                WriteXmlRpcIntMember(writer, false, "buddy_rights_has", rightsHas);
-                WriteXmlRpcIntMember(writer, false, "buddy_rights_given", rightsGiven);
-                WriteXmlRpcStringMember(writer, false, "buddy_id", buddyID.ToString());
-            }
-            writer.WriteEndElement();
-            writer.WriteEndElement();
-        }
-
-        public static void WriteXmlRpcGesture(XmlWriter writer, UUID assetID, UUID itemID)
-        {
-            writer.WriteStartElement("value");
-            writer.WriteStartElement("struct");
-            {
-                WriteXmlRpcStringMember(writer, false, "asset_id", assetID.ToString());
-                WriteXmlRpcStringMember(writer, false, "item_id", itemID.ToString());
-            }
-            writer.WriteEndElement();
-            writer.WriteEndElement();
-        }
-
-        public static void WriteXmlRpcTutorialSetting(XmlWriter writer, string url)
-        {
-            writer.WriteStartElement("value");
-            writer.WriteStartElement("struct");
-            {
-                WriteXmlRpcStringMember(writer, false, "tutorial_url", url);
-            }
-            writer.WriteEndElement();
-            writer.WriteEndElement();
-
-            writer.WriteStartElement("value");
-            writer.WriteStartElement("struct");
-            {
-                writer.WriteStartElement("member");
-                {
-                    writer.WriteElementString("name", "use_tutorial");
-                    writer.WriteStartElement("value");
-                    writer.WriteEndElement();
-                }
-                writer.WriteEndElement();
-            }
-            writer.WriteEndElement();
-            writer.WriteEndElement();
-        }
-
-        #endregion XmlRpc Serializing Helpers
     }
 
     #endregion Structs
@@ -1250,6 +900,9 @@ namespace OpenMetaverse
         private void BeginLogin()
         {
             LoginParams loginParams = CurrentContext.Value;
+            // Generate a random ID to identify this login attempt
+            loginParams.LoginID = UUID.Random();
+            CurrentContext = loginParams;
 
             #region Sanity Check loginParams
 
@@ -1350,7 +1003,7 @@ namespace OpenMetaverse
                 loginRequest.OnComplete += new CapsClient.CompleteCallback(LoginReplyLLSDHandler);
                 loginRequest.UserData = CurrentContext;
                 UpdateLoginStatus(LoginStatus.ConnectingToLogin, String.Format("Logging in as {0} {1}...", loginParams.FirstName, loginParams.LastName));
-                loginRequest.BeginGetResponse(OSDParser.SerializeLLSDXmlBytes(loginLLSD), "application/xml+llsd");
+                loginRequest.BeginGetResponse(loginLLSD, OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
 
                 #endregion
             }
@@ -1399,13 +1052,20 @@ namespace OpenMetaverse
                     XmlRpcRequest request = new XmlRpcRequest(CurrentContext.Value.MethodName, loginArray);
 
                     // Start the request
-                    Thread requestThread = new Thread(new ThreadStart(
+                    Thread requestThread = new Thread(
                         delegate()
                         {
-                            LoginReplyXmlRpcHandler(
-                                request.Send(CurrentContext.Value.URI, CurrentContext.Value.Timeout),
-                                loginParams);
-                        }));
+                            try
+                            {
+                                LoginReplyXmlRpcHandler(
+                                    request.Send(CurrentContext.Value.URI, CurrentContext.Value.Timeout),
+                                    loginParams);
+                            }
+                            catch (WebException e)
+                            {
+                                UpdateLoginStatus(LoginStatus.Failed, "Error opening the login server connection: " + e.Message);
+                            }
+                        });
                     requestThread.Name = "XML-RPC Login";
                     requestThread.Start();
                 }
@@ -1451,24 +1111,27 @@ namespace OpenMetaverse
             uint regionY = 0;
 
             // Fetch the login response
+            if (response == null || !(response.Value is Hashtable))
+            {
+                UpdateLoginStatus(LoginStatus.Failed, "Invalid or missing login response from the server");
+                Logger.Log("Invalid or missing login response from the server", Helpers.LogLevel.Warning);
+                return;
+            }
+
             try
             {
-                reply.Parse(response.Value as Hashtable);
-                if (context.GetHashCode() != CurrentContext.Value.GetHashCode())
+                reply.Parse((Hashtable)response.Value);
+                if (context.LoginID != CurrentContext.Value.LoginID)
                 {
-                    Logger.Log("Login Response does not match login request", Helpers.LogLevel.Warning);
-                    // TODO: Although the hash codes to not match the login appears to work correctly if
-                    // we don't exit the process here. Need to look into why the hashcodes do not match with Mono.
-                    // See LIBOMV-485 for additional information
-                    //
-                    // Temporarily disabling this to allow mono based clients to login with XML-RPC
-                    //return;
+                    Logger.Log("Login response does not match login request. Only one login can be attempted at a time",
+                        Helpers.LogLevel.Error);
+                    return;
                 }
             }
             catch (Exception e)
             {
-                UpdateLoginStatus(LoginStatus.Failed, "Error retrieving the login response from the server " + e.Message );
-                Logger.Log("Login response failure: " + e.Message + " " + e.StackTrace, Helpers.LogLevel.Debug);
+                UpdateLoginStatus(LoginStatus.Failed, "Error retrieving the login response from the server: " + e.Message);
+                Logger.Log("Login response failure: " + e.Message + " " + e.StackTrace, Helpers.LogLevel.Warning);
                 return;
             }
 
@@ -1544,7 +1207,8 @@ namespace OpenMetaverse
                 UpdateLoginStatus(LoginStatus.Redirecting, "Redirecting login...");
                 LoginParams loginParams = CurrentContext.Value;
                 loginParams.URI = reply.NextUrl;
-                //CurrentContext.Value.MethodName = reply.next_method;
+                loginParams.MethodName = reply.NextMethod;
+                loginParams.Options = reply.NextOptions;
 
                 // Sleep for some amount of time while the servers work
                 int seconds = reply.NextDuration;
@@ -1552,10 +1216,7 @@ namespace OpenMetaverse
                     Helpers.LogLevel.Info);
                 Thread.Sleep(seconds * 1000);
 
-                // Ignore next_options for now
                 CurrentContext = loginParams;
-                
-                // Ignore next_options and next_duration for now
                 BeginLogin();
             }
             else if (reply.Success)
