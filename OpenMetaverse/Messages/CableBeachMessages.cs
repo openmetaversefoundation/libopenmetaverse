@@ -47,7 +47,7 @@ namespace OpenMetaverse.Messages.CableBeach
         public Uri Owner;
         public RegionFlags Flags;
         public int AgentCount;
-        public Dictionary<string, Uri> Capabilities;
+        public Dictionary<Uri, Uri> Capabilities;
         public float WaterHeight;
         public Vector3 DefaultPosition;
         public Vector3 DefaultLookAt;
