@@ -243,6 +243,10 @@ namespace OpenMetaverse
                             download.TimeSinceLastPacket = 0;
                             RequestImage(download.ID, download.ImageType, download.Priority, download.DiscardLevel, packet);
                         }
+                        if (download.TimeSinceLastPacket > _Client.Settings.PIPELINE_REQUEST_TIMEOUT)
+                        {
+                            resetEvents[transfer.RequestSlot].Set();
+                        }
                     }
                 }
             }
@@ -528,14 +532,14 @@ namespace OpenMetaverse
             if (task.Transfer.PacketsSeen != null && task.Transfer.PacketsSeen.Count > 0)
                 packet = GetFirstMissingPacket(task.Transfer.PacketsSeen);
 
-            // Start the timeout timer
-            resetEvents[task.RequestSlot].Reset();
-
             // Request the texture
             RequestImage(task.RequestID, task.Type, task.Transfer.Priority, task.Transfer.DiscardLevel, packet);
 
+            // Set starting time
+            task.Transfer.TimeSinceLastPacket = 0;
+
             // Don't release this worker slot until texture is downloaded or timeout occurs
-            if (!resetEvents[task.RequestSlot].WaitOne(_Client.Settings.PIPELINE_REQUEST_TIMEOUT, false))
+            if (!resetEvents[task.RequestSlot].WaitOne())
             {
                 // Timed out
                 Logger.Log("Worker " + task.RequestSlot + " timeout waiting for texture " + task.RequestID + " to download got " +
@@ -743,7 +747,7 @@ namespace OpenMetaverse
                 if (task != null)
                 {
                     // reset the timeout interval since we got data
-                    resetEvents[task.RequestSlot].Reset();
+                    task.Transfer.TimeSinceLastPacket = 0;
 
                     if (task.Transfer.Size == 0)
                     {
