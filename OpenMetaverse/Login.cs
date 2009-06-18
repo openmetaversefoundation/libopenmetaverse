@@ -910,11 +910,6 @@ namespace OpenMetaverse
 
         #endregion
 
-        #region Settings
-        //public int CapsTimeout;
-
-        #endregion
-
         #region Private Methods
 
         private void BeginLogin()
