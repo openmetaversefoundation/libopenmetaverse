@@ -364,14 +364,16 @@ namespace Prebuild.Core.Targets
 
 					SubType subType = project.Files.GetSubType(file);
 
+                    if (file.EndsWith("Settings.Designer.cs"))
+                        subType = SubType.Settings;
+
 					if (subType != SubType.Code && subType != SubType.Settings && subType != SubType.Designer
 						&& subType != SubType.CodeBehind)
 					{
 						ps.WriteLine("    <EmbeddedResource Include=\"{0}\">", file.Substring(0, file.LastIndexOf('.')) + ".resx");
 						ps.WriteLine("      <DependentUpon>{0}</DependentUpon>", Path.GetFileName(file));
-						ps.WriteLine("      <SubType>Designer</SubType>");
+						//ps.WriteLine("      <SubType>Designer</SubType>");
 						ps.WriteLine("    </EmbeddedResource>");
-						//
 					}
 
 					if (subType == SubType.Designer)
@@ -393,13 +395,13 @@ namespace Prebuild.Core.Targets
                              * These two lines screw up the designer, ie: if you make a change to a form,
                              * when you press Save VS corrups the .Designer.cs file 
                              */
-                            //ps.WriteLine("      <Generator>ResXFileCodeGenerator</Generator>");
-                            //ps.WriteLine("      <LastGenOutput>{0}</LastGenOutput>", Path.GetFileName(autogen_name));
+                            ps.WriteLine("      <Generator>ResXFileCodeGenerator</Generator>");
+                            ps.WriteLine("      <LastGenOutput>{0}</LastGenOutput>", Path.GetFileName(autogen_name));
                             ps.WriteLine("      <SubType>" + subType + "</SubType>");
                         }
 						
                         ps.WriteLine("    </EmbeddedResource>");
-						if (File.Exists(autogen_name))
+						/*if (File.Exists(autogen_name))
 						{
 							ps.WriteLine("    <Compile Include=\"{0}\">", autogen_name);
 							//ps.WriteLine("      <DesignTime>True</DesignTime>");
@@ -417,8 +419,10 @@ namespace Prebuild.Core.Targets
                             }
 	
                             ps.WriteLine("    </Compile>");
-						}
-						list.Add(autogen_name);
+						}*/
+
+                        if (!list.Contains(autogen_name))
+						    list.Add(autogen_name);
 					}
 					if (subType == SubType.Settings)
 					{
@@ -432,12 +436,12 @@ namespace Prebuild.Core.Targets
 						}
 						else
 						{
-							ps.WriteLine("      <SubType>Code</SubType>");
+                            string fileNameShort = fileName.Substring(0, fileName.LastIndexOf('.'));
+                            string fileNameShorter = fileNameShort.Substring(0, fileNameShort.LastIndexOf('.'));
+
 							ps.WriteLine("      <AutoGen>True</AutoGen>");
-							ps.WriteLine("      <DesignTimeSharedInput>True</DesignTimeSharedInput>");
-							string fileNameShort = fileName.Substring(0, fileName.LastIndexOf('.'));
-							string fileNameShorter = fileNameShort.Substring(0, fileNameShort.LastIndexOf('.'));
 							ps.WriteLine("      <DependentUpon>{0}</DependentUpon>", Path.GetFileName(fileNameShorter + ".settings"));
+                            ps.WriteLine("      <DesignTimeSharedInput>True</DesignTimeSharedInput>");
 						}
 						ps.WriteLine("    </{0}>", project.Files.GetBuildAction(file));
 					}
@@ -446,7 +450,7 @@ namespace Prebuild.Core.Targets
 						string path = Helper.NormalizePath(file);
                         string path_lower = path.ToLower();
 
-						if (!list.Contains(file))
+						//if (!list.Contains(file))
 						{
 							ps.Write("    <{0} ", project.Files.GetBuildAction(path));
 
@@ -474,10 +478,15 @@ namespace Prebuild.Core.Targets
 								int designer_index = path_lower.IndexOf(designer_format);
 								string file_name = path.Substring(0, designer_index);
 
-								if (File.Exists(file_name))
-									ps.WriteLine("      <DependentUpon>{0}</DependentUpon>", Path.GetFileName(file_name));
-								else if (File.Exists(file_name + ".resx"))
-									ps.WriteLine("      <DependentUpon>{0}</DependentUpon>", Path.GetFileName(file_name + ".resx"));
+                                if (File.Exists(file_name + ".cs"))
+                                {
+                                    ps.WriteLine("      <DependentUpon>{0}</DependentUpon>", Path.GetFileName(file_name + ".cs"));
+                                }
+                                else if (File.Exists(file_name + ".resx"))
+                                {
+                                    ps.WriteLine("      <AutoGen>True</AutoGen>");
+                                    ps.WriteLine("      <DependentUpon>{0}</DependentUpon>", Path.GetFileName(file_name + ".resx"));
+                                }
 							}
 							else if (subType == SubType.CodeBehind)
 							{
@@ -495,10 +504,10 @@ namespace Prebuild.Core.Targets
 								if (project.Files.GetBuildAction(file) != BuildAction.EmbeddedResource)
 								{
                                     //HACK: Ugly method of supporting WinForms
-                                    if (file.Contains("frm"))
+                                    if (file.Contains("frm") && !file.Contains("Designer.cs"))
                                         ps.WriteLine("      <SubType>Form</SubType>");
-                                    else
-                                        ps.WriteLine("      <SubType>{0}</SubType>", subType);
+                                    //else
+                                    //    ps.WriteLine("      <SubType>{0}</SubType>", subType);
 								}
 							}
 
