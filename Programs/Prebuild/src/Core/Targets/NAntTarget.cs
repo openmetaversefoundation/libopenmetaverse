@@ -390,7 +390,7 @@ namespace Prebuild.Core.Targets
                     foreach (string s in conf.Options.SuppressWarnings.Split(new char[] { ',', ' ' }))
                     {
                         // duplicate check
-                        if (!suppressWarningsArray.Contains(s))
+                        if (!String.IsNullOrEmpty(s) && !suppressWarningsArray.Contains(s))
                         {
                             suppressWarningsArray.Add(s);
                             ss.WriteLine("                <warning number=\"{0}\" />", s);
