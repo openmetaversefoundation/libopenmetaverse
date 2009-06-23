@@ -391,10 +391,40 @@ namespace OpenMetaverse.Imaging
                                         "Inconsistent packet data in JPEG2000 stream:\n");
                                     for (int j = 0; j < layerInfo.Length; j++)
                                         output.AppendFormat("Layer {0}: Start: {1} End: {2}\n", j, layerInfo[j].Start, layerInfo[j].End);
-                                    Logger.Log(output.ToString(), Helpers.LogLevel.Error);
+                                    Logger.DebugLog(output.ToString());
 
                                     success = false;
                                     break;
+                                }
+                            }
+
+                            if (!success)
+                            {
+                                for (int i = 0; i < layerInfo.Length; i++)
+                                {
+                                    if (i < layerInfo.Length - 1)
+                                        layerInfo[i].End = layerInfo[i + 1].Start - 1;
+                                    else
+                                        layerInfo[i].End = marshalled.length;
+                                }
+
+                                Logger.DebugLog("Corrected JPEG2000 packet data");
+                                success = true;
+
+                                for (int i = 0; i < layerInfo.Length; i++)
+                                {
+                                    if (layerInfo[i].Start >= layerInfo[i].End ||
+                                        (i > 0 && layerInfo[i].Start <= layerInfo[i - 1].End))
+                                    {
+                                        System.Text.StringBuilder output = new System.Text.StringBuilder(
+                                            "Still inconsistent packet data in JPEG2000 stream, giving up:\n");
+                                        for (int j = 0; j < layerInfo.Length; j++)
+                                            output.AppendFormat("Layer {0}: Start: {1} End: {2}\n", j, layerInfo[j].Start, layerInfo[j].End);
+                                        Logger.DebugLog(output.ToString());
+
+                                        success = false;
+                                        break;
+                                    }
                                 }
                             }
                         }
