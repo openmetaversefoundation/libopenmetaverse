@@ -912,6 +912,7 @@ namespace OpenMetaverse
                     if (vp.Group == 0)
                     {
                         set.VisualParam[vpIndex] = new AgentSetAppearancePacket.VisualParamBlock();
+                        set.VisualParam[vpIndex].ParamValue = Utils.FloatToByte(vp.DefaultValue, vp.MinValue, vp.MaxValue);
 
                         // Try and find this value in our collection of downloaded wearables
                         foreach (WearableData data in Wearables.Dictionary.Values)
