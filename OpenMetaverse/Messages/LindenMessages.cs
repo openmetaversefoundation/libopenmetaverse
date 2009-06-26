@@ -943,6 +943,44 @@ namespace OpenMetaverse.Messages.Linden
     [Serializable]
     public class RemoteParcelRequestMessage : IMessage
     {
+        /// <summary>Local sim position of the parcel we are looking up</summary>
+        public Vector3 Location;
+
+        /// <summary>Region handle of the parcel we are looking up</summary>
+        public ulong RegionHandle;
+
+        /// <summary>Region <see cref="UUID"/> of the parcel we are looking up</summary>
+        public UUID RegionID;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(3);
+            map["location"] = OSD.FromVector3(Location);
+            map["region_handle"] = OSD.FromULong(RegionHandle);
+            map["region_id"] = OSD.FromUUID(RegionID);
+            return map;
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            Location = map["location"].AsVector3();
+            RegionHandle = map["region_handle"].AsULong();
+            RegionID = map["region_id"].AsUUID();
+        }
+
+    }
+
+    [Serializable]
+    public class RemoteParcelResponseMessage : IMessage
+    {
         /// <summary>The grid-wide unique parcel ID</summary>
         public UUID ParcelID;
 

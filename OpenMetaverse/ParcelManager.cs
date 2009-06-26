@@ -1448,6 +1448,42 @@ namespace OpenMetaverse
 
             Client.Network.SendPacket(abandon, simulator);
         }
+
+        /// <summary>
+        /// Requests the UUID of the parcel in a remote region at a specified location
+        /// </summary>
+        /// <param name="location">Location of the parcel in the remote region</param>
+        /// <param name="regionHandle">Remote region handle</param>
+        /// <param name="regionID">Remote region UUID</param>
+        /// <returns>If successful UUID of the remote parcel, UUID.Zero otherwise</returns>
+        public UUID RequestRemoteParcelID(Vector3 location, ulong regionHandle, UUID regionID)
+        {
+            Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("RemoteParcelRequest");
+
+            if (url != null)
+            {
+                RemoteParcelRequestMessage msg = new RemoteParcelRequestMessage();
+                msg.Location = location;
+                msg.RegionHandle = regionHandle;
+                msg.RegionID = regionID;
+
+                try
+                {
+                    CapsClient request = new CapsClient(url);
+                    OSD result = request.GetResponse(msg.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+                    RemoteParcelResponseMessage response = new RemoteParcelResponseMessage();
+                    response.Deserialize((OSDMap)result);
+                    return response.ParcelID;
+                }
+                catch (Exception)
+                {
+                    Logger.Log("Failed to fetch remote parcel ID", Helpers.LogLevel.Debug, Client);
+                }
+            }
+            
+            return UUID.Zero;
+
+        }
         #endregion Public Methods
 
         #region Packet Handlers
