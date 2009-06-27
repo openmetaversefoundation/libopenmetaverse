@@ -149,7 +149,7 @@ namespace OpenMetaverse
         /// 
         /// </summary>
         /// <returns></returns>
-        public void GetObjectData(SerializationInfo info, StreamingContext ctxt)
+        public virtual void GetObjectData(SerializationInfo info, StreamingContext ctxt)
         {
             info.AddValue("UUID", UUID);
             info.AddValue("ParentUUID",ParentUUID );
@@ -254,7 +254,7 @@ namespace OpenMetaverse
         /// 
         /// </summary>
         /// <returns></returns>
-        new public void GetObjectData(SerializationInfo info, StreamingContext ctxt) 
+        override public void GetObjectData(SerializationInfo info, StreamingContext ctxt) 
         {
             base.GetObjectData(info,ctxt);
             info.AddValue("AssetUUID",AssetUUID,typeof(UUID));
@@ -739,7 +739,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Get Serilization data for this InventoryFolder object
         /// </summary>
-        new public void GetObjectData(SerializationInfo info, StreamingContext ctxt)
+        override public void GetObjectData(SerializationInfo info, StreamingContext ctxt)
         {
             base.GetObjectData(info,ctxt);
             info.AddValue("PreferredType", PreferredType, typeof(AssetType));
@@ -756,7 +756,6 @@ namespace OpenMetaverse
             Version=(int)info.GetValue("Version",typeof(int));
             DescendentCount = (int)info.GetValue("DescendentCount", typeof(int));
         }
-
 
         /// <summary>
         /// 
@@ -3192,13 +3191,19 @@ namespace OpenMetaverse
                     // Iterate folders in this packet
                     for (int i = 0; i < reply.FolderData.Length; i++)
                     {
-                        InventoryFolder folder = new InventoryFolder(reply.FolderData[i].FolderID);
-                        folder.ParentUUID = reply.FolderData[i].ParentID;
-                        folder.Name = Utils.BytesToString(reply.FolderData[i].Name);
-                        folder.PreferredType = (AssetType)reply.FolderData[i].Type;
-                        folder.OwnerID = reply.AgentData.OwnerID;
+                        // If folder already exists then ignore, we assume the version cache
+                        // logic is working and if the folder is stale then it should not be present.
 
-                        _Store[folder.UUID] = folder;
+                        if (!_Store.Contains(reply.FolderData[i].FolderID))
+                        {
+                            InventoryFolder folder = new InventoryFolder(reply.FolderData[i].FolderID);
+                            folder.ParentUUID = reply.FolderData[i].ParentID;
+                            folder.Name = Utils.BytesToString(reply.FolderData[i].Name);
+                            folder.PreferredType = (AssetType)reply.FolderData[i].Type;
+                            folder.OwnerID = reply.AgentData.OwnerID;
+
+                            _Store[folder.UUID] = folder;
+                        }
                     }
                 }
 
