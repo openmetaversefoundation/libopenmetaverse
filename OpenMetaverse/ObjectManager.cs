@@ -670,21 +670,55 @@ namespace OpenMetaverse
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
         public void ClickObject(Simulator simulator, uint localID)
         {
+            ClickObject(simulator, localID, Vector3.Zero, Vector3.Zero, 0, Vector3.Zero, Vector3.Zero, Vector3.Zero);
+        }
+
+        /// <summary>
+        /// Perform a click action on an object
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
+        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="uvCoord"></param>
+        /// <param name="stCoord"></param>
+        /// <param name="faceIndex"></param>
+        /// <param name="position"></param>
+        /// <param name="normal"></param>
+        /// <param name="binormal"></param>
+        public void ClickObject(Simulator simulator, uint localID, Vector3 uvCoord, Vector3 stCoord, int faceIndex, Vector3 position,
+            Vector3 normal, Vector3 binormal)
+        {
             ObjectGrabPacket grab = new ObjectGrabPacket();
             grab.AgentData.AgentID = Client.Self.AgentID;
             grab.AgentData.SessionID = Client.Self.SessionID;
             grab.ObjectData.GrabOffset = Vector3.Zero;
             grab.ObjectData.LocalID = localID;
+            grab.SurfaceInfo = new ObjectGrabPacket.SurfaceInfoBlock[1];
+            grab.SurfaceInfo[0] = new ObjectGrabPacket.SurfaceInfoBlock();
+            grab.SurfaceInfo[0].UVCoord = uvCoord;
+            grab.SurfaceInfo[0].STCoord = stCoord;
+            grab.SurfaceInfo[0].FaceIndex = faceIndex;
+            grab.SurfaceInfo[0].Position = position;
+            grab.SurfaceInfo[0].Normal = normal;
+            grab.SurfaceInfo[0].Binormal = binormal;
 
             Client.Network.SendPacket(grab, simulator);
 
             // TODO: If these hit the server out of order the click will fail 
             // and we'll be grabbing the object
+            Thread.Sleep(50);
 
             ObjectDeGrabPacket degrab = new ObjectDeGrabPacket();
             degrab.AgentData.AgentID = Client.Self.AgentID;
             degrab.AgentData.SessionID = Client.Self.SessionID;
             degrab.ObjectData.LocalID = localID;
+            degrab.SurfaceInfo = new ObjectDeGrabPacket.SurfaceInfoBlock[1];
+            degrab.SurfaceInfo[0] = new ObjectDeGrabPacket.SurfaceInfoBlock();
+            degrab.SurfaceInfo[0].UVCoord = uvCoord;
+            degrab.SurfaceInfo[0].STCoord = stCoord;
+            degrab.SurfaceInfo[0].FaceIndex = faceIndex;
+            degrab.SurfaceInfo[0].Position = position;
+            degrab.SurfaceInfo[0].Normal = normal;
+            degrab.SurfaceInfo[0].Binormal = binormal;
 
             Client.Network.SendPacket(degrab, simulator);
         }
