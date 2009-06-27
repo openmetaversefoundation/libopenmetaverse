@@ -890,7 +890,7 @@ namespace OpenMetaverse
         /// location</returns>
         public static string StartLocation(string sim, int x, int y, int z)
         {
-            return String.Format("uri:{0}&{1}&{2}&{3}", sim.ToLower(), x, y, z);
+            return String.Format("uri:{0}&{1}&{2}&{3}", sim, x, y, z);
         }
 
         #endregion

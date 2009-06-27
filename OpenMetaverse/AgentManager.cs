@@ -2285,9 +2285,8 @@ namespace OpenMetaverse
                 return false;
 
             teleportStat = TeleportStatus.None;
-            simName = simName.ToLower();
 
-            if (simName != Client.Network.CurrentSim.Name.ToLower())
+            if (simName != Client.Network.CurrentSim.Name)
             {
                 // Teleporting to a foreign sim
                 GridRegion region;
