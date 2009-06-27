@@ -3117,9 +3117,6 @@ namespace OpenMetaverse
                     teleportMessage = "Teleport finished";
                     teleportStat = TeleportStatus.Finished;
 
-                    // Disconnect from the previous sim
-                    Client.Network.DisconnectSim(simulator, true);
-
                     Logger.Log("Moved to new sim " + newSimulator.ToString(), Helpers.LogLevel.Info, Client);
                 }
                 else
