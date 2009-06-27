@@ -845,13 +845,13 @@ namespace OpenMetaverse.Tests
         }
 
         [Test]
-        public void RemoteParcelResponseMessage()
+        public void RemoteParcelRequestReply()
         {
-            RemoteParcelResponseMessage s = new RemoteParcelResponseMessage();
+            RemoteParcelRequestReply s = new RemoteParcelRequestReply();
             s.ParcelID = UUID.Random();
             OSDMap map = s.Serialize();
 
-            RemoteParcelResponseMessage t = new RemoteParcelResponseMessage();
+            RemoteParcelRequestReply t = new RemoteParcelRequestReply();
             t.Deserialize(map);
 
             Assert.AreEqual(s.ParcelID, t.ParcelID);
@@ -1152,23 +1152,23 @@ namespace OpenMetaverse.Tests
             DateTime messageTestTime = DateTime.UtcNow;
             for (int x = 0; x < TEST_ITER; x++)
             {
-                RemoteParcelResponseMessage s = new RemoteParcelResponseMessage();
+                RemoteParcelRequestReply s = new RemoteParcelRequestReply();
                 s.ParcelID = UUID.Random();
                 OSDMap map = s.Serialize();
 
-                RemoteParcelResponseMessage t = new RemoteParcelResponseMessage();
+                RemoteParcelRequestReply t = new RemoteParcelRequestReply();
                 t.Deserialize(map);
 
                 Assert.AreEqual(s.ParcelID, t.ParcelID);
             }
             TimeSpan duration = DateTime.UtcNow - messageTestTime;
-            Console.WriteLine("RemoteParcelResponseMessage: OMV Message System Serialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, duration);
+            Console.WriteLine("RemoteParcelRequestReply: OMV Message System Serialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, duration);
 
             BinaryFormatter formatter = new BinaryFormatter();
             DateTime xmlTestTime = DateTime.UtcNow;
             for (int x = 0; x < TEST_ITER; x++)
             {
-                RemoteParcelResponseMessage s = new RemoteParcelResponseMessage();
+                RemoteParcelRequestReply s = new RemoteParcelRequestReply();
                 s.ParcelID = UUID.Random();
                 
                 MemoryStream stream = new MemoryStream();
@@ -1176,12 +1176,12 @@ namespace OpenMetaverse.Tests
                 formatter.Serialize(stream, s);
 
                 stream.Seek(0, SeekOrigin.Begin);
-                RemoteParcelResponseMessage t = (RemoteParcelResponseMessage)formatter.Deserialize(stream);
+                RemoteParcelRequestReply t = (RemoteParcelRequestReply)formatter.Deserialize(stream);
 
                 Assert.AreEqual(s.ParcelID, t.ParcelID);
             }
             TimeSpan durationxml = DateTime.UtcNow - xmlTestTime;
-            Console.WriteLine("RemoteParcelResponseMessage: .NET BinarySerialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, durationxml);
+            Console.WriteLine("RemoteParcelRequestReply: .NET BinarySerialization/Deserialization Passes: {0} Total time: {1}", TEST_ITER, durationxml);
         }
 
 

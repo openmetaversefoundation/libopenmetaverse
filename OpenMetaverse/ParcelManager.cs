@@ -1462,7 +1462,7 @@ namespace OpenMetaverse
 
             if (url != null)
             {
-                RemoteParcelRequestMessage msg = new RemoteParcelRequestMessage();
+                RemoteParcelRequestRequest msg = new RemoteParcelRequestRequest();
                 msg.Location = location;
                 msg.RegionHandle = regionHandle;
                 msg.RegionID = regionID;
@@ -1471,7 +1471,7 @@ namespace OpenMetaverse
                 {
                     CapsClient request = new CapsClient(url);
                     OSD result = request.GetResponse(msg.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
-                    RemoteParcelResponseMessage response = new RemoteParcelResponseMessage();
+                    RemoteParcelRequestReply response = new RemoteParcelRequestReply();
                     response.Deserialize((OSDMap)result);
                     return response.ParcelID;
                 }

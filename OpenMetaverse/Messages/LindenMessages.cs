@@ -940,8 +940,14 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
-    [Serializable]
-    public class RemoteParcelRequestMessage : IMessage
+    public abstract class RemoteParcelRequestBlock
+    {
+        public abstract OSDMap Serialize();
+        public abstract void Deserialize(OSDMap map);
+    }
+
+    // variant A - the request to the simulator
+    public class RemoteParcelRequestRequest : RemoteParcelRequestBlock
     {
         /// <summary>Local sim position of the parcel we are looking up</summary>
         public Vector3 Location;
@@ -956,7 +962,7 @@ namespace OpenMetaverse.Messages.Linden
         /// Serialize the object
         /// </summary>
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap(3);
             map["location"] = OSD.FromVector3(Location);
@@ -969,7 +975,7 @@ namespace OpenMetaverse.Messages.Linden
         /// Deserialize the message
         /// </summary>
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             Location = map["location"].AsVector3();
             RegionHandle = map["region_handle"].AsULong();
@@ -978,8 +984,8 @@ namespace OpenMetaverse.Messages.Linden
 
     }
 
-    [Serializable]
-    public class RemoteParcelResponseMessage : IMessage
+    // variant B - the reply from the simulator
+    public class RemoteParcelRequestReply : RemoteParcelRequestBlock
     {
         /// <summary>The grid-wide unique parcel ID</summary>
         public UUID ParcelID;
@@ -988,7 +994,7 @@ namespace OpenMetaverse.Messages.Linden
         /// Serialize the object
         /// </summary>
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
             map["parcel_id"] = OSD.FromUUID(ParcelID);
@@ -999,11 +1005,42 @@ namespace OpenMetaverse.Messages.Linden
         /// Deserialize the message
         /// </summary>
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             ParcelID = map["parcel_id"].AsUUID();
         }
 
+    }
+
+    [Serializable]
+    public class RemoteParcelRequestMessage : IMessage
+    {
+        public RemoteParcelRequestBlock Request;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            return Request.Serialize();
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("parcel_id"))
+                Request = new RemoteParcelRequestReply();
+            else if (map.ContainsKey("location"))
+                Request = new RemoteParcelRequestRequest();
+            else
+                Logger.Log("Unable to deserialize RemoteParcelRequest: No message handler exists for method " + map["method"].AsString(), Helpers.LogLevel.Warning);
+
+            Request.Deserialize(map);
+        }
     }
     #endregion
 
