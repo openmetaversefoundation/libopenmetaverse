@@ -1329,6 +1329,7 @@ namespace OpenMetaverse
                 prim["name"] = OSD.FromString("Object");
                 prim["description"] = OSD.FromString(String.Empty);
             }
+
             prim["phantom"] = OSD.FromBoolean(((Flags & PrimFlags.Phantom) != 0));
             prim["physical"] = OSD.FromBoolean(((Flags & PrimFlags.Physics) != 0));
             prim["position"] = OSD.FromVector3(Position);
@@ -1336,11 +1337,13 @@ namespace OpenMetaverse
             prim["scale"] = OSD.FromVector3(Scale);
             prim["material"] = OSD.FromInteger((int)PrimData.Material);
             prim["shadows"] = OSD.FromBoolean(((Flags & PrimFlags.CastShadows) != 0));
-            prim["textures"] = Textures.GetOSD();
-            prim["volume"] = volume;
-            if (ParentID != 0)
-                prim["parentid"] = OSD.FromInteger(ParentID);
+            prim["parentid"] = OSD.FromInteger(ParentID);
 
+            prim["volume"] = volume;
+
+            if (Textures != null)
+                prim["textures"] = Textures.GetOSD();
+            
             if (Light != null)
                 prim["light"] = Light.GetOSD();
 
