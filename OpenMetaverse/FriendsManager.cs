@@ -490,6 +490,11 @@ namespace OpenMetaverse
             FindAgentPacket stalk = new FindAgentPacket();
             stalk.AgentBlock.Hunter = Client.Self.AgentID;
             stalk.AgentBlock.Prey = friendID;
+            stalk.AgentBlock.SpaceIP = 0; // Will be filled in by the simulator
+            stalk.LocationBlock = new FindAgentPacket.LocationBlockBlock[1];
+            stalk.LocationBlock[0] = new FindAgentPacket.LocationBlockBlock();
+            stalk.LocationBlock[0].GlobalX = 0.0; // Filled in by the simulator
+            stalk.LocationBlock[0].GlobalY = 0.0;
 
             Client.Network.SendPacket(stalk);
         }
