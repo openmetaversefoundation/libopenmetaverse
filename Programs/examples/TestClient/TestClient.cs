@@ -25,6 +25,7 @@ namespace OpenMetaverse.TestClient
         public InventoryFolder CurrentDirectory = null;
 
         private System.Timers.Timer updateTimer;
+        private UUID GroupMembersRequestID;
 
         /// <summary>
         /// 
@@ -117,12 +118,15 @@ namespace OpenMetaverse.TestClient
             {
                 GroupID = p.AgentData.ActiveGroupID;
 
-                sim.Client.Groups.RequestGroupMembers(GroupID);
+                GroupMembersRequestID = sim.Client.Groups.RequestGroupMembers(GroupID);
             }
         }
 
-        private void GroupMembersHandler(Dictionary<UUID, GroupMember> members)
+        private void GroupMembersHandler(UUID requestID, UUID groupID, int memberCount, Dictionary<UUID, GroupMember> members)
         {
+            // Check for partial result, or result we didn't request
+            if (requestID != GroupMembersRequestID || memberCount > members.Count) return;
+
             GroupMembers = members;
         }
 

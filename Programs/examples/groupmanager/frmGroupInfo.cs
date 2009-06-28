@@ -212,8 +212,9 @@ namespace groupmanager
             }
         }
 
-        private void GroupMembersHandler(Dictionary<UUID, GroupMember> members)
+        private void GroupMembersHandler(UUID requestID, UUID groupID, int memberCount, Dictionary<UUID, GroupMember> members)
         {
+            if (memberCount > members.Count) return; // Partail result
             Members = members;
 
             UpdateMembers();

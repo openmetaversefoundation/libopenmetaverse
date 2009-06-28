@@ -447,9 +447,12 @@ namespace OpenMetaverse
         /// <summary>
         /// Callback for the member list of a group
         /// </summary>
+        /// <param name="requestID"><seealso cref="UUID"/> returned by RequestGroupMembers</param>
+        /// <param name="groupID"><seealso cref="UUID"/> of the group</param>
+        /// <param name="memberCount">Total number of members in the group</param>
         /// <param name="members">A dictionary containing the members of a group
-        /// where the Key is the group <seealso cref="UUID"/>, and the values are the members</param>
-        public delegate void GroupMembersCallback(Dictionary<UUID, GroupMember> members);
+        /// where key is <seealso cref="UUID"/> and value is <seealso cref="GroupMember"/> struct</param>
+        public delegate void GroupMembersCallback(UUID requestID, UUID groupID, int memberCount, Dictionary<UUID, GroupMember> members);
 
         /// <summary>
         /// Callback for the role list of a group
@@ -1326,9 +1329,9 @@ namespace OpenMetaverse
             }
 
             // Check if we've received all the group members that are showing up
-            if (OnGroupMembers != null && groupMemberCache != null && groupMemberCache.Count >= members.GroupData.MemberCount)
+            if (OnGroupMembers != null && groupMemberCache != null)
             {
-                try { OnGroupMembers(groupMemberCache); }
+                try { OnGroupMembers(members.GroupData.RequestID, members.GroupData.GroupID, members.GroupData.MemberCount, groupMemberCache); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
