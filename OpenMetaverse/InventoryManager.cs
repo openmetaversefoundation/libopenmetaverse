@@ -3288,6 +3288,7 @@ namespace OpenMetaverse
             // FIXME: reply.AgentData.Descendants is not parentFolder.DescendentCount if we didn't 
             // request items and folders
             parentFolder.DescendentCount = reply.AgentData.Descendents;
+            _Store.GetNodeFor(reply.AgentData.FolderID).NeedsUpdate = false;
 
             #region FindObjectsByPath Handling
 

@@ -373,7 +373,6 @@ namespace OpenMetaverse
 
             item_count = 0;
             List<InventoryNode> del_nodes = new List<InventoryNode>(); //nodes that we have processed and will delete
-            List<UUID> dirty_nodes = new List<UUID>(); // nodes that are stale and we should not process from cache, need server update. Server version is newer
 
             // Because we could get child nodes before parents we must itterate around and only add nodes who have
             // a parent already in the list because we must update both child and parent to link together
@@ -403,7 +402,7 @@ namespace OpenMetaverse
                             if (cache_folder.Version != server_folder.Version)
                             {
                                 Logger.DebugLog("Inventory Cache/Server version mismatch on "+node.Data.Name+" "+cache_folder.Version.ToString()+" vs "+server_folder.Version.ToString());
-                                dirty_nodes.Add(cache_folder.UUID);
+                                pnode.NeedsUpdate = true;
                             }
                             del_nodes.Add(node);
                         }
@@ -416,13 +415,10 @@ namespace OpenMetaverse
                             //nodes other than the root are populated.
                             if (!Items.ContainsKey(node.Data.UUID))
                             {
-                                if(!dirty_nodes.Contains(node.ParentID))
-                                {
-                                    Items.Add(node.Data.UUID, node);
-                                    node.Parent = pnode; //Update this node with its parent
-                                    pnode.Nodes.Add(node.Data.UUID, node); // Add to the parents child list
-                                    item_count++;
-                                }
+                                Items.Add(node.Data.UUID, node);
+                                node.Parent = pnode; //Update this node with its parent
+                                pnode.Nodes.Add(node.Data.UUID, node); // Add to the parents child list
+                                item_count++;
                             }
                         }
 
@@ -441,8 +437,6 @@ namespace OpenMetaverse
 
                 del_nodes.Clear();
             }
-
-            dirty_nodes.Clear();
 
             Logger.Log("Reassembled " + item_count.ToString() + " items from inventory cache file", Helpers.LogLevel.Info);
             return item_count;

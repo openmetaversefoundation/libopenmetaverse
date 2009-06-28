@@ -38,6 +38,7 @@ namespace OpenMetaverse
         private InventoryNode parent;
         private UUID parentID; //used for de-seralization 
         private InventoryNodeDictionary nodes;
+        private bool needsUpdate = false;
 
         /// <summary></summary>
         public InventoryBase Data
@@ -70,6 +71,16 @@ namespace OpenMetaverse
                 return nodes;
             }
             set { nodes = value; }
+        }
+
+        /// <summary>
+        /// For inventory folder nodes specifies weather the folder needs to be
+        /// refreshed from the server
+        /// </summary>
+        public bool NeedsUpdate
+        {
+            get { return needsUpdate; }
+            set { needsUpdate = value; }
         }
 
         /// <summary>
