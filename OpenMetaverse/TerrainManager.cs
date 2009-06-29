@@ -73,22 +73,26 @@ namespace OpenMetaverse
         {
             if (x >= 0 && x < 256 && y >= 0 && y < 256)
             {
-                lock (SimPatches)
+                TerrainPatch[] found;
+                lock (SimPatches.Dictionary)
                 {
-                    if (SimPatches.ContainsKey(regionHandle))
+                    if (!SimPatches.TryGetValue(regionHandle, out found))
                     {
-                        int patchX = x / 16;
-                        int patchY = y / 16;
-                        x = x % 16;
-                        y = y % 16;
-
-                        if (SimPatches[regionHandle][patchY * 16 + patchX] != null)
-                        {
-                            height = SimPatches[regionHandle][patchY * 16 + patchX].Data[y * 16 + x];
-                            return true;
-                        }
+                        height = 0.0f;
+                        return false;
                     }
                 }
+                int patchX = x / 16;
+                int patchY = y / 16;
+                x = x % 16;
+                y = y % 16;
+                TerrainPatch patch = found[patchY * 16 + patchX];
+                if (patch != null)
+                {
+                    height = patch.Data[y * 16 + x];
+                    return true;
+                }
+
             }
 
             height = 0.0f;
@@ -137,18 +141,19 @@ namespace OpenMetaverse
 
                 if (Client.Settings.STORE_LAND_PATCHES)
                 {
-                    lock (SimPatches)
-                    {
-                        if (!SimPatches.ContainsKey(simulator.Handle))
-                            SimPatches.Add(simulator.Handle, new TerrainPatch[16 * 16]);
+                    TerrainPatch[] found;
+                    lock (SimPatches.Dictionary)
+                        if (!SimPatches.TryGetValue(simulator.Handle, out found))
+                        {
+                            found = new TerrainPatch[16 * 16];
+                            SimPatches.Add(simulator.Handle, found);
+                        }
+                    TerrainPatch patch = new TerrainPatch();
+                    patch.Data = heightmap;
+                    patch.X = x;
+                    patch.Y = y;
+                    found[y * 16 + x] = patch;
 
-                        TerrainPatch patch = new TerrainPatch();
-                        patch.Data = heightmap;
-                        patch.X = x;
-                        patch.Y = y;
-
-                        SimPatches[simulator.Handle][y * 16 + x] = patch;
-                    }
                 }
             }
         }
