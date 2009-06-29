@@ -552,13 +552,16 @@ namespace OpenMetaverse
             foreach (KeyValuePair<UUID, string> kvp in names)
             {
                 FriendInfo friend;
-                if (FriendList.TryGetValue(kvp.Key, out friend))
+                lock (FriendList.Dictionary)
                 {
-                    if (friend.Name == null)
-                        newNames.Add(kvp.Key, names[kvp.Key]);
+                    if (FriendList.TryGetValue(kvp.Key, out friend))
+                    {
+                        if (friend.Name == null)
+                            newNames.Add(kvp.Key, names[kvp.Key]);
 
-                    friend.Name = names[kvp.Key];
-                    FriendList[kvp.Key] = friend;
+                        friend.Name = names[kvp.Key];
+                        FriendList[kvp.Key] = friend;
+                    }
                 }
             }
 
@@ -586,16 +589,18 @@ namespace OpenMetaverse
                 foreach (OnlineNotificationPacket.AgentBlockBlock block in notification.AgentBlock)
                 {
                     FriendInfo friend;
-
-                    if (!FriendList.ContainsKey(block.AgentID))
+                    lock (FriendList.Dictionary)
                     {
-                        friend = new FriendInfo(block.AgentID, FriendRights.CanSeeOnline,
-                            FriendRights.CanSeeOnline);
-                        FriendList.Add(block.AgentID, friend);
-                    }
-                    else
-                    {
-                        friend = FriendList[block.AgentID];
+                        if (!FriendList.ContainsKey(block.AgentID))
+                        {
+                            friend = new FriendInfo(block.AgentID, FriendRights.CanSeeOnline,
+                                FriendRights.CanSeeOnline);
+                            FriendList.Add(block.AgentID, friend);
+                        }
+                        else
+                        {
+                            friend = FriendList[block.AgentID];
+                        }
                     }
 
                     bool doNotify = !friend.IsOnline;
@@ -735,7 +740,7 @@ namespace OpenMetaverse
                 FriendInfo friend = new FriendInfo(im.FromAgentID, FriendRights.CanSeeOnline,
                     FriendRights.CanSeeOnline);
                 friend.Name = im.FromAgentName;
-                FriendList[friend.UUID] = friend;
+                lock (FriendList.Dictionary) FriendList[friend.UUID] = friend;
 
                 if (OnFriendshipResponse != null)
                 {
@@ -771,14 +776,20 @@ namespace OpenMetaverse
                 {
                     foreach (BuddyListEntry buddy in replyData.BuddyList)
                     {
-                        FriendList.Add(UUID.Parse(buddy.buddy_id),
-                            new FriendInfo(UUID.Parse(buddy.buddy_id),
+                        UUID bubid = UUID.Parse(buddy.buddy_id);
+                        lock (FriendList.Dictionary)
+                        {
+                            if (!FriendList.ContainsKey(bubid))
+                            {
+                                FriendList.Add(bubid,
+                                new FriendInfo(UUID.Parse(buddy.buddy_id),
                                 (FriendRights)buddy.buddy_rights_given,
                                 (FriendRights)buddy.buddy_rights_has));
+                            }
+                        }
                     }
                 }
             }
         }
-
     }
 }
