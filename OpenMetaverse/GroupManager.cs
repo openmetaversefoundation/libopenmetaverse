@@ -451,29 +451,26 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="requestID"><seealso cref="UUID"/> returned by RequestGroupMembers</param>
         /// <param name="groupID"><seealso cref="UUID"/> of the group</param>
-        /// <param name="memberCount">Total number of members in the group</param>
         /// <param name="members">A dictionary containing the members of a group
         /// where key is member <seealso cref="UUID"/> and value is <seealso cref="GroupMember"/> struct</param>
-        public delegate void GroupMembersCallback(UUID requestID, UUID groupID, int memberCount, Dictionary<UUID, GroupMember> members);
+        public delegate void GroupMembersCallback(UUID requestID, UUID groupID, Dictionary<UUID, GroupMember> members);
 
         /// <summary>
         /// Callback for retrieving group roles
         /// </summary>
         /// <param name="requestID"><seealso cref="UUID"/> of the request returned from RequestGroupRoles</param>
         /// <param name="groupID"><seealso cref="UUID"/> of the group</param>
-        /// <param name="roleCount">Total number of roles defined in the group</param>
         /// <param name="roles">A dictionary containing role <seealso cref="UUID"/>s as the key
         /// and <seealso cref="GroupRole"/> structs as values</param>
-        public delegate void GroupRolesCallback(UUID requestID, UUID groupID, int roleCount, Dictionary<UUID, GroupRole> roles);
+        public delegate void GroupRolesCallback(UUID requestID, UUID groupID, Dictionary<UUID, GroupRole> roles);
 
         /// <summary>
         /// Callback for a pairing of roles to members
         /// </summary>
         /// <param name="requestID"><seealso cref="UUID"/> of the request returned from RequestGroupRolesMembers</param>
         /// <param name="groupID"><seealso cref="UUID"/> of the group</param>
-        /// <param name="totalPairs">Total number of role/member mappings</param>
         /// <param name="rolesMembers">List containing role/member pairs</param>
-        public delegate void GroupRolesMembersCallback(UUID requestID, UUID groupID, uint totalPairs, List<KeyValuePair<UUID, UUID>> rolesMembers);
+        public delegate void GroupRolesMembersCallback(UUID requestID, UUID groupID, List<KeyValuePair<UUID, UUID>> rolesMembers);
 
         /// <summary>
         /// Callback for the title list of a group
@@ -1274,9 +1271,9 @@ namespace OpenMetaverse
                 }
             }
 
-            if (OnGroupMembers != null && groupMemberCache != null)
+            if (OnGroupMembers != null && groupMemberCache != null && groupMemberCache.Count >= members.GroupData.MemberCount)
             {
-                try { OnGroupMembers(members.GroupData.RequestID, members.GroupData.GroupID, members.GroupData.MemberCount, groupMemberCache); }
+                try { OnGroupMembers(members.GroupData.RequestID, members.GroupData.GroupID, groupMemberCache); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
@@ -1324,9 +1321,9 @@ namespace OpenMetaverse
                 }
             }
 
-            if (OnGroupRoles != null && groupRoleCache != null)
+            if (OnGroupRoles != null && groupRoleCache != null && groupRoleCache.Count >= roles.GroupData.RoleCount)
             {
-                try { OnGroupRoles(roles.GroupData.RequestID, roles.GroupData.GroupID, roles.GroupData.RoleCount, groupRoleCache); }
+                try { OnGroupRoles(roles.GroupData.RequestID, roles.GroupData.GroupID, groupRoleCache); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
@@ -1373,9 +1370,9 @@ namespace OpenMetaverse
                 Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e);
             }
 
-            if (OnGroupRolesMembers != null && groupRoleMemberCache != null)
+            if (OnGroupRolesMembers != null && groupRoleMemberCache != null && groupRoleMemberCache.Count >= members.AgentData.TotalPairs)
             {
-                try { OnGroupRolesMembers(members.AgentData.RequestID, members.AgentData.GroupID, members.AgentData.TotalPairs, groupRoleMemberCache); }
+                try { OnGroupRolesMembers(members.AgentData.RequestID, members.AgentData.GroupID, groupRoleMemberCache); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }

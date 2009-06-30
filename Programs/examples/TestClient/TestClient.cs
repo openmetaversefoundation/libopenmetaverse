@@ -122,10 +122,9 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        private void GroupMembersHandler(UUID requestID, UUID groupID, int memberCount, Dictionary<UUID, GroupMember> members)
+        private void GroupMembersHandler(UUID requestID, UUID groupID, Dictionary<UUID, GroupMember> members)
         {
-            // Check for partial result, or result we didn't request
-            if (requestID != GroupMembersRequestID || memberCount > members.Count) return;
+            if (requestID != GroupMembersRequestID) return;
 
             GroupMembers = members;
         }
