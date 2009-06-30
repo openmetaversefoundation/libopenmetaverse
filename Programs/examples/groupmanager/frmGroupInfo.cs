@@ -256,7 +256,7 @@ namespace groupmanager
             }
         }
 
-        private void GroupTitlesHandler(Dictionary<UUID, GroupTitle> titles)
+        private void GroupTitlesHandler(UUID groupID, Dictionary<UUID, GroupTitle> titles)
         {
             Titles = titles;
 

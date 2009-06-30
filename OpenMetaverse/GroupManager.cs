@@ -86,6 +86,8 @@ namespace OpenMetaverse
     {
         /// <summary>Key of the group</summary>
         public UUID GroupID;
+        /// <summary>ID of the role title belongs to</summary>
+        public UUID RoleID;
         /// <summary>Group Title</summary>
         public string Title;
         /// <summary>Whether title is Active</summary>
@@ -451,35 +453,42 @@ namespace OpenMetaverse
         /// <param name="groupID"><seealso cref="UUID"/> of the group</param>
         /// <param name="memberCount">Total number of members in the group</param>
         /// <param name="members">A dictionary containing the members of a group
-        /// where key is <seealso cref="UUID"/> and value is <seealso cref="GroupMember"/> struct</param>
+        /// where key is member <seealso cref="UUID"/> and value is <seealso cref="GroupMember"/> struct</param>
         public delegate void GroupMembersCallback(UUID requestID, UUID groupID, int memberCount, Dictionary<UUID, GroupMember> members);
 
         /// <summary>
-        /// Callback for the role list of a group
+        /// Callback for retrieving group roles
         /// </summary>
-        /// <param name="roles">A dictionary containing the roles of a group
-        /// where the Key is the group <seealso cref="UUID"/>, and the values are the roles</param>
-        public delegate void GroupRolesCallback(Dictionary<UUID, GroupRole> roles);
+        /// <param name="requestID"><seealso cref="UUID"/> of the request returned from RequestGroupRoles</param>
+        /// <param name="groupID"><seealso cref="UUID"/> of the group</param>
+        /// <param name="roleCount">Total number of roles defined in the group</param>
+        /// <param name="roles">A dictionary containing role <seealso cref="UUID"/>s as the key
+        /// and <seealso cref="GroupRole"/> structs as values</param>
+        public delegate void GroupRolesCallback(UUID requestID, UUID groupID, int roleCount, Dictionary<UUID, GroupRole> roles);
 
         /// <summary>
         /// Callback for a pairing of roles to members
         /// </summary>
-        /// <param name="rolesMembers">A List of Keyvalue pairs containing the role ID and the members assigned to 
-        /// that role</param>
-        public delegate void GroupRolesMembersCallback(List<KeyValuePair<UUID, UUID>> rolesMembers);
+        /// <param name="requestID"><seealso cref="UUID"/> of the request returned from RequestGroupRolesMembers</param>
+        /// <param name="groupID"><seealso cref="UUID"/> of the group</param>
+        /// <param name="totalPairs">Total number of role/member mappings</param>
+        /// <param name="rolesMembers">List containing role/member pairs</param>
+        public delegate void GroupRolesMembersCallback(UUID requestID, UUID groupID, uint totalPairs, List<KeyValuePair<UUID, UUID>> rolesMembers);
 
         /// <summary>
         /// Callback for the title list of a group
         /// </summary>
+        /// <param name="groupID">Group <seealso cref="UUID"/></param>
         /// <param name="titles">A dictionary containing the titles of a group
-        /// where the Key is the group <seealso cref="UUID"/>, and the values are the title details</param>
-        public delegate void GroupTitlesCallback(Dictionary<UUID, GroupTitle> titles);
+        /// where the Key is the role <seealso cref="UUID"/>, and the values are the title details</param>
+        public delegate void GroupTitlesCallback(UUID groupID, Dictionary<UUID, GroupTitle> titles);
 
         /// <summary>
         /// Callback fired when group account summary information is received
         /// </summary>
+        /// <param name="groupID">Group <seealso cref="UUID"/></param>
         /// <param name="summary">The group account summary information</param>
-        public delegate void GroupAccountSummaryCallback(GroupAccountSummary summary);
+        public delegate void GroupAccountSummaryCallback(UUID groupID, GroupAccountSummary summary);
 
         /// <summary>
         /// Callback fired after an attempt to create a group
@@ -584,12 +593,12 @@ namespace OpenMetaverse
         private List<UUID> GroupRolesRequests;
         /// <summary>Currently-active group role-member requests</summary>
         private List<UUID> GroupRolesMembersRequests;
-        /// <summary>A list of all the lists of group members, indexed by the group ID</summary>
-        public InternalDictionary<UUID, Dictionary<UUID, GroupMember>> GroupMembersCaches;
-        /// <summary>A list of all the lists of group roles, indexed by the group ID</summary>
-        public InternalDictionary<UUID, Dictionary<UUID, GroupRole>> GroupRolesCaches;
-        /// <summary>A list of all the role to member mappings, indexed by the group ID</summary>
-        public InternalDictionary<UUID, List<KeyValuePair<UUID, UUID>>> GroupRolesMembersCaches;
+        /// <summary>Dictionary keeping group members while request is in progress</summary>
+        private InternalDictionary<UUID, Dictionary<UUID, GroupMember>> TempGroupMembers;
+        /// <summary>Dictionary keeping mebmer/role mapping while request is in progress</summary>
+        private InternalDictionary<UUID, List<KeyValuePair<UUID, UUID>>> TempGroupRolesMembers;
+        /// <summary>Dictionary keeping GroupRole information while request is in progress</summary>
+        private InternalDictionary<UUID, Dictionary<UUID, GroupRole>> TempGroupRoles;
         /// <summary>Caches group name lookups</summary>
         public InternalDictionary<UUID, string> GroupName2KeyCache;
         /// <summary>
@@ -600,11 +609,11 @@ namespace OpenMetaverse
         {
             Client = client;
 
-            GroupMembersCaches = new InternalDictionary<UUID, Dictionary<UUID, GroupMember>>();
+            TempGroupMembers = new InternalDictionary<UUID, Dictionary<UUID, GroupMember>>();
             GroupMembersRequests = new List<UUID>();
-            GroupRolesCaches = new InternalDictionary<UUID, Dictionary<UUID, GroupRole>>();
+            TempGroupRoles = new InternalDictionary<UUID, Dictionary<UUID, GroupRole>>();
             GroupRolesRequests = new List<UUID>();
-            GroupRolesMembersCaches = new InternalDictionary<UUID, List<KeyValuePair<UUID, UUID>>>();
+            TempGroupRolesMembers = new InternalDictionary<UUID, List<KeyValuePair<UUID, UUID>>>();
             GroupRolesMembersRequests = new List<UUID>();
             GroupName2KeyCache  = new InternalDictionary<UUID, string>();
 
@@ -1162,73 +1171,6 @@ namespace OpenMetaverse
             }
         }
 
-        //private void AgentGroupDataUpdateHandler(string capsKey, OSD osd, Simulator simulator)
-        //{
-        //    if (OnCurrentGroups != null)
-        //    {
-        //        AgentGroupUpdateMessage message = new AgentGroupUpdateMessage();
-        //        message.Deserialize((OSDMap)osd);
-
-        //        Dictionary<UUID, Group> currentGroups = new Dictionary<UUID, Group>();
-        //        for (int i = 0; i < message.GroupDataBlock.Length; i++)
-        //        {
-        //            Group group = new Group();
-        //            group.ID = message.GroupDataBlock[i].GroupID;
-        //            group.InsigniaID = message.GroupDataBlock[i].GroupInsigniaID;
-        //            group.Name = message.GroupDataBlock[i].GroupName;
-        //            group.Contribution = message.GroupDataBlock[i].Contribution;
-        //            group.AcceptNotices = message.GroupDataBlock[i].AcceptNotices;
-        //            group.Powers = message.GroupDataBlock[i].GroupPowers;
-        //            // verify this is correct - or add to struct if ListInProfile is a new field
-        //            group.ShowInList = message.GroupDataBlock[i].ListInProfile;
-
-        //            currentGroups.Add(group.ID, group);
-
-        //            lock (GroupName2KeyCache.Dictionary)
-        //            {
-        //                if (!GroupName2KeyCache.Dictionary.ContainsKey(group.ID))
-        //                    GroupName2KeyCache.Dictionary.Add(group.ID, group.Name);
-        //            }
-        //        }
-
-        //        try { OnCurrentGroups(currentGroups); }
-        //        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-        //    }
-        //}
-
-        //private void GroupDataHandler(Packet packet, Simulator simulator)
-        //{
-        //    if (OnCurrentGroups != null)
-        //    {
-        //        AgentGroupDataUpdatePacket update = (AgentGroupDataUpdatePacket)packet;
-
-        //        Dictionary<UUID, Group> currentGroups = new Dictionary<UUID, Group>();
-
-        //        foreach (AgentGroupDataUpdatePacket.GroupDataBlock block in update.GroupData)
-        //        {
-        //            Group group = new Group();
-
-        //            group.ID = block.GroupID;
-        //            group.InsigniaID = block.GroupInsigniaID;
-        //            group.Name = Utils.BytesToString(block.GroupName);
-        //            group.Powers = (GroupPowers)block.GroupPowers;
-        //            group.Contribution = block.Contribution;
-        //            group.AcceptNotices = block.AcceptNotices;
-
-        //            currentGroups[block.GroupID] = group;
-
-        //            lock (GroupName2KeyCache.Dictionary)
-        //            {
-        //                if (!GroupName2KeyCache.Dictionary.ContainsKey(block.GroupID))
-        //                    GroupName2KeyCache.Dictionary.Add(block.GroupID, Utils.BytesToString(block.GroupName));
-        //            }
-        //        }
-
-        //        try { OnCurrentGroups(currentGroups); }
-        //        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-        //    }
-        //}
-
         private void AgentDropGroupHandler(Packet packet, Simulator simulator)
         {
             if (OnGroupDropped != null)
@@ -1279,13 +1221,14 @@ namespace OpenMetaverse
                     GroupTitle groupTitle = new GroupTitle();
 
                     groupTitle.GroupID = titles.AgentData.GroupID;
+                    groupTitle.RoleID = block.RoleID;
                     groupTitle.Title = Utils.BytesToString(block.Title);
                     groupTitle.Selected = block.Selected;
 
                     groupTitleCache[block.RoleID] = groupTitle;
                 }
 
-                try { OnGroupTitles(groupTitleCache); }
+                try { OnGroupTitles(titles.AgentData.GroupID, groupTitleCache); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
@@ -1300,12 +1243,12 @@ namespace OpenMetaverse
                 // If nothing is registered to receive this RequestID drop the data
                 if (GroupMembersRequests.Contains(members.GroupData.RequestID))
                 {
-                    lock (GroupMembersCaches)
+                    lock (TempGroupMembers.Dictionary)
                     {
-                        if (!GroupMembersCaches.TryGetValue(members.GroupData.RequestID, out groupMemberCache))
+                        if (!TempGroupMembers.TryGetValue(members.GroupData.RequestID, out groupMemberCache))
                         {
                             groupMemberCache = new Dictionary<UUID, GroupMember>();
-                            GroupMembersCaches[members.GroupData.RequestID] = groupMemberCache;
+                            TempGroupMembers[members.GroupData.RequestID] = groupMemberCache;
                         }
 
                         foreach (GroupMembersReplyPacket.MemberDataBlock block in members.MemberData)
@@ -1322,13 +1265,15 @@ namespace OpenMetaverse
                             groupMemberCache[block.AgentID] = groupMember;
                         }
 
-                        if(groupMemberCache.Count >= members.GroupData.MemberCount)
+                        if (groupMemberCache.Count >= members.GroupData.MemberCount)
+                        {
                             GroupMembersRequests.Remove(members.GroupData.RequestID);
+                            TempGroupMembers.Remove(members.GroupData.RequestID);
+                        }
                     }
                 }
             }
 
-            // Check if we've received all the group members that are showing up
             if (OnGroupMembers != null && groupMemberCache != null)
             {
                 try { OnGroupMembers(members.GroupData.RequestID, members.GroupData.GroupID, members.GroupData.MemberCount, groupMemberCache); }
@@ -1348,12 +1293,12 @@ namespace OpenMetaverse
                 {
                     GroupRolesRequests.Remove(roles.GroupData.RequestID);
 
-                    lock (GroupRolesCaches)
+                    lock (TempGroupRoles.Dictionary)
                     {
-                        if (!GroupRolesCaches.TryGetValue(roles.GroupData.GroupID, out groupRoleCache))
+                        if (!TempGroupRoles.TryGetValue(roles.GroupData.RequestID, out groupRoleCache))
                         {
                             groupRoleCache = new Dictionary<UUID, GroupRole>();
-                            GroupRolesCaches[roles.GroupData.GroupID] = groupRoleCache;
+                            TempGroupRoles[roles.GroupData.RequestID] = groupRoleCache;
                         }
 
                         foreach (GroupRoleDataReplyPacket.RoleDataBlock block in roles.RoleData)
@@ -1369,14 +1314,19 @@ namespace OpenMetaverse
 
                             groupRoleCache[block.RoleID] = groupRole;
                         }
+
+                        if (groupRoleCache.Count >= roles.GroupData.RoleCount)
+                        {
+                            GroupRolesRequests.Remove(roles.GroupData.RequestID);
+                            TempGroupRoles.Remove(roles.GroupData.RequestID);
+                        }
                     }
                 }
             }
 
-            // Check if we've received all the group members that are showing up
-            if (OnGroupRoles != null && groupRoleCache != null && groupRoleCache.Count >= roles.GroupData.RoleCount)
+            if (OnGroupRoles != null && groupRoleCache != null)
             {
-                try { OnGroupRoles(groupRoleCache); }
+                try { OnGroupRoles(roles.GroupData.RequestID, roles.GroupData.GroupID, roles.GroupData.RoleCount, groupRoleCache); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
@@ -1393,24 +1343,27 @@ namespace OpenMetaverse
                     // If nothing is registered to receive this RequestID drop the data
                     if (GroupRolesMembersRequests.Contains(members.AgentData.RequestID))
                     {
-                        GroupRolesMembersRequests.Remove(members.AgentData.RequestID);
-
-                        if (!GroupRolesMembersRequests.Contains(members.AgentData.RequestID))
+                        lock (TempGroupRolesMembers.Dictionary)
                         {
-                            GroupRolesMembersRequests.Remove(members.AgentData.RequestID);
-
-                            if (!GroupRolesMembersCaches.TryGetValue(members.AgentData.GroupID, out groupRoleMemberCache))
+                            if (!TempGroupRolesMembers.TryGetValue(members.AgentData.RequestID, out groupRoleMemberCache))
                             {
                                 groupRoleMemberCache = new List<KeyValuePair<UUID, UUID>>();
-                                GroupRolesMembersCaches[members.AgentData.GroupID] = groupRoleMemberCache;
+                                TempGroupRolesMembers[members.AgentData.RequestID] = groupRoleMemberCache;
                             }
-                        }
-                        foreach (GroupRoleMembersReplyPacket.MemberDataBlock block in members.MemberData)
-                        {
-                            KeyValuePair<UUID, UUID> rolemember =
-                                new KeyValuePair<UUID, UUID>(block.RoleID, block.MemberID);
 
-                            groupRoleMemberCache.Add(rolemember);
+                            foreach (GroupRoleMembersReplyPacket.MemberDataBlock block in members.MemberData)
+                            {
+                                KeyValuePair<UUID, UUID> rolemember =
+                                    new KeyValuePair<UUID, UUID>(block.RoleID, block.MemberID);
+
+                                groupRoleMemberCache.Add(rolemember);
+                            }
+
+                            if (groupRoleMemberCache.Count >= members.AgentData.TotalPairs)
+                            {
+                                GroupRolesMembersRequests.Remove(members.AgentData.RequestID);
+                                TempGroupRolesMembers.Remove(members.AgentData.RequestID);
+                            }
                         }
                     }
                 }
@@ -1420,12 +1373,9 @@ namespace OpenMetaverse
                 Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e);
             }
 
-            //Client.DebugLog("Pairs Ratio: " + groupRoleMemberCache.Count + "/" + members.AgentData.TotalPairs);
-            
-            // Check if we've received all the pairs that are showing up
-            if (OnGroupRolesMembers != null && groupRoleMemberCache != null && groupRoleMemberCache.Count >= members.AgentData.TotalPairs)
+            if (OnGroupRolesMembers != null && groupRoleMemberCache != null)
             {
-                try { OnGroupRolesMembers(groupRoleMemberCache); }
+                try { OnGroupRolesMembers(members.AgentData.RequestID, members.AgentData.GroupID, members.AgentData.TotalPairs, groupRoleMemberCache); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
@@ -1471,7 +1421,7 @@ namespace OpenMetaverse
                 account.TotalCredits = summary.MoneyData.TotalCredits;
                 account.TotalDebits = summary.MoneyData.TotalDebits;
 
-                try { OnGroupAccountSummary(account); }
+                try { OnGroupAccountSummary(summary.AgentData.GroupID, account); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
