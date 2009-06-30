@@ -475,10 +475,11 @@ namespace OpenMetaverse
         /// <summary>
         /// Callback for the title list of a group
         /// </summary>
+        /// <param name="requestID"><seealso cref="UUID"/> of the request returned from RequestGroupTitles</param>
         /// <param name="groupID">Group <seealso cref="UUID"/></param>
         /// <param name="titles">A dictionary containing the titles of a group
         /// where the Key is the role <seealso cref="UUID"/>, and the values are the title details</param>
-        public delegate void GroupTitlesCallback(UUID groupID, Dictionary<UUID, GroupTitle> titles);
+        public delegate void GroupTitlesCallback(UUID requestID, UUID groupID, Dictionary<UUID, GroupTitle> titles);
 
         /// <summary>
         /// Callback fired when group account summary information is received
@@ -1225,7 +1226,7 @@ namespace OpenMetaverse
                     groupTitleCache[block.RoleID] = groupTitle;
                 }
 
-                try { OnGroupTitles(titles.AgentData.GroupID, groupTitleCache); }
+                try { OnGroupTitles(titles.AgentData.RequestID, titles.AgentData.GroupID, groupTitleCache); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
