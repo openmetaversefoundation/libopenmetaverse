@@ -325,130 +325,132 @@ namespace OpenMetaverse
     }
 
     [Flags]
-    public enum GroupPowers : long
+    public enum GroupPowers : ulong
     {
         /// <summary></summary>
         None = 0,
 
         // Membership
         /// <summary>Can send invitations to groups default role</summary>
-        Invite = 1 << 1,
+        Invite = 1UL << 1,
         /// <summary>Can eject members from group</summary>
-        Eject = 1 << 2,
+        Eject = 1UL << 2,
         /// <summary>Can toggle 'Open Enrollment' and change 'Signup fee'</summary>
-        ChangeOptions = 1 << 3,
+        ChangeOptions = 1UL << 3,
+        /// <summary>Member is visible in the public member list</summary>
+        MemberVisible = 1UL << 47,
 
         // Roles
         /// <summary>Can create new roles</summary>
-        CreateRole = 1 << 4,
+        CreateRole = 1UL << 4,
         /// <summary>Can delete existing roles</summary>
-        DeleteRole = 1 << 5,
+        DeleteRole = 1UL << 5,
         /// <summary>Can change Role names, titles and descriptions</summary>
-        RoleProperties = 1 << 6,
+        RoleProperties = 1UL << 6,
         /// <summary>Can assign other members to assigners role</summary>
-        AssignMemberLimited = 1 << 7,
+        AssignMemberLimited = 1UL << 7,
         /// <summary>Can assign other members to any role</summary>
-        AssignMember = 1 << 8,
+        AssignMember = 1UL << 8,
         /// <summary>Can remove members from roles</summary>
-        RemoveMember = 1 << 9,
+        RemoveMember = 1UL << 9,
         /// <summary>Can assign and remove abilities in roles</summary>
-        ChangeActions = 1 << 10,
+        ChangeActions = 1UL << 10,
 
         // Identity
         /// <summary>Can change group Charter, Insignia, 'Publish on the web' and which
         /// members are publicly visible in group member listings</summary>
-        ChangeIdentity = 1 << 11,
+        ChangeIdentity = 1UL << 11,
 
         // Parcel management
         /// <summary>Can buy land or deed land to group</summary>
-        LandDeed = 1 << 12,
+        LandDeed = 1UL << 12,
         /// <summary>Can abandon group owned land to Governor Linden on mainland, or Estate owner for
         /// private estates</summary>
-        LandRelease = 1 << 13,
+        LandRelease = 1UL << 13,
         /// <summary>Can set land for-sale information on group owned parcels</summary>
-        LandSetSale = 1 << 14,
+        LandSetSale = 1UL << 14,
         /// <summary>Can subdivide and join parcels</summary>
-        LandDivideJoin = 1 << 15,
+        LandDivideJoin = 1UL << 15,
 
 
         // Chat
         /// <summary>Can join group chat sessions</summary>
-        JoinChat = 1 << 16,
+        JoinChat = 1UL << 16,
         /// <summary>Can use voice chat in Group Chat sessions</summary>
-        AllowVoiceChat = 1 << 27,
+        AllowVoiceChat = 1UL << 27,
         /// <summary>Can moderate group chat sessions</summary>
-        ModerateChat = 1 << 37,
+        ModerateChat = 1UL << 37,
 
         // Parcel identity
         /// <summary>Can toggle "Show in Find Places" and set search category</summary>
-        FindPlaces = 1 << 17,
+        FindPlaces = 1UL << 17,
         /// <summary>Can change parcel name, description, and 'Publish on web' settings</summary>
-        LandChangeIdentity = 1 << 18,
+        LandChangeIdentity = 1UL << 18,
         /// <summary>Can set the landing point and teleport routing on group land</summary>
-        SetLandingPoint = 1 << 19,
+        SetLandingPoint = 1UL << 19,
 
         // Parcel settings
         /// <summary>Can change music and media settings</summary>
-        ChangeMedia = 1 << 20,
+        ChangeMedia = 1UL << 20,
         /// <summary>Can toggle 'Edit Terrain' option in Land settings</summary>
-        LandEdit = 1 << 21,
+        LandEdit = 1UL << 21,
         /// <summary>Can toggle various About Land > Options settings</summary>
-        LandOptions = 1 << 22,
+        LandOptions = 1UL << 22,
 
         // Parcel powers
         /// <summary>Can always terraform land, even if parcel settings have it turned off</summary>
-        AllowEditLand = 1 << 23,
+        AllowEditLand = 1UL << 23,
         /// <summary>Can always fly while over group owned land</summary>
-        AllowFly = 1 << 24,
+        AllowFly = 1UL << 24,
         /// <summary>Can always rez objects on group owned land</summary>
-        AllowRez = 1 << 25,
+        AllowRez = 1UL << 25,
         /// <summary>Can always create landmarks for group owned parcels</summary>
-        AllowLandmark = 1 << 26,
+        AllowLandmark = 1UL << 26,
         /// <summary>Can set home location on any group owned parcel</summary>
-        AllowSetHome = 1 << 28,
+        AllowSetHome = 1UL << 28,
 
 
         // Parcel access
         /// <summary>Can modify public access settings for group owned parcels</summary>
-        LandManageAllowed = 1 << 29,
+        LandManageAllowed = 1UL << 29,
         /// <summary>Can manager parcel ban lists on group owned land</summary>
-        LandManageBanned = 1 << 30,
+        LandManageBanned = 1UL << 30,
         /// <summary>Can manage pass list sales information</summary>
-        LandManagePasses = 1 << 31,
+        LandManagePasses = 1UL << 31,
         /// <summary>Can eject and freeze other avatars on group owned land</summary>
-        LandEjectAndFreeze = 1 << 32,
+        LandEjectAndFreeze = 1UL << 32,
 
         // Parcel content
         /// <summary>Can return objects set to group</summary>
-        ReturnGroupSet = 1 << 33,
+        ReturnGroupSet = 1UL << 33,
         /// <summary>Can return non-group owned/set objects</summary>
-        ReturnNonGroup = 1 << 34,
+        ReturnNonGroup = 1UL << 34,
         /// <summary>Can return group owned objects</summary>
-        ReturnGroupOwned = 1 << 48,
+        ReturnGroupOwned = 1UL << 48,
 
         /// <summary>Can landscape using Linden plants</summary>
-        LandGardening = 1 << 35,
+        LandGardening = 1UL << 35,
 
         // Objects
         /// <summary>Can deed objects to group</summary>
-        DeedObject = 1 << 36,
+        DeedObject = 1UL << 36,
         /// <summary>Can move group owned objects</summary>
-        ObjectManipulate = 1 << 38,
+        ObjectManipulate = 1UL << 38,
         /// <summary>Can set group owned objects for-sale</summary>
-        ObjectSetForSale = 1 << 39,
+        ObjectSetForSale = 1UL << 39,
 
         /// <summary>Pay group liabilities and receive group dividends</summary>
-        Accountable = 1 << 40,
+        Accountable = 1UL << 40,
 
         // Notices and proposals
         /// <summary>Can send group notices</summary>
-        SendNotices = 1 << 42,
+        SendNotices = 1UL << 42,
         /// <summary>Can receive group notices</summary>
-        ReceiveNotices = 1 << 43,
+        ReceiveNotices = 1UL << 43,
         /// <summary>Can create group proposals</summary>
-        StartProposal = 1 << 44,
+        StartProposal = 1UL << 44,
         /// <summary>Can vote on group proposals</summary>
-        VoteOnProposal = 1 << 45
+        VoteOnProposal = 1UL << 45
     }
 
     #endregion Enums
