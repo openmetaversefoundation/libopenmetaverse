@@ -92,6 +92,11 @@ namespace OpenMetaverse
         public string Title;
         /// <summary>Whether title is Active</summary>
         public bool Selected;
+        /// <summary>Returns group title</summary>
+        public override string ToString()
+        {
+            return Title;
+        }
     }
 
     /// <summary>
