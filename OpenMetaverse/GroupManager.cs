@@ -140,7 +140,9 @@ namespace OpenMetaverse
         public int GroupMembershipCount;
         /// <summary>The number of roles this group has configured</summary>
         public int GroupRolesCount;
-
+        /// <summary>Show this group in agent's profile</summary>
+        public bool ListInProfile;
+       
         /// <summary>Returns the name of the group</summary>
         /// <returns>A string containing the name of the group</returns>
         public override string ToString()
@@ -327,98 +329,126 @@ namespace OpenMetaverse
     {
         /// <summary></summary>
         None = 0,
+
+        // Membership
         /// <summary>Can send invitations to groups default role</summary>
-        Invite = 1,
+        Invite = 1 << 1,
         /// <summary>Can eject members from group</summary>
-        Eject = 2,
+        Eject = 1 << 2,
         /// <summary>Can toggle 'Open Enrollment' and change 'Signup fee'</summary>
-        ChangeOptions = 4,
+        ChangeOptions = 1 << 3,
+
+        // Roles
         /// <summary>Can create new roles</summary>
-        CreateRole = 8,
+        CreateRole = 1 << 4,
         /// <summary>Can delete existing roles</summary>
-        DeleteRole = 16,
+        DeleteRole = 1 << 5,
         /// <summary>Can change Role names, titles and descriptions</summary>
-        RoleProperties = 32,
+        RoleProperties = 1 << 6,
         /// <summary>Can assign other members to assigners role</summary>
-        AssignMemberLimited = 64,
+        AssignMemberLimited = 1 << 7,
         /// <summary>Can assign other members to any role</summary>
-        AssignMember = 128,
+        AssignMember = 1 << 8,
         /// <summary>Can remove members from roles</summary>
-        RemoveMember = 256,
+        RemoveMember = 1 << 9,
         /// <summary>Can assign and remove abilities in roles</summary>
-        ChangeActions = 512,
+        ChangeActions = 1 << 10,
+
+        // Identity
         /// <summary>Can change group Charter, Insignia, 'Publish on the web' and which
         /// members are publicly visible in group member listings</summary>
-        ChangeIdentity = 1024,
+        ChangeIdentity = 1 << 11,
+
+        // Parcel management
         /// <summary>Can buy land or deed land to group</summary>
-        LandDeed = 2048,
+        LandDeed = 1 << 12,
         /// <summary>Can abandon group owned land to Governor Linden on mainland, or Estate owner for
         /// private estates</summary>
-        LandRelease = 4096,
+        LandRelease = 1 << 13,
         /// <summary>Can set land for-sale information on group owned parcels</summary>
-        LandSetSale = 8192,
+        LandSetSale = 1 << 14,
         /// <summary>Can subdivide and join parcels</summary>
-        LandDivideJoin = 16384,
+        LandDivideJoin = 1 << 15,
+
+
+        // Chat
         /// <summary>Can join group chat sessions</summary>
-        JoinChat = 32768,
-        /// <summary>Can toggle "Show in Find Places" and set search category</summary>
-        FindPlaces = 65536,
-        /// <summary>Can change parcel name, description, and 'Publish on web' settings</summary>
-        LandChangeIdentity = 131072,
-        /// <summary>Can set the landing point and teleport routing on group land</summary>
-        SetLandingPoint = 262144,
-        /// <summary>Can change music and media settings</summary>
-        ChangeMedia = 524288,
-        /// <summary>Can toggle 'Edit Terrain' option in Land settings</summary>
-        LandEdit = 1048576,
-        /// <summary>Can toggle various About Land > Options settings</summary>
-        LandOptions = 2097152,
-        /// <summary>Can always terraform land, even if parcel settings have it turned off</summary>
-        AllowEditLand = 4194304,
-        /// <summary>Can always fly while over group owned land</summary>
-        AllowFly = 8388608,
-        /// <summary>Can always rez objects on group owned land</summary>
-        AllowRez = 16777216,
-        /// <summary>Can always create landmarks for group owned parcels</summary>
-        AllowLandmark = 33554432,
+        JoinChat = 1 << 16,
         /// <summary>Can use voice chat in Group Chat sessions</summary>
-        AllowVoiceChat = 67108864,
-        /// <summary>Can set home location on any group owned parcel</summary>
-        AllowSetHome = 134217728,
-        /// <summary>Can modify public access settings for group owned parcels</summary>
-        LandManageAllowed = 268435456,
-        /// <summary>Can manager parcel ban lists on group owned land</summary>
-        LandManageBanned = 536870912,
-        /// <summary>Can manage pass list sales information</summary>
-        LandManagePasses = 1073741824,
-        /// <summary>Can eject and freeze other avatars on group owned land</summary>
-        LandEjectAndFreeze = 2147483648,
-        /// <summary>Can return objects set to group</summary>
-        ReturnGroupSet = 4294967296,
-        /// <summary>Can return non-group owned/set objects</summary>
-        ReturnNonGroup = 8589934592,
-        /// <summary>Can landscape using Linden plants</summary>
-        LandGardening = 17179869184,
-        /// <summary>Can deed objects to group</summary>
-        DeedObject = 34359738368,
+        AllowVoiceChat = 1 << 27,
         /// <summary>Can moderate group chat sessions</summary>
-        ModerateChat = 68719476736,
-        /// <summary>Can move group owned objects</summary>
-        ObjectManipulate = 137438953472,
-        /// <summary>Can set group owned objects for-sale</summary>
-        ObjectSetForSale = 274877906944,
-        /// <summary>Pay group liabilities and receive group dividends</summary>
-        Accountable = 549755813888,
-        /// <summary>Can send group notices</summary>
-        SendNotices = 1099511627776,
-        /// <summary>Can receive group notices</summary>
-        ReceiveNotices = 2199023255552,
-        /// <summary>Can create group proposals</summary>
-        StartProposal = 4398046511104,
-        /// <summary>Can vote on group proposals</summary>
-        VoteOnProposal = 8796093022208,
+        ModerateChat = 1 << 37,
+
+        // Parcel identity
+        /// <summary>Can toggle "Show in Find Places" and set search category</summary>
+        FindPlaces = 1 << 17,
+        /// <summary>Can change parcel name, description, and 'Publish on web' settings</summary>
+        LandChangeIdentity = 1 << 18,
+        /// <summary>Can set the landing point and teleport routing on group land</summary>
+        SetLandingPoint = 1 << 19,
+
+        // Parcel settings
+        /// <summary>Can change music and media settings</summary>
+        ChangeMedia = 1 << 20,
+        /// <summary>Can toggle 'Edit Terrain' option in Land settings</summary>
+        LandEdit = 1 << 21,
+        /// <summary>Can toggle various About Land > Options settings</summary>
+        LandOptions = 1 << 22,
+
+        // Parcel powers
+        /// <summary>Can always terraform land, even if parcel settings have it turned off</summary>
+        AllowEditLand = 1 << 23,
+        /// <summary>Can always fly while over group owned land</summary>
+        AllowFly = 1 << 24,
+        /// <summary>Can always rez objects on group owned land</summary>
+        AllowRez = 1 << 25,
+        /// <summary>Can always create landmarks for group owned parcels</summary>
+        AllowLandmark = 1 << 26,
+        /// <summary>Can set home location on any group owned parcel</summary>
+        AllowSetHome = 1 << 28,
+
+
+        // Parcel access
+        /// <summary>Can modify public access settings for group owned parcels</summary>
+        LandManageAllowed = 1 << 29,
+        /// <summary>Can manager parcel ban lists on group owned land</summary>
+        LandManageBanned = 1 << 30,
+        /// <summary>Can manage pass list sales information</summary>
+        LandManagePasses = 1 << 31,
+        /// <summary>Can eject and freeze other avatars on group owned land</summary>
+        LandEjectAndFreeze = 1 << 32,
+
+        // Parcel content
+        /// <summary>Can return objects set to group</summary>
+        ReturnGroupSet = 1 << 33,
+        /// <summary>Can return non-group owned/set objects</summary>
+        ReturnNonGroup = 1 << 34,
         /// <summary>Can return group owned objects</summary>
-        ReturnGroupOwned = 17592186044416
+        ReturnGroupOwned = 1 << 48,
+
+        /// <summary>Can landscape using Linden plants</summary>
+        LandGardening = 1 << 35,
+
+        // Objects
+        /// <summary>Can deed objects to group</summary>
+        DeedObject = 1 << 36,
+        /// <summary>Can move group owned objects</summary>
+        ObjectManipulate = 1 << 38,
+        /// <summary>Can set group owned objects for-sale</summary>
+        ObjectSetForSale = 1 << 39,
+
+        /// <summary>Pay group liabilities and receive group dividends</summary>
+        Accountable = 1 << 40,
+
+        // Notices and proposals
+        /// <summary>Can send group notices</summary>
+        SendNotices = 1 << 42,
+        /// <summary>Can receive group notices</summary>
+        ReceiveNotices = 1 << 43,
+        /// <summary>Can create group proposals</summary>
+        StartProposal = 1 << 44,
+        /// <summary>Can vote on group proposals</summary>
+        VoteOnProposal = 1 << 45
     }
 
     #endregion Enums
@@ -896,6 +926,24 @@ namespace OpenMetaverse
             Client.Network.SendPacket(sgp);
         }
 
+        /// <summary>
+        /// Save wheather agent wants to accept group notices and list this group in their profile
+        /// </summary>
+        /// <param name="groupID">Group <see cref="UUID"/></param>
+        /// <param name="acceptNotices">Accept notices from this group</param>
+        /// <param name="listInProfile">List this group in the profile</param>
+        public void SetGroupAcceptNotices(UUID groupID, bool acceptNotices, bool listInProfile)
+        {
+            SetGroupAcceptNoticesPacket p = new SetGroupAcceptNoticesPacket();
+            p.AgentData.AgentID = Client.Self.AgentID;
+            p.AgentData.SessionID = Client.Self.SessionID;
+            p.Data.GroupID = groupID;
+            p.Data.AcceptNotices = acceptNotices;
+            p.NewData.ListInProfile = listInProfile;
+
+            Client.Network.SendPacket(p);
+        }
+
         /// <summary>Request to join a group</summary>
         /// <remarks>Subscribe to <code>OnGroupJoined</code> event for confirmation.</remarks>
         /// <param name="id">group ID (UUID) to join.</param>
@@ -1157,8 +1205,7 @@ namespace OpenMetaverse
                     group.Contribution = msg.GroupDataBlock[i].Contribution;
                     group.AcceptNotices = msg.GroupDataBlock[i].AcceptNotices;
                     group.Powers = msg.GroupDataBlock[i].GroupPowers;
-                    // verify this is correct - or add to struct if ListInProfile is a new field
-                    group.ShowInList = msg.GroupDataBlock[i].ListInProfile;
+                    group.ListInProfile = msg.GroupDataBlock[i].ListInProfile;
 
                     currentGroups.Add(group.ID, group);
 
