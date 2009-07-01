@@ -1101,10 +1101,15 @@ namespace OpenMetaverse.Messages.Linden
             public UUID GroupInsigniaID;
             public string GroupName;
             public GroupPowers GroupPowers;
+        }
+
+        public class NewGroupData
+        {
             public bool ListInProfile;
         }
 
         public GroupData[] GroupDataBlock;
+        public NewGroupData[] NewGroupDataBlock;
 
         /// <summary>
         /// Serialize the object
@@ -1133,11 +1138,20 @@ namespace OpenMetaverse.Messages.Linden
                 group["GroupInsigniaID"] = OSD.FromUUID(GroupDataBlock[i].GroupInsigniaID);
                 group["GroupName"] = OSD.FromString(GroupDataBlock[i].GroupName);
                 group["GroupPowers"] = OSD.FromLong((long)GroupDataBlock[i].GroupPowers);
-                group["ListInProfile"] = OSD.FromBoolean(GroupDataBlock[i].ListInProfile);
                 groupDataArray.Add(group);
             }
 
             map["GroupData"] = groupDataArray;
+
+            OSDArray newGroupDataArray = new OSDArray(NewGroupDataBlock.Length);
+
+            for (int i = 0; i < NewGroupDataBlock.Length; i++)
+            {
+                OSDMap group = new OSDMap(1);
+                group["ListInProfile"] = OSD.FromBoolean(NewGroupDataBlock[i].ListInProfile);
+            }
+
+            map["NewGroupData"] = groupDataArray;
 
             return map;
         }
@@ -1153,8 +1167,7 @@ namespace OpenMetaverse.Messages.Linden
             AgentID = agentMap["AgentID"].AsUUID();
 
             OSDArray groupArray = (OSDArray)map["GroupData"];
-
-            //OSDArray newGroupDataArray = (OSDArray)map["NewGroupData"];
+            OSDArray newGroupArray = (OSDArray)map["NewGroupData"];
 
             GroupDataBlock = new GroupData[groupArray.Count];
 
@@ -1170,9 +1183,18 @@ namespace OpenMetaverse.Messages.Linden
                 groupData.GroupInsigniaID = groupMap["GroupInsigniaID"].AsUUID();
                 groupData.GroupName = groupMap["GroupName"].AsString();
                 groupData.GroupPowers = (GroupPowers)groupMap["GroupPowers"].AsLong();
-                groupData.ListInProfile = groupMap["ListInProfile"].AsBoolean();
                 groupData.AcceptNotices = groupMap["AcceptNotices"].AsBoolean();
                 GroupDataBlock[i] = groupData;
+            }
+
+            NewGroupDataBlock = new NewGroupData[newGroupArray.Count];
+
+            for (int i = 0; i < newGroupArray.Count; i++)
+            {
+                OSDMap newGroupMap = (OSDMap)newGroupArray[i];
+                NewGroupData newGroupData = new NewGroupData();
+                newGroupData.ListInProfile = newGroupMap["ListInProfile"].AsBoolean();
+                NewGroupDataBlock[i] = newGroupData;
             }
         }
     }

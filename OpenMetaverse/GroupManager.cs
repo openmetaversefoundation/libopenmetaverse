@@ -1207,7 +1207,7 @@ namespace OpenMetaverse
                     group.Contribution = msg.GroupDataBlock[i].Contribution;
                     group.AcceptNotices = msg.GroupDataBlock[i].AcceptNotices;
                     group.Powers = msg.GroupDataBlock[i].GroupPowers;
-                    group.ListInProfile = msg.GroupDataBlock[i].ListInProfile;
+                    group.ListInProfile = msg.NewGroupDataBlock[i].ListInProfile;
 
                     currentGroups.Add(group.ID, group);
 
