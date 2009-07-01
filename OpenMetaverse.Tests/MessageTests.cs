@@ -85,9 +85,11 @@ namespace OpenMetaverse.Tests
 
             AgentGroupDataUpdateMessage.NewGroupData ng1 = new AgentGroupDataUpdateMessage.NewGroupData();
             ng1.ListInProfile = false;
+            nblocks[0] = ng1;
 
             AgentGroupDataUpdateMessage.NewGroupData ng2 = new AgentGroupDataUpdateMessage.NewGroupData();
             ng2.ListInProfile = true;
+            nblocks[1] = ng2;
 
             s.NewGroupDataBlock = nblocks;
 

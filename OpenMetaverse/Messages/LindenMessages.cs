@@ -1131,7 +1131,7 @@ namespace OpenMetaverse.Messages.Linden
 
             for (int i = 0; i < GroupDataBlock.Length; i++)
             {
-                OSDMap group = new OSDMap(7);
+                OSDMap group = new OSDMap(6);
                 group["AcceptNotices"] = OSD.FromBoolean(GroupDataBlock[i].AcceptNotices);
                 group["Contribution"] = OSD.FromInteger(GroupDataBlock[i].Contribution);
                 group["GroupID"] = OSD.FromUUID(GroupDataBlock[i].GroupID);
@@ -1149,9 +1149,10 @@ namespace OpenMetaverse.Messages.Linden
             {
                 OSDMap group = new OSDMap(1);
                 group["ListInProfile"] = OSD.FromBoolean(NewGroupDataBlock[i].ListInProfile);
+                newGroupDataArray.Add(group);
             }
 
-            map["NewGroupData"] = groupDataArray;
+            map["NewGroupData"] = newGroupDataArray;
 
             return map;
         }
