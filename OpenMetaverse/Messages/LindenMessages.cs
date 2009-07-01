@@ -1168,7 +1168,6 @@ namespace OpenMetaverse.Messages.Linden
             AgentID = agentMap["AgentID"].AsUUID();
 
             OSDArray groupArray = (OSDArray)map["GroupData"];
-            OSDArray newGroupArray = (OSDArray)map["NewGroupData"];
 
             GroupDataBlock = new GroupData[groupArray.Count];
 
@@ -1188,14 +1187,32 @@ namespace OpenMetaverse.Messages.Linden
                 GroupDataBlock[i] = groupData;
             }
 
-            NewGroupDataBlock = new NewGroupData[newGroupArray.Count];
-
-            for (int i = 0; i < newGroupArray.Count; i++)
+            // If request for current groups came very close to login
+            // the Linden sim will return no NewGroupData block, but
+            // it will instead set all ListInProfile fields to false
+            if (map.ContainsKey("NewGroupData"))
             {
-                OSDMap newGroupMap = (OSDMap)newGroupArray[i];
-                NewGroupData newGroupData = new NewGroupData();
-                newGroupData.ListInProfile = newGroupMap["ListInProfile"].AsBoolean();
-                NewGroupDataBlock[i] = newGroupData;
+                OSDArray newGroupArray = (OSDArray)map["NewGroupData"];
+
+                NewGroupDataBlock = new NewGroupData[newGroupArray.Count];
+
+                for (int i = 0; i < newGroupArray.Count; i++)
+                {
+                    OSDMap newGroupMap = (OSDMap)newGroupArray[i];
+                    NewGroupData newGroupData = new NewGroupData();
+                    newGroupData.ListInProfile = newGroupMap["ListInProfile"].AsBoolean();
+                    NewGroupDataBlock[i] = newGroupData;
+                }
+            }
+            else
+            {
+                NewGroupDataBlock = new NewGroupData[GroupDataBlock.Length];
+                for (int i = 0; i < NewGroupDataBlock.Length; i++)
+                {
+                    NewGroupData newGroupData = new NewGroupData();
+                    newGroupData.ListInProfile = false;
+                    NewGroupDataBlock[i] = newGroupData;
+                }
             }
         }
     }
