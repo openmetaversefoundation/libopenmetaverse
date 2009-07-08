@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 using OpenMetaverse;
 
@@ -38,9 +39,6 @@ namespace OpenMetaverse.Assets
     {
         /// <summary>Override the base classes AssetType</summary>
         public override AssetType AssetType { get { return AssetType.Notecard; } }
-
-        /// <summary>A text string containing the raw contents of the notecard</summary>
-        public string Text = null;
 
         /// <summary>A text string containing main text of the notecard</summary>
         public string BodyText = null;
@@ -77,12 +75,72 @@ namespace OpenMetaverse.Assets
         /// </summary>
         public override void Encode()
         {
-            // TODO: encode embedded inventory items
-            Text = "Linden text version 2\n{\nLLEmbeddedItems version 1\n{\ncount 0\n}\nText length ";
-            Text += BodyText.Length + "\n";
-            Text += BodyText;
-            Text += "}";
-            AssetData = Utils.StringToBytes(Text);
+            string body = BodyText ?? String.Empty;
+
+            StringBuilder output = new StringBuilder();
+            output.AppendLine("Linden text version 2");
+            output.AppendLine("{");
+            output.AppendLine("LLEmbeddedItems version 1");
+            output.AppendLine("{");
+
+            if (EmbeddedItems != null)
+            {
+                output.AppendLine("count " + EmbeddedItems.Count);
+                output.AppendLine("{");
+
+                for (int i = 0; i < EmbeddedItems.Count; i++)
+                {
+                    InventoryItem item = EmbeddedItems[i];
+
+                    output.AppendLine("\tinv_item\t" + i);
+                    output.AppendLine("\t{");
+
+                    output.AppendLine("\t\titem_id\t" + item.UUID);
+                    output.AppendLine("\t\tparent_id\t" + item.ParentUUID);
+
+                    output.AppendLine("\tpermissions\t0");
+                    output.AppendLine("\t{");
+                    output.AppendLine("\t\tbase_mask\t" + ((uint)item.Permissions.BaseMask).ToString("x"));
+                    output.AppendLine("\t\towner_mask\t" + ((uint)item.Permissions.OwnerMask).ToString("x"));
+                    output.AppendLine("\t\tgroup_mask\t" + ((uint)item.Permissions.GroupMask).ToString("x"));
+                    output.AppendLine("\t\teveryone_mask\t" + ((uint)item.Permissions.EveryoneMask).ToString("x"));
+                    output.AppendLine("\t\tnext_owner_mask\t" + ((uint)item.Permissions.NextOwnerMask).ToString("x"));
+                    output.AppendLine("\t\tcreator_id\t" + item.CreatorID);
+                    output.AppendLine("\t\towner_id\t" + item.OwnerID);
+                    output.AppendLine("\t\tlast_owner_id\t" + UUID.Zero);
+                    output.AppendLine("\t\tgroup_id\t" + item.GroupID);
+                    output.AppendLine("\t}");
+
+                    output.AppendLine("\t\tasset_id\t" + item.AssetUUID);
+                    output.AppendLine("\t\ttype\t" + Utils.AssetTypeToString(item.AssetType));
+                    output.AppendLine("\t\tinv_type\t" + Utils.InventoryTypeToString(item.InventoryType));
+                    output.AppendLine("\t\tflags\t" + item.Flags.ToString().PadLeft(8, '0'));
+
+                    output.AppendLine("\tsale_info\t0");
+                    output.AppendLine("\t{");
+                    output.AppendLine("\t\tsale_type\t" + Utils.SaleTypeToString(item.SaleType));
+                    output.AppendLine("\t\tsale_price\t" + item.SalePrice);
+                    output.AppendLine("\t}");
+
+                    output.AppendLine("\t\tname\t" + item.Name.Replace('|', '_') + "|");
+                    output.AppendLine("\t\tdesc\t" + item.Description.Replace('|', '_') + "|");
+                    output.AppendLine("\t\tcreation_date\t" + Utils.DateTimeToUnixTime(item.CreationDate));
+
+                    output.AppendLine("\t}");
+                }
+
+                output.AppendLine("}");
+            }
+            else
+            {
+                output.AppendLine("count 0");
+            }
+
+            output.AppendLine("}");
+            output.AppendLine("Text length " + body.Length);
+            output.Append(body + "}");
+
+            AssetData = Utils.StringToBytes(output.ToString());
         }
 
         /// <summary>
@@ -91,13 +149,13 @@ namespace OpenMetaverse.Assets
         /// <returns>true if the AssetData was successfully decoded to a string</returns>
         public override bool Decode()
         {
-            Text = Utils.BytesToString(AssetData);
+            string data = Utils.BytesToString(AssetData);
             EmbeddedItems = new List<InventoryItem>();
             BodyText = string.Empty;
 
             try
             {
-                string[] lines = Text.Split(new Char[] { '\n' } );
+                string[] lines = data.Split('\n');
                 int i = 0;
                 Match m;
 
