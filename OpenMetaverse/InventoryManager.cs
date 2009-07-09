@@ -3730,41 +3730,56 @@ namespace OpenMetaverse
 
         private void UploadNotecardAssetResponse(CapsClient client, OSD result, Exception error)
         {
-            OSDMap contents = (OSDMap)result;
+            OSDMap contents = result as OSDMap;
             KeyValuePair<NotecardUploadedAssetCallback, byte[]> kvp = (KeyValuePair<NotecardUploadedAssetCallback, byte[]>)(((object[])client.UserData)[0]);
             NotecardUploadedAssetCallback callback = kvp.Key;
             byte[] itemData = (byte[])kvp.Value;
 
-            string status = contents["state"].AsString();
-
-            if (status == "upload")
+            if (contents != null)
             {
-                string uploadURL = contents["uploader"].AsString();
+                string status = contents["state"].AsString();
 
-                // This makes the assumption that all uploads go to CurrentSim, to avoid
-                // the problem of HttpRequestState not knowing anything about simulators
-                CapsClient upload = new CapsClient(new Uri(uploadURL));
-                upload.OnComplete += new CapsClient.CompleteCallback(UploadNotecardAssetResponse);
-                upload.UserData = new object[2] { kvp, (UUID)(((object[])client.UserData)[1]) };
-                upload.BeginGetResponse(itemData, "application/octet-stream", _Client.Settings.CAPS_TIMEOUT);
-            }
-            else if (status == "complete")
-            {
-                if (contents.ContainsKey("new_asset"))
+                if (status == "upload")
                 {
-                    try { callback(true, String.Empty, (UUID)(((object[])client.UserData)[1]), contents["new_asset"].AsUUID()); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    Uri uploadURL = contents["uploader"].AsUri();
+
+                    if (uploadURL != null)
+                    {
+                        // This makes the assumption that all uploads go to CurrentSim, to avoid
+                        // the problem of HttpRequestState not knowing anything about simulators
+                        CapsClient upload = new CapsClient(uploadURL);
+                        upload.OnComplete += new CapsClient.CompleteCallback(UploadNotecardAssetResponse);
+                        upload.UserData = new object[2] { kvp, (UUID)(((object[])client.UserData)[1]) };
+                        upload.BeginGetResponse(itemData, "application/octet-stream", _Client.Settings.CAPS_TIMEOUT);
+                    }
+                    else
+                    {
+                        try { callback(false, "Missing uploader URL", UUID.Zero, UUID.Zero); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    }
+                }
+                else if (status == "complete")
+                {
+                    if (contents.ContainsKey("new_asset"))
+                    {
+                        try { callback(true, String.Empty, (UUID)(((object[])client.UserData)[1]), contents["new_asset"].AsUUID()); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    }
+                    else
+                    {
+                        try { callback(false, "Failed to parse asset and item UUIDs", UUID.Zero, UUID.Zero); }
+                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    }
                 }
                 else
                 {
-                    try { callback(false, "Failed to parse asset and item UUIDs", UUID.Zero, UUID.Zero); }
+                    try { callback(false, status, UUID.Zero, UUID.Zero); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                 }
             }
             else
             {
-                // Failure
-                try { callback(false, status, UUID.Zero, UUID.Zero); }
+                try { callback(false, "Unrecognized or empty response", UUID.Zero, UUID.Zero); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
             }
         }

@@ -208,7 +208,6 @@ namespace OpenMetaverse
     {
         public ulong XferID;
         public UUID VFileID;
-        public AssetType Type;
         public uint PacketNum;
         public string Filename = String.Empty;
         public TransferError Error = TransferError.None;
@@ -1278,21 +1277,23 @@ namespace OpenMetaverse
         private void AbortXferHandler(Packet packet, Simulator simulator)
         {
             AbortXferPacket abort = (AbortXferPacket)packet;
-            Transfer transfer;
+            XferDownload download = null;
 
             // Lame ulong to UUID conversion, please go away Xfer system
             UUID transferID = new UUID(abort.XferID.ID);
 
             lock (Transfers)
             {
+                Transfer transfer;
                 if (Transfers.TryGetValue(transferID, out transfer))
+                {
+                    download = (XferDownload)transfer;
                     Transfers.Remove(transferID);
+                }
             }
 
-            if (transfer != null && OnXferReceived != null)
+            if (download != null && OnXferReceived != null)
             {
-                XferDownload download = (XferDownload)transfer;
-
                 download.Success = false;
                 download.Error = (TransferError)abort.XferID.Result;
 
