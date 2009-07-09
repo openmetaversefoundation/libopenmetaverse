@@ -211,6 +211,7 @@ namespace OpenMetaverse
         public AssetType Type;
         public uint PacketNum;
         public string Filename = String.Empty;
+        public TransferError Error = TransferError.None;
 
         public XferDownload()
             : base()
@@ -375,8 +376,9 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.ConfirmXferPacket, new NetworkManager.PacketCallback(ConfirmXferPacketHandler));
             Client.Network.RegisterCallback(PacketType.AssetUploadComplete, new NetworkManager.PacketCallback(AssetUploadCompleteHandler));
 
-            // Xfer packet for downloading misc assets
+            // Xfer packets for downloading misc assets
             Client.Network.RegisterCallback(PacketType.SendXferPacket, new NetworkManager.PacketCallback(SendXferPacketHandler));
+            Client.Network.RegisterCallback(PacketType.AbortXfer, new NetworkManager.PacketCallback(AbortXferHandler));
 
             // Simulator is responding to a request to download a file
             Client.Network.RegisterCallback(PacketType.InitiateDownload, new NetworkManager.PacketCallback(InitiateDownloadPacketHandler));
@@ -1270,6 +1272,32 @@ namespace OpenMetaverse
                         catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                     }
                 }
+            }
+        }
+
+        private void AbortXferHandler(Packet packet, Simulator simulator)
+        {
+            AbortXferPacket abort = (AbortXferPacket)packet;
+            Transfer transfer;
+
+            // Lame ulong to UUID conversion, please go away Xfer system
+            UUID transferID = new UUID(abort.XferID.ID);
+
+            lock (Transfers)
+            {
+                if (Transfers.TryGetValue(transferID, out transfer))
+                    Transfers.Remove(transferID);
+            }
+
+            if (transfer != null && OnXferReceived != null)
+            {
+                XferDownload download = (XferDownload)transfer;
+
+                download.Success = false;
+                download.Error = (TransferError)abort.XferID.Result;
+
+                try { OnXferReceived(download); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
