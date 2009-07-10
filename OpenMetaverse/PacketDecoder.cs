@@ -878,7 +878,7 @@ namespace OpenMetaverse.Packets
             return String.Format("{0,30}: {1,-2} {2,-37} [ParcelCategory]",
                 fieldName,
                 fieldData,
-                "(" + (ParcelCategory)(uint)fieldData + ")");
+                "(" + fieldData + ")");
         }
 
         private static string DecodeObjectUpdateFlags(string fieldName, object fieldData)

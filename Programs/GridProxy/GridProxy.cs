@@ -891,20 +891,23 @@ namespace GridProxy
 
                 if (stage == CapsStage.Response)
                 {
-                    OSDMap map = (OSDMap)capReq.Response;
-
-                    if (map.ContainsKey("uploader"))
+                    if (capReq.Response != null)
                     {
-                        string val = map["uploader"].AsString();
+                        OSDMap map = (OSDMap)capReq.Response;
 
-                        if (!KnownCaps.ContainsKey(val))
-                        {                            
-                            CapInfo newCap = new CapInfo(val, capReq.Info.Sim, capReq.Info.CapType, CapsDataFormat.Binary, CapsDataFormat.OSD);
-                            newCap.AddDelegate(new CapsDelegate(KnownCapDelegate));
-                            lock (this) { KnownCaps[val] = newCap; }
+                        if (map.ContainsKey("uploader"))
+                        {
+                            string val = map["uploader"].AsString();
+
+                            if (!KnownCaps.ContainsKey(val))
+                            {
+                                CapInfo newCap = new CapInfo(val, capReq.Info.Sim, capReq.Info.CapType, CapsDataFormat.Binary, CapsDataFormat.OSD);
+                                newCap.AddDelegate(new CapsDelegate(KnownCapDelegate));
+                                lock (this) { KnownCaps[val] = newCap; }
+                            }
+
+                            map["uploader"] = OSD.FromString(loginURI + val);
                         }
-
-                        map["uploader"] = OSD.FromString(loginURI + val);
                     }
                 }
 

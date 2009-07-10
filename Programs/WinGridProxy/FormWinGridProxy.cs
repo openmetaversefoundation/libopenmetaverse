@@ -483,12 +483,22 @@ namespace WinGridProxy
                         }
                         rawRequest.AppendLine(Utils.BytesToString(capsData.RawRequest));
 
-                        OSD requestOSD = OSDParser.DeserializeLLSDXml(capsData.RawRequest);
+                        if (capsData.RequestHeaders["content-type"].Equals("application/octet-stream"))
+                        {
+                            richTextBoxDecodedRequest.Text = rawRequest.ToString();
+                            treeViewXMLRequest.Nodes.Clear();
+                            richTextBoxNotationRequest.Text = "Binary data cannot be formatted as notation";                            
+                        }
+                        else
+                        {
+                            OSD requestOSD = OSDParser.DeserializeLLSDXml(capsData.RawRequest);
 
-                        richTextBoxDecodedRequest.Text = TagToString(requestOSD, listViewSessions.FocusedItem.SubItems[2].Text);//.ToString();
+                            richTextBoxDecodedRequest.Text = TagToString(requestOSD, listViewSessions.FocusedItem.SubItems[2].Text);
+                            richTextBoxNotationRequest.Text = requestOSD.ToString();
+                            updateTreeView(Utils.BytesToString(capsData.RawRequest), treeViewXMLRequest);
+                        }
+                        // these work for both binary and xml+llsd messages
                         richTextBoxRawRequest.Text = rawRequest.ToString();
-                        richTextBoxNotationRequest.Text = requestOSD.ToString();
-                        updateTreeView(Utils.BytesToString(capsData.RawRequest), treeViewXMLRequest);
                         Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(capsData.RawRequest);
                         hexBoxRequest.ByteProvider = data;
                     }
@@ -968,9 +978,14 @@ namespace WinGridProxy
             result.AppendFormat("Message Type {0}" + System.Environment.NewLine, message.GetType().Name);
 
             foreach (FieldInfo messageField in message.GetType().GetFields())
-            {                
+            {
+                // an abstract message class
+                if (messageField.FieldType.IsAbstract)
+                {
+                    result.AppendLine(IMessageToString(messageField.GetValue(message)));
+                }
                 // a byte array
-                if (messageField.GetValue(message) != null && messageField.GetValue(message).GetType() == typeof(Byte[]))
+                else if (messageField.GetValue(message) != null && messageField.GetValue(message).GetType() == typeof(Byte[]))
                 {
                     result.AppendFormat("{0, 30}: ({1})" + System.Environment.NewLine,
                     messageField.Name, messageField.FieldType.Name);
