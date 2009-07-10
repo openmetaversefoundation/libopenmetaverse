@@ -1,12 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Threading;
 using OpenMetaverse;
+using OpenMetaverse.Assets;
 
 namespace OpenMetaverse.TestClient
 {
     public class CreateNotecardCommand : Command
     {
+        const int NOTECARD_CREATE_TIMEOUT = 10 * 1000;
+        const int NOTECARD_FETCH_TIMEOUT = 10 * 1000;
+
         public CreateNotecardCommand(TestClient testClient)
         {
             Name = "createnotecard";
@@ -14,74 +20,104 @@ namespace OpenMetaverse.TestClient
             Category = CommandCategory.Inventory;
         }
 
-        void OnNoteUpdate(bool success, string status, UUID itemID, UUID assetID)
-        {
-            if (success)
-                Console.WriteLine("Notecard successfully uploaded, ItemID {0} AssetID {1}", itemID, assetID);
-        }
-
         public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length < 1)
                 return "Usage: createnotecard filename.txt";
+
+            UUID notecardItemID = UUID.Zero, notecardAssetID = UUID.Zero;
+            bool success = false;
+            string message = String.Empty;
+            AutoResetEvent notecardEvent = new AutoResetEvent(false);
+
+            #region File Loading
 
             string file = String.Empty;
             for (int ct = 0; ct < args.Length; ct++)
                 file = file + args[ct] + " ";
             file = file.TrimEnd();
 
-            Console.WriteLine("Filename: {0}", file);
             if (!File.Exists(file))
                 return String.Format("Filename '{0}' does not exist", file);
 
-            System.IO.StreamReader reader = new StreamReader(file);
+            StreamReader reader = new StreamReader(file);
             string body = reader.ReadToEnd();
 
-            // FIXME: Upload the notecard asset first. When that completes, call RequestCreateItem
-            try
-            {
-                string desc = String.Format("{0} created by OpenMetaverse TestClient {1}", file, DateTime.Now);
-                // create the asset
+            #endregion File Loading
 
-                Client.Inventory.RequestCreateItem(Client.Inventory.FindFolderForType(AssetType.Notecard),
-                    file, desc, AssetType.Notecard, UUID.Random(), InventoryType.Notecard, PermissionMask.All,
-                    delegate(bool success, InventoryItem item)
+            // Notecard creation
+            AssetNotecard notecard = new AssetNotecard();
+            notecard.BodyText = body;
+            notecard.Encode();
+
+            Client.Inventory.RequestCreateItem(Client.Inventory.FindFolderForType(AssetType.Notecard),
+                file, file + " created by OpenMetaverse TestClient " + DateTime.Now, AssetType.Notecard,
+                UUID.Random(), InventoryType.Notecard, PermissionMask.All,
+                delegate(bool createSuccess, InventoryItem item)
+                {
+                    if (createSuccess)
                     {
-                        if (success) // upload the asset
-                            Client.Inventory.RequestUploadNotecardAsset(CreateNotecardAsset(body), item.UUID, new InventoryManager.NotecardUploadedAssetCallback(OnNoteUpdate));
+                        Client.Inventory.RequestUploadNotecardAsset(notecard.AssetData, item.UUID,
+                            delegate(bool uploadSuccess, string status, UUID itemID, UUID assetID)
+                            {
+                                notecardItemID = itemID;
+                                notecardAssetID = assetID;
+                                success = uploadSuccess;
+                                message = status ?? "Unknown error uploading notecard asset";
+                                notecardEvent.Set();
+                            });
                     }
-                );
-                return "Done";
+                    else
+                    {
+                        message = "Notecard item creation failed";
+                        notecardEvent.Set();
+                    }
+                }
+            );
 
-            }
-            catch (System.Exception e)
+            notecardEvent.WaitOne(NOTECARD_CREATE_TIMEOUT, false);
+
+            if (success)
             {
-                Logger.Log(e.ToString(), Helpers.LogLevel.Error, Client);
-                return "Error creating notecard.";
+                Logger.Log("Notecard successfully created, ItemID " + notecardItemID + " AssetID " + notecardAssetID, Helpers.LogLevel.Info);
+                return DownloadNotecard(notecardItemID, notecardAssetID);
             }
+            else
+                return "Notecard creation failed: " + message;
         }
-        /// <summary>
-        /// </summary>
-        /// <param name="body"></param>
-        public static byte[] CreateNotecardAsset(string body)
+
+        string DownloadNotecard(UUID itemID, UUID assetID)
         {
-            // Format the string body into Linden text
-            string lindenText = "Linden text version 1\n";
-            lindenText += "{\n";
-            lindenText += "LLEmbeddedItems version 1\n";
-            lindenText += "{\n";
-            lindenText += "count 0\n";
-            lindenText += "}\n";
-            lindenText += "Text length " + body.Length + "\n";
-            lindenText += body;
-            lindenText += "}\n";
+            UUID transferID = UUID.Zero;
+            AutoResetEvent assetDownloadEvent = new AutoResetEvent(false);
+            byte[] notecardData = null;
+            string error = "Timeout";
 
-            // Assume this is a string, add 1 for the null terminator
-            byte[] stringBytes = System.Text.Encoding.UTF8.GetBytes(lindenText);
-            byte[] assetData = new byte[stringBytes.Length]; //+ 1];
-            Array.Copy(stringBytes, 0, assetData, 0, stringBytes.Length);
+            AssetManager.AssetReceivedCallback assetCallback =
+                delegate(AssetDownload transfer, Asset asset)
+                {
+                    if (transfer.ID == transferID)
+                    {
+                        if (transfer.Success)
+                            notecardData = transfer.AssetData;
+                        else
+                            error = transfer.Status.ToString();
+                        assetDownloadEvent.Set();
+                    }
+                };
 
-            return assetData;
+            Client.Assets.OnAssetReceived += assetCallback;
+
+            transferID = Client.Assets.RequestInventoryAsset(assetID, itemID, UUID.Zero, Client.Self.AgentID, AssetType.Notecard, true);
+
+            assetDownloadEvent.WaitOne(NOTECARD_FETCH_TIMEOUT, false);
+
+            Client.Assets.OnAssetReceived -= assetCallback;
+
+            if (notecardData != null)
+                return Encoding.UTF8.GetString(notecardData);
+            else
+                return "Error downloading notecard asset: " + error;
         }
     }
 }
