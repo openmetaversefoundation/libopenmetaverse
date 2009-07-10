@@ -316,7 +316,9 @@ namespace WinGridProxy
                 InitProxyFilters();
 
                 proxy.Start();
-
+                
+                loadFilterSelectionsToolStripMenuItem.Enabled = saveFilterSelectionsToolStripMenuItem.Enabled = true;
+                
                 // enable any gui elements
                 toolStripDropDownButton5.Enabled =
                 toolStripMenuItemPlugins.Enabled = grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = true;
@@ -327,6 +329,7 @@ namespace WinGridProxy
             }
             else if (button1.Text.StartsWith("Stop") && IsProxyRunning.Equals(true))
             {
+                loadFilterSelectionsToolStripMenuItem.Enabled = saveFilterSelectionsToolStripMenuItem.Enabled = false;
                 // stop the proxy
                 proxy.Stop();
                 toolStripMenuItemPlugins.Enabled = grpUDPFilters.Enabled = grpCapsFilters.Enabled = IsProxyRunning = false;
@@ -1150,9 +1153,6 @@ namespace WinGridProxy
                     }
                 }
             }
-
-            //listViewPacketFilters.Sort();
-
             listViewPacketFilters.EndUpdate();
         }
 
