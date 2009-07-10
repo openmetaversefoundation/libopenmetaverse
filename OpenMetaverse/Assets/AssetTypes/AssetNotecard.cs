@@ -83,9 +83,17 @@ namespace OpenMetaverse.Assets
             output.Append("LLEmbeddedItems version 1\n");
             output.Append("{\n");
 
+            int count = 0;
+
             if (EmbeddedItems != null)
             {
-                output.Append("count " + EmbeddedItems.Count + "\n");
+                count = EmbeddedItems.Count;
+            }
+
+            output.Append("count " + EmbeddedItems.Count + "\n");
+
+            if (count > 0)
+            {
                 output.Append("{\n");
 
                 for (int i = 0; i < EmbeddedItems.Count; i++)
@@ -129,17 +137,18 @@ namespace OpenMetaverse.Assets
                     output.Append("\t\tcreation_date\t" + Utils.DateTimeToUnixTime(item.CreationDate) + "\n");
 
                     output.Append("\t}\n");
+
+                    if (i != EmbeddedItems.Count - 1)
+                    {
+                        output.Append("}\n{\n");
+                    }
                 }
 
                 output.Append("}\n");
             }
-            else
-            {
-                output.Append("count 0\n");
-            }
 
             output.Append("}\n");
-            output.Append("Text length " + body.Length + "\n");
+            output.Append("Text length " + (Utils.StringToBytes(body).Length - 1).ToString() + "\n");
             output.Append(body + "}\n");
 
             AssetData = Utils.StringToBytes(output.ToString());
