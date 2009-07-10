@@ -157,7 +157,7 @@ namespace WinGridProxy
             }
             else
             {
-                ListViewItem foundCap = listViewMessageFilters.FindItemWithText(cap.CapType);
+                ListViewItem foundCap = FindListViewItem(listViewMessageFilters, cap.CapType, false);
                 if (foundCap == null)
                 {
                     ListViewItem addedItem = listViewMessageFilters.Items.Add(new ListViewItem(cap.CapType, new ListViewGroup("Capabilities Messages")));
@@ -673,7 +673,7 @@ namespace WinGridProxy
         {
             if (enableDisableFilterByNameToolStripMenuItem.Tag != null)
             {
-                ListViewItem found = listViewMessageFilters.FindItemWithText(enableDisableFilterByNameToolStripMenuItem.Tag.ToString());
+                ListViewItem found = FindListViewItem(listViewMessageFilters, enableDisableFilterByNameToolStripMenuItem.Tag.ToString(), false);
 
                 if (found != null)
                 {
@@ -681,7 +681,7 @@ namespace WinGridProxy
                 }
                 else
                 {
-                    found = listViewPacketFilters.FindItemWithText(enableDisableFilterByNameToolStripMenuItem.Tag.ToString());
+                    found = FindListViewItem(listViewPacketFilters, enableDisableFilterByNameToolStripMenuItem.Tag.ToString(), false);
 
                     if (found != null)
                         listViewPacketFilters.Items[found.Index].Checked = enableDisableFilterByNameToolStripMenuItem.Checked;
@@ -715,13 +715,13 @@ namespace WinGridProxy
 
                 if (strPacketOrMessage.Equals("Packets"))
                 {
-                    ListViewItem found = listViewPacketFilters.FindItemWithText(toolStripMenuItemSelectPacketName.Tag.ToString());
+                    ListViewItem found = FindListViewItem(listViewPacketFilters, toolStripMenuItemSelectPacketName.Tag.ToString(), false);
                     if (found != null)
                         ctxChecked = found.Checked;
                 }
                 else if (strPacketOrMessage.Equals("Messages"))// && listViewMessageFilters.Items.ContainsKey(toolStripMenuItemSelectPacketName.Tag.ToString()))
                 {
-                    ListViewItem found = listViewMessageFilters.FindItemWithText(toolStripMenuItemSelectPacketName.Tag.ToString());
+                    ListViewItem found = FindListViewItem(listViewMessageFilters, toolStripMenuItemSelectPacketName.Tag.ToString(), false);
                     if (found != null)
                         ctxChecked = found.Checked;
                 }
@@ -1083,7 +1083,7 @@ namespace WinGridProxy
                 listViewMessageFilters.BeginUpdate();
                 foreach (KeyValuePair<string, FilterEntry> kvp in Store.MessageSessions)
                 {
-                    ListViewItem foundMessage = listViewPacketFilters.FindItemWithText(kvp.Key);
+                    ListViewItem foundMessage = FindListViewItem(listViewPacketFilters, kvp.Key, false);
                     if (foundMessage == null)
                     {
                         ListViewItem addedItem = listViewMessageFilters.Items.Add(kvp.Key);
@@ -1102,7 +1102,7 @@ namespace WinGridProxy
                 listViewPacketFilters.BeginUpdate();
                 foreach (KeyValuePair<string, FilterEntry> kvp in Store.PacketSessions)
                 {
-                    ListViewItem foundPacket = listViewPacketFilters.FindItemWithText(kvp.Key);
+                    ListViewItem foundPacket = FindListViewItem(listViewPacketFilters, kvp.Key, false);
                     if (foundPacket == null)
                     {
                         ListViewItem addedItem = listViewPacketFilters.Items.Add(new ListViewItem(kvp.Key));
@@ -1140,7 +1140,7 @@ namespace WinGridProxy
                     {
                         pType = packetTypeFromName(name);
 
-                        ListViewItem found = listViewPacketFilters.FindItemWithText(name);
+                        ListViewItem found = FindListViewItem(listViewPacketFilters, name, false);
                         if (!String.IsNullOrEmpty(name) && found == null)
                         {
                             ListViewItem addedItem = listViewPacketFilters.Items.Add(new ListViewItem(name));
