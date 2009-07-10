@@ -344,6 +344,46 @@ namespace OpenMetaverse
         Direct = 2
     }
 
+    /// <summary>
+    /// Parcel Media Command used in ParcelMediaCommandMessage
+    /// </summary>
+    public enum ParcelMediaCommand : uint
+    {
+        /// <summary>Stop the media stream and go back to the first frame</summary>
+        Stop = 0,
+        /// <summary>Pause the media stream (stop playing but stay on current frame)</summary>
+        Pause,
+        /// <summary>Start the current media stream playing and stop when the end is reached</summary>
+        Play,
+        /// <summary>Start the current media stream playing, 
+        /// loop to the beginning when the end is reached and continue to play</summary>
+        Loop,
+        /// <summary>Specifies the texture to replace with video</summary>
+        /// <remarks>If passing the key of a texture, it must be explicitly typecast as a key, 
+        /// not just passed within double quotes.</remarks>
+        Texture,
+        /// <summary>Specifies the movie URL (254 characters max)</summary>
+        URL,
+        /// <summary>Specifies the time index at which to begin playing</summary>
+        Time,
+        /// <summary>Specifies a single agent to apply the media command to</summary>
+        Agent,
+        /// <summary>Unloads the stream. While the stop command sets the texture to the first frame of the movie, 
+        /// unload resets it to the real texture that the movie was replacing.</summary>
+        Unload,
+        /// <summary>Turn on/off the auto align feature, similar to the auto align checkbox in the parcel media properties 
+        /// (NOT to be confused with the "align" function in the textures view of the editor!) Takes TRUE or FALSE as parameter.</summary>
+        AutoAlign,
+        /// <summary>Allows a Web page or image to be placed on a prim (1.19.1 RC0 and later only). 
+        /// Use "text/html" for HTML.</summary>
+        Type,
+        /// <summary>Resizes a Web page to fit on x, y pixels (1.19.1 RC0 and later only).</summary>
+        /// <remarks>This might still not be working</remarks>
+        Size,
+        /// <summary>Sets a description for the media being displayed (1.19.1 RC0 and later only).</summary>
+        Desc
+    }
+
     #endregion Enums
 
     #region Structs
@@ -839,6 +879,16 @@ namespace OpenMetaverse
         /// <param name="media">A struct containing updated media information</param>
         public delegate void ParcelMediaUpdateReplyCallback(Simulator simulator, ParcelMedia media);
 
+        /// <summary>
+        /// Fired when a ParcelMediaCommandMessage packet is received, this occurs when the media on the parcel sends a specialized event
+        /// </summary>
+        /// <param name="simulator">A reference to the simulator object</param>
+        /// <param name="sequence">The sequence the parcel command belongs to</param>
+        /// <param name="flags">Updated parcel information</param>
+        /// <param name="command">The command executed on the Parcel</param>
+        /// <param name="time">The time operand for some parcel commands</param>
+        public delegate void ParcelMediaCommandMessageCallback(Simulator simulator, uint sequence, ParcelFlags flags, ParcelMediaCommand command, float time);
+
         #endregion Delegates
 
         #region Events
@@ -867,6 +917,10 @@ namespace OpenMetaverse
         /// <summary>Fired when the Agent receives a <seealso cref="Packets.ParcelMediaUpdatePacket"/> which
         /// occurs when the parcel media information is changed for the current parcel the Agent is over</summary>
         public event ParcelMediaUpdateReplyCallback OnParcelMediaUpdate;
+        /// <summary>Fired when the Agent receives a <seealso cref="Packets.ParcelMediaCommandMessage"/> which
+        /// occurs when the parcel media has a specialized event like starting and looping command on the media is raised
+        ///  for the current parcel the Agent is over</summary>
+        public event ParcelMediaCommandMessageCallback OnParcelMediaCommandMessage;
 
         #endregion Events
 
@@ -892,6 +946,7 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.ForceObjectSelect, new NetworkManager.PacketCallback(SelectParcelObjectsReplyHandler));
             Client.Network.RegisterCallback(PacketType.ParcelMediaUpdate, new NetworkManager.PacketCallback(ParcelMediaUpdateHandler));
             Client.Network.RegisterCallback(PacketType.ParcelOverlay, new NetworkManager.PacketCallback(ParcelOverlayHandler));
+            Client.Network.RegisterCallback(PacketType.ParcelMediaCommandMessage, new NetworkManager.PacketCallback(ParcelMediaCommandMessagePacketHandler));
         }
 
         /// <summary>
@@ -1816,6 +1871,17 @@ namespace OpenMetaverse
             {
                 Logger.Log("Parcel overlay with sequence ID of " + overlay.ParcelData.SequenceID +
                     " received from " + simulator.ToString(), Helpers.LogLevel.Warning, Client);
+            }
+        }
+
+        private void ParcelMediaCommandMessagePacketHandler(Packet packet, Simulator simulator)
+        {
+            if (OnParcelMediaCommandMessage != null)
+            {
+                ParcelMediaCommandMessagePacket pmc = (ParcelMediaCommandMessagePacket)packet;
+                ParcelMediaCommandMessagePacket.CommandBlockBlock block = pmc.CommandBlock;
+                try { OnParcelMediaCommandMessage(simulator, pmc.Header.Sequence, (ParcelFlags)block.Flags, (ParcelMediaCommand)block.Command, block.Time); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
 
