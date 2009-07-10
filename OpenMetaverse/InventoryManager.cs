@@ -3791,7 +3791,8 @@ namespace OpenMetaverse
                 {
                     if (error is WebException)
                         message = ((HttpWebResponse)((WebException)error).Response).StatusDescription;
-                    else
+
+                    if (message == null || message == "None")
                         message = error.Message;
                 }
 

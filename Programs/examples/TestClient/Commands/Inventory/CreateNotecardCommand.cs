@@ -59,12 +59,26 @@ namespace OpenMetaverse.TestClient
                 // Try to fetch the inventory item
                 InventoryItem item = FetchItem(embedItemID);
                 if (item != null)
+                {
                     notecard.EmbeddedItems = new List<InventoryItem> { item };
+                    notecard.BodyText += "xxxx";
+                }
                 else
+                {
                     return "Failed to fetch inventory item " + embedItemID;
+                }
             }
 
             notecard.Encode();
+
+            if (notecard.EmbeddedItems != null && notecard.EmbeddedItems.Count > 0)
+            {
+                // Replace xxxx in the notecard text with a link to the embedded item
+                notecard.AssetData[notecard.AssetData.Length - 7] = 0xF4;
+                notecard.AssetData[notecard.AssetData.Length - 6] = 0x80;
+                notecard.AssetData[notecard.AssetData.Length - 5] = 0x80;
+                notecard.AssetData[notecard.AssetData.Length - 4] = 0x80;
+            }
 
             Client.Inventory.RequestCreateItem(Client.Inventory.FindFolderForType(AssetType.Notecard),
                 filename, filename + " created by OpenMetaverse TestClient " + DateTime.Now, AssetType.Notecard,
