@@ -10,48 +10,64 @@ namespace OpenMetaverse.TestClient
 {
     public class CreateNotecardCommand : Command
     {
-        const int NOTECARD_CREATE_TIMEOUT = 10 * 1000;
-        const int NOTECARD_FETCH_TIMEOUT = 10 * 1000;
+        const int NOTECARD_CREATE_TIMEOUT = 1000 * 10;
+        const int NOTECARD_FETCH_TIMEOUT = 1000 * 10;
+        const int INVENTORY_FETCH_TIMEOUT = 1000 * 10;
 
         public CreateNotecardCommand(TestClient testClient)
         {
             Name = "createnotecard";
-            Description = "Creates a notecard from a local text file.";
+            Description = "Creates a notecard from a local text file and optionally embed an inventory item. Usage: createnotecard filename.txt [itemid]";
             Category = CommandCategory.Inventory;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
         {
-            if (args.Length < 1)
-                return "Usage: createnotecard filename.txt";
-
-            UUID notecardItemID = UUID.Zero, notecardAssetID = UUID.Zero;
+            UUID embedItemID = UUID.Zero, notecardItemID = UUID.Zero, notecardAssetID = UUID.Zero;
+            string filename, fileData;
             bool success = false;
             string message = String.Empty;
             AutoResetEvent notecardEvent = new AutoResetEvent(false);
 
-            #region File Loading
+            if (args.Length == 1)
+            {
+                filename = args[0];
+            }
+            else if (args.Length == 2)
+            {
+                filename = args[0];
+                UUID.TryParse(args[1], out embedItemID);
+            }
+            else
+            {
+                return "Usage: createnotecard filename.txt";
+            }
 
-            string file = String.Empty;
-            for (int ct = 0; ct < args.Length; ct++)
-                file = file + args[ct] + " ";
-            file = file.TrimEnd();
+            if (!File.Exists(filename))
+                return "File \"" + filename + "\" does not exist";
 
-            if (!File.Exists(file))
-                return String.Format("Filename '{0}' does not exist", file);
-
-            StreamReader reader = new StreamReader(file);
-            string body = reader.ReadToEnd();
-
-            #endregion File Loading
+            try { fileData = File.ReadAllText(filename); }
+            catch (Exception ex) { return "Failed to open " + filename + ": " + ex.Message; }
 
             // Notecard creation
             AssetNotecard notecard = new AssetNotecard();
-            notecard.BodyText = body;
+            notecard.BodyText = fileData;
+
+            // Item embedding
+            if (embedItemID != UUID.Zero)
+            {
+                // Try to fetch the inventory item
+                InventoryItem item = FetchItem(embedItemID);
+                if (item != null)
+                    notecard.EmbeddedItems = new List<InventoryItem> { item };
+                else
+                    return "Failed to fetch inventory item " + embedItemID;
+            }
+
             notecard.Encode();
 
             Client.Inventory.RequestCreateItem(Client.Inventory.FindFolderForType(AssetType.Notecard),
-                file, file + " created by OpenMetaverse TestClient " + DateTime.Now, AssetType.Notecard,
+                filename, filename + " created by OpenMetaverse TestClient " + DateTime.Now, AssetType.Notecard,
                 UUID.Random(), InventoryType.Notecard, PermissionMask.All,
                 delegate(bool createSuccess, InventoryItem item)
                 {
@@ -84,6 +100,29 @@ namespace OpenMetaverse.TestClient
             }
             else
                 return "Notecard creation failed: " + message;
+        }
+
+        InventoryItem FetchItem(UUID itemID)
+        {
+            InventoryItem fetchItem = null;
+            AutoResetEvent fetchItemEvent = new AutoResetEvent(false);
+
+            InventoryManager.ItemReceivedCallback itemReceivedCallback =
+                delegate(InventoryItem item)
+                {
+                    fetchItem = item;
+                    fetchItemEvent.Set();
+                };
+
+            Client.Inventory.OnItemReceived += itemReceivedCallback;
+
+            Client.Inventory.RequestFetchInventory(itemID, Client.Self.AgentID);
+
+            fetchItemEvent.WaitOne(INVENTORY_FETCH_TIMEOUT, false);
+
+            Client.Inventory.OnItemReceived -= itemReceivedCallback;
+
+            return fetchItem;
         }
 
         string DownloadNotecard(UUID itemID, UUID assetID)
