@@ -60,7 +60,7 @@ namespace OpenMetaverse
         /// <summary>Equivalent to a 404 error</summary>
         UnknownSource = -2,
         /// <summary>Client does not have permission for that resource</summary>
-        InsufficientPermissiosn = -3,
+        InsufficientPermissions = -3,
         /// <summary>Unknown status</summary>
         Unknown = -4
     }
@@ -393,13 +393,26 @@ namespace OpenMetaverse
         /// <returns>The transaction ID generated for this transfer</returns>
         public UUID RequestAsset(UUID assetID, AssetType type, bool priority)
         {
+            return RequestAsset(assetID, type, priority, SourceType.Asset);
+        }
+
+        /// <summary>
+        /// Request an asset download
+        /// </summary>
+        /// <param name="assetID">Asset UUID</param>
+        /// <param name="type">Asset type, must be correct for the transfer to succeed</param>
+        /// <param name="priority">Whether to give this transfer an elevated priority</param>
+        /// <param name="sourceType">Source location of the requested asset</param>
+        /// <returns>The transaction ID generated for this transfer</returns>
+        public UUID RequestAsset(UUID assetID, AssetType type, bool priority, SourceType sourceType)
+        {
             AssetDownload transfer = new AssetDownload();
             transfer.ID = UUID.Random();
             transfer.AssetID = assetID;
             //transfer.AssetType = type; // Set in TransferInfoHandler.
             transfer.Priority = 100.0f + (priority ? 1.0f : 0.0f);
             transfer.Channel = ChannelType.Asset;
-            transfer.Source = SourceType.Asset;
+            transfer.Source = sourceType;
             transfer.Simulator = Client.Network.CurrentSim;
 
             // Add this transfer to the dictionary

@@ -3735,7 +3735,7 @@ namespace OpenMetaverse
             NotecardUploadedAssetCallback callback = kvp.Key;
             byte[] itemData = (byte[])kvp.Value;
 
-            if (contents != null)
+            if (error == null && contents != null)
             {
                 string status = contents["state"].AsString();
 
@@ -3779,7 +3779,7 @@ namespace OpenMetaverse
             }
             else
             {
-                try { callback(false, "Unrecognized or empty response", UUID.Zero, UUID.Zero); }
+                try { callback(false, (error != null) ? error.Message : "Unrecognized or empty response", UUID.Zero, UUID.Zero); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
             }
         }

@@ -78,67 +78,69 @@ namespace OpenMetaverse.Assets
             string body = BodyText ?? String.Empty;
 
             StringBuilder output = new StringBuilder();
-            output.AppendLine("Linden text version 2");
-            output.AppendLine("{");
-            output.AppendLine("LLEmbeddedItems version 1");
-            output.AppendLine("{");
+            output.Append("Linden text version 2\n");
+            output.Append("{\n");
+            output.Append("LLEmbeddedItems version 1\n");
+            output.Append("{\n");
 
             if (EmbeddedItems != null)
             {
-                output.AppendLine("count " + EmbeddedItems.Count);
-                output.AppendLine("{");
+                output.Append("count " + EmbeddedItems.Count + "\n");
+                output.Append("{\n");
 
                 for (int i = 0; i < EmbeddedItems.Count; i++)
                 {
                     InventoryItem item = EmbeddedItems[i];
 
-                    output.AppendLine("\tinv_item\t" + i);
-                    output.AppendLine("\t{");
+                    output.Append("ext char index " + i + "\n");
 
-                    output.AppendLine("\t\titem_id\t" + item.UUID);
-                    output.AppendLine("\t\tparent_id\t" + item.ParentUUID);
+                    output.Append("\tinv_item\t0\n");
+                    output.Append("\t{\n");
 
-                    output.AppendLine("\tpermissions\t0");
-                    output.AppendLine("\t{");
-                    output.AppendLine("\t\tbase_mask\t" + ((uint)item.Permissions.BaseMask).ToString("x"));
-                    output.AppendLine("\t\towner_mask\t" + ((uint)item.Permissions.OwnerMask).ToString("x"));
-                    output.AppendLine("\t\tgroup_mask\t" + ((uint)item.Permissions.GroupMask).ToString("x"));
-                    output.AppendLine("\t\teveryone_mask\t" + ((uint)item.Permissions.EveryoneMask).ToString("x"));
-                    output.AppendLine("\t\tnext_owner_mask\t" + ((uint)item.Permissions.NextOwnerMask).ToString("x"));
-                    output.AppendLine("\t\tcreator_id\t" + item.CreatorID);
-                    output.AppendLine("\t\towner_id\t" + item.OwnerID);
-                    output.AppendLine("\t\tlast_owner_id\t" + UUID.Zero);
-                    output.AppendLine("\t\tgroup_id\t" + item.GroupID);
-                    output.AppendLine("\t}");
+                    output.Append("\t\titem_id\t" + item.UUID + "\n");
+                    output.Append("\t\tparent_id\t" + item.ParentUUID + "\n");
 
-                    output.AppendLine("\t\tasset_id\t" + item.AssetUUID);
-                    output.AppendLine("\t\ttype\t" + Utils.AssetTypeToString(item.AssetType));
-                    output.AppendLine("\t\tinv_type\t" + Utils.InventoryTypeToString(item.InventoryType));
-                    output.AppendLine("\t\tflags\t" + item.Flags.ToString().PadLeft(8, '0'));
+                    output.Append("\tpermissions 0\n");
+                    output.Append("\t{\n");
+                    output.Append("\t\tbase_mask\t" + ((uint)item.Permissions.BaseMask).ToString("x").PadLeft(8, '0') + "\n");
+                    output.Append("\t\towner_mask\t" + ((uint)item.Permissions.OwnerMask).ToString("x").PadLeft(8, '0') + "\n");
+                    output.Append("\t\tgroup_mask\t" + ((uint)item.Permissions.GroupMask).ToString("x").PadLeft(8, '0') + "\n");
+                    output.Append("\t\teveryone_mask\t" + ((uint)item.Permissions.EveryoneMask).ToString("x").PadLeft(8, '0') + "\n");
+                    output.Append("\t\tnext_owner_mask\t" + ((uint)item.Permissions.NextOwnerMask).ToString("x").PadLeft(8, '0') + "\n");
+                    output.Append("\t\tcreator_id\t" + item.CreatorID + "\n");
+                    output.Append("\t\towner_id\t" + item.OwnerID + "\n");
+                    output.Append("\t\tlast_owner_id\t" + UUID.Zero + "\n");
+                    output.Append("\t\tgroup_id\t" + item.GroupID + "\n");
+                    output.Append("\t}\n");
 
-                    output.AppendLine("\tsale_info\t0");
-                    output.AppendLine("\t{");
-                    output.AppendLine("\t\tsale_type\t" + Utils.SaleTypeToString(item.SaleType));
-                    output.AppendLine("\t\tsale_price\t" + item.SalePrice);
-                    output.AppendLine("\t}");
+                    output.Append("\t\tasset_id\t" + item.AssetUUID + "\n");
+                    output.Append("\t\ttype\t" + Utils.AssetTypeToString(item.AssetType) + "\n");
+                    output.Append("\t\tinv_type\t" + Utils.InventoryTypeToString(item.InventoryType) + "\n");
+                    output.Append("\t\tflags\t" + item.Flags.ToString().PadLeft(8, '0') + "\n");
 
-                    output.AppendLine("\t\tname\t" + item.Name.Replace('|', '_') + "|");
-                    output.AppendLine("\t\tdesc\t" + item.Description.Replace('|', '_') + "|");
-                    output.AppendLine("\t\tcreation_date\t" + Utils.DateTimeToUnixTime(item.CreationDate));
+                    output.Append("\tsale_info\t0\n");
+                    output.Append("\t{\n");
+                    output.Append("\t\tsale_type\t" + Utils.SaleTypeToString(item.SaleType) + "\n");
+                    output.Append("\t\tsale_price\t" + item.SalePrice + "\n");
+                    output.Append("\t}\n");
 
-                    output.AppendLine("\t}");
+                    output.Append("\t\tname\t" + item.Name.Replace('|', '_') + "|\n");
+                    output.Append("\t\tdesc\t" + item.Description.Replace('|', '_') + "|\n");
+                    output.Append("\t\tcreation_date\t" + Utils.DateTimeToUnixTime(item.CreationDate) + "\n");
+
+                    output.Append("\t}\n");
                 }
 
-                output.AppendLine("}");
+                output.Append("}\n");
             }
             else
             {
-                output.AppendLine("count 0");
+                output.Append("count 0\n");
             }
 
-            output.AppendLine("}");
-            output.AppendLine("Text length " + body.Length);
-            output.Append(body + "}");
+            output.Append("}\n");
+            output.Append("Text length " + body.Length + "\n");
+            output.Append(body + "}\n");
 
             AssetData = Utils.StringToBytes(output.ToString());
         }
