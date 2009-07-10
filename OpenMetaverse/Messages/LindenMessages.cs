@@ -2591,11 +2591,11 @@ namespace OpenMetaverse.Messages.Linden
         /// <summary>
         /// A string containing the reason the agent was removed
         /// </summary>
-        string Reason;
+        public string Reason;
         /// <summary>
         /// The ChatterBoxSession's SessionID
         /// </summary>
-        UUID SessionID;
+        public UUID SessionID;
 
         /// <summary>
         /// Serialize the object
