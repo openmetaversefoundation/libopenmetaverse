@@ -653,6 +653,7 @@ namespace OpenMetaverse
             GroupName2KeyCache  = new InternalDictionary<UUID, string>();
 
             Client.Network.RegisterEventCallback("AgentGroupDataUpdate", new Caps.EventQueueCallback(AgentGroupDataUpdateHandler));
+            // deprecated in simulator v1.27
             Client.Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(AgentDropGroupHandler));
             Client.Network.RegisterCallback(PacketType.GroupTitlesReply, new NetworkManager.PacketCallback(GroupTitlesHandler));
             Client.Network.RegisterCallback(PacketType.GroupProfileReply, new NetworkManager.PacketCallback(GroupProfileHandler));
@@ -668,6 +669,8 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.UUIDGroupNameReply, new NetworkManager.PacketCallback(UUIDGroupNameReplyHandler));
             Client.Network.RegisterCallback(PacketType.EjectGroupMemberReply, new NetworkManager.PacketCallback(EjectGroupMemberReplyHandler));
             Client.Network.RegisterCallback(PacketType.GroupNoticesListReply, new NetworkManager.PacketCallback(GroupNoticesListReplyHandler));
+
+            Client.Network.RegisterEventCallback("AgentDropGroup", new Caps.EventQueueCallback(AgentDropGroupMessageHandler));
         }
 
         /// <summary>
@@ -1229,6 +1232,19 @@ namespace OpenMetaverse
             {
                 try { OnGroupDropped(((AgentDropGroupPacket)packet).AgentData.GroupID); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
+        }
+
+        private void AgentDropGroupMessageHandler(string capsKey, IMessage message, Simulator simulator)
+        {
+            if (OnGroupDropped != null)
+            {
+                AgentDropGroupMessage msg = (AgentDropGroupMessage)message;
+                for (int i = 0; i < msg.AgentDataBlock.Length; i++)
+                {
+                    try { OnGroupDropped(msg.AgentDataBlock[i].GroupID); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                }
             }
         }
 

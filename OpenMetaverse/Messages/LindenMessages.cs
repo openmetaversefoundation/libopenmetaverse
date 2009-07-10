@@ -1245,9 +1245,78 @@ namespace OpenMetaverse.Messages.Linden
             LanguagePublic = map["language_is_public"].AsBoolean();
             Language = map["language"].AsString();
         }
-
     }
 
+    /// <summary>
+    /// An EventQueue message sent from the simulator to an agent when the agent
+    /// leaves a group
+    /// </summary>
+    public class AgentDropGroupMessage : IMessage
+    {
+        /// <summary>
+        /// An object containing the Agents UUID, and the Groups UUID
+        /// </summary>
+        public class AgentData
+        {
+            /// <summary>
+            /// The ID of the Agent leaving the group
+            /// </summary>
+            public UUID AgentID;
+            /// <summary>
+            /// The GroupID the Agent is leaving
+            /// </summary>
+            public UUID GroupID;
+        }
+
+        /// <summary>
+        /// An Array containing the AgentID and GroupID
+        /// </summary>
+        public AgentData[] AgentDataBlock;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(1);
+
+            OSDArray agentDataArray = new OSDArray(AgentDataBlock.Length);
+
+            for (int i = 0; i < AgentDataBlock.Length; i++)
+            {
+                OSDMap agentMap = new OSDMap(2);
+                agentMap["AgentID"] = OSD.FromUUID(AgentDataBlock[i].AgentID);
+                agentMap["GroupID"] = OSD.FromUUID(AgentDataBlock[i].GroupID);
+                agentDataArray.Add(agentMap);
+            }
+            map["AgentData"] = agentDataArray;
+
+            return map;
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            OSDArray agentDataArray = (OSDArray)map["AgentData"];
+
+            AgentDataBlock = new AgentData[agentDataArray.Count];
+
+            for (int i = 0; i < agentDataArray.Count; i++)
+            {
+                OSDMap agentMap = (OSDMap)agentDataArray[i];
+                AgentData agentData = new AgentData();
+
+                agentData.AgentID = agentMap["AgentID"].AsUUID();
+                agentData.GroupID = agentMap["GroupID"].AsUUID();
+
+                AgentDataBlock[i] = agentData;
+            }
+        }
+    }
     #endregion
 
     #region Voice Messages
@@ -2409,6 +2478,44 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    /// <summary>
+    /// An EventQueue message sent when the agent is forcibly removed from a chatterbox session
+    /// </summary>
+    public class ForceCloseChatterBoxSessionMessage : IMessage
+    {
+        /// <summary>
+        /// A string containing the reason the agent was removed
+        /// </summary>
+        string Reason;
+        /// <summary>
+        /// The ChatterBoxSession's SessionID
+        /// </summary>
+        UUID SessionID;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(2);
+            map["reason"] = OSD.FromString(Reason);
+            map["session_id"] = OSD.FromUUID(SessionID);
+
+            return map;
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            Reason = map["reason"].AsString();
+            SessionID = map["session_id"].AsUUID();
+        }
+    }
+
     #endregion
 
     #region EventQueue
@@ -2536,7 +2643,6 @@ namespace OpenMetaverse.Messages.Linden
     }
 
     #endregion
-
 
     #region Stats Messages
 
