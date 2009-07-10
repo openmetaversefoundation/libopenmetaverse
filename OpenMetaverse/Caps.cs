@@ -169,7 +169,6 @@ namespace OpenMetaverse
             req.Add("ViewerStartAuction");
             req.Add("ViewerStats");
 
-
             _SeedRequest = new CapsClient(new Uri(_SeedCapsURI));
             _SeedRequest.OnComplete += new CapsClient.CompleteCallback(SeedRequestCompleteHandler);
             _SeedRequest.BeginGetResponse(req, OSDFormat.Xml, Simulator.Client.Settings.CAPS_TIMEOUT);

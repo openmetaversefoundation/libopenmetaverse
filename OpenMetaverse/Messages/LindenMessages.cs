@@ -1317,6 +1317,109 @@ namespace OpenMetaverse.Messages.Linden
             }
         }
     }
+
+    /// <summary>
+    /// Base class for Baked Texture uploads/result
+    /// </summary>
+    public abstract class UploadBakedTextureBlock
+    {
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public abstract OSDMap Serialize();
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public abstract void Deserialize(OSDMap map);
+    }
+
+    /// <summary>
+    /// Request a capability to upload baked textures to
+    /// </summary>
+    public class UploadBakedTextureRequestUpload : UploadBakedTextureBlock
+    {
+        /// <summary>The request state (Always "upload")</summary>
+        public string State = "upload";
+        /// <summary>The Capability URL sent by the simulator to upload the baked texture to</summary>
+        public string Url;
+
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(2);
+            map["state"] = OSD.FromString(State);
+            map["uploader"] = OSD.FromString(Url);
+
+            return map;
+        }
+
+        public override void Deserialize(OSDMap map)
+        {
+            Url = map["uploader"].AsString();
+        }
+    }
+
+    /// <summary>
+    /// Response from the simulator to notify the viewer the upload is completed, and
+    /// the UUID of the baked texture asset
+    /// </summary>
+    public class UploadBakedTextureRequestComplete : UploadBakedTextureBlock
+    {
+        /// <summary>The request state (Always "complete")</summary>
+        public string State = "complete";
+        /// <summary>The uploaded texture asset ID</summary>
+        public UUID AssetID;
+
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(2);
+            map["state"] = OSD.FromString(State);
+            map["new_asset"] = OSD.FromUUID(AssetID);
+
+            return map;
+        }
+
+        public override void Deserialize(OSDMap map)
+        {
+            AssetID = map["new_asset"].AsUUID();
+        }
+    }
+
+    /// <summary>
+    /// Request a capability for uploading baked textures
+    /// </summary>
+    public class UploadBakedTextureMessage : IMessage
+    {
+        /// <summary></summary>
+        public UploadBakedTextureBlock Request;
+        
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            return Request.Serialize();
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("state") && map["state"].Equals("upload"))
+                Request = new UploadBakedTextureRequestUpload();
+            else if (map.ContainsKey("state") && map["state"].Equals("complete"))
+                Request = new UploadBakedTextureRequestComplete();
+            else
+                Logger.Log("Unable to deserialize UploadBakedTexture: No message handler exists for state " + map["state"].AsString(), Helpers.LogLevel.Warning);
+
+            Request.Deserialize(map);
+        }
+    }
     #endregion
 
     #region Voice Messages
@@ -1425,7 +1528,9 @@ namespace OpenMetaverse.Messages.Linden
     #endregion
 
     #region Script/Notecards Messages
-    // upload a script to a tasks inventory
+    /// <summary>
+    /// 
+    /// </summary>
     public class UploadScriptTaskMessage : IMessage
     {
         public string State; // "upload"
@@ -1808,7 +1913,7 @@ namespace OpenMetaverse.Messages.Linden
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
-
+            throw new NotImplementedException();
         }
 
     }

@@ -82,36 +82,8 @@ namespace OpenMetaverse.Messages
                 case "ScriptRunningReply": message = new ScriptRunningReplyMessage(); break;
                 case "SearchStatRequest": message = new SearchStatRequestMessage(); break;
                 case "AgentDropGroup": message = new AgentDropGroupMessage(); break;
-                    /*
-                     *   {
-    'body':
-    {
-      'AgentData':
-      [        
-        {
-          'AgentID':u8ec835d1-b61d-4563-86da-c91e174f0f2e
-          ,
-          'GroupID':u04f595b0-cdc8-97f0-e710-9564824c03b2
-        }
-      ]
-    }
-    ,
-    'message':'AgentDropGroup'
-  }*/
                 case "ForceCloseChatterBoxSession": message = new ForceCloseChatterBoxSessionMessage(); break;
-                    /*
-                     * No Decoder for ForceCloseChatterBoxSession
-
-  {
-    'body':
-    {
-      'reason':'removed'
-      ,
-      'session_id':u04f595b0-cdc8-97f0-e710-9564824c03b2
-    }
-    ,
-    'message':'ForceCloseChatterBoxSession'
-  } */
+                case "UploadBakedTexture": message = new UploadBakedTextureMessage(); break;
                 //case "ProductInfoRequest": message = new ProductInfoRequestMessage(); break;
 
                 // Capabilities TODO:

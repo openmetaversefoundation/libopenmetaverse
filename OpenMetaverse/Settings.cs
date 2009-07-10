@@ -252,7 +252,7 @@ namespace OpenMetaverse
         /// If true, images downloaded from the server will be cached 
         /// in a local directory
         /// </summary>
-        public bool USE_TEXTURE_CACHE = false;
+        public bool USE_TEXTURE_CACHE = true;
 
         /// <summary>Path to store cached texture data</summary>
         public string TEXTURE_CACHE_DIR = RESOURCE_DIR + "/cache";
