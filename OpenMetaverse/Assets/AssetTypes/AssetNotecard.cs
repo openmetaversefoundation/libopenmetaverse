@@ -90,7 +90,7 @@ namespace OpenMetaverse.Assets
                 count = EmbeddedItems.Count;
             }
 
-            output.Append("count " + EmbeddedItems.Count + "\n");
+            output.Append("count " + count + "\n");
 
             if (count > 0)
             {
