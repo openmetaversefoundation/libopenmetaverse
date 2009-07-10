@@ -965,10 +965,9 @@ namespace WinGridProxy
             result.AppendFormat("Message Type {0}" + System.Environment.NewLine, message.GetType().Name);
 
             foreach (FieldInfo messageField in message.GetType().GetFields())
-            {
-
+            {                
                 // a byte array
-                if (messageField.GetValue(message).GetType() == typeof(Byte[]))
+                if (messageField.GetValue(message) != null && messageField.GetValue(message).GetType() == typeof(Byte[]))
                 {
                     result.AppendFormat("{0, 30}: ({1})" + System.Environment.NewLine,
                     messageField.Name, messageField.FieldType.Name);
@@ -1044,7 +1043,9 @@ namespace WinGridProxy
                 FilterEntry entry = new FilterEntry();
                 entry.Checked = item.Checked;
                 entry.pType = item.SubItems[1].Text;
-                Store.PacketSessions.Add(item.Text, entry);
+
+                if(!Store.PacketSessions.ContainsKey(item.Text))
+                    Store.PacketSessions.Add(item.Text, entry);
             }
 
             foreach (ListViewItem item in listViewMessageFilters.Items)
@@ -1052,7 +1053,8 @@ namespace WinGridProxy
                 FilterEntry entry = new FilterEntry();
                 entry.Checked = item.Checked;
                 entry.pType = item.SubItems[1].Text;
-                Store.MessageSessions.Add(item.Text, entry);
+                if(!Store.MessageSessions.ContainsKey(item.Text))
+                    Store.MessageSessions.Add(item.Text, entry);
             }
 
             Store.StatisticsEnabled = enableStatisticsToolStripMenuItem.Checked;
