@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Text;
@@ -2087,7 +2088,7 @@ namespace OpenMetaverse
 
                 // Make the request
                 CapsClient request = new CapsClient(url);
-                request.OnComplete += new CapsClient.CompleteCallback(UploadNotecardAssetResponse);
+                request.OnComplete += UploadNotecardAssetResponse;
                 request.UserData = new object[] { new KeyValuePair<NotecardUploadedAssetCallback, byte[]>(callback, data), notecardID };
                 request.BeginGetResponse(query, OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);
             }
@@ -3405,6 +3406,9 @@ namespace OpenMetaverse
                     // assign default folder for type
                     item.ParentUUID = FindFolderForType(item.AssetType);
 
+                    Logger.Log("Received an item through UpdateCreateInventoryItem with no parent folder, assigning to folder " +
+                        item.ParentUUID, Helpers.LogLevel.Info);
+
                     // send update to the sim
                     RequestUpdateItem(item);
                 }
@@ -3549,7 +3553,7 @@ namespace OpenMetaverse
                     continue;
                 }
 
-                InventoryItem item = CreateInventoryItem((InventoryType)dataBlock.InvType,dataBlock.ItemID);
+                InventoryItem item = CreateInventoryItem((InventoryType)dataBlock.InvType, dataBlock.ItemID);
                 item.AssetType = (AssetType)dataBlock.Type;
                 item.AssetUUID = dataBlock.AssetID;
                 item.CreationDate = Utils.UnixTimeToDateTime(dataBlock.CreationDate);
@@ -3558,6 +3562,7 @@ namespace OpenMetaverse
                 item.Flags = dataBlock.Flags;
                 item.GroupID = dataBlock.GroupID;
                 item.GroupOwned = dataBlock.GroupOwned;
+                item.InventoryType = (InventoryType)dataBlock.InvType;
                 item.Name = Utils.BytesToString(dataBlock.Name);
                 item.OwnerID = dataBlock.OwnerID;
                 item.ParentUUID = dataBlock.FolderID;
@@ -3569,6 +3574,7 @@ namespace OpenMetaverse
                     dataBlock.OwnerMask);
                 item.SalePrice = dataBlock.SalePrice;
                 item.SaleType = (SaleType)dataBlock.SaleType;
+                item.UUID = dataBlock.ItemID;
 
                 _Store[item.UUID] = item;
 
@@ -3748,7 +3754,7 @@ namespace OpenMetaverse
                         // This makes the assumption that all uploads go to CurrentSim, to avoid
                         // the problem of HttpRequestState not knowing anything about simulators
                         CapsClient upload = new CapsClient(uploadURL);
-                        upload.OnComplete += new CapsClient.CompleteCallback(UploadNotecardAssetResponse);
+                        upload.OnComplete += UploadNotecardAssetResponse;
                         upload.UserData = new object[2] { kvp, (UUID)(((object[])client.UserData)[1]) };
                         upload.BeginGetResponse(itemData, "application/octet-stream", _Client.Settings.CAPS_TIMEOUT);
                     }
@@ -3779,7 +3785,17 @@ namespace OpenMetaverse
             }
             else
             {
-                try { callback(false, (error != null) ? error.Message : "Unrecognized or empty response", UUID.Zero, UUID.Zero); }
+                string message = "Unrecognized or empty response";
+
+                if (error != null)
+                {
+                    if (error is WebException)
+                        message = ((HttpWebResponse)((WebException)error).Response).StatusDescription;
+                    else
+                        message = error.Message;
+                }
+
+                try { callback(false, message, UUID.Zero, UUID.Zero); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
             }
         }
