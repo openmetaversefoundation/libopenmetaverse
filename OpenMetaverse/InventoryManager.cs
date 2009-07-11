@@ -491,6 +491,15 @@ namespace OpenMetaverse
             get { return (InventoryItemFlags)(Flags & ~0xFF); }
             set { Flags = (uint)value | (Flags & 0xFF); }
         }
+
+        /// <summary>
+        /// Gets or sets the object attachment point, the lower byte of the Flags value
+        /// </summary>
+        public AttachmentPoint AttachPoint
+        {
+            get { return (AttachmentPoint)(Flags & 0xFF); }
+            set { Flags = (uint)value | (Flags & 0xFFFFFF00); }
+        }
     }
 
     /// <summary>
