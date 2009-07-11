@@ -235,6 +235,8 @@ namespace OpenMetaverse
         /// <summary>Time and date this inventory item was created, stored as
         /// UTC (Coordinated Universal Time)</summary>
         public DateTime CreationDate;
+        /// <summary>Used to update the AssetID in requests sent to the server</summary>
+        public UUID TransactionID;
         /// <summary>The <seealso cref="OpenMetaverse.UUID"/> of the previous owner of the item</summary>
         public UUID LastOwnerID;
 
@@ -824,6 +826,9 @@ namespace OpenMetaverse
     /// </summary>
     public class InventoryManager
     {
+        /// <summary>Used for converting shadow_id to asset_id</summary>
+        public static readonly UUID MAGIC_ID = new UUID("3c115e51-04f4-523c-9fa6-98aff1034730");
+
         protected struct InventorySearch
         {
             public UUID Folder;
@@ -2073,7 +2078,7 @@ namespace OpenMetaverse
                 block.OwnerMask = (uint)item.Permissions.OwnerMask;
                 block.SalePrice = item.SalePrice;
                 block.SaleType = (byte)item.SaleType;
-                block.TransactionID = UUID.Zero;
+                block.TransactionID = item.TransactionID;
                 block.Type = (sbyte)item.AssetType;
 
                 update.InventoryData[i] = block;
@@ -2754,6 +2759,16 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Reverses a cheesy XORing with a fixed UUID to convert a shadow_id to an asset_id
+        /// </summary>
+        /// <param name="shadowID">Obfuscated shadow_id value</param>
+        /// <returns>Deobfuscated asset_id value</returns>
+        public static UUID DecryptShadowID(UUID shadowID)
+        {
+            return shadowID ^ MAGIC_ID;
+        }
+
+        /// <summary>
         /// Wrapper for creating a new <seealso cref="InventoryItem"/> object
         /// </summary>
         /// <param name="type">The type of item from the <seealso cref="InventoryType"/> enum</param>
@@ -3058,7 +3073,9 @@ namespace OpenMetaverse
                                 }
                                 else if (key == "shadow_id")
                                 {
-                                    //FIXME:
+                                    UUID shadowID;
+                                    if (UUID.TryParse(value, out shadowID))
+                                        assetID = DecryptShadowID(shadowID);
                                 }
                                 else if (key == "asset_id")
                                 {
