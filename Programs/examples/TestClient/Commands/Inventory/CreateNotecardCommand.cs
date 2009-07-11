@@ -25,7 +25,7 @@ namespace OpenMetaverse.TestClient
         {
             UUID embedItemID = UUID.Zero, notecardItemID = UUID.Zero, notecardAssetID = UUID.Zero;
             string filename, fileData;
-            bool success = false;
+            bool success = false, finalUploadSuccess = false;
             string message = String.Empty;
             AutoResetEvent notecardEvent = new AutoResetEvent(false);
 
@@ -49,7 +49,8 @@ namespace OpenMetaverse.TestClient
             try { fileData = File.ReadAllText(filename); }
             catch (Exception ex) { return "Failed to open " + filename + ": " + ex.Message; }
 
-            // Notecard creation
+            #region Notecard asset data
+
             AssetNotecard notecard = new AssetNotecard();
             notecard.BodyText = fileData;
 
@@ -71,6 +72,8 @@ namespace OpenMetaverse.TestClient
 
             notecard.Encode();
 
+            #endregion Notecard asset data
+
             Client.Inventory.RequestCreateItem(Client.Inventory.FindFolderForType(AssetType.Notecard),
                 filename, filename + " created by OpenMetaverse TestClient " + DateTime.Now, AssetType.Notecard,
                 UUID.Random(), InventoryType.Notecard, PermissionMask.All,
@@ -78,6 +81,8 @@ namespace OpenMetaverse.TestClient
                 {
                     if (createSuccess)
                     {
+                        #region Upload an empty notecard asset first
+
                         AutoResetEvent emptyNoteEvent = new AutoResetEvent(false);
                         AssetNotecard empty = new AssetNotecard();
                         empty.BodyText = "\n";
@@ -95,21 +100,24 @@ namespace OpenMetaverse.TestClient
 
                         emptyNoteEvent.WaitOne(NOTECARD_CREATE_TIMEOUT, false);
 
-                        if (!success)
+                        #endregion Upload an empty notecard asset first
+
+                        if (success)
                         {
-                            notecardEvent.Set();
-                        }
-                        else
-                        {
+                            // Upload the actual notecard asset
                             Client.Inventory.RequestUploadNotecardAsset(notecard.AssetData, item.UUID,
                                 delegate(bool uploadSuccess, string status, UUID itemID, UUID assetID)
                                 {
                                     notecardItemID = itemID;
                                     notecardAssetID = assetID;
-                                    success = uploadSuccess;
+                                    finalUploadSuccess = uploadSuccess;
                                     message = status ?? "Unknown error uploading notecard asset";
                                     notecardEvent.Set();
                                 });
+                        }
+                        else
+                        {
+                            notecardEvent.Set();
                         }
                     }
                     else
@@ -122,7 +130,7 @@ namespace OpenMetaverse.TestClient
 
             notecardEvent.WaitOne(NOTECARD_CREATE_TIMEOUT, false);
 
-            if (success)
+            if (finalUploadSuccess)
             {
                 Logger.Log("Notecard successfully created, ItemID " + notecardItemID + " AssetID " + notecardAssetID, Helpers.LogLevel.Info);
                 return DownloadNotecard(notecardItemID, notecardAssetID);
