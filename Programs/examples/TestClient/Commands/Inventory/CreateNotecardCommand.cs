@@ -61,7 +61,7 @@ namespace OpenMetaverse.TestClient
                 if (item != null)
                 {
                     notecard.EmbeddedItems = new List<InventoryItem> { item };
-                    notecard.BodyText += "xxxx";
+                    notecard.BodyText += (char)0xdbc0 + (char)0xdc00;
                 }
                 else
                 {
@@ -71,15 +71,6 @@ namespace OpenMetaverse.TestClient
 
             notecard.Encode();
 
-            if (notecard.EmbeddedItems != null && notecard.EmbeddedItems.Count > 0)
-            {
-                // Replace xxxx in the notecard text with a link to the embedded item
-                notecard.AssetData[notecard.AssetData.Length - 7] = 0xF4;
-                notecard.AssetData[notecard.AssetData.Length - 6] = 0x80;
-                notecard.AssetData[notecard.AssetData.Length - 5] = 0x80;
-                notecard.AssetData[notecard.AssetData.Length - 4] = 0x80;
-            }
-
             Client.Inventory.RequestCreateItem(Client.Inventory.FindFolderForType(AssetType.Notecard),
                 filename, filename + " created by OpenMetaverse TestClient " + DateTime.Now, AssetType.Notecard,
                 UUID.Random(), InventoryType.Notecard, PermissionMask.All,
@@ -87,15 +78,39 @@ namespace OpenMetaverse.TestClient
                 {
                     if (createSuccess)
                     {
-                        Client.Inventory.RequestUploadNotecardAsset(notecard.AssetData, item.UUID,
+                        AutoResetEvent emptyNoteEvent = new AutoResetEvent(false);
+                        AssetNotecard empty = new AssetNotecard();
+                        empty.BodyText = "\n";
+                        empty.Encode();
+
+                        Client.Inventory.RequestUploadNotecardAsset(empty.AssetData, item.UUID,
                             delegate(bool uploadSuccess, string status, UUID itemID, UUID assetID)
                             {
                                 notecardItemID = itemID;
                                 notecardAssetID = assetID;
                                 success = uploadSuccess;
                                 message = status ?? "Unknown error uploading notecard asset";
-                                notecardEvent.Set();
+                                emptyNoteEvent.Set();
                             });
+
+                        emptyNoteEvent.WaitOne(NOTECARD_CREATE_TIMEOUT, false);
+
+                        if (!success)
+                        {
+                            notecardEvent.Set();
+                        }
+                        else
+                        {
+                            Client.Inventory.RequestUploadNotecardAsset(notecard.AssetData, item.UUID,
+                                delegate(bool uploadSuccess, string status, UUID itemID, UUID assetID)
+                                {
+                                    notecardItemID = itemID;
+                                    notecardAssetID = assetID;
+                                    success = uploadSuccess;
+                                    message = status ?? "Unknown error uploading notecard asset";
+                                    notecardEvent.Set();
+                                });
+                        }
                     }
                     else
                     {
