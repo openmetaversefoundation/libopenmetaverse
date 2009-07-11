@@ -1004,10 +1004,10 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeInventoryFlags(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-37} [FixMe]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [InventoryItemFlags]",
                                  fieldName,
-                                  fieldData,
-                                 "(" + fieldData + ")");
+                                 (uint)fieldData,
+                                 "(" + (InventoryItemFlags)(uint)fieldData + ")");
         }
 
         private static string DecodeObjectSaleType(string fieldName, object fieldData)

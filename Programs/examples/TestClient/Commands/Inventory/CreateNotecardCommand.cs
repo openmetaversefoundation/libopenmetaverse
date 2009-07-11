@@ -124,8 +124,11 @@ namespace OpenMetaverse.TestClient
             InventoryManager.ItemReceivedCallback itemReceivedCallback =
                 delegate(InventoryItem item)
                 {
-                    fetchItem = item;
-                    fetchItemEvent.Set();
+                    if (item.UUID == itemID)
+                    {
+                        fetchItem = item;
+                        fetchItemEvent.Set();
+                    }
                 };
 
             Client.Inventory.OnItemReceived += itemReceivedCallback;
