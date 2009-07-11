@@ -409,7 +409,7 @@ namespace OpenMetaverse
 
             // If the callbacks aren't registered there's not point in doing client-side path prediction,
             // so we set it up here
-            if (Client.Settings.USE_INTERPOLATION_TIMER)
+            if (Settings.USE_INTERPOLATION_TIMER)
             {
                 InterpolationTimer = new Timer(InterpolationTimer_Elapsed, null, Settings.INTERPOLATION_INTERVAL,
                     Timeout.Infinite);
