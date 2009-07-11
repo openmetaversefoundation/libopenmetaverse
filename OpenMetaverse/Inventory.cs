@@ -346,25 +346,31 @@ namespace OpenMetaverse
             List<InventoryNode> nodes = new List<InventoryNode>();
             int item_count = 0;
 
+            Stream stream = null;
+
             try
             {
                 if (!File.Exists(filename))
                     return -1;
 
-                Stream stream = File.Open(filename, FileMode.Open);
+                stream = File.Open(filename, FileMode.Open);
                 BinaryFormatter bformatter = new BinaryFormatter();
-         
+
                 while (stream.Position < stream.Length)
                 {
                     OpenMetaverse.InventoryNode node = (InventoryNode)bformatter.Deserialize(stream);
                     nodes.Add(node);
                     item_count++;
                 }
-
                 stream.Close();
             }
             catch (Exception e)
             {
+                if (stream != null)
+                {
+                    stream.Close();
+                }
+
                 Logger.Log("Error accessing inventory cache file :" + e.Message, Helpers.LogLevel.Error);
                 return -1;
             }

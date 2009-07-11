@@ -235,6 +235,8 @@ namespace OpenMetaverse
         /// <summary>Time and date this inventory item was created, stored as
         /// UTC (Coordinated Universal Time)</summary>
         public DateTime CreationDate;
+        /// <summary>The <seealso cref="OpenMetaverse.UUID"/> of the previous owner of the item</summary>
+        public UUID LastOwnerID;
 
         /// <summary>
         ///  Construct a new InventoryItem object
@@ -255,11 +257,11 @@ namespace OpenMetaverse
         /// 
         /// </summary>
         /// <returns></returns>
-        override public void GetObjectData(SerializationInfo info, StreamingContext ctxt) 
+        override public void GetObjectData(SerializationInfo info, StreamingContext ctxt)
         {
-            base.GetObjectData(info,ctxt);
-            info.AddValue("AssetUUID",AssetUUID,typeof(UUID));
-            info.AddValue("Permissions", Permissions,typeof(Permissions));
+            base.GetObjectData(info, ctxt);
+            info.AddValue("AssetUUID", AssetUUID, typeof(UUID));
+            info.AddValue("Permissions", Permissions, typeof(Permissions));
             info.AddValue("AssetType", AssetType);
             info.AddValue("InventoryType", InventoryType);
             info.AddValue("CreatorID", CreatorID);
@@ -269,7 +271,8 @@ namespace OpenMetaverse
             info.AddValue("SalePrice", SalePrice);
             info.AddValue("SaleType", SaleType);
             info.AddValue("Flags", Flags);
-            info.AddValue("CreationDate", CreationDate);  
+            info.AddValue("CreationDate", CreationDate);
+            info.AddValue("LastOwnerID", LastOwnerID);
         }
 
         /// <summary>
@@ -290,6 +293,7 @@ namespace OpenMetaverse
            SaleType = (SaleType)info.GetValue("SaleType", typeof(SaleType));
            Flags = (uint)info.GetValue("Flags", typeof(uint));
            CreationDate = (DateTime)info.GetValue("CreationDate", typeof(DateTime));
+           LastOwnerID = (UUID)info.GetValue("LastOwnerID", typeof(UUID));
         }
 
         /// <summary>
@@ -302,7 +306,7 @@ namespace OpenMetaverse
             return AssetUUID.GetHashCode() ^ Permissions.GetHashCode() ^ AssetType.GetHashCode() ^
                 InventoryType.GetHashCode() ^ Description.GetHashCode() ^ GroupID.GetHashCode() ^
                 GroupOwned.GetHashCode() ^ SalePrice.GetHashCode() ^ SaleType.GetHashCode() ^
-                Flags.GetHashCode() ^ CreationDate.GetHashCode();
+                Flags.GetHashCode() ^ CreationDate.GetHashCode() ^ LastOwnerID.GetHashCode();
         }
 
         /// <summary>
@@ -345,7 +349,8 @@ namespace OpenMetaverse
                 && o.InventoryType == InventoryType
                 && o.Permissions.Equals(Permissions)
                 && o.SalePrice == SalePrice
-                && o.SaleType == SaleType;
+                && o.SaleType == SaleType
+                && o.LastOwnerID == LastOwnerID;
         }
     }
 
@@ -3101,6 +3106,7 @@ namespace OpenMetaverse
                         item.GroupOwned = groupOwned;
                         item.Name = name;
                         item.OwnerID = ownerID;
+                        item.LastOwnerID = lastOwnerID;
                         item.ParentUUID = parentID;
                         item.Permissions = perms;
                         item.SalePrice = salePrice;

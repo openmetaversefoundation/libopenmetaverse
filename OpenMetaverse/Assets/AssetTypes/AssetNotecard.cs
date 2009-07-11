@@ -117,7 +117,7 @@ namespace OpenMetaverse.Assets
                     output.Append("\t\tnext_owner_mask\t" + ((uint)item.Permissions.NextOwnerMask).ToString("x").PadLeft(8, '0') + "\n");
                     output.Append("\t\tcreator_id\t" + item.CreatorID + "\n");
                     output.Append("\t\towner_id\t" + item.OwnerID + "\n");
-                    output.Append("\t\tlast_owner_id\t" + UUID.Zero + "\n");
+                    output.Append("\t\tlast_owner_id\t" + item.LastOwnerID + "\n");
                     output.Append("\t\tgroup_id\t" + item.GroupID + "\n");
                     output.Append("\t}\n");
 
@@ -208,7 +208,23 @@ namespace OpenMetaverse.Assets
                         throw new Exception("missing inv item");
 
                     // Item itself
-                    InventoryItem embedded = new InventoryItem(UUID.Zero);
+                    UUID uuid = UUID.Zero;
+                    UUID creatorID = UUID.Zero;
+                    UUID ownerID = UUID.Zero;
+                    UUID lastOwnerID = UUID.Zero;
+                    UUID groupID = UUID.Zero;
+                    Permissions permissions = Permissions.NoPermissions;
+                    int salePrice = 0;
+                    SaleType saleType = SaleType.Not;
+                    UUID parentUUID = UUID.Zero;
+                    UUID assetUUID = UUID.Zero;
+                    AssetType assetType = AssetType.Unknown;
+                    InventoryType inventoryType = InventoryType.Unknown;
+                    uint flags = 0;
+                    string name = string.Empty;
+                    string description = string.Empty;
+                    DateTime creationDate = Utils.Epoch;
+
                     while (true)
                     {
                         if (!(m = Regex.Match(lines[i++], @"([^\s]+)(\s+)?(.*)?")).Success)
@@ -240,15 +256,19 @@ namespace OpenMetaverse.Assets
                                     break;
                                 else if (pkey == "creator_id")
                                 {
-                                    embedded.CreatorID = new UUID(pval);
+                                    creatorID = new UUID(pval);
                                 }
                                 else if (pkey == "owner_id")
                                 {
-                                    embedded.OwnerID = new UUID(pval);
+                                    ownerID = new UUID(pval);
+                                }
+                                else if (pkey == "last_owner_id")
+                                {
+                                    lastOwnerID = new UUID(pval);
                                 }
                                 else if (pkey == "group_id")
                                 {
-                                    embedded.GroupID = new UUID(pval);
+                                    groupID = new UUID(pval);
                                 }
                                 else if (pkey == "base_mask")
                                 {
@@ -271,7 +291,7 @@ namespace OpenMetaverse.Assets
                                     nextOwnerMask = uint.Parse(pval, System.Globalization.NumberStyles.AllowHexSpecifier);
                                 }
                             }
-                            embedded.Permissions = new Permissions(baseMask, everyoneMask, groupMask, nextOwnerMask, ownerMask);
+                            permissions = new Permissions(baseMask, everyoneMask, groupMask, nextOwnerMask, ownerMask);
                         }
                         else if (key == "sale_info")
                         {
@@ -288,52 +308,69 @@ namespace OpenMetaverse.Assets
                                     break;
                                 else if (pkey == "sale_price")
                                 {
-                                    embedded.SalePrice = int.Parse(pval);
+                                    salePrice = int.Parse(pval);
                                 }
                                 else if (pkey == "sale_type")
                                 {
-                                    embedded.SaleType = Utils.StringToSaleType(pval);
+                                    saleType = Utils.StringToSaleType(pval);
                                 }
                             }
                         }
                         else if (key == "item_id")
                         {
-                            embedded.UUID = new UUID(val);
+                            uuid = new UUID(val);
                         }
                         else if (key == "parent_id")
                         {
-                            embedded.ParentUUID = new UUID(val);
+                            parentUUID = new UUID(val);
                         }
                         else if (key == "asset_id")
                         {
-                            embedded.AssetUUID = new UUID(val);
+                            assetUUID = new UUID(val);
                         }
                         else if (key == "type")
                         {
-                            embedded.AssetType = Utils.StringToAssetType(val);
+                            assetType = Utils.StringToAssetType(val);
                         }
                         else if (key == "inv_type")
                         {
-                            embedded.InventoryType = Utils.StringToInventoryType(val);
+                            inventoryType = Utils.StringToInventoryType(val);
                         }
                         else if (key == "flags")
                         {
-                            embedded.Flags = uint.Parse(val, System.Globalization.NumberStyles.AllowHexSpecifier);
+                            flags = uint.Parse(val, System.Globalization.NumberStyles.AllowHexSpecifier);
                         }
                         else if (key == "name")
                         {
-                            embedded.Name = val.Remove(val.LastIndexOf("|"));
+                            name = val.Remove(val.LastIndexOf("|"));
                         }
                         else if (key == "desc")
                         {
-                            embedded.Description = val.Remove(val.LastIndexOf("|"));
+                            description = val.Remove(val.LastIndexOf("|"));
                         }
                         else if (key == "creation_date")
                         {
-                            embedded.CreationDate = Utils.UnixTimeToDateTime(int.Parse(val));
+                            creationDate = Utils.UnixTimeToDateTime(int.Parse(val));
                         }
                     }
-                    EmbeddedItems.Add(embedded);
+                    InventoryItem finalEmbedded = InventoryManager.CreateInventoryItem(inventoryType, uuid);
+
+                    finalEmbedded.CreatorID = creatorID;
+                    finalEmbedded.OwnerID = ownerID;
+                    finalEmbedded.LastOwnerID = lastOwnerID;
+                    finalEmbedded.GroupID = groupID;
+                    finalEmbedded.Permissions = permissions;
+                    finalEmbedded.SalePrice = salePrice;
+                    finalEmbedded.SaleType = saleType;
+                    finalEmbedded.ParentUUID = parentUUID;
+                    finalEmbedded.AssetUUID = assetUUID;
+                    finalEmbedded.AssetType = assetType;
+                    finalEmbedded.Flags = flags;
+                    finalEmbedded.Name = name;
+                    finalEmbedded.Description = description;
+                    finalEmbedded.CreationDate = creationDate;
+
+                    EmbeddedItems.Add(finalEmbedded);
 
                     if (!(m = Regex.Match(lines[i++], @"\s*}$")).Success)
                         throw new Exception("wrong format");
