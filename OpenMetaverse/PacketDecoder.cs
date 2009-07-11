@@ -1470,7 +1470,7 @@ namespace OpenMetaverse.Packets
                     {
                         var p = propertyInfo.GetValue(nestedArrayRecord, null);
                         string s = Utils.BytesToString((byte[])p);
-                        
+                        /* Leave the c for now at the end, it signifies something useful that still needs to be done */
                         result.AppendFormat("{0, 30}: {1,-40} [{2}]c" + Environment.NewLine,
                             propertyInfo.Name,
                             Utils.BytesToString((byte[])propertyInfo.GetValue(nestedArrayRecord, null)),

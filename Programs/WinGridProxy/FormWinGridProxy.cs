@@ -968,28 +968,41 @@ namespace WinGridProxy
         /// </summary>
         /// <param name="message">The IMessage object</param>
         /// <returns>A formatted string containing the names and values of the source object</returns>
-        public static string IMessageToString(object message)
+        public static string IMessageToString(object message, int recurseLevel)
         {
             if (message == null)
                 return String.Empty;
 
             StringBuilder result = new StringBuilder();
             // common/custom types
-            result.AppendFormat("Message Type {0}" + System.Environment.NewLine, message.GetType().Name);
+            if (recurseLevel <= 0)
+            {
+                result.AppendFormat("Message Type: {0}" + System.Environment.NewLine, message.GetType().Name);
+            }
+            else
+            {
+                string pad = "              +--".PadLeft(recurseLevel + 3);
+                result.AppendFormat("{0} {1}" + System.Environment.NewLine, pad, message.GetType().Name);
+            }
+
+            recurseLevel++;
 
             foreach (FieldInfo messageField in message.GetType().GetFields())
             {
                 // an abstract message class
                 if (messageField.FieldType.IsAbstract)
                 {
-                    result.AppendLine(IMessageToString(messageField.GetValue(message)));
+                    result.AppendLine(IMessageToString(messageField.GetValue(message), recurseLevel));
                 }
                 // a byte array
                 else if (messageField.GetValue(message) != null && messageField.GetValue(message).GetType() == typeof(Byte[]))
                 {
-                    result.AppendFormat("{0, 30}: ({1})" + System.Environment.NewLine,
-                    messageField.Name, messageField.FieldType.Name);
-                    result.AppendFormat("{0}" + System.Environment.NewLine, Utils.BytesToHexString((byte[])messageField.GetValue(message), string.Format("{0,30}", "")));
+                    result.AppendFormat("{0, 30}:" + System.Environment.NewLine,
+                    messageField.Name);
+
+                    result.AppendFormat("{0}" + System.Environment.NewLine, 
+                        Utils.BytesToHexString((byte[])messageField.GetValue(message), 
+                        string.Format("{0,30}", "")));
                 }
 
                 // an array of class objects
@@ -999,26 +1012,26 @@ namespace WinGridProxy
                     result.AppendFormat("-- {0} --" + System.Environment.NewLine, messageField.FieldType.Name);
                     foreach (object nestedArrayObject in messageObjectData as Array)
                     {
-                        result.AppendFormat("     [{0}]" + System.Environment.NewLine, nestedArrayObject.GetType().Name);
+                        result.AppendFormat("{0,30}" + System.Environment.NewLine, "-- " + nestedArrayObject.GetType().Name + " --");
 
                         foreach (FieldInfo nestedField in nestedArrayObject.GetType().GetFields())
                         {
                             if (nestedField.FieldType.IsEnum)
                             {
-                                result.AppendFormat("{0, 30}: {1} {2} ({3})" + System.Environment.NewLine,
+                                result.AppendFormat("{0,30}: {1,-10} {2,-29} [{3}]" + System.Environment.NewLine,
                                     nestedField.Name,
                                     Enum.Format(nestedField.GetValue(nestedArrayObject).GetType(),
                                     nestedField.GetValue(nestedArrayObject), "D"),
-                                    nestedField.GetValue(nestedArrayObject),
+                                    "(" + nestedField.GetValue(nestedArrayObject) + ")",
                                     nestedField.GetValue(nestedArrayObject).GetType().Name);
                             }
                             else if (nestedField.FieldType.IsInterface)
                             {
-                                result.AppendLine(IMessageToString(nestedField.GetValue(nestedArrayObject)));
+                                result.AppendLine(IMessageToString(nestedField.GetValue(nestedArrayObject), recurseLevel));
                             }
                             else
                             {
-                                result.AppendFormat("{0, 30}: {1} ({2})" + Environment.NewLine,
+                                result.AppendFormat("{0, 30}: {1,-40} [{2}]" + Environment.NewLine,
                                  nestedField.Name,
                                  nestedField.GetValue(nestedArrayObject),
                                  nestedField.GetValue(nestedArrayObject).GetType().Name);
@@ -1030,19 +1043,20 @@ namespace WinGridProxy
                 {
                     if (messageField.FieldType.IsEnum)
                     {
-                        result.AppendFormat("{0, 30}: {1} {2} ({3})" + Environment.NewLine,
+                        result.AppendFormat("{0,30}: {1,-2} {2,-37} [{3}]" + Environment.NewLine,
                             messageField.Name,
-                            Enum.Format(messageField.GetValue(message).GetType(),
+                            Enum.Format(messageField.GetValue(message).GetType(), 
                             messageField.GetValue(message), "D"),
-                            messageField.GetValue(message), messageField.FieldType.Name);
+                            "(" + messageField.GetValue(message) + ")", 
+                            messageField.FieldType.Name);
                     }
                     else if (messageField.FieldType.IsInterface)
                     {
-                        result.AppendLine(IMessageToString(messageField.GetValue(message)));
+                        result.AppendLine(IMessageToString(messageField.GetValue(message), recurseLevel));
                     }
                     else
                     {
-                        result.AppendFormat("{0, 30}: {1} ({2})" + System.Environment.NewLine,
+                        result.AppendFormat("{0, 30}: {1,-40} [{2}]" + System.Environment.NewLine,
                         messageField.Name, messageField.GetValue(message), messageField.FieldType.Name);
                     }
                 }
@@ -1275,7 +1289,7 @@ namespace WinGridProxy
                         message = OpenMetaverse.Messages.MessageUtils.DecodeEvent(key, data);
 
                     if (message != null)
-                        return IMessageToString(message);
+                        return IMessageToString(message, 0);
                     else
                         return "No Decoder for " + key + System.Environment.NewLine
                             + osd.ToString();
