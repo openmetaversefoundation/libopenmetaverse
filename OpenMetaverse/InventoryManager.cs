@@ -2120,7 +2120,7 @@ namespace OpenMetaverse
 
             if(url != null)
             {
-                UpdateScriptAgentMessage msg = new UpdateScriptAgentMessage();
+                UpdateScriptAgentRequestMessage msg = new UpdateScriptAgentRequestMessage();
                 msg.ItemID = itemID;
                 msg.Target = mono ? "mono" : "lsl2";
                 

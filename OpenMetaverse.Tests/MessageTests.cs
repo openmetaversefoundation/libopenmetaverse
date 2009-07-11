@@ -453,8 +453,7 @@ namespace OpenMetaverse.Tests
             ScriptRunningReplyMessage t = new ScriptRunningReplyMessage();
             t.Deserialize(map);
 
-            Assert.AreEqual(s.ItemID, t.ItemID);
-            Assert.AreEqual(s.message, t.message);
+            Assert.AreEqual(s.ItemID, t.ItemID);            
             Assert.AreEqual(s.Mono, t.Mono);
             Assert.AreEqual(s.ObjectID, t.ObjectID);
             Assert.AreEqual(s.Running, t.Running);
@@ -874,14 +873,14 @@ namespace OpenMetaverse.Tests
         [Test]
         public void UpdateScriptTaskMessage()
         {
-            UpdateScriptTaskMessage s = new UpdateScriptTaskMessage();
+            UpdateScriptTaskUpdateMessage s = new UpdateScriptTaskUpdateMessage();
             s.TaskID = UUID.Random();
             s.Target = "mono";
             s.ScriptRunning = true;
             s.ItemID = UUID.Random();
 
             OSDMap map = s.Serialize();
-            UpdateScriptTaskMessage t = new UpdateScriptTaskMessage();
+            UpdateScriptTaskUpdateMessage t = new UpdateScriptTaskUpdateMessage();
             t.Deserialize(map);
 
             Assert.AreEqual(s.ItemID, t.ItemID);
@@ -893,13 +892,13 @@ namespace OpenMetaverse.Tests
         [Test]
         public void UpdateScriptAgentMessage()
         {
-            UpdateScriptAgentMessage s = new UpdateScriptAgentMessage();
+            UpdateScriptAgentRequestMessage s = new UpdateScriptAgentRequestMessage();
             s.ItemID = UUID.Random();
             s.Target = "lsl2";
 
             OSDMap map = s.Serialize();
 
-            UpdateScriptAgentMessage t = new UpdateScriptAgentMessage();
+            UpdateScriptAgentRequestMessage t = new UpdateScriptAgentRequestMessage();
             t.Deserialize(map);
 
             Assert.AreEqual(s.ItemID, t.ItemID);
@@ -933,12 +932,12 @@ namespace OpenMetaverse.Tests
         [Test]
         public void UpdateNotecardAgentInventoryMessage()
         {
-            UpdateNotecardAgentInventoryMessage s = new UpdateNotecardAgentInventoryMessage();
+            UpdateNotecardAgentInventoryUpdateMessage s = new UpdateNotecardAgentInventoryUpdateMessage();
             s.ItemID = UUID.Random();
 
             OSDMap map = s.Serialize();
 
-            UpdateNotecardAgentInventoryMessage t = new UpdateNotecardAgentInventoryMessage();
+            UpdateNotecardAgentInventoryUpdateMessage t = new UpdateNotecardAgentInventoryUpdateMessage();
             t.Deserialize(map);
 
             Assert.AreEqual(s.ItemID, t.ItemID);
