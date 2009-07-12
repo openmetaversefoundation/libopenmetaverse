@@ -234,6 +234,16 @@ namespace OpenMetaverse.Assets
         }
 
         /// <summary>
+        /// Keyboard key that triggers the gestyre
+        /// </summary>
+        public byte TriggerKey;
+
+        /// <summary>
+        /// Modifier to the trigger key
+        /// </summary>
+        public uint TriggerKeyMask;
+
+        /// <summary>
         /// String that triggers playing of the gesture sequence
         /// </summary>
         public string Trigger;
@@ -269,8 +279,81 @@ namespace OpenMetaverse.Assets
         /// </summary>
         public override void Encode()
         {
-            // TODO: implement encoder
-            throw new NotImplementedException("Encoding guestire assets not supported");
+            StringBuilder sb = new StringBuilder();
+            sb.Append("2\n");
+            sb.Append(TriggerKey + "\n");
+            sb.Append(TriggerKeyMask + "\n");
+            sb.Append(Trigger + "\n");
+            sb.Append(ReplaceWith + "\n");
+
+            int count = 0;
+            if (Sequence != null)
+            {
+                count = Sequence.Count;
+            }
+
+            sb.Append(count + "\n");
+
+            for (int i = 0; i < count; i++)
+            {
+                GestureStep step = Sequence[i];
+                sb.Append((int)step.GestureStepType + "\n");
+
+                switch (step.GestureStepType)
+                {
+                    case GestureStepType.EOF:
+                        goto Finish;
+
+                    case GestureStepType.Animation:
+                        GestureStepAnimation animstep = (GestureStepAnimation)step;
+                        sb.Append(animstep.Name + "\n");
+                        sb.Append(animstep.ID + "\n");
+
+                        if (animstep.AnimationStart)
+                        {
+                            sb.Append("0\n");
+                        }
+                        else
+                        {
+                            sb.Append("1\n");
+                        }
+                        break;
+
+                    case GestureStepType.Sound:
+                        GestureStepSound soundstep = (GestureStepSound)step;
+                        sb.Append(soundstep.Name + "\n");
+                        sb.Append(soundstep.ID + "\n");
+                        sb.Append("0\n");
+                        break;
+
+                    case GestureStepType.Chat:
+                        GestureStepChat chatstep = (GestureStepChat)step;
+                        sb.Append(chatstep.Text + "\n");
+                        sb.Append("0\n");
+                        break;
+
+                    case GestureStepType.Wait:
+                        GestureStepWait waitstep = (GestureStepWait)step;
+                        sb.AppendFormat("{0:0.000000}\n", waitstep.WaitTime);
+                        int waitflags = 0;
+
+                        if (waitstep.WaitForTime)
+                        {
+                            waitflags |= 0x01;
+                        }
+
+                        if (waitstep.WaitForAnimation)
+                        {
+                            waitflags |= 0x02;
+                        }
+
+                        sb.Append(waitflags + "\n");
+                        break;
+                }
+            }
+        Finish:
+
+            AssetData = Utils.StringToBytes(sb.ToString());
         }
 
         /// <summary>
@@ -285,7 +368,7 @@ namespace OpenMetaverse.Assets
                 Sequence = new List<GestureStep>();
 
                 int i = 0;
-                
+
                 // version
                 int version = int.Parse(lines[i++]);
                 if (version != 2)
@@ -293,8 +376,8 @@ namespace OpenMetaverse.Assets
                     throw new Exception("Only know how to decode version 2 of gesture asset");
                 }
 
-                byte key = byte.Parse(lines[i++]);
-                int mask = int.Parse(lines[i++]);
+                TriggerKey = byte.Parse(lines[i++]);
+                TriggerKeyMask = uint.Parse(lines[i++]);
                 Trigger = lines[i++];
                 ReplaceWith = lines[i++];
 
@@ -337,7 +420,7 @@ namespace OpenMetaverse.Assets
                         case GestureStepType.Sound:
                             {
                                 GestureStepSound step = new GestureStepSound();
-                                step.Name = lines[i++];
+                                step.Name = lines[i++].Replace("\r", "");
                                 step.ID = new UUID(lines[i++]);
                                 int flags = int.Parse(lines[i++]);
 
@@ -369,7 +452,7 @@ namespace OpenMetaverse.Assets
 
                     }
                 }
-                Finish:
+            Finish:
 
                 return true;
             }

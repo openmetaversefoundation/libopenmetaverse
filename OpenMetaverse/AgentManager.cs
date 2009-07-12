@@ -2261,6 +2261,53 @@ namespace OpenMetaverse
             t.Name = "Gesture thread: " + gestureID;
             t.Start();
         }
+
+        /// <summary>
+        /// Mark gesture active
+        /// </summary>
+        /// <param name="invID">Inventory <seealso cref="UUID"/> of the gesture</param>
+        /// <param name="assetID">Asset <seealso cref="UUID"/> of the gesture</param>
+        public void ActivateGesture(UUID invID, UUID assetID)
+        {
+            ActivateGesturesPacket p = new ActivateGesturesPacket();
+
+            p.AgentData.AgentID = AgentID;
+            p.AgentData.SessionID = SessionID;
+            p.AgentData.Flags = 0x00;
+
+            ActivateGesturesPacket.DataBlock b = new ActivateGesturesPacket.DataBlock();
+            b.ItemID = invID;
+            b.AssetID = assetID;
+            b.GestureFlags = 0x00;
+
+            p.Data = new ActivateGesturesPacket.DataBlock[1];
+            p.Data[0] = b;
+
+            Client.Network.SendPacket(p);
+
+        }
+
+        /// <summary>
+        /// Mark gesture inactive
+        /// </summary>
+        /// <param name="invID">Inventory <seealso cref="UUID"/> of the gesture</param>
+        public void DeactivateGesture(UUID invID)
+        {
+            DeactivateGesturesPacket p = new DeactivateGesturesPacket();
+
+            p.AgentData.AgentID = AgentID;
+            p.AgentData.SessionID = SessionID;
+            p.AgentData.Flags = 0x00;
+
+            DeactivateGesturesPacket.DataBlock b = new DeactivateGesturesPacket.DataBlock();
+            b.ItemID = invID;
+            b.GestureFlags = 0x00;
+
+            p.Data = new DeactivateGesturesPacket.DataBlock[1];
+            p.Data[0] = b;
+
+            Client.Network.SendPacket(p);
+        }
         #endregion
 
         #region Animations
