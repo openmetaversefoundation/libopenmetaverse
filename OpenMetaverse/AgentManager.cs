@@ -1147,6 +1147,7 @@ namespace OpenMetaverse
         private int balance;
         private UUID activeGroup;
         private GroupPowers activeGroupPowers;
+        private Dictionary<UUID, AssetGesture> gestureCache = new Dictionary<UUID, AssetGesture>();
         #endregion Private Members
 
         /// <summary>
@@ -2182,16 +2183,31 @@ namespace OpenMetaverse
                             gotAsset.Set();
                         };
 
+                    if (gestureCache.ContainsKey(gestureID))
+                    {
+                        gesture = gestureCache[gestureID];
+                    }
+                    else
+                    {
+                        Client.Assets.OnAssetReceived += callback;
+                        Client.Assets.RequestAsset(gestureID, AssetType.Gesture, true);
+                        gotAsset.WaitOne(30 * 1000);
+                        Client.Assets.OnAssetReceived -= callback;
 
-                    Client.Assets.OnAssetReceived += callback;
-
-                    Client.Assets.RequestAsset(gestureID, AssetType.Gesture, true);
-                    gotAsset.WaitOne(30 * 1000);
-
-                    Client.Assets.OnAssetReceived -= callback;
+                        if (gesture != null && gesture.Decode())
+                        {
+                            lock (gestureCache)
+                            {
+                                if (!gestureCache.ContainsKey(gestureID))
+                                {
+                                    gestureCache[gestureID] = gesture;
+                                }
+                            }
+                        }
+                    }
 
                     // We got it, now we play it
-                    if (gesture != null && gesture.Decode())
+                    if (gesture != null)
                     {
                         for (int i = 0; i < gesture.Sequence.Count; i++)
                         {
