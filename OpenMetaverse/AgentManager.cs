@@ -2191,7 +2191,7 @@ namespace OpenMetaverse
                     {
                         Client.Assets.OnAssetReceived += callback;
                         Client.Assets.RequestAsset(gestureID, AssetType.Gesture, true);
-                        gotAsset.WaitOne(30 * 1000);
+                        gotAsset.WaitOne(30 * 1000, false);
                         Client.Assets.OnAssetReceived -= callback;
 
                         if (gesture != null && gesture.Decode())
