@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace OpenMetaverse.GUI
@@ -35,6 +36,7 @@ namespace OpenMetaverse.GUI
     {
         private GridClient _Client;
         private LoginParams _LoginParams = new LoginParams();
+        private Thread LoginThread;
         private Dictionary<string, string> _Accounts = new Dictionary<string, string>();
         private Button btnLogin = new Button();
         private Label label1 = new Label();
@@ -175,6 +177,15 @@ namespace OpenMetaverse.GUI
             btnLogin.Click += new EventHandler(btnLogin_Click);
         }
 
+        /// <summary>
+        /// Begins login sequence using the parameters defined in .LoginParams
+        /// </summary>
+        public void Login()
+        {
+            LoginThread = new Thread(new ThreadStart(delegate() { _Client.Network.Login(_LoginParams); }));
+            LoginThread.Start();
+        }
+
         private void InitializeClient(GridClient client)
         {
             _Client = client;
@@ -200,10 +211,19 @@ namespace OpenMetaverse.GUI
                 _LoginParams.Password = Password;
                 _LoginParams.Start = StartURI;
 
-                _Client.Network.BeginLogin(_LoginParams);
+                LoginThread = new Thread(new ThreadStart(delegate() { _Client.Network.Login(_LoginParams); }));
+                LoginThread.Start();
             }
             else if (btnLogin.Text == "Logout")
             {
+                if (LoginThread != null)
+                {
+                    if (LoginThread.IsAlive)
+                        LoginThread.Abort();
+
+                    LoginThread = null;
+                }
+
                 if (_Client != null)
                 {
                     if (_Client.Network.Connected)
@@ -240,6 +260,13 @@ namespace OpenMetaverse.GUI
 
         private void Network_OnLogin(LoginStatus login, string message)
         {
+            if (!this.IsHandleCreated) return;
+
+            this.BeginInvoke((MethodInvoker)delegate
+            {
+                btnLogin.Text = "Logout";
+            });
+
             if (login == LoginStatus.Success)
             {
                 lock (_Accounts)
@@ -250,7 +277,8 @@ namespace OpenMetaverse.GUI
                     {
                         this.BeginInvoke((MethodInvoker)delegate
                         {
-                            listNames.Items.Add(_Client.Self.Name);
+                            int index = listNames.Items.Add(_Client.Self.Name);
+                            listNames.SelectedIndex = index;
                         });
                     }
                 }
@@ -260,12 +288,14 @@ namespace OpenMetaverse.GUI
                 this.BeginInvoke((MethodInvoker)delegate
                 {
                     btnLogin.Text = "Login";
-
-                    if (MessageBox.Show(this, "Login failed. Try again?", "Login", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.Yes)
-                    {
-                        btnLogin.Text = "Logout";
-                        Client.Network.BeginLogin(_LoginParams);
-                    }
+                });
+            }
+            else
+            {
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    listNames.Text = _LoginParams.FirstName + " " + _LoginParams.LastName;
+                    txtPass.Text = _LoginParams.Password;
                 });
             }
         }
