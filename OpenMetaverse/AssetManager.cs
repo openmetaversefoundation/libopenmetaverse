@@ -849,6 +849,9 @@ namespace OpenMetaverse
                 case AssetType.Landmark:
                     asset = new AssetLandmark();
                     break;
+                case AssetType.Gesture:
+                    asset = new AssetGesture();
+                    break;
                 default:
                     Logger.Log("Unimplemented asset type: " + type, Helpers.LogLevel.Error, Client);
                     return null;
