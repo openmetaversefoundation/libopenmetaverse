@@ -32,7 +32,7 @@ namespace Dashboard
             InitializeClient(true);
 
             //double-click events
-            avatarList1.OnAvatarDoubleClick += new AvatarList.AvatarDoubleClickCallback(avatarList1_OnAvatarDoubleClick);
+            avatarList1.OnAvatarDoubleClick += new AvatarList.AvatarCallback(avatarList1_OnAvatarDoubleClick);
             friendsList1.OnFriendDoubleClick += new FriendList.FriendDoubleClickCallback(friendsList1_OnFriendDoubleClick);
             groupList1.OnGroupDoubleClick += new GroupList.GroupDoubleClickCallback(groupList1_OnGroupDoubleClick);
 
@@ -60,6 +60,7 @@ namespace Dashboard
 
             //initialize client object
             Client = new GridClient();
+            Client.Settings.USE_LLSD_LOGIN = true;
             Client.Settings.USE_TEXTURE_CACHE = true;
 
             Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
@@ -76,6 +77,7 @@ namespace Dashboard
             messageBar1.Client = Client;
             miniMap1.Client = Client;
             statusOutput1.Client = Client;
+            topScriptsList1.Client = Client;
         }
 
         void Dashboard_FormClosing(object sender, FormClosingEventArgs e)
