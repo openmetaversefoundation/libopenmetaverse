@@ -77,7 +77,6 @@ namespace Dashboard
             messageBar1.Client = Client;
             miniMap1.Client = Client;
             statusOutput1.Client = Client;
-            topScriptsList1.Client = Client;
         }
 
         void Dashboard_FormClosing(object sender, FormClosingEventArgs e)
