@@ -9,45 +9,30 @@ namespace OpenMetaverse.TestClient
 {
     public class GroupsCommand : Command
     {        
-        ManualResetEvent GetCurrentGroupsEvent = new ManualResetEvent(false);
-        Dictionary<UUID, Group> groups = new Dictionary<UUID, Group>();
-
         public GroupsCommand(TestClient testClient)
         {
-            testClient.Groups.OnCurrentGroups += new GroupManager.CurrentGroupsCallback(Groups_OnCurrentGroups);
-
             Name = "groups";
             Description = "List avatar groups. Usage: groups";
             Category = CommandCategory.Groups;
         }
+
         public override string Execute(string[] args, UUID fromAgentID)
         {
-            if (groups.Count == 0)
-            {
-                Client.Groups.RequestCurrentGroups();
-                GetCurrentGroupsEvent.WaitOne(10000, false);
-            }
-            if (groups.Count > 0)
-            {
-                return getGroupsString();
-            }
-            else
-            {
-                return "No groups";
-            }
+            Client.ReloadGroupsCache();
+            return getGroupsString();
         }
 
-        void Groups_OnCurrentGroups(Dictionary<UUID, Group> pGroups)
-        {
-            groups = pGroups;
-            GetCurrentGroupsEvent.Set();
-        }
         string getGroupsString()
         {
+            if (null == Client.GroupsCache)
+                    return "Groups cache failed.";
+            if (0 == Client.GroupsCache.Count)
+                    return "No groups";
             StringBuilder sb = new StringBuilder();
-            foreach (Group group in groups.Values)
+            sb.AppendLine("got "+Client.GroupsCache.Count +" groups:");
+            foreach (Group group in Client.GroupsCache.Values)
             {
-                sb.AppendLine(group.Name + " " + group.ID);
+                sb.AppendLine(group.ID + ", " + group.Name);
                 
             }
             

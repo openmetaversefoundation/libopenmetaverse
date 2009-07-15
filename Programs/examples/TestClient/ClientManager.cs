@@ -49,6 +49,7 @@ namespace OpenMetaverse.TestClient
         public bool Running = true;
         public bool GetTextures = false;
         public volatile int PendingLogins = 0;
+        public string onlyAvatar = String.Empty;
 
         ClientManager()
         {
@@ -247,6 +248,28 @@ namespace OpenMetaverse.TestClient
             // Allow for comments when cmdline begins with ';' or '#'
             if (firstToken[0] == ';' || firstToken[0] == '#')
                 return;
+
+            if ('@' == firstToken[0]) {
+                onlyAvatar = String.Empty;
+                if (tokens.Length == 3) {
+                    bool found = false;
+                    onlyAvatar = tokens[1]+" "+tokens[2];
+                    foreach (TestClient client in Clients.Values) {
+                        if (client.ToString() == onlyAvatar) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        Logger.Log("Commanding only "+onlyAvatar+" now", Helpers.LogLevel.Info);
+                    } else {
+                        Logger.Log("Commanding nobody now. Avatar "+onlyAvatar+" is offline", Helpers.LogLevel.Info);
+                    }
+                } else {
+                    Logger.Log("Commanding all avatars now", Helpers.LogLevel.Info);
+                }
+                return;
+            }
             
             string[] args = new string[tokens.Length - 1];
             if (args.Length > 0)
@@ -308,11 +331,13 @@ namespace OpenMetaverse.TestClient
                         delegate(object state)
                         {
                             TestClient testClient = (TestClient)state;
-                            if (testClient.Commands.ContainsKey(firstToken))
-                                Logger.Log(testClient.Commands[firstToken].Execute(args, fromAgentID),
-                                    Helpers.LogLevel.Info, testClient);
-                            else
-                                Logger.Log("Unknown command " + firstToken, Helpers.LogLevel.Warning);
+                            if ((String.Empty == onlyAvatar) || (testClient.ToString() == onlyAvatar)) {
+                                if (testClient.Commands.ContainsKey(firstToken))
+                                    Logger.Log(testClient.Commands[firstToken].Execute(args, fromAgentID),
+                                        Helpers.LogLevel.Info, testClient);
+                                else
+                                    Logger.Log("Unknown command " + firstToken, Helpers.LogLevel.Warning);
+                            }
 
                             ++completed;
                         },
