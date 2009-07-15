@@ -917,13 +917,13 @@ namespace OpenMetaverse
         public delegate void TaskInventoryReplyCallback(UUID itemID, short serial, string assetFilename);
 
         /// <summary>
-        /// 
+        /// Reply received when uploading an invetnory asset
         /// </summary>
-        /// <param name="success"></param>
-        /// <param name="status"></param>
-        /// <param name="itemID"></param>
-        /// <param name="assetID"></param>
-        public delegate void NotecardUploadedAssetCallback(bool success, string status, UUID itemID, UUID assetID);
+        /// <param name="success">Has upload been successful</param>
+        /// <param name="status">Error message if upload failed</param>
+        /// <param name="itemID">Inventory asset UUID</param>
+        /// <param name="assetID">New gesture asset UUID</param>
+        public delegate void InventoryUploadedAssetCallback(bool success, string status, UUID itemID, UUID assetID);
 
         /// <summary>
         /// Fired when local inventory store needs to be updated. Generally at logout to update a local cache
@@ -2093,7 +2093,7 @@ namespace OpenMetaverse
         /// <param name="data"></param>
         /// <param name="notecardID"></param>
         /// <param name="callback"></param>
-        public void RequestUploadNotecardAsset(byte[] data, UUID notecardID, NotecardUploadedAssetCallback callback)
+        public void RequestUploadNotecardAsset(byte[] data, UUID notecardID, InventoryUploadedAssetCallback callback)
         {
             if (_Client.Network.CurrentSim == null || _Client.Network.CurrentSim.Caps == null)
                 throw new Exception("UpdateNotecardAgentInventory capability is not currently available");
@@ -2107,13 +2107,43 @@ namespace OpenMetaverse
 
                 // Make the request
                 CapsClient request = new CapsClient(url);
-                request.OnComplete += UploadNotecardAssetResponse;
-                request.UserData = new object[] { new KeyValuePair<NotecardUploadedAssetCallback, byte[]>(callback, data), notecardID };
+                request.OnComplete += UploadInventoryAssetResponse;
+                request.UserData = new object[] { new KeyValuePair<InventoryUploadedAssetCallback, byte[]>(callback, data), notecardID };
                 request.BeginGetResponse(query, OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);
             }
             else
             {
                 throw new Exception("UpdateNotecardAgentInventory capability is not currently available");
+            }
+        }
+
+        /// <summary>
+        /// Upload new gesture asset for an inventory gesture item
+        /// </summary>
+        /// <param name="data">Encoded gesture asset</param>
+        /// <param name="gestureID">Gesture inventory UUID</param>
+        /// <param name="callback">Callback whick will be called when upload is complete</param>
+        public void RequestUploadGestureAsset(byte[] data, UUID gestureID, InventoryUploadedAssetCallback callback)
+        {
+            if (_Client.Network.CurrentSim == null || _Client.Network.CurrentSim.Caps == null)
+                throw new Exception("UpdateGestureAgentInventory capability is not currently available");
+
+            Uri url = _Client.Network.CurrentSim.Caps.CapabilityURI("UpdateGestureAgentInventory");
+
+            if (url != null)
+            {
+                OSDMap query = new OSDMap();
+                query.Add("item_id", OSD.FromUUID(gestureID));
+
+                // Make the request
+                CapsClient request = new CapsClient(url);
+                request.OnComplete += UploadInventoryAssetResponse;
+                request.UserData = new object[] { new KeyValuePair<InventoryUploadedAssetCallback, byte[]>(callback, data), gestureID };
+                request.BeginGetResponse(query, OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);
+            }
+            else
+            {
+                throw new Exception("UpdateGestureAgentInventory capability is not currently available");
             }
         }
 
@@ -3766,11 +3796,11 @@ namespace OpenMetaverse
             }
         }
 
-        private void UploadNotecardAssetResponse(CapsClient client, OSD result, Exception error)
+        private void UploadInventoryAssetResponse(CapsClient client, OSD result, Exception error)
         {
             OSDMap contents = result as OSDMap;
-            KeyValuePair<NotecardUploadedAssetCallback, byte[]> kvp = (KeyValuePair<NotecardUploadedAssetCallback, byte[]>)(((object[])client.UserData)[0]);
-            NotecardUploadedAssetCallback callback = kvp.Key;
+            KeyValuePair<InventoryUploadedAssetCallback, byte[]> kvp = (KeyValuePair<InventoryUploadedAssetCallback, byte[]>)(((object[])client.UserData)[0]);
+            InventoryUploadedAssetCallback callback = kvp.Key;
             byte[] itemData = (byte[])kvp.Value;
 
             if (error == null && contents != null)
@@ -3786,7 +3816,7 @@ namespace OpenMetaverse
                         // This makes the assumption that all uploads go to CurrentSim, to avoid
                         // the problem of HttpRequestState not knowing anything about simulators
                         CapsClient upload = new CapsClient(uploadURL);
-                        upload.OnComplete += UploadNotecardAssetResponse;
+                        upload.OnComplete += UploadInventoryAssetResponse;
                         upload.UserData = new object[2] { kvp, (UUID)(((object[])client.UserData)[1]) };
                         upload.BeginGetResponse(itemData, "application/octet-stream", _Client.Settings.CAPS_TIMEOUT);
                     }

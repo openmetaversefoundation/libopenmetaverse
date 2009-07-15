@@ -1687,6 +1687,77 @@ namespace OpenMetaverse.Messages.Linden
     }
 
     /// <summary>
+    /// A message sent from the viewer to the simulator to request a temporary uploader capability
+    /// used to update a gesture contained in the agents inventory
+    /// </summary>
+    public class UpdateGestureAgentInventoryUpdateMessage : AssetUploaderBlock
+    {
+        /// <summary>
+        /// The Gesture AssetID to replace
+        /// </summary>
+        public UUID ItemID;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(1);
+            map["item_id"] = OSD.FromUUID(ItemID);
+
+            return map;
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public override void Deserialize(OSDMap map)
+        {
+            ItemID = map["item_id"].AsUUID();
+        }
+    }
+
+    /// <summary>
+    /// A message containing the request/response used for updating a gesture
+    /// contained with an agents inventory
+    /// </summary>
+    public class UpdateGestureAgentInventoryMessage : IMessage
+    {
+        /// <summary>Object containing request or response</summary>
+        public AssetUploaderBlock Request;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            return Request.Serialize();
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("item_id"))
+                Request = new UpdateGestureAgentInventoryUpdateMessage();
+            else if (map.ContainsKey("state") && map["state"].AsString().Equals("upload"))
+                Request = new UploaderRequestUpload();
+            else if (map.ContainsKey("state") && map["state"].AsString().Equals("complete"))
+                Request = new UploaderRequestComplete();
+            else
+                Logger.Log("Unable to deserialize UpdateGestureAgentInventory: No message handler exists for state " + map["state"].AsString(), Helpers.LogLevel.Warning);
+
+            if (Request != null)
+                Request.Deserialize(map);
+        }
+    }
+
+    /// <summary>
     /// A message request/response which is used to update a notecard contained within
     /// a tasks inventory
     /// </summary>

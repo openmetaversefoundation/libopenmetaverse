@@ -69,6 +69,7 @@ namespace OpenMetaverse.Messages
                 case "UpdateScriptTask": message = new UpdateScriptTaskMessage(); break;
                 case "UpdateScriptAgent": message = new UpdateScriptAgentMessage(); break;
                 case "SendPostcard": message = new SendPostcardMessage(); break;
+                case "UpdateGestureAgentInventory": message = new UpdateGestureAgentInventoryMessage(); break;
                 case "UpdateNotecardAgentInventory": message = new UpdateNotecardAgentInventoryMessage(); break;
                 case "LandStatReply": message = new LandStatReplyMessage(); break;
                 case "ParcelVoiceInfoRequest": message = new ParcelVoiceInfoRequestMessage(); break;
@@ -101,7 +102,6 @@ namespace OpenMetaverse.Messages
                 // SendUserReportWithScreenshot
                 // ServerReleaseNotes
                 // StartGroupProposal
-                // UpdateGestureAgentInventory
                 // UpdateGestureTaskInventory
                 // UpdateNotecardTaskInventory
                 // ViewerStartAuction
