@@ -255,7 +255,7 @@ namespace OpenMetaverse.TestClient
                     bool found = false;
                     onlyAvatar = tokens[1]+" "+tokens[2];
                     foreach (TestClient client in Clients.Values) {
-                        if (client.ToString() == onlyAvatar) {
+                        if ((client.ToString() == onlyAvatar) && (client.Network.Connected)) {
                             found = true;
                             break;
                         }
