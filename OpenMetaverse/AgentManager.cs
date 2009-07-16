@@ -2161,7 +2161,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Plays a gesture
         /// </summary>
-        /// <param name="guestureID">Asset <seealso cref="UUID"/> of the gesture</param>
+        /// <param name="gestureID">Asset <seealso cref="UUID"/> of the gesture</param>
         public void PlayGesture(UUID gestureID)
         {
             Thread t = new Thread(new ThreadStart(delegate()
