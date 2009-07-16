@@ -1017,13 +1017,13 @@ namespace OpenMetaverse.Messages.Linden
             RegionHandle = map["region_handle"].AsULong();
             RegionID = map["region_id"].AsUUID();
         }
-
     }
 
     /// <summary>
     /// A message sent from the simulator to the viewer in response to a <see cref="RemoteParcelRequestRequest"/> 
     /// which will contain parcel information
     /// </summary>
+    [Serializable]
     public class RemoteParcelRequestReply : RemoteParcelRequestBlock
     {
         /// <summary>The grid-wide unique parcel ID</summary>
@@ -1048,7 +1048,6 @@ namespace OpenMetaverse.Messages.Linden
         {
             ParcelID = map["parcel_id"].AsUUID();
         }
-
     }
 
     /// <summary>
@@ -1081,9 +1080,9 @@ namespace OpenMetaverse.Messages.Linden
             else if (map.ContainsKey("location"))
                 Request = new RemoteParcelRequestRequest();
             else
-                Logger.Log("Unable to deserialize RemoteParcelRequest: No message handler exists for method ", Helpers.LogLevel.Warning);
+                Logger.Log("Unable to deserialize RemoteParcelRequest: No message handler exists for method: " + map.AsString(), Helpers.LogLevel.Warning);
 
-            if(Request != null)
+            if (Request != null)
                 Request.Deserialize(map);
         }
     }
@@ -1113,7 +1112,6 @@ namespace OpenMetaverse.Messages.Linden
             map["description"] = OSD.FromString(Description);
 
             return map;
-
         }
 
         /// <summary>
@@ -1239,7 +1237,6 @@ namespace OpenMetaverse.Messages.Linden
             for (int i = 0; i < groupArray.Count; i++)
             {
                 OSDMap groupMap = (OSDMap)groupArray[i];
-
 
                 GroupData groupData = new GroupData();
 
@@ -1452,6 +1449,7 @@ namespace OpenMetaverse.Messages.Linden
         public override void Deserialize(OSDMap map)
         {
             AssetID = map["new_asset"].AsUUID();
+            State = map["state"].AsString();
         }
     }
 
@@ -1463,7 +1461,7 @@ namespace OpenMetaverse.Messages.Linden
     {
         /// <summary>Object containing request or response</summary>
         public AssetUploaderBlock Request;
-        
+
         /// <summary>
         /// Serialize the object
         /// </summary>
@@ -1486,22 +1484,28 @@ namespace OpenMetaverse.Messages.Linden
             else
             {
                 Logger.Log("Unable to deserialize UploadBakedTexture: No message handler exists for state " + map["state"].AsString(), Helpers.LogLevel.Warning);
-                
+
             }
 
-            if(Request != null)
+            if (Request != null)
                 Request.Deserialize(map);
         }
     }
     #endregion
 
     #region Voice Messages
+    /// <summary>
+    /// A message sent from the simulator which indicates the minimum version required for 
+    /// using voice chat
+    /// </summary>
     public class RequiredVoiceVersionMessage : IMessage
     {
+        /// <summary>Major Version Required</summary>
         public int MajorVersion;
+        /// <summary>Minor version required</summary>
         public int MinorVersion;
+        /// <summary>The name of the region sending the version requrements</summary>
         public string RegionName;
-        public string Message = "RequiredVoiceVersion";
 
         /// <summary>
         /// Serialize the object
@@ -1513,7 +1517,7 @@ namespace OpenMetaverse.Messages.Linden
             map["major_version"] = OSD.FromInteger(MajorVersion);
             map["minor_version"] = OSD.FromInteger(MinorVersion);
             map["region_name"] = OSD.FromString(RegionName);
-            map["message"] = OSD.FromString(Message);
+
             return map;
         }
 
@@ -1526,14 +1530,21 @@ namespace OpenMetaverse.Messages.Linden
             MajorVersion = map["major_version"].AsInteger();
             MinorVersion = map["minor_version"].AsInteger();
             RegionName = map["region_name"].AsString();
-            Message = map["message"].AsString();
         }
     }
 
+    /// <summary>
+    /// A message sent from the simulator to the viewer containing the 
+    /// voice server URI
+    /// </summary>
     public class ParcelVoiceInfoRequestMessage : IMessage
     {
+        /// <summary>The Parcel ID which the voice server URI applies</summary>
         public int ParcelID;
+        /// <summary>The name of the region</summary>
         public string RegionName;
+        /// <summary>A uri containing the server/channel information
+        /// which the viewer can utilize to participate in voice conversations</summary>
         public Uri SipChannelUri;
 
         /// <summary>
@@ -1568,9 +1579,14 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class ProvisionVoiceAccountRequestMessage : IMessage
     {
+        /// <summary></summary>
         public string Password;
+        /// <summary></summary>
         public string Username;
 
         /// <summary>
@@ -1642,9 +1658,14 @@ namespace OpenMetaverse.Messages.Linden
     /// </summary>
     public class ScriptRunningReplyMessage : IMessage
     {
+        /// <summary>The Asset ID of the script</summary>
         public UUID ItemID;
+        /// <summary>True of the script is compiled/ran using the mono interpreter, false indicates it 
+        /// uses the older less efficient lsl2 interprter</summary>
         public bool Mono;
+        /// <summary>The Task containing the scripts <seealso cref="UUID"/></summary>
         public UUID ObjectID;
+        /// <summary>true of the script is in a running state</summary>
         public bool Running;
 
         /// <summary>
@@ -1687,39 +1708,6 @@ namespace OpenMetaverse.Messages.Linden
     }
 
     /// <summary>
-    /// A message sent from the viewer to the simulator to request a temporary uploader capability
-    /// used to update a gesture contained in the agents inventory
-    /// </summary>
-    public class UpdateGestureAgentInventoryUpdateMessage : AssetUploaderBlock
-    {
-        /// <summary>
-        /// The Gesture AssetID to replace
-        /// </summary>
-        public UUID ItemID;
-
-        /// <summary>
-        /// Serialize the object
-        /// </summary>
-        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        public override OSDMap Serialize()
-        {
-            OSDMap map = new OSDMap(1);
-            map["item_id"] = OSD.FromUUID(ItemID);
-
-            return map;
-        }
-
-        /// <summary>
-        /// Deserialize the message
-        /// </summary>
-        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        public override void Deserialize(OSDMap map)
-        {
-            ItemID = map["item_id"].AsUUID();
-        }
-    }
-
-    /// <summary>
     /// A message containing the request/response used for updating a gesture
     /// contained with an agents inventory
     /// </summary>
@@ -1744,13 +1732,13 @@ namespace OpenMetaverse.Messages.Linden
         public void Deserialize(OSDMap map)
         {
             if (map.ContainsKey("item_id"))
-                Request = new UpdateGestureAgentInventoryUpdateMessage();
+                Request = new UpdateAgentInventoryRequestMessage();
             else if (map.ContainsKey("state") && map["state"].AsString().Equals("upload"))
                 Request = new UploaderRequestUpload();
             else if (map.ContainsKey("state") && map["state"].AsString().Equals("complete"))
                 Request = new UploaderRequestComplete();
             else
-                Logger.Log("Unable to deserialize UpdateGestureAgentInventory: No message handler exists for state " + map["state"].AsString(), Helpers.LogLevel.Warning);
+                Logger.Log("Unable to deserialize UpdateGestureAgentInventory: No message handler exists: " + map.AsString(), Helpers.LogLevel.Warning);
 
             if (Request != null)
                 Request.Deserialize(map);
@@ -1794,10 +1782,10 @@ namespace OpenMetaverse.Messages.Linden
 
     // TODO: Add Test
     /// <summary>
-    /// A message sent from the viewer to the simulator to request a temporary uploader capability
-    /// used to update a notecard contained in the agents inventory
+    /// A reusable class containing a message sent from the viewer to the simulator to request a temporary uploader capability
+    /// which is used to update an asset in an agents inventory
     /// </summary>
-    public class UpdateNotecardAgentInventoryUpdateMessage : AssetUploaderBlock
+    public class UpdateAgentInventoryRequestMessage : AssetUploaderBlock
     {
         /// <summary>
         /// The Notecard AssetID to replace
@@ -1851,7 +1839,7 @@ namespace OpenMetaverse.Messages.Linden
         public void Deserialize(OSDMap map)
         {
             if (map.ContainsKey("item_id"))
-                Request = new UpdateNotecardAgentInventoryUpdateMessage();
+                Request = new UpdateAgentInventoryRequestMessage();
             else if (map.ContainsKey("state") && map["state"].AsString().Equals("upload"))
                 Request = new UploaderRequestUpload();
             else if (map.ContainsKey("state") && map["state"].AsString().Equals("complete"))
@@ -1859,7 +1847,7 @@ namespace OpenMetaverse.Messages.Linden
             else
                 Logger.Log("Unable to deserialize UpdateNotecardAgentInventory: No message handler exists for state " + map["state"].AsString(), Helpers.LogLevel.Warning);
 
-            if(Request != null)
+            if (Request != null)
                 Request.Deserialize(map);
         }
     }
@@ -1927,8 +1915,8 @@ namespace OpenMetaverse.Messages.Linden
             map["compiled"] = OSD.FromBoolean(Compiled);
 
             OSDArray errorsArray = new OSDArray();
-                errorsArray.Add(Error);
-            
+            errorsArray.Add(Error);
+
 
             map["errors"] = errorsArray;
             return map;
@@ -1942,7 +1930,6 @@ namespace OpenMetaverse.Messages.Linden
 
             OSDArray errorsArray = (OSDArray)map["errors"];
             Error = errorsArray[0].AsString();
-            
         }
     }
 
@@ -2030,7 +2017,7 @@ namespace OpenMetaverse.Messages.Linden
             if (Request != null)
                 Request.Deserialize(map);
         }
-    }    
+    }
 
     /// <summary>
     /// Response from the simulator to notify the viewer the upload is completed, and
@@ -2122,7 +2109,7 @@ namespace OpenMetaverse.Messages.Linden
         {
             if (map.ContainsKey("item_id"))
                 Request = new UpdateScriptAgentRequestMessage();
-            else if(map.ContainsKey("errors"))
+            else if (map.ContainsKey("errors"))
                 Request = new UploaderScriptRequestError();
             else if (map.ContainsKey("state") && map["state"].AsString().Equals("upload"))
                 Request = new UploaderRequestUpload();
@@ -2131,7 +2118,7 @@ namespace OpenMetaverse.Messages.Linden
             else
                 Logger.Log("Unable to deserialize UpdateScriptAgent: No message handler exists for state " + map["state"].AsString(), Helpers.LogLevel.Warning);
 
-            if(Request != null)
+            if (Request != null)
                 Request.Deserialize(map);
         }
     }
@@ -2282,10 +2269,10 @@ namespace OpenMetaverse.Messages.Linden
         {
             throw new NotImplementedException();
         }
-
     }
 
     #region ChatSessionRequestMessage
+
 
     public abstract class SearchStatRequestBlock
     {
@@ -2384,20 +2371,8 @@ namespace OpenMetaverse.Messages.Linden
 
     /// <summary>
     /// A request sent from an agent to the Simulator to begin a new conference.
-    /// Contains a list of Agents to be in the conference
-    /// </summary>
-    /* VARIANT A:
-    {
-        'method':'start conference'
-        ,
-        'params':
-        [
-            u69d068f3-824f-43ca-8b9a-1542065669b9,
-            ua11dccfb-a55f-406a-bad2-f851af5979be
-        ]
-        ,
-        'session-id':u30dcb931-c2f8-469e-662d-f7c2daacffee
-    } */
+    /// Contains a list of Agents which will be included in the conference
+    /// </summary>    
     public class ChatSessionRequestStartConference : ChatSessionRequestBlock
     {
         /// <summary>An array containing the <see cref="UUID"/> of the agents invited to this conference</summary>
@@ -2452,23 +2427,7 @@ namespace OpenMetaverse.Messages.Linden
     /// <summary>
     /// A moderation request sent from a conference moderator
     /// Contains an agent and an optional action to take
-    /// </summary>
-    /* VARIANT B:
-    {
-            'method':'mute update'
-            ,
-            'params':
-            {
-            'agent_id':u69d068f3-824f-43ca-8b9a-1542065669b9
-            ,
-            'mute_info':
-            {
-                'text':t
-            }
-        }
-        ,
-        'session-id':ufdf0ac75-73b7-0320-96a8-ddd295ba7d8c
-    } */
+    /// </summary>    
     public class ChatSessionRequestMuteUpdate : ChatSessionRequestBlock
     {
         /// <summary>The Session ID</summary>
@@ -2534,14 +2493,6 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
-
-    /*
-     * VARIANT C
-    {
-     'method':'accept invitation'
-     ,
-     'session-id':u30867cec-7906-2ca1-400f-742ad88e4928
-    }*/
     /// <summary>
     /// A message sent from the agent to the simulator which tells the 
     /// simulator we've accepted a conference invitation
@@ -2763,7 +2714,6 @@ namespace OpenMetaverse.Messages.Linden
             OSDMap map = new OSDMap(1);
             map["instantmessage"] = imMap;
 
-
             return map;
         }
 
@@ -2813,7 +2763,6 @@ namespace OpenMetaverse.Messages.Linden
         // <llsd><map><key>events</key><array><map><key>body</key><map><key>agent_updates</key><map><key>ca00e3e1-0fdb-4136-8ed4-0aab739b29e8</key><map><key>info</key><map><key>mutes</key><map><key>text</key><boolean>1</boolean></map></map></map></map><key>session_id</key><string>be7a1def-bd8a-5043-5d5b-49e3805adf6b</string><key>updates</key><map /></map><key>message</key><string>ChatterBoxSessionAgentListUpdates</string></map></array><key>id</key><integer>7</integer></map></llsd>
 
         public UUID SessionID;
-        public string Message = "ChatterBoxSessionAgentListUpdates"; // message
 
         public class AgentUpdatesBlock
         {
@@ -2861,8 +2810,6 @@ namespace OpenMetaverse.Messages.Linden
 
             map["session_id"] = OSD.FromUUID(SessionID);
 
-            map["message"] = OSD.FromString(Message);
-
             return map;
         }
 
@@ -2875,7 +2822,6 @@ namespace OpenMetaverse.Messages.Linden
 
             OSDMap agent_updates = (OSDMap)map["agent_updates"];
             SessionID = map["session_id"].AsUUID();
-            Message = map["message"].AsString();
 
             List<AgentUpdatesBlock> updatesList = new List<AgentUpdatesBlock>();
 
