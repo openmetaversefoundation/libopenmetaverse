@@ -389,10 +389,29 @@ namespace OpenMetaverse
         protected ObjectManager(GridClient client, bool registerCallbacks)
         {
             Client = client;
+            Client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnected);
+            Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
 
             if (registerCallbacks)
             {
                 RegisterCallbacks();
+            }
+        }
+
+        void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        {
+            if (InterpolationTimer != null)
+            {
+                InterpolationTimer.Dispose();
+                InterpolationTimer = null;
+            }
+        }
+
+        void Network_OnConnected(object sender)
+        {
+            if (Settings.USE_INTERPOLATION_TIMER)
+            {
+                InterpolationTimer = new Timer(InterpolationTimer_Elapsed, null, Settings.INTERPOLATION_INTERVAL, Timeout.Infinite);
             }
         }
 
@@ -406,14 +425,6 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.ObjectPropertiesFamily, ObjectPropertiesFamilyHandler);
             Client.Network.RegisterCallback(PacketType.ObjectProperties, ObjectPropertiesHandler);
             Client.Network.RegisterCallback(PacketType.PayPriceReply, PayPriceReplyHandler);
-
-            // If the callbacks aren't registered there's not point in doing client-side path prediction,
-            // so we set it up here
-            if (Settings.USE_INTERPOLATION_TIMER)
-            {
-                InterpolationTimer = new Timer(InterpolationTimer_Elapsed, null, Settings.INTERPOLATION_INTERVAL,
-                    Timeout.Infinite);
-            }
         }
 
         #region Action Methods
@@ -2952,7 +2963,10 @@ namespace OpenMetaverse
 
             // Start the timer again. Use a minimum of a 50ms pause in between calculations
             int delay = Math.Max(50, Settings.INTERPOLATION_INTERVAL - elapsed);
-            InterpolationTimer.Change(delay, Timeout.Infinite);
+            if (InterpolationTimer != null)
+            {
+                InterpolationTimer.Change(delay, Timeout.Infinite);
+            }
         }
     }
 }

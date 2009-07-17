@@ -397,12 +397,18 @@ namespace OpenMetaverse
                 {
                     if (value > 0)
                     {
-                        updateTimer.Change(value, value);
+                        if (updateTimer != null)
+                        {
+                            updateTimer.Change(value, value);
+                        }
                         updateInterval = value;
                     }
                     else
                     {
-                        updateTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                        if (updateTimer != null)
+                        {
+                            updateTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                        }
                         updateInterval = 0;
                     }
                 }
@@ -467,10 +473,29 @@ namespace OpenMetaverse
             {
                 Client = client;
                 Camera = new AgentCamera();
-
+                client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnected);
+                client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
                 updateInterval = Settings.DEFAULT_AGENT_UPDATE_INTERVAL;
-                updateTimer = new Timer(new TimerCallback(UpdateTimer_Elapsed), null, Settings.DEFAULT_AGENT_UPDATE_INTERVAL,
-                    Settings.DEFAULT_AGENT_UPDATE_INTERVAL);
+            }
+
+            private void CleanupTimer()
+            {
+                if (updateTimer != null)
+                {
+                    updateTimer.Dispose();
+                    updateTimer = null;
+                }
+            }
+
+            private void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+            {
+                CleanupTimer();
+            }
+
+            private void Network_OnConnected(object sender)
+            {
+                CleanupTimer();
+                updateTimer = new Timer(new TimerCallback(UpdateTimer_Elapsed), null, updateInterval, updateInterval);
             }
 
             /// <summary>
