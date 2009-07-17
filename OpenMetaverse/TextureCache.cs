@@ -45,6 +45,7 @@ namespace OpenMetaverse
         private Thread cleanerThread;
         private System.Timers.Timer cleanerTimer;
         private double pruneInterval = 1000 * 60 * 5;
+        private bool autoPruneEnabled = true;
 
         /// <summary>
         /// Allows setting weather to periodicale prune the cache if it grows too big
@@ -54,16 +55,10 @@ namespace OpenMetaverse
         {
             set
             {
-                if (!Operational())
-                {
-                    return;
-                }
-                else
-                {
-                    cleanerTimer.Enabled = value;
-                }
+                autoPruneEnabled = value;
+                SetupTimer();
             }
-            get { return cleanerTimer.Enabled; }
+            get { return autoPruneEnabled; }
         }
 
         /// <summary>
@@ -71,12 +66,12 @@ namespace OpenMetaverse
         /// </summary>
         public double AutoPruneInterval
         {
-            get { return pruneInterval; }
             set
             {
                 pruneInterval = value;
-                cleanerTimer.Interval = pruneInterval;
+                SetupTimer();
             }
+            get { return pruneInterval; }
         }
 
         /// <summary>
@@ -86,15 +81,38 @@ namespace OpenMetaverse
         public TextureCache(GridClient client)
         {
             Client = client;
-            cleanerTimer = new System.Timers.Timer(pruneInterval);
-            cleanerTimer.Elapsed += new System.Timers.ElapsedEventHandler(cleanerTimer_Elapsed);
-            if (Operational())
+            Client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnected);
+            Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
+        }
+
+        void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        {
+            if (cleanerTimer != null)
             {
-                cleanerTimer.Enabled = true;
+                cleanerTimer.Dispose();
+                cleanerTimer = null;
             }
-            else
+        }
+
+        void Network_OnConnected(object sender)
+        {
+            SetupTimer();
+        }
+
+        /// <summary>
+        /// Only create timer when needed
+        /// </summary>
+        private void SetupTimer()
+        {
+            if (Operational() && autoPruneEnabled && Client.Network.Connected)
             {
-                cleanerTimer.Enabled = false;
+                if (cleanerTimer == null)
+                {
+                    cleanerTimer = new System.Timers.Timer(pruneInterval);
+                    cleanerTimer.Elapsed += new System.Timers.ElapsedEventHandler(cleanerTimer_Elapsed);
+                }
+                cleanerTimer.Interval = pruneInterval;
+                cleanerTimer.Enabled = true;
             }
         }
 
