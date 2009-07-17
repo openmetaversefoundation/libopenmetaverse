@@ -541,7 +541,11 @@ namespace OpenMetaverse
         public void RequestLogout()
         {
             // No need to run the disconnect timer any more
-            if (DisconnectTimer != null) DisconnectTimer.Dispose();
+            if (DisconnectTimer != null)
+            {
+                DisconnectTimer.Dispose();
+                DisconnectTimer = null;
+            }
 
             // This will catch a Logout when the client is not logged in
             if (CurrentSim == null || !connected)
@@ -642,7 +646,7 @@ namespace OpenMetaverse
             // Fire the disconnected callback
             if (OnDisconnected != null)
             {
-                try { OnDisconnected(DisconnectType.ClientInitiated, String.Empty); }
+                try { OnDisconnected(type, type.ToString()); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
@@ -777,9 +781,11 @@ namespace OpenMetaverse
         {
             if (!connected || CurrentSim == null)
             {
-                Timer timer = DisconnectTimer;
-                if (timer != null)
-                    timer.Dispose();
+                if (DisconnectTimer != null)
+                {
+                    DisconnectTimer.Dispose();
+                    DisconnectTimer = null;
+                }
                 connected = false;
             }
             else if (CurrentSim.DisconnectCandidate)
@@ -788,7 +794,12 @@ namespace OpenMetaverse
                 Logger.Log("Network timeout for the current simulator (" +
                     CurrentSim.ToString() + "), logging out", Helpers.LogLevel.Warning, Client);
 
-                if (DisconnectTimer != null) DisconnectTimer.Dispose();
+                if (DisconnectTimer != null)
+                {
+                    DisconnectTimer.Dispose();
+                    DisconnectTimer = null;
+                }
+
                 connected = false;
 
                 // Shutdown the network layer
