@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.IO;
 using System.Drawing;
+using System.Globalization;
 using OpenMetaverse;
 using OpenMetaverse.Http;
 using OpenMetaverse.Imaging;
@@ -334,14 +335,14 @@ namespace importprimscript
                                     if (words.Length >= 9)
                                     {
                                         float x, y, z;
-                                        x = Single.Parse(words[2]);
-                                        y = Single.Parse(words[3]);
-                                        z = Single.Parse(words[4]);
+                                        x = Single.Parse(words[2], CultureInfo.InvariantCulture);
+                                        y = Single.Parse(words[3], CultureInfo.InvariantCulture);
+                                        z = Single.Parse(words[4], CultureInfo.InvariantCulture);
                                         current.Scale = new Vector3(x, y, z);
 
-                                        x = Single.Parse(words[6]);
-                                        y = Single.Parse(words[7]);
-                                        z = Single.Parse(words[8]);
+                                        x = Single.Parse(words[6], CultureInfo.InvariantCulture);
+                                        y = Single.Parse(words[7], CultureInfo.InvariantCulture);
+                                        z = Single.Parse(words[8], CultureInfo.InvariantCulture);
                                         current.Offset = new Vector3(x, y, z);
                                     }
                                     break;
