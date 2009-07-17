@@ -56,7 +56,15 @@ namespace OpenMetaverse
             set
             {
                 autoPruneEnabled = value;
-                SetupTimer();
+
+                if (autoPruneEnabled)
+                {
+                    SetupTimer();
+                }
+                else
+                {
+                    DestroyTimer();
+                }
             }
             get { return autoPruneEnabled; }
         }
@@ -87,16 +95,24 @@ namespace OpenMetaverse
 
         void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
         {
-            if (cleanerTimer != null)
-            {
-                cleanerTimer.Dispose();
-                cleanerTimer = null;
-            }
+            DestroyTimer();
         }
 
         void Network_OnConnected(object sender)
         {
             SetupTimer();
+        }
+
+        /// <summary>
+        /// Disposes cleanup timer
+        /// </summary>
+        private void DestroyTimer()
+        {
+            if (cleanerTimer != null)
+            {
+                cleanerTimer.Dispose();
+                cleanerTimer = null;
+            }
         }
 
         /// <summary>
