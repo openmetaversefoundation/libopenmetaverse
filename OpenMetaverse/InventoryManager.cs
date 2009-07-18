@@ -917,12 +917,12 @@ namespace OpenMetaverse
         public delegate void TaskInventoryReplyCallback(UUID itemID, short serial, string assetFilename);
 
         /// <summary>
-        /// Reply received when uploading an invetnory asset
+        /// Reply received when uploading an inventory asset
         /// </summary>
         /// <param name="success">Has upload been successful</param>
         /// <param name="status">Error message if upload failed</param>
         /// <param name="itemID">Inventory asset UUID</param>
-        /// <param name="assetID">New gesture asset UUID</param>
+        /// <param name="assetID">New asset UUID</param>
         public delegate void InventoryUploadedAssetCallback(bool success, string status, UUID itemID, UUID assetID);
 
         /// <summary>
@@ -1882,8 +1882,41 @@ namespace OpenMetaverse
             return id;
         }
 
+        /// <summary>
+        /// Create an inventory item and upload asset data
+        /// </summary>
+        /// <param name="data">Asset data</param>
+        /// <param name="name">Inventory item name</param>
+        /// <param name="description">Inventory item description</param>
+        /// <param name="assetType">Asset type</param>
+        /// <param name="invType">Inventory type</param>
+        /// <param name="folderID">Put newly created inventory in this folder</param>
+        /// <param name="callback">Delegate that will receive feedback on success or failure</param>
         public void RequestCreateItemFromAsset(byte[] data, string name, string description, AssetType assetType,
             InventoryType invType, UUID folderID, ItemCreatedFromAssetCallback callback)
+        {
+            Permissions permissions = new Permissions();
+            permissions.EveryoneMask = PermissionMask.None;
+            permissions.GroupMask = PermissionMask.None;
+            permissions.NextOwnerMask = PermissionMask.All;
+
+            RequestCreateItemFromAsset(data, name, description, assetType, invType, folderID, permissions, callback);
+        }
+
+        /// <summary>
+        /// Create an inventory item and upload asset data
+        /// </summary>
+        /// <param name="data">Asset data</param>
+        /// <param name="name">Inventory item name</param>
+        /// <param name="description">Inventory item description</param>
+        /// <param name="assetType">Asset type</param>
+        /// <param name="invType">Inventory type</param>
+        /// <param name="folderID">Put newly created inventory in this folder</param>
+        /// <param name="permissions">Permission of the newly created item 
+        /// (EveryoneMask, GroupMask, and NextOwnerMask of Permissions struct are supported)</param>
+        /// <param name="callback">Delegate that will receive feedback on success or failure</param>
+        public void RequestCreateItemFromAsset(byte[] data, string name, string description, AssetType assetType,
+            InventoryType invType, UUID folderID, Permissions permissions, ItemCreatedFromAssetCallback callback)
         {
             if (_Client.Network.CurrentSim == null || _Client.Network.CurrentSim.Caps == null)
                 throw new Exception("NewFileAgentInventory capability is not currently available");
@@ -1898,11 +1931,15 @@ namespace OpenMetaverse
                 query.Add("inventory_type", OSD.FromString(Utils.InventoryTypeToString(invType)));
                 query.Add("name", OSD.FromString(name));
                 query.Add("description", OSD.FromString(description));
+                query.Add("everyone_mask", OSD.FromInteger((int)permissions.EveryoneMask));
+                query.Add("group_mask", OSD.FromInteger((int)permissions.GroupMask));
+                query.Add("next_owner_mask", OSD.FromInteger((int)permissions.NextOwnerMask));
+                query.Add("expected_upload_cost", OSD.FromInteger(_Client.Settings.UPLOAD_COST));
 
                 // Make the request
                 CapsClient request = new CapsClient(url);
                 request.OnComplete += CreateItemFromAssetResponse;
-                request.UserData = new object[] { callback, data, _Client.Settings.CAPS_TIMEOUT };
+                request.UserData = new object[] { callback, data, _Client.Settings.CAPS_TIMEOUT, query };
 
                 request.BeginGetResponse(query, OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);
             }
@@ -3184,7 +3221,8 @@ namespace OpenMetaverse
             ItemCreatedFromAssetCallback callback = (ItemCreatedFromAssetCallback)args[0];
             byte[] itemData = (byte[])args[1];
             int millisecondsTimeout = (int)args[2];
-
+            OSDMap request = (OSDMap)args[3];
+            
             if (result == null)
             {
                 try { callback(false, error.Message, UUID.Zero, UUID.Zero); }
@@ -3206,7 +3244,7 @@ namespace OpenMetaverse
                 // the problem of HttpRequestState not knowing anything about simulators
                 CapsClient upload = new CapsClient(new Uri(uploadURL));
                 upload.OnComplete += CreateItemFromAssetResponse;
-                upload.UserData = new object[] { callback, itemData, millisecondsTimeout };
+                upload.UserData = new object[] { callback, itemData, millisecondsTimeout, request };
                 upload.BeginGetResponse(itemData, "application/octet-stream", millisecondsTimeout);
             }
             else if (status == "complete")
@@ -3215,6 +3253,36 @@ namespace OpenMetaverse
 
                 if (contents.ContainsKey("new_inventory_item") && contents.ContainsKey("new_asset"))
                 {
+                    // Update the local store
+                    InventoryItem item = CreateInventoryItem(Utils.StringToInventoryType(request["inventory_type"].AsString()), contents["new_inventory_item"].AsUUID());
+                    item.Name = request["name"].AsString();
+                    item.Description = request["description"].AsString();
+                    item.OwnerID = _Client.Self.AgentID;
+                    item.CreatorID = _Client.Self.AgentID;
+                    item.AssetUUID = contents["new_asset"].AsUUID();
+                    item.AssetType = Utils.StringToAssetType(request["asset_type"].AsString());
+                    item.ParentUUID = request["folder_id"].AsUUID();
+
+                    try
+                    {
+                        item.CreationDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time"));
+                    }
+                    catch (Exception) { item.CreationDate = DateTime.Now; }
+
+                    if (contents.ContainsKey("new_next_owner_mask"))
+                        item.Permissions.NextOwnerMask = (PermissionMask)contents["new_next_owner_mask"].AsInteger();
+                    if (contents.ContainsKey("new_everyone_mask"))
+                        item.Permissions.EveryoneMask = (PermissionMask)contents["new_everyone_mask"].AsInteger();
+                    if (contents.ContainsKey("new_base_mask"))
+                        item.Permissions.BaseMask = (PermissionMask)contents["new_base_mask"].AsInteger();
+                    if (contents.ContainsKey("new_group_mask"))
+                        item.Permissions.GroupMask = (PermissionMask)contents["new_group_mask"].AsInteger();
+                    if (contents.ContainsKey("new_owner_mask"))
+                        item.Permissions.OwnerMask = (PermissionMask)contents["new_owner_mask"].AsInteger();
+
+                    try { _Store[item.UUID] = item; }
+                    catch (InventoryException ie) { Logger.Log(ie.Message, Helpers.LogLevel.Warning, _Client, ie); }
+
                     try { callback(true, String.Empty, contents["new_inventory_item"].AsUUID(), contents["new_asset"].AsUUID()); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                 }
