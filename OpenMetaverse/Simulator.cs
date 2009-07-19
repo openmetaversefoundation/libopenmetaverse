@@ -1075,7 +1075,7 @@ namespace OpenMetaverse
 
             // Start the ACK handling functions again after NETWORK_TICK_INTERVAL milliseconds
             try { AckTimer.Change(Settings.NETWORK_TICK_INTERVAL, Timeout.Infinite); }
-            catch (ObjectDisposedException) { }
+            catch (Exception) { }
         }
 
         private void StatsTimer_Elapsed(object obj)
