@@ -338,8 +338,12 @@ namespace GridImageUpload
 
                 string name = System.IO.Path.GetFileNameWithoutExtension(FileName);
 
+                Permissions perms = new Permissions();
+                perms.EveryoneMask = PermissionMask.All;
+                perms.NextOwnerMask = PermissionMask.All;
+
                 Client.Inventory.RequestCreateItemFromAsset(UploadData, name, "Uploaded with SL Image Upload", AssetType.Texture,
-                    InventoryType.Texture, Client.Inventory.FindFolderForType(AssetType.Texture),
+                    InventoryType.Texture, Client.Inventory.FindFolderForType(AssetType.Texture), perms,
                     delegate(bool success, string status, UUID itemID, UUID assetID)
                     {
                         if (this.InvokeRequired)
@@ -353,37 +357,10 @@ namespace GridImageUpload
                             UpdateAssetID();
 
                             // Fix the permissions on the new upload since they are fscked by default
-                            InventoryItem item = Client.Inventory.FetchItem(itemID, Client.Self.AgentID, 1000 * 15);
+                            InventoryItem item = (InventoryItem)Client.Inventory.Store[itemID];
 
                             Transferred = UploadData.Length;
                             BeginInvoke((MethodInvoker)delegate() { SetProgress(); });
-
-                            if (item != null)
-                            {
-                                item.Permissions.EveryoneMask = PermissionMask.All;
-                                item.Permissions.NextOwnerMask = PermissionMask.All;
-                                Client.Inventory.RequestUpdateItem(item);
-
-                                Logger.Log("Created inventory item " + itemID.ToString(), Helpers.LogLevel.Info, Client);
-                                MessageBox.Show("Created inventory item " + itemID.ToString());
-
-                                // FIXME: We should be watching the callback for RequestUpdateItem instead of a dumb sleep
-                                System.Threading.Thread.Sleep(2000);
-
-                                if (SendToID != UUID.Zero)
-                                {
-                                    Logger.Log("Sending item to " + SendToID.ToString(), Helpers.LogLevel.Info, Client);
-                                    Client.Inventory.GiveItem(itemID, name, AssetType.Texture, SendToID, true);
-                                    MessageBox.Show("Sent item to " + SendToID.ToString());
-                                }
-                            }
-                            else
-                            {
-                                Logger.DebugLog("Created inventory item " + itemID.ToString() + " but failed to fetch it," +
-                                    " cannot update permissions or send to another avatar", Client);
-                                MessageBox.Show("Created inventory item " + itemID.ToString() + " but failed to fetch it," +
-                                    " cannot update permissions or send to another avatar");
-                            }
                         }
                         else
                         {
