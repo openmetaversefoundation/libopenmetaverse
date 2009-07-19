@@ -647,20 +647,12 @@ namespace OpenMetaverse
                     AgentTextures[i] = UUID.Zero;
             }
 
-            // Register an asset download callback to get wearable data
-            AssetManager.AssetReceivedCallback assetCallback = new AssetManager.AssetReceivedCallback(Assets_OnAssetReceived);
-            
             AssetManager.AssetUploadedCallback uploadCallback = new AssetManager.AssetUploadedCallback(Assets_OnAssetUploaded);
-            Assets.OnAssetReceived += assetCallback;
-            
             Assets.OnAssetUploaded += uploadCallback;
 
             // Download assets for what we are wearing and fill in AgentTextures
             DownloadWearableAssets();
             WearablesDownloadedEvent.WaitOne();
-
-            // Unregister the asset download callback
-            Assets.OnAssetReceived -= assetCallback;
 
             // Check if anything needs to be rebaked
             if (bake) RequestCachedBakes();
@@ -1099,7 +1091,7 @@ namespace OpenMetaverse
             if (AssetDownloads.Count > 0)
             {
                 PendingAssetDownload pad = AssetDownloads.Dequeue();
-                Assets.RequestAsset(pad.Id, pad.Type, true);
+                Assets.RequestAsset(pad.Id, pad.Type, true, Assets_OnAssetReceived);
             }
         }
 
@@ -1428,7 +1420,7 @@ namespace OpenMetaverse
             {
                 // Dowload the next wearable in line
                 PendingAssetDownload pad = AssetDownloads.Dequeue();
-                Assets.RequestAsset(pad.Id, pad.Type, true);
+                Assets.RequestAsset(pad.Id, pad.Type, true, Assets_OnAssetReceived);
             }
             else
             {

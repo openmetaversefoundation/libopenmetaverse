@@ -281,11 +281,11 @@ namespace OpenMetaverse
 
             if (callback != null)
             {
-                if (_Client.Assets.Cache.HasImage(textureID))
+                if (_Client.Assets.Cache.HasAsset(textureID))
                 {
                     ImageDownload image = new ImageDownload();
                     image.ID = textureID;
-                    image.AssetData = _Client.Assets.Cache.GetCachedImageBytes(textureID);
+                    image.AssetData = _Client.Assets.Cache.GetCachedAssetBytes(textureID);
                     image.Size = image.AssetData.Length;
                     image.Transferred = image.AssetData.Length;
                     image.ImageType = imageType;
@@ -708,7 +708,7 @@ namespace OpenMetaverse
                         task.Transfer.Success = true;
                         _Transfers.Remove(task.Transfer.ID);
                         resetEvents[task.RequestSlot].Set(); // free up request slot
-                        _Client.Assets.Cache.SaveImageToCache(task.RequestID, task.Transfer.AssetData);
+                        _Client.Assets.Cache.SaveAssetToCache(task.RequestID, task.Transfer.AssetData);
                         foreach (TextureDownloadCallback callback in task.Callbacks)
                             callback(TextureRequestState.Finished, new AssetTexture(task.RequestID, task.Transfer.AssetData));
 
@@ -790,7 +790,7 @@ namespace OpenMetaverse
                         _Transfers.Remove(task.RequestID);
                         resetEvents[task.RequestSlot].Set();
 
-                        _Client.Assets.Cache.SaveImageToCache(task.RequestID, task.Transfer.AssetData);
+                        _Client.Assets.Cache.SaveAssetToCache(task.RequestID, task.Transfer.AssetData);
 
                         foreach (TextureDownloadCallback callback in task.Callbacks)
                             callback(TextureRequestState.Finished, new AssetTexture(task.RequestID, task.Transfer.AssetData));

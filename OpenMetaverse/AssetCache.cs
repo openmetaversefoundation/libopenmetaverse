@@ -32,14 +32,14 @@ using System.Threading;
 namespace OpenMetaverse
 {
     /// <summary>
-    /// Class that handles the local image cache
+    /// Class that handles the local asset cache
     /// </summary>
-    public class TextureCache
+    public class AssetCache
     {
-        // User can plug in a routine to compute the texture cache location
-        public delegate string ComputeTextureCacheFilenameDelegate(string cacheDir, UUID textureID);
+        // User can plug in a routine to compute the asset cache location
+        public delegate string ComputeAssetCacheFilenameDelegate(string cacheDir, UUID assetID);
 
-        public ComputeTextureCacheFilenameDelegate ComputeTextureCacheFilename = null;
+        public ComputeAssetCacheFilenameDelegate ComputeAssetCacheFilename = null;
 
         private GridClient Client;
         private Thread cleanerThread;
@@ -86,7 +86,7 @@ namespace OpenMetaverse
         /// Default constructor
         /// </summary>
         /// <param name="client">A reference to the GridClient object</param>
-        public TextureCache(GridClient client)
+        public AssetCache(GridClient client)
         {
             Client = client;
             Client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnected);
@@ -133,11 +133,11 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Return bytes read from the local image cache, null if it does not exist
+        /// Return bytes read from the local asset cache, null if it does not exist
         /// </summary>
-        /// <param name="imageID">UUID of the image we want to get</param>
-        /// <returns>Raw bytes of the image, or null on failure</returns>
-        public byte[] GetCachedImageBytes(UUID imageID)
+        /// <param name="assetID">UUID of the asset we want to get</param>
+        /// <returns>Raw bytes of the asset, or null on failure</returns>
+        public byte[] GetCachedAssetBytes(UUID assetID)
         {
             if (!Operational())
             {
@@ -145,13 +145,13 @@ namespace OpenMetaverse
             }
             try
             {
-                Logger.DebugLog("Reading " + FileName(imageID) + " from texture cache.");
-                byte[] data = File.ReadAllBytes(FileName(imageID));
+                Logger.DebugLog("Reading " + FileName(assetID) + " from asset cache.");
+                byte[] data = File.ReadAllBytes(FileName(assetID));
                 return data;
             }
             catch (Exception ex)
             {
-                Logger.Log("Failed reading image from cache (" + ex.Message + ")", Helpers.LogLevel.Warning, Client);
+                Logger.Log("Failed reading asset from cache (" + ex.Message + ")", Helpers.LogLevel.Warning, Client);
                 return null;
             }
         }
@@ -167,7 +167,7 @@ namespace OpenMetaverse
             if (!Operational())
                 return null;
 
-            byte[] imageData = GetCachedImageBytes(imageID);
+            byte[] imageData = GetCachedAssetBytes(imageID);
             if (imageData == null)
                 return null;
             ImageDownload transfer = new ImageDownload();
@@ -182,25 +182,25 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Constructs a file name of the cached image
+        /// Constructs a file name of the cached asset
         /// </summary>
-        /// <param name="imageID">UUID of the image</param>
-        /// <returns>String with the file name of the cahced image</returns>
-        private string FileName(UUID imageID)
+        /// <param name="assetID">UUID of the asset</param>
+        /// <returns>String with the file name of the cahced asset</returns>
+        private string FileName(UUID assetID)
         {
-            if (ComputeTextureCacheFilename != null) {
-                return ComputeTextureCacheFilename(Client.Settings.TEXTURE_CACHE_DIR, imageID);
+            if (ComputeAssetCacheFilename != null) {
+                return ComputeAssetCacheFilename(Client.Settings.TEXTURE_CACHE_DIR, assetID);
             }
-            return Client.Settings.TEXTURE_CACHE_DIR + Path.DirectorySeparatorChar + imageID.ToString();
+            return Client.Settings.TEXTURE_CACHE_DIR + Path.DirectorySeparatorChar + assetID.ToString();
         }
 
         /// <summary>
-        /// Saves an image to the local cache
+        /// Saves an asset to the local cache
         /// </summary>
-        /// <param name="imageID">UUID of the image</param>
-        /// <param name="imageData">Raw bytes the image consists of</param>
+        /// <param name="assetID">UUID of the asset</param>
+        /// <param name="assetData">Raw bytes the asset consists of</param>
         /// <returns>Weather the operation was successfull</returns>
-        public bool SaveImageToCache(UUID imageID, byte[] imageData)
+        public bool SaveAssetToCache(UUID assetID, byte[] assetData)
         {
             if (!Operational())
             {
@@ -209,18 +209,18 @@ namespace OpenMetaverse
 
             try
             {
-                Logger.DebugLog("Saving " + FileName(imageID) + " to texture cache.", Client);
+                Logger.DebugLog("Saving " + FileName(assetID) + " to asset cache.", Client);
 
                 if (!Directory.Exists(Client.Settings.TEXTURE_CACHE_DIR))
                 {
                     Directory.CreateDirectory(Client.Settings.TEXTURE_CACHE_DIR);
                 }
 
-                File.WriteAllBytes(FileName(imageID), imageData);
+                File.WriteAllBytes(FileName(assetID), assetData);
             }
             catch (Exception ex)
             {
-                Logger.Log("Failed saving image to cache (" + ex.Message + ")", Helpers.LogLevel.Warning, Client);
+                Logger.Log("Failed saving asset to cache (" + ex.Message + ")", Helpers.LogLevel.Warning, Client);
                 return false;
             }
 
@@ -230,16 +230,16 @@ namespace OpenMetaverse
         /// <summary>
         /// Get the file name of the asset stored with gived UUID
         /// </summary>
-        /// <param name="imageID">UUID of the image</param>
+        /// <param name="assetID">UUID of the asset</param>
         /// <returns>Null if we don't have that UUID cached on disk, file name if found in the cache folder</returns>
-        public string ImageFileName(UUID imageID)
+        public string AssetFileName(UUID assetID)
         {
             if (!Operational())
             {
                 return null;
             }
 
-            string fileName = FileName(imageID);
+            string fileName = FileName(assetID);
 
             if (File.Exists(fileName))
                 return fileName;
@@ -248,16 +248,16 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Checks if the image exists in the local cache
+        /// Checks if the asset exists in the local cache
         /// </summary>
-        /// <param name="imageID">UUID of the image</param>
-        /// <returns>True is the image is stored in the cache, otherwise false</returns>
-        public bool HasImage(UUID imageID)
+        /// <param name="assetID">UUID of the asset</param>
+        /// <returns>True is the asset is stored in the cache, otherwise false</returns>
+        public bool HasAsset(UUID assetID)
         {
             if (!Operational())
                 return false;
             else
-                return File.Exists(FileName(imageID));
+                return File.Exists(FileName(assetID));
         }
 
         /// <summary>

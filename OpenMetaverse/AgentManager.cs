@@ -2168,20 +2168,6 @@ namespace OpenMetaverse
                 {
                     // First fetch the guesture
                     AssetGesture gesture = null;
-                    AutoResetEvent gotAsset = new AutoResetEvent(false);
-
-                    AssetManager.AssetReceivedCallback callback =
-                        delegate(AssetDownload transfer, Asset asset)
-                        {
-                            if (transfer.AssetID != gestureID) return;
-
-                            if (transfer.Success)
-                            {
-                                gesture = (AssetGesture)asset;
-                            }
-
-                            gotAsset.Set();
-                        };
 
                     if (gestureCache.ContainsKey(gestureID))
                     {
@@ -2189,10 +2175,21 @@ namespace OpenMetaverse
                     }
                     else
                     {
-                        Client.Assets.OnAssetReceived += callback;
-                        Client.Assets.RequestAsset(gestureID, AssetType.Gesture, true);
+                        AutoResetEvent gotAsset = new AutoResetEvent(false);
+
+                        Client.Assets.RequestAsset(gestureID, AssetType.Gesture, true,
+                                                    delegate(AssetDownload transfer, Asset asset)
+                                                    {
+                                                        if (transfer.Success)
+                                                        {
+                                                            gesture = (AssetGesture)asset;
+                                                        }
+
+                                                        gotAsset.Set();
+                                                    }
+                        );
+
                         gotAsset.WaitOne(30 * 1000, false);
-                        Client.Assets.OnAssetReceived -= callback;
 
                         if (gesture != null && gesture.Decode())
                         {

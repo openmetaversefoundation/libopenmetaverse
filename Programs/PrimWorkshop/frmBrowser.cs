@@ -356,7 +356,7 @@ namespace PrimWorkshop
                 // Copy all of relevant textures from the cache to the temp directory
                 foreach (UUID texture in textureList)
                 {
-                    string tempFileName = Client.Assets.Cache.ImageFileName(texture);
+                    string tempFileName = Client.Assets.Cache.AssetFileName(texture);
 
                     if (!String.IsNullOrEmpty(tempFileName))
                     {

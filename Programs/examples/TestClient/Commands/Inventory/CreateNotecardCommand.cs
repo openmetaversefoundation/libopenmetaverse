@@ -172,26 +172,18 @@ namespace OpenMetaverse.TestClient
             byte[] notecardData = null;
             string error = "Timeout";
 
-            AssetManager.AssetReceivedCallback assetCallback =
-                delegate(AssetDownload transfer, Asset asset)
-                {
-                    if (transfer.ID == transferID)
-                    {
-                        if (transfer.Success)
-                            notecardData = transfer.AssetData;
-                        else
-                            error = transfer.Status.ToString();
-                        assetDownloadEvent.Set();
-                    }
-                };
-
-            Client.Assets.OnAssetReceived += assetCallback;
-
-            transferID = Client.Assets.RequestInventoryAsset(assetID, itemID, UUID.Zero, Client.Self.AgentID, AssetType.Notecard, true);
+            Client.Assets.RequestInventoryAsset(assetID, itemID, UUID.Zero, Client.Self.AgentID, AssetType.Notecard, true,
+                                delegate(AssetDownload transfer, Asset asset)
+                                {
+                                    if (transfer.Success)
+                                        notecardData = transfer.AssetData;
+                                    else
+                                        error = transfer.Status.ToString();
+                                    assetDownloadEvent.Set();
+                                }
+            );
 
             assetDownloadEvent.WaitOne(NOTECARD_FETCH_TIMEOUT, false);
-
-            Client.Assets.OnAssetReceived -= assetCallback;
 
             if (notecardData != null)
                 return Encoding.UTF8.GetString(notecardData);

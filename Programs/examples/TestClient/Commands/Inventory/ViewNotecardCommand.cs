@@ -42,35 +42,29 @@ namespace OpenMetaverse.TestClient
 
             System.Text.StringBuilder result = new System.Text.StringBuilder();
 
-
-            // define a delegate to handle the reply
-            AssetManager.AssetReceivedCallback del = delegate(AssetDownload transfer, Asset asset)
-            {
-                if (transfer.Success)
-                {
-                    result.AppendFormat("Raw Notecard Data: " + System.Environment.NewLine + " {0}", Utils.BytesToString(asset.AssetData));
-                    waitEvent.Set();
-                }
-            };
-
             // verify asset is loaded in store
             if (Client.Inventory.Store.Contains(note))
             {
                 // retrieve asset from store
                 InventoryItem ii = (InventoryItem)Client.Inventory.Store[note];
-                // subscribe to reply event
-                Client.Assets.OnAssetReceived += del;
 
                 // make request for asset
-                Client.Assets.RequestInventoryAsset(ii, true);
+                Client.Assets.RequestInventoryAsset(ii, true,
+                    delegate(AssetDownload transfer, Asset asset)
+                    {
+                        if (transfer.Success)
+                        {
+                            result.AppendFormat("Raw Notecard Data: " + System.Environment.NewLine + " {0}", Utils.BytesToString(asset.AssetData));
+                            waitEvent.Set();
+                        }
+                    }
+                );
 
                 // wait for reply or timeout
                 if (!waitEvent.WaitOne(10000, false))
                 {
                     result.Append("Timeout waiting for notecard to download.");
                 }
-                // unsubscribe from reply event
-                Client.Assets.OnAssetReceived -= del;
             }
             else
             {
