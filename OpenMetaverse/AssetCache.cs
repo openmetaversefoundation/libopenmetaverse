@@ -189,9 +189,9 @@ namespace OpenMetaverse
         private string FileName(UUID assetID)
         {
             if (ComputeAssetCacheFilename != null) {
-                return ComputeAssetCacheFilename(Client.Settings.TEXTURE_CACHE_DIR, assetID);
+                return ComputeAssetCacheFilename(Client.Settings.ASSET_CACHE_DIR, assetID);
             }
-            return Client.Settings.TEXTURE_CACHE_DIR + Path.DirectorySeparatorChar + assetID.ToString();
+            return Client.Settings.ASSET_CACHE_DIR + Path.DirectorySeparatorChar + assetID.ToString();
         }
 
         /// <summary>
@@ -211,9 +211,9 @@ namespace OpenMetaverse
             {
                 Logger.DebugLog("Saving " + FileName(assetID) + " to asset cache.", Client);
 
-                if (!Directory.Exists(Client.Settings.TEXTURE_CACHE_DIR))
+                if (!Directory.Exists(Client.Settings.ASSET_CACHE_DIR))
                 {
-                    Directory.CreateDirectory(Client.Settings.TEXTURE_CACHE_DIR);
+                    Directory.CreateDirectory(Client.Settings.ASSET_CACHE_DIR);
                 }
 
                 File.WriteAllBytes(FileName(assetID), assetData);
@@ -265,7 +265,7 @@ namespace OpenMetaverse
         /// </summary>
         public void Clear()
         {
-            string cacheDir = Client.Settings.TEXTURE_CACHE_DIR;
+            string cacheDir = Client.Settings.ASSET_CACHE_DIR;
             if (!Directory.Exists(cacheDir))
             {
                 return;
@@ -290,7 +290,7 @@ namespace OpenMetaverse
         /// </summary>
         public void Prune()
         {
-            string cacheDir = Client.Settings.TEXTURE_CACHE_DIR;
+            string cacheDir = Client.Settings.ASSET_CACHE_DIR;
             if (!Directory.Exists(cacheDir))
             {
                 return;
@@ -301,10 +301,10 @@ namespace OpenMetaverse
 
             long size = GetFileSize(files);
 
-            if (size > Client.Settings.TEXTURE_CACHE_MAX_SIZE)
+            if (size > Client.Settings.ASSET_CACHE_MAX_SIZE)
             {
                 Array.Sort(files, new SortFilesByAccesTimeHelper());
-                long targetSize = (long)(Client.Settings.TEXTURE_CACHE_MAX_SIZE * 0.9);
+                long targetSize = (long)(Client.Settings.ASSET_CACHE_MAX_SIZE * 0.9);
                 int num = 0;
                 foreach (FileInfo file in files)
                 {
@@ -362,7 +362,7 @@ namespace OpenMetaverse
         /// </summary>
         private bool Operational()
         {
-            return Client.Settings.USE_TEXTURE_CACHE;
+            return Client.Settings.USE_ASSET_CACHE;
         }
 
         /// <summary>

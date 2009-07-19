@@ -48,7 +48,7 @@ namespace OpenMetaverse.TestClient
             Settings.ALWAYS_DECODE_OBJECTS = true;
             Settings.ALWAYS_REQUEST_OBJECTS = true;
             Settings.SEND_AGENT_UPDATES = true;
-            Settings.USE_TEXTURE_CACHE = true;
+            Settings.USE_ASSET_CACHE = true;
 
             Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
             Network.OnLogin += new NetworkManager.LoginCallback(LoginHandler);

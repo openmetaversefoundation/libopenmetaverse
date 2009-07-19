@@ -61,7 +61,7 @@ namespace Dashboard
             //initialize client object
             Client = new GridClient();
             Client.Settings.USE_LLSD_LOGIN = true;
-            Client.Settings.USE_TEXTURE_CACHE = true;
+            Client.Settings.USE_ASSET_CACHE = true;
 
             Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
             Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
