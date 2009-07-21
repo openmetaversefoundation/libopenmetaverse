@@ -233,7 +233,7 @@ namespace OpenMetaverse
         /// <summary>A public reference to the client that this Simulator object
         /// is attached to</summary>
         public GridClient Client;
-        /// <summary></summary>
+        /// <summary>A Unique Cache identifier for this simulator</summary>
         public UUID ID = UUID.Zero;
         /// <summary>The capabilities for this simulator</summary>
         public Caps Caps = null;
@@ -284,7 +284,7 @@ namespace OpenMetaverse
         public UUID TerrainDetail2 = UUID.Zero;
         /// <summary></summary>
         public UUID TerrainDetail3 = UUID.Zero;
-        /// <summary></summary>
+        /// <summary>true if your agent has Estate Manager rights on this region</summary>
         public bool IsEstateManager;
         /// <summary></summary>
         public RegionFlags Flags;

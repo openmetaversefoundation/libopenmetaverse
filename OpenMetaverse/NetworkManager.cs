@@ -200,6 +200,32 @@ namespace OpenMetaverse
         public event ConnectedCallback OnConnected;
         /// <summary>
         /// Event raised when a logout is confirmed by the simulator
+        /// <example>
+        /// request a logout, print a message when the simulator confirms
+        /// <code>
+        /// // subscribe to the logout reply event
+        /// Client.Network.OnLogoutReply += Network_OnLogoutReply;
+        /// 
+        /// // tell the simulator we want to logout
+        /// Client.Network.Logout();
+        /// 
+        /// // event handler for the logout reply event
+        /// void Network_OnLogoutReply(List<UUID> inventoryItems)
+        ///{
+        ///    Console.WriteLine("Simulator confirmed logout");
+        ///}
+        /// </code>
+        /// Same as above but using inline delegates
+        /// <code>
+        /// Client.Network.OnLogoutReply += delegate(List<UUID> inventoryItems)
+        /// {
+        ///    Console.WriteLine("Simulator confirmed logout");
+        /// };
+        /// 
+        ///  tell the simulator we want to logout
+        /// Client.Network.Logout();
+        /// </code>
+        /// </example>
         /// </summary>
         public event LogoutCallback OnLogoutReply;
         /// <summary>

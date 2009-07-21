@@ -2168,20 +2168,32 @@ namespace OpenMetaverse.Messages.Linden
 
     #region Grid/Maps
 
+    /// <summary>
+    /// A message sent from the simulator to the viewer which contains an array of map images and their grid coordinates
+    /// </summary>
     public class MapLayerMessage : IMessage
     {
-        // AgentData -> Flags
+        /// <summary></summary>
         public int Flags;
 
+        /// <summary>
+        /// A n object containing map location details
+        /// </summary>
         public class LayerData
         {
+            /// <summary>The Asset ID of the regions tile overlay</summary>
             public UUID ImageID;
+            /// <summary>The grid location of the southern border of the map tile</summary>
             public int Bottom;
+            /// <summary>The grid location of the western border of the map tile</summary>
             public int Left;
+            /// <summary>The grid location of the eastern border of the map tile</summary>
             public int Right;
+            /// <summary>The grid location of the northern border of the map tile</summary>
             public int Top;
         }
 
+        /// <summary>An array containing LayerData items</summary>
         public LayerData[] LayerDataBlocks;
 
         /// <summary>
