@@ -975,6 +975,7 @@ namespace OpenMetaverse.Messages.Linden
     }
 
     /// <summary>Base class used for the RemoteParcelRequest message</summary>
+    [Serializable]
     public abstract class RemoteParcelRequestBlock
     {
         public abstract OSDMap Serialize();

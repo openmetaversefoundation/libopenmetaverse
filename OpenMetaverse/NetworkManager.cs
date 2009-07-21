@@ -198,8 +198,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <remarks>Uses the ConnectedCallback delegate.</remarks>
         public event ConnectedCallback OnConnected;
-        /// <summary>
-        /// Event raised when a logout is confirmed by the simulator
+        /// <summary>Event raised when a logout is confirmed by the simulator</summary>
         /// <example>
         /// request a logout, print a message when the simulator confirms
         /// <code>
@@ -226,7 +225,6 @@ namespace OpenMetaverse
         /// Client.Network.Logout();
         /// </code>
         /// </example>
-        /// </summary>
         public event LogoutCallback OnLogoutReply;
         /// <summary>
         /// Event raised when a before a connection to a simulator is 
