@@ -1725,6 +1725,12 @@ namespace OpenMetaverse
                             continue;
                         }
 
+                        // Automatically request ObjectProperties for prim if it was rezzed selected.
+                        if ((prim.Flags & PrimFlags.CreateSelected) != 0)
+                        {
+                            SelectObject(simulator, prim.LocalID);
+                        }
+
                         prim.NameValues = nameValues;
                         prim.LocalID = block.ID;
                         prim.ID = block.FullID;
