@@ -41,27 +41,27 @@ namespace OpenMetaverse.GUI
     {
         private GridClient _Client;
         private ListColumnSorter _ColumnSorter = new ListColumnSorter();
-        private ContextMenu _ContextMenu;
-        private UUID _SelectedAvatarID;
+        private TrackedAvatar _SelectedAvatar;
 
         private DoubleDictionary<uint, UUID, TrackedAvatar> _TrackedAvatars = new DoubleDictionary<uint, UUID, TrackedAvatar>();
         private Dictionary<UUID, TrackedAvatar> _UntrackedAvatars = new Dictionary<UUID, TrackedAvatar>();
 
-        /// <summary>
-        /// Gets or sets the context menu associated with this control
-        /// </summary>
-        public ContextMenu Menu
-        {
-            get { return _ContextMenu; }
-            set { _ContextMenu = value; }
-        }
-
-        public delegate void AvatarDoubleClickCallback(TrackedAvatar trackedAvatar);
+        public delegate void AvatarCallback(TrackedAvatar trackedAvatar);
 
         /// <summary>
         /// Triggered when the user double clicks on an avatar in the list
         /// </summary>
-        public event AvatarDoubleClickCallback OnAvatarDoubleClick;
+        public event AvatarCallback OnAvatarDoubleClick;
+
+        /// <summary>
+        /// Triggered when a new avatar is added to the list
+        /// </summary>
+        public event AvatarCallback OnAvatarAdded;
+
+        /// <summary>
+        /// Triggered when an avatar is removed from the list
+        /// </summary>
+        public event AvatarCallback OnAvatarRemoved;
 
         /// <summary>
         /// Gets or sets the GridClient associated with this control
@@ -70,6 +70,14 @@ namespace OpenMetaverse.GUI
         {
             get { return _Client; }
             set { if (value != null) InitializeClient(value); }
+        }
+
+        /// <summary>
+        /// Returns the current selected avatar in the tracked avatars list
+        /// </summary>
+        public TrackedAvatar SelectedAvatar
+        {
+            get { return _SelectedAvatar; }
         }
 
         /// <summary>
@@ -83,30 +91,43 @@ namespace OpenMetaverse.GUI
             ColumnHeader header2 = this.Columns.Add(" ");
             header2.Width = 40;
 
+            this.MultiSelect = false;
+            this.SelectedIndexChanged += new EventHandler(AvatarList_SelectedIndexChanged);
+
             _ColumnSorter.SortColumn = 1;
             this.Sorting = SortOrder.Ascending;
             this.ListViewItemSorter = _ColumnSorter;
 
             EventHandler clickHandler = new EventHandler(defaultMenuItem_Click);
-            _ContextMenu = new ContextMenu();
-            _ContextMenu.MenuItems.Add("Walk To", clickHandler);
-            _ContextMenu.MenuItems.Add("Teleport To", clickHandler);
+            this.ContextMenu = new ContextMenu();
+            this.ContextMenu.MenuItems.Add("Offer Teleport", clickHandler);
+            this.ContextMenu.MenuItems.Add("Teleport To", clickHandler);
+            this.ContextMenu.MenuItems.Add("Walk To", clickHandler);
 
             this.DoubleBuffered = true;
             this.ListViewItemSorter = _ColumnSorter;
             this.View = View.Details;
             this.ColumnClick += new ColumnClickEventHandler(AvatarList_ColumnClick);
             this.DoubleClick += new EventHandler(AvatarList_DoubleClick);
-            this.MouseClick += new MouseEventHandler(AvatarList_MouseClick);
         }
 
-        /// <summary>
-        /// TreeView control for the specified client's nearby avatar list
-        /// </summary>
-        /// <param name="client"></param>
-        public AvatarList(GridClient client) : this ()
+        void AvatarList_SelectedIndexChanged(object sender, EventArgs e)
         {
-            InitializeClient(client);
+            lock (_TrackedAvatars)
+            {
+                lock (_UntrackedAvatars)
+                {
+                    if (this.SelectedItems.Count > 0)
+                    {
+                        UUID selectedID = new UUID(this.SelectedItems[0].Name);
+                        TrackedAvatar selectedAV;
+                        if (!_TrackedAvatars.TryGetValue(selectedID, out selectedAV) && !_UntrackedAvatars.TryGetValue(selectedID, out selectedAV))
+                            selectedAV = null;
+
+                        _SelectedAvatar = selectedAV;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -122,6 +143,13 @@ namespace OpenMetaverse.GUI
             }
         }
 
+        public TrackedAvatar GetAvatar(UUID avatarID)
+        {
+            TrackedAvatar av;
+            _TrackedAvatars.TryGetValue(avatarID, out av);
+            return av;
+        }
+
         private void InitializeClient(GridClient client)
         {
             _Client = client;
@@ -130,7 +158,6 @@ namespace OpenMetaverse.GUI
             _Client.Grid.OnCoarseLocationUpdate += new GridManager.CoarseLocationUpdateCallback(Grid_OnCoarseLocationUpdate);
             _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
             _Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
-            _Client.Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
             _Client.Objects.OnObjectUpdated += new ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
         }
 
@@ -145,6 +172,7 @@ namespace OpenMetaverse.GUI
                 trackedAvatar.CoarseLocation = coarsePosition;
                 trackedAvatar.ID = avatarID;
                 trackedAvatar.ListViewItem = this.Items.Add(avatarID.ToString(), trackedAvatar.Name, null);
+                trackedAvatar.ListViewItem.Name = avatarID.ToString();
 
                 string strDist = avatarID == _Client.Self.AgentID ? "--" : (int)Vector3.Distance(_Client.Self.SimPosition, coarsePosition) + "m";
                 trackedAvatar.ListViewItem.SubItems.Add(strDist);
@@ -156,6 +184,12 @@ namespace OpenMetaverse.GUI
 
                     lock (_TrackedAvatars)
                         _TrackedAvatars.Add(localID, avatarID, trackedAvatar);
+
+                    if (OnAvatarAdded != null)
+                    {
+                        try { OnAvatarAdded(trackedAvatar); }
+                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
+                    }
                 }
                 else
                 {
@@ -174,6 +208,7 @@ namespace OpenMetaverse.GUI
                         else Client.Avatars.RequestAvatarName(avatarID);
                     }
                 }
+
             }
         }
 
@@ -184,14 +219,21 @@ namespace OpenMetaverse.GUI
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { RemoveAvatar(localID); });
             else
             {
+                TrackedAvatar trackedAvatar;
+
                 lock (_TrackedAvatars)
                 {
-                    TrackedAvatar trackedAvatar;
                     if (_TrackedAvatars.TryGetValue(localID, out trackedAvatar))
                     {
                         this.Items.Remove(trackedAvatar.ListViewItem);
                         _TrackedAvatars.Remove(localID);
                     }
+                }
+
+                if (OnAvatarRemoved != null)
+                {
+                    try { OnAvatarRemoved(trackedAvatar); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                 }
             }
         }
@@ -203,10 +245,10 @@ namespace OpenMetaverse.GUI
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateAvatar(avatar); });
             else
             {
+                TrackedAvatar trackedAvatar;
+
                 lock (_TrackedAvatars)
                 {
-                    TrackedAvatar trackedAvatar;
-
                     lock (_UntrackedAvatars)
                     {
                         if (_UntrackedAvatars.TryGetValue(avatar.ID, out trackedAvatar))
@@ -254,6 +296,10 @@ namespace OpenMetaverse.GUI
                             this.Items.Remove(trackedAvatar.ListViewItem);
                             _UntrackedAvatars.Remove(trackedAvatar.ID);
                         }
+                        lock (_TrackedAvatars)
+                        {
+                            if (_TrackedAvatars.TryGetValue(removedEntries[i], out trackedAvatar)) RemoveAvatar(trackedAvatar.Avatar.LocalID);
+                        }
                     }
                     for (int i = 0; i < newEntries.Count; i++)
                     {
@@ -277,19 +323,24 @@ namespace OpenMetaverse.GUI
 
             switch (menuItem.Text)
             {
-                case "Walk To":
+                case "Offer Teleport":
                     {
-                        Vector3 pos;
-                        if (Client.Network.CurrentSim.AvatarPositions.TryGetValue(_SelectedAvatarID, out pos))
-                            Client.Self.AutoPilotLocal((int)pos.X, (int)pos.Y, pos.Z);
-
+                        Client.Self.SendTeleportLure(_SelectedAvatar.ID);
                         break;
                     }
                 case "Teleport To":
                     {
                         Vector3 pos;
-                        if (Client.Network.CurrentSim.AvatarPositions.TryGetValue(_SelectedAvatarID, out pos))
+                        if (Client.Network.CurrentSim.AvatarPositions.TryGetValue(_SelectedAvatar.ID, out pos))
                             Client.Self.Teleport(Client.Network.CurrentSim.Name, pos);
+
+                        break;
+                    }
+                case "Walk To":
+                    {
+                        Vector3 pos;
+                        if (Client.Network.CurrentSim.AvatarPositions.TryGetValue(_SelectedAvatar.ID, out pos))
+                            Client.Self.AutoPilotLocal((int)pos.X, (int)pos.Y, pos.Z);
 
                         break;
                     }
@@ -319,15 +370,6 @@ namespace OpenMetaverse.GUI
                     try { OnAvatarDoubleClick(trackedAvatar); }
                     catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                 }
-            }
-        }
-
-        void AvatarList_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Right && this.SelectedItems.Count > 0)
-            {
-                _SelectedAvatarID = new UUID(this.SelectedItems[0].Name);
-                _ContextMenu.Show(this, e.Location);
             }
         }
 
@@ -365,6 +407,12 @@ namespace OpenMetaverse.GUI
                     {
                         trackedAvatar.Name = name.Value;
 
+                        if (OnAvatarAdded != null && trackedAvatar.ListViewItem.Text == "(Loading...)")
+                        {
+                            try { OnAvatarAdded(trackedAvatar); }
+                            catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
+                        }
+
                         this.BeginInvoke((MethodInvoker)delegate
                         {
                             trackedAvatar.ListViewItem.Text = name.Value;
@@ -393,14 +441,6 @@ namespace OpenMetaverse.GUI
         void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
         {
             UpdateAvatar(avatar);
-        }
-
-        void Objects_OnObjectKilled(Simulator simulator, uint objectID)
-        {
-            lock (_TrackedAvatars)
-            {
-                if (_TrackedAvatars.ContainsKey(objectID)) RemoveAvatar(objectID);
-            }
         }
 
         void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)

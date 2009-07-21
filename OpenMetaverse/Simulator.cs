@@ -233,7 +233,7 @@ namespace OpenMetaverse
         /// <summary>A public reference to the client that this Simulator object
         /// is attached to</summary>
         public GridClient Client;
-        /// <summary></summary>
+        /// <summary>A Unique Cache identifier for this simulator</summary>
         public UUID ID = UUID.Zero;
         /// <summary>The capabilities for this simulator</summary>
         public Caps Caps = null;
@@ -284,10 +284,8 @@ namespace OpenMetaverse
         public UUID TerrainDetail2 = UUID.Zero;
         /// <summary></summary>
         public UUID TerrainDetail3 = UUID.Zero;
-        /// <summary></summary>
+        /// <summary>true if your agent has Estate Manager rights on this region</summary>
         public bool IsEstateManager;
-        /// <summary></summary>
-        public EstateTools Estate;
         /// <summary></summary>
         public RegionFlags Flags;
         /// <summary></summary>
@@ -456,7 +454,6 @@ namespace OpenMetaverse
             Client = client;
 
             Handle = handle;
-            Estate = new EstateTools(Client);
             Network = Client.Network;
             PacketArchive = new IncomingPacketIDCollection(Settings.PACKET_ARCHIVE_SIZE);
             InBytes = new Queue<long>(Client.Settings.STATS_QUEUE_SIZE);
@@ -583,6 +580,10 @@ namespace OpenMetaverse
                 if (AckTimer != null) AckTimer.Dispose();
                 if (StatsTimer != null) StatsTimer.Dispose();
                 if (PingTimer != null) PingTimer.Dispose();
+
+                AckTimer = null;
+                StatsTimer = null;
+                PingTimer = null;
 
                 // Kill the current CAPS system
                 if (Caps != null)
@@ -1073,7 +1074,8 @@ namespace OpenMetaverse
             ResendUnacked();
 
             // Start the ACK handling functions again after NETWORK_TICK_INTERVAL milliseconds
-            AckTimer.Change(Settings.NETWORK_TICK_INTERVAL, Timeout.Infinite);
+            try { AckTimer.Change(Settings.NETWORK_TICK_INTERVAL, Timeout.Infinite); }
+            catch (Exception) { }
         }
 
         private void StatsTimer_Elapsed(object obj)

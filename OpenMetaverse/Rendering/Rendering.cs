@@ -183,7 +183,7 @@ namespace OpenMetaverse.Rendering
 
         public override string ToString()
         {
-            if (!String.IsNullOrEmpty(Prim.Properties.Name))
+            if (Prim.Properties != null && !String.IsNullOrEmpty(Prim.Properties.Name))
             {
                 return Prim.Properties.Name;
             }

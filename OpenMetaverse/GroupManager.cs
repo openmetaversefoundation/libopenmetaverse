@@ -86,10 +86,17 @@ namespace OpenMetaverse
     {
         /// <summary>Key of the group</summary>
         public UUID GroupID;
+        /// <summary>ID of the role title belongs to</summary>
+        public UUID RoleID;
         /// <summary>Group Title</summary>
         public string Title;
         /// <summary>Whether title is Active</summary>
         public bool Selected;
+        /// <summary>Returns group title</summary>
+        public override string ToString()
+        {
+            return Title;
+        }
     }
 
     /// <summary>
@@ -133,7 +140,9 @@ namespace OpenMetaverse
         public int GroupMembershipCount;
         /// <summary>The number of roles this group has configured</summary>
         public int GroupRolesCount;
-
+        /// <summary>Show this group in agent's profile</summary>
+        public bool ListInProfile;
+       
         /// <summary>Returns the name of the group</summary>
         /// <returns>A string containing the name of the group</returns>
         public override string ToString()
@@ -316,102 +325,132 @@ namespace OpenMetaverse
     }
 
     [Flags]
-    public enum GroupPowers : long
+    public enum GroupPowers : ulong
     {
         /// <summary></summary>
         None = 0,
+
+        // Membership
         /// <summary>Can send invitations to groups default role</summary>
-        Invite = 1,
+        Invite = 1UL << 1,
         /// <summary>Can eject members from group</summary>
-        Eject = 2,
+        Eject = 1UL << 2,
         /// <summary>Can toggle 'Open Enrollment' and change 'Signup fee'</summary>
-        ChangeOptions = 4,
+        ChangeOptions = 1UL << 3,
+        /// <summary>Member is visible in the public member list</summary>
+        MemberVisible = 1UL << 47,
+
+        // Roles
         /// <summary>Can create new roles</summary>
-        CreateRole = 8,
+        CreateRole = 1UL << 4,
         /// <summary>Can delete existing roles</summary>
-        DeleteRole = 16,
+        DeleteRole = 1UL << 5,
         /// <summary>Can change Role names, titles and descriptions</summary>
-        RoleProperties = 32,
+        RoleProperties = 1UL << 6,
         /// <summary>Can assign other members to assigners role</summary>
-        AssignMemberLimited = 64,
+        AssignMemberLimited = 1UL << 7,
         /// <summary>Can assign other members to any role</summary>
-        AssignMember = 128,
+        AssignMember = 1UL << 8,
         /// <summary>Can remove members from roles</summary>
-        RemoveMember = 256,
+        RemoveMember = 1UL << 9,
         /// <summary>Can assign and remove abilities in roles</summary>
-        ChangeActions = 512,
+        ChangeActions = 1UL << 10,
+
+        // Identity
         /// <summary>Can change group Charter, Insignia, 'Publish on the web' and which
         /// members are publicly visible in group member listings</summary>
-        ChangeIdentity = 1024,
+        ChangeIdentity = 1UL << 11,
+
+        // Parcel management
         /// <summary>Can buy land or deed land to group</summary>
-        LandDeed = 2048,
+        LandDeed = 1UL << 12,
         /// <summary>Can abandon group owned land to Governor Linden on mainland, or Estate owner for
         /// private estates</summary>
-        LandRelease = 4096,
+        LandRelease = 1UL << 13,
         /// <summary>Can set land for-sale information on group owned parcels</summary>
-        LandSetSale = 8192,
+        LandSetSale = 1UL << 14,
         /// <summary>Can subdivide and join parcels</summary>
-        LandDivideJoin = 16384,
+        LandDivideJoin = 1UL << 15,
+
+
+        // Chat
         /// <summary>Can join group chat sessions</summary>
-        JoinChat = 32768,
-        /// <summary>Can toggle "Show in Find Places" and set search category</summary>
-        FindPlaces = 65536,
-        /// <summary>Can change parcel name, description, and 'Publish on web' settings</summary>
-        LandChangeIdentity = 131072,
-        /// <summary>Can set the landing point and teleport routing on group land</summary>
-        SetLandingPoint = 262144,
-        /// <summary>Can change music and media settings</summary>
-        ChangeMedia = 524288,
-        /// <summary>Can toggle 'Edit Terrain' option in Land settings</summary>
-        LandEdit = 1048576,
-        /// <summary>Can toggle various About Land > Options settings</summary>
-        LandOptions = 2097152,
-        /// <summary>Can always terraform land, even if parcel settings have it turned off</summary>
-        AllowEditLand = 4194304,
-        /// <summary>Can always fly while over group owned land</summary>
-        AllowFly = 8388608,
-        /// <summary>Can always rez objects on group owned land</summary>
-        AllowRez = 16777216,
-        /// <summary>Can always create landmarks for group owned parcels</summary>
-        AllowLandmark = 33554432,
+        JoinChat = 1UL << 16,
         /// <summary>Can use voice chat in Group Chat sessions</summary>
-        AllowVoiceChat = 67108864,
-        /// <summary>Can set home location on any group owned parcel</summary>
-        AllowSetHome = 134217728,
-        /// <summary>Can modify public access settings for group owned parcels</summary>
-        LandManageAllowed = 268435456,
-        /// <summary>Can manager parcel ban lists on group owned land</summary>
-        LandManageBanned = 536870912,
-        /// <summary>Can manage pass list sales information</summary>
-        LandManagePasses = 1073741824,
-        /// <summary>Can eject and freeze other avatars on group owned land</summary>
-        LandEjectAndFreeze = 2147483648,
-        /// <summary>Can return objects set to group</summary>
-        ReturnGroupSet = 4294967296,
-        /// <summary>Can return non-group owned/set objects</summary>
-        ReturnNonGroup = 8589934592,
-        /// <summary>Can landscape using Linden plants</summary>
-        LandGardening = 17179869184,
-        /// <summary>Can deed objects to group</summary>
-        DeedObject = 34359738368,
+        AllowVoiceChat = 1UL << 27,
         /// <summary>Can moderate group chat sessions</summary>
-        ModerateChat = 68719476736,
-        /// <summary>Can move group owned objects</summary>
-        ObjectManipulate = 137438953472,
-        /// <summary>Can set group owned objects for-sale</summary>
-        ObjectSetForSale = 274877906944,
-        /// <summary>Pay group liabilities and receive group dividends</summary>
-        Accountable = 549755813888,
-        /// <summary>Can send group notices</summary>
-        SendNotices = 1099511627776,
-        /// <summary>Can receive group notices</summary>
-        ReceiveNotices = 2199023255552,
-        /// <summary>Can create group proposals</summary>
-        StartProposal = 4398046511104,
-        /// <summary>Can vote on group proposals</summary>
-        VoteOnProposal = 8796093022208,
+        ModerateChat = 1UL << 37,
+
+        // Parcel identity
+        /// <summary>Can toggle "Show in Find Places" and set search category</summary>
+        FindPlaces = 1UL << 17,
+        /// <summary>Can change parcel name, description, and 'Publish on web' settings</summary>
+        LandChangeIdentity = 1UL << 18,
+        /// <summary>Can set the landing point and teleport routing on group land</summary>
+        SetLandingPoint = 1UL << 19,
+
+        // Parcel settings
+        /// <summary>Can change music and media settings</summary>
+        ChangeMedia = 1UL << 20,
+        /// <summary>Can toggle 'Edit Terrain' option in Land settings</summary>
+        LandEdit = 1UL << 21,
+        /// <summary>Can toggle various About Land > Options settings</summary>
+        LandOptions = 1UL << 22,
+
+        // Parcel powers
+        /// <summary>Can always terraform land, even if parcel settings have it turned off</summary>
+        AllowEditLand = 1UL << 23,
+        /// <summary>Can always fly while over group owned land</summary>
+        AllowFly = 1UL << 24,
+        /// <summary>Can always rez objects on group owned land</summary>
+        AllowRez = 1UL << 25,
+        /// <summary>Can always create landmarks for group owned parcels</summary>
+        AllowLandmark = 1UL << 26,
+        /// <summary>Can set home location on any group owned parcel</summary>
+        AllowSetHome = 1UL << 28,
+
+
+        // Parcel access
+        /// <summary>Can modify public access settings for group owned parcels</summary>
+        LandManageAllowed = 1UL << 29,
+        /// <summary>Can manager parcel ban lists on group owned land</summary>
+        LandManageBanned = 1UL << 30,
+        /// <summary>Can manage pass list sales information</summary>
+        LandManagePasses = 1UL << 31,
+        /// <summary>Can eject and freeze other avatars on group owned land</summary>
+        LandEjectAndFreeze = 1UL << 32,
+
+        // Parcel content
+        /// <summary>Can return objects set to group</summary>
+        ReturnGroupSet = 1UL << 33,
+        /// <summary>Can return non-group owned/set objects</summary>
+        ReturnNonGroup = 1UL << 34,
         /// <summary>Can return group owned objects</summary>
-        ReturnGroupOwned = 17592186044416
+        ReturnGroupOwned = 1UL << 48,
+
+        /// <summary>Can landscape using Linden plants</summary>
+        LandGardening = 1UL << 35,
+
+        // Objects
+        /// <summary>Can deed objects to group</summary>
+        DeedObject = 1UL << 36,
+        /// <summary>Can move group owned objects</summary>
+        ObjectManipulate = 1UL << 38,
+        /// <summary>Can set group owned objects for-sale</summary>
+        ObjectSetForSale = 1UL << 39,
+
+        /// <summary>Pay group liabilities and receive group dividends</summary>
+        Accountable = 1UL << 40,
+
+        // Notices and proposals
+        /// <summary>Can send group notices</summary>
+        SendNotices = 1UL << 42,
+        /// <summary>Can receive group notices</summary>
+        ReceiveNotices = 1UL << 43,
+        /// <summary>Can create group proposals</summary>
+        StartProposal = 1UL << 44,
+        /// <summary>Can vote on group proposals</summary>
+        VoteOnProposal = 1UL << 45
     }
 
     #endregion Enums
@@ -447,36 +486,44 @@ namespace OpenMetaverse
         /// <summary>
         /// Callback for the member list of a group
         /// </summary>
+        /// <param name="requestID"><seealso cref="UUID"/> returned by RequestGroupMembers</param>
+        /// <param name="groupID"><seealso cref="UUID"/> of the group</param>
         /// <param name="members">A dictionary containing the members of a group
-        /// where the Key is the group <seealso cref="UUID"/>, and the values are the members</param>
-        public delegate void GroupMembersCallback(Dictionary<UUID, GroupMember> members);
+        /// where key is member <seealso cref="UUID"/> and value is <seealso cref="GroupMember"/> struct</param>
+        public delegate void GroupMembersCallback(UUID requestID, UUID groupID, Dictionary<UUID, GroupMember> members);
 
         /// <summary>
-        /// Callback for the role list of a group
+        /// Callback for retrieving group roles
         /// </summary>
-        /// <param name="roles">A dictionary containing the roles of a group
-        /// where the Key is the group <seealso cref="UUID"/>, and the values are the roles</param>
-        public delegate void GroupRolesCallback(Dictionary<UUID, GroupRole> roles);
+        /// <param name="requestID"><seealso cref="UUID"/> of the request returned from RequestGroupRoles</param>
+        /// <param name="groupID"><seealso cref="UUID"/> of the group</param>
+        /// <param name="roles">A dictionary containing role <seealso cref="UUID"/>s as the key
+        /// and <seealso cref="GroupRole"/> structs as values</param>
+        public delegate void GroupRolesCallback(UUID requestID, UUID groupID, Dictionary<UUID, GroupRole> roles);
 
         /// <summary>
         /// Callback for a pairing of roles to members
         /// </summary>
-        /// <param name="rolesMembers">A List of Keyvalue pairs containing the role ID and the members assigned to 
-        /// that role</param>
-        public delegate void GroupRolesMembersCallback(List<KeyValuePair<UUID, UUID>> rolesMembers);
+        /// <param name="requestID"><seealso cref="UUID"/> of the request returned from RequestGroupRolesMembers</param>
+        /// <param name="groupID"><seealso cref="UUID"/> of the group</param>
+        /// <param name="rolesMembers">List containing role/member pairs</param>
+        public delegate void GroupRolesMembersCallback(UUID requestID, UUID groupID, List<KeyValuePair<UUID, UUID>> rolesMembers);
 
         /// <summary>
         /// Callback for the title list of a group
         /// </summary>
+        /// <param name="requestID"><seealso cref="UUID"/> of the request returned from RequestGroupTitles</param>
+        /// <param name="groupID">Group <seealso cref="UUID"/></param>
         /// <param name="titles">A dictionary containing the titles of a group
-        /// where the Key is the group <seealso cref="UUID"/>, and the values are the title details</param>
-        public delegate void GroupTitlesCallback(Dictionary<UUID, GroupTitle> titles);
+        /// where the Key is the role <seealso cref="UUID"/>, and the values are the title details</param>
+        public delegate void GroupTitlesCallback(UUID requestID, UUID groupID, Dictionary<UUID, GroupTitle> titles);
 
         /// <summary>
         /// Callback fired when group account summary information is received
         /// </summary>
+        /// <param name="groupID">Group <seealso cref="UUID"/></param>
         /// <param name="summary">The group account summary information</param>
-        public delegate void GroupAccountSummaryCallback(GroupAccountSummary summary);
+        public delegate void GroupAccountSummaryCallback(UUID groupID, GroupAccountSummary summary);
 
         /// <summary>
         /// Callback fired after an attempt to create a group
@@ -581,12 +628,12 @@ namespace OpenMetaverse
         private List<UUID> GroupRolesRequests;
         /// <summary>Currently-active group role-member requests</summary>
         private List<UUID> GroupRolesMembersRequests;
-        /// <summary>A list of all the lists of group members, indexed by the group ID</summary>
-        public InternalDictionary<UUID, Dictionary<UUID, GroupMember>> GroupMembersCaches;
-        /// <summary>A list of all the lists of group roles, indexed by the group ID</summary>
-        public InternalDictionary<UUID, Dictionary<UUID, GroupRole>> GroupRolesCaches;
-        /// <summary>A list of all the role to member mappings, indexed by the group ID</summary>
-        public InternalDictionary<UUID, List<KeyValuePair<UUID, UUID>>> GroupRolesMembersCaches;
+        /// <summary>Dictionary keeping group members while request is in progress</summary>
+        private InternalDictionary<UUID, Dictionary<UUID, GroupMember>> TempGroupMembers;
+        /// <summary>Dictionary keeping mebmer/role mapping while request is in progress</summary>
+        private InternalDictionary<UUID, List<KeyValuePair<UUID, UUID>>> TempGroupRolesMembers;
+        /// <summary>Dictionary keeping GroupRole information while request is in progress</summary>
+        private InternalDictionary<UUID, Dictionary<UUID, GroupRole>> TempGroupRoles;
         /// <summary>Caches group name lookups</summary>
         public InternalDictionary<UUID, string> GroupName2KeyCache;
         /// <summary>
@@ -597,15 +644,16 @@ namespace OpenMetaverse
         {
             Client = client;
 
-            GroupMembersCaches = new InternalDictionary<UUID, Dictionary<UUID, GroupMember>>();
+            TempGroupMembers = new InternalDictionary<UUID, Dictionary<UUID, GroupMember>>();
             GroupMembersRequests = new List<UUID>();
-            GroupRolesCaches = new InternalDictionary<UUID, Dictionary<UUID, GroupRole>>();
+            TempGroupRoles = new InternalDictionary<UUID, Dictionary<UUID, GroupRole>>();
             GroupRolesRequests = new List<UUID>();
-            GroupRolesMembersCaches = new InternalDictionary<UUID, List<KeyValuePair<UUID, UUID>>>();
+            TempGroupRolesMembers = new InternalDictionary<UUID, List<KeyValuePair<UUID, UUID>>>();
             GroupRolesMembersRequests = new List<UUID>();
             GroupName2KeyCache  = new InternalDictionary<UUID, string>();
 
             Client.Network.RegisterEventCallback("AgentGroupDataUpdate", new Caps.EventQueueCallback(AgentGroupDataUpdateHandler));
+            // deprecated in simulator v1.27
             Client.Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(AgentDropGroupHandler));
             Client.Network.RegisterCallback(PacketType.GroupTitlesReply, new NetworkManager.PacketCallback(GroupTitlesHandler));
             Client.Network.RegisterCallback(PacketType.GroupProfileReply, new NetworkManager.PacketCallback(GroupProfileHandler));
@@ -621,6 +669,8 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.UUIDGroupNameReply, new NetworkManager.PacketCallback(UUIDGroupNameReplyHandler));
             Client.Network.RegisterCallback(PacketType.EjectGroupMemberReply, new NetworkManager.PacketCallback(EjectGroupMemberReplyHandler));
             Client.Network.RegisterCallback(PacketType.GroupNoticesListReply, new NetworkManager.PacketCallback(GroupNoticesListReplyHandler));
+
+            Client.Network.RegisterEventCallback("AgentDropGroup", new Caps.EventQueueCallback(AgentDropGroupMessageHandler));
         }
 
         /// <summary>
@@ -879,6 +929,24 @@ namespace OpenMetaverse
             sgp.Data.Contribution = contribution;
 
             Client.Network.SendPacket(sgp);
+        }
+
+        /// <summary>
+        /// Save wheather agent wants to accept group notices and list this group in their profile
+        /// </summary>
+        /// <param name="groupID">Group <see cref="UUID"/></param>
+        /// <param name="acceptNotices">Accept notices from this group</param>
+        /// <param name="listInProfile">List this group in the profile</param>
+        public void SetGroupAcceptNotices(UUID groupID, bool acceptNotices, bool listInProfile)
+        {
+            SetGroupAcceptNoticesPacket p = new SetGroupAcceptNoticesPacket();
+            p.AgentData.AgentID = Client.Self.AgentID;
+            p.AgentData.SessionID = Client.Self.SessionID;
+            p.Data.GroupID = groupID;
+            p.Data.AcceptNotices = acceptNotices;
+            p.NewData.ListInProfile = listInProfile;
+
+            Client.Network.SendPacket(p);
         }
 
         /// <summary>Request to join a group</summary>
@@ -1142,8 +1210,7 @@ namespace OpenMetaverse
                     group.Contribution = msg.GroupDataBlock[i].Contribution;
                     group.AcceptNotices = msg.GroupDataBlock[i].AcceptNotices;
                     group.Powers = msg.GroupDataBlock[i].GroupPowers;
-                    // verify this is correct - or add to struct if ListInProfile is a new field
-                    group.ShowInList = msg.GroupDataBlock[i].ListInProfile;
+                    group.ListInProfile = msg.NewGroupDataBlock[i].ListInProfile;
 
                     currentGroups.Add(group.ID, group);
 
@@ -1159,79 +1226,25 @@ namespace OpenMetaverse
             }
         }
 
-        //private void AgentGroupDataUpdateHandler(string capsKey, OSD osd, Simulator simulator)
-        //{
-        //    if (OnCurrentGroups != null)
-        //    {
-        //        AgentGroupUpdateMessage message = new AgentGroupUpdateMessage();
-        //        message.Deserialize((OSDMap)osd);
-
-        //        Dictionary<UUID, Group> currentGroups = new Dictionary<UUID, Group>();
-        //        for (int i = 0; i < message.GroupDataBlock.Length; i++)
-        //        {
-        //            Group group = new Group();
-        //            group.ID = message.GroupDataBlock[i].GroupID;
-        //            group.InsigniaID = message.GroupDataBlock[i].GroupInsigniaID;
-        //            group.Name = message.GroupDataBlock[i].GroupName;
-        //            group.Contribution = message.GroupDataBlock[i].Contribution;
-        //            group.AcceptNotices = message.GroupDataBlock[i].AcceptNotices;
-        //            group.Powers = message.GroupDataBlock[i].GroupPowers;
-        //            // verify this is correct - or add to struct if ListInProfile is a new field
-        //            group.ShowInList = message.GroupDataBlock[i].ListInProfile;
-
-        //            currentGroups.Add(group.ID, group);
-
-        //            lock (GroupName2KeyCache.Dictionary)
-        //            {
-        //                if (!GroupName2KeyCache.Dictionary.ContainsKey(group.ID))
-        //                    GroupName2KeyCache.Dictionary.Add(group.ID, group.Name);
-        //            }
-        //        }
-
-        //        try { OnCurrentGroups(currentGroups); }
-        //        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-        //    }
-        //}
-
-        //private void GroupDataHandler(Packet packet, Simulator simulator)
-        //{
-        //    if (OnCurrentGroups != null)
-        //    {
-        //        AgentGroupDataUpdatePacket update = (AgentGroupDataUpdatePacket)packet;
-
-        //        Dictionary<UUID, Group> currentGroups = new Dictionary<UUID, Group>();
-
-        //        foreach (AgentGroupDataUpdatePacket.GroupDataBlock block in update.GroupData)
-        //        {
-        //            Group group = new Group();
-
-        //            group.ID = block.GroupID;
-        //            group.InsigniaID = block.GroupInsigniaID;
-        //            group.Name = Utils.BytesToString(block.GroupName);
-        //            group.Powers = (GroupPowers)block.GroupPowers;
-        //            group.Contribution = block.Contribution;
-        //            group.AcceptNotices = block.AcceptNotices;
-
-        //            currentGroups[block.GroupID] = group;
-
-        //            lock (GroupName2KeyCache.Dictionary)
-        //            {
-        //                if (!GroupName2KeyCache.Dictionary.ContainsKey(block.GroupID))
-        //                    GroupName2KeyCache.Dictionary.Add(block.GroupID, Utils.BytesToString(block.GroupName));
-        //            }
-        //        }
-
-        //        try { OnCurrentGroups(currentGroups); }
-        //        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-        //    }
-        //}
-
         private void AgentDropGroupHandler(Packet packet, Simulator simulator)
         {
             if (OnGroupDropped != null)
             {
                 try { OnGroupDropped(((AgentDropGroupPacket)packet).AgentData.GroupID); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
+        }
+
+        private void AgentDropGroupMessageHandler(string capsKey, IMessage message, Simulator simulator)
+        {
+            if (OnGroupDropped != null)
+            {
+                AgentDropGroupMessage msg = (AgentDropGroupMessage)message;
+                for (int i = 0; i < msg.AgentDataBlock.Length; i++)
+                {
+                    try { OnGroupDropped(msg.AgentDataBlock[i].GroupID); }
+                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                }
             }
         }
 
@@ -1276,13 +1289,14 @@ namespace OpenMetaverse
                     GroupTitle groupTitle = new GroupTitle();
 
                     groupTitle.GroupID = titles.AgentData.GroupID;
+                    groupTitle.RoleID = block.RoleID;
                     groupTitle.Title = Utils.BytesToString(block.Title);
                     groupTitle.Selected = block.Selected;
 
                     groupTitleCache[block.RoleID] = groupTitle;
                 }
 
-                try { OnGroupTitles(groupTitleCache); }
+                try { OnGroupTitles(titles.AgentData.RequestID, titles.AgentData.GroupID, groupTitleCache); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
@@ -1297,12 +1311,12 @@ namespace OpenMetaverse
                 // If nothing is registered to receive this RequestID drop the data
                 if (GroupMembersRequests.Contains(members.GroupData.RequestID))
                 {
-                    lock (GroupMembersCaches)
+                    lock (TempGroupMembers.Dictionary)
                     {
-                        if (!GroupMembersCaches.TryGetValue(members.GroupData.RequestID, out groupMemberCache))
+                        if (!TempGroupMembers.TryGetValue(members.GroupData.RequestID, out groupMemberCache))
                         {
                             groupMemberCache = new Dictionary<UUID, GroupMember>();
-                            GroupMembersCaches[members.GroupData.RequestID] = groupMemberCache;
+                            TempGroupMembers[members.GroupData.RequestID] = groupMemberCache;
                         }
 
                         foreach (GroupMembersReplyPacket.MemberDataBlock block in members.MemberData)
@@ -1319,16 +1333,18 @@ namespace OpenMetaverse
                             groupMemberCache[block.AgentID] = groupMember;
                         }
 
-                        if(groupMemberCache.Count >= members.GroupData.MemberCount)
+                        if (groupMemberCache.Count >= members.GroupData.MemberCount)
+                        {
                             GroupMembersRequests.Remove(members.GroupData.RequestID);
+                            TempGroupMembers.Remove(members.GroupData.RequestID);
+                        }
                     }
                 }
             }
 
-            // Check if we've received all the group members that are showing up
             if (OnGroupMembers != null && groupMemberCache != null && groupMemberCache.Count >= members.GroupData.MemberCount)
             {
-                try { OnGroupMembers(groupMemberCache); }
+                try { OnGroupMembers(members.GroupData.RequestID, members.GroupData.GroupID, groupMemberCache); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
@@ -1345,12 +1361,12 @@ namespace OpenMetaverse
                 {
                     GroupRolesRequests.Remove(roles.GroupData.RequestID);
 
-                    lock (GroupRolesCaches)
+                    lock (TempGroupRoles.Dictionary)
                     {
-                        if (!GroupRolesCaches.TryGetValue(roles.GroupData.GroupID, out groupRoleCache))
+                        if (!TempGroupRoles.TryGetValue(roles.GroupData.RequestID, out groupRoleCache))
                         {
                             groupRoleCache = new Dictionary<UUID, GroupRole>();
-                            GroupRolesCaches[roles.GroupData.GroupID] = groupRoleCache;
+                            TempGroupRoles[roles.GroupData.RequestID] = groupRoleCache;
                         }
 
                         foreach (GroupRoleDataReplyPacket.RoleDataBlock block in roles.RoleData)
@@ -1366,14 +1382,19 @@ namespace OpenMetaverse
 
                             groupRoleCache[block.RoleID] = groupRole;
                         }
+
+                        if (groupRoleCache.Count >= roles.GroupData.RoleCount)
+                        {
+                            GroupRolesRequests.Remove(roles.GroupData.RequestID);
+                            TempGroupRoles.Remove(roles.GroupData.RequestID);
+                        }
                     }
                 }
             }
 
-            // Check if we've received all the group members that are showing up
             if (OnGroupRoles != null && groupRoleCache != null && groupRoleCache.Count >= roles.GroupData.RoleCount)
             {
-                try { OnGroupRoles(groupRoleCache); }
+                try { OnGroupRoles(roles.GroupData.RequestID, roles.GroupData.GroupID, groupRoleCache); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
@@ -1390,24 +1411,27 @@ namespace OpenMetaverse
                     // If nothing is registered to receive this RequestID drop the data
                     if (GroupRolesMembersRequests.Contains(members.AgentData.RequestID))
                     {
-                        GroupRolesMembersRequests.Remove(members.AgentData.RequestID);
-
-                        if (!GroupRolesMembersRequests.Contains(members.AgentData.RequestID))
+                        lock (TempGroupRolesMembers.Dictionary)
                         {
-                            GroupRolesMembersRequests.Remove(members.AgentData.RequestID);
-
-                            if (!GroupRolesMembersCaches.TryGetValue(members.AgentData.GroupID, out groupRoleMemberCache))
+                            if (!TempGroupRolesMembers.TryGetValue(members.AgentData.RequestID, out groupRoleMemberCache))
                             {
                                 groupRoleMemberCache = new List<KeyValuePair<UUID, UUID>>();
-                                GroupRolesMembersCaches[members.AgentData.GroupID] = groupRoleMemberCache;
+                                TempGroupRolesMembers[members.AgentData.RequestID] = groupRoleMemberCache;
                             }
-                        }
-                        foreach (GroupRoleMembersReplyPacket.MemberDataBlock block in members.MemberData)
-                        {
-                            KeyValuePair<UUID, UUID> rolemember =
-                                new KeyValuePair<UUID, UUID>(block.RoleID, block.MemberID);
 
-                            groupRoleMemberCache.Add(rolemember);
+                            foreach (GroupRoleMembersReplyPacket.MemberDataBlock block in members.MemberData)
+                            {
+                                KeyValuePair<UUID, UUID> rolemember =
+                                    new KeyValuePair<UUID, UUID>(block.RoleID, block.MemberID);
+
+                                groupRoleMemberCache.Add(rolemember);
+                            }
+
+                            if (groupRoleMemberCache.Count >= members.AgentData.TotalPairs)
+                            {
+                                GroupRolesMembersRequests.Remove(members.AgentData.RequestID);
+                                TempGroupRolesMembers.Remove(members.AgentData.RequestID);
+                            }
                         }
                     }
                 }
@@ -1417,12 +1441,9 @@ namespace OpenMetaverse
                 Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e);
             }
 
-            //Client.DebugLog("Pairs Ratio: " + groupRoleMemberCache.Count + "/" + members.AgentData.TotalPairs);
-            
-            // Check if we've received all the pairs that are showing up
             if (OnGroupRolesMembers != null && groupRoleMemberCache != null && groupRoleMemberCache.Count >= members.AgentData.TotalPairs)
             {
-                try { OnGroupRolesMembers(groupRoleMemberCache); }
+                try { OnGroupRolesMembers(members.AgentData.RequestID, members.AgentData.GroupID, groupRoleMemberCache); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
@@ -1468,7 +1489,7 @@ namespace OpenMetaverse
                 account.TotalCredits = summary.MoneyData.TotalCredits;
                 account.TotalDebits = summary.MoneyData.TotalDebits;
 
-                try { OnGroupAccountSummary(account); }
+                try { OnGroupAccountSummary(summary.AgentData.GroupID, account); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }

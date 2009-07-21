@@ -136,8 +136,7 @@ namespace OpenMetaverse
         /// <summary>A synchronization object used by the primary thread</summary>
         private object lockerObject = new object();
         /// <summary>A refresh timer used to increase the priority of stalled requests</summary>
-        private readonly System.Timers.Timer RefreshDownloadsTimer =
-            new System.Timers.Timer(Settings.PIPELINE_REFRESH_INTERVAL);
+        private System.Timers.Timer RefreshDownloadsTimer;
 
         /// <summary>Current number of pending and in-process transfers</summary>
         public int TransferCount { get { return _Transfers.Count; } }
@@ -172,8 +171,6 @@ namespace OpenMetaverse
             downloadMaster = new Thread(DownloadThread);
             downloadMaster.Name = "TexturePipeline";
             downloadMaster.IsBackground = true;
-
-            RefreshDownloadsTimer.Elapsed += RefreshDownloadsTimer_Elapsed;
         }
 
         /// <summary>
@@ -190,7 +187,12 @@ namespace OpenMetaverse
             _Client.Network.RegisterCallback(PacketType.ImagePacket, ImagePacketHandler);
             _Client.Network.RegisterCallback(PacketType.ImageNotInDatabase, ImageNotInDatabaseHandler);
             downloadMaster.Start();
-            RefreshDownloadsTimer.Start();
+            if (RefreshDownloadsTimer == null)
+            {
+                RefreshDownloadsTimer = new System.Timers.Timer(Settings.PIPELINE_REFRESH_INTERVAL);
+                RefreshDownloadsTimer.Elapsed += RefreshDownloadsTimer_Elapsed;
+                RefreshDownloadsTimer.Start();
+            }
         }
 
         /// <summary>
@@ -204,7 +206,8 @@ namespace OpenMetaverse
             Logger.Log(String.Format("Combined Execution Time: {0}, Network Execution Time {1}, Network {2}K/sec, Image Size {3}",
                         TotalTime, NetworkTime, Math.Round(TotalBytes / NetworkTime.TotalSeconds / 60, 2), TotalBytes), Helpers.LogLevel.Debug);
 #endif
-            RefreshDownloadsTimer.Stop();
+            RefreshDownloadsTimer.Dispose();
+            RefreshDownloadsTimer = null;
 
             _Client.Network.UnregisterCallback(PacketType.ImageNotInDatabase, ImageNotInDatabaseHandler);
             _Client.Network.UnregisterCallback(PacketType.ImageData, ImageDataHandler);
@@ -278,11 +281,11 @@ namespace OpenMetaverse
 
             if (callback != null)
             {
-                if (_Client.Assets.Cache.HasImage(textureID))
+                if (_Client.Assets.Cache.HasAsset(textureID))
                 {
                     ImageDownload image = new ImageDownload();
                     image.ID = textureID;
-                    image.AssetData = _Client.Assets.Cache.GetCachedImageBytes(textureID);
+                    image.AssetData = _Client.Assets.Cache.GetCachedAssetBytes(textureID);
                     image.Size = image.AssetData.Length;
                     image.Transferred = image.AssetData.Length;
                     image.ImageType = imageType;
@@ -705,7 +708,7 @@ namespace OpenMetaverse
                         task.Transfer.Success = true;
                         _Transfers.Remove(task.Transfer.ID);
                         resetEvents[task.RequestSlot].Set(); // free up request slot
-                        _Client.Assets.Cache.SaveImageToCache(task.RequestID, task.Transfer.AssetData);
+                        _Client.Assets.Cache.SaveAssetToCache(task.RequestID, task.Transfer.AssetData);
                         foreach (TextureDownloadCallback callback in task.Callbacks)
                             callback(TextureRequestState.Finished, new AssetTexture(task.RequestID, task.Transfer.AssetData));
 
@@ -787,7 +790,7 @@ namespace OpenMetaverse
                         _Transfers.Remove(task.RequestID);
                         resetEvents[task.RequestSlot].Set();
 
-                        _Client.Assets.Cache.SaveImageToCache(task.RequestID, task.Transfer.AssetData);
+                        _Client.Assets.Cache.SaveAssetToCache(task.RequestID, task.Transfer.AssetData);
 
                         foreach (TextureDownloadCallback callback in task.Callbacks)
                             callback(TextureRequestState.Finished, new AssetTexture(task.RequestID, task.Transfer.AssetData));

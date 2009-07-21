@@ -198,9 +198,33 @@ namespace OpenMetaverse
         /// </summary>
         /// <remarks>Uses the ConnectedCallback delegate.</remarks>
         public event ConnectedCallback OnConnected;
-        /// <summary>
-        /// Event raised when a logout is confirmed by the simulator
-        /// </summary>
+        /// <summary>Event raised when a logout is confirmed by the simulator</summary>
+        /// <example>
+        /// request a logout, print a message when the simulator confirms
+        /// <code>
+        /// // subscribe to the logout reply event
+        /// Client.Network.OnLogoutReply += Network_OnLogoutReply;
+        /// 
+        /// // tell the simulator we want to logout
+        /// Client.Network.Logout();
+        /// 
+        /// // event handler for the logout reply event
+        /// void Network_OnLogoutReply(List<UUID> inventoryItems)
+        ///{
+        ///    Console.WriteLine("Simulator confirmed logout");
+        ///}
+        /// </code>
+        /// Same as above but using inline delegates
+        /// <code>
+        /// Client.Network.OnLogoutReply += delegate(List<UUID> inventoryItems)
+        /// {
+        ///    Console.WriteLine("Simulator confirmed logout");
+        /// };
+        /// 
+        ///  tell the simulator we want to logout
+        /// Client.Network.Logout();
+        /// </code>
+        /// </example>
         public event LogoutCallback OnLogoutReply;
         /// <summary>
         /// Event raised when a before a connection to a simulator is 
@@ -541,7 +565,11 @@ namespace OpenMetaverse
         public void RequestLogout()
         {
             // No need to run the disconnect timer any more
-            if (DisconnectTimer != null) DisconnectTimer.Dispose();
+            if (DisconnectTimer != null)
+            {
+                DisconnectTimer.Dispose();
+                DisconnectTimer = null;
+            }
 
             // This will catch a Logout when the client is not logged in
             if (CurrentSim == null || !connected)
@@ -642,7 +670,7 @@ namespace OpenMetaverse
             // Fire the disconnected callback
             if (OnDisconnected != null)
             {
-                try { OnDisconnected(DisconnectType.ClientInitiated, String.Empty); }
+                try { OnDisconnected(type, type.ToString()); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
@@ -777,7 +805,11 @@ namespace OpenMetaverse
         {
             if (!connected || CurrentSim == null)
             {
-                if (DisconnectTimer != null) DisconnectTimer.Dispose();
+                if (DisconnectTimer != null)
+                {
+                    DisconnectTimer.Dispose();
+                    DisconnectTimer = null;
+                }
                 connected = false;
             }
             else if (CurrentSim.DisconnectCandidate)
@@ -786,7 +818,12 @@ namespace OpenMetaverse
                 Logger.Log("Network timeout for the current simulator (" +
                     CurrentSim.ToString() + "), logging out", Helpers.LogLevel.Warning, Client);
 
-                if (DisconnectTimer != null) DisconnectTimer.Dispose();
+                if (DisconnectTimer != null)
+                {
+                    DisconnectTimer.Dispose();
+                    DisconnectTimer = null;
+                }
+
                 connected = false;
 
                 // Shutdown the network layer
@@ -794,52 +831,10 @@ namespace OpenMetaverse
             }
             else
             {
-                #region Check for timed out simulators
-
-                // Figure out which sims need to be disconnected, then fire
-                // all of the events to avoid calling DisconnectSim() inside
-                // the Simulators lock
-                List<Simulator> disconnectedSims = null;
-
-                // Check all of the connected sims for disconnects
-                lock (Simulators)
-                {
-                    for (int i = 0; i < Simulators.Count; i++)
-                    {
-                        if (Simulators[i].DisconnectCandidate)
-                        {
-                            // Avoid initializing a new List<> every time the timer
-                            // fires with this piece of code
-                            if (disconnectedSims == null)
-                                disconnectedSims = new List<Simulator>();
-
-                            disconnectedSims.Add(Simulators[i]);
-                        }
-                        else
-                        {
-                            Simulators[i].DisconnectCandidate = true;
-                        }
-                    }
-                }
-
-                // Actually disconnect each sim we detected as disconnected
-                if (disconnectedSims != null)
-                {
-                    for (int i = 0; i < disconnectedSims.Count; i++)
-                    {
-                        if (disconnectedSims[i] != null)
-                        {
-                            // This sim hasn't received any network traffic since the 
-                            // timer last elapsed, consider it disconnected
-                            Logger.Log("Network timeout for simulator " + disconnectedSims[i].ToString() +
-                                ", disconnecting", Helpers.LogLevel.Warning, Client);
-
-                            DisconnectSim(disconnectedSims[i], true);
-                        }
-                    }
-                }
-
-                #endregion Check for timed out simulators
+                // Mark the current simulator as potentially disconnected each time this timer fires.
+                // If the timer is fired again before any packets are received, an actual disconnect
+                // sequence will be triggered
+                CurrentSim.DisconnectCandidate = true;
             }
         }
 

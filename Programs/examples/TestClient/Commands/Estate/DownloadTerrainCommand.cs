@@ -65,7 +65,7 @@ namespace OpenMetaverse.TestClient
             parameters.Add("download filename");
             parameters.Add(fileName);
             // send the request
-            Client.Network.CurrentSim.Estate.EstateOwnerMessage("terrain", parameters);
+            Client.Estate.EstateOwnerMessage("terrain", parameters);
 
             // wait for (timeout) seconds for the request to complete (defaults 2 minutes)
             if (!xferTimeout.WaitOne(timeout, false))

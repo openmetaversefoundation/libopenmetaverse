@@ -18,8 +18,6 @@ namespace OpenMetaverse.TestClient
             Name = "download";
             Description = "Downloads the specified asset. Usage: download [uuid] [assetType]";
             Category = CommandCategory.Inventory;
-
-            testClient.Assets.OnAssetReceived += new AssetManager.AssetReceivedCallback(Assets_OnAssetReceived);
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
@@ -40,7 +38,7 @@ namespace OpenMetaverse.TestClient
                     assetType = (AssetType)typeInt;
 
                     // Start the asset download
-                    Client.Assets.RequestAsset(AssetID, assetType, true);
+                    Client.Assets.RequestAsset(AssetID, assetType, true, Assets_OnAssetReceived);
 
                     if (DownloadHandle.WaitOne(120 * 1000, false))
                     {

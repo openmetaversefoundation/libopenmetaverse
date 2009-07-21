@@ -26,6 +26,7 @@
 
 using System;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 namespace OpenMetaverse.GUI
@@ -35,6 +36,11 @@ namespace OpenMetaverse.GUI
     /// </summary>
     public class StatusOutput : RichTextBox
     {
+        /// <summary>
+        /// A file that output should be logged to (or null, to disable logging)
+        /// </summary>
+        public string LogFile = null;
+
         private GridClient _Client;
 
         /// <summary>
@@ -65,8 +71,12 @@ namespace OpenMetaverse.GUI
                 this.SelectionStart = this.Text.Length;
                 this.SelectionColor = color;
                 DateTime now = DateTime.Now;
-                this.SelectedText = string.Format("{0}[{1}:{2}] {3}", Environment.NewLine, now.Hour.ToString().PadLeft(2, '0'), now.Minute.ToString().PadLeft(2, '0'), text);
+                string output = String.Format("{0}[{1}:{2}] {3}", Environment.NewLine, now.Hour.ToString().PadLeft(2, '0'), now.Minute.ToString().PadLeft(2, '0'), text);
+                this.SelectedText = output;
                 this.ScrollToCaret();
+
+                if (LogFile != null)
+                    File.AppendAllText(LogFile, output);
             }
         }
 

@@ -223,8 +223,9 @@ namespace OpenMetaverse
         /// interpolated (extrapolated, technically) for objects and 
         /// avatars that are being tracked by the library. This is
         /// necessary to increase the accuracy of speed and position
-        /// estimates for simulated objects</summary>
-        public bool USE_INTERPOLATION_TIMER = true;
+        /// estimates for simulated objects. Needs to be set before
+        /// GridClient instance is made as it is static.</summary>
+        public static bool USE_INTERPOLATION_TIMER = true;
 
         #endregion
         #region Parcel Tracking
@@ -246,19 +247,19 @@ namespace OpenMetaverse
         public bool ALWAYS_REQUEST_PARCEL_DWELL = true;
 
         #endregion
-        #region Texture Cache
+        #region Asset Cache
 
         /// <summary>
-        /// If true, images downloaded from the server will be cached 
-        /// in a local directory
+        /// If true, images, and other assets downloaded from the server 
+        /// will be cached in a local directory
         /// </summary>
-        public bool USE_TEXTURE_CACHE = false;
+        public bool USE_ASSET_CACHE = true;
 
         /// <summary>Path to store cached texture data</summary>
-        public string TEXTURE_CACHE_DIR = RESOURCE_DIR + "/cache";
+        public string ASSET_CACHE_DIR = RESOURCE_DIR + "/cache";
 
         /// <summary>Maximum size cached files are allowed to take on disk (bytes)</summary>
-        public long TEXTURE_CACHE_MAX_SIZE = 1024 * 1024 * 1024; // 1GB
+        public long ASSET_CACHE_MAX_SIZE = 1024 * 1024 * 1024; // 1GB
 
         #endregion
         #region Misc

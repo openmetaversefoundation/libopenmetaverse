@@ -105,6 +105,11 @@ namespace Prebuild.Core.Nodes
 		/// <returns></returns>
 		public BuildAction GetBuildAction(string file)
 		{
+            if (file.EndsWith(".settings"))
+                return BuildAction.None;
+            else if (file.EndsWith(".ico"))
+                return BuildAction.Content;
+
 			if(!m_BuildActions.ContainsKey(file))
 			{
 				return BuildAction.Compile;

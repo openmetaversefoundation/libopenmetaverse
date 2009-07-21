@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Reflection;
 using System.Xml;
 using OpenMetaverse;
@@ -25,6 +26,9 @@ namespace OpenMetaverse.TestClient
         public InventoryFolder CurrentDirectory = null;
 
         private System.Timers.Timer updateTimer;
+        private UUID GroupMembersRequestID;
+        public Dictionary<UUID, Group> GroupsCache = null;
+        private ManualResetEvent GroupsEvent = new ManualResetEvent(false);
 
         /// <summary>
         /// 
@@ -44,7 +48,7 @@ namespace OpenMetaverse.TestClient
             Settings.ALWAYS_DECODE_OBJECTS = true;
             Settings.ALWAYS_REQUEST_OBJECTS = true;
             Settings.SEND_AGENT_UPDATES = true;
-            Settings.USE_TEXTURE_CACHE = true;
+            Settings.USE_ASSET_CACHE = true;
 
             Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
             Network.OnLogin += new NetworkManager.LoginCallback(LoginHandler);
@@ -103,6 +107,47 @@ namespace OpenMetaverse.TestClient
             }
         }
 
+        public void ReloadGroupsCache()
+        {
+            GroupManager.CurrentGroupsCallback callback =
+                    new GroupManager.CurrentGroupsCallback(Groups_OnCurrentGroups);
+            Groups.OnCurrentGroups += callback;
+            Groups.RequestCurrentGroups();
+            GroupsEvent.WaitOne(10000, false);
+            Groups.OnCurrentGroups -= callback;
+            GroupsEvent.Reset();
+        }
+
+        public UUID GroupName2UUID(String groupName)
+        {
+            UUID tryUUID;
+            if (UUID.TryParse(groupName,out tryUUID))
+                    return tryUUID;
+            if (null == GroupsCache) {
+                    ReloadGroupsCache();
+                if (null == GroupsCache)
+                    return UUID.Zero;
+            }
+            lock(GroupsCache) {
+                if (GroupsCache.Count > 0) {
+                    foreach (Group currentGroup in GroupsCache.Values)
+                        if (currentGroup.Name.ToLower() == groupName.ToLower())
+                            return currentGroup.ID;
+                }
+            }
+            return UUID.Zero;
+        }
+
+        private void Groups_OnCurrentGroups(Dictionary<UUID, Group> pGroups)
+        {
+            if (null == GroupsCache)
+                GroupsCache = pGroups;
+            else
+                lock(GroupsCache) { GroupsCache = pGroups; }
+            GroupsEvent.Set();
+        }
+
+
         private void updateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             foreach (Command c in Commands.Values)
@@ -117,12 +162,14 @@ namespace OpenMetaverse.TestClient
             {
                 GroupID = p.AgentData.ActiveGroupID;
 
-                sim.Client.Groups.RequestGroupMembers(GroupID);
+                GroupMembersRequestID = sim.Client.Groups.RequestGroupMembers(GroupID);
             }
         }
 
-        private void GroupMembersHandler(Dictionary<UUID, GroupMember> members)
+        private void GroupMembersHandler(UUID requestID, UUID groupID, Dictionary<UUID, GroupMember> members)
         {
+            if (requestID != GroupMembersRequestID) return;
+
             GroupMembers = members;
         }
 

@@ -15,7 +15,6 @@ namespace OpenMetaverse.TestClient
 {
     public class QueuedDownloadInfo
     {
-        public UUID TransferID;
         public UUID AssetID;
         public UUID ItemID;
         public UUID TaskID;
@@ -33,7 +32,6 @@ namespace OpenMetaverse.TestClient
             TaskID = task;
             OwnerID = owner;
             Type = type;
-            TransferID = UUID.Zero;
             WhenRequested = DateTime.Now;
             IsRequested = false;
         }
@@ -114,7 +112,6 @@ namespace OpenMetaverse.TestClient
         {
             Name = "backuptext";
             Description = "Backup inventory to a folder on your hard drive. Usage: " + Name + " [to <directory>] | [abort] | [status]";
-            testClient.Assets.OnAssetReceived += new AssetManager.AssetReceivedCallback(Assets_OnAssetReceived);
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
@@ -183,8 +180,8 @@ namespace OpenMetaverse.TestClient
                         {
                             Logger.DebugLog(Name + ": timeout on asset " + qdi.AssetID.ToString(), Client);
                             // submit request again
-                            qdi.TransferID = Client.Assets.RequestInventoryAsset(
-                                qdi.AssetID, qdi.ItemID, qdi.TaskID, qdi.OwnerID, qdi.Type, true);
+                            Client.Assets.RequestInventoryAsset(
+                                qdi.AssetID, qdi.ItemID, qdi.TaskID, qdi.OwnerID, qdi.Type, true, Assets_OnAssetReceived);
                             qdi.WhenRequested = DateTime.Now;
                             qdi.IsRequested = true;
                         }
@@ -200,8 +197,8 @@ namespace OpenMetaverse.TestClient
                         QueuedDownloadInfo qdi = PendingDownloads.Dequeue();
                         qdi.WhenRequested = DateTime.Now;
                         qdi.IsRequested = true;
-                        qdi.TransferID = Client.Assets.RequestInventoryAsset(
-                            qdi.AssetID, qdi.ItemID, qdi.TaskID, qdi.OwnerID, qdi.Type, true);
+                        Client.Assets.RequestInventoryAsset(
+                            qdi.AssetID, qdi.ItemID, qdi.TaskID, qdi.OwnerID, qdi.Type, true, Assets_OnAssetReceived);
 
                         lock (CurrentDownloads) CurrentDownloads.Add(qdi);
                     }
@@ -316,10 +313,10 @@ namespace OpenMetaverse.TestClient
                 // see if we have this in our transfer list
                 QueuedDownloadInfo r = CurrentDownloads.Find(delegate(QueuedDownloadInfo q)
                 {
-                    return q.TransferID == asset.ID;
+                    return q.AssetID == asset.AssetID;
                 });
 
-                if (r != null && r.TransferID == asset.ID)
+                if (r != null && r.AssetID == asset.AssetID)
                 {
                     if (asset.Success)
                     {

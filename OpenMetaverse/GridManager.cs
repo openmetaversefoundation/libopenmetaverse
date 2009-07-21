@@ -304,7 +304,7 @@ namespace OpenMetaverse
             request.AgentData.Flags = (uint)layer;
             request.AgentData.EstateID = 0; // Filled in on the sim
             request.AgentData.Godlike = false; // Filled in on the sim
-            request.NameData.Name = Utils.StringToBytes(regionName.ToLower());
+            request.NameData.Name = Utils.StringToBytes(regionName);
 
             Client.Network.SendPacket(request);
         }
@@ -431,9 +431,6 @@ namespace OpenMetaverse
                 return false;
             }
 
-            // All lookups are done using lowercase sim names
-            name = name.ToLower();
-
             if (Regions.ContainsKey(name))
             {
                 // We already have this GridRegion structure
@@ -529,7 +526,7 @@ namespace OpenMetaverse
 
                     lock (Regions)
                     {
-                        Regions[region.Name.ToLower()] = region;
+                        Regions[region.Name] = region;
                         RegionsByHandle[region.RegionHandle] = region;
                     }
 

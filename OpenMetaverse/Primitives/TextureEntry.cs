@@ -683,7 +683,11 @@ namespace OpenMetaverse
             {
                 OSDArray array = new OSDArray();
 
-                // Always add default texture
+                // If DefaultTexture is null, assume the whole TextureEntry is empty
+                if (DefaultTexture == null)
+                    return array;
+
+                // Otherwise, always add default texture
                 array.Add(DefaultTexture.GetOSD(-1));
 
                 for (int i = 0; i < MAX_FACES; i++)
@@ -697,29 +701,30 @@ namespace OpenMetaverse
 
             public static TextureEntry FromOSD(OSD osd)
             {
-                OSDArray array = (OSDArray)osd;
-                OSDMap faceSD;
-
-                if (array.Count > 0)
+                if (osd.Type == OSDType.Array)
                 {
-                    int faceNumber;
-                    faceSD = (OSDMap)array[0];
-                    TextureEntryFace defaultFace = TextureEntryFace.FromOSD(faceSD, null, out faceNumber);
-                    TextureEntry te = new TextureEntry(defaultFace);
+                    OSDArray array = (OSDArray)osd;
+                    OSDMap faceSD;
 
-                    for (int i = 1; i < array.Count; i++)
+                    if (array.Count > 0)
                     {
-                        TextureEntryFace tex = TextureEntryFace.FromOSD(array[i], defaultFace, out faceNumber);
-                        if (faceNumber >= 0 && faceNumber < te.FaceTextures.Length)
-                            te.FaceTextures[faceNumber] = tex;
-                    }
+                        int faceNumber;
+                        faceSD = (OSDMap)array[0];
+                        TextureEntryFace defaultFace = TextureEntryFace.FromOSD(faceSD, null, out faceNumber);
+                        TextureEntry te = new TextureEntry(defaultFace);
 
-                    return te;
+                        for (int i = 1; i < array.Count; i++)
+                        {
+                            TextureEntryFace tex = TextureEntryFace.FromOSD(array[i], defaultFace, out faceNumber);
+                            if (faceNumber >= 0 && faceNumber < te.FaceTextures.Length)
+                                te.FaceTextures[faceNumber] = tex;
+                        }
+
+                        return te;
+                    }
                 }
-                else
-                {
-                    throw new ArgumentException("SD contains no elements");
-                }
+
+                return new TextureEntry(UUID.Zero);
             }
 
             private void FromBytes(byte[] data, int pos, int length)

@@ -212,7 +212,7 @@ namespace groupmanager
             }
         }
 
-        private void GroupMembersHandler(Dictionary<UUID, GroupMember> members)
+        private void GroupMembersHandler(UUID requestID, UUID groupID, Dictionary<UUID, GroupMember> members)
         {
             Members = members;
 
@@ -255,7 +255,7 @@ namespace groupmanager
             }
         }
 
-        private void GroupTitlesHandler(Dictionary<UUID, GroupTitle> titles)
+        private void GroupTitlesHandler(UUID requestID, UUID groupID, Dictionary<UUID, GroupTitle> titles)
         {
             Titles = titles;
 

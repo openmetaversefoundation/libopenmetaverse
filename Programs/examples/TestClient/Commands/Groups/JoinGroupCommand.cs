@@ -75,6 +75,7 @@ namespace OpenMetaverse.TestClient
 
             Client.Groups.OnGroupJoined -= gcallback;
             GetGroupsSearchEvent.Reset();
+            Client.ReloadGroupsCache();
 
             if (joinedGroup)
                 return "Joined the group " + resolvedGroupName;

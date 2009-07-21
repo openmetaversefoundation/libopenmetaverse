@@ -641,7 +641,7 @@ namespace OpenMetaverse
     #endregion Structs
 
     /// <summary>
-    /// Oveerides SSL certificate validation check for Mono
+    /// Overrides SSL certificate validation check for Mono
     /// </summary>
     /// <remarks>Remove me when MONO can handle ServerCertificateValidationCallback</remarks>
     public class AcceptAllCertificatePolicy : ICertificatePolicy
@@ -890,7 +890,7 @@ namespace OpenMetaverse
         /// location</returns>
         public static string StartLocation(string sim, int x, int y, int z)
         {
-            return String.Format("uri:{0}&{1}&{2}&{3}", sim.ToLower(), x, y, z);
+            return String.Format("uri:{0}&{1}&{2}&{3}", sim, x, y, z);
         }
 
         #endregion

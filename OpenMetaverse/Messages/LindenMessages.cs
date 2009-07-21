@@ -292,7 +292,7 @@ namespace OpenMetaverse.Messages.Linden
         public OSDMap Serialize()
         {
             OSDMap map = new OSDMap(2);
-            
+
             OSDMap alertInfoMap = new OSDMap(2);
 
             alertInfoMap["ExtraParams"] = OSD.FromString(ExtraParams);
@@ -318,14 +318,14 @@ namespace OpenMetaverse.Messages.Linden
         public void Deserialize(OSDMap map)
         {
 
-            OSDArray alertInfoArray = (OSDArray) map["AlertInfo"];
+            OSDArray alertInfoArray = (OSDArray)map["AlertInfo"];
 
-            OSDMap alertInfoMap = (OSDMap) alertInfoArray[0];
+            OSDMap alertInfoMap = (OSDMap)alertInfoArray[0];
             ExtraParams = alertInfoMap["ExtraParams"].AsString();
             MessageKey = alertInfoMap["Message"].AsString();
 
-            OSDArray infoArray = (OSDArray) map["Info"];
-            OSDMap infoMap = (OSDMap) infoArray[0];
+            OSDArray infoArray = (OSDArray)map["Info"];
+            OSDMap infoMap = (OSDMap)infoArray[0];
             AgentID = infoMap["AgentID"].AsUUID();
             Reason = infoMap["Reason"].AsString();
         }
@@ -363,7 +363,7 @@ namespace OpenMetaverse.Messages.Linden
             requestDataMap["ReportType"] = OSD.FromInteger(this.ReporType);
             requestDataMap["RequestFlags"] = OSD.FromInteger(this.RequestFlags);
             requestDataMap["TotalObjectCount"] = OSD.FromInteger(this.TotalObjectCount);
-            
+
             OSDArray requestDatArray = new OSDArray();
             requestDatArray.Add(requestDataMap);
             map["RequestData"] = requestDatArray;
@@ -401,10 +401,10 @@ namespace OpenMetaverse.Messages.Linden
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
-            
+
             OSDArray requestDataArray = (OSDArray)map["RequestData"];
             OSDMap requestMap = (OSDMap)requestDataArray[0];
-            
+
             this.ReporType = requestMap["ReportType"].AsInteger();
             this.RequestFlags = requestMap["RequestFlags"].AsInteger();
             this.TotalObjectCount = requestMap["TotalObjectCount"].AsInteger();
@@ -469,9 +469,7 @@ namespace OpenMetaverse.Messages.Linden
             public DateTime TimeStamp;
         }
 
-        /// <summary>
-        /// An Array of <see cref="PrimOwner"/> objects
-        /// </summary>
+        /// <summary>An Array of <see cref="PrimOwner"/> objects</summary>
         public PrimOwner[] PrimOwnersBlock;
 
         /// <summary>
@@ -506,10 +504,9 @@ namespace OpenMetaverse.Messages.Linden
         }
 
         /// <summary>
-        /// Convert an OSDMap into the a strongly typed object containing 
-        /// prim ownership information
+        /// Deserialize the message
         /// </summary>
-        /// <param name="map"></param>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             OSDArray dataArray = (OSDArray)map["Data"];
@@ -688,7 +685,6 @@ namespace OpenMetaverse.Messages.Linden
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
-
             OSDMap map = new OSDMap(3);
 
             OSDArray dataArray = new OSDArray(1);
@@ -704,7 +700,6 @@ namespace OpenMetaverse.Messages.Linden
             parcelDataMap["ClaimDate"] = OSD.FromDate(ClaimDate);
             parcelDataMap["ClaimPrice"] = OSD.FromInteger(ClaimPrice);
             parcelDataMap["Desc"] = OSD.FromString(Desc);
-            //parcelDataMap["ParcelFlags"] = OSD.FromLong((long)ParcelFlags); // verify this!
             parcelDataMap["ParcelFlags"] = OSD.FromUInteger((uint)ParcelFlags);
             parcelDataMap["GroupID"] = OSD.FromUUID(GroupID);
             parcelDataMap["GroupPrims"] = OSD.FromInteger(GroupPrims);
@@ -765,6 +760,10 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             OSDMap parcelDataMap = (OSDMap)((OSDArray)map["ParcelData"])[0];
@@ -830,7 +829,7 @@ namespace OpenMetaverse.Messages.Linden
 
             if (map.ContainsKey("MediaData")) // temporary, OpenSim doesn't send this block
             {
-                OSDMap mediaDataMap = (OSDMap) ((OSDArray) map["MediaData"])[0];
+                OSDMap mediaDataMap = (OSDMap)((OSDArray)map["MediaData"])[0];
                 MediaDesc = mediaDataMap["MediaDesc"].AsString();
                 MediaHeight = mediaDataMap["MediaHeight"].AsInteger();
                 MediaWidth = mediaDataMap["MediaWidth"].AsInteger();
@@ -845,34 +844,69 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    /// <summary>A message sent from the viewer to the simulator to updated a specific parcels settings</summary>
     public class ParcelPropertiesUpdateMessage : IMessage
     {
+        /// <summary>The <seealso cref="UUID"/> of the agent authorized to purchase this
+        /// parcel of land or a NULL <seealso cref="UUID"/> if the sale is authorized to anyone</summary>
         public UUID AuthBuyerID;
+        /// <summary>true to enable auto scaling of the parcel media</summary>
         public bool MediaAutoScale;
+        /// <summary>The category of this parcel used when search is enabled to restrict
+        /// search results</summary>
         public ParcelCategory Category;
+        /// <summary>A string containing the description to set</summary>
         public string Desc;
+        /// <summary>The <seealso cref="UUID"/> of the <seealso cref="Group"/> which allows for additional
+        /// powers and restrictions.</summary>
         public UUID GroupID;
+        /// <summary>The <seealso cref="LandingType"/> which specifies how avatars which teleport
+        /// to this parcel are handled</summary>
         public LandingType Landing;
+        /// <summary>The LocalID of the parcel to update settings on</summary>
         public int LocalID;
+        /// <summary>A string containing the description of the media which can be played
+        /// to visitors</summary>
         public string MediaDesc;
+        /// <summary></summary>
         public int MediaHeight;
+        /// <summary></summary>
         public bool MediaLoop;
+        /// <summary></summary>
         public UUID MediaID;
+        /// <summary></summary>
         public string MediaType;
+        /// <summary></summary>
         public string MediaURL;
+        /// <summary></summary>
         public int MediaWidth;
+        /// <summary></summary>
         public string MusicURL;
+        /// <summary></summary>
         public string Name;
+        /// <summary></summary>
         public bool ObscureMedia;
+        /// <summary></summary>
         public bool ObscureMusic;
+        /// <summary></summary>
         public ParcelFlags ParcelFlags;
+        /// <summary></summary>
         public float PassHours;
+        /// <summary></summary>
         public uint PassPrice;
+        /// <summary></summary>
         public uint SalePrice;
+        /// <summary></summary>
         public UUID SnapshotID;
+        /// <summary></summary>
         public Vector3 UserLocation;
+        /// <summary></summary>
         public Vector3 UserLookAt;
 
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
             AuthBuyerID = map["auth_buyer_id"].AsUUID();
@@ -940,8 +974,58 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    /// <summary>Base class used for the RemoteParcelRequest message</summary>
     [Serializable]
-    public class RemoteParcelRequestMessage : IMessage
+    public abstract class RemoteParcelRequestBlock
+    {
+        public abstract OSDMap Serialize();
+        public abstract void Deserialize(OSDMap map);
+    }
+
+    /// <summary>
+    /// A message sent from the viewer to the simulator to request information
+    /// on a remote parcel
+    /// </summary>
+    public class RemoteParcelRequestRequest : RemoteParcelRequestBlock
+    {
+        /// <summary>Local sim position of the parcel we are looking up</summary>
+        public Vector3 Location;
+        /// <summary>Region handle of the parcel we are looking up</summary>
+        public ulong RegionHandle;
+        /// <summary>Region <see cref="UUID"/> of the parcel we are looking up</summary>
+        public UUID RegionID;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(3);
+            map["location"] = OSD.FromVector3(Location);
+            map["region_handle"] = OSD.FromULong(RegionHandle);
+            map["region_id"] = OSD.FromUUID(RegionID);
+            return map;
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public override void Deserialize(OSDMap map)
+        {
+            Location = map["location"].AsVector3();
+            RegionHandle = map["region_handle"].AsULong();
+            RegionID = map["region_id"].AsUUID();
+        }
+    }
+
+    /// <summary>
+    /// A message sent from the simulator to the viewer in response to a <see cref="RemoteParcelRequestRequest"/> 
+    /// which will contain parcel information
+    /// </summary>
+    [Serializable]
+    public class RemoteParcelRequestReply : RemoteParcelRequestBlock
     {
         /// <summary>The grid-wide unique parcel ID</summary>
         public UUID ParcelID;
@@ -950,7 +1034,7 @@ namespace OpenMetaverse.Messages.Linden
         /// Serialize the object
         /// </summary>
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
             map["parcel_id"] = OSD.FromUUID(ParcelID);
@@ -961,11 +1045,47 @@ namespace OpenMetaverse.Messages.Linden
         /// Deserialize the message
         /// </summary>
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             ParcelID = map["parcel_id"].AsUUID();
         }
+    }
 
+    /// <summary>
+    /// A message containing a request for a remote parcel from a viewer, or a response
+    /// from the simulator to that request
+    /// </summary>
+    [Serializable]
+    public class RemoteParcelRequestMessage : IMessage
+    {
+        /// <summary>The request or response details block</summary>
+        public RemoteParcelRequestBlock Request;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            return Request.Serialize();
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("parcel_id"))
+                Request = new RemoteParcelRequestReply();
+            else if (map.ContainsKey("location"))
+                Request = new RemoteParcelRequestRequest();
+            else
+                Logger.Log("Unable to deserialize RemoteParcelRequest: No message handler exists for method: " + map.AsString(), Helpers.LogLevel.Warning);
+
+            if (Request != null)
+                Request.Deserialize(map);
+        }
     }
     #endregion
 
@@ -993,7 +1113,6 @@ namespace OpenMetaverse.Messages.Linden
             map["description"] = OSD.FromString(Description);
 
             return map;
-
         }
 
         /// <summary>
@@ -1014,22 +1133,47 @@ namespace OpenMetaverse.Messages.Linden
 
     #region Agent Messages
 
+    /// <summary>
+    /// A message sent from the simulator to an agent which contains
+    /// the groups the agent is in
+    /// </summary>
     public class AgentGroupDataUpdateMessage : IMessage
     {
+        /// <summary>The Agent receiving the message</summary>
         public UUID AgentID;
 
+        /// <summary>Group Details specific to the agent</summary>
         public class GroupData
         {
+            /// <summary>true of the agent accepts group notices</summary>
             public bool AcceptNotices;
+            /// <summary>The agents tier contribution to the group</summary>
             public int Contribution;
+            /// <summary>The Groups <seealso cref="UUID"/></summary>
             public UUID GroupID;
+            /// <summary>The <seealso cref="UUID"/> of the groups insignia</summary>
             public UUID GroupInsigniaID;
+            /// <summary>The name of the group</summary>
             public string GroupName;
+            /// <summary>The aggregate permissions the agent has in the group for all roles the agent
+            /// is assigned</summary>
             public GroupPowers GroupPowers;
+        }
+
+        /// <summary>An optional block containing additional agent specific information</summary>
+        public class NewGroupData
+        {
+            /// <summary>true of the agent allows this group to be
+            /// listed in their profile</summary>
             public bool ListInProfile;
         }
 
+        /// <summary>An array containing <seealso cref="GroupData"/> information
+        /// for each <see cref="Group"/> the agent is a member of</summary>
         public GroupData[] GroupDataBlock;
+        /// <summary>An array containing <seealso cref="NewGroupData"/> information
+        /// for each <see cref="Group"/> the agent is a member of</summary>
+        public NewGroupData[] NewGroupDataBlock;
 
         /// <summary>
         /// Serialize the object
@@ -1051,18 +1195,28 @@ namespace OpenMetaverse.Messages.Linden
 
             for (int i = 0; i < GroupDataBlock.Length; i++)
             {
-                OSDMap group = new OSDMap(7);
+                OSDMap group = new OSDMap(6);
                 group["AcceptNotices"] = OSD.FromBoolean(GroupDataBlock[i].AcceptNotices);
                 group["Contribution"] = OSD.FromInteger(GroupDataBlock[i].Contribution);
                 group["GroupID"] = OSD.FromUUID(GroupDataBlock[i].GroupID);
                 group["GroupInsigniaID"] = OSD.FromUUID(GroupDataBlock[i].GroupInsigniaID);
                 group["GroupName"] = OSD.FromString(GroupDataBlock[i].GroupName);
                 group["GroupPowers"] = OSD.FromLong((long)GroupDataBlock[i].GroupPowers);
-                group["ListInProfile"] = OSD.FromBoolean(GroupDataBlock[i].ListInProfile);
                 groupDataArray.Add(group);
             }
 
             map["GroupData"] = groupDataArray;
+
+            OSDArray newGroupDataArray = new OSDArray(NewGroupDataBlock.Length);
+
+            for (int i = 0; i < NewGroupDataBlock.Length; i++)
+            {
+                OSDMap group = new OSDMap(1);
+                group["ListInProfile"] = OSD.FromBoolean(NewGroupDataBlock[i].ListInProfile);
+                newGroupDataArray.Add(group);
+            }
+
+            map["NewGroupData"] = newGroupDataArray;
 
             return map;
         }
@@ -1079,14 +1233,11 @@ namespace OpenMetaverse.Messages.Linden
 
             OSDArray groupArray = (OSDArray)map["GroupData"];
 
-            //OSDArray newGroupDataArray = (OSDArray)map["NewGroupData"];
-
             GroupDataBlock = new GroupData[groupArray.Count];
 
             for (int i = 0; i < groupArray.Count; i++)
             {
                 OSDMap groupMap = (OSDMap)groupArray[i];
-
 
                 GroupData groupData = new GroupData();
 
@@ -1095,16 +1246,52 @@ namespace OpenMetaverse.Messages.Linden
                 groupData.GroupInsigniaID = groupMap["GroupInsigniaID"].AsUUID();
                 groupData.GroupName = groupMap["GroupName"].AsString();
                 groupData.GroupPowers = (GroupPowers)groupMap["GroupPowers"].AsLong();
-                groupData.ListInProfile = groupMap["ListInProfile"].AsBoolean();
                 groupData.AcceptNotices = groupMap["AcceptNotices"].AsBoolean();
                 GroupDataBlock[i] = groupData;
+            }
+
+            // If request for current groups came very close to login
+            // the Linden sim will not include the NewGroupData block, but
+            // it will instead set all ListInProfile fields to false
+            if (map.ContainsKey("NewGroupData"))
+            {
+                OSDArray newGroupArray = (OSDArray)map["NewGroupData"];
+
+                NewGroupDataBlock = new NewGroupData[newGroupArray.Count];
+
+                for (int i = 0; i < newGroupArray.Count; i++)
+                {
+                    OSDMap newGroupMap = (OSDMap)newGroupArray[i];
+                    NewGroupData newGroupData = new NewGroupData();
+                    newGroupData.ListInProfile = newGroupMap["ListInProfile"].AsBoolean();
+                    NewGroupDataBlock[i] = newGroupData;
+                }
+            }
+            else
+            {
+                NewGroupDataBlock = new NewGroupData[GroupDataBlock.Length];
+                for (int i = 0; i < NewGroupDataBlock.Length; i++)
+                {
+                    NewGroupData newGroupData = new NewGroupData();
+                    newGroupData.ListInProfile = false;
+                    NewGroupDataBlock[i] = newGroupData;
+                }
             }
         }
     }
 
+    /// <summary>
+    /// A message sent from the viewer to the simulator which 
+    /// specifies the language and permissions for others to detect
+    /// the language specified
+    /// </summary>
     public class UpdateAgentLanguageMessage : IMessage
     {
+        /// <summary>A string containng the default language 
+        /// to use for the agent</summary>
         public string Language;
+        /// <summary>true of others are allowed to
+        /// know the language setting</summary>
         public bool LanguagePublic;
 
         /// <summary>
@@ -1130,18 +1317,196 @@ namespace OpenMetaverse.Messages.Linden
             LanguagePublic = map["language_is_public"].AsBoolean();
             Language = map["language"].AsString();
         }
-
     }
 
+    /// <summary>
+    /// An EventQueue message sent from the simulator to an agent when the agent
+    /// leaves a group
+    /// </summary>
+    public class AgentDropGroupMessage : IMessage
+    {
+        /// <summary>An object containing the Agents UUID, and the Groups UUID</summary>
+        public class AgentData
+        {
+            /// <summary>The ID of the Agent leaving the group</summary>
+            public UUID AgentID;
+            /// <summary>The GroupID the Agent is leaving</summary>
+            public UUID GroupID;
+        }
+
+        /// <summary>
+        /// An Array containing the AgentID and GroupID
+        /// </summary>
+        public AgentData[] AgentDataBlock;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(1);
+
+            OSDArray agentDataArray = new OSDArray(AgentDataBlock.Length);
+
+            for (int i = 0; i < AgentDataBlock.Length; i++)
+            {
+                OSDMap agentMap = new OSDMap(2);
+                agentMap["AgentID"] = OSD.FromUUID(AgentDataBlock[i].AgentID);
+                agentMap["GroupID"] = OSD.FromUUID(AgentDataBlock[i].GroupID);
+                agentDataArray.Add(agentMap);
+            }
+            map["AgentData"] = agentDataArray;
+
+            return map;
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            OSDArray agentDataArray = (OSDArray)map["AgentData"];
+
+            AgentDataBlock = new AgentData[agentDataArray.Count];
+
+            for (int i = 0; i < agentDataArray.Count; i++)
+            {
+                OSDMap agentMap = (OSDMap)agentDataArray[i];
+                AgentData agentData = new AgentData();
+
+                agentData.AgentID = agentMap["AgentID"].AsUUID();
+                agentData.GroupID = agentMap["GroupID"].AsUUID();
+
+                AgentDataBlock[i] = agentData;
+            }
+        }
+    }
+
+    /// <summary>Base class for Asset uploads/results via Capabilities</summary>
+    public abstract class AssetUploaderBlock
+    {
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public abstract OSDMap Serialize();
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public abstract void Deserialize(OSDMap map);
+    }
+
+    /// <summary>
+    /// A message sent from the viewer to the simulator to request a temporary upload capability
+    /// which allows an asset to be uploaded
+    /// </summary>
+    public class UploaderRequestUpload : AssetUploaderBlock
+    {
+        /// <summary>The request state (Always "upload")</summary>
+        public string State = "upload";
+        /// <summary>The Capability URL sent by the simulator to upload the baked texture to</summary>
+        public string Url;
+
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(2);
+            map["state"] = OSD.FromString(State);
+            map["uploader"] = OSD.FromString(Url);
+
+            return map;
+        }
+
+        public override void Deserialize(OSDMap map)
+        {
+            Url = map["uploader"].AsString();
+            State = map["state"].AsString();
+        }
+    }
+
+    /// <summary>
+    /// A message sent from the simulator that will inform the agent the upload is complete, 
+    /// and the UUID of the uploaded asset
+    /// </summary>
+    public class UploaderRequestComplete : AssetUploaderBlock
+    {
+        /// <summary>The request state (Always "complete")</summary>
+        public string State = "complete";
+        /// <summary>The uploaded texture asset ID</summary>
+        public UUID AssetID;
+
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(2);
+            map["state"] = OSD.FromString(State);
+            map["new_asset"] = OSD.FromUUID(AssetID);
+
+            return map;
+        }
+
+        public override void Deserialize(OSDMap map)
+        {
+            AssetID = map["new_asset"].AsUUID();
+            State = map["state"].AsString();
+        }
+    }
+
+    /// <summary>
+    /// A message sent from the viewer to the simulator to request a temporary
+    /// capability URI which is used to upload an agents baked appearance textures
+    /// </summary>
+    public class UploadBakedTextureMessage : IMessage
+    {
+        /// <summary>Object containing request or response</summary>
+        public AssetUploaderBlock Request;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            return Request.Serialize();
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("state") && map["state"].AsString().Equals("upload"))
+                Request = new UploaderRequestUpload();
+            else if (map.ContainsKey("state") && map["state"].AsString().Equals("complete"))
+                Request = new UploaderRequestComplete();
+            else
+            {
+                Logger.Log("Unable to deserialize UploadBakedTexture: No message handler exists for state " + map["state"].AsString(), Helpers.LogLevel.Warning);
+
+            }
+
+            if (Request != null)
+                Request.Deserialize(map);
+        }
+    }
     #endregion
 
     #region Voice Messages
+    /// <summary>
+    /// A message sent from the simulator which indicates the minimum version required for 
+    /// using voice chat
+    /// </summary>
     public class RequiredVoiceVersionMessage : IMessage
     {
+        /// <summary>Major Version Required</summary>
         public int MajorVersion;
+        /// <summary>Minor version required</summary>
         public int MinorVersion;
+        /// <summary>The name of the region sending the version requrements</summary>
         public string RegionName;
-        public string Message = "RequiredVoiceVersion";
 
         /// <summary>
         /// Serialize the object
@@ -1153,7 +1518,7 @@ namespace OpenMetaverse.Messages.Linden
             map["major_version"] = OSD.FromInteger(MajorVersion);
             map["minor_version"] = OSD.FromInteger(MinorVersion);
             map["region_name"] = OSD.FromString(RegionName);
-            map["message"] = OSD.FromString(Message);
+
             return map;
         }
 
@@ -1166,14 +1531,21 @@ namespace OpenMetaverse.Messages.Linden
             MajorVersion = map["major_version"].AsInteger();
             MinorVersion = map["minor_version"].AsInteger();
             RegionName = map["region_name"].AsString();
-            Message = map["message"].AsString();
         }
     }
 
+    /// <summary>
+    /// A message sent from the simulator to the viewer containing the 
+    /// voice server URI
+    /// </summary>
     public class ParcelVoiceInfoRequestMessage : IMessage
     {
+        /// <summary>The Parcel ID which the voice server URI applies</summary>
         public int ParcelID;
+        /// <summary>The name of the region</summary>
         public string RegionName;
+        /// <summary>A uri containing the server/channel information
+        /// which the viewer can utilize to participate in voice conversations</summary>
         public Uri SipChannelUri;
 
         /// <summary>
@@ -1208,9 +1580,14 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class ProvisionVoiceAccountRequestMessage : IMessage
     {
+        /// <summary></summary>
         public string Password;
+        /// <summary></summary>
         public string Username;
 
         /// <summary>
@@ -1241,11 +1618,14 @@ namespace OpenMetaverse.Messages.Linden
     #endregion
 
     #region Script/Notecards Messages
-    // upload a script to a tasks inventory
+    /// <summary>
+    /// A message sent by the viewer to the simulator to request a temporary
+    /// capability for a script contained with in a Tasks inventory to be updated
+    /// </summary>
     public class UploadScriptTaskMessage : IMessage
     {
-        public string State; // "upload"
-        public Uri UploaderUrl;
+        /// <summary>Object containing request or response</summary>
+        public AssetUploaderBlock Request;
 
         /// <summary>
         /// Serialize the object
@@ -1253,11 +1633,7 @@ namespace OpenMetaverse.Messages.Linden
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
         {
-            OSDMap map = new OSDMap(2);
-            map["state"] = OSD.FromString(State);
-            map["uploader"] = OSD.FromUri(UploaderUrl);
-
-            return map;
+            return Request.Serialize();
         }
 
         /// <summary>
@@ -1266,18 +1642,32 @@ namespace OpenMetaverse.Messages.Linden
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
-            State = map["state"].AsString();
-            UploaderUrl = map["uploader"].AsUri();
+            if (map.ContainsKey("state") && map["state"].Equals("upload"))
+                Request = new UploaderRequestUpload();
+            else if (map.ContainsKey("state") && map["state"].Equals("complete"))
+                Request = new UploaderRequestComplete();
+            else
+                Logger.Log("Unable to deserialize UploadScriptTask: No message handler exists for state " + map["state"].AsString(), Helpers.LogLevel.Warning);
+
+            Request.Deserialize(map);
         }
     }
 
+    /// <summary>
+    /// A message sent from the simulator to the viewer to indicate
+    /// a Tasks scripts status.
+    /// </summary>
     public class ScriptRunningReplyMessage : IMessage
     {
+        /// <summary>The Asset ID of the script</summary>
         public UUID ItemID;
+        /// <summary>True of the script is compiled/ran using the mono interpreter, false indicates it 
+        /// uses the older less efficient lsl2 interprter</summary>
         public bool Mono;
+        /// <summary>The Task containing the scripts <seealso cref="UUID"/></summary>
         public UUID ObjectID;
+        /// <summary>true of the script is in a running state</summary>
         public bool Running;
-        public string message = "ScriptRunningReply";
 
         /// <summary>
         /// Serialize the object
@@ -1297,7 +1687,6 @@ namespace OpenMetaverse.Messages.Linden
             scriptArray.Add((OSD)scriptMap);
 
             map["Script"] = scriptArray;
-            map["message"] = OSD.FromString(message);
 
             return map;
         }
@@ -1316,14 +1705,56 @@ namespace OpenMetaverse.Messages.Linden
             Mono = scriptMap["Mono"].AsBoolean();
             ObjectID = scriptMap["ObjectID"].AsUUID();
             Running = scriptMap["Running"].AsBoolean();
-            message = map["message"].AsString();
-
         }
     }
 
-    public class UpdateNotecardTaskInventoryMessage
+    /// <summary>
+    /// A message containing the request/response used for updating a gesture
+    /// contained with an agents inventory
+    /// </summary>
+    public class UpdateGestureAgentInventoryMessage : IMessage
     {
+        /// <summary>Object containing request or response</summary>
+        public AssetUploaderBlock Request;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            return Request.Serialize();
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("item_id"))
+                Request = new UpdateAgentInventoryRequestMessage();
+            else if (map.ContainsKey("state") && map["state"].AsString().Equals("upload"))
+                Request = new UploaderRequestUpload();
+            else if (map.ContainsKey("state") && map["state"].AsString().Equals("complete"))
+                Request = new UploaderRequestComplete();
+            else
+                Logger.Log("Unable to deserialize UpdateGestureAgentInventory: No message handler exists: " + map.AsString(), Helpers.LogLevel.Warning);
+
+            if (Request != null)
+                Request.Deserialize(map);
+        }
+    }
+
+    /// <summary>
+    /// A message request/response which is used to update a notecard contained within
+    /// a tasks inventory
+    /// </summary>
+    public class UpdateNotecardTaskInventoryMessage : IMessage
+    {
+        /// <summary>The <seealso cref="UUID"/> of the Task containing the notecard asset to update</summary>
         public UUID TaskID;
+        /// <summary>The notecard assets <seealso cref="UUID"/> contained in the tasks inventory</summary>
         public UUID ItemID;
 
         /// <summary>
@@ -1351,15 +1782,22 @@ namespace OpenMetaverse.Messages.Linden
     }
 
     // TODO: Add Test
-    public class UpdateNotecardAgentInventoryMessage : IMessage
+    /// <summary>
+    /// A reusable class containing a message sent from the viewer to the simulator to request a temporary uploader capability
+    /// which is used to update an asset in an agents inventory
+    /// </summary>
+    public class UpdateAgentInventoryRequestMessage : AssetUploaderBlock
     {
+        /// <summary>
+        /// The Notecard AssetID to replace
+        /// </summary>
         public UUID ItemID;
 
         /// <summary>
         /// Serialize the object
         /// </summary>
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
             map["item_id"] = OSD.FromUUID(ItemID);
@@ -1371,9 +1809,47 @@ namespace OpenMetaverse.Messages.Linden
         /// Deserialize the message
         /// </summary>
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             ItemID = map["item_id"].AsUUID();
+        }
+    }
+
+    /// <summary>
+    /// A message containing the request/response used for updating a notecard
+    /// contained with an agents inventory
+    /// </summary>
+    public class UpdateNotecardAgentInventoryMessage : IMessage
+    {
+        /// <summary>Object containing request or response</summary>
+        public AssetUploaderBlock Request;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            return Request.Serialize();
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("item_id"))
+                Request = new UpdateAgentInventoryRequestMessage();
+            else if (map.ContainsKey("state") && map["state"].AsString().Equals("upload"))
+                Request = new UploaderRequestUpload();
+            else if (map.ContainsKey("state") && map["state"].AsString().Equals("complete"))
+                Request = new UploaderRequestComplete();
+            else
+                Logger.Log("Unable to deserialize UpdateNotecardAgentInventory: No message handler exists for state " + map["state"].AsString(), Helpers.LogLevel.Warning);
+
+            if (Request != null)
+                Request.Deserialize(map);
         }
     }
 
@@ -1416,20 +1892,71 @@ namespace OpenMetaverse.Messages.Linden
     }
 
     /// <summary>
-    /// Request sent by client to update a script inside a tasks inventory
+    /// A message sent from the simulator to the viewer which indicates
+    /// an error occurred while attempting to update a script in an agents or tasks 
+    /// inventory
     /// </summary>
-    public class UpdateScriptTaskMessage : IMessage
+    public class UploaderScriptRequestError : AssetUploaderBlock
     {
+        /// <summary>true of the script was successfully compiled by the simulator</summary>
+        public bool Compiled;
+        /// <summary>The state of the request</summary>
+        public string State;
+        /// <summary>A string containing the error which occured while trying
+        /// to update the script</summary>
+        public string Error;
+        /// <summary>A new AssetID assigned to the script</summary>
+        public UUID AssetID;
+
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(4);
+            map["state"] = OSD.FromString(State);
+            map["new_asset"] = OSD.FromUUID(AssetID);
+            map["compiled"] = OSD.FromBoolean(Compiled);
+
+            OSDArray errorsArray = new OSDArray();
+            errorsArray.Add(Error);
+
+
+            map["errors"] = errorsArray;
+            return map;
+        }
+
+        public override void Deserialize(OSDMap map)
+        {
+            AssetID = map["new_asset"].AsUUID();
+            Compiled = map["compiled"].AsBoolean();
+            State = map["state"].AsString();
+
+            OSDArray errorsArray = (OSDArray)map["errors"];
+            Error = errorsArray[0].AsString();
+        }
+    }
+
+    /// <summary>
+    /// A message sent from the viewer to the simulator
+    /// requesting the update of an existing script contained
+    /// within a tasks inventory
+    /// </summary>
+    public class UpdateScriptTaskUpdateMessage : AssetUploaderBlock
+    {
+        /// <summary>if true, set the script mode to running</summary>
         public bool ScriptRunning;
+        /// <summary>The scripts InventoryItem ItemID to update</summary>
         public UUID ItemID;
+        /// <summary>A lowercase string containing either "mono" or "lsl2" which 
+        /// specifies the script is compiled and ran on the mono runtime, or the older
+        /// lsl runtime</summary>
         public string Target; // mono or lsl2
+        /// <summary>The tasks <see cref="UUID"/> which contains the script to update</summary>
         public UUID TaskID;
 
         /// <summary>
         /// Serialize the object
         /// </summary>
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap(4);
             map["is_script_running"] = OSD.FromBoolean(ScriptRunning);
@@ -1443,7 +1970,7 @@ namespace OpenMetaverse.Messages.Linden
         /// Deserialize the message
         /// </summary>
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             ScriptRunning = map["is_script_running"].AsBoolean();
             ItemID = map["item_id"].AsUUID();
@@ -1452,16 +1979,93 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
-    public class UpdateScriptAgentMessage : IMessage
+    /// <summary>
+    /// A message containing either the request or response used in updating a script inside
+    /// a tasks inventory
+    /// </summary>
+    public class UpdateScriptTaskMessage : IMessage
     {
-        public UUID ItemID;
-        public string Target;
+        /// <summary>Object containing request or response</summary>
+        public AssetUploaderBlock Request;
 
         /// <summary>
         /// Serialize the object
         /// </summary>
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
         public OSDMap Serialize()
+        {
+            return Request.Serialize();
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("task_id"))
+                Request = new UpdateScriptTaskUpdateMessage();
+            else if (map.ContainsKey("state") && map["state"].AsString().Equals("upload"))
+                Request = new UploaderRequestUpload();
+            else if (map.ContainsKey("state") && map["state"].AsString().Equals("complete")
+                && map.ContainsKey("errors"))
+                Request = new UploaderScriptRequestError();
+            else if (map.ContainsKey("state") && map["state"].AsString().Equals("complete"))
+                Request = new UploaderRequestScriptComplete();
+            else
+                Logger.Log("Unable to deserialize UpdateScriptTaskMessage: No message handler exists for state " + map["state"].AsString(), Helpers.LogLevel.Warning);
+
+            if (Request != null)
+                Request.Deserialize(map);
+        }
+    }
+
+    /// <summary>
+    /// Response from the simulator to notify the viewer the upload is completed, and
+    /// the UUID of the script asset and its compiled status
+    /// </summary>
+    public class UploaderRequestScriptComplete : AssetUploaderBlock
+    {
+        /// <summary>The request state (Always "complete")</summary>
+        public string State = "complete";
+        /// <summary>The uploaded texture asset ID</summary>
+        public UUID AssetID;
+        /// <summary>true of the script was compiled successfully</summary>
+        public bool Compiled;
+
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(2);
+            map["state"] = OSD.FromString(State);
+            map["new_asset"] = OSD.FromUUID(AssetID);
+            map["compiled"] = OSD.FromBoolean(Compiled);
+            return map;
+        }
+
+        public override void Deserialize(OSDMap map)
+        {
+            AssetID = map["new_asset"].AsUUID();
+            Compiled = map["compiled"].AsBoolean();
+        }
+    }
+
+    /// <summary>
+    /// A message sent from a viewer to the simulator requesting a temporary uploader capability
+    /// used to update a script contained in an agents inventory
+    /// </summary>
+    public class UpdateScriptAgentRequestMessage : AssetUploaderBlock
+    {
+        /// <summary>The existing asset if of the script in the agents inventory to replace</summary>
+        public UUID ItemID;
+        /// <summary>The language of the script</summary>
+        /// <remarks>Defaults to lsl version 2, "mono" might be another possible option</remarks>
+        public string Target = "lsl2"; // lsl2
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap(2);
             map["item_id"] = OSD.FromUUID(ItemID);
@@ -1473,13 +2077,53 @@ namespace OpenMetaverse.Messages.Linden
         /// Deserialize the message
         /// </summary>
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             ItemID = map["item_id"].AsUUID();
             Target = map["target"].AsString();
         }
-
     }
+
+    /// <summary>
+    /// A message containing either the request or response used in updating a script inside
+    /// an agents inventory
+    /// </summary>
+    public class UpdateScriptAgentMessage : IMessage
+    {
+        /// <summary>Object containing request or response</summary>
+        public AssetUploaderBlock Request;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            return Request.Serialize();
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("item_id"))
+                Request = new UpdateScriptAgentRequestMessage();
+            else if (map.ContainsKey("errors"))
+                Request = new UploaderScriptRequestError();
+            else if (map.ContainsKey("state") && map["state"].AsString().Equals("upload"))
+                Request = new UploaderRequestUpload();
+            else if (map.ContainsKey("state") && map["state"].AsString().Equals("complete"))
+                Request = new UploaderRequestScriptComplete();
+            else
+                Logger.Log("Unable to deserialize UpdateScriptAgent: No message handler exists for state " + map["state"].AsString(), Helpers.LogLevel.Warning);
+
+            if (Request != null)
+                Request.Deserialize(map);
+        }
+    }
+
 
     public class SendPostcardMessage : IMessage
     {
@@ -1525,20 +2169,32 @@ namespace OpenMetaverse.Messages.Linden
 
     #region Grid/Maps
 
+    /// <summary>
+    /// A message sent from the simulator to the viewer which contains an array of map images and their grid coordinates
+    /// </summary>
     public class MapLayerMessage : IMessage
     {
-        // AgentData -> Flags
+        /// <summary></summary>
         public int Flags;
 
+        /// <summary>
+        /// A n object containing map location details
+        /// </summary>
         public class LayerData
         {
+            /// <summary>The Asset ID of the regions tile overlay</summary>
             public UUID ImageID;
+            /// <summary>The grid location of the southern border of the map tile</summary>
             public int Bottom;
+            /// <summary>The grid location of the western border of the map tile</summary>
             public int Left;
+            /// <summary>The grid location of the eastern border of the map tile</summary>
             public int Right;
+            /// <summary>The grid location of the northern border of the map tile</summary>
             public int Top;
         }
 
+        /// <summary>An array containing LayerData items</summary>
         public LayerData[] LayerDataBlocks;
 
         /// <summary>
@@ -1624,49 +2280,38 @@ namespace OpenMetaverse.Messages.Linden
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
-            
+            throw new NotImplementedException();
         }
-
     }
 
     #region ChatSessionRequestMessage
 
 
-    public interface ISearchStatRequest
+    public abstract class SearchStatRequestBlock
     {
-        /// <summary>
-        /// Serialize the object
-        /// </summary>
-        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        OSDMap Serialize();
-
-        /// <summary>
-        /// Deserialize the message
-        /// </summary>
-        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        void Deserialize(OSDMap map);
+        public abstract OSDMap Serialize();
+        public abstract void Deserialize(OSDMap map);
     }
 
     // variant A - the request to the simulator
-    public class SearchStatRequestRequest : ISearchStatRequest
+    public class SearchStatRequestRequest : SearchStatRequestBlock
     {
         public UUID ClassifiedID;
 
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
             map["classified_id"] = OSD.FromUUID(ClassifiedID);
             return map;
         }
 
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             ClassifiedID = map["classified_id"].AsUUID();
         }
-
     }
 
-    public class SearchStatRequestReply : ISearchStatRequest
+    public class SearchStatRequestReply : SearchStatRequestBlock
     {
         public int MapClicks;
         public int ProfileClicks;
@@ -1675,7 +2320,7 @@ namespace OpenMetaverse.Messages.Linden
         public int SearchTeleportClicks;
         public int TeleportClicks;
 
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap(6);
             map["map_clicks"] = OSD.FromInteger(MapClicks);
@@ -1687,7 +2332,7 @@ namespace OpenMetaverse.Messages.Linden
             return map;
         }
 
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             MapClicks = map["map_clicks"].AsInteger();
             ProfileClicks = map["profile_clicks"].AsInteger();
@@ -1700,7 +2345,7 @@ namespace OpenMetaverse.Messages.Linden
 
     public class SearchStatRequestMessage : IMessage
     {
-        public ISearchStatRequest Request;
+        public SearchStatRequestBlock Request;
 
         /// <summary>
         /// Serialize the object
@@ -1728,51 +2373,36 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
-    public interface IChatSessionRequest
+    public abstract class ChatSessionRequestBlock
     {
-        /// <summary>
-        /// Serialize the object
-        /// </summary>
-        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        OSDMap Serialize();
+        /// <summary>A string containing the method used</summary>
+        public string Method;
 
-        /// <summary>
-        /// Deserialize the message
-        /// </summary>
-        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        void Deserialize(OSDMap map);
+        public abstract OSDMap Serialize();
+        public abstract void Deserialize(OSDMap map);
     }
 
     /// <summary>
     /// A request sent from an agent to the Simulator to begin a new conference.
-    /// Contains a list of Agents to be in the conference
-    /// </summary>
-    /* VARIANT A:
+    /// Contains a list of Agents which will be included in the conference
+    /// </summary>    
+    public class ChatSessionRequestStartConference : ChatSessionRequestBlock
     {
-        'method':'start conference'
-        ,
-        'params':
-        [
-            u69d068f3-824f-43ca-8b9a-1542065669b9,
-            ua11dccfb-a55f-406a-bad2-f851af5979be
-        ]
-        ,
-        'session-id':u30dcb931-c2f8-469e-662d-f7c2daacffee
-    } */
-    public class ChatSessionRequestStartConference : IChatSessionRequest
-    {
-        /// <summary>A string containing the method used, for a new session (non group) this will be "start conference"</summary>
-        public string Method = "start conference";
         /// <summary>An array containing the <see cref="UUID"/> of the agents invited to this conference</summary>
         public UUID[] AgentsBlock;
         /// <summary>The conferences Session ID</summary>
         public UUID SessionID;
 
+        public ChatSessionRequestStartConference()
+        {
+            Method = "start conference";
+        }
+
         /// <summary>
         /// Serialize the object
         /// </summary>
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap(3);
             map["method"] = OSD.FromString(Method);
@@ -1791,7 +2421,7 @@ namespace OpenMetaverse.Messages.Linden
         /// Deserialize the message
         /// </summary>
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             Method = map["method"].AsString();
             OSDArray agentsArray = (OSDArray)map["params"];
@@ -1810,50 +2440,32 @@ namespace OpenMetaverse.Messages.Linden
     /// <summary>
     /// A moderation request sent from a conference moderator
     /// Contains an agent and an optional action to take
-    /// </summary>
-    /* VARIANT B:
+    /// </summary>    
+    public class ChatSessionRequestMuteUpdate : ChatSessionRequestBlock
     {
-            'method':'mute update'
-            ,
-            'params':
-            {
-            'agent_id':u69d068f3-824f-43ca-8b9a-1542065669b9
-            ,
-            'mute_info':
-            {
-                'text':t
-            }
-        }
-        ,
-        'session-id':ufdf0ac75-73b7-0320-96a8-ddd295ba7d8c
-    } */
-    public class ChatSessionRequestMuteUpdate : IChatSessionRequest
-    {
-        /// <summary>
-        /// The Session ID
-        /// </summary>
+        /// <summary>The Session ID</summary>
         public UUID SessionID;
-
-        /// <summary>
-        /// The method used to update session, currently known valid values:
-        ///  mute update
-        /// </summary>
-        public string Method = "mute update";
-
+        /// <summary></summary>
         public UUID AgentID;
-        /// <summary>
-        /// A list containing Key/Value pairs, known valid values:
+        /// <summary>A list containing Key/Value pairs, known valid values:
         /// key: text value: true/false - allow/disallow specified agents ability to use text in session
         /// key: voice value: true/false - allow/disallow specified agents ability to use voice in session
         /// </summary>
-        public string RequestKey; // "text" or "voice"
+        /// <remarks>"text" or "voice"</remarks>
+        public string RequestKey;
+        /// <summary></summary>
         public bool RequestValue;
+
+        public ChatSessionRequestMuteUpdate()
+        {
+            Method = "mute update";
+        }
 
         /// <summary>
         /// Serialize the object
         /// </summary>
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap(3);
             map["method"] = OSD.FromString(Method);
@@ -1875,7 +2487,7 @@ namespace OpenMetaverse.Messages.Linden
         /// Deserialize the message
         /// </summary>
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             Method = map["method"].AsString();
             SessionID = map["session-id"].AsUUID();
@@ -1894,29 +2506,25 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
-
-   /*
-    * VARIANT C
-  {
-    'method':'accept invitation'
-    ,
-    'session-id':u30867cec-7906-2ca1-400f-742ad88e4928
-  }*/
     /// <summary>
     /// A message sent from the agent to the simulator which tells the 
     /// simulator we've accepted a conference invitation
     /// </summary>
-    public class ChatSessionAcceptInvitation : IChatSessionRequest
+    public class ChatSessionAcceptInvitation : ChatSessionRequestBlock
     {
-        public string Method = "accept invitation";
         /// <summary>The conference SessionID</summary>
         public UUID SessionID;
+
+        public ChatSessionAcceptInvitation()
+        {
+            Method = "accept invitation";
+        }
 
         /// <summary>
         /// Serialize the object
         /// </summary>
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap(2);
             map["method"] = OSD.FromString(Method);
@@ -1928,7 +2536,7 @@ namespace OpenMetaverse.Messages.Linden
         /// Deserialize the message
         /// </summary>
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             Method = map["method"].AsString();
             SessionID = map["session-id"].AsUUID();
@@ -1937,7 +2545,7 @@ namespace OpenMetaverse.Messages.Linden
 
     public class ChatSessionRequestMessage : IMessage
     {
-        public IChatSessionRequest Request;
+        public ChatSessionRequestBlock Request;
 
         /// <summary>
         /// Serialize the object
@@ -1961,7 +2569,7 @@ namespace OpenMetaverse.Messages.Linden
             else if (map.ContainsKey("method") && map["method"].AsString().Equals("accept invitation"))
                 Request = new ChatSessionAcceptInvitation();
             else
-                Logger.Log("Unable to deserialize ChatSessionRequest: No message handler exists for method " + map["method"].AsString(), Helpers.LogLevel.Warning); 
+                Logger.Log("Unable to deserialize ChatSessionRequest: No message handler exists for method " + map["method"].AsString(), Helpers.LogLevel.Warning);
 
             Request.Deserialize(map);
         }
@@ -2119,7 +2727,6 @@ namespace OpenMetaverse.Messages.Linden
             OSDMap map = new OSDMap(1);
             map["instantmessage"] = imMap;
 
-
             return map;
         }
 
@@ -2169,7 +2776,6 @@ namespace OpenMetaverse.Messages.Linden
         // <llsd><map><key>events</key><array><map><key>body</key><map><key>agent_updates</key><map><key>ca00e3e1-0fdb-4136-8ed4-0aab739b29e8</key><map><key>info</key><map><key>mutes</key><map><key>text</key><boolean>1</boolean></map></map></map></map><key>session_id</key><string>be7a1def-bd8a-5043-5d5b-49e3805adf6b</string><key>updates</key><map /></map><key>message</key><string>ChatterBoxSessionAgentListUpdates</string></map></array><key>id</key><integer>7</integer></map></llsd>
 
         public UUID SessionID;
-        public string Message = "ChatterBoxSessionAgentListUpdates"; // message
 
         public class AgentUpdatesBlock
         {
@@ -2207,7 +2813,7 @@ namespace OpenMetaverse.Messages.Linden
 
                 OSDMap imap = new OSDMap(1);
                 imap["info"] = infoMap;
- 		imap["transition"] = OSD.FromString(Updates[i].Transition);
+                imap["transition"] = OSD.FromString(Updates[i].Transition);
                 imap.Add("mutes", mutesMap);
 
                 agent_updatesMap.Add(Updates[i].AgentID.ToString(), imap);
@@ -2216,8 +2822,6 @@ namespace OpenMetaverse.Messages.Linden
             map.Add("agent_updates", agent_updatesMap);
 
             map["session_id"] = OSD.FromUUID(SessionID);
-
-            map["message"] = OSD.FromString(Message);
 
             return map;
         }
@@ -2231,7 +2835,6 @@ namespace OpenMetaverse.Messages.Linden
 
             OSDMap agent_updates = (OSDMap)map["agent_updates"];
             SessionID = map["session_id"].AsUUID();
-            Message = map["message"].AsString();
 
             List<AgentUpdatesBlock> updatesList = new List<AgentUpdatesBlock>();
 
@@ -2277,8 +2880,8 @@ namespace OpenMetaverse.Messages.Linden
 
                     block.CanVoiceChat = agentPermsMap["can_voice_chat"].AsBoolean();
                     block.IsModerator = agentPermsMap["is_moderator"].AsBoolean();
-            
-  	            block.Transition = infoMap["transition"].AsString();
+
+                    block.Transition = infoMap["transition"].AsString();
 
                     if (infoMap.ContainsKey("mutes"))
                     {
@@ -2306,17 +2909,55 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    /// <summary>
+    /// An EventQueue message sent when the agent is forcibly removed from a chatterbox session
+    /// </summary>
+    public class ForceCloseChatterBoxSessionMessage : IMessage
+    {
+        /// <summary>
+        /// A string containing the reason the agent was removed
+        /// </summary>
+        public string Reason;
+        /// <summary>
+        /// The ChatterBoxSession's SessionID
+        /// </summary>
+        public UUID SessionID;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(2);
+            map["reason"] = OSD.FromString(Reason);
+            map["session_id"] = OSD.FromUUID(SessionID);
+
+            return map;
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            Reason = map["reason"].AsString();
+            SessionID = map["session_id"].AsUUID();
+        }
+    }
+
     #endregion
 
     #region EventQueue
 
-    public interface IEventMessage
+    public abstract class EventMessageBlock
     {
-        OSDMap Serialize();
-        void Deserialize(OSDMap map);
+        public abstract OSDMap Serialize();
+        public abstract void Deserialize(OSDMap map);
     }
 
-    public class EventQueueAck : IEventMessage
+    public class EventQueueAck : EventMessageBlock
     {
         public int AckID;
         public bool Done;
@@ -2325,7 +2966,7 @@ namespace OpenMetaverse.Messages.Linden
         /// Serialize the object
         /// </summary>
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap();
             map["ack"] = OSD.FromInteger(AckID);
@@ -2337,29 +2978,29 @@ namespace OpenMetaverse.Messages.Linden
         /// Deserialize the message
         /// </summary>
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             AckID = map["ack"].AsInteger();
             Done = map["done"].AsBoolean();
         }
     }
 
-    public class EventQueueEvent : IEventMessage
+    public class EventQueueEvent : EventMessageBlock
     {
-        public int Sequence;
-
         public class QueueEvent
         {
             public IMessage EventMessage;
             public string MessageKey;
         }
+
+        public int Sequence;
         public QueueEvent[] MessageEvents;
 
         /// <summary>
         /// Serialize the object
         /// </summary>
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        public OSDMap Serialize()
+        public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap(1);
 
@@ -2383,7 +3024,7 @@ namespace OpenMetaverse.Messages.Linden
         /// Deserialize the message
         /// </summary>
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        public void Deserialize(OSDMap map)
+        public override void Deserialize(OSDMap map)
         {
             Sequence = map["id"].AsInteger();
             OSDArray arrayEvents = (OSDArray)map["events"];
@@ -2402,39 +3043,37 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
-        public class EventQueueGetMessage : IMessage
+    public class EventQueueGetMessage : IMessage
+    {
+        public EventMessageBlock Messages;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
         {
-            public IEventMessage Messages;
-
-            /// <summary>
-            /// Serialize the object
-            /// </summary>
-            /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-            public OSDMap Serialize()
-            {
-                return Messages.Serialize();
-            }
-
-            /// <summary>
-            /// Deserialize the message
-            /// </summary>
-            /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-            public void Deserialize(OSDMap map)
-            {
-                if (map.ContainsKey("ack"))
-                    Messages = new EventQueueAck();
-                else if (map.ContainsKey("events"))
-                    Messages = new EventQueueEvent();
-                else
-                    Logger.Log("Unable to deserialize EventQueueGetMessage: No message handler exists for event", Helpers.LogLevel.Warning);
-
-                Messages.Deserialize(map);
-            }
+            return Messages.Serialize();
         }
-    
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("ack"))
+                Messages = new EventQueueAck();
+            else if (map.ContainsKey("events"))
+                Messages = new EventQueueEvent();
+            else
+                Logger.Log("Unable to deserialize EventQueueGetMessage: No message handler exists for event", Helpers.LogLevel.Warning);
+
+            Messages.Deserialize(map);
+        }
+    }
 
     #endregion
-
 
     #region Stats Messages
 
@@ -2689,12 +3328,12 @@ namespace OpenMetaverse.Messages.Linden
 
             OSDArray agentDataArray = new OSDArray();
             agentDataArray.Add(agentIDmap);
-            
+
             map["AgentData"] = agentDataArray;
 
             // add the QueryData map
             OSDArray dataBlocksArray = new OSDArray(QueryDataBlocks.Length);
-            for(int i = 0; i < QueryDataBlocks.Length; i++)
+            for (int i = 0; i < QueryDataBlocks.Length; i++)
             {
                 OSDMap queryDataMap = new OSDMap(14);
                 queryDataMap["ActualArea"] = OSD.FromInteger(QueryDataBlocks[i].ActualArea);
@@ -2732,16 +3371,16 @@ namespace OpenMetaverse.Messages.Linden
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
-            OSDArray agentDataArray = (OSDArray) map["AgentData"];
+            OSDArray agentDataArray = (OSDArray)map["AgentData"];
 
             OSDMap agentDataMap = (OSDMap)agentDataArray[0];
             AgentID = agentDataMap["AgentID"].AsUUID();
             QueryID = agentDataMap["QueryID"].AsUUID();
 
 
-            OSDArray dataBlocksArray = (OSDArray) map["QueryData"];
+            OSDArray dataBlocksArray = (OSDArray)map["QueryData"];
             QueryDataBlocks = new QueryData[dataBlocksArray.Count];
-            for(int i = 0; i < dataBlocksArray.Count; i++)
+            for (int i = 0; i < dataBlocksArray.Count; i++)
             {
                 OSDMap dataMap = (OSDMap)dataBlocksArray[i];
                 QueryData data = new QueryData();
@@ -2762,8 +3401,8 @@ namespace OpenMetaverse.Messages.Linden
                 QueryDataBlocks[i] = data;
             }
 
-            OSDArray transactionArray = (OSDArray) map["TransactionData"];
-            OSDMap transactionDataMap = (OSDMap) transactionArray[0];
+            OSDArray transactionArray = (OSDArray)map["TransactionData"];
+            OSDMap transactionDataMap = (OSDMap)transactionArray[0];
             TransactionID = transactionDataMap["TransactionID"].AsUUID();
         }
     }
@@ -2813,7 +3452,7 @@ namespace OpenMetaverse.Messages.Linden
             public string ProductSku;
             public int SalePrice;
         }
-    
+
         public QueryReply[] QueryReplies;
 
         /// <summary>
@@ -2861,21 +3500,21 @@ namespace OpenMetaverse.Messages.Linden
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public void Deserialize(OSDMap map)
         {
-            OSDArray agentDataArray = (OSDArray) map["AgentData"];
+            OSDArray agentDataArray = (OSDArray)map["AgentData"];
             OSDMap agentDataMap = (OSDMap)agentDataArray[0];
             AgentID = agentDataMap["AgentID"].AsUUID();
 
-            OSDArray queryDataArray = (OSDArray) map["QueryData"];
-            OSDMap queryDataMap = (OSDMap) queryDataArray[0];
+            OSDArray queryDataArray = (OSDArray)map["QueryData"];
+            OSDMap queryDataMap = (OSDMap)queryDataArray[0];
             QueryID = queryDataMap["QueryID"].AsUUID();
 
-            OSDArray queryRepliesArray = (OSDArray) map["QueryReplies"];
+            OSDArray queryRepliesArray = (OSDArray)map["QueryReplies"];
 
             QueryReplies = new QueryReply[queryRepliesArray.Count];
-            for(int i = 0; i < queryRepliesArray.Count; i++)
+            for (int i = 0; i < queryRepliesArray.Count; i++)
             {
                 QueryReply reply = new QueryReply();
-                OSDMap replyMap = (OSDMap) queryRepliesArray[i];
+                OSDMap replyMap = (OSDMap)queryRepliesArray[i];
                 reply.ActualArea = replyMap["ActualArea"].AsInteger();
                 reply.Auction = replyMap["Auction"].AsBoolean();
                 reply.ForSale = replyMap["ForSale"].AsBoolean();

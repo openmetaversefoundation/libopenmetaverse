@@ -878,7 +878,7 @@ namespace OpenMetaverse.Packets
             return String.Format("{0,30}: {1,-2} {2,-37} [ParcelCategory]",
                 fieldName,
                 fieldData,
-                "(" + (ParcelCategory)(uint)fieldData + ")");
+                "(" + fieldData + ")");
         }
 
         private static string DecodeObjectUpdateFlags(string fieldName, object fieldData)
@@ -1004,10 +1004,10 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeInventoryFlags(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-37} [FixMe]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [InventoryItemFlags]",
                                  fieldName,
-                                  fieldData,
-                                 "(" + fieldData + ")");
+                                 (uint)fieldData,
+                                 "(" + (InventoryItemFlags)(uint)fieldData + ")");
         }
 
         private static string DecodeObjectSaleType(string fieldName, object fieldData)
@@ -1470,7 +1470,7 @@ namespace OpenMetaverse.Packets
                     {
                         var p = propertyInfo.GetValue(nestedArrayRecord, null);
                         string s = Utils.BytesToString((byte[])p);
-                        
+                        /* Leave the c for now at the end, it signifies something useful that still needs to be done */
                         result.AppendFormat("{0, 30}: {1,-40} [{2}]c" + Environment.NewLine,
                             propertyInfo.Name,
                             Utils.BytesToString((byte[])propertyInfo.GetValue(nestedArrayRecord, null)),

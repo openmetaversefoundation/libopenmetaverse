@@ -346,7 +346,7 @@ namespace Prebuild.Core.Targets
 							ss.WriteLine("				  {0}", "<include name=\"" + Helper.NormalizePath(PrependPath(file), '/') + "\" />");
 							break;
 						default:
-							if (project.Files.GetSubType(file) != SubType.Code && project.Files.GetSubType(file) != SubType.Settings)
+							if (file.EndsWith(".resx") || (project.Files.GetSubType(file) != SubType.Code && project.Files.GetSubType(file) != SubType.Settings))
 							{
 								ss.WriteLine("				  <include name=\"{0}\" />", file.Substring(0, file.LastIndexOf('.')) + ".resx");
 							}
@@ -364,7 +364,8 @@ namespace Prebuild.Core.Targets
 					switch (project.Files.GetBuildAction(file))
 					{
 						case BuildAction.Compile:
-							ss.WriteLine("				  <include name=\"" + Helper.NormalizePath(PrependPath(file), '/') + "\" />");
+                            if (!file.EndsWith(".resx"))
+							    ss.WriteLine("				  <include name=\"" + Helper.NormalizePath(PrependPath(file), '/') + "\" />");
 							break;
 						default:
 							break;
@@ -390,7 +391,7 @@ namespace Prebuild.Core.Targets
                     foreach (string s in conf.Options.SuppressWarnings.Split(new char[] { ',', ' ' }))
                     {
                         // duplicate check
-                        if (!suppressWarningsArray.Contains(s))
+                        if (!String.IsNullOrEmpty(s) && !suppressWarningsArray.Contains(s))
                         {
                             suppressWarningsArray.Add(s);
                             ss.WriteLine("                <warning number=\"{0}\" />", s);

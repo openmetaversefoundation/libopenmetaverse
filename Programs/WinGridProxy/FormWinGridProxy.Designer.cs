@@ -1684,6 +1684,7 @@
             // 
             // saveFilterSelectionsToolStripMenuItem
             // 
+            this.saveFilterSelectionsToolStripMenuItem.Enabled = false;
             this.saveFilterSelectionsToolStripMenuItem.Name = "saveFilterSelectionsToolStripMenuItem";
             this.saveFilterSelectionsToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
             this.saveFilterSelectionsToolStripMenuItem.Text = "Save Filter Selections";
@@ -1691,6 +1692,7 @@
             // 
             // loadFilterSelectionsToolStripMenuItem
             // 
+            this.loadFilterSelectionsToolStripMenuItem.Enabled = false;
             this.loadFilterSelectionsToolStripMenuItem.Name = "loadFilterSelectionsToolStripMenuItem";
             this.loadFilterSelectionsToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
             this.loadFilterSelectionsToolStripMenuItem.Text = "Load Filter Selections";
@@ -2003,7 +2005,7 @@
             // openFileDialog1
             // 
             this.openFileDialog1.DefaultExt = "osd";
-            this.openFileDialog1.FileName = "openFileDialog1";
+            this.openFileDialog1.FileName = "sessions";
             this.openFileDialog1.Filter = "Session Files|*.osd|All Files|*.*";
             this.openFileDialog1.Title = "Open Session Archive";
             // 
@@ -2016,7 +2018,7 @@
             // openFileDialog2
             // 
             this.openFileDialog2.DefaultExt = "osd";
-            this.openFileDialog2.FileName = "openFileDialog2";
+            this.openFileDialog2.FileName = "filters";
             this.openFileDialog2.Filter = "Filter Files|*.osd|All Files|*.*";
             this.openFileDialog2.Title = "Load Saved Filter Settings";
             // 

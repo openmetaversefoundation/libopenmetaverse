@@ -10,7 +10,7 @@ using Nwc.XmlRpc;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 using GridProxy;
-using Logger=OpenMetaverse.Logger;
+using Logger = OpenMetaverse.Logger;
 
 
 namespace GridProxy
@@ -21,6 +21,7 @@ namespace GridProxy
         private Dictionary<string, CommandDelegate> commandDelegates = new Dictionary<string, CommandDelegate>();
         private UUID agentID;
         private UUID sessionID;
+        private UUID secureSessionID;
         private UUID inventoryRoot;
         private bool logLogin = false;
         private string[] args;
@@ -40,6 +41,11 @@ namespace GridProxy
         public UUID SessionID
         {
             get { return sessionID; }
+        }
+
+        public UUID SecureSessionID
+        {
+            get { return secureSessionID; }
         }
 
         public UUID InventoryRoot
@@ -103,7 +109,7 @@ namespace GridProxy
                 }
 
             commandDelegates["/load"] = new CommandDelegate(CmdLoad);
-       }
+        }
 
         private void CmdLoad(string[] words)
         {
@@ -163,7 +169,9 @@ namespace GridProxy
                 agentID = new UUID((string)values["agent_id"]);
             if (values.Contains("session_id"))
                 sessionID = new UUID((string)values["session_id"]);
-            if (values.Contains("inventory-root")) 
+            if (values.Contains("secure_session_id"))
+                secureSessionID = new UUID((string)values["secure_session_id"]);
+            if (values.Contains("inventory-root"))
             {
                 inventoryRoot = new UUID(
                     (string)((System.Collections.Hashtable)(((System.Collections.ArrayList)values["inventory-root"])[0]))["folder_id"]
@@ -223,5 +231,4 @@ namespace GridProxy
         // public abstract ProxyPlugin(ProxyFrame main);
         public abstract void Init();
     }
-
 }
