@@ -158,7 +158,6 @@ namespace OpenMetaverse.GUI
             _Client.Grid.OnCoarseLocationUpdate += new GridManager.CoarseLocationUpdateCallback(Grid_OnCoarseLocationUpdate);
             _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
             _Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
-            _Client.Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
             _Client.Objects.OnObjectUpdated += new ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
         }
 
@@ -296,6 +295,10 @@ namespace OpenMetaverse.GUI
                         {
                             this.Items.Remove(trackedAvatar.ListViewItem);
                             _UntrackedAvatars.Remove(trackedAvatar.ID);
+                        }
+                        lock (_TrackedAvatars)
+                        {
+                            if (_TrackedAvatars.TryGetValue(removedEntries[i], out trackedAvatar)) RemoveAvatar(trackedAvatar.Avatar.LocalID);
                         }
                     }
                     for (int i = 0; i < newEntries.Count; i++)
@@ -438,14 +441,6 @@ namespace OpenMetaverse.GUI
         void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
         {
             UpdateAvatar(avatar);
-        }
-
-        void Objects_OnObjectKilled(Simulator simulator, uint objectID)
-        {
-            lock (_TrackedAvatars)
-            {
-                if (_TrackedAvatars.ContainsKey(objectID)) RemoveAvatar(objectID);
-            }
         }
 
         void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
