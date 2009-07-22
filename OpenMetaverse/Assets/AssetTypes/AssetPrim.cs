@@ -157,7 +157,8 @@ namespace OpenMetaverse.Assets
 
             reader.ReadStartElement("SceneObjectPart");
             obj.CreatorIdentity = ReadUUID(reader, "CreatorID").ToString();
-            UUID folderID = ReadUUID(reader, "FolderID");
+            //warning CS0219: The variable `folderID' is assigned but its value is never used
+            //UUID folderID = ReadUUID(reader, "FolderID");
             obj.Inventory.Serial = reader.ReadElementContentAsInt("InventorySerial", String.Empty);
             
             // FIXME: Parse TaskInventory
@@ -185,7 +186,8 @@ namespace OpenMetaverse.Assets
             Vector3 offsetPosition = ReadVector(reader, "OffsetPosition");
             obj.Rotation = ReadQuaternion(reader, "RotationOffset");
             obj.Velocity = ReadVector(reader, "Velocity");
-            Vector3 rotationalVelocity = ReadVector(reader, "RotationalVelocity");
+            //warning CS0219: The variable `rotationalVelocity' is assigned but its value is never used
+            //Vector3 rotationalVelocity = ReadVector(reader, "RotationalVelocity");
             obj.AngularVelocity = ReadVector(reader, "AngularVelocity");
             obj.Acceleration = ReadVector(reader, "Acceleration");
             obj.Description = reader.ReadElementString("Description");
@@ -307,10 +309,12 @@ namespace OpenMetaverse.Assets
             obj.ParentID = (uint)reader.ReadElementContentAsLong("ParentID", String.Empty);
             obj.CreationDate = Utils.UnixTimeToDateTime(reader.ReadElementContentAsInt("CreationDate", String.Empty));
             //obj.Category = reader.ReadElementContentAsInt("Category", String.Empty);
-            int category = reader.ReadElementContentAsInt("Category", String.Empty);
+            //warning CS0219: The variable `category' is assigned but its value is never used
+            //int category = reader.ReadElementContentAsInt("Category", String.Empty);
             obj.SalePrice = reader.ReadElementContentAsInt("SalePrice", String.Empty);
             obj.SaleType = reader.ReadElementContentAsInt("ObjectSaleType", String.Empty);
-            int ownershipCost = reader.ReadElementContentAsInt("OwnershipCost", String.Empty);
+            //warning CS0219: The variable `ownershipCost' is assigned but its value is never used
+            //int ownershipCost = reader.ReadElementContentAsInt("OwnershipCost", String.Empty);
             obj.GroupIdentity = ReadUUID(reader, "GroupID").ToString();
             obj.OwnerIdentity = ReadUUID(reader, "OwnerID").ToString();
             obj.LastOwnerIdentity = ReadUUID(reader, "LastOwnerID").ToString();

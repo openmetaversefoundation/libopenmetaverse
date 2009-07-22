@@ -87,7 +87,7 @@ namespace OpenMetaverse.GUI
         /// </summary>
         /// <param name="name"></param>
         /// <param name="type"></param>
-        /// <param name="text"></param>
+        /// <param name="message"></param>
         /// <param name="color"></param>
         public void LogChat(string name, ChatType type, string message, Color color)
         {

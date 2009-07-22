@@ -49,7 +49,7 @@ namespace PrimWorkshop
         int ClickY = 0;
         uint LastHit = 0;
 
-        //
+        //warning CS0414: The private field `PrimWorkshop.frmBrowser.PivotPosition' is assigned but its value is never used
         Vector3 PivotPosition = Vector3.Zero;
         private bool Pivoting;
         Point LastPivot;
@@ -58,7 +58,7 @@ namespace PrimWorkshop
         const int SELECT_BUFSIZE = 512;
         uint[] SelectBuffer = new uint[SELECT_BUFSIZE];
 
-        //
+        //warning CS0414: The private field `PrimWorkshop.frmBrowser.msg' is assigned but its value is never used
         NativeMethods.Message msg;
         private bool AppStillIdle
         {

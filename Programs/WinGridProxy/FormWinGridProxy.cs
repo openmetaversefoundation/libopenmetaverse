@@ -363,7 +363,6 @@ namespace WinGridProxy
                 if (tag is string && tag.ToString().StartsWith("Packet Type:"))
                 {
                     Be.Windows.Forms.DynamicByteProvider data = new Be.Windows.Forms.DynamicByteProvider(Utils.StringToBytes(tag.ToString()));
-                    var ei = e.Item;
                     if (e.Item.ImageIndex == 1) // sent item
                     {
                         richTextBoxDecodedRequest.Text = String.Format("{0}", tag);
@@ -930,7 +929,7 @@ namespace WinGridProxy
                         session["packet"].AsString(),
                         session["size"].AsString(),
                         session["host"].AsString()}));
-                    var id = addedItem.SubItems[1];
+                    
                     addedItem.ImageIndex = session["image_index"].AsInteger();
                     addedItem.BackColor = Color.GhostWhite; // give imported items a different color
                     addedItem.Tag = Utils.BytesToString(session["tag"].AsBinary());
@@ -1163,6 +1162,8 @@ namespace WinGridProxy
 
                     string name = packetTypes[i].Name;
 
+                    // warning CS0219: The variable `pType' is assigned but its value is never used
+                    // this is used to check for valid names.
                     PacketType pType;
 
                     try
