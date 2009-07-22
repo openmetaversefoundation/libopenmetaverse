@@ -157,7 +157,7 @@ namespace OpenMetaverse.Assets
         /// <summary>
         /// Decode the raw asset data including the Linden Text properties
         /// </summary>
-        /// <returns>true if the AssetData was successfully decoded to a string</returns>
+        /// <returns>true if the AssetData was successfully decoded</returns>
         public override bool Decode()
         {
             string data = Utils.BytesToString(AssetData);
