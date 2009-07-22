@@ -9,8 +9,8 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyDescription("OpenMetaverse library")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("openmetaverse.org")]
-[assembly: AssemblyProduct("OpenMetaverse")]
-[assembly: AssemblyCopyright("Copyright © openmetaverse.org 2006-2008")]
+[assembly: AssemblyProduct("libOpenMetaverse")]
+[assembly: AssemblyCopyright("Copyright © openmetaverse.org 2006-2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]		
 
@@ -25,7 +25,7 @@ using System.Runtime.CompilerServices;
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
 
-[assembly: AssemblyVersion("1.0.0.*")]
+[assembly: AssemblyVersion("0.7.0.*")]
 
 //
 // In order to sign your assembly you must specify a key to use. Refer to the 

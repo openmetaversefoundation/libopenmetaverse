@@ -64,13 +64,8 @@ namespace OpenMetaverse.Tests
             Assert.IsTrue(a == b, "UUID hyphenated string constructor failed, should have " + a.ToString() + 
                 " but we got " + b.ToString());
 
-            // ToString()
-            string one = a.ToString();
-            string two = b.ToString();
-            Assert.IsTrue(a == b);
-            one = a.ToString();
-            two = b.ToString();
-            Assert.IsTrue(a == b);
+            // ToString()            
+            Assert.IsTrue(a == b);                        
             Assert.IsTrue(a == (UUID)zeroonetwo);
 
             // TODO: CRC test

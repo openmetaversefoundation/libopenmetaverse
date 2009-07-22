@@ -201,7 +201,8 @@ namespace OpenMetaverse.Assets
                     // Index
                     if (!(m = Regex.Match(lines[i++], @"ext char index\s+(\d+)")).Success)
                         throw new Exception("missing ext char index");
-                    int index = int.Parse(m.Groups[1].Value);
+                    //warning CS0219: The variable `index' is assigned but its value is never used
+                    //int index = int.Parse(m.Groups[1].Value);
 
                     // Inventory item
                     if (!(m = Regex.Match(lines[i++], @"inv_item\s+0")).Success)

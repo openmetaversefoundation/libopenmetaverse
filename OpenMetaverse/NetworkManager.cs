@@ -216,7 +216,7 @@ namespace OpenMetaverse
         /// </code>
         /// Same as above but using inline delegates
         /// <code>
-        /// Client.Network.OnLogoutReply += delegate(List<UUID> inventoryItems)
+        /// Client.Network.OnLogoutReply += delegate(List&lt;UUID&gt; inventoryItems)
         /// {
         ///    Console.WriteLine("Simulator confirmed logout");
         /// };

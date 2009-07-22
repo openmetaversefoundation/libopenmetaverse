@@ -167,7 +167,6 @@ namespace OpenMetaverse.TestClient
 
         string DownloadNotecard(UUID itemID, UUID assetID)
         {
-            UUID transferID = UUID.Zero;
             AutoResetEvent assetDownloadEvent = new AutoResetEvent(false);
             byte[] notecardData = null;
             string error = "Timeout";

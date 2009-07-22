@@ -33,6 +33,7 @@ namespace groupmanager
             while (!IsHandleCreated)
             {
                 // Force handle creation
+                // warning CS0219: The variable `temp' is assigned but its value is never used
                 IntPtr temp = Handle;
             }
 

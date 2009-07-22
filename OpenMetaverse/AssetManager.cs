@@ -381,13 +381,14 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.InitiateDownload, new NetworkManager.PacketCallback(InitiateDownloadPacketHandler));
 
         }
-
+        
         /// <summary>
         /// Request an asset download
         /// </summary>
         /// <param name="assetID">Asset UUID</param>
         /// <param name="type">Asset type, must be correct for the transfer to succeed</param>
         /// <param name="priority">Whether to give this transfer an elevated priority</param>
+        /// <param name="callback">The callback to fire when the simulator responds with the asset data</param>
         public void RequestAsset(UUID assetID, AssetType type, bool priority, AssetReceivedCallback callback)
         {
             RequestAsset(assetID, type, priority, SourceType.Asset, callback);
@@ -400,6 +401,7 @@ namespace OpenMetaverse
         /// <param name="type">Asset type, must be correct for the transfer to succeed</param>
         /// <param name="priority">Whether to give this transfer an elevated priority</param>
         /// <param name="sourceType">Source location of the requested asset</param>
+        /// <param name="callback">The callback to fire when the simulator responds with the asset data</param>
         public void RequestAsset(UUID assetID, AssetType type, bool priority, SourceType sourceType, AssetReceivedCallback callback)
         {
             AssetDownload transfer = new AssetDownload();

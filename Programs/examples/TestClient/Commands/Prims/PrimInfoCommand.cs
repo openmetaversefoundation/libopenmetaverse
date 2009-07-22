@@ -27,7 +27,8 @@ namespace OpenMetaverse.TestClient
 
                 if (target != null)
                 {
-                    Logger.Log("Light: " + target.Light.ToString(), Helpers.LogLevel.Info, Client);
+                    if(target.Light != null)
+                        Logger.Log("Light: " + target.Light.ToString(), Helpers.LogLevel.Info, Client);
 
                     if (target.ParticleSys.CRC != 0)
                         Logger.Log("Particles: " + target.ParticleSys.ToString(), Helpers.LogLevel.Info, Client);

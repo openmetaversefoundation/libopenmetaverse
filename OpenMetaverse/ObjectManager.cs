@@ -409,7 +409,7 @@ namespace OpenMetaverse
 
         void Network_OnConnected(object sender)
         {
-            if (Settings.USE_INTERPOLATION_TIMER)
+            if (Client.Settings.USE_INTERPOLATION_TIMER)
             {
                 InterpolationTimer = new Timer(InterpolationTimer_Elapsed, null, Settings.INTERPOLATION_INTERVAL, Timeout.Infinite);
             }
@@ -1723,6 +1723,12 @@ namespace OpenMetaverse
                             Logger.Log("Got a ZlibCompressed ObjectUpdate, implement me!",
                                 Helpers.LogLevel.Warning, Client);
                             continue;
+                        }
+
+                        // Automatically request ObjectProperties for prim if it was rezzed selected.
+                        if ((prim.Flags & PrimFlags.CreateSelected) != 0)
+                        {
+                            SelectObject(simulator, prim.LocalID);
                         }
 
                         prim.NameValues = nameValues;

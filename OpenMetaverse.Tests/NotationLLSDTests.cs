@@ -711,9 +711,7 @@ namespace OpenMetaverse.Tests
             OSD llsdTwo = OSD.FromInteger(1);
             llsdArray.Add(llsdOne);
             llsdArray.Add(llsdTwo);
-
-            string sOne = OSDParser.SerializeLLSDNotationFormatted(llsdArray);
-            
+                        
             OSDMap llsdMap = new OSDMap();
             OSD llsdThree = OSD.FromInteger(2);
             llsdMap["test1"] = llsdThree;
@@ -721,9 +719,7 @@ namespace OpenMetaverse.Tests
             llsdMap["test2"] = llsdFour;
 
             llsdArray.Add(llsdMap);
-
-            string sTwo = OSDParser.SerializeLLSDNotationFormatted(llsdArray);
-
+            
             OSDArray llsdArrayTwo = new OSDArray();
             OSD llsdFive = OSD.FromString("asdflkhjasdhj");
             OSD llsdSix = OSD.FromString("asdkfhasjkldfghsd");

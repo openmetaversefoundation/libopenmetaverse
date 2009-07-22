@@ -1430,10 +1430,7 @@ namespace GridProxy
             private Dictionary<uint, Packet> outgoingAcks;
             private List<uint> incomingSeenAcks;
             private List<uint> outgoingSeenAcks;
-
-            private List<XmlRpcRequestDelegate> loginRequestDelegates = new List<XmlRpcRequestDelegate>();
-            private List<XmlRpcResponseDelegate> loginResponseDelegates = new List<XmlRpcResponseDelegate>();
-
+            
             // SimProxy: construct a proxy for a single simulator
             public SimProxy(ProxyConfig proxyConfig, IPEndPoint simEndPoint, Proxy proxy)
             {

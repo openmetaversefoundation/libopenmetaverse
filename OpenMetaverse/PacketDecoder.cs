@@ -650,12 +650,7 @@ namespace OpenMetaverse.Packets
             return result.ToString();
 
         }
-
-        private static string DecodeGenericByteArrayToFormattedString(string fieldName, object fieldData)
-        {
-                return String.Format("{0,30}: {1,-40} [String]", fieldName, Utils.BytesToString((byte[]) fieldData));   
-        }
-
+       
         private static string DecodeEstateParameter(string fieldName, object fieldData)
         {
             byte[] bytes = (byte[])fieldData;
@@ -857,14 +852,7 @@ namespace OpenMetaverse.Packets
                 fieldData,
                 "(" + (AccessList)(uint)fieldData + ")");
         }
-
-        private static string DecodeParcelACLReply(string fieldName, object fieldData)
-        {
-            return String.Format("{0,30}: {1,-10} {2,-29} [ParcelAccessFlags]",
-                fieldName,
-                fieldData,
-                "(" + (ParcelAccessFlags)(uint)fieldData + ")");
-        }
+       
         private static string SearchTypeFlags(string fieldName, object fieldData)
         {
             return String.Format("{0,30}: {1,-10} {2,-29} [DirectoryManager.SearchTypeFlags]",
@@ -1469,13 +1457,11 @@ namespace OpenMetaverse.Packets
                     else
                     {
                         var p = propertyInfo.GetValue(nestedArrayRecord, null);
-                        string s = Utils.BytesToString((byte[])p);
                         /* Leave the c for now at the end, it signifies something useful that still needs to be done */
                         result.AppendFormat("{0, 30}: {1,-40} [{2}]c" + Environment.NewLine,
                             propertyInfo.Name,
                             Utils.BytesToString((byte[])propertyInfo.GetValue(nestedArrayRecord, null)),
                             propertyInfo.PropertyType.Name);
-                        //result.AppendFormat("TEST: {0} ### ", s);
                     }
                 }
                 result.AppendFormat("{0,32}" + Environment.NewLine, "***");
