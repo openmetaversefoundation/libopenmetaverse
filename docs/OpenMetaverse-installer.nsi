@@ -92,7 +92,7 @@ BrandingText "OpenMetaverse Installer v2.36"
 ;!define MUI_FINISHPAGE_RUN "$INSTDIR\GUITestClient.exe"
 !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\docs\README.txt"
 !define MUI_FINISHPAGE_LINK "OpenMetaverse"
-!define MUI_FINISHPAGE_LINK_LOCATION "http://www.libsecondlife.org/"
+!define MUI_FINISHPAGE_LINK_LOCATION "http://www.openmetaverse.org/"
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages
@@ -115,8 +115,6 @@ Section "!Base Libraries" SEC01
   SetOutPath "$INSTDIR\bin"
   CreateDirectory "$SMPROGRAMS\OpenMetaverse\libomv"
   SetOverwrite ifnewer
-;  File "..\bin\*.dll"
-;  File "..\bin\*.config"
   File "..\bin\log4net.dll"
   File "..\bin\openjpeg-dotnet.dll"
   File "..\bin\OpenMetaverse.dll"
@@ -127,6 +125,8 @@ Section "!Base Libraries" SEC01
   File "..\bin\OpenMetaverseTypes.dll"
   File "..\bin\OpenMetaverse.dll.config"
   File "..\README.txt"
+  File "..\License.txt"
+  File "..\bin\XMLRPC.dll"
 SectionEnd
 
 Section "API Documentation" SEC02
@@ -158,6 +158,9 @@ Section "Example Applications" SEC03
    File "..\bin\Tao.OpenGL.dll"
    File "..\bin\Tao.Platform.Windows.dll"
    File "..\bin\ICSharpCode.SharpZipLib.dll"
+   File "..\bin\WinGridProxy.exe"
+   File "..\bin\WinGridProxy.exe.config"
+   File "..\bin\Be.Windows.Forms.HexBox.dll"
 SectionEnd
 
 Section -AdditionalIcons
@@ -218,4 +221,5 @@ Section Uninstall
   DeleteRegKey HKLM "${PRODUCT_DIR_REGKEY}"
   SetAutoClose true
 SectionEnd
+
 

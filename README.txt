@@ -1,4 +1,4 @@
-OpenMetaverse Library Quick Start (Formerly known as libsecondlife) 
+OpenMetaverse Library Quick Start
 
 
 Finding Help
@@ -27,11 +27,11 @@ Getting started on Windows
 Prerequisites (all Freely Available)
 --------------------------------------
 
-Microsoft .NET Framework 2.0 (v2.0.50727 or later) - Get directly from Windows Update.
+Microsoft .NET Framework 3.5 - Get directly from Windows Update.
 Visual C# Express - http://msdn.microsoft.com/vstudio/express/visualcsharp/
 
 Optional-
-nAnt (0.85) - http://nant.sourceforge.net/
+nAnt (0.86) - http://nant.sourceforge.net/
 nUnit Framework (2.2.8 or greater) - http://www.nunit.org/
 
 
@@ -63,8 +63,8 @@ Getting started on Linux
 Prerequisites Needed
 --------------------
 
-mono 1.9 - http://www.mono-project.com/
-nAnt (0.85) - http://nant.sourceforge.net/
+mono 2.4 - http://www.mono-project.com/
+nAnt (0.88) - http://nant.sourceforge.net/
 
 Optional-
 nUnit Framework (2.2.8 or greater) - http://www.nunit.org/
