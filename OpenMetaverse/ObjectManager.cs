@@ -409,7 +409,7 @@ namespace OpenMetaverse
 
         void Network_OnConnected(object sender)
         {
-            if (Settings.USE_INTERPOLATION_TIMER)
+            if (Client.Settings.USE_INTERPOLATION_TIMER)
             {
                 InterpolationTimer = new Timer(InterpolationTimer_Elapsed, null, Settings.INTERPOLATION_INTERVAL, Timeout.Infinite);
             }
