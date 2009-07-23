@@ -27,22 +27,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using OpenMetaverse;
 
 namespace OpenMetaverse
-{
-    /// <summary>
-    /// 
-    /// </summary>
-	public enum PacketFrequency : byte
-	{
-        /// <summary></summary>
-		Low,
-        /// <summary></summary>
-		Medium,
-        /// <summary></summary>
-		High
-	}
-
+{    
     /// <summary>
     /// 
     /// </summary>

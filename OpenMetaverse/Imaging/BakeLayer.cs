@@ -389,7 +389,7 @@ namespace OpenMetaverse.Imaging
 
         public static ManagedImage LoadAlphaLayer(string fileName)
         {
-            Stream stream = Helpers.GetResourceStream(fileName);
+            Stream stream = Helpers.GetResourceStream(fileName, Settings.RESOURCE_DIR);
 
             if (stream != null)
             {

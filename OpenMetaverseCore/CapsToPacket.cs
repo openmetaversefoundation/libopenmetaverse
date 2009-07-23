@@ -153,7 +153,7 @@ namespace OpenMetaverse.Packets
             }
             catch (Exception e)
             {
-                Logger.Log(e.Message, Helpers.LogLevel.Error, e);
+                //FIXME Logger.Log(e.Message, Helpers.LogLevel.Error, e);
             }
 
             return packet;
