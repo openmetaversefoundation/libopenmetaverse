@@ -1642,14 +1642,16 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Create a particle beam between an avatar and an primitive
+        /// Create a particle beam between an avatar and an primitive 
         /// </summary>
-        /// <param name="sourceAvatar"><seealso cref="UUID"/> of sources avatar</param>
-        /// <param name="targetObject"><seealso cref="UUID"/> of the target</param>
-        /// <param name="globalOffset"><seealso cref="Vector3d"/>global offset</param>
-        /// <param name="color"><seealso cref="Color4"/>Color values of beam</param>
-        /// <param name="duration">a float representing the duration the beam will last</param>
-        /// <param name="effectID"><seealso cref="UUID"/> of the Effect</param>
+        /// <param name="sourceAvatar">The ID of source avatar</param>
+        /// <param name="targetObject">The ID of the target primitive</param>
+        /// <param name="globalOffset">global offset</param>
+        /// <param name="color">A <see cref="Color4"/> object containing the combined red, green, blue and alpha 
+        /// color values of particle beam</param>
+        /// <param name="duration">a float representing the duration the parcicle beam will last</param>
+        /// <param name="effectID">A Unique ID for the beam</param>
+        /// <seealso cref="ViewerEffectPacket"/>
         public void BeamEffect(UUID sourceAvatar, UUID targetObject, Vector3d globalOffset, Color4 color,
             float duration, UUID effectID)
         {
@@ -1677,12 +1679,13 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Create a particle swirl around a target position
+        /// Create a particle swirl around a target position using a <seealso cref="ViewerEffectPacket"/> packet
         /// </summary>
-        /// <param name="globalOffset"><seealso cref="Vector3d"/>Target's global position</param>
-        /// <param name="color"><seealso cref="Color4"/>Color values of beam</param>
-        /// <param name="duration">A float representing the duration the swirl will last</param>
-        /// <param name="effectID"><seealso cref="UUID"/> of the Effect</param>
+        /// <param name="globalOffset">global offset</param>
+        /// <param name="color">A <see cref="Color4"/> object containing the combined red, green, blue and alpha 
+        /// color values of particle beam</param>
+        /// <param name="duration">a float representing the duration the parcicle beam will last</param>
+        /// <param name="effectID">A Unique ID for the beam</param>
         public void SphereEffect(Vector3d globalOffset, Color4 color, float duration, UUID effectID)
         {
             ViewerEffectPacket effect = new ViewerEffectPacket();
@@ -2876,6 +2879,16 @@ namespace OpenMetaverse
             Client.Network.SendPacket(classified);
         }
 
+        /// <summary>
+        /// Create or update profile Classified
+        /// </summary>
+        /// <param name="classifiedID">UUID of the classified to update, or random UUID to create a new classified</param>
+        /// <param name="category">Defines what catagory the classified is in</param>
+        /// <param name="snapshotID">UUID of the image displayed with the classified</param>
+        /// <param name="price">Price that the classified will cost to place for a week</param>
+        /// <param name="name">Name of the classified</param>
+        /// <param name="desc">Long description of the classified</param>
+        /// <param name="autoRenew">if true, auto renew classified after expiration</param>
         public void UpdateClassifiedInfo(UUID classifiedID, DirectoryManager.ClassifiedCategories category, UUID snapshotID, int price, string name, string desc, bool autoRenew)
         {
             UpdateClassifiedInfo(classifiedID, category, snapshotID, price, Client.Self.GlobalPosition, name, desc, autoRenew);

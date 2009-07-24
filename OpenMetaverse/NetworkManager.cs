@@ -209,7 +209,7 @@ namespace OpenMetaverse
         /// Client.Network.Logout();
         /// 
         /// // event handler for the logout reply event
-        /// void Network_OnLogoutReply(List<UUID> inventoryItems)
+        /// void Network_OnLogoutReply(List&lt;UUID&gt; inventoryItems)
         ///{
         ///    Console.WriteLine("Simulator confirmed logout");
         ///}

@@ -235,6 +235,8 @@ namespace OpenMetaverse
         /// <param name="simulator"></param>
         /// <param name="prim"></param>
         /// <param name="update"></param>
+        /// <param name="RegionHandle"></param>
+        /// <param name="TimeDilation"></param>
         public delegate void ObjectUpdatedTerseCallback(Simulator simulator, Primitive prim, ObjectUpdate update, ulong RegionHandle, ushort TimeDilation);
         /// <summary>
         /// Called whenever an major object update is received
@@ -243,9 +245,9 @@ namespace OpenMetaverse
         /// <param name="simulator"></param>
         /// <param name="prim"></param>
         /// <param name="constructionData"></param>
-        /// <param name="block"></param>
-        /// <param name="update"></param>
-        /// <param name="nameValues"></param>
+        /// <param name="block"></param>     
+        /// <param name="objectupdate"></param>
+        /// <param name="nameValues"></param>        
         public delegate void ObjectDataBlockUpdateCallback(Simulator simulator, Primitive prim, Primitive.ConstructionData constructionData, 
             ObjectUpdatePacket.ObjectDataBlock block, ObjectUpdate objectupdate, NameValue[] nameValues);
         /// <summary>
