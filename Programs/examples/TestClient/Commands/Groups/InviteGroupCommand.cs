@@ -30,6 +30,9 @@ namespace OpenMetaverse.TestClient
                     return "parse error avatar UUID";
             if (!UUID.TryParse(args[1], out group))
                     return "parse error group UUID";
+            if (2 == args.Length)
+                    roles.Add(UUID.Zero);
+	    else
             for (int i = 2; i < args.Length; i++)
                 if (UUID.TryParse(args[i], out role))
                     roles.Add(role);
