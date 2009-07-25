@@ -350,11 +350,10 @@ namespace GridProxy
             {
                 for (; ; )
                 {
-                   
-                    Socket client = loginServer.Accept();
-
                     try
                     {
+                        Socket client = loginServer.Accept();
+
                         Thread connThread = new Thread((ThreadStart)delegate
                         {
                             OpenMetaverse.Logger.Log(">T> ProxyHTTP", Helpers.LogLevel.Debug);

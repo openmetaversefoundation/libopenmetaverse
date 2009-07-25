@@ -70,6 +70,10 @@ namespace WinGridProxy
         private int PacketsInBytes;
         private int PacketsOutCounter;
         private int PacketsOutBytes;
+        private List<ListViewItem> QueuedSessions;
+        private System.Threading.Timer SessionQueue;
+        private int SessionQueueInterval;
+        private bool monoRuntime;
 
         public FormWinGridProxy()
         {
@@ -80,6 +84,22 @@ namespace WinGridProxy
             if (FireEventAppender.Instance != null)
             {
                 FireEventAppender.Instance.MessageLoggedEvent += new MessageLoggedEventHandler(Instance_MessageLoggedEvent);
+            }
+
+            // Attempt to work around some mono bugs
+            monoRuntime = Type.GetType("Mono.Runtime") != null; // Officially supported way of detecting mono
+            if (monoRuntime)
+            {
+                SessionQueueInterval = 500;
+                SessionQueue = new System.Threading.Timer(new TimerCallback(SessionQueueWorker), null, SessionQueueInterval, SessionQueueInterval);
+                QueuedSessions = new List<ListViewItem>();
+                Font fixedFont = new Font(FontFamily.GenericMonospace, 9f, FontStyle.Regular, GraphicsUnit.Point);
+                richTextBoxDecodedRequest.Font =
+                    richTextBoxDecodedResponse.Font =
+                    richTextBoxNotationRequest.Font =
+                    richTextBoxNotationResponse.Font =
+                    richTextBoxRawRequest.Font =
+                    richTextBoxRawResponse.Font = fixedFont;
             }
 
             // populate the listen box with IPs
@@ -193,43 +213,30 @@ namespace WinGridProxy
                 session.Tag = request;
                 session.ImageIndex = (request is XmlRpcRequest) ? 1 : 0;
 
-                listViewSessions.Items.Add(session);
+                AddSession(session);
             }
         }
 
         void PacketAnalyzer_OnPacketLog(Packet packet, Direction direction, IPEndPoint endpoint)
         {
-            if (this.InvokeRequired)
+            PacketCounter++;
+
+            if (direction == Direction.Incoming)
             {
-                this.BeginInvoke(new MethodInvoker(delegate()
-                {
-                    PacketAnalyzer_OnPacketLog(packet, direction, endpoint);
-                }));
+                PacketsInCounter++;
+                PacketsInBytes += packet.Length;
             }
             else
             {
-                PacketCounter++;
-
-                if (direction == Direction.Incoming)
-                {
-                    PacketsInCounter++;
-                    PacketsInBytes += packet.Length;
-                }
-                else
-                {
-                    PacketsOutCounter++;
-                    PacketsOutBytes += packet.Length;
-                }
-
-
-                ListViewItem session = new ListViewItem(new string[] { PacketCounter.ToString(), "UDP", packet.Type.ToString(), packet.Length.ToString(), endpoint.ToString(), "binary udp" });
-                session.Tag = packet;
-                session.ImageIndex = (direction == Direction.Incoming) ? 0 : 1;
-                listViewSessions.Items.Add(session);
-
-                if (listViewSessions.Items.Count > 0 && AutoScrollSessions)
-                    listViewSessions.EnsureVisible(listViewSessions.Items.Count - 1);
+                PacketsOutCounter++;
+                PacketsOutBytes += packet.Length;
             }
+
+
+            ListViewItem session = new ListViewItem(new string[] { PacketCounter.ToString(), "UDP", packet.Type.ToString(), packet.Length.ToString(), endpoint.ToString(), "binary udp" });
+            session.Tag = packet;
+            session.ImageIndex = (direction == Direction.Incoming) ? 0 : 1;
+            AddSession(session);
         }
 
         void ProxyManager_OnMessageLog(CapsRequest req, CapsStage stage)
@@ -280,7 +287,7 @@ namespace WinGridProxy
                         session.ImageIndex = 0;
                     }
 
-                    listViewSessions.Items.Add(session);
+                    AddSession(session);
                 }
                 else
                 {
@@ -294,9 +301,6 @@ namespace WinGridProxy
                             addedItem.Checked = true;
                     }
                 }
-
-                if (listViewSessions.Items.Count > 0 && AutoScrollSessions)
-                    listViewSessions.EnsureVisible(listViewSessions.Items.Count - 1);
             }
         }
 
@@ -480,13 +484,18 @@ namespace WinGridProxy
                             }
                             rawRequest.AppendLine();
                         }
-                        rawRequest.AppendLine(Utils.BytesToString(capsData.RawRequest));
+                        
+                        string rawCapsData = string.Empty;
+                        try { rawCapsData = Utils.BytesToString(capsData.RawRequest); }
+                        catch (Exception) { }
+
+                        rawRequest.AppendLine(rawCapsData);
 
                         if (capsData.RequestHeaders["content-type"].Equals("application/octet-stream"))
                         {
                             richTextBoxDecodedRequest.Text = rawRequest.ToString();
                             treeViewXMLRequest.Nodes.Clear();
-                            richTextBoxNotationRequest.Text = "Binary data cannot be formatted as notation";                            
+                            richTextBoxNotationRequest.Text = "Binary data cannot be formatted as notation";
                         }
                         else
                         {
@@ -494,7 +503,7 @@ namespace WinGridProxy
 
                             richTextBoxDecodedRequest.Text = TagToString(requestOSD, listViewSessions.FocusedItem.SubItems[2].Text);
                             richTextBoxNotationRequest.Text = requestOSD.ToString();
-                            updateTreeView(Utils.BytesToString(capsData.RawRequest), treeViewXMLRequest);
+                            updateTreeView(rawCapsData, treeViewXMLRequest);
                         }
                         // these work for both binary and xml+llsd messages
                         richTextBoxRawRequest.Text = rawRequest.ToString();
@@ -923,13 +932,13 @@ namespace WinGridProxy
                 for (int i = 0; i < sessionsArray.Count; i++)
                 {
                     OSDMap session = (OSDMap)sessionsArray[i];
-                    ListViewItem addedItem = listViewSessions.Items.Add(new ListViewItem(new string[] {
+                    ListViewItem addedItem = new ListViewItem(new string[] {
                         session["id"].AsString(), 
                         session["protocol"].AsString(),
                         session["packet"].AsString(),
                         session["size"].AsString(),
-                        session["host"].AsString()}));
-                    
+                        session["host"].AsString()});
+                    AddSession(addedItem);
                     addedItem.ImageIndex = session["image_index"].AsInteger();
                     addedItem.BackColor = Color.GhostWhite; // give imported items a different color
                     addedItem.Tag = Utils.BytesToString(session["tag"].AsBinary());
@@ -1123,6 +1132,10 @@ namespace WinGridProxy
                     {
                         foundMessage.Checked = kvp.Value.Checked;
                     }
+                    if (kvp.Value.pType.Equals("CapMessage"))
+                    {
+                        proxy.AddCapsDelegate(kvp.Key, kvp.Value.Checked);
+                    }
                 }
                 listViewMessageFilters.EndUpdate();
 
@@ -1140,6 +1153,10 @@ namespace WinGridProxy
                     else
                     {
                         foundPacket.Checked = kvp.Value.Checked;
+                    }
+                    if (kvp.Value.pType.Equals("UDP"))
+                    {
+                        proxy.AddUDPDelegate(packetTypeFromName(kvp.Key), kvp.Value.Checked);
                     }
                 }
                 listViewPacketFilters.EndUpdate();
@@ -1546,6 +1563,59 @@ namespace WinGridProxy
                 else if (!String.IsNullOrEmpty(match.Groups["BlockCounter"].Value))
                     m_rtb.SelectionColor = Color.Green;
 
+            }
+        }
+
+        private void SessionQueueWorker(object sender)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new MethodInvoker(() => SessionQueueWorker(sender)));
+                return;
+            }
+
+            lock (QueuedSessions)
+            {
+                if (QueuedSessions.Count > 0)
+                {
+                    listViewSessions.BeginUpdate();
+                    listViewSessions.Items.AddRange(QueuedSessions.ToArray());
+                    
+                    if (AutoScrollSessions)
+                        listViewSessions.EnsureVisible(listViewSessions.Items.Count - 1);
+
+                    listViewSessions.EndUpdate();
+                    QueuedSessions.Clear();
+                }
+            }
+        }
+
+        private void DirectAddSession(ListViewItem item)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new MethodInvoker(() => DirectAddSession(item)));
+            }
+            else
+            {
+                listViewSessions.Items.Add(item);
+                if (AutoScrollSessions)
+                    listViewSessions.EnsureVisible(listViewSessions.Items.Count - 1);
+            }
+        }
+
+        private void AddSession(ListViewItem item)
+        {
+            if (!monoRuntime)
+            {
+                DirectAddSession(item);
+            }
+            else
+            {
+                lock (QueuedSessions)
+                {
+                    QueuedSessions.Add(item);
+                }
             }
         }
     }

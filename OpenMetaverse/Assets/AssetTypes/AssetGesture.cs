@@ -359,7 +359,7 @@ namespace OpenMetaverse.Assets
         /// <summary>
         /// Decodes gesture assset into play sequence
         /// </summary>
-        /// <returns></returns>
+        /// <returns>true if the asset data was decoded successfully</returns>
         public override bool Decode()
         {
             try
@@ -460,7 +460,7 @@ namespace OpenMetaverse.Assets
             }
             catch (Exception ex)
             {
-                Logger.Log("Decoding gestrue asset failed:" + ex.Message, Helpers.LogLevel.Error);
+                Logger.Log("Decoding gesture asset failed:" + ex.Message, Helpers.LogLevel.Error);
                 return false;
             }
         }

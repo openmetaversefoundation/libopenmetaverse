@@ -2824,6 +2824,7 @@ namespace OpenMetaverse
                         prim = new Primitive();
                         prim.LocalID = localID;
                         prim.ID = fullID;
+                        prim.RegionHandle = simulator.Handle;
 
                         simulator.ObjectsPrimitives.Dictionary[localID] = prim;
 
@@ -2862,6 +2863,7 @@ namespace OpenMetaverse
                         avatar = new Avatar();
                         avatar.LocalID = localID;
                         avatar.ID = fullID;
+                        avatar.RegionHandle = simulator.Handle;
 
                         simulator.ObjectsAvatars.Dictionary[localID] = avatar;
 
