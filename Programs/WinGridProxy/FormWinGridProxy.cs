@@ -1123,6 +1123,10 @@ namespace WinGridProxy
                     {
                         foundMessage.Checked = kvp.Value.Checked;
                     }
+                    if (kvp.Value.pType.Equals("CapMessage"))
+                    {
+                        proxy.AddCapsDelegate(kvp.Key, kvp.Value.Checked);
+                    }
                 }
                 listViewMessageFilters.EndUpdate();
 
@@ -1140,6 +1144,10 @@ namespace WinGridProxy
                     else
                     {
                         foundPacket.Checked = kvp.Value.Checked;
+                    }
+                    if (kvp.Value.pType.Equals("UDP"))
+                    {
+                        proxy.AddUDPDelegate(packetTypeFromName(kvp.Key), kvp.Value.Checked);
                     }
                 }
                 listViewPacketFilters.EndUpdate();
