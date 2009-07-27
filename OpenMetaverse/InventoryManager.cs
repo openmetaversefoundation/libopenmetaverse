@@ -2036,21 +2036,38 @@ namespace OpenMetaverse
         /// <param name="callback">callback to run when item is copied to inventory</param>
         public void RequestCopyItemFromNotecard(UUID objectID, UUID notecardID, UUID folderID, UUID itemID, ItemCopiedCallback callback)
         {
-            CopyInventoryFromNotecardPacket copy = new CopyInventoryFromNotecardPacket();
-            copy.AgentData.AgentID = _Client.Self.AgentID;
-            copy.AgentData.SessionID = _Client.Self.SessionID;
-
-            copy.NotecardData.ObjectID = objectID;
-            copy.NotecardData.NotecardItemID = notecardID;
-
-            copy.InventoryData = new CopyInventoryFromNotecardPacket.InventoryDataBlock[1];
-            copy.InventoryData[0] = new CopyInventoryFromNotecardPacket.InventoryDataBlock();
-            copy.InventoryData[0].FolderID = folderID;
-            copy.InventoryData[0].ItemID = itemID;
-           
             _ItemCopiedCallbacks[0] = callback; //Notecards always use callback ID 0
 
-            _Client.Network.SendPacket(copy);
+            Uri url = _Client.Network.CurrentSim.Caps.CapabilityURI("CopyInventoryFromNotecard");
+
+            if (url != null)
+            {
+                CopyInventoryFromNotecardMessage message = new CopyInventoryFromNotecardMessage();
+                message.CallbackID = 0;
+                message.FolderID = folderID;
+                message.ItemID = itemID;
+                message.NotecardID = notecardID;
+                message.ObjectID = objectID;
+
+                CapsClient request = new CapsClient(url);
+                request.BeginGetResponse(message.Serialize(), OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);
+            }
+            else
+            {
+                CopyInventoryFromNotecardPacket copy = new CopyInventoryFromNotecardPacket();
+                copy.AgentData.AgentID = _Client.Self.AgentID;
+                copy.AgentData.SessionID = _Client.Self.SessionID;
+
+                copy.NotecardData.ObjectID = objectID;
+                copy.NotecardData.NotecardItemID = notecardID;
+
+                copy.InventoryData = new CopyInventoryFromNotecardPacket.InventoryDataBlock[1];
+                copy.InventoryData[0] = new CopyInventoryFromNotecardPacket.InventoryDataBlock();
+                copy.InventoryData[0].FolderID = folderID;
+                copy.InventoryData[0].ItemID = itemID;
+
+                _Client.Network.SendPacket(copy);
+            }
         }
 
         #endregion Copy

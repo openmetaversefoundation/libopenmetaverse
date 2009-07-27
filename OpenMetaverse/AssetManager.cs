@@ -288,6 +288,9 @@ namespace OpenMetaverse
     /// </summary>
     public class AssetManager
     {
+        /// <summary>Number of milliseconds to wait for a transfer header packet if out of order data was received</summary>
+        const int TRANSFER_HEADER_TIMEOUT = 1000 * 15;
+
         #region Delegates
 
         /// <summary>
@@ -1055,7 +1058,7 @@ namespace OpenMetaverse
                     Logger.DebugLog("TransferPacket received ahead of the transfer header, blocking...", Client);
 
                     // We haven't received the header yet, block until it's received or times out
-                    download.HeaderReceivedEvent.WaitOne(1000 * 5, false);
+                    download.HeaderReceivedEvent.WaitOne(TRANSFER_HEADER_TIMEOUT, false);
 
                     if (download.Size == 0)
                     {
