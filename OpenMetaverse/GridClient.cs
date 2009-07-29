@@ -118,7 +118,7 @@ namespace OpenMetaverse
             Objects = new ObjectManager(this);
             Groups = new GroupManager(this);
             Assets = new AssetManager(this);
-            Appearance = new AppearanceManager(this, Assets);
+            Appearance = new AppearanceManager(this);
             Inventory = new InventoryManager(this);
             Directory = new DirectoryManager(this);
             Terrain = new TerrainManager(this);
