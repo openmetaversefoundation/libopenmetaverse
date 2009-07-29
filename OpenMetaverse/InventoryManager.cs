@@ -2853,6 +2853,16 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Does a cheesy XORing with a fixed UUID to convert an asset_id to a shadow_id
+        /// </summary>
+        /// <param name="assetID">asset_id value to obfuscate</param>
+        /// <returns>Obfuscated shadow_id value</returns>
+        public static UUID EncryptAssetID(UUID assetID)
+        {
+            return assetID ^ MAGIC_ID;
+        }
+
+        /// <summary>
         /// Wrapper for creating a new <seealso cref="InventoryItem"/> object
         /// </summary>
         /// <param name="type">The type of item from the <seealso cref="InventoryType"/> enum</param>

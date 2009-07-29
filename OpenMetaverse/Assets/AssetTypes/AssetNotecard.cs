@@ -119,9 +119,19 @@ namespace OpenMetaverse.Assets
                     output.Append("\t\towner_id\t" + item.OwnerID + "\n");
                     output.Append("\t\tlast_owner_id\t" + item.LastOwnerID + "\n");
                     output.Append("\t\tgroup_id\t" + item.GroupID + "\n");
+                    if (item.GroupOwned) output.Append("\t\tgroup_owned\t1\n");
                     output.Append("\t}\n");
 
-                    output.Append("\t\tasset_id\t" + item.AssetUUID + "\n");
+                    if (Permissions.HasPermissions(item.Permissions.BaseMask, PermissionMask.Modify | PermissionMask.Copy | PermissionMask.Transfer) ||
+                        item.AssetUUID == UUID.Zero)
+                    {
+                        output.Append("\t\tasset_id\t" + item.AssetUUID + "\n");
+                    }
+                    else
+                    {
+                        output.Append("\t\tshadow_id\t" + InventoryManager.EncryptAssetID(item.AssetUUID) + "\n");
+                    }
+                    
                     output.Append("\t\ttype\t" + Utils.AssetTypeToString(item.AssetType) + "\n");
                     output.Append("\t\tinv_type\t" + Utils.InventoryTypeToString(item.InventoryType) + "\n");
                     output.Append("\t\tflags\t" + item.Flags.ToString().PadLeft(8, '0') + "\n");

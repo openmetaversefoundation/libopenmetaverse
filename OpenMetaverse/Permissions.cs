@@ -168,6 +168,11 @@ namespace OpenMetaverse
             return !(lhs == rhs);
         }
 
+        public static bool HasPermissions(PermissionMask perms, PermissionMask checkPerms)
+        {
+            return (perms & checkPerms) == checkPerms;
+        }
+
         public static readonly Permissions NoPermissions = new Permissions();
         public static readonly Permissions FullPermissions = new Permissions((uint)PermissionMask.All, (uint)PermissionMask.All,
             (uint)PermissionMask.All, (uint)PermissionMask.All, (uint)PermissionMask.All);
