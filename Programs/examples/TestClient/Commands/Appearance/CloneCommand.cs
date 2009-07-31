@@ -61,7 +61,7 @@ namespace OpenMetaverse.TestClient
                     #endregion AvatarAppearance to AgentSetAppearance
 
                     // Detach everything we are currently wearing
-                    Client.Appearance.AddAttachments(new List<InventoryBase>(), true);
+                    Client.Appearance.AddAttachments(new List<InventoryItem>(), true);
 
                     // Send the new appearance packet
                     Client.Network.SendPacket(set);
