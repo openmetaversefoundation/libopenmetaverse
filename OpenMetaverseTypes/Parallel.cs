@@ -35,15 +35,7 @@ namespace OpenMetaverse
     /// </summary>
     public static class Parallel
     {
-        private static int threadCount = System.Environment.ProcessorCount;
-
-        /// <summary>The number of parallel threads to run tasks on. Defaults
-        /// to the number of system processors</summary>
-        public static int ThreadCount
-        {
-            get { return threadCount; }
-            set { threadCount = Math.Max(1, value); }
-        }
+        private static readonly int processorCount = System.Environment.ProcessorCount;
 
         /// <summary>
         /// Executes a for loop in which iterations may run in parallel
@@ -52,6 +44,18 @@ namespace OpenMetaverse
         /// <param name="toExclusive">The loop will be terminated before this index is reached</param>
         /// <param name="body">Method body to run for each iteration of the loop</param>
         public static void For(int fromInclusive, int toExclusive, Action<int> body)
+        {
+            For(processorCount, fromInclusive, toExclusive, body);
+        }
+
+        /// <summary>
+        /// Executes a for loop in which iterations may run in parallel
+        /// </summary>
+        /// <param name="threadCount">The number of concurrent execution threads to run</param>
+        /// <param name="fromInclusive">The loop will be started at this index</param>
+        /// <param name="toExclusive">The loop will be terminated before this index is reached</param>
+        /// <param name="body">Method body to run for each iteration of the loop</param>
+        public static void For(int threadCount, int fromInclusive, int toExclusive, Action<int> body)
         {
             AutoResetEvent[] threadFinishEvent = new AutoResetEvent[threadCount];
             --fromInclusive;
@@ -67,12 +71,12 @@ namespace OpenMetaverse
 
                         while (true)
                         {
-                            int index = Interlocked.Increment(ref fromInclusive);
+                            int currentIndex = Interlocked.Increment(ref fromInclusive);
 
-                            if (index >= toExclusive)
+                            if (currentIndex >= toExclusive)
                                 break;
 
-                            body(index);
+                            body(currentIndex);
                         }
 
                         threadFinishEvent[threadIndex].Set();
@@ -91,6 +95,18 @@ namespace OpenMetaverse
         /// <param name="enumerable">An enumerable collection to iterate over</param>
         /// <param name="body">Method body to run for each object in the collection</param>
         public static void ForEach<T>(IEnumerable<T> enumerable, Action<T> body)
+        {
+            ForEach<T>(processorCount, enumerable, body);
+        }
+
+        /// <summary>
+        /// Executes a foreach loop in which iterations may run in parallel
+        /// </summary>
+        /// <typeparam name="T">Object type that the collection wraps</typeparam>
+        /// <param name="threadCount">The number of concurrent execution threads to run</param>
+        /// <param name="enumerable">An enumerable collection to iterate over</param>
+        /// <param name="body">Method body to run for each object in the collection</param>
+        public static void ForEach<T>(int threadCount, IEnumerable<T> enumerable, Action<T> body)
         {
             AutoResetEvent[] threadFinishEvent = new AutoResetEvent[threadCount];
             IEnumerator<T> enumerator = enumerable.GetEnumerator();
@@ -113,10 +129,57 @@ namespace OpenMetaverse
                             {
                                 if (!enumerator.MoveNext())
                                     break;
-                                entry = enumerator.Current;
+                                entry = (T)enumerator.Current; // Explicit typecast for Mono's sake
                             }
 
                             body(entry);
+                        }
+
+                        threadFinishEvent[threadIndex].Set();
+                    }, i
+                );
+            }
+
+            for (int i = 0; i < threadCount; i++)
+                threadFinishEvent[i].WaitOne();
+        }
+
+        /// <summary>
+        /// Executes a series of tasks in parallel
+        /// </summary>
+        /// <param name="actions">A series of method bodies to execute</param>
+        public static void Invoke(params Action[] actions)
+        {
+            Invoke(processorCount, actions);
+        }
+
+        /// <summary>
+        /// Executes a series of tasks in parallel
+        /// </summary>
+        /// <param name="threadCount">The number of concurrent execution threads to run</param>
+        /// <param name="actions">A series of method bodies to execute</param>
+        public static void Invoke(int threadCount, params Action[] actions)
+        {
+            AutoResetEvent[] threadFinishEvent = new AutoResetEvent[threadCount];
+            int index = -1;
+
+            for (int i = 0; i < threadCount; i++)
+            {
+                threadFinishEvent[i] = new AutoResetEvent(false);
+
+                ThreadPool.QueueUserWorkItem(
+                    delegate(object o)
+                    {
+                        int threadIndex = (int)o;
+
+                        while (true)
+                        {
+                            int currentIndex = Interlocked.Increment(ref index);
+
+                            if (currentIndex >= actions.Length)
+                                break;
+
+                            actions[currentIndex]();
                         }
 
                         threadFinishEvent[threadIndex].Set();

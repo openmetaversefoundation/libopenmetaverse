@@ -37,7 +37,7 @@ namespace OpenMetaverse.TestClient.Commands.Appearance
                     if (foundAv.Textures.FaceTextures[i] != null)
                     {
                         Primitive.TextureEntryFace face = foundAv.Textures.FaceTextures[i];
-                        AppearanceManager.TextureIndex type = (AppearanceManager.TextureIndex)i;
+                        AvatarTextureIndex type = (AvatarTextureIndex)i;
 
                         output.AppendFormat("{0}: {1}", type, face.TextureID);
                         output.AppendLine();

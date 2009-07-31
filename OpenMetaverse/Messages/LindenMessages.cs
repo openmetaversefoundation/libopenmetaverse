@@ -1388,6 +1388,11 @@ namespace OpenMetaverse.Messages.Linden
     public abstract class AssetUploaderBlock
     {
         /// <summary>
+        /// The request state
+        /// </summary>
+        public string State;
+
+        /// <summary>
         /// Serialize the object
         /// </summary>
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
@@ -1406,23 +1411,26 @@ namespace OpenMetaverse.Messages.Linden
     /// </summary>
     public class UploaderRequestUpload : AssetUploaderBlock
     {
-        /// <summary>The request state (Always "upload")</summary>
-        public string State = "upload";
         /// <summary>The Capability URL sent by the simulator to upload the baked texture to</summary>
-        public string Url;
+        public Uri Url;
+
+        public UploaderRequestUpload()
+        {
+            State = "upload";
+        }
 
         public override OSDMap Serialize()
         {
             OSDMap map = new OSDMap(2);
             map["state"] = OSD.FromString(State);
-            map["uploader"] = OSD.FromString(Url);
+            map["uploader"] = OSD.FromUri(Url);
 
             return map;
         }
 
         public override void Deserialize(OSDMap map)
         {
-            Url = map["uploader"].AsString();
+            Url = map["uploader"].AsUri();
             State = map["state"].AsString();
         }
     }
@@ -1433,10 +1441,13 @@ namespace OpenMetaverse.Messages.Linden
     /// </summary>
     public class UploaderRequestComplete : AssetUploaderBlock
     {
-        /// <summary>The request state (Always "complete")</summary>
-        public string State = "complete";
         /// <summary>The uploaded texture asset ID</summary>
         public UUID AssetID;
+
+        public UploaderRequestComplete()
+        {
+            State = "complete";
+        }
 
         public override OSDMap Serialize()
         {
@@ -1483,10 +1494,7 @@ namespace OpenMetaverse.Messages.Linden
             else if (map.ContainsKey("state") && map["state"].AsString().Equals("complete"))
                 Request = new UploaderRequestComplete();
             else
-            {
                 Logger.Log("Unable to deserialize UploadBakedTexture: No message handler exists for state " + map["state"].AsString(), Helpers.LogLevel.Warning);
-
-            }
 
             if (Request != null)
                 Request.Deserialize(map);

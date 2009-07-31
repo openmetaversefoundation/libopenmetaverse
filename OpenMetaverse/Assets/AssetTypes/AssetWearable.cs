@@ -61,7 +61,7 @@ namespace OpenMetaverse.Assets
         /// <summary>A Dictionary containing Key/Value pairs of the objects parameters</summary>
         public Dictionary<int, float> Params = new Dictionary<int, float>();
         /// <summary>A Dictionary containing Key/Value pairs where the Key is the textures Index and the Value is the Textures <seealso cref="UUID"/></summary>
-        public Dictionary<AppearanceManager.TextureIndex, UUID> Textures = new Dictionary<AppearanceManager.TextureIndex, UUID>();
+        public Dictionary<AvatarTextureIndex, UUID> Textures = new Dictionary<AvatarTextureIndex, UUID>();
 
         /// <summary>Initializes a new instance of an AssetWearable object</summary>
         public AssetWearable() { }
@@ -145,7 +145,7 @@ namespace OpenMetaverse.Assets
                                 line = lines[stri].Trim();
                                 fields = line.Split(' ');
 
-                                AppearanceManager.TextureIndex id = (AppearanceManager.TextureIndex)Int32.Parse(fields[0]);
+                                AvatarTextureIndex id = (AvatarTextureIndex)Int32.Parse(fields[0]);
                                 UUID texture = new UUID(fields[1]);
 
                                 Textures[id] = texture;
@@ -249,7 +249,7 @@ namespace OpenMetaverse.Assets
             }
 
             data.Append("textures "); data.Append(Textures.Count); data.Append(NL);
-            foreach (KeyValuePair<AppearanceManager.TextureIndex, UUID> texture in Textures)
+            foreach (KeyValuePair<AvatarTextureIndex, UUID> texture in Textures)
             {
                 data.Append((byte)texture.Key); data.Append(" "); data.Append(texture.Value.ToString()); data.Append(NL);
             }

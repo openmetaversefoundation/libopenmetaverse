@@ -31,6 +31,9 @@ using System.IO;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 using OpenMetaverse.Assets;
+using OpenMetaverse.Http;
+using OpenMetaverse.StructuredData;
+using OpenMetaverse.Messages.Linden;
 
 namespace OpenMetaverse
 {
@@ -309,6 +312,11 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="upload"></param>
         public delegate void AssetUploadedCallback(AssetUpload upload);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="newAssetID"></param>
+        public delegate void BakedTextureUploadedCallback(UUID newAssetID);
         /// <summary>
         /// 
         /// </summary>
@@ -706,6 +714,70 @@ namespace OpenMetaverse
                 {
                     throw new Exception("Timeout waiting for previous asset upload to begin");
                 }
+            }
+        }
+
+        public void RequestUploadBakedTexture(byte[] textureData, BakedTextureUploadedCallback callback)
+        {
+            Uri url = null;
+
+            Caps caps = Client.Network.CurrentSim.Caps;
+            if (caps != null)
+                url = caps.CapabilityURI("UploadBakedTexture");
+
+            if (url != null)
+            {
+                // Fetch the uploader capability
+                CapsClient request = new CapsClient(url);
+                request.OnComplete +=
+                    delegate(CapsClient client, OSD result, Exception error)
+                    {
+                        if (error == null && result is OSDMap)
+                        {
+                            UploadBakedTextureMessage message = new UploadBakedTextureMessage();
+                            message.Deserialize((OSDMap)result);
+
+                            if (message.Request.State == "upload")
+                            {
+                                Uri uploadUrl = ((UploaderRequestUpload)message.Request).Url;
+
+                                if (uploadUrl != null)
+                                {
+                                    // POST the asset data
+                                    CapsClient upload = new CapsClient(uploadUrl);
+                                    upload.OnComplete +=
+                                        delegate(CapsClient client2, OSD result2, Exception error2)
+                                        {
+                                            if (error2 == null && result2 is OSDMap)
+                                            {
+                                                UploadBakedTextureMessage message2 = new UploadBakedTextureMessage();
+                                                message2.Deserialize((OSDMap)result2);
+
+                                                if (message2.Request.State == "complete")
+                                                {
+                                                    callback(((UploaderRequestComplete)message2.Request).AssetID);
+                                                    return;
+                                                }
+                                            }
+
+                                            Logger.Log("Bake upload failed during asset upload", Helpers.LogLevel.Warning, Client);
+                                            callback(UUID.Zero);
+                                        };
+                                    upload.BeginGetResponse(textureData, "application/octet-stream", Client.Settings.CAPS_TIMEOUT);
+                                    return;
+                                }
+                            }
+                        }
+
+                        Logger.Log("Bake upload failed during uploader retrieval", Helpers.LogLevel.Warning, Client);
+                        callback(UUID.Zero);
+                    };
+                request.BeginGetResponse(new OSDMap(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+            }
+            else
+            {
+                Logger.Log("UploadBakedTexture not available, falling back to UDP method", Helpers.LogLevel.Info, Client);
+                // FIXME:
             }
         }
 

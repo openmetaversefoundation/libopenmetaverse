@@ -31,16 +31,9 @@ namespace OpenMetaverse.TestClient
 
             target = target.TrimEnd();
 
-            try
-            {
-                Client.Appearance.WearOutfit(target.Split('/'), bake);
-            }
-            catch (InvalidOutfitException ex)
-            {
-                return "Invalid outfit (" + ex.Message + ")";
-            }
+            //Client.Appearance.WearOutfit(target.Split('/'), bake);
 
-            return String.Empty;
+            return "FIXME: Implement this";
         }
     }
 }

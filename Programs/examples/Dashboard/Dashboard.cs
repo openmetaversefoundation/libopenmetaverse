@@ -63,7 +63,6 @@ namespace Dashboard
             Client.Settings.USE_LLSD_LOGIN = true;
             Client.Settings.USE_ASSET_CACHE = true;
 
-            Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
             Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
             Client.Self.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
 
@@ -99,11 +98,6 @@ namespace Dashboard
         void groupList1_OnGroupDoubleClick(Group group)
         {
             MessageBox.Show(group.Name + " = " + group.ID);
-        }
-
-        void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
-        {
-            Client.Appearance.SetPreviousAppearance(false);
         }
 
         void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)

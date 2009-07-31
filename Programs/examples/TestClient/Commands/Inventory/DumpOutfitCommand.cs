@@ -55,20 +55,20 @@ namespace OpenMetaverse.TestClient
                             {
                                 ImageType type = ImageType.Normal;
 
-                                switch ((AppearanceManager.TextureIndex)j)
+                                switch ((AvatarTextureIndex)j)
                                 {
-                                    case AppearanceManager.TextureIndex.HeadBaked:
-                                    case AppearanceManager.TextureIndex.EyesBaked:
-                                    case AppearanceManager.TextureIndex.UpperBaked:
-                                    case AppearanceManager.TextureIndex.LowerBaked:
-                                    case AppearanceManager.TextureIndex.SkirtBaked:
+                                    case AvatarTextureIndex.HeadBaked:
+                                    case AvatarTextureIndex.EyesBaked:
+                                    case AvatarTextureIndex.UpperBaked:
+                                    case AvatarTextureIndex.LowerBaked:
+                                    case AvatarTextureIndex.SkirtBaked:
                                         type = ImageType.Baked;
                                         break;
                                 }
 
                                 OutfitAssets.Add(face.TextureID);
                                 Client.Assets.RequestImage(face.TextureID, type, Assets_OnImageReceived);
-                                output.Append(((AppearanceManager.TextureIndex)j).ToString());
+                                output.Append(((AvatarTextureIndex)j).ToString());
                                 output.Append(" ");
                             }
                         }

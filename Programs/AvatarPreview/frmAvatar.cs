@@ -282,30 +282,30 @@ namespace AvatarPreview
             #region Baking
 
             Dictionary<int, float> paramValues = GetParamValues();
-            Dictionary<AppearanceManager.TextureIndex, AssetTexture> layers =
-                    new Dictionary<AppearanceManager.TextureIndex, AssetTexture>();
+            Dictionary<AvatarTextureIndex, AssetTexture> layers =
+                    new Dictionary<AvatarTextureIndex, AssetTexture>();
             int textureCount = 0;
 
             if ((string)control.Tag == "Head")
             {
                 if (picHair.Image != null)
                 {
-                    layers.Add(AppearanceManager.TextureIndex.Hair,
+                    layers.Add(AvatarTextureIndex.Hair,
                         new AssetTexture(new ManagedImage((Bitmap)picHair.Image)));
                     ++textureCount;
                 }
                 if (picHeadBodypaint.Image != null)
                 {
-                    layers.Add(AppearanceManager.TextureIndex.HeadBodypaint,
+                    layers.Add(AvatarTextureIndex.HeadBodypaint,
                         new AssetTexture(new ManagedImage((Bitmap)picHeadBodypaint.Image)));
                     ++textureCount;
                 }
 
                 // Compute the head bake
                 Baker baker = new Baker(
-                    _client, AppearanceManager.BakeType.Head, textureCount, paramValues);
+                    _client, BakeType.Head, textureCount, paramValues);
 
-                foreach (KeyValuePair<AppearanceManager.TextureIndex, AssetTexture> kvp in layers)
+                foreach (KeyValuePair<AvatarTextureIndex, AssetTexture> kvp in layers)
                     baker.AddTexture(kvp.Key, kvp.Value, false);
 
                 if (baker.BakedTexture != null)
@@ -324,40 +324,40 @@ namespace AvatarPreview
             {
                 if (picUpperBodypaint.Image != null)
                 {
-                    layers.Add(AppearanceManager.TextureIndex.UpperBodypaint,
+                    layers.Add(AvatarTextureIndex.UpperBodypaint,
                         new AssetTexture(new ManagedImage((Bitmap)picUpperBodypaint.Image)));
                     ++textureCount;
                 }
                 if (picUpperGloves.Image != null)
                 {
-                    layers.Add(AppearanceManager.TextureIndex.UpperGloves,
+                    layers.Add(AvatarTextureIndex.UpperGloves,
                         new AssetTexture(new ManagedImage((Bitmap)picUpperGloves.Image)));
                     ++textureCount;
                 }
                 if (picUpperUndershirt.Image != null)
                 {
-                    layers.Add(AppearanceManager.TextureIndex.UpperUndershirt,
+                    layers.Add(AvatarTextureIndex.UpperUndershirt,
                         new AssetTexture(new ManagedImage((Bitmap)picUpperUndershirt.Image)));
                     ++textureCount;
                 }
                 if (picUpperShirt.Image != null)
                 {
-                    layers.Add(AppearanceManager.TextureIndex.UpperShirt,
+                    layers.Add(AvatarTextureIndex.UpperShirt,
                         new AssetTexture(new ManagedImage((Bitmap)picUpperShirt.Image)));
                     ++textureCount;
                 }
                 if (picUpperJacket.Image != null)
                 {
-                    layers.Add(AppearanceManager.TextureIndex.UpperJacket,
+                    layers.Add(AvatarTextureIndex.UpperJacket,
                         new AssetTexture(new ManagedImage((Bitmap)picUpperJacket.Image)));
                     ++textureCount;
                 }
 
                 // Compute the upper body bake
                 Baker baker = new Baker(
-                    _client, AppearanceManager.BakeType.UpperBody, textureCount, paramValues);
+                    _client, BakeType.UpperBody, textureCount, paramValues);
 
-                foreach (KeyValuePair<AppearanceManager.TextureIndex, AssetTexture> kvp in layers)
+                foreach (KeyValuePair<AvatarTextureIndex, AssetTexture> kvp in layers)
                     baker.AddTexture(kvp.Key, kvp.Value, false);
 
                 if (baker.BakedTexture != null)
@@ -376,40 +376,40 @@ namespace AvatarPreview
             {
                 if (picLowerBodypaint.Image != null)
                 {
-                    layers.Add(AppearanceManager.TextureIndex.LowerBodypaint,
+                    layers.Add(AvatarTextureIndex.LowerBodypaint,
                         new AssetTexture(new ManagedImage((Bitmap)picLowerBodypaint.Image)));
                     ++textureCount;
                 }
                 if (picLowerUnderpants.Image != null)
                 {
-                    layers.Add(AppearanceManager.TextureIndex.LowerUnderpants,
+                    layers.Add(AvatarTextureIndex.LowerUnderpants,
                         new AssetTexture(new ManagedImage((Bitmap)picLowerUnderpants.Image)));
                     ++textureCount;
                 }
                 if (picLowerSocks.Image != null)
                 {
-                    layers.Add(AppearanceManager.TextureIndex.LowerSocks,
+                    layers.Add(AvatarTextureIndex.LowerSocks,
                         new AssetTexture(new ManagedImage((Bitmap)picLowerSocks.Image)));
                     ++textureCount;
                 }
                 if (picLowerShoes.Image != null)
                 {
-                    layers.Add(AppearanceManager.TextureIndex.LowerShoes,
+                    layers.Add(AvatarTextureIndex.LowerShoes,
                         new AssetTexture(new ManagedImage((Bitmap)picLowerShoes.Image)));
                     ++textureCount;
                 }
                 if (picLowerPants.Image != null)
                 {
-                    layers.Add(AppearanceManager.TextureIndex.LowerPants,
+                    layers.Add(AvatarTextureIndex.LowerPants,
                         new AssetTexture(new ManagedImage((Bitmap)picLowerPants.Image)));
                     ++textureCount;
                 }
 
                 // Compute the lower body bake
                 Baker baker = new Baker(
-                    _client, AppearanceManager.BakeType.LowerBody, textureCount, paramValues);
+                    _client, BakeType.LowerBody, textureCount, paramValues);
 
-                foreach (KeyValuePair<AppearanceManager.TextureIndex, AssetTexture> kvp in layers)
+                foreach (KeyValuePair<AvatarTextureIndex, AssetTexture> kvp in layers)
                     baker.AddTexture(kvp.Key, kvp.Value, false);
 
                 if (baker.BakedTexture != null)

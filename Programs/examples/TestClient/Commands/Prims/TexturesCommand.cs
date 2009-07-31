@@ -60,14 +60,14 @@ namespace OpenMetaverse.TestClient
 
                             // Determine if this is a baked outfit texture or a normal texture
                             ImageType type = ImageType.Normal;
-                            AppearanceManager.TextureIndex index = (AppearanceManager.TextureIndex)i;
+                            AvatarTextureIndex index = (AvatarTextureIndex)i;
                             switch (index)
                             {
-                                case AppearanceManager.TextureIndex.EyesBaked:
-                                case AppearanceManager.TextureIndex.HeadBaked:
-                                case AppearanceManager.TextureIndex.LowerBaked:
-                                case AppearanceManager.TextureIndex.SkirtBaked:
-                                case AppearanceManager.TextureIndex.UpperBaked:
+                                case AvatarTextureIndex.EyesBaked:
+                                case AvatarTextureIndex.HeadBaked:
+                                case AvatarTextureIndex.LowerBaked:
+                                case AvatarTextureIndex.SkirtBaked:
+                                case AvatarTextureIndex.UpperBaked:
                                     type = ImageType.Baked;
                                     break;
                             }

@@ -158,6 +158,10 @@ namespace OpenMetaverse
         /// <summary>Enable/disable sending periodic camera updates</summary>
         public bool SEND_AGENT_UPDATES = true;
 
+        /// <summary>Enable/disable automatically setting agent appearance at
+        /// login and after sim crossing</summary>
+        public bool SEND_AGENT_APPEARANCE = true;
+
         /// <summary>Enable/disable automatically setting the bandwidth throttle
         /// after connecting to each simulator</summary>
         /// <remarks>The default throttle uses the equivalent of the maximum
