@@ -138,9 +138,9 @@ namespace OpenMetaverse
         #region Structs / Classes
 
         /// <summary>
-        /// A tuple containing a wearable inventory item and the corresponding asset
+        /// Contains information about a wearable inventory item
         /// </summary>
-        private class WearableData
+        public struct WearableData
         {
             /// <summary>Inventory ItemID of the wearable</summary>
             public UUID ItemID;
@@ -235,6 +235,15 @@ namespace OpenMetaverse
         }
 
         #region Publics Methods
+
+        /// <summary>
+        /// Obsolete method for setting appearance. This function no longer does anything.
+        /// Use RequestSetAppearance() to manually start the appearance thread
+        /// </summary>
+        [Obsolete("Appearance is now handled automatically")]
+        public void SetPreviousAppearance()
+        {
+        }
 
         /// <summary>
         /// Obsolete method for setting appearance. This function no longer does anything.
@@ -400,6 +409,57 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>
+        /// Returns the AssetID of the asset that is currently being worn in a 
+        /// given WearableType slot
+        /// </summary>
+        /// <param name="type">WearableType slot to get the AssetID for</param>
+        /// <returns>The UUID of the asset being worn in the given slot, or
+        /// UUID.Zero if no wearable is attached to the given slot or wearables
+        /// have not been downloaded yet</returns>
+        public UUID GetWearableAsset(WearableType type)
+        {
+            WearableData wearable;
+
+            if (Wearables.TryGetValue(type, out wearable))
+                return wearable.AssetID;
+            else
+                return UUID.Zero;
+        }
+
+        /// <summary>
+        /// Checks if an inventory item is currently being worn
+        /// </summary>
+        /// <param name="item">The inventory item to check against the agent
+        /// wearables</param>
+        /// <returns>The WearableType slot that the item is being worn in,
+        /// or WearbleType.Invalid if it is not currently being worn</returns>
+        public WearableType IsItemWorn(InventoryItem item)
+        {
+            lock (Wearables)
+            {
+                foreach (KeyValuePair<WearableType, WearableData> entry in Wearables)
+                {
+                    if (entry.Value.ItemID == item.UUID)
+                        return entry.Key;
+                }
+            }
+
+            return WearableType.Invalid;
+        }
+
+        /// <summary>
+        /// Returns a copy of the agents currently worn wearables
+        /// </summary>
+        /// <returns>A copy of the agents currently worn wearables</returns>
+        /// <remarks>Avoid calling this function multiple times as it will make
+        /// a copy of all of the wearable data each time</remarks>
+        public Dictionary<WearableType, WearableData> GetWearables()
+        {
+            lock (Wearables)
+                return new Dictionary<WearableType, WearableData>(Wearables);
+        }
+
         #endregion Publics Methods
 
         #region Attachments
@@ -410,7 +470,7 @@ namespace OpenMetaverse
         /// <param name="attachments">A List containing the attachments to add</param>
         /// <param name="removeExistingFirst">If true, tells simulator to remove existing attachment
         /// first</param>
-        public void AddAttachments(List<InventoryBase> attachments, bool removeExistingFirst)
+        public void AddAttachments(List<InventoryItem> attachments, bool removeExistingFirst)
         {
             // Use RezMultipleAttachmentsFromInv  to clear out current attachments, and attach new ones
             RezMultipleAttachmentsFromInvPacket attachmentsPacket = new RezMultipleAttachmentsFromInvPacket();
@@ -1064,7 +1124,7 @@ namespace OpenMetaverse
 
         #region Inventory Helpers
 
-        private bool GetFolderWearables(string[] folderPath, out List<InventoryWearable> wearables, out List<InventoryBase> attachments)
+        private bool GetFolderWearables(string[] folderPath, out List<InventoryWearable> wearables, out List<InventoryItem> attachments)
         {
             UUID folder = Client.Inventory.FindObjectByPath(
                 Client.Inventory.Store.RootFolder.UUID, Client.Self.AgentID, String.Join("/", folderPath), INVENTORY_TIMEOUT);
@@ -1082,10 +1142,10 @@ namespace OpenMetaverse
             }
         }
 
-        private bool GetFolderWearables(UUID folder, out List<InventoryWearable> wearables, out List<InventoryBase> attachments)
+        private bool GetFolderWearables(UUID folder, out List<InventoryWearable> wearables, out List<InventoryItem> attachments)
         {
             wearables = new List<InventoryWearable>();
-            attachments = new List<InventoryBase>();
+            attachments = new List<InventoryItem>();
             List<InventoryBase> objects = Client.Inventory.FolderContents(folder, Client.Self.AgentID, false, true,
                 InventorySortOrder.ByName, INVENTORY_TIMEOUT);
 
@@ -1101,12 +1161,12 @@ namespace OpenMetaverse
                     else if (ib is InventoryAttachment)
                     {
                         Logger.DebugLog("Adding attachment (attachment) " + ib.Name, Client);
-                        attachments.Add(ib);
+                        attachments.Add((InventoryItem)ib);
                     }
                     else if (ib is InventoryObject)
                     {
                         Logger.DebugLog("Adding attachment (object) " + ib.Name, Client);
-                        attachments.Add(ib);
+                        attachments.Add((InventoryItem)ib);
                     }
                     else
                     {
