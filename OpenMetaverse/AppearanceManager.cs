@@ -140,7 +140,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Contains information about a wearable inventory item
         /// </summary>
-        public struct WearableData
+        public class WearableData
         {
             /// <summary>Inventory ItemID of the wearable</summary>
             public UUID ItemID;
@@ -425,6 +425,21 @@ namespace OpenMetaverse
                 return wearable.AssetID;
             else
                 return UUID.Zero;
+        }
+
+        /// <summary>
+        /// Replace the current outfit with a list of wearables and set appearance
+        /// </summary>
+        /// <param name="wearableItems">List of wearable inventory items that
+        /// define a new outfit</param>
+        public void WearOutfit(List<InventoryItem> wearableItems)
+        {
+            List<InventoryWearable> wearables = new List<InventoryWearable>();
+            List<InventoryItem> attachments = new List<InventoryItem>();
+
+            for (int i = 0; i < wearableItems.Count; i++)
+            {
+            }
         }
 
         /// <summary>
