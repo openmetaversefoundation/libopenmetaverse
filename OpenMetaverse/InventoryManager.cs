@@ -2036,21 +2036,38 @@ namespace OpenMetaverse
         /// <param name="callback">callback to run when item is copied to inventory</param>
         public void RequestCopyItemFromNotecard(UUID objectID, UUID notecardID, UUID folderID, UUID itemID, ItemCopiedCallback callback)
         {
-            CopyInventoryFromNotecardPacket copy = new CopyInventoryFromNotecardPacket();
-            copy.AgentData.AgentID = _Client.Self.AgentID;
-            copy.AgentData.SessionID = _Client.Self.SessionID;
-
-            copy.NotecardData.ObjectID = objectID;
-            copy.NotecardData.NotecardItemID = notecardID;
-
-            copy.InventoryData = new CopyInventoryFromNotecardPacket.InventoryDataBlock[1];
-            copy.InventoryData[0] = new CopyInventoryFromNotecardPacket.InventoryDataBlock();
-            copy.InventoryData[0].FolderID = folderID;
-            copy.InventoryData[0].ItemID = itemID;
-           
             _ItemCopiedCallbacks[0] = callback; //Notecards always use callback ID 0
 
-            _Client.Network.SendPacket(copy);
+            Uri url = _Client.Network.CurrentSim.Caps.CapabilityURI("CopyInventoryFromNotecard");
+
+            if (url != null)
+            {
+                CopyInventoryFromNotecardMessage message = new CopyInventoryFromNotecardMessage();
+                message.CallbackID = 0;
+                message.FolderID = folderID;
+                message.ItemID = itemID;
+                message.NotecardID = notecardID;
+                message.ObjectID = objectID;
+
+                CapsClient request = new CapsClient(url);
+                request.BeginGetResponse(message.Serialize(), OSDFormat.Xml, _Client.Settings.CAPS_TIMEOUT);
+            }
+            else
+            {
+                CopyInventoryFromNotecardPacket copy = new CopyInventoryFromNotecardPacket();
+                copy.AgentData.AgentID = _Client.Self.AgentID;
+                copy.AgentData.SessionID = _Client.Self.SessionID;
+
+                copy.NotecardData.ObjectID = objectID;
+                copy.NotecardData.NotecardItemID = notecardID;
+
+                copy.InventoryData = new CopyInventoryFromNotecardPacket.InventoryDataBlock[1];
+                copy.InventoryData[0] = new CopyInventoryFromNotecardPacket.InventoryDataBlock();
+                copy.InventoryData[0].FolderID = folderID;
+                copy.InventoryData[0].ItemID = itemID;
+
+                _Client.Network.SendPacket(copy);
+            }
         }
 
         #endregion Copy
@@ -2227,7 +2244,7 @@ namespace OpenMetaverse
             InventoryItem item)
         {
             return RequestRezFromInventory(simulator, rotation, position, item, _Client.Self.ActiveGroup,
-                UUID.Random(), false);
+                UUID.Random(), true);
         }
 
         /// <summary>
@@ -2241,7 +2258,7 @@ namespace OpenMetaverse
         public UUID RequestRezFromInventory(Simulator simulator, Quaternion rotation, Vector3 position,
             InventoryItem item, UUID groupOwner)
         {
-            return RequestRezFromInventory(simulator, rotation, position, item, groupOwner, UUID.Random(), false);
+            return RequestRezFromInventory(simulator, rotation, position, item, groupOwner, UUID.Random(), true);
         }
 
         /// <summary>
@@ -2253,10 +2270,10 @@ namespace OpenMetaverse
         /// <param name="item">InventoryItem object containing item details</param>
         /// <param name="groupOwner">UUID of group to own the object</param>        
         /// <param name="queryID">User defined queryID to correlate replies</param>
-        /// <param name="requestObjectDetails">if set to true the simulator
-        /// will automatically send object detail packet(s) back to the client</param>
+        /// <param name="rezSelected">If set to true, the CreateSelected flag
+        /// will be set on the rezzed object</param>
         public UUID RequestRezFromInventory(Simulator simulator, Quaternion rotation, Vector3 position,
-            InventoryItem item, UUID groupOwner, UUID queryID, bool requestObjectDetails)
+            InventoryItem item, UUID groupOwner, UUID queryID, bool rezSelected)
         {
             RezObjectPacket add = new RezObjectPacket();
 
@@ -2270,7 +2287,7 @@ namespace OpenMetaverse
             add.RezData.RayEnd = position;
             add.RezData.RayTargetID = UUID.Zero;
             add.RezData.RayEndIsIntersection = false;
-            add.RezData.RezSelected = requestObjectDetails;
+            add.RezData.RezSelected = rezSelected;
             add.RezData.RemoveItem = false;
             add.RezData.ItemFlags = (uint)item.Flags;
             add.RezData.GroupMask = (uint)item.Permissions.GroupMask;
