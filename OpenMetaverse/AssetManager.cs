@@ -777,7 +777,36 @@ namespace OpenMetaverse
             else
             {
                 Logger.Log("UploadBakedTexture not available, falling back to UDP method", Helpers.LogLevel.Info, Client);
-                // FIXME:
+
+                ThreadPool.QueueUserWorkItem(
+                    delegate(object o)
+                    {
+                        UUID transactionID = UUID.Random();
+                        BakedTextureUploadedCallback uploadCallback = (BakedTextureUploadedCallback)o;
+                        AutoResetEvent uploadEvent = new AutoResetEvent(false);
+                        AssetUploadedCallback udpCallback =
+                            delegate(AssetUpload upload)
+                            {
+                                if (upload.ID == transactionID)
+                                {
+                                    uploadEvent.Set();
+                                    uploadCallback(upload.Success ? upload.AssetID : UUID.Zero);
+                                }
+                            };
+
+                        OnAssetUploaded += udpCallback;
+
+                        UUID assetID;
+                        RequestUpload(out assetID, AssetType.Texture, textureData, true, transactionID);
+
+                        bool success = uploadEvent.WaitOne(Settings.TRANSFER_TIMEOUT, false);
+
+                        OnAssetUploaded -= udpCallback;
+
+                        if (!success)
+                            uploadCallback(UUID.Zero);
+                    }, callback
+                );
             }
         }
 
