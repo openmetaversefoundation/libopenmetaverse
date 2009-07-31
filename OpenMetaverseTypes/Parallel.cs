@@ -116,7 +116,6 @@ namespace OpenMetaverse
             int counter = threadCount;
             AutoResetEvent threadFinishEvent = new AutoResetEvent(false);
             IEnumerator<T> enumerator = enumerable.GetEnumerator();
-            object syncRoot = new Object();
             Exception exception = null;
 
             for (int i = 0; i < threadCount; i++)
@@ -130,7 +129,7 @@ namespace OpenMetaverse
                         {
                             T entry;
 
-                            lock (syncRoot)
+                            lock (enumerator)
                             {
                                 if (!enumerator.MoveNext())
                                     break;

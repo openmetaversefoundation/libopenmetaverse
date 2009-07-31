@@ -402,7 +402,7 @@ namespace OpenMetaverse
         /// <param name="callback">The callback to fire when the simulator responds with the asset data</param>
         public void RequestAsset(UUID assetID, AssetType type, bool priority, AssetReceivedCallback callback)
         {
-            RequestAsset(assetID, type, priority, SourceType.Asset, callback);
+            RequestAsset(assetID, type, priority, SourceType.Asset, UUID.Random(), callback);
         }
 
         /// <summary>
@@ -415,8 +415,21 @@ namespace OpenMetaverse
         /// <param name="callback">The callback to fire when the simulator responds with the asset data</param>
         public void RequestAsset(UUID assetID, AssetType type, bool priority, SourceType sourceType, AssetReceivedCallback callback)
         {
+            RequestAsset(assetID, type, priority, sourceType, UUID.Random(), callback);
+        }
+
+        /// <summary>
+        /// Request an asset download
+        /// </summary>
+        /// <param name="assetID">Asset UUID</param>
+        /// <param name="type">Asset type, must be correct for the transfer to succeed</param>
+        /// <param name="priority">Whether to give this transfer an elevated priority</param>
+        /// <param name="sourceType">Source location of the requested asset</param>
+        /// <param name="callback">The callback to fire when the simulator responds with the asset data</param>
+        public void RequestAsset(UUID assetID, AssetType type, bool priority, SourceType sourceType, UUID transactionID, AssetReceivedCallback callback)
+        {
             AssetDownload transfer = new AssetDownload();
-            transfer.ID = UUID.Random();
+            transfer.ID = transactionID;
             transfer.AssetID = assetID;
             //transfer.AssetType = type; // Set in TransferInfoHandler.
             transfer.Priority = 100.0f + (priority ? 1.0f : 0.0f);
