@@ -2244,7 +2244,7 @@ namespace OpenMetaverse
             InventoryItem item)
         {
             return RequestRezFromInventory(simulator, rotation, position, item, _Client.Self.ActiveGroup,
-                UUID.Random(), false);
+                UUID.Random(), true);
         }
 
         /// <summary>
@@ -2258,7 +2258,7 @@ namespace OpenMetaverse
         public UUID RequestRezFromInventory(Simulator simulator, Quaternion rotation, Vector3 position,
             InventoryItem item, UUID groupOwner)
         {
-            return RequestRezFromInventory(simulator, rotation, position, item, groupOwner, UUID.Random(), false);
+            return RequestRezFromInventory(simulator, rotation, position, item, groupOwner, UUID.Random(), true);
         }
 
         /// <summary>
@@ -2270,10 +2270,10 @@ namespace OpenMetaverse
         /// <param name="item">InventoryItem object containing item details</param>
         /// <param name="groupOwner">UUID of group to own the object</param>        
         /// <param name="queryID">User defined queryID to correlate replies</param>
-        /// <param name="requestObjectDetails">if set to true the simulator
-        /// will automatically send object detail packet(s) back to the client</param>
+        /// <param name="rezSelected">If set to true, the CreateSelected flag
+        /// will be set on the rezzed object</param>
         public UUID RequestRezFromInventory(Simulator simulator, Quaternion rotation, Vector3 position,
-            InventoryItem item, UUID groupOwner, UUID queryID, bool requestObjectDetails)
+            InventoryItem item, UUID groupOwner, UUID queryID, bool rezSelected)
         {
             RezObjectPacket add = new RezObjectPacket();
 
@@ -2287,7 +2287,7 @@ namespace OpenMetaverse
             add.RezData.RayEnd = position;
             add.RezData.RayTargetID = UUID.Zero;
             add.RezData.RayEndIsIntersection = false;
-            add.RezData.RezSelected = requestObjectDetails;
+            add.RezData.RezSelected = rezSelected;
             add.RezData.RemoveItem = false;
             add.RezData.ItemFlags = (uint)item.Flags;
             add.RezData.GroupMask = (uint)item.Permissions.GroupMask;
