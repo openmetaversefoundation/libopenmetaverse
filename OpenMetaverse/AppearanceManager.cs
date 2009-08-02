@@ -702,15 +702,36 @@ namespace OpenMetaverse
                                         Dictionary<VisualColorParam, float> colorParams = new Dictionary<VisualColorParam, float>();
 
                                         // Populate collection of alpha masks from visual params
+                                        // also add color tinting information
                                         foreach (KeyValuePair<int, float> kvp in wearable.Asset.Params)
                                         {
                                             VisualParam p = VisualParams.Params[kvp.Key];
 
+                                            // Color params
                                             if (p.ColorParams.HasValue)
                                             {
-                                                colorParams.Add(p.ColorParams.Value, kvp.Value);
+                                                // If this is not skin, just add params directly
+                                                if (wearable.WearableType != WearableType.Skin)
+                                                {
+                                                    colorParams.Add(p.ColorParams.Value, kvp.Value);
+                                                }
+                                                else
+                                                {
+                                                    // For skin we skip makeup params for now and use only the 3
+                                                    // that are used to determine base skin tone
+                                                    // Param 108 - Rainbow Color
+                                                    // Param 110 - Red Skin (Ruddiness)
+                                                    // Param 111 - Pigment
+                                                    if (kvp.Key == 108 || kvp.Key == 110 || kvp.Key == 111)
+                                                    {
+                                                        colorParams.Add(p.ColorParams.Value, kvp.Value);
+                                                    }
+                                                }
                                             }
 
+                                            // Alhpa masks are specified in sub "driver" params
+                                            // TODO pull bump data too to implement things like
+                                            // clothes "bagginess"
                                             if (p.Drivers != null)
                                             {
                                                 for (int i = 0; i < p.Drivers.Length; i++)
@@ -721,7 +742,6 @@ namespace OpenMetaverse
                                                         if (driver.AlphaParams.HasValue && driver.AlphaParams.Value.TGAFile != string.Empty && !driver.IsBumpAttribute)
                                                         {
                                                             alphaMasks.Add(driver.AlphaParams.Value, kvp.Value);
-                                                            Logger.DebugLog(wearable.WearableType + " using value " + kvp.Value + " for " + driver.ParamID + ": " + driver.Name + ": " + driver.AlphaParams.Value.TGAFile);
                                                             break;
                                                         }
                                                     }

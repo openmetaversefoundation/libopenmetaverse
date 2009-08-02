@@ -469,8 +469,8 @@ namespace OpenMetaverse
             Params[863] = new VisualParam(863, "skirt_looseness", 0, "skirt", "Skirt Fit", "Tight Skirt", "Poofy Skirt", 0.333f, 0f, 1f, false, new int[] { 866, 846, 845 }, null, null);
             Params[866] = new VisualParam(866, "skirt_tight", 1, "skirt", "tight skirt", "form fitting", "loose", 0f, 0f, 1f, false, null, null, null);
             Params[867] = new VisualParam(867, "skirt_smallbutt", 1, "skirt", "tight skirt", "form fitting", "loose", 0f, 0f, 1f, false, null, null, null);
-            Params[868] = new VisualParam(868, "Shirt Wrinkles", 0, "shirt", String.Empty, String.Empty, String.Empty, 0f, 0f, 1f, true, null, null, new VisualColorParam(VisualColorOperation.None, new System.Drawing.Color[] { System.Drawing.Color.FromArgb(0, 255, 255, 255), System.Drawing.Color.FromArgb(255, 255, 255, 255) }));
-            Params[869] = new VisualParam(869, "Pants Wrinkles", 0, "pants", String.Empty, String.Empty, String.Empty, 0f, 0f, 1f, true, null, null, new VisualColorParam(VisualColorOperation.None, new System.Drawing.Color[] { System.Drawing.Color.FromArgb(0, 255, 255, 255), System.Drawing.Color.FromArgb(255, 255, 255, 255) }));
+            Params[868] = new VisualParam(868, "Shirt Wrinkles", 0, "shirt", String.Empty, String.Empty, String.Empty, 0f, 0f, 1f, true, null, null, null);
+            Params[869] = new VisualParam(869, "Pants Wrinkles", 0, "pants", String.Empty, String.Empty, String.Empty, 0f, 0f, 1f, true, null, null, null);
             Params[870] = new VisualParam(870, "Pointy_Eyebrows", 1, "hair", "Eyebrow Points", "Smooth", "Pointy", -0.5f, -0.5f, 1f, false, null, null, null);
             Params[871] = new VisualParam(871, "Lower_Eyebrows", 1, "hair", "Eyebrow Height", "Higher", "Lower", -2f, -2f, 2f, false, null, null, null);
             Params[872] = new VisualParam(872, "Arced_Eyebrows", 1, "hair", "Eyebrow Arc", "Flat", "Arced", 0f, 0f, 1f, false, null, null, null);

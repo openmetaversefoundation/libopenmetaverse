@@ -112,12 +112,26 @@ namespace VisualParamGenerator
                         int id = Int32.Parse(node.Attributes["id"].Value);
 
                         string bumpAttrib = "false";
+                        bool skipColor = false;
 
                         if (node.ParentNode.Name == "layer")
                         {
                             if (node.ParentNode.Attributes["render_pass"] != null && node.ParentNode.Attributes["render_pass"].Value == "bump")
                             {
                                 bumpAttrib = "true";
+                            }
+
+                            for (int nodeNr = 0; nodeNr < node.ParentNode.ChildNodes.Count; nodeNr++)
+                            {
+                                XmlNode lnode = node.ParentNode.ChildNodes[nodeNr];
+
+                                if (lnode.Name == "texture")
+                                {
+                                    if (lnode.Attributes["local_texture_alpha_only"] != null && lnode.Attributes["local_texture_alpha_only"].Value.ToLower() == "true")
+                                    {
+                                        skipColor = true;
+                                    }
+                                }
                             }
                         }
 
@@ -186,7 +200,7 @@ namespace VisualParamGenerator
                                         }
                                     }
 
-                                    if (colors.Count > 0)
+                                    if (colors.Count > 0 && !skipColor)
                                     {
                                         string colorsStr = string.Join(", ", colors.ToArray());
                                         Colors.Add(id, string.Format("new VisualColorParam({0}, new System.Drawing.Color[] {{ {1} }})", operation, colorsStr));
