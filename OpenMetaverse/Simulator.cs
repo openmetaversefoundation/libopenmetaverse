@@ -1037,6 +1037,12 @@ namespace OpenMetaverse
                     {
                         if (outgoing.ResendCount < Client.Settings.MAX_RESEND_COUNT)
                         {
+                            if (Client.Settings.LOG_RESENDS)
+                            {
+                                Logger.DebugLog(String.Format("Resending packet #{0}, {1}ms have passed",
+                                    outgoing.SequenceNumber, now - outgoing.TickCount), Client);
+                            }
+
                             // The TickCount will be set to the current time when the packet
                             // is actually sent out again
                             outgoing.TickCount = 0;
@@ -1047,12 +1053,6 @@ namespace OpenMetaverse
                             // Stats tracking
                             Interlocked.Increment(ref outgoing.ResendCount);
                             Interlocked.Increment(ref Stats.ResentPackets);
-
-                            if (Client.Settings.LOG_RESENDS)
-                            {
-                                Logger.DebugLog(String.Format("Resending packet #{0}, {1}ms have passed",
-                                    outgoing.SequenceNumber, now - outgoing.TickCount), Client);
-                            }
 
                             SendPacketFinal(outgoing);
                         }
