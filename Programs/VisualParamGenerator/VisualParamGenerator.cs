@@ -141,10 +141,10 @@ namespace VisualParamGenerator
                                     if (anode.Attributes["tga_file"] != null)
                                         tga_file = string.Format("\"{0}\"", anode.Attributes["tga_file"].Value); ;
 
-                                    if (anode.Attributes["skip_if_zero"] != null && anode.Attributes["skip_if_zero"].Value == "true")
+                                    if (anode.Attributes["skip_if_zero"] != null && anode.Attributes["skip_if_zero"].Value.ToLower() == "true")
                                         skip_if_zero = "true";
 
-                                    if (anode.Attributes["multiply_blend"] != null && anode.Attributes["multiply_blend"].Value == "true")
+                                    if (anode.Attributes["multiply_blend"] != null && anode.Attributes["multiply_blend"].Value.ToLower() == "true")
                                         multiply_blend = "true";
 
                                     Alphas.Add(id, string.Format("new VisualAlphaParam({0}f, {1}, {2}, {3})", domain, tga_file, skip_if_zero, multiply_blend));
