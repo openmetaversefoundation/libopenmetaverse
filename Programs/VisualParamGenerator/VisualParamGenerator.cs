@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 
 namespace VisualParamGenerator
@@ -75,6 +76,9 @@ namespace VisualParamGenerator
             }
 
             SortedList<int, string> IDs = new SortedList<int, string>();
+            Dictionary<int, string> Alphas = new Dictionary<int, string>();
+            Dictionary<int, string> Colors = new Dictionary<int, string>();
+
             StringWriter output = new StringWriter();
 
             // Make sure we end up with 218 Group-0 VisualParams as a sanity check
@@ -106,6 +110,81 @@ namespace VisualParamGenerator
                     try
                     {
                         int id = Int32.Parse(node.Attributes["id"].Value);
+
+                        if (node.HasChildNodes)
+                        {
+                            for (int nodeNr = 0; nodeNr < node.ChildNodes.Count; nodeNr++)
+                            {
+                                #region Alpha mask and bumps
+                                if (node.ChildNodes[nodeNr].Name == "param_alpha")
+                                {
+                                    XmlNode anode = node.ChildNodes[nodeNr];
+                                    string tga_file = "string.Empty";
+                                    string skip_if_zero = "false";
+                                    string multiply_blend = "false";
+                                    string domain = "0";
+
+                                    if (anode.Attributes["domain"] != null)
+                                        domain = anode.Attributes["domain"].Value;
+
+                                    if (anode.Attributes["tga_file"] != null)
+                                        tga_file = string.Format("\"{0}\"", anode.Attributes["tga_file"].Value); ;
+
+                                    if (anode.Attributes["skip_if_zero"] != null && anode.Attributes["skip_if_zero"].Value == "true")
+                                        skip_if_zero = "true";
+
+                                    if (anode.Attributes["multiply_blend"] != null && anode.Attributes["multiply_blend"].Value == "true")
+                                        multiply_blend = "true";
+
+                                    Alphas.Add(id, string.Format("new VisualAlphaParam({0}f, {1}, {2}, {3})", domain, tga_file, skip_if_zero, multiply_blend));
+                                }
+                                #endregion
+                                #region Colors
+                                else if (node.ChildNodes[nodeNr].Name == "param_color" && node.ChildNodes[nodeNr].HasChildNodes)
+                                {
+                                    XmlNode cnode = node.ChildNodes[nodeNr];
+                                    string operation = "VisualColorOperation.None";
+                                    List<string> colors = new List<string>();
+
+                                    if (cnode.Attributes["operation"] != null)
+                                    {
+
+                                        switch (cnode.Attributes["operation"].Value)
+                                        {
+                                            case "blend":
+                                                operation = "VisualColorOperation.Blend";
+                                                break;
+
+                                            case "multiply":
+                                                operation = "VisualColorOperation.Blend";
+                                                break;
+                                        }
+                                    }
+
+                                    foreach (XmlNode cvalue in cnode.ChildNodes)
+                                    {
+                                        if (cvalue.Name == "value" && cvalue.Attributes["color"] != null)
+                                        {
+                                            Match m = Regex.Match(cvalue.Attributes["color"].Value, @"((?<val>\d+)(?:, *)?){4}");
+                                            if (!m.Success)
+                                            {
+                                                continue;
+                                            }
+                                            CaptureCollection val = m.Groups["val"].Captures;
+                                            colors.Add(string.Format("System.Drawing.Color.FromArgb({0}, {1}, {2}, {3})", val[3], val[0], val[1], val[2]));
+                                        }
+                                    }
+
+                                    if (colors.Count > 0)
+                                    {
+                                        string colorsStr = string.Join(", ", colors.ToArray());
+                                        Colors.Add(id, string.Format("new VisualColorParam({0}, new System.Drawing.Color[] {{ {1} }})", operation, colorsStr));
+                                    }
+                                }
+                                #endregion
+
+                            }
+                        }
 
                         // Check for duplicates
                         if (IDs.ContainsKey(id))
@@ -143,8 +222,8 @@ namespace VisualParamGenerator
                             def = min;
 
                         IDs.Add(id,
-                            String.Format("            Params[{0}] = new VisualParam({0}, \"{1}\", {2}, {3}, {4}, {5}, {6}, {7}f, {8}f, {9}f);{10}",
-                            id, name, group, wearable, label, label_min, label_max, def, min, max, Environment.NewLine));
+                            String.Format("            Params[{0}] = new VisualParam({0}, \"{1}\", {2}, {3}, {4}, {5}, {6}, {7}f, {8}f, {9}f, ",
+                            id, name, group, wearable, label, label_min, label_max, def, min, max));
 
                         if (group == 0)
                             ++count;
@@ -158,14 +237,35 @@ namespace VisualParamGenerator
 
             if (count != 218)
             {
-                Console.WriteLine("Ended up with the wrong number of Group-8 VisualParams! Exiting...");
+                Console.WriteLine("Ended up with the wrong number of Group-0 VisualParams! Exiting...");
                 return;
             }
 
             // Now that we've collected all the entries and sorted them, add them to our output buffer
-            foreach (string line in IDs.Values)
+            foreach (KeyValuePair<int, string> line in IDs)
             {
-                output.Write(line);
+                output.Write(line.Value);
+                
+                if (Alphas.ContainsKey(line.Key))
+                {
+                    output.Write(Alphas[line.Key] + ", ");
+                }
+                else
+                {
+                    output.Write("null, ");
+                }
+
+                if (Colors.ContainsKey(line.Key))
+                {
+                    output.Write(Colors[line.Key]);
+                }
+                else
+                {
+                    output.Write("null");
+                }
+
+
+                output.WriteLine(");");
             }
 
             output.Write("        }" + Environment.NewLine);
