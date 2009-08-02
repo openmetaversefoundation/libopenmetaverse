@@ -9,7 +9,7 @@ namespace VisualParamGenerator
 {
     class VisualParamGenerator
     {
-        public static readonly System.Globalization.CultureInfo EnUsCulture = 
+        public static readonly System.Globalization.CultureInfo EnUsCulture =
             new System.Globalization.CultureInfo("en-us");
 
         static void Main(string[] args)
@@ -111,6 +111,17 @@ namespace VisualParamGenerator
                     {
                         int id = Int32.Parse(node.Attributes["id"].Value);
 
+                        string bumpAttrib = "false";
+
+                        if (node.ParentNode.Name == "layer")
+                        {
+                            if (node.ParentNode.Attributes["render_pass"] != null && node.ParentNode.Attributes["render_pass"].Value == "bump")
+                            {
+                                bumpAttrib = "true";
+                            }
+                        }
+
+
                         if (node.HasChildNodes)
                         {
                             for (int nodeNr = 0; nodeNr < node.ChildNodes.Count; nodeNr++)
@@ -209,7 +220,7 @@ namespace VisualParamGenerator
                         if (node.Attributes["label_max"] != null)
                             label_max = "\"" + node.Attributes["label_max"].Value + "\"";
 
-                        float min = Single.Parse(node.Attributes["value_min"].Value, 
+                        float min = Single.Parse(node.Attributes["value_min"].Value,
                             System.Globalization.NumberStyles.Float, EnUsCulture.NumberFormat);
                         float max = Single.Parse(node.Attributes["value_max"].Value,
                             System.Globalization.NumberStyles.Float, EnUsCulture.NumberFormat);
@@ -221,9 +232,36 @@ namespace VisualParamGenerator
                         else
                             def = min;
 
+                        string drivers = "null";
+                        if (node.HasChildNodes)
+                        {
+                            for (int nodeNr = 0; nodeNr < node.ChildNodes.Count; nodeNr++)
+                            {
+                                XmlNode cnode = node.ChildNodes[nodeNr];
+
+                                if (cnode.Name == "param_driver" && cnode.HasChildNodes)
+                                {
+                                    List<string> driverIDs = new List<string>();
+                                    foreach (XmlNode dnode in cnode.ChildNodes)
+                                    {
+                                        if (dnode.Name == "driven" && dnode.Attributes["id"] != null)
+                                        {
+                                            driverIDs.Add(dnode.Attributes["id"].Value);
+                                        }
+                                    }
+
+                                    if (driverIDs.Count > 0)
+                                    {
+                                        drivers = string.Format("new int[] {{ {0} }}", string.Join(", ", driverIDs.ToArray()));
+                                    }
+
+                                }
+                            }
+                        }
+
                         IDs.Add(id,
-                            String.Format("            Params[{0}] = new VisualParam({0}, \"{1}\", {2}, {3}, {4}, {5}, {6}, {7}f, {8}f, {9}f, ",
-                            id, name, group, wearable, label, label_min, label_max, def, min, max));
+                            String.Format("            Params[{0}] = new VisualParam({0}, \"{1}\", {2}, {3}, {4}, {5}, {6}, {7}f, {8}f, {9}f, {10}, {11}, ",
+                            id, name, group, wearable, label, label_min, label_max, def, min, max, bumpAttrib, drivers));
 
                         if (group == 0)
                             ++count;
@@ -245,7 +283,7 @@ namespace VisualParamGenerator
             foreach (KeyValuePair<int, string> line in IDs)
             {
                 output.Write(line.Value);
-                
+
                 if (Alphas.ContainsKey(line.Key))
                 {
                     output.Write(Alphas[line.Key] + ", ");

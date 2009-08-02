@@ -91,10 +91,14 @@ namespace OpenMetaverse
         public float MinValue;
         /// <summary>Maximum value</summary>
         public float MaxValue;
+        /// <summary>Is this param used for creation of bump layer?</summary>
+        public bool IsBumpAttribute;
         /// <summary>Alpha blending/bump info</summary>
         public VisualAlphaParam? AlphaParams;
         /// <summary>Color information</summary>
         public VisualColorParam? ColorParams;
+        /// <summary>Array of param IDs that are drivers for this parameter</summary>
+        public int[] Drivers;
         /// <summary>
         /// Set all the values through the constructor
         /// </summary>
@@ -108,7 +112,11 @@ namespace OpenMetaverse
         /// <param name="def">Default value</param>
         /// <param name="min">Minimum value</param>
         /// <param name="max">Maximum value</param>
-        public VisualParam(int paramID, string name, int group, string wearable, string label, string labelMin, string labelMax, float def, float min, float max, VisualAlphaParam? alpha, VisualColorParam? colorParams)
+        /// <param name="isBumpAttribute">Is this param used for creation of bump layer?</param>
+        /// <param name="drivers">Array of param IDs that are drivers for this parameter</param>
+        /// <param name="alpha">Alpha blending/bump info</param>
+        /// <param name="colorParams">Color information</param>
+        public VisualParam(int paramID, string name, int group, string wearable, string label, string labelMin, string labelMax, float def, float min, float max, bool isBumpAttribute, int[] drivers, VisualAlphaParam? alpha, VisualColorParam? colorParams)
         {
             ParamID = paramID;
             Name = name;
@@ -120,6 +128,8 @@ namespace OpenMetaverse
             DefaultValue = def;
             MaxValue = max;
             MinValue = min;
+            IsBumpAttribute = isBumpAttribute;
+            Drivers = drivers;
             AlphaParams = alpha;
             ColorParams = colorParams;
         }

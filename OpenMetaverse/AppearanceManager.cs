@@ -170,6 +170,10 @@ namespace OpenMetaverse
             public UUID TextureID;
             /// <summary>Asset data for the texture</summary>
             public AssetTexture Texture;
+            /// <summary>Collection of alpha masks that needs applying</summary>
+            public Dictionary<VisualAlphaParam, float> AlphaMasks;
+            /// <summary>Collection of color params used for calculating texture tint</summary>
+            public Dictionary<VisualColorParam, float> ColorParams;
 
             public override string ToString()
             {
@@ -691,8 +695,39 @@ namespace OpenMetaverse
 
                                     if (wearable.Asset.Decode())
                                     {
-                                        Logger.DebugLog("Downloaded wearable asset with " + wearable.Asset.Params.Count +
+                                        Logger.DebugLog("Downloaded wearable asset " + wearable.WearableType + " with " + wearable.Asset.Params.Count +
                                             " visual params and " + wearable.Asset.Textures.Count + " textures", Client);
+
+                                        Dictionary<VisualAlphaParam, float> alphaMasks = new Dictionary<VisualAlphaParam, float>();
+                                        Dictionary<VisualColorParam, float> colorParams = new Dictionary<VisualColorParam, float>();
+
+                                        // Populate collection of alpha masks from visual params
+                                        foreach (KeyValuePair<int, float> kvp in wearable.Asset.Params)
+                                        {
+                                            VisualParam p = VisualParams.Params[kvp.Key];
+
+                                            if (p.ColorParams.HasValue)
+                                            {
+                                                colorParams.Add(p.ColorParams.Value, kvp.Value);
+                                            }
+
+                                            if (p.Drivers != null)
+                                            {
+                                                for (int i = 0; i < p.Drivers.Length; i++)
+                                                {
+                                                    if (VisualParams.Params.ContainsKey(p.Drivers[i]))
+                                                    {
+                                                        VisualParam driver = VisualParams.Params[p.Drivers[i]];
+                                                        if (driver.AlphaParams.HasValue && driver.AlphaParams.Value.TGAFile != string.Empty && !driver.IsBumpAttribute)
+                                                        {
+                                                            alphaMasks.Add(driver.AlphaParams.Value, kvp.Value);
+                                                            Logger.DebugLog(wearable.WearableType + " using value " + kvp.Value + " for " + driver.ParamID + ": " + driver.Name + ": " + driver.AlphaParams.Value.TGAFile);
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
 
                                         // Loop through all of the texture IDs in this decoded asset and put them in our cache of worn textures
                                         foreach (KeyValuePair<AvatarTextureIndex, UUID> entry in wearable.Asset.Textures)
@@ -709,6 +744,8 @@ namespace OpenMetaverse
                                                     Textures[i].TextureID = UUID.Zero;
                                                 Logger.DebugLog("Set " + entry.Key + " to " + Textures[i].TextureID, Client);
 
+                                                Textures[i].AlphaMasks = alphaMasks;
+                                                Textures[i].ColorParams = colorParams;
                                                 Textures[i].Texture = null;
                                             }
                                         }
