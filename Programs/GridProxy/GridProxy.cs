@@ -187,6 +187,8 @@ namespace GridProxy
         {
             this.proxyConfig = proxyConfig;
 
+            ServicePointManager.ServerCertificateValidationCallback = OpenMetaverse.Http.TrustAllCertificatePolicy.TrustAllCertificateHandler;
+
             InitializeLoginProxy();
             InitializeSimProxy();
             InitializeCaps();
@@ -1085,7 +1087,6 @@ namespace GridProxy
         private void ProxyLoginSD(NetworkStream netStream, byte[] content)
         {
             lock (this) {
-                ServicePointManager.CertificatePolicy = new OpenMetaverse.AcceptAllCertificatePolicy();
                 AutoResetEvent remoteComplete = new AutoResetEvent(false);
                 CapsClient loginRequest = new CapsClient(proxyConfig.remoteLoginUri);
                 OSD response = null;

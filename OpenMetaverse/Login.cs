@@ -641,25 +641,6 @@ namespace OpenMetaverse
     #endregion Structs
 
     /// <summary>
-    /// Overrides SSL certificate validation check for Mono
-    /// </summary>
-    /// <remarks>Remove me when MONO can handle ServerCertificateValidationCallback</remarks>
-    public class AcceptAllCertificatePolicy : ICertificatePolicy
-    {
-        public AcceptAllCertificatePolicy()
-        {
-        }
-
-        public bool CheckValidationResult(ServicePoint sPoint,
-            System.Security.Cryptography.X509Certificates.X509Certificate cert,
-            WebRequest wRequest, int certProb)
-        {
-            // Always accept
-            return true;
-        }
-    }
-
-    /// <summary>
     /// Login Routines
     /// </summary>
     public partial class NetworkManager : INetworkManager
@@ -942,12 +923,9 @@ namespace OpenMetaverse
 
             #endregion
 
-            // Override SSL authentication mechanisms. DO NOT convert this to the 
-            // .NET 2.0 preferred method, the equivalent function in Mono has a 
-            // different name and it will break compatibility!
-            #pragma warning disable 0618
-            ServicePointManager.CertificatePolicy = new AcceptAllCertificatePolicy();
+            // Override SSL authentication mechanisms
             // TODO: At some point, maybe we should check the cert?
+            ServicePointManager.ServerCertificateValidationCallback = OpenMetaverse.Http.TrustAllCertificatePolicy.TrustAllCertificateHandler;
 
             if (Client.Settings.USE_LLSD_LOGIN)
             {
