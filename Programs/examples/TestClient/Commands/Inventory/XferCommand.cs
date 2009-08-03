@@ -26,7 +26,7 @@ namespace OpenMetaverse.TestClient
                 return "Usage: xfer [uuid]";
 
             string filename;
-            byte[] assetData = RequestXferPrim(assetID, out filename);
+            byte[] assetData = RequestXfer(assetID, AssetType.Object, out filename);
 
             if (assetData != null)
             {
@@ -46,7 +46,7 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        byte[] RequestXferPrim(UUID assetID, out string filename)
+        byte[] RequestXfer(UUID assetID, AssetType type, out string filename)
         {
             AutoResetEvent xferEvent = new AutoResetEvent(false);
             ulong xferID = 0;
@@ -66,7 +66,7 @@ namespace OpenMetaverse.TestClient
             Client.Assets.OnXferReceived += xferCallback;
 
             filename = assetID + ".asset";
-            xferID = Client.Assets.RequestAssetXfer(filename, false, true, assetID, AssetType.Object, false);
+            xferID = Client.Assets.RequestAssetXfer(filename, false, true, assetID, type, false);
 
             xferEvent.WaitOne(FETCH_ASSET_TIMEOUT, false);
 
