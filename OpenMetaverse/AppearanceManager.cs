@@ -92,7 +92,7 @@ namespace OpenMetaverse
         const int MAX_CONCURRENT_UPLOADS = 3;
         /// <summary>Timeout for fetching inventory listings</summary>
         const int INVENTORY_TIMEOUT = 1000 * 20;
-        /// <summary>Timeout for fetching a single wearable</summary>
+        /// <summary>Timeout for fetching a single wearable, or receiving a single packet response</summary>
         const int WEARABLE_TIMEOUT = 1000 * 10;
         /// <summary>Timeout for fetching a single texture</summary>
         const int TEXTURE_TIMEOUT = 1000 * 30;
@@ -757,7 +757,7 @@ namespace OpenMetaverse
 
             RequestAgentWearables();
 
-            bool success = wearablesEvent.WaitOne(1000 * 10);
+            bool success = wearablesEvent.WaitOne(WEARABLE_TIMEOUT, false);
 
             OnAgentWearables -= wearablesCallback;
 
@@ -777,7 +777,7 @@ namespace OpenMetaverse
 
             RequestCachedBakes();
 
-            bool success = cacheCheckEvent.WaitOne(1000 * 10);
+            bool success = cacheCheckEvent.WaitOne(WEARABLE_TIMEOUT, false);
 
             OnAgentCachedBakes -= cacheCallback;
 
@@ -934,7 +934,7 @@ namespace OpenMetaverse
                             }
                         );
 
-                        if (!downloadEvent.WaitOne(WEARABLE_TIMEOUT))
+                        if (!downloadEvent.WaitOne(WEARABLE_TIMEOUT, false))
                         {
                             Logger.Log("Timed out downloading wearable asset " + wearable.AssetID + " (" + wearable.WearableType + ")",
                                 Helpers.LogLevel.Error, Client);
