@@ -26,6 +26,7 @@
 
 using System;
 using System.Net;
+using System.Net.Security;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -36,7 +37,13 @@ namespace OpenMetaverse.Http
     public class TrustAllCertificatePolicy : ICertificatePolicy
     {
         public TrustAllCertificatePolicy() { }
+
         public bool CheckValidationResult(ServicePoint sp, X509Certificate cert, WebRequest req, int problem)
+        {
+            return true;
+        }
+
+        public static bool TrustAllCertificateHandler(Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             return true;
         }
@@ -50,7 +57,8 @@ namespace OpenMetaverse.Http
 
         static CapsBase()
         {
-            System.Net.ServicePointManager.CertificatePolicy = new TrustAllCertificatePolicy();
+            //ServicePointManager.CertificatePolicy = new TrustAllCertificatePolicy();
+            ServicePointManager.ServerCertificateValidationCallback = TrustAllCertificatePolicy.TrustAllCertificateHandler;
         }
 
         private class RequestState
