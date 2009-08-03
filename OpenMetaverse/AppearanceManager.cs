@@ -25,10 +25,9 @@
  */
 
 using System;
-using System.Text;
 using System.Collections.Generic;
 using System.Threading;
-using System.IO;
+using System.Drawing;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 using OpenMetaverse.Imaging;
@@ -161,6 +160,18 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Data collected from visual params for each wearable
+        /// needed for the calculation of the color
+        /// </summary>
+        private struct ColorParamInfo
+        {
+            public VisualParam VisualParam;
+            public VisualColorParam VisualColorParam;
+            public float Value;
+            public WearableType WearableType;
+        }
+
+        /// <summary>
         /// A tuple containing a TextureID and a texture asset. Used to keep track
         /// of currently worn textures and the corresponding texture data for baking
         /// </summary>
@@ -172,8 +183,8 @@ namespace OpenMetaverse
             public AssetTexture Texture;
             /// <summary>Collection of alpha masks that needs applying</summary>
             public Dictionary<VisualAlphaParam, float> AlphaMasks;
-            /// <summary>Collection of color params used for calculating texture tint</summary>
-            public Dictionary<VisualColorParam, float> ColorParams;
+            /// <summary>Tint that should be applied to the texture</summary>
+            public Color Color;
 
             public override string ToString()
             {
@@ -613,6 +624,127 @@ namespace OpenMetaverse
         #region Appearance Helpers
 
         /// <summary>
+        /// Calculates base color/tint for a specific wearable
+        /// based on its params
+        /// </summary>
+        /// <param name="param">All the color info gathered from wearable's VisualParams
+        /// passed as list of ColorParamInfo tuples</param>
+        /// <returns>Base color/tint for the wearable</returns>
+        private Color GetColorFromParams(List<ColorParamInfo> param)
+        {
+            // Start off with a blank slate, black, fully transparent
+            Color res = Color.FromArgb(0, 0, 0, 0);
+
+            // Apply color modification from each color parameter
+            foreach (ColorParamInfo p in param)
+            {
+                int n = p.VisualColorParam.Colors.Length;
+
+                Color paramColor = Color.FromArgb(0, 0, 0, 0);
+
+                if (n == 1)
+                {
+                    // We got only one color in this param, use it for application
+                    // to the final color
+                    paramColor = p.VisualColorParam.Colors[0];
+                }
+                else if (n > 1)
+                {
+                    // We have an array of colors in this parameter
+                    // First, we need to find out, based on param value
+                    // between which two elements of the array our value lands
+
+                    // Size of the step using which we iterate from Min to Max
+                    float step = (p.VisualParam.MaxValue - p.VisualParam.MinValue) / ((float)n - 1);
+
+                    // Our color should land inbetween colors in the array with index a and b
+                    int indexa = 0;
+                    int indexb = 0;
+
+                    int i = 0;
+
+                    for (float a = p.VisualParam.MinValue; a <= p.VisualParam.MaxValue; a += step)
+                    {
+                        if (a <= p.Value)
+                        {
+                            indexa = i;
+                        }
+                        else
+                        {
+                            break;
+                        }
+
+                        i++;
+                    }
+
+                    // Sanity check that we don't go outside bounds of the array
+                    if (indexa > n - 1)
+                        indexa = n - 1;
+
+                    indexb = (indexa == n - 1) ? indexa : indexa + 1;
+
+                    // How far is our value from Index A on the 
+                    // line from Index A to Index B
+                    float distance = p.Value - (float)indexa * step;
+
+                    // We are at Index A (allowing for some floating point math fuzz),
+                    // use the color on that index
+                    if (distance < 0.00001f || indexa == indexb)
+                    {
+                        paramColor = p.VisualColorParam.Colors[indexa];
+                    }
+                    else
+                    {
+                        // Not so simple as being precisely on the index eh? No problem.
+                        // We take the two colors that our param value places us between
+                        // and then find the value for each ARGB element that is
+                        // somewhere on the line between color1 and color2 at some
+                        // distance from the first color
+                        Color c1 = paramColor = p.VisualColorParam.Colors[indexa];
+                        Color c2 = paramColor = p.VisualColorParam.Colors[indexb];
+
+                        // Distance is some fraction of the step, use that fraction
+                        // to find the value in the range from color1 to color2
+                        paramColor = Color.FromArgb(
+                            (int)(c1.A + (c2.A - c1.A) * (distance / step)),
+                            (int)(c1.R + (c2.R - c1.R) * (distance / step)),
+                            (int)(c1.G + (c2.G - c1.G) * (distance / step)),
+                            (int)(c1.B + (c2.B - c1.B) * (distance / step))
+                            );
+                    }
+
+                    // Please leave this fragment even if its commented out
+                    // might prove useful should ($deity forbid) there be bugs in this code
+                    //string carray = "";
+                    //foreach (Color c in p.VisualColorParam.Colors)
+                    //{
+                    //    carray += c.ToString() + " - ";
+                    //}
+                    //Logger.DebugLog("Calculating color for " + p.WearableType + " from " + p.VisualParam.Name + ", value is " + p.Value + " in range " + p.VisualParam.MinValue + " - " + p.VisualParam.MaxValue + " step " + step + " with " + n + " elements " + carray + " A: " + indexa + " B: " + indexb + " at distance " + distance);
+                }
+
+                // Now that we have calculated color from the scale of colors
+                // that visual params provided, lets apply it to the result
+                if (p.VisualColorParam.Operation == VisualColorOperation.Multiply)
+                {
+                    // TODO: do color multiplication (not needed for the purpose of baking)
+                }
+                else
+                {
+                    // Adding color to the base
+                    res = Color.FromArgb(
+                        (res.A + paramColor.A) > 255 ? 255 : res.A + paramColor.A,
+                        (res.R + paramColor.R) > 255 ? 255 : res.R + paramColor.R,
+                        (res.G + paramColor.G) > 255 ? 255 : res.G + paramColor.G,
+                        (res.B + paramColor.B) > 255 ? 255 : res.B + paramColor.B
+                        );
+                }
+            }
+
+            return res;
+        }
+
+        /// <summary>
         /// Blocking method to populate the Wearables dictionary
         /// </summary>
         /// <returns>True on success, otherwise false</returns>
@@ -699,7 +831,7 @@ namespace OpenMetaverse
                                             " visual params and " + wearable.Asset.Textures.Count + " textures", Client);
 
                                         Dictionary<VisualAlphaParam, float> alphaMasks = new Dictionary<VisualAlphaParam, float>();
-                                        Dictionary<VisualColorParam, float> colorParams = new Dictionary<VisualColorParam, float>();
+                                        List<ColorParamInfo> colorParams = new List<ColorParamInfo>();
 
                                         // Populate collection of alpha masks from visual params
                                         // also add color tinting information
@@ -707,13 +839,20 @@ namespace OpenMetaverse
                                         {
                                             VisualParam p = VisualParams.Params[kvp.Key];
 
+                                            ColorParamInfo colorInfo = new ColorParamInfo();
+                                            colorInfo.WearableType = wearable.WearableType;
+                                            colorInfo.VisualParam = p;
+                                            colorInfo.Value = kvp.Value;
+
                                             // Color params
                                             if (p.ColorParams.HasValue)
                                             {
+                                                colorInfo.VisualColorParam = p.ColorParams.Value;
+
                                                 // If this is not skin, just add params directly
                                                 if (wearable.WearableType != WearableType.Skin)
                                                 {
-                                                    colorParams.Add(p.ColorParams.Value, kvp.Value);
+                                                    colorParams.Add(colorInfo);
                                                 }
                                                 else
                                                 {
@@ -724,7 +863,7 @@ namespace OpenMetaverse
                                                     // Param 111 - Pigment
                                                     if (kvp.Key == 108 || kvp.Key == 110 || kvp.Key == 111)
                                                     {
-                                                        colorParams.Add(p.ColorParams.Value, kvp.Value);
+                                                        colorParams.Add(colorInfo);
                                                     }
                                                 }
                                             }
@@ -749,10 +888,21 @@ namespace OpenMetaverse
                                             }
                                         }
 
+                                        Color wearableColor = Color.White; // Never actually used
+                                        if (colorParams.Count > 0)
+                                        {
+                                            wearableColor = GetColorFromParams(colorParams);
+                                            Logger.DebugLog("Setting tint " + wearableColor + " for " + wearable.WearableType);
+                                        }
+
                                         // Loop through all of the texture IDs in this decoded asset and put them in our cache of worn textures
                                         foreach (KeyValuePair<AvatarTextureIndex, UUID> entry in wearable.Asset.Textures)
                                         {
                                             int i = (int)entry.Key;
+
+                                            // Update information about color and alpha masks for this texture
+                                            Textures[i].AlphaMasks = alphaMasks;
+                                            Textures[i].Color = wearableColor;
 
                                             // If this texture changed, update the TextureID and clear out the old cached texture asset
                                             if (Textures[i].TextureID != entry.Value)
@@ -764,8 +914,6 @@ namespace OpenMetaverse
                                                     Textures[i].TextureID = UUID.Zero;
                                                 Logger.DebugLog("Set " + entry.Key + " to " + Textures[i].TextureID, Client);
 
-                                                Textures[i].AlphaMasks = alphaMasks;
-                                                Textures[i].ColorParams = colorParams;
                                                 Textures[i].Texture = null;
                                             }
                                         }
