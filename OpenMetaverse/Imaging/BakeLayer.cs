@@ -271,8 +271,6 @@ namespace OpenMetaverse.Imaging
 
         private bool MaskBelongsToBake(string mask)
         {
-            if (bakeType == BakeType.LowerBody)
-                Logger.DebugLog("foo");
             if ((bakeType == BakeType.LowerBody && mask.Contains("upper"))
                 || (bakeType == BakeType.LowerBody && mask.Contains("shirt"))
                 || (bakeType == BakeType.UpperBody && mask.Contains("lower")))
@@ -386,9 +384,6 @@ namespace OpenMetaverse.Imaging
             {
                 dest.ConvertChannels(ManagedImage.ImageChannels.Alpha | dest.Channels);
             }
-
-            Logger.DebugLog(param.TGAFile + " val " + val + " mode " + param.MultiplyBlend + " domain " + param.Domain + " skipz " + param.SkipIfZero);
-
 
             if (dest.Width != src.Width || dest.Height != src.Height)
             {
