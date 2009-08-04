@@ -111,7 +111,7 @@ namespace OpenMetaverse.Imaging
             {
                 InitBakedLayerColor(Color.White);
             }
-            else
+            else if (textures.Count > 0)
             {
                 InitBakedLayerColor(textures[0].Color);
             }
@@ -160,7 +160,7 @@ namespace OpenMetaverse.Imaging
                 }
 
                 // Apply parametrized alpha masks
-                if (textures[i].AlphaMasks.Count > 0)
+                if (textures[i].AlphaMasks != null && textures[i].AlphaMasks.Count > 0)
                 {
                     // Combined mask for the layer, fully transparent to begin with
                     ManagedImage combinedMask = new ManagedImage(bakeWidth, bakeHeight, ManagedImage.ImageChannels.Alpha);
