@@ -172,8 +172,9 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// A tuple containing a TextureID and a texture asset. Used to keep track
-        /// of currently worn textures and the corresponding texture data for baking
+        /// Holds a texture assetID and the data needed to bake this layer into
+        /// an outfit texture. Used to keep track of currently worn textures
+        /// and baking data
         /// </summary>
         public struct TextureData
         {
