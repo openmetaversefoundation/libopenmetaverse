@@ -302,11 +302,16 @@ namespace AvatarPreview
                 }
 
                 // Compute the head bake
-                Baker baker = new Baker(
-                    _client, BakeType.Head, textureCount, paramValues);
+                Baker baker = new Baker(BakeType.Head);
 
                 foreach (KeyValuePair<AvatarTextureIndex, AssetTexture> kvp in layers)
-                    baker.AddTexture(kvp.Key, kvp.Value, false);
+                {
+                    AppearanceManager.TextureData tdata = new AppearanceManager.TextureData();
+                    tdata.Texture = kvp.Value;
+                    baker.AddTexture(tdata);
+                }
+
+                baker.Bake();
 
                 if (baker.BakedTexture != null)
                 {
@@ -354,11 +359,16 @@ namespace AvatarPreview
                 }
 
                 // Compute the upper body bake
-                Baker baker = new Baker(
-                    _client, BakeType.UpperBody, textureCount, paramValues);
+                Baker baker = new Baker(BakeType.UpperBody);
 
                 foreach (KeyValuePair<AvatarTextureIndex, AssetTexture> kvp in layers)
-                    baker.AddTexture(kvp.Key, kvp.Value, false);
+                {
+                    AppearanceManager.TextureData tdata = new AppearanceManager.TextureData();
+                    tdata.Texture = kvp.Value;
+                    baker.AddTexture(tdata);
+                }
+
+                baker.Bake();
 
                 if (baker.BakedTexture != null)
                 {
@@ -406,11 +416,16 @@ namespace AvatarPreview
                 }
 
                 // Compute the lower body bake
-                Baker baker = new Baker(
-                    _client, BakeType.LowerBody, textureCount, paramValues);
+                Baker baker = new Baker(BakeType.LowerBody);
 
                 foreach (KeyValuePair<AvatarTextureIndex, AssetTexture> kvp in layers)
-                    baker.AddTexture(kvp.Key, kvp.Value, false);
+                {
+                    AppearanceManager.TextureData tdata = new AppearanceManager.TextureData();
+                    tdata.Texture = kvp.Value;
+                    baker.AddTexture(tdata);
+                }
+
+                baker.Bake();
 
                 if (baker.BakedTexture != null)
                 {
