@@ -175,7 +175,7 @@ namespace OpenMetaverse
         /// A tuple containing a TextureID and a texture asset. Used to keep track
         /// of currently worn textures and the corresponding texture data for baking
         /// </summary>
-        private struct TextureData
+        public struct TextureData
         {
             /// <summary>A texture AssetID</summary>
             public UUID TextureID;
@@ -868,9 +868,16 @@ namespace OpenMetaverse
                                                 }
                                             }
 
-                                            // Alhpa masks are specified in sub "driver" params
                                             // TODO pull bump data too to implement things like
                                             // clothes "bagginess"
+                                            
+                                            // Add alpha mask
+                                            if (p.AlphaParams.HasValue && p.AlphaParams.Value.TGAFile != string.Empty && !p.IsBumpAttribute)
+                                            {
+                                                alphaMasks.Add(p.AlphaParams.Value, kvp.Value);
+                                            }
+
+                                            // Alhpa masks can also be specified in sub "driver" params
                                             if (p.Drivers != null)
                                             {
                                                 for (int i = 0; i < p.Drivers.Length; i++)
@@ -881,7 +888,6 @@ namespace OpenMetaverse
                                                         if (driver.AlphaParams.HasValue && driver.AlphaParams.Value.TGAFile != string.Empty && !driver.IsBumpAttribute)
                                                         {
                                                             alphaMasks.Add(driver.AlphaParams.Value, kvp.Value);
-                                                            break;
                                                         }
                                                     }
                                                 }
@@ -1075,12 +1081,10 @@ namespace OpenMetaverse
             {
                 DownloadTextures(pendingBakes);
 
-                Dictionary<int, float> paramValues = MakeParamValues();
-
                 Parallel.ForEach<BakeType>(pendingBakes,
                     delegate(BakeType bakeType)
                     {
-                        if (!CreateBake(bakeType, paramValues))
+                        if (!CreateBake(bakeType))
                             success = false;
                     }
                 );
@@ -1096,31 +1100,30 @@ namespace OpenMetaverse
         /// <param name="bakeType">Layer to bake</param>
         /// <param name="paramValues">Dictionary of current visual param values</param>
         /// <returns>True on success, otherwise false</returns>
-        private bool CreateBake(BakeType bakeType, Dictionary<int, float> paramValues)
+        private bool CreateBake(BakeType bakeType)
         {
+            // FIXME: skipping hair bake for now which does not work without 
+            // bump layer, viewer still displays the avatar even if its missing 
+            // hair bake, and as long as viewer 1.22 is officially supported
+            // (it does not bake hair either) it will remain to work
+            if (bakeType == BakeType.Hair) return false;
+
             List<AvatarTextureIndex> textureIndices = BakeTypeToTextures(bakeType);
-            Baker oven = new Baker(Client, bakeType, textureIndices.Count, paramValues);
+            Baker oven = new Baker(bakeType);
 
             for (int i = 0; i < textureIndices.Count; i++)
             {
                 AvatarTextureIndex textureIndex = textureIndices[i];
-                AssetTexture asset = Textures[(int)textureIndex].Texture;
-                bool baked;
+                TextureData texture = Textures[(int)textureIndex];
 
-                if (asset != null)
-                    baked = oven.AddTexture(textureIndex, asset, false);
-                else
-                    baked = oven.MissingTexture(textureIndex);
-
-                if (baked)
-                {
-                    UUID newAssetID = UploadBake(oven.BakedTexture.AssetData);
-                    Textures[(int)BakeTypeToAgentTextureIndex(bakeType)].TextureID = newAssetID;
-                    return newAssetID != UUID.Zero;
-                }
+                oven.AddTexture(texture);
             }
 
-            return false;
+            oven.Bake();
+
+            UUID newAssetID = UploadBake(oven.BakedTexture.AssetData);
+            Textures[(int)BakeTypeToAgentTextureIndex(bakeType)].TextureID = newAssetID;
+            return newAssetID != UUID.Zero;
         }
 
         /// <summary>
