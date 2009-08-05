@@ -136,14 +136,13 @@ namespace OpenMetaverse.Imaging
                 DrawLayer(LoadResourceLayer("lowerbody_color.tga"), false);
             }
 
-
-
             // Layer each texture on top of one other, applying alpha masks as we go
             for (int i = 0; i < textures.Count; i++)
             {
                 if (textures[i].Texture == null) continue;
 
                 ManagedImage texture = textures[i].Texture.Image.Clone();
+                //File.WriteAllBytes(bakeType + "-texture-layer-" + i + ".tga", texture.ExportTGA());
 
                 // Resize texture to the size of baked layer
                 // FIXME: if texture is smaller than the layer, don't stretch it, tile it
@@ -153,58 +152,65 @@ namespace OpenMetaverse.Imaging
                     catch (Exception) { continue; }
                 }
 
-                // Aply tint except for skin texture that is on layer 0
+                // Aply tint and alpha masks except for skin that has a texture
+                // on layer 0 which always overrides other skin settings
                 if (!(IsSkin && i == 0))
                 {
                     ApplyTint(texture, textures[i].Color);
-                }
 
-                // Apply parametrized alpha masks
-                if (textures[i].AlphaMasks != null && textures[i].AlphaMasks.Count > 0)
-                {
-                    // Combined mask for the layer, fully transparent to begin with
-                    ManagedImage combinedMask = new ManagedImage(bakeWidth, bakeHeight, ManagedImage.ImageChannels.Alpha);
-                    int addedMasks = 0;
-
-                    // First add mask in normal blend mode
-                    foreach (KeyValuePair<VisualAlphaParam, float> kvp in textures[i].AlphaMasks)
+                    // Apply parametrized alpha masks
+                    if (textures[i].AlphaMasks != null && textures[i].AlphaMasks.Count > 0)
                     {
-                        if (!MaskBelongsToBake(kvp.Key.TGAFile)) continue;
+                        // Combined mask for the layer, fully transparent to begin with
+                        ManagedImage combinedMask = new ManagedImage(bakeWidth, bakeHeight, ManagedImage.ImageChannels.Alpha);
 
-                        if (kvp.Key.MultiplyBlend == false)
+                        int addedMasks = 0;
+
+                        // First add mask in normal blend mode
+                        foreach (KeyValuePair<VisualAlphaParam, float> kvp in textures[i].AlphaMasks)
                         {
-                            ApplyAlpha(combinedMask, kvp.Key, kvp.Value);
-                            addedMasks++;
+                            if (!MaskBelongsToBake(kvp.Key.TGAFile)) continue;
+
+                            if (kvp.Key.MultiplyBlend == false)
+                            {
+                                ApplyAlpha(combinedMask, kvp.Key, kvp.Value);
+                                //File.WriteAllBytes(bakeType + "-layer-" + i + "-mask-" + addedMasks + ".tga", combinedMask.ExportTGA());
+                                addedMasks++;
+                            }
                         }
-                    }
 
-                    // If there were no mask in normal blend mode make aplha fully opaque
-                    if (addedMasks == 0) for (int l = 0; l < combinedMask.Alpha.Length; l++) combinedMask.Alpha[l] = 255;
+                        // If there were no mask in normal blend mode make aplha fully opaque
+                        if (addedMasks == 0) for (int l = 0; l < combinedMask.Alpha.Length; l++) combinedMask.Alpha[l] = 255;
 
-                    // Add masks in multiply blend mode
-                    foreach (KeyValuePair<VisualAlphaParam, float> kvp in textures[i].AlphaMasks)
-                    {
-                        if (!MaskBelongsToBake(kvp.Key.TGAFile)) continue;
-
-                        if (kvp.Key.MultiplyBlend == true)
+                        // Add masks in multiply blend mode
+                        foreach (KeyValuePair<VisualAlphaParam, float> kvp in textures[i].AlphaMasks)
                         {
-                            ApplyAlpha(combinedMask, kvp.Key, kvp.Value);
-                            addedMasks++;
-                        }
-                    }
+                            if (!MaskBelongsToBake(kvp.Key.TGAFile)) continue;
 
-                    // Finally, apply combined alpha mask to the cloned texture
-                    if (addedMasks > 0)
-                        AddAlpha(texture, combinedMask);
+                            if (kvp.Key.MultiplyBlend == true)
+                            {
+                                ApplyAlpha(combinedMask, kvp.Key, kvp.Value);
+                                //File.WriteAllBytes(bakeType + "-layer-" + i + "-mask-" + addedMasks + ".tga", combinedMask.ExportTGA());
+                                addedMasks++;
+                            }
+                        }
+
+                        // Finally, apply combined alpha mask to the cloned texture
+                        if (addedMasks > 0)
+                            AddAlpha(texture, combinedMask);
+                        //File.WriteAllBytes(bakeType + "-masked-texture-" + i + ".tga", texture.ExportTGA());
+                    }
                 }
 
                 // Only skirt and head bake have alpha channels
                 bool useAlpha = i == 0 && (bakeType == BakeType.Head || BakeType == BakeType.Skirt);
                 DrawLayer(texture, useAlpha);
+                //File.WriteAllBytes(bakeType + "-layer-" + i + ".tga", texture.ExportTGA());
             }
 
             // We are done, encode asset for finalized bake
             bakedTexture.Encode();
+            //File.WriteAllBytes(bakeType + ".tga", bakedTexture.Image.ExportTGA());
         }
 
         public static ManagedImage LoadResourceLayer(string fileName)

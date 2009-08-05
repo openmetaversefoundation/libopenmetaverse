@@ -1120,7 +1120,9 @@ namespace OpenMetaverse
                 oven.AddTexture(texture);
             }
 
+            int start = Environment.TickCount;
             oven.Bake();
+            Logger.DebugLog("Baking " + bakeType + " took " + (Environment.TickCount - start) + "ms");
 
             UUID newAssetID = UploadBake(oven.BakedTexture.AssetData);
             Textures[(int)BakeTypeToAgentTextureIndex(bakeType)].TextureID = newAssetID;
