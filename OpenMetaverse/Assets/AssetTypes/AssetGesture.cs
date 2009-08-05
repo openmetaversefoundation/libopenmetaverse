@@ -422,8 +422,7 @@ namespace OpenMetaverse.Assets
                                 GestureStepSound step = new GestureStepSound();
                                 step.Name = lines[i++].Replace("\r", "");
                                 step.ID = new UUID(lines[i++]);
-                                // warning CS0219: The variable `flags' is assigned but its value is never used
-                                //int flags = int.Parse(lines[i++]);
+                                int flags = int.Parse(lines[i++]);
 
                                 Sequence.Add(step);
                                 break;
@@ -433,8 +432,7 @@ namespace OpenMetaverse.Assets
                             {
                                 GestureStepChat step = new GestureStepChat();
                                 step.Text = lines[i++];
-                                // warning CS0219: The variable `flags' is assigned but its value is never used
-                                //int flags = int.Parse(lines[i++]);
+                                int flags = int.Parse(lines[i++]);
 
                                 Sequence.Add(step);
                                 break;
