@@ -13,12 +13,26 @@ CC = gcc
 AR = ar
 
 OSNAME = $(shell uname -s)
+
 ifeq ($(OSNAME), Linux)
   ARCH = $(shell arch)
+  ARCHSET = 0
   ifeq ($(ARCH), x86_64)
     ARCH=-x86_64
-    ARCHFLAGS=
-  else
+    ARCHFLAGS=-m64
+    ARCHSET=1
+  endif
+  ifeq ($(ARCH), s390x)
+    ARCH=-s390x 
+    ARCHFLAGS=-m64
+    ARCHSET=1
+  endif
+  ifeq ($(ARCH), ppc64)
+    ARCH=-ppc64
+    ARCHFLAGS=-m64
+    ARCHSET=1
+  endif
+  ifeq ($(ARCHSET), 0)
     ARCH=-i686
     ARCHFLAGS=-m32
   endif
