@@ -34,8 +34,13 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace OpenMetaverse.Http
 {
-    public class TrustAllCertificatePolicy
+    public class TrustAllCertificatePolicy : ICertificatePolicy
     {
+        public bool CheckValidationResult(ServicePoint sp, X509Certificate cert, WebRequest req, int problem)
+        {
+            return true;
+        }
+
         public static bool TrustAllCertificateHandler(Object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
             return true;
@@ -50,8 +55,9 @@ namespace OpenMetaverse.Http
 
         static CapsBase()
         {
-            //ServicePointManager.CertificatePolicy = new TrustAllCertificatePolicy();
-            ServicePointManager.ServerCertificateValidationCallback = TrustAllCertificatePolicy.TrustAllCertificateHandler;
+            ServicePointManager.CertificatePolicy = new TrustAllCertificatePolicy();
+            // Even though this will compile on Mono 2.4, it throws a runtime exception
+            //ServicePointManager.ServerCertificateValidationCallback = TrustAllCertificatePolicy.TrustAllCertificateHandler;
         }
 
         private class RequestState

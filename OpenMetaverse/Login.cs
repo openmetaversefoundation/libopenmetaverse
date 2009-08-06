@@ -923,9 +923,10 @@ namespace OpenMetaverse
 
             #endregion
 
-            // Override SSL authentication mechanisms
-            // TODO: At some point, maybe we should check the cert?
-            ServicePointManager.ServerCertificateValidationCallback = OpenMetaverse.Http.TrustAllCertificatePolicy.TrustAllCertificateHandler;
+            // TODO: Allow a user callback to be defined for handling the cert
+            ServicePointManager.CertificatePolicy = new TrustAllCertificatePolicy();
+            // Even though this will compile on Mono 2.4, it throws a runtime exception
+            //ServicePointManager.ServerCertificateValidationCallback = TrustAllCertificatePolicy.TrustAllCertificateHandler;
 
             if (Client.Settings.USE_LLSD_LOGIN)
             {
