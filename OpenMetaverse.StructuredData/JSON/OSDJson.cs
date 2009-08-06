@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using LitJson;
 
@@ -46,8 +48,9 @@ namespace OpenMetaverse.StructuredData
                     return array;
                 case JsonType.Object:
                     OSDMap map = new OSDMap(json.Count);
-                    foreach (KeyValuePair<string, JsonData> kvp in json)
-                        map.Add(kvp.Key, DeserializeJson(kvp.Value));
+                    IDictionaryEnumerator e = ((IOrderedDictionary)json).GetEnumerator();
+                    while (e.MoveNext())
+                        map.Add((string)e.Key, DeserializeJson((JsonData)e.Value));
                     return map;
                 case JsonType.None:
                 default:
