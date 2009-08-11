@@ -78,7 +78,7 @@
       </Files>
     </Project>
 
-    <Project name="OpenMetaverse.StructuredData" path="OpenMetaverse.StructuredData" type="Library" rootNamespace="OpenMetaverse.StructuredData">
+    <Project name="OpenMetaverse.StructuredData" path="OpenMetaverse.StructuredData" type="Library" rootNamespace="OpenMetaverse.StructuredData" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../bin/</OutputPath>
@@ -100,7 +100,7 @@
       </Files>
     </Project>
 
-    <Project name="OpenMetaverse.Http" path="OpenMetaverse.Http" type="Library" rootNamespace="OpenMetaverse.Http">
+    <Project name="OpenMetaverse.Http" path="OpenMetaverse.Http" type="Library" rootNamespace="OpenMetaverse.Http" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../bin/</OutputPath>
@@ -183,7 +183,7 @@
       </Files>
     </Project>
 
-    <Project name="OpenMetaverse.Utilities" path="OpenMetaverse.Utilities" type="Library">
+    <Project name="OpenMetaverse.Utilities" path="OpenMetaverse.Utilities" type="Library" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../bin/</OutputPath>
@@ -210,7 +210,7 @@
       </Files>
     </Project>
 
-    <Project name="OpenMetaverse.Tests" path="OpenMetaverse.Tests" type="Library">
+    <Project name="OpenMetaverse.Tests" path="OpenMetaverse.Tests" type="Library" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../bin/</OutputPath>
@@ -236,7 +236,7 @@
       </Files>
     </Project>
 
-    <Project name="GridProxy" path="Programs/GridProxy" type="Library">
+    <Project name="GridProxy" path="Programs/GridProxy" type="Library" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -265,7 +265,7 @@
       </Files>
     </Project>
 
-    <Project name="OpenMetaverse.Rendering.Simple" path="OpenMetaverse.Rendering.Simple" type="Library">
+    <Project name="OpenMetaverse.Rendering.Simple" path="OpenMetaverse.Rendering.Simple" type="Library" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../bin/</OutputPath>
@@ -286,7 +286,7 @@
       </Files>
     </Project>
 
-    <Project name="OpenMetaverse.Rendering.Meshmerizer" path="OpenMetaverse.Rendering.Meshmerizer" type="Library">
+    <Project name="OpenMetaverse.Rendering.Meshmerizer" path="OpenMetaverse.Rendering.Meshmerizer" type="Library" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../bin/</OutputPath>
@@ -307,7 +307,7 @@
       </Files>
     </Project>
 
-    <Project name="OpenMetaverse.Rendering.GPL" path="OpenMetaverse.Rendering.GPL" type="Library">
+    <Project name="OpenMetaverse.Rendering.GPL" path="OpenMetaverse.Rendering.GPL" type="Library" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../bin/</OutputPath>
@@ -328,7 +328,7 @@
       </Files>
     </Project>
 
-    <Project name="OpenMetaverse.GUI" path="OpenMetaverse.GUI" type="Library">
+    <Project name="OpenMetaverse.GUI" path="OpenMetaverse.GUI" type="Library" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../bin/</OutputPath>
@@ -356,7 +356,7 @@
 
     <!-- Programs -->
 
-    <Project name="AvatarPreview" path="Programs/AvatarPreview" type="WinExe">
+    <Project name="AvatarPreview" path="Programs/AvatarPreview" type="WinExe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -387,7 +387,7 @@
       </Files>
     </Project>
 
-    <Project name="Baker" path="Programs/Baker" type="WinExe">
+    <Project name="Baker" path="Programs/Baker" type="WinExe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -416,7 +416,7 @@
       </Files>
     </Project>
 
-    <Project name="importprimscript" path="Programs/importprimscript" type="Exe">
+    <Project name="importprimscript" path="Programs/importprimscript" type="Exe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -441,7 +441,7 @@
       </Files>
     </Project>
 
-    <Project name="mapgenerator" path="Programs/mapgenerator" type="Exe">
+    <Project name="mapgenerator" path="Programs/mapgenerator" type="Exe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -462,7 +462,7 @@
       </Files>
     </Project>
 
-    <Project name="IRCGateway" path="Programs/examples/IRCGateway" type="Exe">
+    <Project name="IRCGateway" path="Programs/examples/IRCGateway" type="Exe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../bin/</OutputPath>
@@ -483,7 +483,7 @@
       </Files>
     </Project>
 
-    <Project name="Dashboard" path="Programs/examples/Dashboard" type="WinExe">
+    <Project name="Dashboard" path="Programs/examples/Dashboard" type="WinExe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../bin/</OutputPath>
@@ -511,7 +511,7 @@
       </Files>
     </Project>
 
-    <Project name="PrimWorkshop" path="Programs/PrimWorkshop" type="WinExe">
+    <Project name="PrimWorkshop" path="Programs/PrimWorkshop" type="WinExe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -546,7 +546,7 @@
       </Files>
     </Project>
 
-    <Project name="GridImageUpload" path="Programs/GridImageUpload" type="WinExe">
+    <Project name="GridImageUpload" path="Programs/GridImageUpload" type="WinExe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -576,7 +576,7 @@
       </Files>
     </Project>
 
-    <Project name="GridProxyApp" path="Programs/GridProxy" type="Exe">
+    <Project name="GridProxyApp" path="Programs/GridProxy" type="Exe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -600,7 +600,7 @@
     </Project>
 
 
-    <Project name="WinGridProxy" path="Programs/WinGridProxy" type="WinExe">
+    <Project name="WinGridProxy" path="Programs/WinGridProxy" type="WinExe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -634,7 +634,7 @@
       </Files>
     </Project>
 
-    <Project name="VisualParamGenerator" path="Programs/VisualParamGenerator" type="Exe">
+    <Project name="VisualParamGenerator" path="Programs/VisualParamGenerator" type="Exe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -658,7 +658,7 @@
       </Files>
     </Project>
 
-    <Project name="VoiceTest" path="Programs/VoiceTest" type="Exe">
+    <Project name="VoiceTest" path="Programs/VoiceTest" type="Exe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../bin/</OutputPath>
@@ -684,7 +684,7 @@
 
     <!-- Examples -->
 
-    <Project name="groupmanager" path="Programs/examples/groupmanager" type="WinExe">
+    <Project name="groupmanager" path="Programs/examples/groupmanager" type="WinExe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../bin/</OutputPath>
@@ -713,7 +713,7 @@
       </Files>
     </Project>
 
-    <Project name="Heightmap" path="Programs/examples/Heightmap" type="WinExe">
+    <Project name="Heightmap" path="Programs/examples/Heightmap" type="WinExe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../bin/</OutputPath>
@@ -741,7 +741,7 @@
       </Files>
     </Project>
 
-    <Project name="GridAccountant" path="Programs/examples/GridAccountant" type="WinExe">
+    <Project name="GridAccountant" path="Programs/examples/GridAccountant" type="WinExe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../bin/</OutputPath>
@@ -770,7 +770,7 @@
       </Files>
     </Project>
 
-    <Project name="PacketDump" path="Programs/examples/PacketDump" type="Exe">
+    <Project name="PacketDump" path="Programs/examples/PacketDump" type="Exe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../bin/</OutputPath>
@@ -793,7 +793,7 @@
       </Files>
     </Project>
 
-    <Project name="TestClient" path="Programs/examples/TestClient" type="Exe">
+    <Project name="TestClient" path="Programs/examples/TestClient" type="Exe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
           <OutputPath>../../../bin/</OutputPath>
