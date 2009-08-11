@@ -117,6 +117,7 @@ Section "!Base Libraries" SEC01
   SetOverwrite ifnewer
   File "..\bin\log4net.dll"
   File "..\bin\openjpeg-dotnet.dll"
+  File "..\bin\openjpeg-dotnet-x86_64.dll"
   File "..\bin\OpenMetaverse.dll"
   File "..\bin\OpenMetaverse.GUI.dll"
   File "..\bin\OpenMetaverse.Http.dll"
