@@ -55,10 +55,10 @@ namespace VisualParamGenerator
             {
                 // Read in avatar_lad.xml
                 Stream stream = OpenMetaverse.Helpers.GetResourceStream("avatar_lad.xml");
-                StreamReader reader = new StreamReader(stream);
 
                 if (stream != null)
                 {
+                    StreamReader reader = new StreamReader(stream);
                     XmlDocument doc = new XmlDocument();
                     doc.LoadXml(reader.ReadToEnd());
                     list = doc.GetElementsByTagName("param");
@@ -168,7 +168,7 @@ namespace VisualParamGenerator
                                 else if (node.ChildNodes[nodeNr].Name == "param_color" && node.ChildNodes[nodeNr].HasChildNodes)
                                 {
                                     XmlNode cnode = node.ChildNodes[nodeNr];
-                                    string operation = "VisualColorOperation.None";
+                                    string operation = "VisualColorOperation.Add";
                                     List<string> colors = new List<string>();
 
                                     if (cnode.Attributes["operation"] != null)
@@ -196,14 +196,14 @@ namespace VisualParamGenerator
                                                 continue;
                                             }
                                             CaptureCollection val = m.Groups["val"].Captures;
-                                            colors.Add(string.Format("System.Drawing.Color.FromArgb({0}, {1}, {2}, {3})", val[3], val[0], val[1], val[2]));
+                                            colors.Add(string.Format("new Color4({0}, {1}, {2}, {3})", val[3], val[0], val[1], val[2]));
                                         }
                                     }
 
                                     if (colors.Count > 0 && !skipColor)
                                     {
                                         string colorsStr = string.Join(", ", colors.ToArray());
-                                        Colors.Add(id, string.Format("new VisualColorParam({0}, new System.Drawing.Color[] {{ {1} }})", operation, colorsStr));
+                                        Colors.Add(id, string.Format("new VisualColorParam({0}, new Color4[] {{ {1} }})", operation, colorsStr));
                                     }
                                 }
                                 #endregion

@@ -8,7 +8,7 @@ namespace OpenMetaverse
     /// </summary>
     public enum VisualColorOperation
     {
-        None,
+        Add,
         Blend,
         Multiply
     }
@@ -19,14 +19,14 @@ namespace OpenMetaverse
     public struct VisualColorParam
     {
         public VisualColorOperation Operation;
-        public System.Drawing.Color[] Colors;
+        public Color4[] Colors;
 
         /// <summary>
         /// Construct VisualColorParam
         /// </summary>
         /// <param name="operation">Operation to apply when applying color to texture</param>
         /// <param name="colors">Colors</param>
-        public VisualColorParam(VisualColorOperation operation, System.Drawing.Color[] colors)
+        public VisualColorParam(VisualColorOperation operation, Color4[] colors)
         {
             Operation = operation;
             Colors = colors;

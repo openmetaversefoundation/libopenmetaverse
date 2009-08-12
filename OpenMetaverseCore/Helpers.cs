@@ -472,7 +472,7 @@ namespace OpenMetaverse
             try
             {
                 return new System.IO.FileStream(
-                    System.IO.Path.Combine(System.IO.Path.Combine(System.Environment.CurrentDirectory, searchPath), resourceName),
+                    System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), searchPath), resourceName),
                     System.IO.FileMode.Open);
             }
             catch (Exception)

@@ -185,7 +185,7 @@ namespace OpenMetaverse
             /// <summary>Collection of alpha masks that needs applying</summary>
             public Dictionary<VisualAlphaParam, float> AlphaMasks;
             /// <summary>Tint that should be applied to the texture</summary>
-            public Color Color;
+            public Color4 Color;
 
             public override string ToString()
             {
@@ -631,17 +631,17 @@ namespace OpenMetaverse
         /// <param name="param">All the color info gathered from wearable's VisualParams
         /// passed as list of ColorParamInfo tuples</param>
         /// <returns>Base color/tint for the wearable</returns>
-        private Color GetColorFromParams(List<ColorParamInfo> param)
+        private Color4 GetColorFromParams(List<ColorParamInfo> param)
         {
             // Start off with a blank slate, black, fully transparent
-            Color res = Color.FromArgb(0, 0, 0, 0);
+            Color4 res = new Color4(0, 0, 0, 0);
 
             // Apply color modification from each color parameter
             foreach (ColorParamInfo p in param)
             {
                 int n = p.VisualColorParam.Colors.Length;
 
-                Color paramColor = Color.FromArgb(0, 0, 0, 0);
+                Color4 paramColor = new Color4(0, 0, 0, 0);
 
                 if (n == 1)
                 {
@@ -701,17 +701,12 @@ namespace OpenMetaverse
                         // and then find the value for each ARGB element that is
                         // somewhere on the line between color1 and color2 at some
                         // distance from the first color
-                        Color c1 = paramColor = p.VisualColorParam.Colors[indexa];
-                        Color c2 = paramColor = p.VisualColorParam.Colors[indexb];
+                        Color4 c1 = paramColor = p.VisualColorParam.Colors[indexa];
+                        Color4 c2 = paramColor = p.VisualColorParam.Colors[indexb];
 
                         // Distance is some fraction of the step, use that fraction
                         // to find the value in the range from color1 to color2
-                        paramColor = Color.FromArgb(
-                            (int)(c1.A + (c2.A - c1.A) * (distance / step)),
-                            (int)(c1.R + (c2.R - c1.R) * (distance / step)),
-                            (int)(c1.G + (c2.G - c1.G) * (distance / step)),
-                            (int)(c1.B + (c2.B - c1.B) * (distance / step))
-                            );
+                        paramColor = Color4.Lerp(c1, c2, distance / step);
                     }
 
                     // Please leave this fragment even if its commented out
@@ -726,19 +721,17 @@ namespace OpenMetaverse
 
                 // Now that we have calculated color from the scale of colors
                 // that visual params provided, lets apply it to the result
-                if (p.VisualColorParam.Operation == VisualColorOperation.Multiply)
+                switch (p.VisualColorParam.Operation)
                 {
-                    // TODO: do color multiplication (not needed for the purpose of baking)
-                }
-                else
-                {
-                    // Adding color to the base
-                    res = Color.FromArgb(
-                        (res.A + paramColor.A) > 255 ? 255 : res.A + paramColor.A,
-                        (res.R + paramColor.R) > 255 ? 255 : res.R + paramColor.R,
-                        (res.G + paramColor.G) > 255 ? 255 : res.G + paramColor.G,
-                        (res.B + paramColor.B) > 255 ? 255 : res.B + paramColor.B
-                        );
+                    case VisualColorOperation.Add:
+                        res += paramColor;
+                        break;
+                    case VisualColorOperation.Multiply:
+                        res *= paramColor;
+                        break;
+                    case VisualColorOperation.Blend:
+                        res = Color4.Lerp(res, paramColor, p.Value);
+                        break;
                 }
             }
 
@@ -895,7 +888,7 @@ namespace OpenMetaverse
                                             }
                                         }
 
-                                        Color wearableColor = Color.White; // Never actually used
+                                        Color4 wearableColor = Color4.White; // Never actually used
                                         if (colorParams.Count > 0)
                                         {
                                             wearableColor = GetColorFromParams(colorParams);

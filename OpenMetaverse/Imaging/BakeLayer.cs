@@ -109,7 +109,7 @@ namespace OpenMetaverse.Imaging
             // Base color for eye bake is white, color of layer0 for others
             if (bakeType == BakeType.Eyes)
             {
-                InitBakedLayerColor(Color.White);
+                InitBakedLayerColor(Color4.White);
             }
             else if (textures.Count > 0)
             {
@@ -361,7 +361,7 @@ namespace OpenMetaverse.Imaging
         /// <param name="dest">Destination image</param>
         /// <param name="src">Source image</param>
         /// <returns>Sanitization was succefull</returns>
-        private bool SanitazeLayers(ManagedImage dest, ManagedImage src)
+        private bool SanitizeLayers(ManagedImage dest, ManagedImage src)
         {
             if (dest == null || src == null) return false;
 
@@ -425,7 +425,7 @@ namespace OpenMetaverse.Imaging
 
         private void AddAlpha(ManagedImage dest, ManagedImage src)
         {
-            if (!SanitazeLayers(dest, src)) return;
+            if (!SanitizeLayers(dest, src)) return;
 
             for (int i = 0; i < dest.Alpha.Length; i++)
             {
@@ -438,7 +438,7 @@ namespace OpenMetaverse.Imaging
 
         private void MultiplyLayerFromAlpha(ManagedImage dest, ManagedImage src)
         {
-            if (!SanitazeLayers(dest, src)) return;
+            if (!SanitizeLayers(dest, src)) return;
 
             for (int i = 0; i < dest.Red.Length; i++)
             {
@@ -448,15 +448,15 @@ namespace OpenMetaverse.Imaging
             }
         }
 
-        private void ApplyTint(ManagedImage dest, Color src)
+        private void ApplyTint(ManagedImage dest, Color4 src)
         {
             if (dest == null) return;
 
             for (int i = 0; i < dest.Red.Length; i++)
             {
-                dest.Red[i] = (byte)((dest.Red[i] * src.R) >> 8);
-                dest.Green[i] = (byte)((dest.Green[i] * src.G) >> 8);
-                dest.Blue[i] = (byte)((dest.Blue[i] * src.B) >> 8);
+                dest.Red[i] = (byte)((dest.Red[i] * Utils.FloatToByte(src.R, 0f, 1f)) >> 8);
+                dest.Green[i] = (byte)((dest.Green[i] * Utils.FloatToByte(src.G, 0f, 1f)) >> 8);
+                dest.Blue[i] = (byte)((dest.Blue[i] * Utils.FloatToByte(src.B, 0f, 1f)) >> 8);
             }
         }
 
@@ -466,8 +466,8 @@ namespace OpenMetaverse.Imaging
         /// compressing it too far since it seems to cause upload failures if 
         /// the image is a pure solid color
         /// </summary>
-        /// <param name="color">System.Drawing.Color of the base of this layer</param>
-        private void InitBakedLayerColor(Color color)
+        /// <param name="color">Color of the base of this layer</param>
+        private void InitBakedLayerColor(Color4 color)
         {
             InitBakedLayerColor(color.R, color.G, color.B);
         }
@@ -481,11 +481,11 @@ namespace OpenMetaverse.Imaging
         /// <param name="r">Red value</param>
         /// <param name="g">Green value</param>
         /// <param name="b">Blue value</param>
-        private void InitBakedLayerColor(byte r, byte g, byte b)
+        private void InitBakedLayerColor(float r, float g, float b)
         {
-            byte rByte = r;
-            byte gByte = g;
-            byte bByte = b;
+            byte rByte = Utils.FloatToByte(r, 0f, 1f);
+            byte gByte = Utils.FloatToByte(g, 0f, 1f);
+            byte bByte = Utils.FloatToByte(b, 0f, 1f);
 
             byte rAlt, gAlt, bAlt;
 

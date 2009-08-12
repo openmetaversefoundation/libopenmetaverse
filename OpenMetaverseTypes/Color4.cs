@@ -458,6 +458,36 @@ namespace OpenMetaverse
             return !(lhs == rhs);
         }
 
+        public static Color4 operator +(Color4 lhs, Color4 rhs)
+        {
+            lhs.R += rhs.R;
+            lhs.G += rhs.G;
+            lhs.B += rhs.B;
+            lhs.A += rhs.A;
+
+            return lhs;
+        }
+
+        public static Color4 operator -(Color4 lhs, Color4 rhs)
+        {
+            lhs.R -= rhs.R;
+            lhs.G -= rhs.G;
+            lhs.B -= rhs.B;
+            lhs.A -= rhs.A;
+
+            return lhs;
+        }
+
+        public static Color4 operator *(Color4 lhs, Color4 rhs)
+        {
+            lhs.R *= rhs.R;
+            lhs.G *= rhs.G;
+            lhs.B *= rhs.B;
+            lhs.A *= rhs.A;
+
+            return lhs;
+        }
+
         #endregion Operators
 
         /// <summary>A Color4 with zero RGB values and fully opaque (alpha 1.0)</summary>
