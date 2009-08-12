@@ -301,13 +301,11 @@ namespace OpenMetaverse
             }
             catch (Exception ex)
             {
-                throw new IndexOutOfRangeException(String.Format("Zerodecoding error: i={0}, srclen={1}, bodylen={2}, zerolen={3}\n{4}\n{5}",
-                    i, srclen, bodylen, zerolen, Utils.BytesToHexString(src, srclen, null)), ex.InnerException);
-
                 //Logger.Log(String.Format("Zerodecoding error: i={0}, srclen={1}, bodylen={2}, zerolen={3}\n{4}\n{5}",
                 //    i, srclen, bodylen, zerolen, Utils.BytesToHexString(src, srclen, null), ex), LogLevel.Error);
-            }      
-            return 0;      
+                throw new IndexOutOfRangeException(String.Format("Zerodecoding error: i={0}, srclen={1}, bodylen={2}, zerolen={3}\n{4}\n{5}",
+                    i, srclen, bodylen, zerolen, Utils.BytesToHexString(src, srclen, null)), ex.InnerException);
+            }
         }
 
         /// <summary>

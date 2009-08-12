@@ -436,101 +436,30 @@ namespace OpenMetaverse.Imaging
 
             System.IO.MemoryStream ms = new System.IO.MemoryStream(buffer);
 
-            System.IO.BinaryReader br = new System.IO.BinaryReader(ms);
-
-            tgaHeader header = new tgaHeader();
-            header.Read(br);
-
-            if (header.ImageSpec.PixelDepth != 8 &&
-                header.ImageSpec.PixelDepth != 16 &&
-                header.ImageSpec.PixelDepth != 24 &&
-                header.ImageSpec.PixelDepth != 32)
-                throw new ArgumentException("Not a supported tga file.");
-
-            if (header.ImageSpec.AlphaBits > 8)
-                throw new ArgumentException("Not a supported tga file.");
-
-            if (header.ImageSpec.Width > 4096 ||
-                header.ImageSpec.Height > 4096)
-                throw new ArgumentException("Image too large.");
-
-            System.Drawing.Bitmap b = new System.Drawing.Bitmap(
-                header.ImageSpec.Width, header.ImageSpec.Height);
-
-            System.Drawing.Imaging.BitmapData bd = b.LockBits(new System.Drawing.Rectangle(0, 0, b.Width, b.Height),
-                System.Drawing.Imaging.ImageLockMode.WriteOnly,
-                System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
-            switch (header.ImageSpec.PixelDepth)
+            using (System.IO.BinaryReader br = new System.IO.BinaryReader(ms))
             {
-                case 8:
-                    decodeStandard8(bd, header, br);
-                    break;
-                case 16:
-                    if (header.ImageSpec.AlphaBits > 0)
-                        decodeSpecial16(bd, header, br);
-                    else
-                        decodeStandard16(bd, header, br);
-                    break;
-                case 24:
-                    if (header.ImageSpec.AlphaBits > 0)
-                        decodeSpecial24(bd, header, br);
-                    else
-                        decodeStandard24(bd, header, br);
-                    break;
-                case 32:
-                    decodeStandard32(bd, header, br);
-                    break;
-                default:
-                    b.UnlockBits(bd);
-                    b.Dispose();
-                    return null;
-            }
-            b.UnlockBits(bd);
-            br.Close();
-            return b;
-        }
+                tgaHeader header = new tgaHeader();
+                header.Read(br);
 
-        public static unsafe ManagedImage LoadTGAImage(System.IO.Stream source)
-        {
-            return LoadTGAImage(source, false);
-        }
-        
-        public static unsafe ManagedImage LoadTGAImage(System.IO.Stream source, bool mask)
-        {
-            byte[] buffer = new byte[source.Length];
-            source.Read(buffer, 0, buffer.Length);
+                if (header.ImageSpec.PixelDepth != 8 &&
+                    header.ImageSpec.PixelDepth != 16 &&
+                    header.ImageSpec.PixelDepth != 24 &&
+                    header.ImageSpec.PixelDepth != 32)
+                    throw new ArgumentException("Not a supported tga file.");
 
-            System.IO.MemoryStream ms = new System.IO.MemoryStream(buffer);
+                if (header.ImageSpec.AlphaBits > 8)
+                    throw new ArgumentException("Not a supported tga file.");
 
-            System.IO.BinaryReader br = new System.IO.BinaryReader(ms);
+                if (header.ImageSpec.Width > 4096 ||
+                    header.ImageSpec.Height > 4096)
+                    throw new ArgumentException("Image too large.");
 
-            tgaHeader header = new tgaHeader();
-            header.Read(br);
+                System.Drawing.Bitmap b = new System.Drawing.Bitmap(
+                    header.ImageSpec.Width, header.ImageSpec.Height);
 
-            if (header.ImageSpec.PixelDepth != 8 &&
-                header.ImageSpec.PixelDepth != 16 &&
-                header.ImageSpec.PixelDepth != 24 &&
-                header.ImageSpec.PixelDepth != 32)
-                throw new ArgumentException("Not a supported tga file.");
-
-            if (header.ImageSpec.AlphaBits > 8)
-                throw new ArgumentException("Not a supported tga file.");
-
-            if (header.ImageSpec.Width > 4096 ||
-                header.ImageSpec.Height > 4096)
-                throw new ArgumentException("Image too large.");
-
-            byte[] decoded = new byte[header.ImageSpec.Width * header.ImageSpec.Height * 4];
-            System.Drawing.Imaging.BitmapData bd = new System.Drawing.Imaging.BitmapData();
-
-            fixed (byte* pdecoded = &decoded[0])
-            {
-                bd.Width = header.ImageSpec.Width;
-                bd.Height = header.ImageSpec.Height;
-                bd.PixelFormat = System.Drawing.Imaging.PixelFormat.Format32bppPArgb;
-                bd.Stride = header.ImageSpec.Width * 4;
-                bd.Scan0 = (IntPtr)pdecoded;
-
+                System.Drawing.Imaging.BitmapData bd = b.LockBits(new System.Drawing.Rectangle(0, 0, b.Width, b.Height),
+                    System.Drawing.Imaging.ImageLockMode.WriteOnly,
+                    System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
                 switch (header.ImageSpec.PixelDepth)
                 {
                     case 8:
@@ -552,42 +481,115 @@ namespace OpenMetaverse.Imaging
                         decodeStandard32(bd, header, br);
                         break;
                     default:
+                        b.UnlockBits(bd);
+                        b.Dispose();
                         return null;
                 }
-            }
 
-            int n = header.ImageSpec.Width * header.ImageSpec.Height;
-            ManagedImage image;
-            
-            if (mask && header.ImageSpec.AlphaBits == 0 && header.ImageSpec.PixelDepth == 8)
+                b.UnlockBits(bd);
+                return b;
+            }
+        }
+
+        public static unsafe ManagedImage LoadTGAImage(System.IO.Stream source)
+        {
+            return LoadTGAImage(source, false);
+        }
+        
+        public static unsafe ManagedImage LoadTGAImage(System.IO.Stream source, bool mask)
+        {
+            byte[] buffer = new byte[source.Length];
+            source.Read(buffer, 0, buffer.Length);
+
+            System.IO.MemoryStream ms = new System.IO.MemoryStream(buffer);
+
+            using (System.IO.BinaryReader br = new System.IO.BinaryReader(ms))
             {
-                image = new ManagedImage(header.ImageSpec.Width, header.ImageSpec.Height,
-                    ManagedImage.ImageChannels.Alpha);
-                int p = 3;
+                tgaHeader header = new tgaHeader();
+                header.Read(br);
 
-                for (int i = 0; i < n; i++)
+                if (header.ImageSpec.PixelDepth != 8 &&
+                    header.ImageSpec.PixelDepth != 16 &&
+                    header.ImageSpec.PixelDepth != 24 &&
+                    header.ImageSpec.PixelDepth != 32)
+                    throw new ArgumentException("Not a supported tga file.");
+
+                if (header.ImageSpec.AlphaBits > 8)
+                    throw new ArgumentException("Not a supported tga file.");
+
+                if (header.ImageSpec.Width > 4096 ||
+                    header.ImageSpec.Height > 4096)
+                    throw new ArgumentException("Image too large.");
+
+                byte[] decoded = new byte[header.ImageSpec.Width * header.ImageSpec.Height * 4];
+                System.Drawing.Imaging.BitmapData bd = new System.Drawing.Imaging.BitmapData();
+
+                fixed (byte* pdecoded = &decoded[0])
                 {
-                    image.Alpha[i] = decoded[p];
-                    p += 4;
-                }
-            }
-            else
-            {
-                image = new ManagedImage(header.ImageSpec.Width, header.ImageSpec.Height,
-                    ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
-                int p = 0;
+                    bd.Width = header.ImageSpec.Width;
+                    bd.Height = header.ImageSpec.Height;
+                    bd.PixelFormat = System.Drawing.Imaging.PixelFormat.Format32bppPArgb;
+                    bd.Stride = header.ImageSpec.Width * 4;
+                    bd.Scan0 = (IntPtr)pdecoded;
 
-                for (int i = 0; i < n; i++)
+                    switch (header.ImageSpec.PixelDepth)
+                    {
+                        case 8:
+                            decodeStandard8(bd, header, br);
+                            break;
+                        case 16:
+                            if (header.ImageSpec.AlphaBits > 0)
+                                decodeSpecial16(bd, header, br);
+                            else
+                                decodeStandard16(bd, header, br);
+                            break;
+                        case 24:
+                            if (header.ImageSpec.AlphaBits > 0)
+                                decodeSpecial24(bd, header, br);
+                            else
+                                decodeStandard24(bd, header, br);
+                            break;
+                        case 32:
+                            decodeStandard32(bd, header, br);
+                            break;
+                        default:
+                            return null;
+                    }
+                }
+
+                int n = header.ImageSpec.Width * header.ImageSpec.Height;
+                ManagedImage image;
+
+                if (mask && header.ImageSpec.AlphaBits == 0 && header.ImageSpec.PixelDepth == 8)
                 {
-                    image.Blue[i] = decoded[p++];
-                    image.Green[i] = decoded[p++];
-                    image.Red[i] = decoded[p++];
-                    image.Alpha[i] = decoded[p++];
-                }
-            }
+                    image = new ManagedImage(header.ImageSpec.Width, header.ImageSpec.Height,
+                        ManagedImage.ImageChannels.Alpha);
+                    int p = 3;
 
-            br.Close();
-            return image;
+                    for (int i = 0; i < n; i++)
+                    {
+                        image.Alpha[i] = decoded[p];
+                        p += 4;
+                    }
+                }
+                else
+                {
+                    image = new ManagedImage(header.ImageSpec.Width, header.ImageSpec.Height,
+                        ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha);
+                    int p = 0;
+
+                    for (int i = 0; i < n; i++)
+                    {
+                        image.Blue[i] = decoded[p++];
+                        image.Green[i] = decoded[p++];
+                        image.Red[i] = decoded[p++];
+                        image.Alpha[i] = decoded[p++];
+                    }
+                }
+
+                br.Close();
+                return image;
+            }
         }
 
         public static System.Drawing.Bitmap LoadTGA(string filename)

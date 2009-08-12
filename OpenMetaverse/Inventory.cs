@@ -119,12 +119,7 @@ namespace OpenMetaverse
         /// </summary>
         public InventoryNode RootNode
         {
-            get
-            {
-                if (_RootNode == null)
-                    throw new InventoryException("Root node unknown. Are you completely logged in?");
-                return _RootNode;
-            }
+            get { return _RootNode; }
         }
 
         /// <summary>
@@ -132,12 +127,7 @@ namespace OpenMetaverse
         /// </summary>
         public InventoryNode LibraryRootNode
         {
-            get
-            {
-                if (_LibraryRootNode == null)
-                    throw new InventoryException("Library Root node unknown. Are you completely logged in?");
-                return _LibraryRootNode;
-            }
+            get { return _LibraryRootNode; }
         }
 
         public UUID Owner {
@@ -318,17 +308,18 @@ namespace OpenMetaverse
         {
 	        try
 	        {
-                Stream stream = File.Open(filename, FileMode.Create);
-                BinaryFormatter bformatter = new BinaryFormatter();
-                lock (Items)
+                using (Stream stream = File.Open(filename, FileMode.Create))
                 {
-                    Logger.Log("Caching " + Items.Count.ToString() + " inventory items to " + filename, Helpers.LogLevel.Info);
-                    foreach (KeyValuePair<UUID, InventoryNode> kvp in Items)
+                    BinaryFormatter bformatter = new BinaryFormatter();
+                    lock (Items)
                     {
-                        bformatter.Serialize(stream, kvp.Value);
+                        Logger.Log("Caching " + Items.Count.ToString() + " inventory items to " + filename, Helpers.LogLevel.Info);
+                        foreach (KeyValuePair<UUID, InventoryNode> kvp in Items)
+                        {
+                            bformatter.Serialize(stream, kvp.Value);
+                        }
                     }
                 }
-                stream.Close();
 	        }
             catch (Exception e)
             {
@@ -346,31 +337,25 @@ namespace OpenMetaverse
             List<InventoryNode> nodes = new List<InventoryNode>();
             int item_count = 0;
 
-            Stream stream = null;
-
             try
             {
                 if (!File.Exists(filename))
                     return -1;
 
-                stream = File.Open(filename, FileMode.Open);
-                BinaryFormatter bformatter = new BinaryFormatter();
-
-                while (stream.Position < stream.Length)
+                using (Stream stream = File.Open(filename, FileMode.Open))
                 {
-                    OpenMetaverse.InventoryNode node = (InventoryNode)bformatter.Deserialize(stream);
-                    nodes.Add(node);
-                    item_count++;
+                    BinaryFormatter bformatter = new BinaryFormatter();
+
+                    while (stream.Position < stream.Length)
+                    {
+                        OpenMetaverse.InventoryNode node = (InventoryNode)bformatter.Deserialize(stream);
+                        nodes.Add(node);
+                        item_count++;
+                    }
                 }
-                stream.Close();
             }
             catch (Exception e)
             {
-                if (stream != null)
-                {
-                    stream.Close();
-                }
-
                 Logger.Log("Error accessing inventory cache file :" + e.Message, Helpers.LogLevel.Error);
                 return -1;
             }

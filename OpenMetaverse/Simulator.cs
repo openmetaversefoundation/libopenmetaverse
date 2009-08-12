@@ -465,10 +465,26 @@ namespace OpenMetaverse
         /// </summary>
         public void Dispose()
         {
-            // Force all the CAPS connections closed for this simulator
-            if (Caps != null)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        public virtual void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                Caps.Disconnect(true);
+                if (AckTimer != null)
+                    AckTimer.Dispose();
+                if (PingTimer != null)
+                    PingTimer.Dispose();
+                if (StatsTimer != null)
+                    StatsTimer.Dispose();
+                if (ConnectedEvent != null)
+                    ConnectedEvent.Close();
+
+                // Force all the CAPS connections closed for this simulator
+                if (Caps != null)
+                    Caps.Disconnect(true);
             }
         }
 

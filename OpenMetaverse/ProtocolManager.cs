@@ -397,40 +397,30 @@ namespace OpenMetaverse
 			byte magicKey = 0;
 			byte[] buffer = new byte[2048];
 			int nread;
-			BinaryReader map;
-			BinaryWriter output;
 
-			try
-			{
-				map = new BinaryReader(new FileStream(mapFile, FileMode.Open));
-			}
-			catch(Exception e)
-			{
-				throw new Exception("Map file error", e);
-			}
+            try
+            {
+                using (BinaryReader map = new BinaryReader(new FileStream(mapFile, FileMode.Open)))
+                {
+                    using (BinaryWriter output = new BinaryWriter(new FileStream(outputFile, FileMode.CreateNew)))
+                    {
+                        while ((nread = map.Read(buffer, 0, 2048)) != 0)
+                        {
+                            for (int i = 0; i < nread; ++i)
+                            {
+                                buffer[i] ^= magicKey;
+                                magicKey += 43;
+                            }
 
-			try
-			{
-				output = new BinaryWriter(new FileStream(outputFile, FileMode.CreateNew));
-			}
-			catch(Exception e)
-			{
-				throw new Exception("Map file error", e);
-			}
-
-			while ((nread = map.Read(buffer, 0, 2048)) != 0)
-			{
-				for (int i = 0; i < nread; ++i)
-				{
-					buffer[i] ^= magicKey;
-					magicKey += 43;
-				}
-
-				output.Write(buffer, 0, nread);
-			}
-
-			map.Close();
-			output.Close();
+                            output.Write(buffer, 0, nread);
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Map file error", e);
+            }
 		}
 
         /// <summary>
@@ -439,236 +429,229 @@ namespace OpenMetaverse
         /// <param name="mapFile"></param>
 		private void LoadMapFile(string mapFile)
 		{
-			FileStream map;
 			ushort low = 1;
 			ushort medium = 1;
 			ushort high = 1;
 
-			// Load the protocol map file
-			try
-			{
-				map = new FileStream(mapFile, FileMode.Open, FileAccess.Read); 
-			}
-			catch(Exception e) 
-			{
-				throw new Exception("Map file loading error", e);
-			}
+            // Load the protocol map file
+            try
+            {
+                using (FileStream map = new FileStream(mapFile, FileMode.Open, FileAccess.Read))
+                {
+                    using (StreamReader r = new StreamReader(map))
+                    {
+                        r.BaseStream.Seek(0, SeekOrigin.Begin);
+                        string newline;
+                        string trimmedline;
+                        bool inPacket = false;
+                        bool inBlock = false;
+                        MapPacket currentPacket = null;
+                        MapBlock currentBlock = null;
+                        char[] trimArray = new char[] { ' ', '\t' };
 
-			try
-			{
-				StreamReader r = new StreamReader(map);        
-				r.BaseStream.Seek(0, SeekOrigin.Begin);
-				string newline;
-				string trimmedline;
-				bool inPacket = false;
-				bool inBlock = false;
-				MapPacket currentPacket = null;
-				MapBlock currentBlock = null;
-				char[] trimArray = new char[] {' ', '\t'};
+                        // While not at the end of the file
+                        while (r.Peek() > -1)
+                        {
+                            #region ParseMap
 
-				// While not at the end of the file
-				while (r.Peek() > -1) 
-				{
-					#region ParseMap
+                            newline = r.ReadLine();
+                            trimmedline = System.Text.RegularExpressions.Regex.Replace(newline, @"\s+", " ");
+                            trimmedline = trimmedline.Trim(trimArray);
 
-					newline = r.ReadLine();
-					trimmedline = System.Text.RegularExpressions.Regex.Replace(newline, @"\s+", " ");
-					trimmedline = trimmedline.Trim(trimArray);
+                            if (!inPacket)
+                            {
+                                // Outside of all packet blocks
 
-					if (!inPacket)
-					{
-						// Outside of all packet blocks
+                                if (trimmedline == "{")
+                                {
+                                    inPacket = true;
+                                }
+                            }
+                            else
+                            {
+                                // Inside of a packet block
 
-						if (trimmedline == "{")
-						{
-							inPacket = true;
-						}
-					}
-					else
-					{
-						// Inside of a packet block
+                                if (!inBlock)
+                                {
+                                    // Inside a packet block, outside of the blocks
 
-						if (!inBlock)
-						{
-							// Inside a packet block, outside of the blocks
+                                    if (trimmedline == "{")
+                                    {
+                                        inBlock = true;
+                                    }
+                                    else if (trimmedline == "}")
+                                    {
+                                        // Reached the end of the packet
+                                        currentPacket.Blocks.Sort();
+                                        inPacket = false;
+                                    }
+                                    else
+                                    {
+                                        // The packet header
+                                        #region ParsePacketHeader
 
-							if (trimmedline == "{")
-							{
-								inBlock = true;
-							}
-							else if (trimmedline == "}")
-							{
-								// Reached the end of the packet
-								currentPacket.Blocks.Sort();
-								inPacket = false;
-							}
-							else 
-							{
-								// The packet header
-								#region ParsePacketHeader
+                                        // Splice the string in to tokens
+                                        string[] tokens = trimmedline.Split(new char[] { ' ', '\t' });
 
-								// Splice the string in to tokens
-								string[] tokens = trimmedline.Split(new char[] {' ', '\t'});
+                                        if (tokens.Length > 3)
+                                        {
+                                            //Hash packet name to insure correct keyword ordering
+                                            KeywordPosition(tokens[0]);
 
-								if (tokens.Length > 3)
-								{
-                                    //Hash packet name to insure correct keyword ordering
-                                    KeywordPosition(tokens[0]);
+                                            if (tokens[1] == "Fixed")
+                                            {
+                                                // Remove the leading "0x"
+                                                if (tokens[2].Substring(0, 2) == "0x")
+                                                {
+                                                    tokens[2] = tokens[2].Substring(2, tokens[2].Length - 2);
+                                                }
 
-									if (tokens[1] == "Fixed")
-									{
-										// Remove the leading "0x"
-										if (tokens[2].Substring(0, 2) == "0x")
-										{
-											tokens[2] = tokens[2].Substring(2, tokens[2].Length - 2);
-										}
+                                                uint fixedID = UInt32.Parse(tokens[2], System.Globalization.NumberStyles.HexNumber);
+                                                // Truncate the id to a short
+                                                fixedID ^= 0xFFFF0000;
+                                                LowMaps[fixedID] = new MapPacket();
+                                                LowMaps[fixedID].ID = (ushort)fixedID;
+                                                LowMaps[fixedID].Frequency = PacketFrequency.Low;
+                                                LowMaps[fixedID].Name = tokens[0];
+                                                LowMaps[fixedID].Trusted = (tokens[3] == "Trusted");
+                                                LowMaps[fixedID].Encoded = (tokens[4] == "Zerocoded");
+                                                LowMaps[fixedID].Blocks = new List<MapBlock>();
 
-										uint fixedID = UInt32.Parse(tokens[2], System.Globalization.NumberStyles.HexNumber);
-										// Truncate the id to a short
-										fixedID ^= 0xFFFF0000;
-										LowMaps[fixedID] = new MapPacket();
-										LowMaps[fixedID].ID = (ushort)fixedID;
-										LowMaps[fixedID].Frequency = PacketFrequency.Low;
-										LowMaps[fixedID].Name = tokens[0];
-										LowMaps[fixedID].Trusted = (tokens[3] == "Trusted");
-										LowMaps[fixedID].Encoded = (tokens[4] == "Zerocoded");
-										LowMaps[fixedID].Blocks = new List<MapBlock>();
+                                                currentPacket = LowMaps[fixedID];
+                                            }
+                                            else if (tokens[1] == "Low")
+                                            {
+                                                LowMaps[low] = new MapPacket();
+                                                LowMaps[low].ID = low;
+                                                LowMaps[low].Frequency = PacketFrequency.Low;
+                                                LowMaps[low].Name = tokens[0];
+                                                LowMaps[low].Trusted = (tokens[2] == "Trusted");
+                                                LowMaps[low].Encoded = (tokens[3] == "Zerocoded");
+                                                LowMaps[low].Blocks = new List<MapBlock>();
 
-										currentPacket = LowMaps[fixedID];
-									}
-									else if (tokens[1] == "Low")
-									{
-										LowMaps[low] = new MapPacket();
-										LowMaps[low].ID = low;
-										LowMaps[low].Frequency = PacketFrequency.Low;
-										LowMaps[low].Name = tokens[0];
-										LowMaps[low].Trusted = (tokens[2] == "Trusted");
-										LowMaps[low].Encoded = (tokens[3] == "Zerocoded");
-										LowMaps[low].Blocks = new List<MapBlock>();
+                                                currentPacket = LowMaps[low];
 
-										currentPacket = LowMaps[low];
+                                                low++;
+                                            }
+                                            else if (tokens[1] == "Medium")
+                                            {
+                                                MediumMaps[medium] = new MapPacket();
+                                                MediumMaps[medium].ID = medium;
+                                                MediumMaps[medium].Frequency = PacketFrequency.Medium;
+                                                MediumMaps[medium].Name = tokens[0];
+                                                MediumMaps[medium].Trusted = (tokens[2] == "Trusted");
+                                                MediumMaps[medium].Encoded = (tokens[3] == "Zerocoded");
+                                                MediumMaps[medium].Blocks = new List<MapBlock>();
 
-										low++;
-									}
-									else if (tokens[1] == "Medium")
-									{
-										MediumMaps[medium] = new MapPacket();
-										MediumMaps[medium].ID = medium;
-										MediumMaps[medium].Frequency = PacketFrequency.Medium;
-										MediumMaps[medium].Name = tokens[0];
-										MediumMaps[medium].Trusted = (tokens[2] == "Trusted");
-										MediumMaps[medium].Encoded = (tokens[3] == "Zerocoded");
-										MediumMaps[medium].Blocks = new List<MapBlock>();
+                                                currentPacket = MediumMaps[medium];
 
-										currentPacket = MediumMaps[medium];
+                                                medium++;
+                                            }
+                                            else if (tokens[1] == "High")
+                                            {
+                                                HighMaps[high] = new MapPacket();
+                                                HighMaps[high].ID = high;
+                                                HighMaps[high].Frequency = PacketFrequency.High;
+                                                HighMaps[high].Name = tokens[0];
+                                                HighMaps[high].Trusted = (tokens[2] == "Trusted");
+                                                HighMaps[high].Encoded = (tokens[3] == "Zerocoded");
+                                                HighMaps[high].Blocks = new List<MapBlock>();
 
-										medium++;
-									}
-									else if (tokens[1] == "High")
-									{
-										HighMaps[high] = new MapPacket();
-										HighMaps[high].ID = high;
-										HighMaps[high].Frequency = PacketFrequency.High;
-										HighMaps[high].Name = tokens[0];
-										HighMaps[high].Trusted = (tokens[2] == "Trusted");
-										HighMaps[high].Encoded = (tokens[3] == "Zerocoded");
-										HighMaps[high].Blocks = new List<MapBlock>();
+                                                currentPacket = HighMaps[high];
 
-										currentPacket = HighMaps[high];
+                                                high++;
+                                            }
+                                            else
+                                            {
+                                                Logger.Log("Unknown packet frequency", Helpers.LogLevel.Error, Client);
+                                            }
+                                        }
 
-										high++;
-									}
-									else
-									{
-										Logger.Log("Unknown packet frequency", Helpers.LogLevel.Error, Client);
-									}
-								}
+                                        #endregion
+                                    }
+                                }
+                                else
+                                {
+                                    if (trimmedline.Length > 0 && trimmedline.Substring(0, 1) == "{")
+                                    {
+                                        // A field
+                                        #region ParseField
 
-								#endregion
-							}
-						}
-						else
-						{
-							if (trimmedline.Length > 0 && trimmedline.Substring(0, 1) == "{")
-							{
-								// A field
-								#region ParseField
+                                        MapField field = new MapField();
 
-								MapField field = new MapField();
+                                        // Splice the string in to tokens
+                                        string[] tokens = trimmedline.Split(new char[] { ' ', '\t' });
 
-								// Splice the string in to tokens
-								string[] tokens = trimmedline.Split(new char[] {' ', '\t'});
+                                        field.Name = tokens[1];
+                                        field.KeywordPosition = KeywordPosition(field.Name);
+                                        field.Type = (FieldType)Enum.Parse(typeof(FieldType), tokens[2], true);
 
-								field.Name = tokens[1];
-								field.KeywordPosition = KeywordPosition(field.Name);
-								field.Type = (FieldType)Enum.Parse(typeof(FieldType), tokens[2], true);
+                                        if (tokens[3] != "}")
+                                        {
+                                            field.Count = Int32.Parse(tokens[3]);
+                                        }
+                                        else
+                                        {
+                                            field.Count = 1;
+                                        }
 
-								if (tokens[3] != "}")
-								{
-									field.Count = Int32.Parse(tokens[3]);
-								}
-								else
-								{
-									field.Count = 1;
-								}
+                                        // Save this field to the current block
+                                        currentBlock.Fields.Add(field);
 
-								// Save this field to the current block
-								currentBlock.Fields.Add(field);
+                                        #endregion
+                                    }
+                                    else if (trimmedline == "}")
+                                    {
+                                        currentBlock.Fields.Sort();
+                                        inBlock = false;
+                                    }
+                                    else if (trimmedline.Length != 0 && trimmedline.Substring(0, 2) != "//")
+                                    {
+                                        // The block header
+                                        #region ParseBlockHeader
 
-								#endregion
-							}
-							else if (trimmedline == "}")
-							{
-								currentBlock.Fields.Sort();
-								inBlock = false;
-							}
-							else if (trimmedline.Length != 0 && trimmedline.Substring(0, 2) != "//")
-							{
-								// The block header
-								#region ParseBlockHeader
+                                        currentBlock = new MapBlock();
 
-								currentBlock = new MapBlock();
+                                        // Splice the string in to tokens
+                                        string[] tokens = trimmedline.Split(new char[] { ' ', '\t' });
 
-								// Splice the string in to tokens
-								string[] tokens = trimmedline.Split(new char[] {' ', '\t'});
+                                        currentBlock.Name = tokens[0];
+                                        currentBlock.KeywordPosition = KeywordPosition(currentBlock.Name);
+                                        currentBlock.Fields = new List<MapField>();
+                                        currentPacket.Blocks.Add(currentBlock);
 
-								currentBlock.Name = tokens[0];
-								currentBlock.KeywordPosition = KeywordPosition(currentBlock.Name);
-								currentBlock.Fields = new List<MapField>();
-								currentPacket.Blocks.Add(currentBlock);
+                                        if (tokens[1] == "Single")
+                                        {
+                                            currentBlock.Count = 1;
+                                        }
+                                        else if (tokens[1] == "Multiple")
+                                        {
+                                            currentBlock.Count = Int32.Parse(tokens[2]);
+                                        }
+                                        else if (tokens[1] == "Variable")
+                                        {
+                                            currentBlock.Count = -1;
+                                        }
+                                        else
+                                        {
+                                            Logger.Log("Unknown block frequency", Helpers.LogLevel.Error, Client);
+                                        }
 
-								if (tokens[1] == "Single")
-								{
-									currentBlock.Count = 1;
-								}
-								else if (tokens[1] == "Multiple")
-								{
-									currentBlock.Count = Int32.Parse(tokens[2]);
-								}
-								else if (tokens[1] == "Variable")
-								{
-									currentBlock.Count = -1;
-								}
-								else
-								{
-									Logger.Log("Unknown block frequency", Helpers.LogLevel.Error, Client);
-								}
+                                        #endregion
+                                    }
+                                }
+                            }
 
-								#endregion
-							}
-						}
-					}
+                            #endregion
+                        }
+                    }
 
-					#endregion
-				}
-
-				r.Close();
-				map.Close();
-			}
-			catch (Exception e)
-			{
+                }
+            }
+            catch (Exception e)
+            {
                 throw new Exception("Map file parsing error", e); ;
-			}
+            }
 		}
 
 		private int KeywordPosition(string keyword)

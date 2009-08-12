@@ -1908,8 +1908,6 @@ namespace OpenMetaverse.Messages.Linden
     {
         /// <summary>true of the script was successfully compiled by the simulator</summary>
         public bool Compiled;
-        /// <summary>The state of the request</summary>
-        public string State;
         /// <summary>A string containing the error which occured while trying
         /// to update the script</summary>
         public string Error;
@@ -2034,12 +2032,15 @@ namespace OpenMetaverse.Messages.Linden
     /// </summary>
     public class UploaderRequestScriptComplete : AssetUploaderBlock
     {
-        /// <summary>The request state (Always "complete")</summary>
-        public string State = "complete";
         /// <summary>The uploaded texture asset ID</summary>
         public UUID AssetID;
         /// <summary>true of the script was compiled successfully</summary>
         public bool Compiled;
+
+        public UploaderRequestScriptComplete()
+        {
+            State = "complete";
+        }
 
         public override OSDMap Serialize()
         {

@@ -70,43 +70,42 @@ namespace OpenMetaverse.Assets
         protected void WriteMetadata(TarArchiveWriter archive)
         {
             StringWriter sw = new StringWriter();
-            XmlTextWriter xtw = new XmlTextWriter(sw);
-
-            xtw.Formatting = Formatting.Indented;
-            xtw.WriteStartDocument();
-
-            xtw.WriteStartElement("assets");
-
-            foreach (UUID uuid in m_assets.Keys)
+            using (XmlTextWriter xtw = new XmlTextWriter(sw))
             {
-                Asset asset = m_assets[uuid];
+                xtw.Formatting = Formatting.Indented;
+                xtw.WriteStartDocument();
 
-                if (asset != null)
+                xtw.WriteStartElement("assets");
+
+                foreach (UUID uuid in m_assets.Keys)
                 {
-                    xtw.WriteStartElement("asset");
+                    Asset asset = m_assets[uuid];
 
-                    string extension = string.Empty;
-
-                    if (ArchiveConstants.ASSET_TYPE_TO_EXTENSION.ContainsKey(asset.AssetType))
+                    if (asset != null)
                     {
-                        extension = ArchiveConstants.ASSET_TYPE_TO_EXTENSION[asset.AssetType];
+                        xtw.WriteStartElement("asset");
+
+                        string extension = string.Empty;
+
+                        if (ArchiveConstants.ASSET_TYPE_TO_EXTENSION.ContainsKey(asset.AssetType))
+                        {
+                            extension = ArchiveConstants.ASSET_TYPE_TO_EXTENSION[asset.AssetType];
+                        }
+
+                        xtw.WriteElementString("filename", uuid.ToString() + extension);
+
+                        xtw.WriteElementString("name", uuid.ToString());
+                        xtw.WriteElementString("description", String.Empty);
+                        xtw.WriteElementString("asset-type", asset.AssetType.ToString());
+
+                        xtw.WriteEndElement();
                     }
-
-                    xtw.WriteElementString("filename", uuid.ToString() + extension);
-
-                    xtw.WriteElementString("name", uuid.ToString());
-                    xtw.WriteElementString("description", String.Empty);
-                    xtw.WriteElementString("asset-type", asset.AssetType.ToString());
-
-                    xtw.WriteEndElement();
                 }
+
+                xtw.WriteEndElement();
+                xtw.WriteEndDocument();
+                archive.WriteFile("assets.xml", sw.ToString());
             }
-
-            xtw.WriteEndElement();
-
-            xtw.WriteEndDocument();
-
-            archive.WriteFile("assets.xml", sw.ToString());
         }
 
         /// <summary>

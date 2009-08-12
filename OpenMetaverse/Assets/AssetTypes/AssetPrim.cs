@@ -95,10 +95,12 @@ namespace OpenMetaverse.Assets
         public string EncodeXml()
         {
             TextWriter textWriter = new StringWriter();
-            XmlTextWriter xmlWriter = new XmlTextWriter(textWriter);
-            OarFile.SOGToXml2(xmlWriter, this);
-            xmlWriter.Flush();
-            return textWriter.ToString();
+            using (XmlTextWriter xmlWriter = new XmlTextWriter(textWriter))
+            {
+                OarFile.SOGToXml2(xmlWriter, this);
+                xmlWriter.Flush();
+                return textWriter.ToString();
+            }
         }
 
         public bool DecodeXml(string xmlData)
