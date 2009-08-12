@@ -196,7 +196,7 @@ namespace VisualParamGenerator
                                                 continue;
                                             }
                                             CaptureCollection val = m.Groups["val"].Captures;
-                                            colors.Add(string.Format("new Color4({0}, {1}, {2}, {3})", val[3], val[0], val[1], val[2]));
+                                            colors.Add(string.Format("new Color4({0}, {1}, {2}, {3})", val[0], val[1], val[2], val[3]));
                                         }
                                     }
 
