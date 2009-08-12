@@ -1608,7 +1608,7 @@ namespace OpenMetaverse
             {
                 case BakeType.Head:
                     textures.Add(AvatarTextureIndex.HeadBodypaint);
-                    //AddTextureDownload(AvatarTextureIndex.Hair, textures);
+                    textures.Add(AvatarTextureIndex.Hair);
                     break;
                 case BakeType.UpperBody:
                     textures.Add(AvatarTextureIndex.UpperBodypaint);
