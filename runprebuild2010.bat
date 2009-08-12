@@ -15,12 +15,12 @@
 ::
 
 echo ##########################################
-echo creating prebuild files for: vs2008
+echo creating prebuild files for: vs2010
 echo Parameters: %1 %2
 echo ##########################################
 
 :: run prebuild to generate solution/project files from prebuild.xml configuration file
-bin\Prebuild.exe /target vs2008
+bin\Prebuild.exe /target vs2010
 
 :: build compile.bat file based on command line parameters
 echo @echo off > compile.bat
