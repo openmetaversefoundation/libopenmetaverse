@@ -399,6 +399,22 @@ namespace OpenMetaverse
             return new Color4((float)r, (float)g, (float)b, 1f);
         }
 
+        /// <summary>
+        /// Performs linear interpolation between two colors
+        /// </summary>
+        /// <param name="value1">Color to start at</param>
+        /// <param name="value2">Color to end at</param>
+        /// <param name="amount">Amount to interpolate</param>
+        /// <returns>The interpolated color</returns>
+        public static Color4 Lerp(Color4 value1, Color4 value2, float amount)
+        {
+            return new Color4(
+                Utils.Lerp(value1.R, value2.R, amount),
+                Utils.Lerp(value1.G, value2.G, amount),
+                Utils.Lerp(value1.B, value2.B, amount),
+                Utils.Lerp(value1.A, value2.A, amount));
+        }
+
         #endregion Static Methods
 
         #region Overrides
