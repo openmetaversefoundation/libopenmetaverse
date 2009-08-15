@@ -652,7 +652,8 @@ namespace OpenMetaverse
             GroupRolesMembersRequests = new List<UUID>();
             GroupName2KeyCache  = new InternalDictionary<UUID, string>();
 
-            Client.Network.RegisterEventCallback("AgentGroupDataUpdate", new Caps.EventQueueCallback(AgentGroupDataUpdateHandler));
+            Client.Network.RegisterEventCallback("AgentGroupDataUpdate", new Caps.EventQueueCallback(AgentGroupDataUpdateMessageHandler));
+            Client.Network.RegisterCallback(PacketType.AgentGroupDataUpdate, new NetworkManager.PacketCallback(AgentGroupDataUpdateHandler));
             // deprecated in simulator v1.27
             Client.Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(AgentDropGroupHandler));
             Client.Network.RegisterCallback(PacketType.GroupTitlesReply, new NetworkManager.PacketCallback(GroupTitlesHandler));
@@ -1193,8 +1194,41 @@ namespace OpenMetaverse
         }
 
         #region Packet Handlers
+        // When Arriving over UDP (OpenSim still sends it this way)
+        private void AgentGroupDataUpdateHandler(Packet packet, Simulator simulator)
+        {
+            if (OnCurrentGroups != null)
+            {                
+                //AgentGroupDataUpdateMessage msg = (AgentGroupDataUpdateMessage)message;
+                AgentGroupDataUpdatePacket msg = (AgentGroupDataUpdatePacket)packet;
+                //AgentGroupDataUpdatePacket.GroupDataBlock groupDataBlock = msg.GroupData;
 
-        private void AgentGroupDataUpdateHandler(string capsKey, IMessage message, Simulator simulator)
+                Dictionary<UUID, Group> currentGroups = new Dictionary<UUID, Group>();
+                foreach (AgentGroupDataUpdatePacket.GroupDataBlock block in msg.GroupData)
+                {
+                    Group group = new Group();
+                    group.ID = block.GroupID;
+                    group.Name = Utils.BytesToString(block.GroupName);
+                    group.InsigniaID = block.GroupInsigniaID;
+                    group.AcceptNotices = block.AcceptNotices;
+                    group.Contribution = block.Contribution;                    
+                    group.Powers = (GroupPowers)block.GroupPowers;
+                                        
+                    currentGroups.Add(group.ID, group);
+                    lock (GroupName2KeyCache.Dictionary)
+                    {
+                        if (!GroupName2KeyCache.Dictionary.ContainsKey(group.ID))
+                            GroupName2KeyCache.Dictionary.Add(group.ID, group.Name);
+                    }
+                }                                
+
+                try { OnCurrentGroups(currentGroups); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
+        }
+
+        // When Arriving via Capabilities
+        private void AgentGroupDataUpdateMessageHandler(string capsKey, IMessage message, Simulator simulator)
         {
             if (OnCurrentGroups != null)
             {
