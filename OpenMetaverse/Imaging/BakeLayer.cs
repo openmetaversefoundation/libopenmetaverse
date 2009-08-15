@@ -116,22 +116,22 @@ namespace OpenMetaverse.Imaging
                 InitBakedLayerColor(textures[0].Color);
             }
 
-            // If we don't have skin textures, apply defaults
-            bool noSkinTexture = textures.Count == 0 || textures[0].Texture == null;
+            // Do we have skin texture?
+            bool SkinTexture = textures.Count > 0 && textures[0].Texture != null;
 
-            if (noSkinTexture && bakeType == BakeType.Head)
+            if (bakeType == BakeType.Head)
             {
                 DrawLayer(LoadResourceLayer("head_color.tga"), false);
                 AddAlpha(bakedTexture.Image, LoadResourceLayer("head_alpha.tga"));
                 MultiplyLayerFromAlpha(bakedTexture.Image, LoadResourceLayer("head_skingrain.tga"));
             }
 
-            if (noSkinTexture && bakeType == BakeType.UpperBody)
+            if (!SkinTexture && bakeType == BakeType.UpperBody)
             {
                 DrawLayer(LoadResourceLayer("upperbody_color.tga"), false);
             }
 
-            if (noSkinTexture && bakeType == BakeType.LowerBody)
+            if (!SkinTexture && bakeType == BakeType.LowerBody)
             {
                 DrawLayer(LoadResourceLayer("lowerbody_color.tga"), false);
             }
@@ -139,7 +139,12 @@ namespace OpenMetaverse.Imaging
             // Layer each texture on top of one other, applying alpha masks as we go
             for (int i = 0; i < textures.Count; i++)
             {
+                // Skip if we have no texture on this layer
                 if (textures[i].Texture == null) continue;
+
+                // Don't draw skin on head bake first
+                // For head bake skin texture is drawn last, go figure
+                if (bakeType == BakeType.Head && i == 0) continue;
 
                 ManagedImage texture = textures[i].Texture.Image.Clone();
                 //File.WriteAllBytes(bakeType + "-texture-layer-" + i + ".tga", texture.ExportTGA());
@@ -150,6 +155,18 @@ namespace OpenMetaverse.Imaging
                 {
                     try { texture.ResizeNearestNeighbor(bakeWidth, bakeHeight); }
                     catch (Exception) { continue; }
+                }
+
+                // Special case for hair layer for the head bake
+                // If we don't have skin texture, we discard hair alpha
+                // and apply hair pattern over the texture
+                if (!SkinTexture && bakeType == BakeType.Head && i == 1)
+                {
+                    if (texture.Alpha != null)
+                    {
+                        for (int j = 0; j < texture.Alpha.Length; j++) texture.Alpha[j] = (byte)255;
+                    }
+                    MultiplyLayerFromAlpha(texture, LoadResourceLayer("head_hair.tga"));
                 }
 
                 // Aply tint and alpha masks except for skin that has a texture
@@ -195,17 +212,28 @@ namespace OpenMetaverse.Imaging
                             }
                         }
 
-                        // Finally, apply combined alpha mask to the cloned texture
+                        // Apply combined alpha mask to the cloned texture
                         if (addedMasks > 0)
                             AddAlpha(texture, combinedMask);
                         //File.WriteAllBytes(bakeType + "-masked-texture-" + i + ".tga", texture.ExportTGA());
                     }
                 }
 
-                // Only skirt and head bake have alpha channels
-                bool useAlpha = i == 0 && (bakeType == BakeType.Head || BakeType == BakeType.Skirt);
+                bool useAlpha = i == 0 && (BakeType == BakeType.Skirt);
                 DrawLayer(texture, useAlpha);
                 //File.WriteAllBytes(bakeType + "-layer-" + i + ".tga", texture.ExportTGA());
+            }
+
+            // For head, we add skin last
+            if (SkinTexture && bakeType == BakeType.Head)
+            {
+                ManagedImage texture = textures[0].Texture.Image.Clone();
+                if (texture.Width != bakeWidth || texture.Height != bakeHeight)
+                {
+                    try { texture.ResizeNearestNeighbor(bakeWidth, bakeHeight); }
+                    catch (Exception) { }
+                }
+                DrawLayer(texture, false);
             }
 
             // We are done, encode asset for finalized bake
