@@ -97,7 +97,9 @@ namespace OpenMetaverse
         /// <summary>Timeout for fetching a single texture</summary>
         const int TEXTURE_TIMEOUT = 1000 * 120;
         /// <summary>Timeout for uploading a single baked texture</summary>
-        const int UPLOAD_TIMEOUT = 1000 * 180;
+        const int UPLOAD_TIMEOUT = 1000 * 90;
+        /// <summary>Number of times to retry bake upload</summary>
+        const int UPLOAD_RETRIES = 2;
 
         /// <summary>Total number of wearables for each avatar</summary>
         public const int WEARABLE_COUNT = 13;
@@ -864,7 +866,7 @@ namespace OpenMetaverse
 
                                             // TODO pull bump data too to implement things like
                                             // clothes "bagginess"
-                                            
+
                                             // Add alpha mask
                                             if (p.AlphaParams.HasValue && p.AlphaParams.Value.TGAFile != string.Empty && !p.IsBumpAttribute)
                                             {
@@ -1102,39 +1104,39 @@ namespace OpenMetaverse
             // (it does not bake hair either) it will remain to work
             if (bakeType == BakeType.Hair) return false;
 
-            try
+            List<AvatarTextureIndex> textureIndices = BakeTypeToTextures(bakeType);
+            Baker oven = new Baker(bakeType);
+
+            for (int i = 0; i < textureIndices.Count; i++)
             {
-                List<AvatarTextureIndex> textureIndices = BakeTypeToTextures(bakeType);
-                Baker oven = new Baker(bakeType);
+                AvatarTextureIndex textureIndex = textureIndices[i];
+                TextureData texture = Textures[(int)textureIndex];
 
-                for (int i = 0; i < textureIndices.Count; i++)
-                {
-                    AvatarTextureIndex textureIndex = textureIndices[i];
-                    TextureData texture = Textures[(int)textureIndex];
-
-                    oven.AddTexture(texture);
-                }
-
-                int start = Environment.TickCount;
-                oven.Bake();
-                Logger.DebugLog("Baking " + bakeType + " took " + (Environment.TickCount - start) + "ms");
-
-                UUID newAssetID = UploadBake(oven.BakedTexture.AssetData);
-                Textures[(int)BakeTypeToAgentTextureIndex(bakeType)].TextureID = newAssetID;
-
-                if (newAssetID == UUID.Zero)
-                {
-                    Logger.Log("Failed uploading bake " + bakeType, Helpers.LogLevel.Warning);
-                    return false;
-                }
-
-                return true;
+                oven.AddTexture(texture);
             }
-            catch (Exception ex)
+
+            int start = Environment.TickCount;
+            oven.Bake();
+            Logger.DebugLog("Baking " + bakeType + " took " + (Environment.TickCount - start) + "ms");
+
+            UUID newAssetID = UUID.Zero;
+            int retries = UPLOAD_RETRIES;
+            
+            while (newAssetID == UUID.Zero && retries > 0)
             {
-                Logger.Log("Failed creating bake " + bakeType, Helpers.LogLevel.Warning, ex);
+                newAssetID = UploadBake(oven.BakedTexture.AssetData);
+                --retries;
+            }
+
+            Textures[(int)BakeTypeToAgentTextureIndex(bakeType)].TextureID = newAssetID;
+
+            if (newAssetID == UUID.Zero)
+            {
+                Logger.Log("Failed uploading bake " + bakeType, Helpers.LogLevel.Warning);
                 return false;
             }
+
+            return true;
         }
 
         /// <summary>
