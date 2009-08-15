@@ -1121,7 +1121,14 @@ namespace OpenMetaverse
 
                 UUID newAssetID = UploadBake(oven.BakedTexture.AssetData);
                 Textures[(int)BakeTypeToAgentTextureIndex(bakeType)].TextureID = newAssetID;
-                return newAssetID != UUID.Zero;
+
+                if (newAssetID == UUID.Zero)
+                {
+                    Logger.Log("Failed uploading bake " + bakeType, Helpers.LogLevel.Warning);
+                    return false;
+                }
+
+                return true;
             }
             catch (Exception ex)
             {
@@ -1148,6 +1155,9 @@ namespace OpenMetaverse
                 }
             );
 
+            // FIXME: evalute the need for timeout here, RequestUploadBakedTexture() will
+            // timout either on Client.Settings.TRANSFER_TIMEOUT or Client.Settings.CAPS_TIMEOUT
+            // depending on which upload method is used.
             uploadEvent.WaitOne(UPLOAD_TIMEOUT, false);
 
             return bakeID;

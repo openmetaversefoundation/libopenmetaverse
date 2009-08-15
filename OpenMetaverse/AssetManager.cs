@@ -812,7 +812,7 @@ namespace OpenMetaverse
                         UUID assetID;
                         RequestUpload(out assetID, AssetType.Texture, textureData, true, transactionID);
 
-                        bool success = uploadEvent.WaitOne(Settings.TRANSFER_TIMEOUT, false);
+                        bool success = uploadEvent.WaitOne(Client.Settings.TRANSFER_TIMEOUT, false);
 
                         OnAssetUploaded -= udpCallback;
 
