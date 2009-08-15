@@ -91,13 +91,13 @@ namespace OpenMetaverse
         /// <summary>Maximum number of concurrent uploads for baked textures</summary>
         const int MAX_CONCURRENT_UPLOADS = 3;
         /// <summary>Timeout for fetching inventory listings</summary>
-        const int INVENTORY_TIMEOUT = 1000 * 20;
+        const int INVENTORY_TIMEOUT = 1000 * 30;
         /// <summary>Timeout for fetching a single wearable, or receiving a single packet response</summary>
-        const int WEARABLE_TIMEOUT = 1000 * 10;
+        const int WEARABLE_TIMEOUT = 1000 * 30;
         /// <summary>Timeout for fetching a single texture</summary>
-        const int TEXTURE_TIMEOUT = 1000 * 30;
+        const int TEXTURE_TIMEOUT = 1000 * 120;
         /// <summary>Timeout for uploading a single baked texture</summary>
-        const int UPLOAD_TIMEOUT = 1000 * 30;
+        const int UPLOAD_TIMEOUT = 1000 * 180;
 
         /// <summary>Total number of wearables for each avatar</summary>
         public const int WEARABLE_COUNT = 13;
@@ -1075,7 +1075,7 @@ namespace OpenMetaverse
             {
                 DownloadTextures(pendingBakes);
 
-                Parallel.ForEach<BakeType>(pendingBakes,
+                Parallel.ForEach<BakeType>(Math.Min(MAX_CONCURRENT_UPLOADS, pendingBakes.Count), pendingBakes,
                     delegate(BakeType bakeType)
                     {
                         if (!CreateBake(bakeType))
@@ -1102,24 +1102,32 @@ namespace OpenMetaverse
             // (it does not bake hair either) it will remain to work
             if (bakeType == BakeType.Hair) return false;
 
-            List<AvatarTextureIndex> textureIndices = BakeTypeToTextures(bakeType);
-            Baker oven = new Baker(bakeType);
-
-            for (int i = 0; i < textureIndices.Count; i++)
+            try
             {
-                AvatarTextureIndex textureIndex = textureIndices[i];
-                TextureData texture = Textures[(int)textureIndex];
+                List<AvatarTextureIndex> textureIndices = BakeTypeToTextures(bakeType);
+                Baker oven = new Baker(bakeType);
 
-                oven.AddTexture(texture);
+                for (int i = 0; i < textureIndices.Count; i++)
+                {
+                    AvatarTextureIndex textureIndex = textureIndices[i];
+                    TextureData texture = Textures[(int)textureIndex];
+
+                    oven.AddTexture(texture);
+                }
+
+                int start = Environment.TickCount;
+                oven.Bake();
+                Logger.DebugLog("Baking " + bakeType + " took " + (Environment.TickCount - start) + "ms");
+
+                UUID newAssetID = UploadBake(oven.BakedTexture.AssetData);
+                Textures[(int)BakeTypeToAgentTextureIndex(bakeType)].TextureID = newAssetID;
+                return newAssetID != UUID.Zero;
             }
-
-            int start = Environment.TickCount;
-            oven.Bake();
-            Logger.DebugLog("Baking " + bakeType + " took " + (Environment.TickCount - start) + "ms");
-
-            UUID newAssetID = UploadBake(oven.BakedTexture.AssetData);
-            Textures[(int)BakeTypeToAgentTextureIndex(bakeType)].TextureID = newAssetID;
-            return newAssetID != UUID.Zero;
+            catch (Exception ex)
+            {
+                Logger.Log("Failed creating bake " + bakeType, Helpers.LogLevel.Warning, ex);
+                return false;
+            }
         }
 
         /// <summary>
