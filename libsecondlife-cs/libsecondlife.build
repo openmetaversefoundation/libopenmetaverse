@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<project name="libsecondlife" default="build">
+    <target name="build" description="compiles the source code">
+	<mkdir dir="..\bin" />
+        <csc target="library" output="..\bin\libsecondlife.dll" debug="None">
+            <sources> 
+		<include name="AssemblyInfo.cs" /> 
+            	<include name="Avatar.cs" />
+            	<include name="EstateTools.cs" />
+            	<include name="GridManager.cs" />
+            	<include name="Inventory.cs" />
+            	<include name="NetworkManager.cs" />
+            	<include name="ObjectManager.cs" />
+            	<include name="Packet.cs" />
+            	<include name="Parcel.cs" />
+            	<include name="Prims.cs" /> 
+            	<include name="ProtocolManager.cs" />
+            	<include name="Region.cs" />
+            	<include name="SecondLife.cs" />
+            	<include name="Types.cs" />
+                <include name="AssetSystem\Asset.cs" />
+                <include name="AssetSystem\AssetImage.cs" />
+                <include name="AssetSystem\AssetManager.cs" />
+                <include name="AssetSystem\AssetNotecard.cs" />
+                <include name="AssetSystem\ImageManager.cs" />
+                <include name="AssetSystem\NotecardAsset.cs" />
+                <include name="InventorySystem\InventoryBase.cs" />
+                <include name="InventorySystem\InventoryFolder.cs" />
+                <include name="InventorySystem\InventoryImage.cs" />
+                <include name="InventorySystem\InventoryItem.cs" />
+                <include name="InventorySystem\InventoryManager.cs" />
+                <include name="InventorySystem\InventoryNotecard.cs" />
+                <include name="JSON\JSONArray.cs" />
+                <include name="JSON\JSONFacade.cs" />
+                <include name="JSON\JSONObject.cs" />
+                <include name="JSON\JSONTokener.cs" />
+                <include name="Packets\AssetPackets.cs" />
+                <include name="Packets\CommunicationPackets.cs" />
+                <include name="Packets\EstatePackets.cs" />
+                <include name="Packets\ImagePackets.cs" />
+                <include name="Packets\InventoryPackets.cs" />
+                <include name="Packets\NetworkPackets.cs" />
+                <include name="Packets\ObjectPackets.cs" />
+                <include name="Packets\ParcelPackets.cs" />
+                <include name="Packets\SimPackets.cs" />
+                <include name="Packets\TransferPackets.cs" />
+                <include name="Utils\ImageTools.cs" />
+                <include name="Utils\InventoryApp.cs" />
+                <include name="Utils\Utils.cs" />
+                <include name="XmlRpcCS\Logger.cs" />
+                <include name="XmlRpcCS\XmlRpcDeserializer.cs" />
+                <include name="XmlRpcCS\XmlRpcErrorCodes.cs" />
+                <include name="XmlRpcCS\XmlRpcException.cs" />
+                <include name="XmlRpcCS\XmlRpcRequest.cs" />
+                <include name="XmlRpcCS\XmlRpcRequestDeserializer.cs" />
+                <include name="XmlRpcCS\XmlRpcRequestSerializer.cs" />
+                <include name="XmlRpcCS\XmlRpcResponse.cs" />
+                <include name="XmlRpcCS\XmlRpcResponseDeserializer.cs" />
+                <include name="XmlRpcCS\XmlRpcResponseSerializer.cs" />
+                <include name="XmlRpcCS\XmlRpcSerializer.cs" />
+                <include name="XmlRpcCS\XmlRpcXmlTokens.cs" />
+	     </sources>
+        </csc>
+        <csc target="exe" output="..\bin\ParcelDownload.exe" debug="true">
+            <sources> 
+		<include name="examples\ParcelDownload\ParcelDownload.cs" /> 
+	    </sources>
+	</csc>
+        <csc target="exe" output="..\bin\ImageTool.exe" debug="true">
+            <sources>
+		<include name="examples\ImageTool\AssemblyInfo.cs" /> 
+		<include name="examples\ImageTool\ImageTool.cs" /> 
+	    </sources>
+	</csc>
+        <csc target="exe" output="..\bin\sldump.exe" debug="true">
+            <sources> 
+		<include name="examples\sldump\sldump.cs" /> 
+	    </sources>
+	</csc>
+        <csc target="exe" output="..\bin\InventoryDump.exe" debug="true">
+            <sources> 
+		<include name="examples\InventoryDump\AssemblyInfo.cs" /> 
+		<include name="examples\InventoryDump\InventoryDump.cs" /> 
+	    </sources>
+	</csc>
+        <csc target="exe" output="..\bin\name2key.exe" debug="true">
+            <sources>
+		<include name="examples\name2key.cs" /> 
+	    </sources>
+	</csc>
+        <csc target="exe" output="..\bin\SLAccountant.exe" debug="true">
+            <sources> 
+		<include name="examples\slaccountant\AssemblyInfo.cs" />
+		<include name="examples\slaccountant\frmSLAccountant.cs" />
+	    </sources>
+	</csc>
+
+    </target>
+
+    <target name="clean" description="remove build output">
+        <delete dir="..\bin" failonerror="false" />
+    </target>
+</project>

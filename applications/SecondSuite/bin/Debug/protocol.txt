@@ -348,6 +348,7 @@ version 1.053
 		AgentData		Single
 		{	AgentID			LLUUID	}
 		{	TexturesChanged	BOOL	}
+		{	HostName		Variable	1	}
 	}
 	{
 		WearableData		Variable
@@ -875,6 +876,10 @@ sim -> dataserver
 		{	QueryID		LLUUID		}
 	}
 	{
+		TransactionData Single
+		{	TransactionID	LLUUID	}
+	}
+	{
 		QueryData		Single
 		{	QueryText	Variable	1	}
 		{	QueryFlags	U32				}
@@ -894,6 +899,10 @@ sim -> dataserver
 		AgentData		Single
 		{	AgentID		LLUUID		}
 		{	QueryID		LLUUID		}
+	}
+	{
+		TransactionData Single
+		{	TransactionID	LLUUID	}
 	}
 	{
 		QueryData		Variable
@@ -2435,6 +2444,17 @@ sim -> dataserver
 	}
 }
 
+// RebakeAvatarTextures
+// simulator -> viewer request when a temporary baked avatar texture is not found
+{
+	RebakeAvatarTextures Low Trusted Unencoded
+	{
+		TextureData			Single
+		{	TextureID		LLUUID	}
+	}
+}
+
+
 // SetAlwaysRun
 // Lets the viewer choose between running and walking
 {
@@ -3361,10 +3381,10 @@ sim -> dataserver
 
 
 // Grant agents the ability to modify your stuff. This message is sent
-// to the user server, and then passed along to the dataserver for
+// to the simulator, and then passed along to the dataserver for
 // persistance. The dataserver will push live updates through
 // AddModifyAbility messages to the simulator.
-// viewer -> userserver -> dataserver
+// viewer -> simulator -> dataserver
 {
 	GrantModification Low NotTrusted Unencoded
 	{
@@ -3380,10 +3400,10 @@ sim -> dataserver
 }
 
 // Revoke the ability to modify your stuff. This message is sent to
-// the user server, and then passed along to the dataserver for
+// the simulator, and then passed along to the dataserver for
 // persistance. The dataserver will push live updates through
 // RemoveModifyAbility messages to the simulator.
-// viewer -> userserver -> dataserver
+// viewer -> simulator -> dataserver
 {
 	RevokeModification Low NotTrusted Unencoded
 	{
@@ -3398,9 +3418,8 @@ sim -> dataserver
 	}
 }
 
-// This message is sent from viewer->userserver, which responds with
-// the complete list of all granted agents in the GrantedProxies
-// message.
+// This message is sent from viewer->simulator->dataserver, which responds with
+// the complete list of all granted agents in the GrantedProxies message.
 {
 	RequestGrantedProxies Low NotTrusted Unencoded
 	{
@@ -3418,16 +3437,20 @@ sim -> dataserver
 		{	AgentID			LLUUID	}
 	}
 	{
-		ProxyBlock			Variable
+		EmpoweredBlock			Variable
 		{	EmpoweredID		LLUUID	}
+	}
+	{
+		GranterBlock			Variable
+		{	GranterID		LLUUID	}
 	}
 }
 
 // This message is sent from the dataserver to the simulator to let
 // AgentID know that they can modify GranterID's stuff. This message is
-// percolated out to child cameras but not the viewer. This message is
+// percolated out to child cameras and the viewer. This message is
 // in response to GrantModification messages, request, or login.
-// ROUTED dataserver -> userserver -> spaceserver -> simulator
+// ROUTED dataserver -> simulator -> spaceserver -> simulator
 // reliable
 {
 	AddModifyAbility Low Trusted Zerocoded
@@ -3448,9 +3471,9 @@ sim -> dataserver
 
 // This message is sent from the dataserver to the simulator to let
 // AgentID know that they can no longer modify GranterID's stuff. This
-// message is percolated out to child cameras but not the viewer. This
+// message is percolated out to child cameras and the viewer. This
 // message is in response to RevokeModification messages.
-// ROUTED dataserver -> userserver -> spaceserver -> simulator
+// ROUTED dataserver -> simulator -> spaceserver -> simulator
 // reliable
 {
 	RemoveModifyAbility Low Trusted Unencoded
@@ -5490,6 +5513,7 @@ sim -> dataserver
 		Data			Single
 		{	GroupID			LLUUID	}
 		{	IsGroupOwned	BOOL 	}
+		{	RemoveContribution BOOL	}
 		{	LocalID			S32		}
 		{	Final			BOOL	} // true if buyer is in tier
 	}
@@ -8629,6 +8653,7 @@ sim -> dataserver
 		{	UUID		LLUUID	}
 		{	Type		S8	}
 		{	Tempfile	BOOL	}
+		{	StoreLocal	BOOL	}
 		{	AssetData	Variable	2	}  // Optional: the actual asset data if the whole thing will fit it this packet
 	}
 }
@@ -9604,8 +9629,7 @@ sim -> dataserver
 
 // AgentCachedTexture
 // viewer queries for cached textures on dataserver (via simulator)
-// viewer -> userserver -> dataserver
-// dataserver -> userserver -> viewer
+// viewer -> simulator -> dataserver
 // reliable
 {
 	AgentCachedTexture Low NotTrusted Unencoded
@@ -9619,6 +9643,26 @@ sim -> dataserver
 		WearableData	Variable
 		{	ID				LLUUID	}
 		{	TextureIndex	U8 }
+	}
+}
+
+// AgentCachedTextureResponse
+// response to viewer queries for cached textures on dataserver (via simulator)
+// dataserver -> simulator -> viewer
+// reliable
+{
+	AgentCachedTextureResponse Low Trusted Unencoded
+	{
+		AgentData		Single
+		{	AgentID		LLUUID		}
+		{	SessionID	LLUUID		}
+		{	SerialNum	S32			}
+	}
+	{
+		WearableData	Variable
+		{	TextureID		LLUUID	}
+		{	TextureIndex	U8 }
+		{	HostName		Variable	1 }
 	}
 }
 
@@ -10358,10 +10402,10 @@ sim -> dataserver
 	}
 }
 
-// LandScriptsRequest
-// Sent by the viewer to request script information for a parcel
+// LandStatRequest
+// Sent by the viewer to request collider/script information for a parcel
 {
-	LandScriptsRequest Low NotTrusted Unencoded
+	LandStatRequest Low NotTrusted Unencoded
 	{
 		AgentData		Single
 		{	AgentID		LLUUID		}
@@ -10369,72 +10413,36 @@ sim -> dataserver
 	}
 	{
 		RequestData Single
+		{	ReportType		U32				}
 		{	RequestFlags	U32				}
-		{	ParcelLocalID	S32				}
-		{	RelatedID		LLUUID			}
+		{	Filter			Variable	1	}
+		{	ParcelLocalID	S32			1	}
 	}
 }
 
-// LandScriptsReply
-// Sent by the simulator in response to LandScriptsRequest
-{
-	LandScriptsReply Low NotTrusted Unencoded
-	{
-		RequestData	Single
-		{	RequestFlags		U32				}
-		{	TotalScriptCount	U32				}
-		{	TotalScriptTime		F32				}
-	}
-	{	
-		Data	Variable
-		{	TaskLocalID			U32				}
-		{	TaskID				LLUUID			}
-		{	LocationX			F32				}
-		{	LocationY			F32				}
-		{	LocationZ			F32				}
-		{	ScriptTime			F32				}
-		{	ScriptCount			S32				}
-		{	TaskName			Variable	1	}
-		{	OwnerName			Variable	1	}
-	}
-}
-
-// LandCollidersRequest
-// Sent by the viewer to request collider information for a parcel (not yet implemented, still using God request)
-{
-	LandCollidersRequest Low NotTrusted Unencoded
-	{
-		AgentData		Single
-		{	AgentID		LLUUID		}
-		{	SessionID	LLUUID		}
-	}
-	{
-		RequestData Single
-		{	RequestFlags	U32				}
-		{	ParcelLocalID	S32				}
-		{	RelatedID		LLUUID			}
-	}
-}
-
-// LandCollidersReply
+// LandStatReply
 // Sent by the simulator in response to LandCollidersRequest
 {
-	LandCollidersReply Low NotTrusted Unencoded
+	LandStatReply Low NotTrusted Unencoded
 	{
 		RequestData	Single
+		{	ReportType			U32				}
 		{	RequestFlags		U32				}
-		{	TotalColliderCount	U32				}
+		{	TotalObjectCount	U32				}
 	}
 	{	
-		Data	Variable
+		ReportData	Variable
 		{	TaskLocalID			U32				}
 		{	TaskID				LLUUID			}
 		{	LocationX			F32				}
 		{	LocationY			F32				}
 		{	LocationZ			F32				}
-		{	Score				S32				}
+		{	Score				F32				}
 		{	TaskName			Variable	1	}
 		{	OwnerName			Variable	1	}
 	}
 }
+
+	
+
 

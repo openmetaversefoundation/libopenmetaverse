@@ -36,7 +36,7 @@ MoneyTransactionsRequest
 GroupAccountTransactionsRequest
 MapNameRequest
 MailTaskSimRequest
-LandScriptsRequest
+LandStatRequest
 UpdateSimulator
 BillableFactor
 ObjectBonusFactor
@@ -173,7 +173,6 @@ OwnerPrims
 ScriptTime
 ObjectGrab
 ToAgentID
-ProxyBlock
 SimulatorMapUpdate
 TransferPacket
 ObjectName
@@ -654,6 +653,7 @@ OnlineNotification
 OfflineNotification
 SendPostcard
 RequestFlags
+ReportType
 MoneyHistoryRequest
 MoneySummaryRequest
 GroupAccountSummaryRequest
@@ -775,7 +775,6 @@ ReporterID
 GranterID
 ButtonLabel
 WantToText
-ReportType
 DataBlock
 SimulatorReady
 AnimationSourceList
@@ -835,7 +834,6 @@ GroupRoleMembersRequest
 OldFolderID
 TextureID
 UserInfoRequest
-LandCollidersRequest
 Handle
 StartParcelRenameAck
 StateLoad
@@ -1032,7 +1030,7 @@ MapBlockRequest
 LureID
 CopyCenters
 RegisterNewAgent
-TotalColliderCount
+TotalObjectCount
 ParamList
 InventorySerial
 EdgeDataPacket
@@ -1087,6 +1085,7 @@ MaturePublish
 UseExistingAsset
 Powers
 ParcelLocalID
+Filter
 TeleportCancel
 UnixTime
 QueryFlags
@@ -1117,7 +1116,6 @@ DirPlacesQuery
 Distance
 SortOrder
 Hunter
-TotalScriptCount
 SunAngVelocity
 InventoryUpdate
 BinaryBucket
@@ -1252,7 +1250,6 @@ Force
 TransactionBlock
 PowersMask
 Stamp
-RelatedID
 TotalCredits
 State
 TextureIndex
@@ -1310,7 +1307,6 @@ TeleportFinish
 PathRevolutions
 ClassifiedInfoReply
 ParcelInfoReply
-LandCollidersReply
 AutosaveData
 SetStartLocation
 PassHours
@@ -1358,7 +1354,6 @@ NextOwnerMask
 MuteData
 PassPrice
 SourceID
-TotalScriptTime
 TeleportFlags
 AssetData
 SlaveParcelData
@@ -1451,6 +1446,7 @@ ParcelPrimBonus
 EjectUser
 CoarseLocationUpdate
 ChildAgentPositionUpdate
+StoreLocal
 GroupName
 PriceParcelRent
 SimStatus
@@ -1471,7 +1467,7 @@ ObjectExtraParams
 Questions
 TransferAbort
 TransferInventory
-LandScriptsReply
+LandStatReply
 RayTargetID
 ClaimPrice
 ObjectProperties
