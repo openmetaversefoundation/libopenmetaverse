@@ -25,7 +25,7 @@
   <fileset id="apps">
     <include name="applications/Decoder/*.build" />
     <include name="applications/SLIRC/*.build" />
-    <include name="SLProxy/*.build" />
+    <include name="applications/SLProxy/*.build" />
   </fileset>
   <fileset id="lib">
     <include name="libjaspernet/*.build" />

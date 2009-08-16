@@ -1,5 +1,5 @@
 using System;
-using System.Text;
+using System.Collections.Generic;
 using System.IO;
 using libsecondlife;
 
@@ -717,19 +717,30 @@ namespace mapgenerator
         static int Main(string[] args)
         {
             ProtocolManager protocol;
+            List<string> unused = new List<string>();
             TextWriter writer;
 
             try
             {
-                if (args.Length < 3)
+                if (args.Length != 4)
                 {
-                    Console.WriteLine("Invalid arguments, need [message_template.msg] [template.cs] [_Packets_.cs]");
+                    Console.WriteLine("Invalid arguments, need [message_template.msg] [template.cs] [unusedpackets.txt] [_Packets_.cs]");
                     return -1;
                 }
 
-                writer = new StreamWriter(args[2]);
+                writer = new StreamWriter(args[3]);
                 protocol = new ProtocolManager(args[0]);
 
+                // Build a list of unused packets
+                using (StreamReader unusedReader = new StreamReader(args[2])) 
+                {
+                    while (unusedReader.Peek() >= 0) 
+                    {
+                        unused.Add(unusedReader.ReadLine().Trim());
+                    }
+                }
+
+                // Read in the template.cs file and write it to our output
                 TextReader reader = new StreamReader(args[1]);
                 writer.WriteLine(reader.ReadToEnd());
                 reader.Close();
@@ -740,59 +751,58 @@ namespace mapgenerator
                 return -2;
             }
 
+
+            // Prune all of the unused packets out of the protocol
+            int i = 0;
+            foreach (MapPacket packet in protocol.LowMaps)
+            {
+                if (packet != null && unused.Contains(packet.Name))
+                    protocol.LowMaps[i] = null;
+                i++;
+            }
+            i = 0;
+            foreach (MapPacket packet in protocol.MediumMaps)
+            {
+                if (packet != null && unused.Contains(packet.Name))
+                    protocol.MediumMaps[i] = null;
+                i++;
+            }
+            i = 0;
+            foreach (MapPacket packet in protocol.HighMaps)
+            {
+                if (packet != null && unused.Contains(packet.Name))
+                    protocol.HighMaps[i] = null;
+                i++;
+            }
+
+
             // Write the PacketType enum
-            //writer.WriteLine("    /// <summary>Used to identify the type of a packet</summary>");
             writer.WriteLine("    public enum PacketType" + Environment.NewLine + "    {" + Environment.NewLine +
                 "        /// <summary>A generic value, not an actual packet type</summary>" + Environment.NewLine +
                 "        Default,");
             foreach (MapPacket packet in protocol.LowMaps)
-            {
                 if (packet != null)
-                {
-                    //writer.WriteLine("        /// <summary>" + packet.Name + "</summary>");
                     writer.WriteLine("        " + packet.Name + ",");
-                }
-            }
             foreach (MapPacket packet in protocol.MediumMaps)
-            {
                 if (packet != null)
-                {
-                    //writer.WriteLine("        /// <summary>" + packet.Name + "</summary>");
                     writer.WriteLine("        " + packet.Name + ",");
-                }
-            }
             foreach (MapPacket packet in protocol.HighMaps)
-            {
                 if (packet != null)
-                {
-                    //writer.WriteLine("        /// <summary>" + packet.Name + "</summary>");
                     writer.WriteLine("        " + packet.Name + ",");
-                }
-            }
             writer.WriteLine("    }" + Environment.NewLine);
+
 
             // Write all of the XmlInclude statements for the Packet class to allow packet serialization
             foreach (MapPacket packet in protocol.LowMaps)
-            {
                 if (packet != null)
-                {
                     writer.WriteLine("    [XmlInclude(typeof(" + packet.Name + "Packet))]");
-                }
-            }
             foreach (MapPacket packet in protocol.MediumMaps)
-            {
                 if (packet != null)
-                {
                     writer.WriteLine("    [XmlInclude(typeof(" + packet.Name + "Packet))]");
-                }
-            }
             foreach (MapPacket packet in protocol.HighMaps)
-            {
                 if (packet != null)
-                {
                     writer.WriteLine("    [XmlInclude(typeof(" + packet.Name + "Packet))]");
-                }
-            }
+
 
             // Write the base Packet class
             writer.WriteLine(
@@ -803,56 +813,43 @@ namespace mapgenerator
                 "        public abstract byte[] ToBytes();" + Environment.NewLine + Environment.NewLine +
                 "        public void ToXml(XmlWriter xmlWriter)" + Environment.NewLine +
                 "        {" + Environment.NewLine +
-                //"            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();" + Environment.NewLine +
-                //"            ns.Add(\"\", \"\");" + Environment.NewLine +
                 "            XmlSerializer serializer = new XmlSerializer(typeof(Packet));" + Environment.NewLine +
                 "            serializer.Serialize(xmlWriter, this);" + Environment.NewLine +
-                "        }" + Environment.NewLine +
+                "        }");
+
+
+            // Write the Packet.GetType() function
+            writer.WriteLine(
                 "        public static PacketType GetType(ushort id, PacketFrequency frequency)" + Environment.NewLine +
                 "        {" + Environment.NewLine +
-                "            switch (frequency)" + Environment.NewLine + "            {" + Environment.NewLine + 
+                "            switch (frequency)" + Environment.NewLine + 
+                "            {" + Environment.NewLine + 
                 "                case PacketFrequency.Low:" + Environment.NewLine +
-                "                    switch (id)" + Environment.NewLine + "                    {");
-
+                "                    switch (id)" + Environment.NewLine + 
+                "                    {");
             foreach (MapPacket packet in protocol.LowMaps)
-            {
                 if (packet != null)
-                {
-                    writer.WriteLine("                        case " + packet.ID + 
-                        ": return PacketType." + packet.Name + ";");
-                }
-            }
-
-            writer.WriteLine("                    }" + Environment.NewLine + "                    break;" + Environment.NewLine +
+                    writer.WriteLine("                        case " + packet.ID + ": return PacketType." + packet.Name + ";");
+            writer.WriteLine("                    }" + Environment.NewLine + 
+                "                    break;" + Environment.NewLine +
                 "                case PacketFrequency.Medium:" + Environment.NewLine +
                 "                    switch (id)" + Environment.NewLine + "                    {");
-
             foreach (MapPacket packet in protocol.MediumMaps)
-            {
                 if (packet != null)
-                {
-                    writer.WriteLine("                        case " + packet.ID +
-                        ": return PacketType." + packet.Name + ";");
-                }
-            }
-
-            writer.WriteLine("                    }" + Environment.NewLine + "                    break;" + Environment.NewLine +
+                    writer.WriteLine("                        case " + packet.ID + ": return PacketType." + packet.Name + ";");
+            writer.WriteLine("                    }" + Environment.NewLine + 
+                "                    break;" + Environment.NewLine +
                 "                case PacketFrequency.High:" + Environment.NewLine +
                 "                    switch (id)" + Environment.NewLine + "                    {");
-
             foreach (MapPacket packet in protocol.HighMaps)
-            {
                 if (packet != null)
-                {
-                    writer.WriteLine("                        case " + packet.ID +
-                        ": return PacketType." + packet.Name + ";");
-                }
-            }
-
+                    writer.WriteLine("                        case " + packet.ID + ": return PacketType." + packet.Name + ";");
             writer.WriteLine("                    }" + Environment.NewLine +
                 "                    break;" + Environment.NewLine + "            }" + Environment.NewLine + Environment.NewLine +
                 "            return PacketType.Default;" + Environment.NewLine + "        }" + Environment.NewLine);
+            
 
+            // Write the Packet.BuildPacket() function
             writer.WriteLine(
                 "        public static Packet BuildPacket(byte[] bytes, ref int packetEnd, byte[] zeroBuffer)" + Environment.NewLine +
                 "        {" + Environment.NewLine + "            ushort id;" + Environment.NewLine + 
@@ -866,61 +863,39 @@ namespace mapgenerator
                 "                    id = (ushort)((bytes[6] << 8) + bytes[7]);" + Environment.NewLine +
                 "                    switch (id)" + Environment.NewLine + "                    {");
             foreach (MapPacket packet in protocol.LowMaps)
-            {
                 if (packet != null)
-                {
-                    writer.WriteLine("                        case " + packet.ID + 
-                        ": return new " + packet.Name + "Packet(header, bytes, ref i);");
-                }
-            }
+                    writer.WriteLine("                        case " + packet.ID + ": return new " + packet.Name + "Packet(header, bytes, ref i);");
             writer.WriteLine("                    }" + Environment.NewLine + "                }" + Environment.NewLine + 
                 "                else" + Environment.NewLine +
                 "                {" + Environment.NewLine + "                    id = (ushort)bytes[5];" + Environment.NewLine +
                 "                    switch (id)" + Environment.NewLine + "                    {");
             foreach (MapPacket packet in protocol.MediumMaps)
-            {
                 if (packet != null)
-                {
-                    writer.WriteLine("                        case " + packet.ID + 
-                        ": return new " + packet.Name + "Packet(header, bytes, ref i);");
-                }
-            }
+                    writer.WriteLine("                        case " + packet.ID + ": return new " + packet.Name + "Packet(header, bytes, ref i);");
             writer.WriteLine("                    }" + Environment.NewLine + "                }" + Environment.NewLine + "            }" + Environment.NewLine +
                 "            else" + Environment.NewLine + "            {" + Environment.NewLine +
                 "                id = (ushort)bytes[4];" + Environment.NewLine +
                 "                switch (id)" + Environment.NewLine + "                    {");
             foreach (MapPacket packet in protocol.HighMaps)
-            {
                 if (packet != null)
-                {
-                    writer.WriteLine("                        case " + packet.ID + 
-                        ": return new " + packet.Name + "Packet(header, bytes, ref i);");
-                }
-            }
+                    writer.WriteLine("                        case " + packet.ID + ": return new " + packet.Name + "Packet(header, bytes, ref i);");
             writer.WriteLine("                }" + Environment.NewLine + "            }" + Environment.NewLine + Environment.NewLine +
                 "            throw new MalformedDataException(\"Unknown packet ID\");" + Environment.NewLine +
                 "        }" + Environment.NewLine + "    }" + Environment.NewLine);
 
+
             // Write the packet classes
             foreach (MapPacket packet in protocol.LowMaps)
-            {
                 if (packet != null) { WritePacketClass(writer, packet); }
-            }
-
             foreach (MapPacket packet in protocol.MediumMaps)
-            {
                 if (packet != null) { WritePacketClass(writer, packet); }
-            }
-
             foreach (MapPacket packet in protocol.HighMaps)
-            {
                 if (packet != null) { WritePacketClass(writer, packet); }
-            }
 
+
+            // Finish up
             writer.WriteLine("}");
-
             writer.Close();
-
             return 0;
         }
     }

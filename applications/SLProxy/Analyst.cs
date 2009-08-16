@@ -56,7 +56,6 @@ public class Analyst
 
     public static void Main(string[] args)
     {
-
         libslAssembly = Assembly.Load("libsecondlife");
         if (libslAssembly == null) throw new Exception("Assembly load exception");
 
@@ -537,7 +536,6 @@ public class Analyst
         {
             fieldInf.SetValue(obj, val);
         }
-
     }
 
     // MagicCast: given a packet/block/field name and a string, convert the string to a value of the appropriate type
@@ -733,10 +731,11 @@ public class Analyst
         return Analyze(packet, endPoint, Direction.Outgoing);
     }
 
-    // Analyze: modify and/or log a pocket
+    // Analyze: modify and/or log a packet
     private static Packet Analyze(Packet packet, IPEndPoint endPoint, Direction direction)
     {
         if (modifiedPackets.Contains(packet.Type))
+        {
             try
             {
                 Hashtable changes = (Hashtable)modifiedPackets[packet.Type];
@@ -757,6 +756,7 @@ public class Analyst
                 Console.WriteLine("failed to modify " + packet.Type + ": " + e.Message);
                 Console.WriteLine(e.StackTrace);
             }
+        }
 
         if (loggedPackets.Contains(packet.Type))
             LogPacket(packet, endPoint, direction);

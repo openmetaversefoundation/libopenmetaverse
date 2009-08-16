@@ -1037,13 +1037,12 @@ namespace SLProxy {
 		private void InitializeAddressCheckers() {
 			// TODO: what do we do with mysteries and empty IPs?
 			AddMystery(PacketType.OpenCircuit);
-			AddMystery(PacketType.AgentPresenceResponse);
+			//AddMystery(PacketType.AgentPresenceResponse);
+
 			incomingCheckers.Add(PacketType.TeleportFinish, new AddressChecker(CheckTeleportFinish));
-			// ViewerStats: IP is 0.0.0.0
 			incomingCheckers.Add(PacketType.AgentToNewRegion, new AddressChecker(CheckAgentToNewRegion));
 			incomingCheckers.Add(PacketType.CrossedRegion, new AddressChecker(CheckCrossedRegion));
 			incomingCheckers.Add(PacketType.EnableSimulator, new AddressChecker(CheckEnableSimulator));
-			// KickUser: IP is 0.0.0.0
 			//incomingCheckers.Add("UserLoginLocationReply", new AddressChecker(CheckUserLoginLocationReply));
 		}
 

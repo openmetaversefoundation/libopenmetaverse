@@ -161,6 +161,26 @@ namespace libsecondlife
         /// <param name="status">The current status of the teleport</param>
         public delegate void TeleportCallback(Simulator currentSim, string message, TeleportStatus status);
 
+        /// <summary>
+        /// Reply to a request to join a group, informs whether it was successful or not
+        /// </summary>
+        /// <param name="groupID">The group we attempted to join</param>
+        /// <param name="success">Whether we joined the group or not</param>
+        public delegate void JoinGroupCallback(LLUUID groupID, bool success);
+
+        /// <summary>
+        /// Reply to a request to leave a group, informs whether it was successful or not
+        /// </summary>
+        /// <param name="groupID">The group we attempted to leave</param>
+        /// <param name="success">Whether we left the group or not</param>
+        public delegate void LeaveGroupCallback(LLUUID groupID, bool success);
+
+        /// <summary>
+        /// Informs the avatar that it is no longer a member of a group
+        /// </summary>
+        /// <param name="groupID">The group we are no longer a member of</param>
+        public delegate void GroupDroppedCallback(LLUUID groupID);
+
 
         /// <summary>Callback for incoming chat packets</summary>
         public event ChatCallback OnChat;
@@ -172,6 +192,12 @@ namespace libsecondlife
         public event TeleportCallback OnTeleport;
         /// <summary>Callback for incoming change in L$ balance</summary>
         public event BalanceCallback OnBalanceUpdated;
+        /// <summary>Callback reply for an attempt to join a group</summary>
+        public event JoinGroupCallback OnJoinGroup;
+        /// <summary>Callback reply for an attempt to leave a group</summary>
+        public event LeaveGroupCallback OnLeaveGroup;
+        /// <summary>Callback for informing the avatar that it is no longer a member of a group</summary>
+        public event GroupDroppedCallback OnGroupDropped;
 
         /// <summary>Your (client) Avatar UUID, asset server</summary>
         public LLUUID ID = LLUUID.Zero;
@@ -290,6 +316,11 @@ namespace libsecondlife
             Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, callback);
             Client.Network.RegisterCallback(PacketType.MoneySummaryReply, callback);
             Client.Network.RegisterCallback(PacketType.AdjustBalance, callback);
+
+            // Group callbacks
+            Client.Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupHandler));
+            Client.Network.RegisterCallback(PacketType.LeaveGroupReply, new NetworkManager.PacketCallback(LeaveGroupHandler));
+            Client.Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(DropGroupHandler));
         }
 
         /// <summary>
@@ -379,11 +410,8 @@ namespace libsecondlife
             // Basic profile properties
             AvatarPropertiesUpdatePacket apup = new AvatarPropertiesUpdatePacket();
 
-            apup.AgentData = new AvatarPropertiesUpdatePacket.AgentDataBlock();
             apup.AgentData.AgentID = this.ID;
             apup.AgentData.SessionID = Client.Network.SessionID;
-
-            apup.PropertiesData = new AvatarPropertiesUpdatePacket.PropertiesDataBlock();
             apup.PropertiesData.AboutText = Helpers.StringToField(this.ProfileProperties.AboutText);
             apup.PropertiesData.AllowPublish = this.ProfileProperties.AllowPublish;
             apup.PropertiesData.FLAboutText = Helpers.StringToField(this.ProfileProperties.FirstLifeText);
@@ -395,11 +423,8 @@ namespace libsecondlife
             // Interests
             AvatarInterestsUpdatePacket aiup = new AvatarInterestsUpdatePacket();
 
-            aiup.AgentData = new AvatarInterestsUpdatePacket.AgentDataBlock();
             aiup.AgentData.AgentID = this.ID;
             aiup.AgentData.SessionID = Client.Network.SessionID;
-
-            aiup.PropertiesData = new AvatarInterestsUpdatePacket.PropertiesDataBlock();
             aiup.PropertiesData.LanguagesText = Helpers.StringToField(this.ProfileInterests.LanguagesText);
             aiup.PropertiesData.SkillsMask = this.ProfileInterests.SkillsMask;
             aiup.PropertiesData.SkillsText = Helpers.StringToField(this.ProfileInterests.SkillsText);
@@ -881,7 +906,39 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Request to join a group. If there is an enrollment fee it will 
+        /// automatically be deducted from your balance
+        /// </summary>
+        /// <param name="groupID">The group to attempt to join</param>
+        public void RequestJoinGroup(LLUUID groupID)
+        {
+            JoinGroupRequestPacket join = new JoinGroupRequestPacket();
+
+            join.AgentData.AgentID = Client.Network.AgentID;
+            join.AgentData.SessionID = Client.Network.SessionID;
+            join.GroupData.GroupID = groupID;
+
+            Client.Network.SendPacket(join);
+        }
+
+        /// <summary>
+        /// Request to leave a group
+        /// </summary>
+        /// <param name="groupID">The group to attempt to leave</param>
+        public void RequestLeaveGroup(LLUUID groupID)
+        {
+            LeaveGroupRequestPacket leave = new LeaveGroupRequestPacket();
+
+            leave.AgentData.AgentID = Client.Network.AgentID;
+            leave.AgentData.SessionID = Client.Network.SessionID;
+            leave.GroupData.GroupID = groupID;
+
+            Client.Network.SendPacket(leave);
+        }
+
+        /// <summary>
+        /// Move an agent in to a simulator. This packet is the last packet
+        /// needed to complete the transition in to a new simulator
         /// </summary>
         /// <param name="simulator"></param>
         public void CompleteAgentMovement(Simulator simulator)
@@ -896,40 +953,32 @@ namespace libsecondlife
         }
 
         /// <summary>
-        /// 
+        /// Sends camera and action updates to the server including the 
+        /// position and orientation of our camera, and a ControlFlags field
+        /// specifying our current movement actions
         /// </summary>
-        /// <param name="reliable"></param>
+        /// <param name="reliable">Whether to ensure this packet makes it to the server</param>
         public void UpdateCamera(Avatar.AgentUpdateFlags controlFlags, LLVector3 position, LLVector3 forwardAxis,
             LLVector3 leftAxis, LLVector3 upAxis, LLQuaternion bodyRotation, LLQuaternion headRotation, float farClip,
             bool reliable)
         {
             AgentUpdatePacket update = new AgentUpdatePacket();
+
             update.AgentData.AgentID = Client.Network.AgentID;
             update.AgentData.SessionID = Client.Network.SessionID;
             update.AgentData.State = 0;
-            // Semi-sane default values
-            update.AgentData.BodyRotation = bodyRotation; //new LLQuaternion(0, 0.6519076f, 0, 0);
-            update.AgentData.HeadRotation = headRotation; //LLQuaternion.Identity;
-            update.AgentData.CameraCenter = position; //new LLVector3(9.549901f, 7.033957f, 11.75f);
-            update.AgentData.CameraAtAxis = forwardAxis; //new LLVector3(0.7f, 0.7f, 0);
-            update.AgentData.CameraLeftAxis = leftAxis; //new LLVector3(-0.7f, 0.7f, 0);
-            update.AgentData.CameraUpAxis = upAxis; //new LLVector3(0.1822026f, 0.9828722f, 0);
+            update.AgentData.BodyRotation = bodyRotation;
+            update.AgentData.HeadRotation = headRotation;
+            update.AgentData.CameraCenter = position;
+            update.AgentData.CameraAtAxis = forwardAxis;
+            update.AgentData.CameraLeftAxis = leftAxis;
+            update.AgentData.CameraUpAxis = upAxis;
             update.AgentData.Far = farClip;
             update.AgentData.ControlFlags = (uint)controlFlags;
             update.AgentData.Flags = 0;
             update.Header.Reliable = reliable;
 
             Client.Network.SendPacket(update);
-
-            // Send an AgentFOV packet widening our field of vision
-            /*AgentFOVPacket fovPacket = new AgentFOVPacket();
-            fovPacket.AgentData.AgentID = this.ID;
-            fovPacket.AgentData.SessionID = Client.Network.SessionID;
-            fovPacket.AgentData.CircuitCode = simulator.CircuitCode;
-            fovPacket.FOVBlock.GenCounter = 0;
-            fovPacket.FOVBlock.VerticalAngle = 6.28318531f;
-            fovPacket.Header.Reliable = true;
-            Client.Network.SendPacket(fovPacket);*/
         }
 
         /// <summary>
@@ -1047,6 +1096,34 @@ namespace libsecondlife
         private void HealthHandler(Packet packet, Simulator simulator)
         {
             health = ((HealthMessagePacket)packet).HealthData.Health;
+        }
+
+        private void JoinGroupHandler(Packet packet, Simulator simulator)
+        {
+            if (OnJoinGroup != null)
+            {
+                JoinGroupReplyPacket reply = (JoinGroupReplyPacket)packet;
+
+                OnJoinGroup(reply.GroupData.GroupID, reply.GroupData.Success);
+            }
+        }
+
+        private void LeaveGroupHandler(Packet packet, Simulator simulator)
+        {
+            if (OnLeaveGroup != null)
+            {
+                LeaveGroupReplyPacket reply = (LeaveGroupReplyPacket)packet;
+
+                OnLeaveGroup(reply.GroupData.GroupID, reply.GroupData.Success);
+            }
+        }
+
+        private void DropGroupHandler(Packet packet, Simulator simulator)
+        {
+            if (OnGroupDropped != null)
+            {
+                OnGroupDropped(((AgentDropGroupPacket)packet).AgentData.GroupID);
+            }
         }
 
         /// <summary>

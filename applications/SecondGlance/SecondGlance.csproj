@@ -30,7 +30,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -72,7 +71,7 @@
       <Project>{D9CDEDFB-8169-4B03-B57F-0DF638F044EC}</Project>
       <Name>libsecondlife</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\SLProxy\SLProxy.csproj">
+    <ProjectReference Include="..\SLProxy\SLProxy.csproj">
       <Project>{E4115DC9-FC88-47D6-B3B6-2400AD19B80D}</Project>
       <Name>SLProxy</Name>
     </ProjectReference>

@@ -44,11 +44,7 @@
   <!-- build tasks -->
     <target name="map" depends="init" description="generates the packet map source code">
         <mkdir dir="${bin_dir}" failonerror="true"/>
-        
-        <!-- <copy file="../data/keywords.txt" tofile="../bin/keywords.txt" />
-        <copy file="../data/message_template.msg" tofile="../bin/message_template.msg" />
-        <copy file="mapgenerator/template.cs" tofile="../bin/template.cs" /> -->
-        
+                
         <csc target="exe" output="../bin/mapgenerator.exe" debug="${build.debug}">
             <sources>
                 <include name="mapgenerator/mapgenerator.cs" />
@@ -67,7 +63,7 @@
 	    </targetfiles>
 	</uptodate>
         <exec program="../bin/mapgenerator.exe" output="_Packets_.cs" useruntimeengine="true" unless="${_Packets_.cs.uptodate}">
-            <arg line="../data/message_template.msg mapgenerator/template.cs _Packets_.cs" />
+            <arg line="../data/message_template.msg mapgenerator/template.cs mapgenerator/unusedpackets.txt _Packets_.cs" />
         </exec>
     </target>
     
