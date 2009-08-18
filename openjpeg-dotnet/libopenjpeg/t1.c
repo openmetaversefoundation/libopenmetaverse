@@ -738,12 +738,24 @@ static double t1_getwmsedec(
 		double stepsize,
 		int numcomps)
 {
-	double w1, w2, wmsedec;
+	double w1 = 1, w2, wmsedec;
+	
+	// Prevent running an MCT on more than 3 components. NB openjpeg v2.0 will support this via
+	// custom MCT tables that can be passed as encode parameters, 1.3 cannot support this as it
+	// uses a static table of 3 entries and there for can only cope with 3 components with out an
+	// array overflow
+
+	if(numcomps==3) {
+	    if (qmfbid == 1) {
+			w1 = (numcomps > 1) ? mct_getnorm(compno) : 1.0;
+		} else {
+			w1 = (numcomps > 1) ? mct_getnorm_real(compno) : 1.0;	
+		}
+	}	
+
 	if (qmfbid == 1) {
-		w1 = (numcomps > 1) ? mct_getnorm(compno) : 1.0;
 		w2 = dwt_getnorm(level, orient);
 	} else {			/* if (qmfbid == 0) */
-		w1 = (numcomps > 1) ? mct_getnorm_real(compno) : 1.0;
 		w2 = dwt_getnorm_real(level, orient);
 	}
 	wmsedec = w1 * w2 * stepsize * (1 << bpno);
