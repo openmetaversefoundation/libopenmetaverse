@@ -85,7 +85,8 @@ namespace OpenMetaverse
     public class AppearanceManager
     {
         #region Constants
-
+        /// <summary>Mapping between BakeType and AvatarTextureIndex</summary>
+        public static byte[] BakeIndexToTextureIndex = new byte[] { 8, 9, 10, 11, 19, 20 };
         /// <summary>Maximum number of concurrent downloads for wearable assets and textures</summary>
         const int MAX_CONCURRENT_DOWNLOADS = 5;
         /// <summary>Maximum number of concurrent uploads for baked textures</summary>
@@ -209,7 +210,7 @@ namespace OpenMetaverse
         public delegate void AgentCachedBakesCallback();
         /// <summary>
         /// Triggered when appearance data is sent to the sim and
-        /// the main appearance thread is done.
+        /// the main appearance thread is done.</summary>
         /// <param name="success">Indicates whether appearance setting was successful</param>
         public delegate void AppearanceSetCallback(bool success);
 
@@ -226,6 +227,23 @@ namespace OpenMetaverse
         /// </summary>
         public event AppearanceSetCallback OnAppearanceSet;
         #endregion Delegates / Events
+
+
+        #region Properties
+
+        /// <summary>
+        /// Returns true if AppearanceManager is busy and trying to set or change appearance will fail
+        /// </summary>
+        public bool ManagerBusy
+        {
+            get
+            {
+                return Interlocked.CompareExchange(ref AppearanceThreadRunning, 1, 0) != 0;
+            }
+        }
+
+        #endregion Properties
+
 
         #region Private Members
 
@@ -1116,7 +1134,6 @@ namespace OpenMetaverse
         /// bake layer
         /// </summary>
         /// <param name="bakeType">Layer to bake</param>
-        /// <param name="paramValues">Dictionary of current visual param values</param>
         /// <returns>True on success, otherwise false</returns>
         private bool CreateBake(BakeType bakeType)
         {
@@ -1137,7 +1154,7 @@ namespace OpenMetaverse
 
             UUID newAssetID = UUID.Zero;
             int retries = UPLOAD_RETRIES;
-            
+
             while (newAssetID == UUID.Zero && retries > 0)
             {
                 newAssetID = UploadBake(oven.BakedTexture.AssetData);
@@ -1349,7 +1366,7 @@ namespace OpenMetaverse
 
                     // Tell the server what cached texture assetID to use for each bake layer
                     set.WearableData[bakedIndex] = new AgentSetAppearancePacket.WearableDataBlock();
-                    set.WearableData[bakedIndex].TextureIndex = (byte)bakedIndex;
+                    set.WearableData[bakedIndex].TextureIndex = BakeIndexToTextureIndex[bakedIndex];
                     set.WearableData[bakedIndex].CacheID = hash;
                     Logger.DebugLog("Sending TextureIndex " + (BakeType)bakedIndex + " with CacheID " + hash, Client);
                 }
