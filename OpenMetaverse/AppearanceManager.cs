@@ -1098,12 +1098,6 @@ namespace OpenMetaverse
         /// <returns>True on success, otherwise false</returns>
         private bool CreateBake(BakeType bakeType)
         {
-            // FIXME: skipping hair bake for now which does not work without 
-            // bump layer, viewer still displays the avatar even if its missing 
-            // hair bake, and as long as viewer 1.22 is officially supported
-            // (it does not bake hair either) it will remain to work
-            if (bakeType == BakeType.Hair) return false;
-
             List<AvatarTextureIndex> textureIndices = BakeTypeToTextures(bakeType);
             Baker oven = new Baker(bakeType);
 

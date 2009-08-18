@@ -175,8 +175,22 @@ namespace OpenMetaverse.Imaging
                 {
                     ApplyTint(texture, textures[i].Color);
 
+                    // For hair bake, we skip all alpha masks
+                    // and use one from the texture, for both
+                    // alpha and morph layers
+                    if (bakeType == BakeType.Hair)
+                    {
+                        if (texture.Alpha != null)
+                        {
+                            bakedTexture.Image.Bump = texture.Alpha;
+                        }
+                        else
+                        {
+                            for (int j = 0; j < bakedTexture.Image.Bump.Length; j++) bakedTexture.Image.Bump[j] = byte.MaxValue;
+                        }
+                    }
                     // Apply parametrized alpha masks
-                    if (textures[i].AlphaMasks != null && textures[i].AlphaMasks.Count > 0)
+                    else if (textures[i].AlphaMasks != null && textures[i].AlphaMasks.Count > 0)
                     {
                         // Combined mask for the layer, fully transparent to begin with
                         ManagedImage combinedMask = new ManagedImage(bakeWidth, bakeHeight, ManagedImage.ImageChannels.Alpha);
@@ -188,7 +202,7 @@ namespace OpenMetaverse.Imaging
                         {
                             if (!MaskBelongsToBake(kvp.Key.TGAFile)) continue;
 
-                            if (kvp.Key.MultiplyBlend == false)
+                            if (kvp.Key.MultiplyBlend == false && (kvp.Value > 0f || !kvp.Key.SkipIfZero))
                             {
                                 ApplyAlpha(combinedMask, kvp.Key, kvp.Value);
                                 //File.WriteAllBytes(bakeType + "-layer-" + i + "-mask-" + addedMasks + ".tga", combinedMask.ExportTGA());
@@ -204,7 +218,7 @@ namespace OpenMetaverse.Imaging
                         {
                             if (!MaskBelongsToBake(kvp.Key.TGAFile)) continue;
 
-                            if (kvp.Key.MultiplyBlend == true)
+                            if (kvp.Key.MultiplyBlend == true && (kvp.Value > 0f || !kvp.Key.SkipIfZero))
                             {
                                 ApplyAlpha(combinedMask, kvp.Key, kvp.Value);
                                 //File.WriteAllBytes(bakeType + "-layer-" + i + "-mask-" + addedMasks + ".tga", combinedMask.ExportTGA());
@@ -228,7 +242,7 @@ namespace OpenMetaverse.Imaging
                     }
                 }
 
-                bool useAlpha = i == 0 && (BakeType == BakeType.Skirt);
+                bool useAlpha = i == 0 && (BakeType == BakeType.Skirt || BakeType == BakeType.Hair);
                 DrawLayer(texture, useAlpha);
                 //File.WriteAllBytes(bakeType + "-layer-" + i + ".tga", texture.ExportTGA());
             }
@@ -436,19 +450,11 @@ namespace OpenMetaverse.Imaging
 
             for (int i = 0; i < dest.Alpha.Length; i++)
             {
-                if (param.SkipIfZero)
-                    if (src.Alpha[i] == 0)
-                        continue;
-
                 byte alpha = src.Alpha[i] <= ((1 - val) * 255) ? (byte)0 : (byte)255;
 
                 if (param.MultiplyBlend)
                 {
                     dest.Alpha[i] = (byte)((dest.Alpha[i] * alpha) >> 8);
-                    //if (alpha < dest.Alpha[i])
-                    //{
-                    //    dest.Alpha[i] = alpha;
-                    //}
                 }
                 else
                 {
