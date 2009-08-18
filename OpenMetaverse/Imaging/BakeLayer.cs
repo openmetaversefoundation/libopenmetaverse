@@ -70,7 +70,7 @@ namespace OpenMetaverse.Imaging
         /// <summary>
         /// Default constructor
         /// </summary>
-        /// <param name="bakeType"><Bake type/param>
+        /// <param name="bakeType">Bake type</param>
         public Baker(BakeType bakeType)
         {
             this.bakeType = bakeType;
