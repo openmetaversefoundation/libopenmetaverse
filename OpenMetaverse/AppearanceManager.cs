@@ -207,6 +207,11 @@ namespace OpenMetaverse
         /// received, giving a list of cached bakes that were found on the
         /// server</summary>
         public delegate void AgentCachedBakesCallback();
+        /// <summary>
+        /// Triggered when appearance data is sent to the sim and
+        /// the main appearance thread is done.
+        /// <param name="success">Indicates whether appearance setting was successful</param>
+        public delegate void AppearanceSetCallback(bool success);
 
         /// <summary>Triggered when an AgentWearablesUpdate packet is received,
         /// telling us what our avatar is currently wearing</summary>
@@ -215,7 +220,11 @@ namespace OpenMetaverse
         /// received, giving a list of cached bakes that were found on the
         /// server</summary>
         public event AgentCachedBakesCallback OnAgentCachedBakes;
-
+        /// <summary>
+        /// Triggered when appearance data is sent to the sim and
+        /// the main appearance thread is done.
+        /// </summary>
+        public event AppearanceSetCallback OnAppearanceSet;
         #endregion Delegates / Events
 
         #region Private Members
@@ -297,6 +306,7 @@ namespace OpenMetaverse
             Thread appearanceThread = new Thread(
                 delegate()
                 {
+                    bool success = true;
                     try
                     {
                         if (forceRebake)
@@ -313,13 +323,14 @@ namespace OpenMetaverse
                             {
                                 Logger.Log("Failed to retrieve a list of current agent wearables, appearance cannot be set",
                                     Helpers.LogLevel.Error, Client);
-                                return;
+                                throw new Exception("Failed to retrieve a list of current agent wearables, appearance cannot be set");
                             }
                         }
 
                         // Download and parse all of the agent wearables
                         if (!DownloadWearables())
                         {
+                            success = false;
                             Logger.Log("One or more agent wearables failed to download, appearance will be incomplete",
                                 Helpers.LogLevel.Warning, Client);
                         }
@@ -339,6 +350,7 @@ namespace OpenMetaverse
                         // Download textures, compute bakes, and upload for any cache misses
                         if (!CreateBakes())
                         {
+                            success = false;
                             Logger.Log("Failed to create or upload one or more bakes, appearance will be incomplete",
                                 Helpers.LogLevel.Warning, Client);
                         }
@@ -346,9 +358,19 @@ namespace OpenMetaverse
                         // Send the appearance packet
                         SendAgentSetAppearance();
                     }
+                    catch (Exception)
+                    {
+                        success = false;
+                    }
                     finally
                     {
                         AppearanceThreadRunning = 0;
+
+                        if (OnAppearanceSet != null)
+                        {
+                            try { OnAppearanceSet(success); }
+                            catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
+                        }
                     }
                 }
             );
