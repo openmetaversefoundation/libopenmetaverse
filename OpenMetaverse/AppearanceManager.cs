@@ -228,7 +228,6 @@ namespace OpenMetaverse
         public event AppearanceSetCallback OnAppearanceSet;
         #endregion Delegates / Events
 
-
         #region Properties
 
         /// <summary>
@@ -243,7 +242,6 @@ namespace OpenMetaverse
         }
 
         #endregion Properties
-
 
         #region Private Members
 
@@ -490,14 +488,51 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="wearableItems">List of wearable inventory items that
         /// define a new outfit</param>
-        public void WearOutfit(List<InventoryItem> wearableItems)
+        public void ReplaceOutfit(List<InventoryItem> wearableItems)
         {
             List<InventoryWearable> wearables = new List<InventoryWearable>();
             List<InventoryItem> attachments = new List<InventoryItem>();
 
             for (int i = 0; i < wearableItems.Count; i++)
             {
+                InventoryItem item = wearableItems[i];
+
+                if (item is InventoryWearable)
+                    wearables.Add((InventoryWearable)item);
+                else if (item is InventoryAttachment || item is InventoryObject)
+                    attachments.Add(item);
             }
+
+            // If we don't already have a the current agent wearables downloaded, updating to a
+            // new set of wearables that doesn't have all of the bodyparts can leave the avatar
+            // in an inconsistent state. If any bodypart entries are empty, we need to fetch the
+            // current wearables first
+            bool needsCurrentWearables = false;
+            lock (Wearables)
+            {
+                for (int i = 0; i < WEARABLE_COUNT; i++)
+                {
+                    WearableType wearableType = (WearableType)i;
+                    if (WearableTypeToAssetType(wearableType) == AssetType.Bodypart && !Wearables.ContainsKey(wearableType))
+                    {
+                        needsCurrentWearables = true;
+                        break;
+                    }
+                }
+            }
+
+            if (needsCurrentWearables && !GetAgentWearables())
+            {
+                Logger.Log("Failed to fetch the current agent wearables, cannot safely replace outfit",
+                    Helpers.LogLevel.Error);
+                return;
+            }
+
+            // Replace our local Wearables collection, send the packet(s) to update our
+            // attachments, and start the baking process
+            ReplaceOutfit(wearables);
+            AddAttachments(attachments, true);
+            RequestSetAppearance();
         }
 
         /// <summary>
@@ -665,6 +700,43 @@ namespace OpenMetaverse
         #endregion Attachments
 
         #region Appearance Helpers
+
+        /// <summary>
+        /// Replaces the Wearables collection with a list of new wearable items
+        /// </summary>
+        /// <param name="wearableItems">Wearable items to replace the Wearables collection with</param>
+        private void ReplaceOutfit(List<InventoryWearable> wearableItems)
+        {
+            Dictionary<WearableType, WearableData> newWearables = new Dictionary<WearableType, WearableData>();
+
+            lock (Wearables)
+            {
+                // Preserve body parts from the previous set of wearables. They may be overwritten,
+                // but cannot be missing in the new set
+                foreach (KeyValuePair<WearableType, WearableData> entry in Wearables)
+                {
+                    if (entry.Value.AssetType == AssetType.Bodypart)
+                        newWearables[entry.Key] = entry.Value;
+                }
+
+                // Add the given wearables to the new wearables collection
+                for (int i = 0; i < wearableItems.Count; i++)
+                {
+                    InventoryWearable wearableItem = wearableItems[i];
+
+                    WearableData wd = new WearableData();
+                    wd.AssetID = wearableItem.AssetUUID;
+                    wd.AssetType = wearableItem.AssetType;
+                    wd.ItemID = wearableItem.UUID;
+                    wd.WearableType = wearableItem.WearableType;
+
+                    newWearables[wearableItem.WearableType] = wd;
+                }
+
+                // Replace the Wearables collection
+                Wearables = newWearables;
+            }
+        }
 
         /// <summary>
         /// Calculates base color/tint for a specific wearable
