@@ -425,6 +425,7 @@ namespace OpenMetaverse
         /// <param name="type">Asset type, must be correct for the transfer to succeed</param>
         /// <param name="priority">Whether to give this transfer an elevated priority</param>
         /// <param name="sourceType">Source location of the requested asset</param>
+        /// <param name="transactionID">UUID of the transaction</param>
         /// <param name="callback">The callback to fire when the simulator responds with the asset data</param>
         public void RequestAsset(UUID assetID, AssetType type, bool priority, SourceType sourceType, UUID transactionID, AssetReceivedCallback callback)
         {

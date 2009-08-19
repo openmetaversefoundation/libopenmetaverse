@@ -86,7 +86,7 @@ namespace OpenMetaverse
     {
         #region Constants
         /// <summary>Mapping between BakeType and AvatarTextureIndex</summary>
-        public static byte[] BakeIndexToTextureIndex = new byte[] { 8, 9, 10, 11, 19, 20 };
+        public static readonly byte[] BakeIndexToTextureIndex = new byte[BAKED_TEXTURE_COUNT] { 8, 9, 10, 11, 19, 20 };
         /// <summary>Maximum number of concurrent downloads for wearable assets and textures</summary>
         const int MAX_CONCURRENT_DOWNLOADS = 5;
         /// <summary>Maximum number of concurrent uploads for baked textures</summary>

@@ -3280,35 +3280,8 @@ namespace OpenMetaverse
 
                 if (contents.ContainsKey("new_inventory_item") && contents.ContainsKey("new_asset"))
                 {
-                    // Update the local store
-                    InventoryItem item = CreateInventoryItem(Utils.StringToInventoryType(request["inventory_type"].AsString()), contents["new_inventory_item"].AsUUID());
-                    item.Name = request["name"].AsString();
-                    item.Description = request["description"].AsString();
-                    item.OwnerID = _Client.Self.AgentID;
-                    item.CreatorID = _Client.Self.AgentID;
-                    item.AssetUUID = contents["new_asset"].AsUUID();
-                    item.AssetType = Utils.StringToAssetType(request["asset_type"].AsString());
-                    item.ParentUUID = request["folder_id"].AsUUID();
-
-                    try
-                    {
-                        item.CreationDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time"));
-                    }
-                    catch (Exception) { item.CreationDate = DateTime.Now; }
-
-                    if (contents.ContainsKey("new_next_owner_mask"))
-                        item.Permissions.NextOwnerMask = (PermissionMask)contents["new_next_owner_mask"].AsInteger();
-                    if (contents.ContainsKey("new_everyone_mask"))
-                        item.Permissions.EveryoneMask = (PermissionMask)contents["new_everyone_mask"].AsInteger();
-                    if (contents.ContainsKey("new_base_mask"))
-                        item.Permissions.BaseMask = (PermissionMask)contents["new_base_mask"].AsInteger();
-                    if (contents.ContainsKey("new_group_mask"))
-                        item.Permissions.GroupMask = (PermissionMask)contents["new_group_mask"].AsInteger();
-                    if (contents.ContainsKey("new_owner_mask"))
-                        item.Permissions.OwnerMask = (PermissionMask)contents["new_owner_mask"].AsInteger();
-
-                    try { _Store[item.UUID] = item; }
-                    catch (InventoryException ie) { Logger.Log(ie.Message, Helpers.LogLevel.Warning, _Client, ie); }
+                    // Request full update on the item in order to update the local store
+                    RequestFetchInventory(contents["new_inventory_item"].AsUUID(), _Client.Self.AgentID);
 
                     try { callback(true, String.Empty, contents["new_inventory_item"].AsUUID(), contents["new_asset"].AsUUID()); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
@@ -3925,6 +3898,9 @@ namespace OpenMetaverse
                 {
                     if (contents.ContainsKey("new_asset"))
                     {
+                        // Request full item update so we keep store in sync
+                        RequestFetchInventory((UUID)(((object[])client.UserData)[1]), contents["new_asset"].AsUUID());
+
                         try { callback(true, String.Empty, (UUID)(((object[])client.UserData)[1]), contents["new_asset"].AsUUID()); }
                         catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                     }
@@ -3993,6 +3969,9 @@ namespace OpenMetaverse
             {
                 if (contents.ContainsKey("new_asset"))
                 {
+                    // Request full item update so we keep store in sync
+                    RequestFetchInventory((UUID)(((object[])client.UserData)[1]), contents["new_asset"].AsUUID());
+
                     try { callback(true, status, (UUID)(((object[])client.UserData)[1]), contents["new_asset"].AsUUID()); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
                 }
