@@ -2,7 +2,7 @@
 
 mono bin/Prebuild.exe /target nant
 mono bin/Prebuild.exe /target monodev
-mono bin/Prebuild.exe /target vs2005
+mono bin/Prebuild.exe /target vs2010
 
 if [ x$1 == xnant ]; then
     nant -buildfile:OpenMetaverse.build
