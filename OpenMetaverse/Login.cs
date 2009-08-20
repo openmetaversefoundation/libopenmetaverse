@@ -77,7 +77,7 @@ namespace OpenMetaverse
         /// failed due to timeout</summary>
         public int Timeout;
         /// <summary>The request method</summary>
-        /// <remarks>login_to_server is currently the only supported method</remarks>
+        /// <remarks>login_to_simulator is currently the only supported method</remarks>
         public string MethodName;
         /// <summary>The Agents First name</summary>
         public string FirstName;
