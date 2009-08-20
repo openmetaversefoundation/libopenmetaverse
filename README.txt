@@ -5,7 +5,7 @@ Finding Help
 ------------
 
 If you need any help we have a couple of resources, the primary one being 
-the #openmv IRC channel on EFNet. There is also the libsl-dev mailing list 
+the #libomv IRC channel on EFNet. There is also the libsl-dev mailing list 
 at http://openmetaverse.org/cgi-bin/mailman/listinfo/libsl-dev and lastly 
 you can use the e-mail contact@openmv.org for any general inquiries 
 (although we prefer developer-related questions to go to IRC or the mailing 
@@ -14,11 +14,11 @@ or at our HQ and testing area in Hooper(SLURL: http://xrl.us/bi233).
 
 Source Code:
    To checkout a copy of libopenmv trunk
-   svn co http://openmv.org/svn/libsl/trunk libopenmv
+   svn co http://openmetaverse.org/svn/omf/libopenmetaverse/trunk/ libopenmetaverse
 
 For more details see: 
-   http://www.libsecondlife.org/wiki/SVN
-   http://www.libsecondlife.org/wiki/Getting_Started
+   http://lib.openmetaverse.org/wiki/SVN
+   http://lib.openmetaverse.org/wiki/Getting_Started
 
 Getting started on Windows
 ====================================================================================
@@ -54,7 +54,7 @@ For Visual Studio 2008/Visual C# Express 2008
 
 The library, example applications and tools will be in the bin directory
 
-For more details http://www.libsecondlife.org/wiki/Getting_Started
+For more details http://lib.openmetaverse.org/wiki/Getting_Started
 
 
 Getting started on Linux
@@ -80,7 +80,7 @@ Compiling
 
 The library, example applications and tools will be in the bin directory
 
-For more details http://www.libsecondlife.org/wiki/Getting_Started
+For more details http://lib.openmetaverse.org/wiki/Getting_Started
 
 
 Happy fiddling,
