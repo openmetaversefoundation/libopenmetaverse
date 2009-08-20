@@ -101,36 +101,66 @@ namespace OpenMetaverse.Imaging
 
         #region Unmanaged Function Declarations
 
+
         // allocate encoded buffer based on length field
         [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool DotNetAllocEncoded(ref MarshalledImage image);
+        private static extern bool DotNetAllocEncoded32(ref MarshalledImage image);
 
         // allocate decoded buffer based on width and height fields
         [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool DotNetAllocDecoded(ref MarshalledImage image);
-        
+        private static extern bool DotNetAllocDecoded32(ref MarshalledImage image);
+
         // free buffers
         [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool DotNetFree(ref MarshalledImage image);
-        
+        private static extern bool DotNetFree32(ref MarshalledImage image);
+
         // encode raw to jpeg2000
         [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool DotNetEncode(ref MarshalledImage image, bool lossless);
+        private static extern bool DotNetEncode32(ref MarshalledImage image, bool lossless);
 
         // decode jpeg2000 to raw
         [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool DotNetDecode(ref MarshalledImage image);
+        private static extern bool DotNetDecode32(ref MarshalledImage image);
 
         // decode jpeg2000 to raw, get jpeg2000 file info
         [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("openjpeg-dotnet.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool DotNetDecodeWithInfo(ref MarshalledImage image);
+        private static extern bool DotNetDecodeWithInfo32(ref MarshalledImage image);
 
+        // invoke 64 bit openjpeg calls        
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("openjpeg-dotnet-x86_64.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DotNetAllocEncoded64(ref MarshalledImage image);
+
+        // allocate decoded buffer based on width and height fields
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("openjpeg-dotnet-x86_64.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DotNetAllocDecoded64(ref MarshalledImage image);
+
+        // free buffers
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("openjpeg-dotnet-x86_64.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DotNetFree64(ref MarshalledImage image);
+
+        // encode raw to jpeg2000
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("openjpeg-dotnet-x86_64.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DotNetEncode64(ref MarshalledImage image, bool lossless);
+
+        // decode jpeg2000 to raw
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("openjpeg-dotnet-x86_64.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DotNetDecode64(ref MarshalledImage image);
+
+        // decode jpeg2000 to raw, get jpeg2000 file info
+        [System.Security.SuppressUnmanagedCodeSecurity]
+        [DllImport("openjpeg-dotnet-x86_64.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern bool DotNetDecodeWithInfo64(ref MarshalledImage image);
         #endregion Unmanaged Function Declarations
 
         /// <summary>OpenJPEG is not threadsafe, so this object is used to lock
@@ -161,7 +191,10 @@ namespace OpenMetaverse.Imaging
 
             lock (OpenJPEGLock)
             {
-                if (!DotNetAllocDecoded(ref marshalled))
+
+                bool allocSuccess = (IntPtr.Size == 8) ? DotNetAllocDecoded64(ref marshalled) : DotNetAllocDecoded32(ref marshalled);
+
+                if (!allocSuccess)
                     throw new Exception("DotNetAllocDecoded failed");
 
                 int n = image.Width * image.Height;
@@ -176,8 +209,9 @@ namespace OpenMetaverse.Imaging
                 if ((image.Channels & ManagedImage.ImageChannels.Alpha) != 0) Marshal.Copy(image.Alpha, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 3), n);
                 if ((image.Channels & ManagedImage.ImageChannels.Bump) != 0) Marshal.Copy(image.Bump, 0, (IntPtr)(marshalled.decoded.ToInt64() + n * 4), n);
 
-                // codec will allocate output buffer
-                if (!DotNetEncode(ref marshalled, lossless))
+                // codec will allocate output buffer                
+                bool encodeSuccess = (IntPtr.Size == 8) ? DotNetEncode64(ref marshalled, lossless) : DotNetEncode32(ref marshalled, lossless);
+                if (!encodeSuccess)
                     throw new Exception("DotNetEncode failed");
 
                 // copy output buffer
@@ -185,7 +219,10 @@ namespace OpenMetaverse.Imaging
                 Marshal.Copy(marshalled.encoded, encoded, 0, marshalled.length);
 
                 // free buffers
-                DotNetFree(ref marshalled);
+                if (IntPtr.Size == 8)
+                    DotNetFree64(ref marshalled);
+                else
+                    DotNetFree32(ref marshalled);
             }
 
             return encoded;
@@ -248,11 +285,18 @@ namespace OpenMetaverse.Imaging
 
             lock (OpenJPEGLock)
             {
-                DotNetAllocEncoded(ref marshalled);
+                if (IntPtr.Size == 8)
+                    DotNetAllocEncoded64(ref marshalled);
+                else
+                    DotNetAllocEncoded32(ref marshalled);
+
                 Marshal.Copy(encoded, 0, marshalled.encoded, encoded.Length);
 
                 // Codec will allocate output buffer
-                DotNetDecode(ref marshalled);
+                if (IntPtr.Size == 8)
+                    DotNetDecode64(ref marshalled);
+                else
+                    DotNetDecode32(ref marshalled);
 
                 int n = marshalled.width * marshalled.height;
 
@@ -306,12 +350,20 @@ namespace OpenMetaverse.Imaging
                     default:
                         Logger.Log("Decoded image with unhandled number of components: " + marshalled.components,
                             Helpers.LogLevel.Error);
-                        DotNetFree(ref marshalled);
+
+                        if (IntPtr.Size == 8)
+                            DotNetFree64(ref marshalled);
+                        else
+                            DotNetFree32(ref marshalled);
+
                         managedImage = null;
                         return false;
                 }
 
-                DotNetFree(ref marshalled);
+                if (IntPtr.Size == 8)
+                    DotNetFree64(ref marshalled);
+                else
+                    DotNetFree32(ref marshalled);
             }
 
             return true;
@@ -336,11 +388,16 @@ namespace OpenMetaverse.Imaging
 
             lock (OpenJPEGLock)
             {
-                DotNetAllocEncoded(ref marshalled);
+                if (IntPtr.Size == 8)
+                    DotNetAllocEncoded64(ref marshalled);
+                else
+                    DotNetAllocEncoded32(ref marshalled);
+
                 Marshal.Copy(encoded, 0, marshalled.encoded, encoded.Length);
 
                 // Run the decode
-                if (DotNetDecodeWithInfo(ref marshalled))
+                bool decodeSuccess = (IntPtr.Size == 8) ? DotNetDecodeWithInfo64(ref marshalled) : DotNetDecodeWithInfo32(ref marshalled);
+                if (decodeSuccess)
                 {
                     components = marshalled.components;
 
@@ -444,7 +501,10 @@ namespace OpenMetaverse.Imaging
                     }
                 }
 
-                DotNetFree(ref marshalled);
+                if (IntPtr.Size == 8)
+                    DotNetFree64(ref marshalled);
+                else
+                    DotNetFree32(ref marshalled);
             }
 
             return success;
