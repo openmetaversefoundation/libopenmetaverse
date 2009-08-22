@@ -4,6 +4,12 @@
 
 #include "../libopenjpeg/openjpeg.h"
 
+#ifdef WIN64
+#	define LibomvFunc(name) name ## 64
+#else
+#	define LibomvFunc(name) name
+#endif
+
 struct MarshalledImage
 {
 	unsigned char* encoded;
@@ -27,18 +33,11 @@ struct MarshalledImage
 #endif
 
 // uncompresed images are raw RGBA 8bit/channel
-DLLEXPORT bool DotNetEncode(MarshalledImage* image, bool lossless);
-DLLEXPORT bool DotNetDecode(MarshalledImage* image);
-DLLEXPORT bool DotNetDecodeWithInfo(MarshalledImage* image);
-DLLEXPORT bool DotNetAllocEncoded(MarshalledImage* image);
-DLLEXPORT bool DotNetAllocDecoded(MarshalledImage* image);
-DLLEXPORT void DotNetFree(MarshalledImage* image);
-
-DLLEXPORT bool DotNetEncode64(MarshalledImage* image, bool lossless);
-DLLEXPORT bool DotNetDecode64(MarshalledImage* image);
-DLLEXPORT bool DotNetDecodeWithInfo64(MarshalledImage* image);
-DLLEXPORT bool DotNetAllocEncoded64(MarshalledImage* image);
-DLLEXPORT bool DotNetAllocDecoded64(MarshalledImage* image);
-DLLEXPORT void DotNetFree64(MarshalledImage* image);
+DLLEXPORT bool LibomvFunc(DotNetEncode)(MarshalledImage* image, bool lossless);
+DLLEXPORT bool LibomvFunc(DotNetDecode)(MarshalledImage* image);
+DLLEXPORT bool LibomvFunc(DotNetDecodeWithInfo)(MarshalledImage* image);
+DLLEXPORT bool LibomvFunc(DotNetAllocEncoded)(MarshalledImage* image);
+DLLEXPORT bool LibomvFunc(DotNetAllocDecoded)(MarshalledImage* image);
+DLLEXPORT void LibomvFunc(DotNetFree)(MarshalledImage* image);
 
 #endif
