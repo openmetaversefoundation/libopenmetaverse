@@ -6,9 +6,14 @@ extern "C" {
 }
 #include <algorithm>
 
-bool LibomvFunc(DotNetAllocEncoded)(MarshalledImage* image)
+bool DotNetAllocEncoded64(MarshalledImage* image)
 {
-	LibomvFunc(DotNetFree)(image);
+	return DotNetAllocEncoded(image);
+}
+
+bool DotNetAllocEncoded(MarshalledImage* image)
+{
+	DotNetFree(image);
 
 	try
 	{
@@ -22,10 +27,14 @@ bool LibomvFunc(DotNetAllocEncoded)(MarshalledImage* image)
 
 	return true;
 }
-
-bool LibomvFunc(DotNetAllocDecoded)(MarshalledImage* image)
+bool DotNetAllocDecoded64(MarshalledImage* image)
 {
-	LibomvFunc(DotNetFree)(image);
+	return DotNetAllocDecoded(image);
+}
+
+bool DotNetAllocDecoded(MarshalledImage* image)
+{
+	DotNetFree(image);
 
 	try
 	{
@@ -39,15 +48,23 @@ bool LibomvFunc(DotNetAllocDecoded)(MarshalledImage* image)
 
 	return true;
 }
+void DotNetFree64(MarshalledImage* image)
+{
+	DotNetFree(image);
+}
 
-void LibomvFunc(DotNetFree)(MarshalledImage* image)
+void DotNetFree(MarshalledImage* image)
 {
 	if (image->encoded != 0) delete[] image->encoded;
 	if (image->decoded != 0) delete[] image->decoded;
 }
 
+bool DotNetEncode64(MarshalledImage* image, bool lossless)
+{
+	return DotNetEncode(image, lossless);
+}
 
-bool LibomvFunc(DotNetEncode)(MarshalledImage* image, bool lossless)
+bool DotNetEncode(MarshalledImage* image, bool lossless)
 {
 	try
 	{
@@ -131,7 +148,12 @@ bool LibomvFunc(DotNetEncode)(MarshalledImage* image, bool lossless)
 	}
 }
 
-bool LibomvFunc(DotNetDecode)(MarshalledImage* image)
+bool DotNetDecode64(MarshalledImage* image)
+{
+	return DotNetDecode(image);
+}
+
+bool DotNetDecode(MarshalledImage* image)
 {
 	opj_dparameters dparameters;
 	
@@ -166,8 +188,12 @@ bool LibomvFunc(DotNetDecode)(MarshalledImage* image)
 		return false;
 	}
 }
+bool DotNetDecodeWithInfo64(MarshalledImage* image)
+{
+	return DotNetDecodeWithInfo(image);
+}
 
-bool LibomvFunc(DotNetDecodeWithInfo)(MarshalledImage* image)
+bool DotNetDecodeWithInfo(MarshalledImage* image)
 {
 	opj_dparameters dparameters;
 	opj_codestream_info_t info;
