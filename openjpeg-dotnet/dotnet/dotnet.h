@@ -34,5 +34,11 @@ DLLEXPORT bool DotNetAllocEncoded(MarshalledImage* image);
 DLLEXPORT bool DotNetAllocDecoded(MarshalledImage* image);
 DLLEXPORT void DotNetFree(MarshalledImage* image);
 
+DLLEXPORT bool DotNetEncode64(MarshalledImage* image, bool lossless);
+DLLEXPORT bool DotNetDecode64(MarshalledImage* image);
+DLLEXPORT bool DotNetDecodeWithInfo64(MarshalledImage* image);
+DLLEXPORT bool DotNetAllocEncoded64(MarshalledImage* image);
+DLLEXPORT bool DotNetAllocDecoded64(MarshalledImage* image);
+DLLEXPORT void DotNetFree64(MarshalledImage* image);
 
 #endif
