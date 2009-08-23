@@ -1453,7 +1453,7 @@ namespace OpenMetaverse
 
             Client.Network.SendPacket(packet, simulator);
         }
-
+        
         /// <summary>
         /// Request additional properties for an object
         /// </summary>
@@ -1485,6 +1485,28 @@ namespace OpenMetaverse
             Client.Network.SendPacket(properties, simulator);
         }
 
+        /// <summary>
+        /// Set the ownership of a list of objects to the specified group
+        /// </summary>
+        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>
+        /// <param name="localIDs">An array which contains the IDs of the objects to set the group id on</param>
+        /// <param name="groupID">The Groups ID</param>
+        public void SetObjectsGroup(Simulator simulator, List<uint> localIds, UUID groupID)
+        {
+            ObjectGroupPacket packet = new ObjectGroupPacket();
+            packet.AgentData.AgentID = Client.Self.AgentID;
+            packet.AgentData.GroupID = groupID;
+            packet.AgentData.SessionID = Client.Self.SessionID;
+
+            packet.ObjectData = new ObjectGroupPacket.ObjectDataBlock[localIds.Count];
+            for (int i = 0; i < localIds.Count; i++)
+            {
+                packet.ObjectData[i] = new ObjectGroupPacket.ObjectDataBlock();
+                packet.ObjectData[i].ObjectLocalID = localIds[i];
+            }
+
+            Client.Network.SendPacket(packet, simulator);
+        }
         #endregion
 
         #region Packet Handlers
