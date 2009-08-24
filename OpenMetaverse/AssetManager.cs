@@ -196,7 +196,7 @@ namespace OpenMetaverse
         public float Priority;
         public Simulator Simulator;
         public AssetManager.AssetReceivedCallback Callback;
-        internal AutoResetEvent HeaderReceivedEvent = new AutoResetEvent(false);
+        internal ManualResetEvent HeaderReceivedEvent = new ManualResetEvent(false);
 
         public AssetDownload()
             : base()
@@ -234,7 +234,7 @@ namespace OpenMetaverse
         public int DiscardLevel;
         public float Priority;
         internal int InitialDataSize;
-        internal AutoResetEvent HeaderReceivedEvent = new AutoResetEvent(false);
+        internal ManualResetEvent HeaderReceivedEvent = new ManualResetEvent(false);
 
         public ImageDownload()
             : base()
@@ -1158,6 +1158,7 @@ namespace OpenMetaverse
                             Helpers.LogLevel.Warning, Client);
                     }
                 }
+                download.HeaderReceivedEvent.Set();
             }
             else
             {
