@@ -484,6 +484,128 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Add a wearable to the current outfit and set appearance
+        /// </summary>
+        /// <param name="wearableItem">Wearable to be added to the outfit</param>
+        public void AddToOutfit(InventoryItem wearableItem)
+        {
+            List<InventoryItem> wearableItems = new List<InventoryItem>();
+            wearableItems.Add(wearableItem);
+            AddToOutfit(wearableItems);
+        }
+
+        /// <summary>
+        /// Add a list of wearables to the current outfit and set appearance
+        /// </summary>
+        /// <param name="wearableItems">List of wearable inventory items to
+        /// be added to the outfit</param>
+        public void AddToOutfit(List<InventoryItem> wearableItems)
+        {
+            List<InventoryWearable> wearables = new List<InventoryWearable>();
+            List<InventoryItem> attachments = new List<InventoryItem>();
+
+            for (int i = 0; i < wearableItems.Count; i++)
+            {
+                InventoryItem item = wearableItems[i];
+
+                if (item is InventoryWearable)
+                    wearables.Add((InventoryWearable)item);
+                else if (item is InventoryAttachment || item is InventoryObject)
+                    attachments.Add(item);
+            }
+
+            lock (Wearables)
+            {
+                // Add the given wearables to the wearables collection
+                for (int i = 0; i < wearables.Count; i++)
+                {
+                    InventoryWearable wearableItem = wearables[i];
+
+                    WearableData wd = new WearableData();
+                    wd.AssetID = wearableItem.AssetUUID;
+                    wd.AssetType = wearableItem.AssetType;
+                    wd.ItemID = wearableItem.UUID;
+                    wd.WearableType = wearableItem.WearableType;
+
+                    Wearables[wearableItem.WearableType] = wd;
+                }
+            }
+
+            if (attachments.Count > 0)
+            {
+                AddAttachments(attachments, false);
+            }
+
+            if (wearables.Count > 0)
+            {
+                SendAgentIsNowWearing();
+                RequestSetAppearance(true);
+            }
+        }
+
+        /// <summary>
+        /// Remove a wearable from the current outfit and set appearance
+        /// </summary>
+        /// <param name="wearableItem">Wearable to be removed from the outfit</param>
+        public void RemoveFromOutfit(InventoryItem wearableItem)
+        {
+            List<InventoryItem> wearableItems = new List<InventoryItem>();
+            wearableItems.Add(wearableItem);
+            RemoveFromOutfit(wearableItems);
+        }
+
+
+        /// <summary>
+        /// Removes a list of wearables from the current outfit and set appearance
+        /// </summary>
+        /// <param name="wearableItems">List of wearable inventory items to
+        /// be removed from the outfit</param>
+        public void RemoveFromOutfit(List<InventoryItem> wearableItems)
+        {
+            List<InventoryWearable> wearables = new List<InventoryWearable>();
+            List<InventoryItem> attachments = new List<InventoryItem>();
+
+            for (int i = 0; i < wearableItems.Count; i++)
+            {
+                InventoryItem item = wearableItems[i];
+
+                if (item is InventoryWearable)
+                    wearables.Add((InventoryWearable)item);
+                else if (item is InventoryAttachment || item is InventoryObject)
+                    attachments.Add(item);
+            }
+
+            bool needSetAppearance = false;
+            lock (Wearables)
+            {
+                // Remove the given wearables from the wearables collection
+                for (int i = 0; i < wearables.Count; i++)
+                {
+                    InventoryWearable wearableItem = wearables[i];
+                    if (wearables[i].AssetType != AssetType.Bodypart        // Remove if it's not a body part
+                        && Wearables.ContainsKey(wearableItem.WearableType) // And we have that wearabe type
+                        && Wearables[wearableItem.WearableType].ItemID == wearableItem.UUID // And we are wearing it
+                        )
+                    {
+                        Wearables.Remove(wearableItem.WearableType);
+                        needSetAppearance = true;
+                    }
+                }
+            }
+
+            for (int i = 0; i < attachments.Count; i++)
+            {
+                Detach(attachments[i].UUID);
+            }
+
+            if (needSetAppearance)
+            {
+                SendAgentIsNowWearing();
+                RequestSetAppearance(true);
+            }
+        }
+
+        /// <summary>
         /// Replace the current outfit with a list of wearables and set appearance
         /// </summary>
         /// <param name="wearableItems">List of wearable inventory items that
@@ -529,10 +651,11 @@ namespace OpenMetaverse
             }
 
             // Replace our local Wearables collection, send the packet(s) to update our
-            // attachments, and start the baking process
+            // attachments, tell sim what we are wearing now, and start the baking process
             ReplaceOutfit(wearables);
             AddAttachments(attachments, true);
-            RequestSetAppearance();
+            SendAgentIsNowWearing();
+            RequestSetAppearance(true);
         }
 
         /// <summary>
@@ -700,6 +823,34 @@ namespace OpenMetaverse
         #endregion Attachments
 
         #region Appearance Helpers
+
+        /// <summary>
+        /// Inform the sim which wearables are part of our current outfit
+        /// </summary>
+        private void SendAgentIsNowWearing()
+        {
+            AgentIsNowWearingPacket wearing = new AgentIsNowWearingPacket();
+            wearing.AgentData.AgentID = Client.Self.AgentID;
+            wearing.AgentData.SessionID = Client.Self.SessionID;
+            wearing.WearableData = new AgentIsNowWearingPacket.WearableDataBlock[WEARABLE_COUNT];
+
+            lock (Wearables)
+            {
+                for (int i = 0; i < WEARABLE_COUNT; i++)
+                {
+                    WearableType type = (WearableType)i;
+                    wearing.WearableData[i] = new AgentIsNowWearingPacket.WearableDataBlock();
+                    wearing.WearableData[i].WearableType = (byte)i;
+
+                    if (Wearables.ContainsKey(type))
+                        wearing.WearableData[i].ItemID = Wearables[type].ItemID;
+                    else
+                        wearing.WearableData[i].ItemID = UUID.Zero;
+                }
+            }
+
+            Client.Network.SendPacket(wearing);
+        }
 
         /// <summary>
         /// Replaces the Wearables collection with a list of new wearable items
@@ -893,6 +1044,104 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Populates textures and visual params from a decoded asset
+        /// </summary>
+        /// <param name="wearable">Wearable to decode</param>
+        private void DecodeWearableParams(WearableData wearable)
+        {
+            Dictionary<VisualAlphaParam, float> alphaMasks = new Dictionary<VisualAlphaParam, float>();
+            List<ColorParamInfo> colorParams = new List<ColorParamInfo>();
+
+            // Populate collection of alpha masks from visual params
+            // also add color tinting information
+            foreach (KeyValuePair<int, float> kvp in wearable.Asset.Params)
+            {
+                VisualParam p = VisualParams.Params[kvp.Key];
+
+                ColorParamInfo colorInfo = new ColorParamInfo();
+                colorInfo.WearableType = wearable.WearableType;
+                colorInfo.VisualParam = p;
+                colorInfo.Value = kvp.Value;
+
+                // Color params
+                if (p.ColorParams.HasValue)
+                {
+                    colorInfo.VisualColorParam = p.ColorParams.Value;
+
+                    // If this is not skin, just add params directly
+                    if (wearable.WearableType != WearableType.Skin)
+                    {
+                        colorParams.Add(colorInfo);
+                    }
+                    else
+                    {
+                        // For skin we skip makeup params for now and use only the 3
+                        // that are used to determine base skin tone
+                        // Param 108 - Rainbow Color
+                        // Param 110 - Red Skin (Ruddiness)
+                        // Param 111 - Pigment
+                        if (kvp.Key == 108 || kvp.Key == 110 || kvp.Key == 111)
+                        {
+                            colorParams.Add(colorInfo);
+                        }
+                    }
+                }
+
+                // Add alpha mask
+                if (p.AlphaParams.HasValue && p.AlphaParams.Value.TGAFile != string.Empty && !p.IsBumpAttribute)
+                {
+                    alphaMasks.Add(p.AlphaParams.Value, kvp.Value);
+                }
+
+                // Alhpa masks can also be specified in sub "driver" params
+                if (p.Drivers != null)
+                {
+                    for (int i = 0; i < p.Drivers.Length; i++)
+                    {
+                        if (VisualParams.Params.ContainsKey(p.Drivers[i]))
+                        {
+                            VisualParam driver = VisualParams.Params[p.Drivers[i]];
+                            if (driver.AlphaParams.HasValue && driver.AlphaParams.Value.TGAFile != string.Empty && !driver.IsBumpAttribute)
+                            {
+                                alphaMasks.Add(driver.AlphaParams.Value, kvp.Value);
+                            }
+                        }
+                    }
+                }
+            }
+
+            Color4 wearableColor = Color4.White; // Never actually used
+            if (colorParams.Count > 0)
+            {
+                wearableColor = GetColorFromParams(colorParams);
+                Logger.DebugLog("Setting tint " + wearableColor + " for " + wearable.WearableType);
+            }
+
+            // Loop through all of the texture IDs in this decoded asset and put them in our cache of worn textures
+            foreach (KeyValuePair<AvatarTextureIndex, UUID> entry in wearable.Asset.Textures)
+            {
+                int i = (int)entry.Key;
+
+                // Update information about color and alpha masks for this texture
+                Textures[i].AlphaMasks = alphaMasks;
+                Textures[i].Color = wearableColor;
+
+                // If this texture changed, update the TextureID and clear out the old cached texture asset
+                if (Textures[i].TextureID != entry.Value)
+                {
+                    // Treat DEFAULT_AVATAR_TEXTURE as null
+                    if (entry.Value != DEFAULT_AVATAR_TEXTURE)
+                        Textures[i].TextureID = entry.Value;
+                    else
+                        Textures[i].TextureID = UUID.Zero;
+                    Logger.DebugLog("Set " + entry.Key + " to " + Textures[i].TextureID, Client);
+
+                    Textures[i].Texture = null;
+                }
+            }
+        }
+
+        /// <summary>
         /// Blocking method to download and parse currently worn wearable assets
         /// </summary>
         /// <returns>True on success, otherwise false</returns>
@@ -905,11 +1154,30 @@ namespace OpenMetaverse
             lock (Wearables)
                 wearables = new Dictionary<WearableType, WearableData>(Wearables);
 
+            // We will refresh the textures (zero out all non bake textures)
+            for (int i = 0; i < Textures.Length; i++)
+            {
+                bool isBake = false;
+                for (int j=0; j<BakeIndexToTextureIndex.Length; j++)
+                {
+                    if (BakeIndexToTextureIndex[j] == i)
+                    {
+                        isBake = true;
+                        break;
+                    }
+                }
+                if (!isBake)
+                    Textures[i] = new TextureData();
+            }
+
             int pendingWearables = wearables.Count;
             foreach (WearableData wearable in wearables.Values)
             {
                 if (wearable.Asset != null)
+                {
+                    DecodeWearableParams(wearable);
                     --pendingWearables;
+                }
             }
 
             if (pendingWearables == 0)
@@ -935,105 +1203,14 @@ namespace OpenMetaverse
 
                                     if (wearable.Asset.Decode())
                                     {
+                                        DecodeWearableParams(wearable);
                                         Logger.DebugLog("Downloaded wearable asset " + wearable.WearableType + " with " + wearable.Asset.Params.Count +
                                             " visual params and " + wearable.Asset.Textures.Count + " textures", Client);
 
-                                        Dictionary<VisualAlphaParam, float> alphaMasks = new Dictionary<VisualAlphaParam, float>();
-                                        List<ColorParamInfo> colorParams = new List<ColorParamInfo>();
-
-                                        // Populate collection of alpha masks from visual params
-                                        // also add color tinting information
-                                        foreach (KeyValuePair<int, float> kvp in wearable.Asset.Params)
-                                        {
-                                            VisualParam p = VisualParams.Params[kvp.Key];
-
-                                            ColorParamInfo colorInfo = new ColorParamInfo();
-                                            colorInfo.WearableType = wearable.WearableType;
-                                            colorInfo.VisualParam = p;
-                                            colorInfo.Value = kvp.Value;
-
-                                            // Color params
-                                            if (p.ColorParams.HasValue)
-                                            {
-                                                colorInfo.VisualColorParam = p.ColorParams.Value;
-
-                                                // If this is not skin, just add params directly
-                                                if (wearable.WearableType != WearableType.Skin)
-                                                {
-                                                    colorParams.Add(colorInfo);
-                                                }
-                                                else
-                                                {
-                                                    // For skin we skip makeup params for now and use only the 3
-                                                    // that are used to determine base skin tone
-                                                    // Param 108 - Rainbow Color
-                                                    // Param 110 - Red Skin (Ruddiness)
-                                                    // Param 111 - Pigment
-                                                    if (kvp.Key == 108 || kvp.Key == 110 || kvp.Key == 111)
-                                                    {
-                                                        colorParams.Add(colorInfo);
-                                                    }
-                                                }
-                                            }
-
-                                            // TODO pull bump data too to implement things like
-                                            // clothes "bagginess"
-
-                                            // Add alpha mask
-                                            if (p.AlphaParams.HasValue && p.AlphaParams.Value.TGAFile != string.Empty && !p.IsBumpAttribute)
-                                            {
-                                                alphaMasks.Add(p.AlphaParams.Value, kvp.Value);
-                                            }
-
-                                            // Alhpa masks can also be specified in sub "driver" params
-                                            if (p.Drivers != null)
-                                            {
-                                                for (int i = 0; i < p.Drivers.Length; i++)
-                                                {
-                                                    if (VisualParams.Params.ContainsKey(p.Drivers[i]))
-                                                    {
-                                                        VisualParam driver = VisualParams.Params[p.Drivers[i]];
-                                                        if (driver.AlphaParams.HasValue && driver.AlphaParams.Value.TGAFile != string.Empty && !driver.IsBumpAttribute)
-                                                        {
-                                                            alphaMasks.Add(driver.AlphaParams.Value, kvp.Value);
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        Color4 wearableColor = Color4.White; // Never actually used
-                                        if (colorParams.Count > 0)
-                                        {
-                                            wearableColor = GetColorFromParams(colorParams);
-                                            Logger.DebugLog("Setting tint " + wearableColor + " for " + wearable.WearableType);
-                                        }
-
-                                        // Loop through all of the texture IDs in this decoded asset and put them in our cache of worn textures
-                                        foreach (KeyValuePair<AvatarTextureIndex, UUID> entry in wearable.Asset.Textures)
-                                        {
-                                            int i = (int)entry.Key;
-
-                                            // Update information about color and alpha masks for this texture
-                                            Textures[i].AlphaMasks = alphaMasks;
-                                            Textures[i].Color = wearableColor;
-
-                                            // If this texture changed, update the TextureID and clear out the old cached texture asset
-                                            if (Textures[i].TextureID != entry.Value)
-                                            {
-                                                // Treat DEFAULT_AVATAR_TEXTURE as null
-                                                if (entry.Value != DEFAULT_AVATAR_TEXTURE)
-                                                    Textures[i].TextureID = entry.Value;
-                                                else
-                                                    Textures[i].TextureID = UUID.Zero;
-                                                Logger.DebugLog("Set " + entry.Key + " to " + Textures[i].TextureID, Client);
-
-                                                Textures[i].Texture = null;
-                                            }
-                                        }
                                     }
                                     else
                                     {
+                                        wearable.Asset = null;
                                         Logger.Log("Failed to decode asset:" + Environment.NewLine +
                                             Utils.BytesToString(asset.AssetData), Helpers.LogLevel.Error, Client);
                                     }
