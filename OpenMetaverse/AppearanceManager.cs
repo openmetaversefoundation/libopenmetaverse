@@ -237,7 +237,7 @@ namespace OpenMetaverse
         {
             get
             {
-                return Interlocked.CompareExchange(ref AppearanceThreadRunning, 1, 0) != 0;
+                return AppearanceThreadRunning != 0;
             }
         }
 
