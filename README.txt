@@ -87,4 +87,4 @@ For more details http://lib.openmetaverse.org/wiki/Getting_Started
 
 
 Happy fiddling,
--- OpenMetaverse Ninjas
+-- OpenMetaverse Ninjas 
