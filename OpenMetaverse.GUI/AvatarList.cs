@@ -161,11 +161,11 @@ namespace OpenMetaverse.GUI
             _Client.Objects.OnObjectUpdated += new ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
         }
 
-        private void AddAvatar(uint localID, UUID avatarID, Vector3 coarsePosition, Avatar avatar)
+        private void AddAvatar(UUID avatarID, Avatar avatar, Vector3 coarsePosition)
         {
             if (!this.IsHandleCreated) return;
 
-            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { AddAvatar(localID, avatarID, coarsePosition, avatar); });
+            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { AddAvatar(avatar.ID, avatar, coarsePosition); });
             else
             {
                 TrackedAvatar trackedAvatar = new TrackedAvatar();
@@ -183,7 +183,12 @@ namespace OpenMetaverse.GUI
                     trackedAvatar.ListViewItem.Text = avatar.Name;
 
                     lock (_TrackedAvatars)
-                        _TrackedAvatars.Add(localID, avatarID, trackedAvatar);
+                    {
+                        if (_TrackedAvatars.ContainsKey(avatarID))
+                            _TrackedAvatars.Remove(avatarID);
+
+                        _TrackedAvatars.Add(avatar.LocalID, avatarID, trackedAvatar);
+                    }
 
                     if (OnAvatarAdded != null)
                     {
@@ -212,21 +217,30 @@ namespace OpenMetaverse.GUI
             }
         }
 
-        private void RemoveAvatar(uint localID)
+        private void RemoveAvatar(UUID id)
         {
             if (!this.IsHandleCreated) return;
 
-            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { RemoveAvatar(localID); });
+            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { RemoveAvatar(id); });
             else
             {
                 TrackedAvatar trackedAvatar;
 
                 lock (_TrackedAvatars)
                 {
-                    if (_TrackedAvatars.TryGetValue(localID, out trackedAvatar))
+                    if (_TrackedAvatars.TryGetValue(id, out trackedAvatar))
                     {
                         this.Items.Remove(trackedAvatar.ListViewItem);
-                        _TrackedAvatars.Remove(localID);
+                        _TrackedAvatars.Remove(id);
+                    }
+                }
+
+                lock (_UntrackedAvatars)
+                {
+                    if (_UntrackedAvatars.TryGetValue(id, out trackedAvatar))
+                    {
+                        this.Items.Remove(trackedAvatar.ListViewItem);
+                        _UntrackedAvatars.Remove(trackedAvatar.ID);
                     }
                 }
 
@@ -273,7 +287,7 @@ namespace OpenMetaverse.GUI
                     }
                     else
                     {
-                        AddAvatar(avatar.LocalID, avatar.ID, Vector3.Zero, avatar);
+                        AddAvatar(avatar.ID, avatar, Vector3.Zero);
                     }               
                 }
 
@@ -286,21 +300,16 @@ namespace OpenMetaverse.GUI
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { UpdateCoarseInfo(sim, newEntries, removedEntries); });
             else
             {
-                lock (_UntrackedAvatars)
+                if (sim == null) return;
+
+                if (removedEntries != null)
                 {
                     for (int i = 0; i < removedEntries.Count; i++)
-                    {
-                        TrackedAvatar trackedAvatar;
-                        if (_UntrackedAvatars.TryGetValue(removedEntries[i], out trackedAvatar))
-                        {
-                            this.Items.Remove(trackedAvatar.ListViewItem);
-                            _UntrackedAvatars.Remove(trackedAvatar.ID);
-                        }
-                        lock (_TrackedAvatars)
-                        {
-                            if (_TrackedAvatars.TryGetValue(removedEntries[i], out trackedAvatar)) RemoveAvatar(trackedAvatar.Avatar.LocalID);
-                        }
-                    }
+                        RemoveAvatar(removedEntries[i]);
+                }
+
+                if (newEntries != null)
+                {
                     for (int i = 0; i < newEntries.Count; i++)
                     {
                         int index = this.Items.IndexOfKey(newEntries[i].ToString());
@@ -310,7 +319,7 @@ namespace OpenMetaverse.GUI
                             if (!sim.AvatarPositions.TryGetValue(newEntries[i], out coarsePos))
                                 continue;
 
-                            AddAvatar(0, newEntries[i], coarsePos, null);
+                            AddAvatar(newEntries[i], null, coarsePos);
                         }
                     }
                 }
