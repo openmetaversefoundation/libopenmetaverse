@@ -370,6 +370,7 @@ namespace OpenMetaverse
 
             Client.Network.RegisterCallback(PacketType.DirClassifiedReply, new NetworkManager.PacketCallback(DirClassifiedReplyHandler));
             Client.Network.RegisterCallback(PacketType.DirLandReply, new NetworkManager.PacketCallback(DirLandReplyHandler));
+            Client.Network.RegisterEventCallback("DirLandReply", DirLandReplyEventHandler);
             Client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(DirPeopleReplyHandler));
             Client.Network.RegisterCallback(PacketType.DirGroupsReply, new NetworkManager.PacketCallback(DirGroupsReplyHandler));
             // Deprecated as of viewer 1.2.3
@@ -759,6 +760,33 @@ namespace OpenMetaverse
                     dirParcel.ActualArea = block.ActualArea;
                     dirParcel.ID = block.ParcelID;
                     dirParcel.Name = Utils.BytesToString(block.Name);
+                    dirParcel.SalePrice = block.SalePrice;
+                    dirParcel.Auction = block.Auction;
+                    dirParcel.ForSale = block.ForSale;
+
+                    parcelsForSale.Add(dirParcel);
+                }
+
+                try { OnDirLandReply(parcelsForSale); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            }
+        }
+
+        private void DirLandReplyEventHandler(string capsKey, IMessage message, Simulator simulator)
+        {
+            if (OnDirLandReply != null)
+            {
+                List<DirectoryParcel> parcelsForSale = new List<DirectoryParcel>();
+
+                DirLandReplyMessage reply = (DirLandReplyMessage)message;
+
+                foreach (DirLandReplyMessage.QueryReply block in reply.QueryReplies)
+                {
+                    DirectoryParcel dirParcel = new DirectoryParcel();
+
+                    dirParcel.ActualArea = block.ActualArea;
+                    dirParcel.ID = block.ParcelID;
+                    dirParcel.Name = block.Name;
                     dirParcel.SalePrice = block.SalePrice;
                     dirParcel.Auction = block.Auction;
                     dirParcel.ForSale = block.ForSale;
