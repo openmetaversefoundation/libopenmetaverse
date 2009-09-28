@@ -171,7 +171,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Initialize callbacks required for the TexturePipeline to operate
         /// </summary>
-        private void Startup()
+        public void Startup()
         {
             if (_Running)
                 return;
@@ -201,7 +201,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Shutdown the TexturePipeline and cleanup any callbacks or transfers
         /// </summary>
-        private void Shutdown()
+        public void Shutdown()
         {
             if (!_Running)
                 return;
