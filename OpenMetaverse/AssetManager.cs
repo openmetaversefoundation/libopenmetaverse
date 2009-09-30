@@ -843,7 +843,10 @@ namespace OpenMetaverse
         /// to prioritize the request before lower valued requests. An image already being transferred using the <see cref="TexturePipeline"/> can have
         /// its priority changed by resending the request with the new priority value</param>
         /// <param name="discardLevel">Number of quality layers to discard.
-        /// This controls the end marker of the data sent</param>
+        /// This controls the end marker of the data sent. Sending with value -1 combined with priority of 0 cancels an in-progress
+        /// transfer.</param>
+        /// <remarks>A bug exists in the Linden Simulator where a -1 will occasionally be sent with a non-zero priority
+        /// indicating an off-by-one error.</remarks>
         /// <param name="packetStart">The packet number to begin the request at. A value of 0 begins the request
         /// from the start of the asset texture</param>
         /// <param name="callback">The <see cref="TextureDownloadCallback"/> callback to fire when the image is retrieved. The callback
