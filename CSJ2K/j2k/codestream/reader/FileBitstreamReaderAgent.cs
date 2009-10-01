@@ -161,6 +161,9 @@ namespace CSJ2K.j2k.codestream.reader
 		
 		/// <summary>Length of each packet head found in the tile </summary>
 		private System.Collections.ArrayList pktHL;
+
+        /// <summary>Layer starting positions</summary>
+        public System.Collections.Generic.List<int> layerStarts;
 		
 		/// <summary>True if truncation mode is used. False if parsing mode </summary>
 		private bool isTruncMode;
@@ -935,6 +938,9 @@ namespace CSJ2K.j2k.codestream.reader
 			}
 			for (int l = minlys; l < lye; l++)
 			{
+                // store the layer starting position
+                layerStarts.Add(in_Renamed.Pos);
+
 				// loop on layers
 				for (int r = ress; r < rese; r++)
 				{
@@ -1984,6 +1990,7 @@ namespace CSJ2K.j2k.codestream.reader
 		private void  readTilePkts(int t)
 		{
 			pktHL = System.Collections.ArrayList.Synchronized(new System.Collections.ArrayList(10));
+            layerStarts = new System.Collections.Generic.List<int>(5);
 			
 			// Number of layers
 			int nl = ((System.Int32) decSpec.nls.getTileDef(t));

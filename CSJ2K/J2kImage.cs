@@ -307,6 +307,72 @@ namespace CSJ2K
             }
             return dst;
         }
+
+        public static List<int> GetLayerBoundaries(Stream stream)
+        {
+            RandomAccessIO in_stream = new ISRandomAccessIO(stream);
+
+            // Create parameter list using defaults
+            ParameterList pl = new ParameterList(GetDefaultParameterList(decoder_pinfo));
+
+            // **** File Format ****
+            // If the codestream is wrapped in the jp2 fileformat, Read the
+            // file format wrapper
+            FileFormatReader ff = new FileFormatReader(in_stream);
+            ff.readFileFormat();
+            if (ff.JP2FFUsed)
+            {
+                in_stream.seek(ff.FirstCodeStreamPos);
+            }
+
+            // +----------------------------+
+            // | Instantiate decoding chain |
+            // +----------------------------+
+
+            // **** Header decoder ****
+            // Instantiate header decoder and read main header 
+            HeaderInfo hi = new HeaderInfo();
+            HeaderDecoder hd;
+            try
+            {
+                hd = new HeaderDecoder(in_stream, pl, hi);
+            }
+            catch (EndOfStreamException e)
+            {
+                throw new ArgumentException("Codestream too short or bad header, unable to decode.", e);
+            }
+
+            int nCompCod = hd.NumComps;
+            int nTiles = hi.sizValue.NumTiles;
+            DecoderSpecs decSpec = hd.DecoderSpecs;
+
+            // Get demixed bitdepths
+            int[] depth = new int[nCompCod];
+            for (int i = 0; i < nCompCod; i++)
+            {
+                depth[i] = hd.getOriginalBitDepth(i);
+            }
+
+            // **** Bit stream reader ****
+            BitstreamReaderAgent breader;
+            try
+            {
+                breader = BitstreamReaderAgent.createInstance(in_stream, hd, pl, decSpec, false, hi);
+            }
+            catch (IOException e)
+            {
+                throw new ArgumentException("Error while reading bit stream header or parsing packets.", e);
+            }
+            catch (ArgumentException e)
+            {
+                throw new ArgumentException("Cannot instantiate bit stream reader.", e);
+            }
+
+            breader.setTile(0, 0);
+
+            return ((FileBitstreamReaderAgent)breader).layerStarts;
+        }
+
         #endregion
 
         #region Static Encoder Methods

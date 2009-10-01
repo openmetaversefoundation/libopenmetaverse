@@ -11,10 +11,10 @@ using System.Runtime.InteropServices;
 
 // TODO: Review the values of the assembly attributes
 
-[assembly: AssemblyTitle("")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("CSJ2K")]
+[assembly: AssemblyDescription("JPEG2000 decoding library")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("")]
+[assembly: AssemblyProduct("CSJ2K")]
 [assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
