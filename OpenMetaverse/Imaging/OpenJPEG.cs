@@ -47,7 +47,7 @@ namespace OpenMetaverse.Imaging
         /// Defines the beginning and ending file positions of a layer in an
         /// LRCP-progression JPEG2000 file
         /// </summary>
-        [System.Diagnostics.DebuggerDisplay("Start = {Start} End = {End} Size = {Start - End}")]
+        [System.Diagnostics.DebuggerDisplay("Start = {Start} End = {End} Size = {End - Start}")]
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         public struct J2KLayerInfo
         {

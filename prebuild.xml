@@ -54,6 +54,26 @@
         <Match pattern="*.cs" recurse="true"/>
       </Files>
     </Project>
+    
+    <Project name="CSJ2K" path="CSJ2K" type="Library" frameworkVersion="v3_5">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Drawing"/>
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+      </Files>
+    </Project>
 
     <!-- Libraries -->
 
