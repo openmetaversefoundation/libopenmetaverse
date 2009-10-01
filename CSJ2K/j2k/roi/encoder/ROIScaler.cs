@@ -402,11 +402,11 @@ namespace CSJ2K.j2k.roi.encoder
 							word = stok.NextToken();
 							h = (System.Int32.Parse(word));
 						}
-						catch (System.FormatException e)
+						catch (System.FormatException)
 						{
 							throw new System.ArgumentException("Bad parameter for " + "'-Rroi R' option : " + word);
 						}
-						catch (System.ArgumentOutOfRangeException f)
+						catch (System.ArgumentOutOfRangeException)
 						{
 							throw new System.ArgumentException("Wrong number of " + "parameters for  " + "h'-Rroi R' option.");
 						}
@@ -444,11 +444,11 @@ namespace CSJ2K.j2k.roi.encoder
 							word = stok.NextToken();
 							rad = (System.Int32.Parse(word));
 						}
-						catch (System.FormatException e)
+						catch (System.FormatException)
 						{
 							throw new System.ArgumentException("Bad parameter for " + "'-Rroi C' option : " + word);
 						}
-						catch (System.ArgumentOutOfRangeException f)
+						catch (System.ArgumentOutOfRangeException)
 						{
 							throw new System.ArgumentException("Wrong number of " + "parameters for " + "'-Rroi C' option.");
 						}
@@ -484,7 +484,7 @@ namespace CSJ2K.j2k.roi.encoder
 						{
 							filename = stok.NextToken();
 						}
-						catch (System.ArgumentOutOfRangeException e)
+						catch (System.ArgumentOutOfRangeException)
 						{
 							throw new System.ArgumentException("Wrong number of " + "parameters for " + "'-Rroi A' option.");
 						}
@@ -492,7 +492,7 @@ namespace CSJ2K.j2k.roi.encoder
 						{
 							maskPGM = new ImgReaderPGM(filename);
 						}
-						catch (System.IO.IOException e)
+						catch (System.IO.IOException)
 						{
 							throw new System.ApplicationException("Cannot read PGM file with ROI");
 						}

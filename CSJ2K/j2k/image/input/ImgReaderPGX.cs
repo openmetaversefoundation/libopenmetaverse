@@ -168,7 +168,7 @@ namespace CSJ2K.j2k.image.input
 				//UPGRADE_ISSUE: Method 'java.io.RandomAccessFile.readLine' was not converted. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1000_javaioRandomAccessFilereadLine'"
 				header = in_reader.ReadLine();
 			}
-			catch (System.IO.IOException e)
+			catch (System.IO.IOException)
 			{
 				throw new System.IO.IOException(in_Renamed.Name + " is not a PGX file");
 			}
@@ -220,12 +220,12 @@ namespace CSJ2K.j2k.image.input
 					w = (System.Int32.Parse(st.NextToken()));
 					h = (System.Int32.Parse(st.NextToken()));
 				}
-				catch (System.FormatException e)
+				catch (System.FormatException)
 				{
 					throw new System.IO.IOException(in_Renamed.Name + " is not a PGX file");
 				}
 			}
-			catch (System.ArgumentOutOfRangeException e)
+			catch (System.ArgumentOutOfRangeException)
 			{
 				throw new System.IO.IOException(in_Renamed.Name + " is not a PGX file");
 			}

@@ -1310,7 +1310,7 @@ namespace CSJ2K.j2k.codestream.reader
 								}
 							}
 						}
-						catch (System.IO.EndOfStreamException e)
+						catch (System.IO.EndOfStreamException)
 						{
 							// Remove found information in this code-block
 							if (l == 0)
@@ -1420,7 +1420,7 @@ namespace CSJ2K.j2k.codestream.reader
 					{
 						ehs.seek(curOff);
 					}
-					catch (System.IO.EndOfStreamException e)
+					catch (System.IO.EndOfStreamException)
 					{
 						if (l == 0)
 						{

@@ -256,11 +256,11 @@ namespace CSJ2K.j2k.codestream.reader
 					trate = System.Single.MaxValue;
 				}
 			}
-			catch (System.FormatException e)
+			catch (System.FormatException)
 			{
 				throw new System.ApplicationException("Invalid value in 'rate' option: " + pl.getParameter("rate"));
 			}
-			catch (System.ArgumentException e)
+			catch (System.ArgumentException)
 			{
 				throw new System.ApplicationException("'rate' option is missing");
 			}
@@ -269,11 +269,11 @@ namespace CSJ2K.j2k.codestream.reader
 			{
 				tnbytes = pl.getIntParameter("nbytes");
 			}
-			catch (System.FormatException e)
+			catch (System.FormatException)
 			{
 				throw new System.ApplicationException("Invalid value in 'nbytes' option: " + pl.getParameter("nbytes"));
 			}
-			catch (System.ArgumentException e)
+			catch (System.ArgumentException)
 			{
 				throw new System.ApplicationException("'nbytes' option is missing");
 			}
@@ -307,11 +307,11 @@ namespace CSJ2K.j2k.codestream.reader
 			{
 				ncbQuit = pl.getIntParameter("ncb_quit");
 			}
-			catch (System.FormatException e)
+			catch (System.FormatException)
 			{
 				throw new System.ApplicationException("Invalid value in 'ncb_quit' option: " + pl.getParameter("ncb_quit"));
 			}
-			catch (System.ArgumentException e)
+			catch (System.ArgumentException)
 			{
 				throw new System.ApplicationException("'ncb_quit' option is missing");
 			}
@@ -324,11 +324,11 @@ namespace CSJ2K.j2k.codestream.reader
 			{
 				lQuit = pl.getIntParameter("l_quit");
 			}
-			catch (System.FormatException e)
+			catch (System.FormatException)
 			{
 				throw new System.ApplicationException("Invalid value in 'l_quit' option: " + pl.getParameter("l_quit"));
 			}
-			catch (System.ArgumentException e)
+			catch (System.ArgumentException)
 			{
 				throw new System.ApplicationException("'l_quit' option is missing");
 			}
@@ -494,7 +494,7 @@ namespace CSJ2K.j2k.codestream.reader
 					}
 				}
 			}
-			catch (System.IO.EndOfStreamException e)
+			catch (System.IO.EndOfStreamException)
 			{
 				if (printInfo)
 				{
@@ -531,7 +531,7 @@ namespace CSJ2K.j2k.codestream.reader
 							throw new System.ArgumentException("Specified negative " + "resolution level " + "index: " + targetRes);
 						}
 					}
-					catch (System.FormatException f)
+					catch (System.FormatException)
 					{
 						throw new System.ArgumentException("Invalid resolution level " + "index ('-res' option) " + pl.getParameter("res"));
 					}
@@ -570,7 +570,7 @@ namespace CSJ2K.j2k.codestream.reader
 						throw new System.ArgumentException("Specified negative " + "resolution level index: " + targetRes);
 					}
 				}
-				catch (System.FormatException e)
+				catch (System.FormatException)
 				{
 					throw new System.ArgumentException("Invalid resolution level " + "index ('-res' option) " + pl.getParameter("res"));
 				}
@@ -600,7 +600,7 @@ namespace CSJ2K.j2k.codestream.reader
 						FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.WARNING, "EOC marker not found. " + "Codestream is corrupted.");
 					}
 				}
-				catch (System.IO.EndOfStreamException e)
+				catch (System.IO.EndOfStreamException)
 				{
 					FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.WARNING, "EOC marker is missing");
 				}
@@ -2056,7 +2056,7 @@ namespace CSJ2K.j2k.codestream.reader
 				}
 				in_Renamed.seek(firstPackOff[t][0]);
 			}
-			catch (System.IO.EndOfStreamException e)
+			catch (System.IO.EndOfStreamException)
 			{
 				FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.WARNING, "Codestream truncated in tile " + t);
 				return ;
@@ -2521,11 +2521,11 @@ namespace CSJ2K.j2k.codestream.reader
 					throw new System.ArgumentException();
 				}
 			}
-			catch (System.IndexOutOfRangeException e)
+			catch (System.IndexOutOfRangeException)
 			{
 				throw new System.ArgumentException("Code-block (t:" + t + ", c:" + c + ", r:" + r + ", s:" + s + ", " + m + "x" + (+ n) + ") not found in codestream");
 			}
-			catch (System.NullReferenceException e)
+			catch (System.NullReferenceException)
 			{
 				throw new System.ArgumentException("Code-block (t:" + t + ", c:" + c + ", r:" + r + ", s:" + s + ", " + m + "x" + n + ") not found in bit stream");
 			}

@@ -242,7 +242,7 @@ namespace CSJ2K.j2k.codestream
 						ms = (SIZ) this.Clone();
 					}
 					//UPGRADE_NOTE: Exception 'java.lang.CloneNotSupportedException' was converted to 'System.Exception' which has different behavior. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1100'"
-					catch (System.Exception e)
+					catch (System.Exception)
 					{
 						throw new System.ApplicationException("Cannot clone SIZ marker segment");
 					}
@@ -442,7 +442,7 @@ namespace CSJ2K.j2k.codestream
 						ms = (COD) this.Clone();
 					}
 					//UPGRADE_NOTE: Exception 'java.lang.CloneNotSupportedException' was converted to 'System.Exception' which has different behavior. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1100'"
-					catch (System.Exception e)
+					catch (System.Exception)
 					{
 						throw new System.ApplicationException("Cannot clone SIZ marker segment");
 					}
@@ -1339,7 +1339,7 @@ namespace CSJ2K.j2k.codestream
 				nhi = (HeaderInfo) Clone();
 			}
 			//UPGRADE_NOTE: Exception 'java.lang.CloneNotSupportedException' was converted to 'System.Exception' which has different behavior. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1100'"
-			catch (System.Exception e)
+			catch (System.Exception)
 			{
 				throw new System.ApplicationException("Cannot clone HeaderInfo instance");
 			}

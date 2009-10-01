@@ -262,7 +262,7 @@ namespace CSJ2K.j2k.entropy.encoder
 			{
 				stok.NextToken();
 			}
-			catch (System.IO.IOException e)
+			catch (System.IO.IOException)
 			{
 				throw new System.ApplicationException("An IOException has ocurred where it " + "should never occur");
 			}
@@ -327,7 +327,7 @@ namespace CSJ2K.j2k.entropy.encoder
 						{
 							stok.NextToken();
 						}
-						catch (System.IO.IOException e)
+						catch (System.IO.IOException)
 						{
 							throw new System.ApplicationException("An IOException has ocurred where it " + "should never occur");
 						}
@@ -345,7 +345,7 @@ namespace CSJ2K.j2k.entropy.encoder
 				{
 					stok.NextToken();
 				}
-				catch (System.IO.IOException e)
+				catch (System.IO.IOException)
 				{
 					throw new System.ApplicationException("An IOException has ocurred where it " + "should never occur");
 				}

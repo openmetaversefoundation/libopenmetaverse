@@ -200,7 +200,7 @@ namespace CSJ2K.j2k.entropy
 							{
 								tmp = (System.Int32.Parse(word));
 							}
-							catch (System.FormatException e)
+							catch (System.FormatException)
 							{
 								// Progression has missing parameters
 								throw new System.ArgumentException("Progression " + "order" + " specification " + "has missing " + "parameters: " + param);

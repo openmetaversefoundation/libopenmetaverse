@@ -233,7 +233,7 @@ namespace CSJ2K.j2k.entropy
 								{
 									word = stk.NextToken();
 								}
-								catch (System.ArgumentOutOfRangeException e)
+								catch (System.ArgumentOutOfRangeException)
 								{
 									errMsg = "'" + optName + "' option : could not " + "parse the precinct's width";
 									throw new System.ArgumentException(errMsg);
@@ -246,7 +246,7 @@ namespace CSJ2K.j2k.entropy
 									throw new System.ArgumentException(errMsg);
 								}
 							}
-							catch (System.FormatException e)
+							catch (System.FormatException)
 							{
 								errMsg = "'" + optName + "' option : the argument '" + word + "' could not be parsed.";
 								throw new System.ArgumentException(errMsg);

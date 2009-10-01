@@ -27,7 +27,6 @@ namespace CSJ2K
 {
     public class J2kImage
     {
-
         #region Static Decoder Methods
         public static Image FromFile(string filename)
         {

@@ -170,7 +170,7 @@ namespace CSJ2K.j2k.wavelet.analysis
 			{
 				cb0x = (System.Int32.Parse(str));
 			}
-			catch (System.FormatException e)
+			catch (System.FormatException)
 			{
 				throw new System.ArgumentException("Bad first parameter for the " + "'-Wcboff' option: " + str);
 			}
@@ -184,7 +184,7 @@ namespace CSJ2K.j2k.wavelet.analysis
 			{
 				cb0y = (System.Int32.Parse(str));
 			}
-			catch (System.FormatException e)
+			catch (System.FormatException)
 			{
 				throw new System.ArgumentException("Bad second parameter for the " + "'-Wcboff' option: " + str);
 			}

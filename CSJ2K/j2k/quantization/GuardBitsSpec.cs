@@ -138,7 +138,7 @@ namespace CSJ2K.j2k.quantization
 						{
 							value_Renamed = System.Int32.Parse(word);
 						}
-						catch (System.FormatException e)
+						catch (System.FormatException)
 						{
 							throw new System.ArgumentException("Bad parameter for " + "-Qguard_bits option" + " : " + word);
 						}

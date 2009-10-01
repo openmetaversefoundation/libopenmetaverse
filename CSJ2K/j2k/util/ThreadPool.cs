@@ -251,7 +251,7 @@ namespace CSJ2K.j2k.util
 							{
 								System.Threading.Monitor.Wait(this);
 							}
-							catch (System.Threading.ThreadInterruptedException e)
+							catch (System.Threading.ThreadInterruptedException)
 							{
 							}
 						}
@@ -278,7 +278,7 @@ namespace CSJ2K.j2k.util
 							Enclosing_Instance.targetRE = re;
 						}
 						//UPGRADE_NOTE: Exception 'java.lang.Throwable' was converted to 'System.Exception' which has different behavior. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1100'"
-						catch (System.Exception e)
+						catch (System.Exception)
 						{
 							// A totally unexpected error has occurred
 							// (Thread.stop(Throwable) has been used, which should 
@@ -632,7 +632,7 @@ namespace CSJ2K.j2k.util
 						{
 							System.Threading.Monitor.Wait(idle);
 						}
-						catch (System.Threading.ThreadInterruptedException e)
+						catch (System.Threading.ThreadInterruptedException)
 						{
 							// If we were interrupted just return null
 							return null;

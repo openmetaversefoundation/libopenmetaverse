@@ -213,7 +213,7 @@ namespace CSJ2K.j2k.util
 			{
 				newbuf = new byte[buf.Length + inc];
 			}
-			catch (System.OutOfMemoryException e)
+			catch (System.OutOfMemoryException)
 			{
 				throw new System.IO.IOException("Out of memory to cache input data");
 			}

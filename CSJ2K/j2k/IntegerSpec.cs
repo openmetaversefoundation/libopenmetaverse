@@ -167,7 +167,7 @@ namespace CSJ2K.j2k
 				{
 					setDefault((System.Object) System.Int32.Parse(param));
 				}
-				catch (System.FormatException e)
+				catch (System.FormatException)
 				{
 					throw new System.ArgumentException("Non recognized value" + " for option -" + optName + ": " + param);
 				}
@@ -218,7 +218,7 @@ namespace CSJ2K.j2k
 						{
 							value_Renamed = System.Int32.Parse(word);
 						}
-						catch (System.FormatException e)
+						catch (System.FormatException)
 						{
 							throw new System.ArgumentException("Non recognized value" + " for option -" + optName + ": " + word);
 						}
@@ -290,7 +290,7 @@ namespace CSJ2K.j2k
 					{
 						setDefault((System.Object) System.Int32.Parse(param));
 					}
-					catch (System.FormatException e)
+					catch (System.FormatException)
 					{
 						throw new System.ArgumentException("Non recognized value" + " for option -" + optName + ": " + param);
 					}

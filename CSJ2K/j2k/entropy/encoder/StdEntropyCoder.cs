@@ -555,6 +555,8 @@ namespace CSJ2K.j2k.entropy.encoder
 		/// table is indexed with one less bit. 
 		/// </summary>
 		private const int MSE_LKP_BITS = 7;
+
+        private const int MSE_LKP_BITS_M1 = 6;
 		
 		/// <summary>The number of fractional bits used to store data in the 'fm' and 'fs'
 		/// lookup tables. 
@@ -565,7 +567,7 @@ namespace CSJ2K.j2k.entropy.encoder
 		/// (SC) primative, for lossy coding (i.e. normal). 
 		/// </summary>
 		//UPGRADE_NOTE: Final was removed from the declaration of 'FS_LOSSY '. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"
-		private static readonly int[] FS_LOSSY = new int[1 << (MSE_LKP_BITS - 1)];
+        private static readonly int[] FS_LOSSY = new int[1 << MSE_LKP_BITS_M1];
 		
 		/// <summary>Distortion estimation lookup table for bits coded using the
 		/// magnitude-refinement (MR) primative, for lossy coding (i.e. normal) 
@@ -579,7 +581,7 @@ namespace CSJ2K.j2k.entropy.encoder
 		/// distortion after the last bit-plane is coded is strictly 0. 
 		/// </summary>
 		//UPGRADE_NOTE: Final was removed from the declaration of 'FS_LOSSLESS '. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"
-		private static readonly int[] FS_LOSSLESS = new int[1 << (MSE_LKP_BITS - 1)];
+        private static readonly int[] FS_LOSSLESS = new int[1 << MSE_LKP_BITS_M1];
 		
 		/// <summary>Distortion estimation lookup table for bits coded using the
 		/// magnitude-refinement (MR) primative, for lossless coding and last
@@ -1189,7 +1191,7 @@ namespace CSJ2K.j2k.entropy.encoder
 								stime = (System.DateTime.Now.Ticks - 621355968000000000) / 10000;
 #endif
 							}
-							catch (System.Threading.ThreadInterruptedException e)
+							catch (System.Threading.ThreadInterruptedException)
 							{
 							}
 						}
@@ -1663,7 +1665,7 @@ namespace CSJ2K.j2k.entropy.encoder
 			dist = 0;
 			// We use the MSE_LKP_BITS-1 bits below the bit just coded for
 			// distortion estimation.
-			shift = bp - (MSE_LKP_BITS - 1);
+			shift = bp - MSE_LKP_BITS_M1;
 			upshift = (shift >= 0)?0:- shift;
 			downshift = (shift <= 0)?0:shift;
 			causal = (options & CSJ2K.j2k.entropy.StdEntropyCoderOptions.OPT_VERT_STR_CAUSAL) != 0;
@@ -1744,7 +1746,7 @@ namespace CSJ2K.j2k.entropy.encoder
 								}
 								// Update distortion
 								normval = (data[k] >> downshift) << upshift;
-								dist += fs[normval & ((1 << (MSE_LKP_BITS - 1)) - 1)];
+                                dist += fs[normval & ((1 << MSE_LKP_BITS_M1) - 1)];
 							}
 							else
 							{
@@ -1793,7 +1795,7 @@ namespace CSJ2K.j2k.entropy.encoder
 								}
 								// Update distortion
 								normval = (data[k] >> downshift) << upshift;
-								dist += fs[normval & ((1 << (MSE_LKP_BITS - 1)) - 1)];
+                                dist += fs[normval & ((1 << MSE_LKP_BITS_M1) - 1)];
 							}
 							else
 							{
@@ -1849,7 +1851,7 @@ namespace CSJ2K.j2k.entropy.encoder
 								}
 								// Update distortion
 								normval = (data[k] >> downshift) << upshift;
-								dist += fs[normval & ((1 << (MSE_LKP_BITS - 1)) - 1)];
+                                dist += fs[normval & ((1 << MSE_LKP_BITS_M1) - 1)];
 							}
 							else
 							{
@@ -1898,7 +1900,7 @@ namespace CSJ2K.j2k.entropy.encoder
 								}
 								// Update distortion
 								normval = (data[k] >> downshift) << upshift;
-								dist += fs[normval & ((1 << (MSE_LKP_BITS - 1)) - 1)];
+                                dist += fs[normval & ((1 << MSE_LKP_BITS_M1) - 1)];
 							}
 							else
 							{
@@ -2030,7 +2032,7 @@ namespace CSJ2K.j2k.entropy.encoder
 			dist = 0;
 			// We use the MSE_LKP_BITS-1 bits below the bit just coded for
 			// distortion estimation.
-			shift = bp - (MSE_LKP_BITS - 1);
+			shift = bp - MSE_LKP_BITS_M1;
 			upshift = (shift >= 0)?0:- shift;
 			downshift = (shift <= 0)?0:shift;
 			causal = (options & CSJ2K.j2k.entropy.StdEntropyCoderOptions.OPT_VERT_STR_CAUSAL) != 0;
@@ -2112,7 +2114,7 @@ namespace CSJ2K.j2k.entropy.encoder
 								}
 								// Update distortion
 								normval = (data[k] >> downshift) << upshift;
-								dist += fs[normval & ((1 << (MSE_LKP_BITS - 1)) - 1)];
+                                dist += fs[normval & ((1 << MSE_LKP_BITS_M1) - 1)];
 							}
 							else
 							{
@@ -2162,7 +2164,7 @@ namespace CSJ2K.j2k.entropy.encoder
 								}
 								// Update distortion
 								normval = (data[k] >> downshift) << upshift;
-								dist += fs[normval & ((1 << (MSE_LKP_BITS - 1)) - 1)];
+                                dist += fs[normval & ((1 << MSE_LKP_BITS_M1) - 1)];
 							}
 							else
 							{
@@ -2218,7 +2220,7 @@ namespace CSJ2K.j2k.entropy.encoder
 								}
 								// Update distortion
 								normval = (data[k] >> downshift) << upshift;
-								dist += fs[normval & ((1 << (MSE_LKP_BITS - 1)) - 1)];
+								dist += fs[normval & ((1 << MSE_LKP_BITS_M1) - 1)];
 							}
 							else
 							{
@@ -2267,7 +2269,7 @@ namespace CSJ2K.j2k.entropy.encoder
 								}
 								// Update distortion
 								normval = (data[k] >> downshift) << upshift;
-								dist += fs[normval & ((1 << (MSE_LKP_BITS - 1)) - 1)];
+                                dist += fs[normval & ((1 << MSE_LKP_BITS_M1) - 1)];
 							}
 							else
 							{
@@ -2383,7 +2385,7 @@ namespace CSJ2K.j2k.entropy.encoder
 			dist = 0;
 			// We use the bit just coded plus MSE_LKP_BITS-1 bits below the bit
 			// just coded for distortion estimation.
-			shift = bp - (MSE_LKP_BITS - 1);
+			shift = bp - MSE_LKP_BITS_M1;
 			upshift = (shift >= 0)?0:- shift;
 			downshift = (shift <= 0)?0:shift;
 			
@@ -2602,7 +2604,7 @@ namespace CSJ2K.j2k.entropy.encoder
 			dist = 0;
 			// We use the bit just coded plus MSE_LKP_BITS-1 bits below the bit
 			// just coded for distortion estimation.
-			shift = bp - (MSE_LKP_BITS - 1);
+			shift = bp - MSE_LKP_BITS_M1;
 			upshift = (shift >= 0)?0:- shift;
 			downshift = (shift <= 0)?0:shift;
 			
@@ -2812,7 +2814,7 @@ namespace CSJ2K.j2k.entropy.encoder
 			dist = 0;
 			// We use the MSE_LKP_BITS-1 bits below the bit just coded for
 			// distortion estimation.
-			shift = bp - (MSE_LKP_BITS - 1);
+			shift = bp - MSE_LKP_BITS_M1;
 			upshift = (shift >= 0)?0:- shift;
 			downshift = (shift <= 0)?0:shift;
 			causal = (options & CSJ2K.j2k.entropy.StdEntropyCoderOptions.OPT_VERT_STR_CAUSAL) != 0;
@@ -2883,7 +2885,7 @@ namespace CSJ2K.j2k.entropy.encoder
 							// Code sign of sample that became significant
 							// Update distortion
 							normval = (data[k] >> downshift) << upshift;
-							dist += fs[normval & ((1 << (MSE_LKP_BITS - 1)) - 1)];
+                            dist += fs[normval & ((1 << MSE_LKP_BITS_M1) - 1)];
 							// Apply sign coding
 							sym = SupportClass.URShift(data[k], 31);
 							if ((rlclen & 0x01) == 0)
@@ -3043,7 +3045,7 @@ namespace CSJ2K.j2k.entropy.encoder
 									}
 									// Update distortion
 									normval = (data[k] >> downshift) << upshift;
-									dist += fs[normval & ((1 << (MSE_LKP_BITS - 1)) - 1)];
+									dist += fs[normval & ((1 << MSE_LKP_BITS_M1) - 1)];
 								}
 							}
 							if (sheight < 2)
@@ -3089,7 +3091,7 @@ namespace CSJ2K.j2k.entropy.encoder
 									}
 									// Update distortion
 									normval = (data[k] >> downshift) << upshift;
-									dist += fs[normval & ((1 << (MSE_LKP_BITS - 1)) - 1)];
+									dist += fs[normval & ((1 << MSE_LKP_BITS_M1) - 1)];
 								}
 							}
 						}
@@ -3147,7 +3149,7 @@ top_half_brk: ;
 								}
 								// Update distortion
 								normval = (data[k] >> downshift) << upshift;
-								dist += fs[normval & ((1 << (MSE_LKP_BITS - 1)) - 1)];
+								dist += fs[normval & ((1 << MSE_LKP_BITS_M1) - 1)];
 							}
 						}
 						if (sheight < 4)
@@ -3193,7 +3195,7 @@ top_half_brk: ;
 								}
 								// Update distortion
 								normval = (data[k] >> downshift) << upshift;
-								dist += fs[normval & ((1 << (MSE_LKP_BITS - 1)) - 1)];
+								dist += fs[normval & ((1 << MSE_LKP_BITS_M1) - 1)];
 							}
 						}
 					}
@@ -3721,10 +3723,10 @@ top_half_brk: ;
 				// Initialize the distortion estimation lookup tables
 				
 				// fs tables
-				for (i = 0; i < (1 << (MSE_LKP_BITS - 1)); i++)
+				for (i = 0; i < (1 << MSE_LKP_BITS_M1); i++)
 				{
 					// In fs we index by val-1, since val is really: 1 <= val < 2
-					val = (double) i / (1 << (MSE_LKP_BITS - 1)) + 1.0;
+					val = (double) i / (1 << MSE_LKP_BITS_M1) + 1.0;
 					deltaMSE = val * val;
 					//UPGRADE_WARNING: Data types in Visual C# might be different.  Verify the accuracy of narrowing conversions. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1042'"
 					FS_LOSSLESS[i] = (int) System.Math.Floor(deltaMSE * ((double) (1 << MSE_LKP_FRAC_BITS)) + 0.5);
@@ -3737,11 +3739,11 @@ top_half_brk: ;
 				// fm tables
 				for (i = 0; i < (1 << MSE_LKP_BITS); i++)
 				{
-					val = (double) i / (1 << (MSE_LKP_BITS - 1));
+					val = (double) i / (1 << MSE_LKP_BITS_M1);
 					deltaMSE = (val - 1.0) * (val - 1.0);
 					//UPGRADE_WARNING: Data types in Visual C# might be different.  Verify the accuracy of narrowing conversions. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1042'"
 					FM_LOSSLESS[i] = (int) System.Math.Floor(deltaMSE * ((double) (1 << MSE_LKP_FRAC_BITS)) + 0.5);
-					val -= ((i < (1 << (MSE_LKP_BITS - 1)))?0.5:1.5);
+					val -= ((i < (1 << MSE_LKP_BITS_M1))?0.5:1.5);
 					deltaMSE -= val * val;
 					//UPGRADE_WARNING: Data types in Visual C# might be different.  Verify the accuracy of narrowing conversions. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1042'"
 					FM_LOSSY[i] = (int) System.Math.Floor(deltaMSE * ((double) (1 << MSE_LKP_FRAC_BITS)) + 0.5);

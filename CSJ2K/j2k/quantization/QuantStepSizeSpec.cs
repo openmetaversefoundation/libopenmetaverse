@@ -138,7 +138,7 @@ namespace CSJ2K.j2k.quantization
 							//UPGRADE_WARNING: Data types in Visual C# might be different.  Verify the accuracy of narrowing conversions. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1042'"
 							value_Renamed = System.Single.Parse(word);
 						}
-						catch (System.FormatException e)
+						catch (System.FormatException)
 						{
 							throw new System.ArgumentException("Bad parameter for " + "-Qstep option : " + word);
 						}

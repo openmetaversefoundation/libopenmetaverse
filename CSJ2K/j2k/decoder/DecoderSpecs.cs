@@ -77,7 +77,7 @@ namespace CSJ2K.j2k.decoder
 					decSpec2 = (DecoderSpecs) this.Clone();
 				}
 				//UPGRADE_NOTE: Exception 'java.lang.CloneNotSupportedException' was converted to 'System.Exception' which has different behavior. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1100'"
-				catch (System.Exception e)
+				catch (System.Exception)
 				{
 					throw new System.ApplicationException("Cannot clone the DecoderSpecs instance");
 				}
