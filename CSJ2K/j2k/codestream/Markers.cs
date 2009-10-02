@@ -151,7 +151,9 @@ namespace CSJ2K.j2k.codestream
 		public const short CRG = unchecked((short)0xff63);
 		/// <summary>Comment (COM): 0xFF64 </summary>
 		public const short COM = unchecked((short)0xff64);
-		/// <summary>General use registration value (COM): 0x0001 </summary>
-		public const short RCOM_GEN_USE = unchecked((short)0x0001);
+        /// <summary>General use registration value (binary) (COM): 0x0000 </summary>
+        public const short RCOM_BINARY = unchecked((short)0x0000);
+		/// <summary>General use registration value (latin) (COM): 0x0001 </summary>
+		public const short RCOM_LATIN = unchecked((short)0x0001);
 	}
 }

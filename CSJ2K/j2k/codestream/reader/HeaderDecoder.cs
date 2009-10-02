@@ -865,16 +865,15 @@ namespace CSJ2K.j2k.codestream.reader
 			ms.rcom = ehs.ReadUInt16();
 			switch (ms.rcom)
 			{
-				
-				case CSJ2K.j2k.codestream.Markers.RCOM_GEN_USE: 
+				case CSJ2K.j2k.codestream.Markers.RCOM_BINARY:
+                case CSJ2K.j2k.codestream.Markers.RCOM_LATIN:
 					ms.ccom = new byte[ms.lcom - 4];
 					for (int i = 0; i < ms.lcom - 4; i++)
 					{
 						ms.ccom[i] = ehs.ReadByte();
 					}
 					break;
-				
-				default: 
+				default:
 					// --- Unknown or unsupported markers ---
 					// (skip them and see if we can get way with it)
 					FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.WARNING, "COM marker registered as 0x" + System.Convert.ToString(ms.rcom, 16) + " unknown, ignoring (this might crash the " + "decoder or decode a quality degraded or even " + "useless image)");
