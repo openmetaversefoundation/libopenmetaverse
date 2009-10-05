@@ -82,8 +82,25 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// 
+        /// Modifier flags sent to DirectoryManager to select the behaviour of the
+        /// query
         /// </summary>
+        /// Land Search Flags required in addition to specify land maturity rating:
+        /// <example>
+        /// <code>PgSimsOnly | SortAsc | PerMeterSort | IncludePG | IncludeAdult</code>
+        /// would sort the results ascending, sort by sale price/m2, Include only Adult and PG Land
+        /// in the search results.
+        /// </example>
+        /// <list type="table">  
+        /// <listheader><term>Desired Query</term><description>Required Flags</description></listheader>  
+        /// <item><term>PG</term><description>PgSimsOnly | IncludePG</description></item>  
+        /// <item><term>PG+Mature</term><description>IncludePG | IncludeMature</description></item>  
+        /// <item><term>PG+Mature+Adult</term><description>IncludePG | IncludeMature | IncludeAdult</description></item>  
+        /// <item><term>Mature+Adult</term><description>MatureSimsOnly | IncludeMature | IncludeAdult</description></item>  
+        /// <item><term>Adult</term><description>IncludeAdult</description></item>  
+        /// <item><term>Mature</term><description>MatureSimsOnly | IncludeMature</description></item>  
+        /// <item><term>PG+Adult</term><description>PgSimsOnly | IncludePG | IncludeAdult</description></item>
+        /// </list>   
         [Flags]
         public enum DirFindFlags
         {
@@ -132,7 +149,19 @@ namespace OpenMetaverse
             /// <summary></summary>
             LimitByPrice = 1 << 20,
             /// <summary></summary>
-            LimitByArea = 1 << 21
+            LimitByArea = 1 << 21,
+            /// <summary></summary>
+            FilterMature = 1 << 22,
+            /// <summary></summary>
+            PGOnly = 1 << 23,
+            /// <summary>Include PG land in results</summary>
+            IncludePG = 1 << 24,
+            /// <summary>Include Mature land in results</summary>
+            IncludeMature = 1 << 25,
+            /// <summary>Include Adult land in results</summary>
+            IncludeAdult = 1 << 26,
+            /// <summary></summary>
+            AdultOnly = 1 << 27                   
         }
 
         /// <summary>
@@ -141,6 +170,8 @@ namespace OpenMetaverse
         [Flags]
         public enum SearchTypeFlags
         {
+            /// <summary>Search Auction, Mainland and Estate</summary>
+            Any = -1,
             /// <summary>Do not search</summary>
             None = 0,
             /// <summary>Land which is currently up for auction</summary>
