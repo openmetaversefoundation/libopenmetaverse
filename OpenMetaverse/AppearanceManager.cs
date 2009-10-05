@@ -199,7 +199,7 @@ namespace OpenMetaverse
 
         #endregion Structs / Classes
 
-        #region Delegates / Events
+        #region Delegates
 
         /// <summary>Triggered when an AgentWearablesUpdate packet is received,
         /// telling us what our avatar is currently wearing</summary>
@@ -213,7 +213,16 @@ namespace OpenMetaverse
         /// the main appearance thread is done.</summary>
         /// <param name="success">Indicates whether appearance setting was successful</param>
         public delegate void AppearanceSetCallback(bool success);
+        /// <summary>
+        /// Triggered when the simulator sends a request for this agent to rebake
+        /// its appearance
+        /// </summary>
+        /// <param name="textureID">The ID of the Texture Layer to bake</param>
+        public delegate void RebakeAvatarCallback(UUID textureID);
+        
+        #endregion
 
+        #region Events
         /// <summary>Triggered when an AgentWearablesUpdate packet is received,
         /// telling us what our avatar is currently wearing</summary>
         public event AgentWearablesCallback OnAgentWearables;
@@ -226,7 +235,11 @@ namespace OpenMetaverse
         /// the main appearance thread is done.
         /// </summary>
         public event AppearanceSetCallback OnAppearanceSet;
-        #endregion Delegates / Events
+        /// <summary>
+        /// Triggered when the simulator requests the agent rebake its appearance.
+        /// </summary>
+        public event RebakeAvatarCallback OnRebakeAvatar;
+        #endregion Events
 
         #region Properties
 
@@ -272,7 +285,7 @@ namespace OpenMetaverse
 
             Client.Network.RegisterCallback(PacketType.AgentWearablesUpdate, AgentWearablesUpdateHandler);
             Client.Network.RegisterCallback(PacketType.AgentCachedTextureResponse, AgentCachedTextureResponseHandler);
-            //Client.Network.RegisterCallback(PacketType.RebakeAvatarTextures, RebakeAvatarTexturesHandler);
+            Client.Network.RegisterCallback(PacketType.RebakeAvatarTextures, RebakeAvatarTexturesHandler);
 
             Client.Network.OnEventQueueRunning += Network_OnEventQueueRunning;
         }
@@ -1790,6 +1803,23 @@ namespace OpenMetaverse
                     try { callback(); }
                     catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                 }
+            }
+        }
+
+        private void RebakeAvatarTexturesHandler(Packet packet, Simulator simulator)
+        {
+            RebakeAvatarTexturesPacket rebake = (RebakeAvatarTexturesPacket)packet;
+
+            // allow the library to do the rebake
+            if (Client.Settings.SEND_AGENT_APPEARANCE)
+            {
+                RequestSetAppearance(true);
+            }
+
+            if (OnRebakeAvatar != null)
+            {
+                try { OnRebakeAvatar(rebake.TextureData.TextureID); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
             }
         }
 
