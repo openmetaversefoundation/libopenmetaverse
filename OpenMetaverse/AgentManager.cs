@@ -2820,7 +2820,7 @@ namespace OpenMetaverse
             pick.Data.ParcelID = parcelID;
             pick.Data.Name = Utils.StringToBytes(name);
             pick.Data.SnapshotID = textureID;
-            pick.Data.PosGlobal = Client.Self.GlobalPosition;
+            pick.Data.PosGlobal = globalPosition;
             pick.Data.SortOrder = 0;
             pick.Data.Enabled = false;
 
