@@ -1828,7 +1828,7 @@ namespace OpenMetaverse
                     #region Avatar
                     case PCode.Avatar:
                         // Update some internals if this is our avatar
-                        if (block.FullID == Client.Self.AgentID)
+                        if (block.FullID == Client.Self.AgentID && simulator == Client.Network.CurrentSim)
                         {
                             #region Update Client.Self
 
@@ -2639,8 +2639,13 @@ namespace OpenMetaverse
         /// <param name="oldSeatID"></param>
         protected void SetAvatarSittingOn(Simulator sim, Avatar av, uint localid, uint oldSeatID)
         {
-            if (av.LocalID == Client.Self.localID) Client.Self.sittingOn = localid;
+            if (Client.Network.CurrentSim == sim && av.LocalID == Client.Self.localID)
+            {
+                Client.Self.sittingOn = localid;
+            }
+            
             av.ParentID = localid;
+            
 
             if (OnAvatarSitChanged != null && oldSeatID != localid)
             {
