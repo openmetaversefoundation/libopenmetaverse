@@ -69,7 +69,7 @@ public class Analyst : ProxyPlugin
 
     public override void Init()
     {
-        openmvAssembly = Assembly.Load("OpenMetaverse");
+        openmvAssembly = Assembly.Load("OpenMetaverseCore");
         if (openmvAssembly == null) throw new Exception("Assembly load exception");
 
         // build the table of /command delegates
