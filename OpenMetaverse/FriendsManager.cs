@@ -405,17 +405,15 @@ namespace OpenMetaverse
         /// <param name="message">A message to send with the request</param>
         public void OfferFriendship(UUID agentID, string message)
         {
-            // HACK: folder id stored as "message"
-            UUID callingCardFolder = Client.Inventory.FindFolderForType(AssetType.CallingCard);
             Client.Self.InstantMessage(Client.Self.Name,
                 agentID,
-                callingCardFolder.ToString(),
+                message,
                 UUID.Random(),
                 InstantMessageDialog.FriendshipOffered,
-                InstantMessageOnline.Online,
+                InstantMessageOnline.Offline,
                 Client.Self.SimPosition,
                 Client.Network.CurrentSim.ID,
-                Utils.StringToBytes(message));
+                null);
         }
 
 
@@ -511,6 +509,27 @@ namespace OpenMetaverse
             stalk.TargetData.PreyID = friendID;
 
             Client.Network.SendPacket(stalk);
+        }
+
+        /// <summary>
+        /// Ask for a notification of friend's online status
+        /// </summary>
+        /// <param name="friendID">Friend's UUID</param>
+        public void RequestOnlineNotification(UUID friendID)
+        {
+            GenericMessagePacket gmp = new GenericMessagePacket();
+
+            gmp.AgentData.AgentID = Client.Self.AgentID;
+            gmp.AgentData.SessionID = Client.Self.SessionID;
+            gmp.AgentData.TransactionID = UUID.Zero;
+
+            gmp.MethodData.Method = Utils.StringToBytes("requestonlinenotification");
+            gmp.MethodData.Invoice = UUID.Zero;
+            gmp.ParamList = new GenericMessagePacket.ParamListBlock[1];
+            gmp.ParamList[0] = new GenericMessagePacket.ParamListBlock();
+            gmp.ParamList[0].Parameter = Utils.StringToBytes(friendID.ToString());
+
+            Client.Network.SendPacket(gmp);
         }
 
         #endregion
@@ -747,6 +766,7 @@ namespace OpenMetaverse
                     try { OnFriendshipResponse(im.FromAgentID, im.FromAgentName, true); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
+                RequestOnlineNotification(im.FromAgentID);
             }
             else if (im.Dialog == InstantMessageDialog.FriendshipDeclined)
             {
