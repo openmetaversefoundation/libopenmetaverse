@@ -34,7 +34,7 @@ using OpenMetaverse.Messages.Linden;
 namespace OpenMetaverse
 {
     /// <summary>
-    /// Access to the Linden dataserver which allows searching for land, events, people, etc
+    /// Access to the dataserver which allows searching for land, events, people, etc
     /// </summary>
     public class DirectoryManager
     {
@@ -43,11 +43,11 @@ namespace OpenMetaverse
         /// </summary>
         public enum ClassifiedCategories
         {
-            /// <summary></summary>
+            /// <summary>Classified is listed in the Any category</summary>
             Any = 0,
-            /// <summary></summary>
+            /// <summary>Classified is shopping related</summary>
             Shopping,
-            /// <summary></summary>
+            /// <summary>Classified is </summary>
             LandRental,
             /// <summary></summary>
             PropertyRental,
@@ -65,24 +65,37 @@ namespace OpenMetaverse
             Personal
         }
 
+        /// <summary></summary>
         public enum EventCategories
         {
+            /// <summary></summary>
             All = 0,
+            /// <summary></summary>
             Discussion = 18,
+            /// <summary></summary>
             Sports = 19,
+            /// <summary></summary>
             LiveMusic = 20,
+            /// <summary></summary>
             Commercial = 22,
+            /// <summary></summary>
             Nightlife = 23,
+            /// <summary></summary>
             Games = 24,
+            /// <summary></summary>
             Pageants = 25,
+            /// <summary></summary>
             Education = 26,
+            /// <summary></summary>
             Arts = 27,
+            /// <summary></summary>
             Charity = 28,
+            /// <summary></summary>
             Miscellaneous = 29
         }
 
         /// <summary>
-        /// Modifier flags sent to DirectoryManager to select the behaviour of the
+        /// Modifier flags sent to DirectoryManager to change the behavior of the
         /// query
         /// </summary>
         /// Land Search Flags required in addition to specify land maturity rating:
@@ -202,14 +215,56 @@ namespace OpenMetaverse
             public UUID ID;
             /// <summary>The title of this classified ad</summary>
             public string Name;
-            /// <summary>Unknown</summary>
-            public byte Flags;
+            /// <summary>Flags that show certain options applied to the classified</summary>
+            public ClassifiedFlags Flags;
             /// <summary>Creation date of the ad</summary>
             public DateTime CreationDate;
             /// <summary>Expiration date of the ad</summary>
             public DateTime ExpirationDate;
             /// <summary>Price that was paid for this ad</summary>
             public int Price;
+
+            /// <summary>
+            /// Display a classified ad in a one line human readable format
+            /// </summary>
+            /// <returns>A string representing a single classified ad</returns>
+            public override string ToString()
+            {
+                return String.Format("Classified Ad: ID: {0}, Name: {1}, Flags: [{2}] {3}, Created: {4}, Expires: {5}, Paid: {6}",
+                    this.ID, this.Name, this.Flags, this.Flags.ToString(), this.CreationDate, this.ExpirationDate, this.Price);
+            }
+        }
+
+        /// <summary>
+        /// Classified Ad Options
+        /// </summary>
+        /// <remarks>There appear to be two formats the flags are packed in.
+        /// This set of flags is for the newer style</remarks>
+        [Flags]
+        public enum ClassifiedFlags : byte
+        {
+            None = 1 << 0,
+            Mature = 1 << 1,
+            Enabled = 1 << 2,
+            // HasPrice = 1 << 3, // Deprecated
+            UpdateTime = 1 << 4,
+            AutoRenew = 1 << 5         
+        }
+
+        /// <summary>
+        /// Classified ad query options
+        /// </summary>
+        [Flags]
+        public enum ClassifiedQueryFlags
+        {
+            /// <summary>Include all ads in results</summary>
+            All = PG | Mature | Adult,
+            /// <summary>Include PG ads in results</summary>
+            PG = 1 << 2,
+            /// <summary>Include Mature ads in results</summary>
+            Mature = 1 << 3,
+            /// <summary>Include Adult ads in results</summary>
+            Adult = 1 << 6,
         }
 
         /// <summary>
@@ -245,9 +300,10 @@ namespace OpenMetaverse
             public string FirstName;
             /// <summary>Agents last name</summary>
             public string LastName;
-            /// <summary>Agents <seealso cref="T:OpenMetaverse.UUID"/></summary>
+            /// <summary>Agents <see cref="UUID"/></summary>
             public UUID AgentID;
         }
+
         /// <summary>
         ///  Response to a "Groups" Search
         /// </summary>
@@ -394,7 +450,10 @@ namespace OpenMetaverse
 
         private GridClient Client;
 
-
+        /// <summary>
+        /// Constructs a new instance of the DirectoryManager class
+        /// </summary>
+        /// <param name="client">An instance of GridClient</param>
         public DirectoryManager(GridClient client)
         {
             Client = client;
@@ -410,18 +469,58 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.DirEventsReply, new NetworkManager.PacketCallback(EventsReplyHandler));
             Client.Network.RegisterCallback(PacketType.EventInfoReply, new NetworkManager.PacketCallback(EventInfoReplyHandler));
             Client.Network.RegisterCallback(PacketType.DirPlacesReply, new NetworkManager.PacketCallback(DirPlacesReplyHandler));
-
         }
 
-        public UUID StartClassifiedSearch(string searchText, ClassifiedCategories categories, bool mature)
+        // Obsoleted due to new Adult search option
+        [Obsolete("Use Overload with ClassifiedQueryFlags option instead")]
+        public UUID StartClassifiedSearch(string searchText, ClassifiedCategories category, bool mature)
         {
+            return UUID.Zero;
+        }
+
+        /// <summary>
+        /// Query the data server for a list of classified ads containing the specified string.
+        /// Defaults to searching for classified placed in any category, and includes PG, Adult and Mature 
+        /// results.
+        /// 
+        /// Responses are sent 16 at a time, there is no way to know how many results a query reply will contain however assuming
+        /// the reply packets arrived ordered, a response with less than 16 entries would indicate all results have been received
+        /// </summary>
+        /// <param name="searchText">A string containing a list of keywords to search for</param>
+        /// <returns>A UUID to correlate the results when the <see cref="OnClassifiedReply"/> event is raised</returns>
+        public UUID StartClassifiedSearch(string searchText)
+        {
+            return StartClassifiedSearch(searchText, ClassifiedCategories.Any, ClassifiedQueryFlags.All);            
+        }
+
+        /// <summary>
+        /// Query the data server for a list of classified ads which contain specified keywords (Overload)
+        /// </summary>
+        /// <param name="searchText">A string containing a list of keywords to search for</param>
+        /// <param name="category">The category to search</param>
+        /// <param name="queryFlags">A set of flags which can be ORed to modify query options 
+        /// such as classified maturity rating.</param>
+        /// <returns>A UUID to correlate the results when the <see cref="OnClassifiedReply"/> event is raised</returns>
+        /// <example>
+        /// Search classified ads containing the key words "foo" and "bar" in the "Any" category that are either PG or Mature
+        /// <code>
+        /// UUID searchID = StartClassifiedSearch("foo bar", ClassifiedCategories.Any, ClassifiedQueryFlags.PG | ClassifiedQueryFlags.Mature);
+        /// </code>
+        /// </example>
+        /// <remarks>        
+        /// Responses are sent 16 at a time, there is no way to know how many results a query reply will contain however assuming
+        /// the reply packets arrived ordered, a response with less than 16 entries would indicate all results have been received
+        /// </remarks>
+        public UUID StartClassifiedSearch(string searchText, ClassifiedCategories category, ClassifiedQueryFlags queryFlags)
+        {            
             DirClassifiedQueryPacket query = new DirClassifiedQueryPacket();
             UUID queryID = UUID.Random();
 
             query.AgentData.AgentID = Client.Self.AgentID;
             query.AgentData.SessionID = Client.Self.SessionID;
-            query.QueryData.Category = (uint)categories;
-            query.QueryData.QueryFlags = (uint)(mature ? 0 : 2);
+
+            query.QueryData.Category = (uint)category;
+            query.QueryData.QueryFlags = (uint)queryFlags;
             query.QueryData.QueryID = queryID;
             query.QueryData.QueryText = Utils.StringToBytes(searchText);
 
@@ -474,7 +573,7 @@ namespace OpenMetaverse
         /// each query.</remarks>
         public UUID StartLandSearch(SearchTypeFlags typeFlags)
         {
-            return StartLandSearch(DirFindFlags.SortAsc | DirFindFlags.PerMeterSort, typeFlags, 0, 0, 0);
+            return StartLandSearch(DirFindFlags.SortAsc | DirFindFlags.PerMeterSort, typeFlags, 0, 0, 0);            
         }
 
         /// <summary>
@@ -541,6 +640,7 @@ namespace OpenMetaverse
 
             return queryID;
         }
+
         /// <summary>
         /// Starts a search for a Group in the directory manager
         /// </summary>
@@ -561,6 +661,14 @@ namespace OpenMetaverse
             return StartGroupSearch(findFlags, searchText, queryStart, UUID.Random());
         }
 
+        /// <summary>
+        /// Search for groups
+        /// </summary>
+        /// <param name="findFlags"></param>
+        /// <param name="searchText"></param>
+        /// <param name="queryStart"></param>
+        /// <param name="queryID"></param>
+        /// <returns></returns>
         public UUID StartGroupSearch(DirFindFlags findFlags, string searchText, int queryStart, UUID queryID)
         {
             DirFindQueryPacket find = new DirFindQueryPacket();
@@ -574,11 +682,26 @@ namespace OpenMetaverse
             return queryID;
         }
 
+        /// <summary>
+        /// Search the people directory for other avatars
+        /// </summary>
+        /// <param name="findFlags"></param>
+        /// <param name="searchText"></param>
+        /// <param name="queryStart"></param>
+        /// <returns></returns>
         public UUID StartPeopleSearch(DirFindFlags findFlags, string searchText, int queryStart)
         {
             return StartPeopleSearch(findFlags, searchText, queryStart, UUID.Random());
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="findFlags"></param>
+        /// <param name="searchText"></param>
+        /// <param name="queryStart"></param>
+        /// <param name="queryID"></param>
+        /// <returns></returns>
         public UUID StartPeopleSearch(DirFindFlags findFlags, string searchText, int queryStart, UUID queryID)
         {
             DirFindQueryPacket find = new DirFindQueryPacket();
@@ -595,7 +718,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Search "places" for Land you personally own
+        /// Search "places" for parcels of land you personally own
         /// </summary>
         public UUID StartPlacesSearch()
         {
@@ -764,7 +887,7 @@ namespace OpenMetaverse
 
                     classified.CreationDate = Utils.UnixTimeToDateTime(block.CreationDate);
                     classified.ExpirationDate = Utils.UnixTimeToDateTime(block.ExpirationDate);
-                    classified.Flags = block.ClassifiedFlags;
+                    classified.Flags = (ClassifiedFlags)block.ClassifiedFlags;
                     classified.ID = block.ClassifiedID;
                     classified.Name = Utils.BytesToString(block.Name);
                     classified.Price = block.PriceForListing;

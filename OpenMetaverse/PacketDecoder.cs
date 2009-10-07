@@ -115,9 +115,12 @@ namespace OpenMetaverse.Packets
             AddCallback("TransferInfo.TargetType", DecodeTransferTargetType);
             AddCallback("TransferData.ChannelType", DecodeTransferChannelType);
             // Directory Manager
+            AddCallback("DirClassifiedQuery.QueryData.QueryFlags", DecodeDirClassifiedQueryFlags);
             AddCallback("QueryData.QueryFlags", DecodeDirQueryFlags);
             AddCallback("Category", DecodeCategory);
             AddCallback("QueryData.SearchType", SearchTypeFlags);
+
+            AddCallback("ClassifiedFlags", DecodeDirClassifiedFlags);
 
             AddCallback("ParcelAccessListRequest.Data.Flags", DecodeParcelACL);
             AddCallback("ParcelAccessListReply.Data.Flags", DecodeParcelACL);
@@ -845,6 +848,22 @@ namespace OpenMetaverse.Packets
                 "(" + (DirectoryManager.DirFindFlags)(uint)fieldData + ")");
         }
 
+        private static string DecodeDirClassifiedQueryFlags(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-10} {2,-29} [ClassifiedQueryFlags]",
+                fieldName,
+                fieldData,
+                "(" + (DirectoryManager.ClassifiedQueryFlags)(uint)fieldData + ")");
+        }
+
+        private static string DecodeDirClassifiedFlags(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-10} {2,-29} [ClassifiedFlags]",
+                fieldName,
+                fieldData,
+                "(" + (DirectoryManager.ClassifiedFlags)(byte)fieldData + ")");
+        }
+        
         private static string DecodeParcelACL(string fieldName, object fieldData)
         {
             return String.Format("{0,30}: {1,-10} {2,-29} [AccessList]",

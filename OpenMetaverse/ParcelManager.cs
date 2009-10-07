@@ -117,34 +117,34 @@ namespace OpenMetaverse
     }
 
     /// <summary>
-    /// 
+    /// The tool to use when modifying terrain levels
     /// </summary>
     public enum TerraformAction : byte
     {
-        /// <summary></summary>
+        /// <summary>Level the terrain</summary>
         Level = 0,
-        /// <summary></summary>
+        /// <summary>Raise the terrain</summary>
         Raise = 1,
-        /// <summary></summary>
+        /// <summary>Lower the terrain</summary>
         Lower = 2,
-        /// <summary></summary>
+        /// <summary>Smooth the terrain</summary>
         Smooth = 3,
-        /// <summary></summary>
+        /// <summary>Add random noise to the terrain</summary>
         Noise = 4,
-        /// <summary></summary>
+        /// <summary>Revert terrain to simulator default</summary>
         Revert = 5
     }
 
     /// <summary>
-    /// 
+    /// The tool size to use when changing terrain levels
     /// </summary>
     public enum TerraformBrushSize : byte
     {
-        /// <summary></summary>
+        /// <summary>Small</summary>
         Small = 1,
-        /// <summary></summary>
+        /// <summary>Medium</summary>
         Medium = 2,
-        /// <summary></summary>
+        /// <summary>Large</summary>
         Large = 4
     }
 
@@ -178,6 +178,7 @@ namespace OpenMetaverse
     /// the BorderWest and BorderSouth values are bit flags that get attached
     /// to the value stored in the first three bits. Bits four, five, and six
     /// are unused</remarks>
+    [Flags]
     public enum ParcelOverlayType : byte
     {
         /// <summary>Public land</summary>
