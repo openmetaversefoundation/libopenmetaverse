@@ -70,7 +70,7 @@ namespace WinGridProxy
 
         public ProxyManager(string port, string listenIP, string loginUri)
         {
-            openmvAssembly = Assembly.Load("OpenMetaverseCore");
+            openmvAssembly = Assembly.Load("OpenMetaverse");
             if (openmvAssembly == null) throw new Exception("Assembly load exception");
 
             _Port = string.Format("--proxy-login-port={0}", port);
