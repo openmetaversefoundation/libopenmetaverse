@@ -146,32 +146,6 @@
       </Files>
     </Project>
 
-	<Project name="OpenMetaverseCore" path="OpenMetaverseCore" type="Library" rootNamespace="OpenMetaverse" frameworkVersion="v3_5">
-      <Configuration name="Debug">
-        <Options>
-          <OutputPath>../bin/</OutputPath>
-        </Options>
-      </Configuration>
-      <Configuration name="Release">
-        <Options>
-          <OutputPath>../bin/</OutputPath>
-          <XmlDocFile>OpenMetaverseCore.XML</XmlDocFile>
-        </Options>
-      </Configuration>
-
-      <ReferencePath>../bin/</ReferencePath>
-      <Reference name="System"/>
-      <Reference name="System.Xml"/>
-      <Reference name="System.Core"/>
-      <Reference name="System.Data"/>
-      <Reference name="OpenMetaverseTypes"/>
-      <Reference name="OpenMetaverse.StructuredData"/>
-      <Reference name="log4net"/>      
-      <Files>
-        <Match pattern="*.cs" recurse="true"/>
-      </Files>
-    </Project>
-
     <Project name="OpenMetaverse" path="OpenMetaverse" type="Library" rootNamespace="OpenMetaverse" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
@@ -191,7 +165,6 @@
       <Reference name="System.Xml"/>
       <Reference name="System.Data"/>
       <Reference name="System.Drawing"/>
-      <Reference name="OpenMetaverseCore"/>
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="OpenMetaverse.Http"/>
@@ -221,7 +194,6 @@
       <Reference name="System.Xml"/>
       <Reference name="System.Data"/>
       <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseCore"/>      
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="OpenMetaverse.Http"/>
@@ -248,7 +220,6 @@
       <Reference name="System.Data"/>
       <Reference name="nunit.framework.dll"/>
       <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseCore"/>      
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
       <Files>
@@ -272,7 +243,6 @@
       <Reference name="System"/>
       <Reference name="System.Xml"/>
       <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseCore"/>
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="OpenMetaverse.Http"/>
@@ -366,7 +336,6 @@
       <Reference name="System.Data"/>
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
-      <Reference name="OpenMetaverseCore"/>
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
       <Files>
@@ -425,7 +394,6 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseCore"/>      
       <Reference name="OpenMetaverseTypes"/>
 
       <Files>
@@ -452,7 +420,6 @@
       <Reference name="System"/>
       <Reference name="System.Drawing"/>
       <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseCore"/>      
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.Http"/>
 
@@ -554,7 +521,6 @@
       <Reference name="GlacialList"/>
       <Reference name="ICSharpCode.SharpZipLib"/>
       <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseCore"/>      
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
 
@@ -584,7 +550,6 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseCore"/>      
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.Http"/>
 
@@ -639,7 +604,6 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseCore"/>      
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.Http"/>
       <Reference name="OpenMetaverse.StructuredData"/>
@@ -670,7 +634,6 @@
       <Reference name="System"/>
       <Reference name="System.Xml"/>
       <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseCore"/>      
       <Reference name="OpenMetaverseTypes"/>
 
       <Files>
@@ -693,7 +656,6 @@
       <ReferencePath>../../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseCore"/>      
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.Utilities"/>
 
@@ -722,7 +684,6 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseCore"/>      
       <Reference name="OpenMetaverseTypes"/>
 
       <Files>
@@ -779,7 +740,6 @@
       <Reference name="System.Drawing"/>
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseCore"/>      
       <Reference name="OpenMetaverseTypes"/>
 
       <Files>
@@ -805,7 +765,6 @@
       <ReferencePath>../../../bin/</ReferencePath>
       <Reference name="System"/>
       <Reference name="OpenMetaverse"/>
-      <Reference name="OpenMetaverseCore"/>
       <Reference name="OpenMetaverseTypes"/>
 
       <Files>
@@ -830,7 +789,6 @@
       <Reference name="System.Xml"/>
       <Reference name="System.Web"/>
       <Reference name="System.Drawing"/>
-      <Reference name="OpenMetaverseCore"/>      
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.Utilities"/>

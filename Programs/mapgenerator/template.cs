@@ -28,6 +28,22 @@ using System;
 using System.Text;
 using OpenMetaverse;
 
+namespace OpenMetaverse
+{
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum PacketFrequency : byte
+    {
+        /// <summary></summary>
+        Low,
+        /// <summary></summary>
+        Medium,
+        /// <summary></summary>
+        High
+    }
+}
+    
 namespace OpenMetaverse.Packets
 {
     /// <summary>
