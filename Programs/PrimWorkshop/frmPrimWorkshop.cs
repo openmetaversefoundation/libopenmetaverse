@@ -275,7 +275,7 @@ namespace PrimWorkshop
 
                 if (osd != null && osd.Type == OSDType.Map)
                 {
-                    List<Primitive> primList = ClientHelpers.OSDToPrimList(osd);
+                    List<Primitive> primList = Helpers.OSDToPrimList(osd);
                     Prims = new List<FacetedMesh>(primList.Count);
 
                     for (int i = 0; i < primList.Count; i++)
