@@ -25,20 +25,24 @@
     <Preliminary>True</Preliminary>
     <PresentationStyle>Prototype</PresentationStyle>
     <DocumentationSources>
-      <DocumentationSource sourceFile="..\bin\OpenMetaverse.dll" xmlns="" />
-<DocumentationSource sourceFile="..\bin\OpenMetaverse.GUI.dll" xmlns="" />
-<DocumentationSource sourceFile="..\bin\OpenMetaverse.GUI.xml" xmlns="" />
-<DocumentationSource sourceFile="..\bin\OpenMetaverse.Http.dll" xmlns="" />
-<DocumentationSource sourceFile="..\bin\OpenMetaverse.Http.xml" xmlns="" />
-<DocumentationSource sourceFile="..\bin\OpenMetaverse.StructuredData.dll" xmlns="" />
-<DocumentationSource sourceFile="..\bin\OpenMetaverse.StructuredData.xml" xmlns="" />
-<DocumentationSource sourceFile="..\bin\OpenMetaverse.Utilities.dll" xmlns="" />
-<DocumentationSource sourceFile="..\bin\OpenMetaverse.Utilities.xml" xmlns="" />
-<DocumentationSource sourceFile="..\bin\OpenMetaverse.xml" xmlns="" />
-<DocumentationSource sourceFile="..\bin\OpenMetaverseCore.dll" xmlns="" />
-<DocumentationSource sourceFile="..\bin\OpenMetaverseCore.xml" xmlns="" />
-<DocumentationSource sourceFile="..\bin\OpenMetaverseTypes.dll" xmlns="" />
-<DocumentationSource sourceFile="..\bin\OpenMetaverseTypes.xml" xmlns="" /></DocumentationSources>
+      <DocumentationSource sourceFile="..\bin\OpenMetaverse.dll" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverse.GUI.dll" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverse.GUI.xml" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverse.Http.dll" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverse.Http.xml" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverse.StructuredData.dll" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverse.StructuredData.xml" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverse.Utilities.dll" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverse.Utilities.xml" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverse.xml" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverseTypes.dll" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverseTypes.xml" /></DocumentationSources>
+    <FrameworkVersion>3.5</FrameworkVersion>
+    <ApiFilter>
+      <Filter entryType="Namespace" fullName="" isExposed="False" xmlns="" />
+<Filter entryType="Namespace" fullName="LitJson" isExposed="False" xmlns="" />
+<Filter entryType="Namespace" fullName="OpenMetaverse.Rendering" isExposed="False" xmlns="" />
+<Filter entryType="Namespace" fullName="OpenMetaverse.Voice" isExposed="False" xmlns="" /></ApiFilter>
   </PropertyGroup>
   <!-- There are no properties for these two groups but they need to appear in
        order for Visual Studio to perform the build. -->
