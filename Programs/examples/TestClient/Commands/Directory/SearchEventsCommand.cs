@@ -28,7 +28,7 @@ namespace OpenMetaverse.TestClient.Commands
             waitQuery.Reset();
 
             Client.Directory.OnEventsReply += new DirectoryManager.EventReplyCallback(Directory_OnEventsReply);
-            Client.Directory.StartEventsSearch(searchText, true, "u", 0, DirectoryManager.EventCategories.All, UUID.Random());
+            Client.Directory.StartEventsSearch(searchText, 0);
             string result;
             if (waitQuery.WaitOne(20000, false) && Client.Network.Connected)
             {

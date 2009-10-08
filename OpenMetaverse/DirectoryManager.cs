@@ -94,30 +94,41 @@ namespace OpenMetaverse
             Miscellaneous = 29
         }
 
+        // I can be deleted as soon as the flags for DirLandQuery can be verified to not use
+        // the below listed combinations. e.g: PgSimsOnly *should not* be necessary any longer as it looks redundant
+        // -- Jim
+        //
+        // <summary>
+        // Modifier flags sent to DirectoryManager to change the behavior of the
+        // query
+        // </summary>
+        // Land Search Flags required in addition to specify land maturity rating:
+        // <example>
+        // <code>PgSimsOnly | SortAsc | PerMeterSort | IncludePG | IncludeAdult</code>
+        // would sort the results ascending, sort by sale price/m2, Include only Adult and PG Land
+        // in the search results.
+        // </example>
+        // <list type="table">  
+        // <listheader><term>Desired Query</term><description>Required Flags</description></listheader>  
+        // <item><term>PG</term><description>PgSimsOnly | IncludePG</description></item>  
+        // <item><term>PG+Mature</term><description>IncludePG | IncludeMature</description></item>  
+        // <item><term>PG+Mature+Adult</term><description>IncludePG | IncludeMature | IncludeAdult</description></item>  
+        // <item><term>Mature+Adult</term><description>MatureSimsOnly | IncludeMature | IncludeAdult</description></item>  
+        // <item><term>Adult</term><description>IncludeAdult</description></item>  
+        // <item><term>Mature</term><description>MatureSimsOnly | IncludeMature</description></item>  
+        // <item><term>PG+Adult</term><description>PgSimsOnly | IncludePG | IncludeAdult</description></item>
+        // </list>   
+        
+
         /// <summary>
-        /// Modifier flags sent to DirectoryManager to change the behavior of the
-        /// query
+        /// Query Flags used in many of the DirectoryManager methods to specify which query to execute and how to return the results.
+        /// 
+        /// Flags can be combined using the | (pipe) character
         /// </summary>
-        /// Land Search Flags required in addition to specify land maturity rating:
-        /// <example>
-        /// <code>PgSimsOnly | SortAsc | PerMeterSort | IncludePG | IncludeAdult</code>
-        /// would sort the results ascending, sort by sale price/m2, Include only Adult and PG Land
-        /// in the search results.
-        /// </example>
-        /// <list type="table">  
-        /// <listheader><term>Desired Query</term><description>Required Flags</description></listheader>  
-        /// <item><term>PG</term><description>PgSimsOnly | IncludePG</description></item>  
-        /// <item><term>PG+Mature</term><description>IncludePG | IncludeMature</description></item>  
-        /// <item><term>PG+Mature+Adult</term><description>IncludePG | IncludeMature | IncludeAdult</description></item>  
-        /// <item><term>Mature+Adult</term><description>MatureSimsOnly | IncludeMature | IncludeAdult</description></item>  
-        /// <item><term>Adult</term><description>IncludeAdult</description></item>  
-        /// <item><term>Mature</term><description>MatureSimsOnly | IncludeMature</description></item>  
-        /// <item><term>PG+Adult</term><description>PgSimsOnly | IncludePG | IncludeAdult</description></item>
-        /// </list>   
         [Flags]
         public enum DirFindFlags
         {
-            /// <summary></summary>
+            /// <summary>Query the People database</summary>
             People = 1 << 0,
             /// <summary></summary>
             Online = 1 << 1,
@@ -128,18 +139,19 @@ namespace OpenMetaverse
             Events = 1 << 3,
             /// <summary></summary>
             Groups = 1 << 4,
-            /// <summary></summary>
+            /// <summary>Query the Events database</summary>
             DateEvents = 1 << 5,
-            /// <summary></summary>
+            /// <summary>Query the land holdings database for land owned by the currently connected agent</summary>
             AgentOwned = 1 << 6,
             /// <summary></summary>
             ForSale = 1 << 7,
-            /// <summary></summary>
+            /// <summary>Query the land holdings database for land which is owned by a Group</summary>
             GroupOwned = 1 << 8,
             // <summary></summary>
             //[Obsolete]
             //Auction = 1 << 9,
-            /// <summary></summary>
+            /// <summary>Specifies the query should pre sort the results based upon traffic
+            /// when searching the Places database</summary>
             DwellSort = 1 << 10,
             /// <summary></summary>
             PgSimsOnly = 1 << 11,
@@ -149,29 +161,36 @@ namespace OpenMetaverse
             PgEventsOnly = 1 << 13,
             /// <summary></summary>
             MatureSimsOnly = 1 << 14,
-            /// <summary></summary>
+            /// <summary>Specifies the query should pre sort the results in an ascending order when searching the land sales database. 
+            /// This flag is only used when searching the land sales database</summary>
             SortAsc = 1 << 15,
-            /// <summary></summary>
+            /// <summary>Specifies the query should pre sort the results using the SalePrice field when searching the land sales database. 
+            /// This flag is only used when searching the land sales database</summary>
             PricesSort = 1 << 16,
-            /// <summary></summary>
+            /// <summary>Specifies the query should pre sort the results by calculating the average price/sq.m (SalePrice / Area) when searching the land sales database. 
+            /// This flag is only used when searching the land sales database</summary>
             PerMeterSort = 1 << 17,
-            /// <summary></summary>
+            /// <summary>Specifies the query should pre sort the results using the ParcelSize field when searching the land sales database. 
+            /// This flag is only used when searching the land sales database</summary>
             AreaSort = 1 << 18,
-            /// <summary></summary>
+            /// <summary>Specifies the query should pre sort the results using the Name field when searching the land sales database. 
+            /// This flag is only used when searching the land sales database</summary>
             NameSort = 1 << 19,
-            /// <summary></summary>
+            /// <summary>When set, only parcels less than the specified Price will be included when searching the land sales database.
+            /// This flag is only used when searching the land sales database</summary>
             LimitByPrice = 1 << 20,
-            /// <summary></summary>
+            /// <summary>When set, only parcels greater than the specified Size will be included when searching the land sales database.
+            /// This flag is only used when searching the land sales database</summary>
             LimitByArea = 1 << 21,
             /// <summary></summary>
             FilterMature = 1 << 22,
             /// <summary></summary>
             PGOnly = 1 << 23,
-            /// <summary>Include PG land in results</summary>
+            /// <summary>Include PG land in results. This flag is used when searching both the Events and Land sales databases</summary>
             IncludePG = 1 << 24,
-            /// <summary>Include Mature land in results</summary>
+            /// <summary>Include Mature land in results. This flag is used when searching both the Events and Land sales databases</summary>
             IncludeMature = 1 << 25,
-            /// <summary>Include Adult land in results</summary>
+            /// <summary>Include Adult land in results. This flag is used when searching both the Events and Land sales databases</summary>
             IncludeAdult = 1 << 26,
             /// <summary></summary>
             AdultOnly = 1 << 27                   
@@ -198,11 +217,17 @@ namespace OpenMetaverse
             Estate = 1 << 4
         }
 
-        [Flags]
+        /// <summary>
+        /// The content rating of the event
+        /// </summary>
         public enum EventFlags
         {
-            None = 0,
-            Mature = 1 << 1
+            /// <summary>Event is PG</summary>
+            PG = 0,
+            /// <summary>Event is Mature</summary>
+            Mature = 1,
+            /// <summary>Event is Adult</summary>
+            Adult = 2
         }
 
         /// <summary>
@@ -269,24 +294,38 @@ namespace OpenMetaverse
 
         /// <summary>
         /// A parcel retrieved from the dataserver such as results from the 
-        /// "For-Sale" listings
+        /// "For-Sale" listings or "Places" Search
         /// </summary>
         public struct DirectoryParcel
         {
-            /// <summary></summary>
+            /// <summary>The unique dataserver parcel ID</summary>
+            /// <remarks>This id is used to obtain additional information from the entry
+            /// by using the <see cref="ParcelManager.InfoRequest"/> method</remarks>
             public UUID ID;
-            /// <summary></summary>
+            /// <summary>A string containing the name of the parcel</summary>
             public string Name;
-            /// <summary></summary>
+            /// <summary>The size of the parcel</summary>
+            /// <remarks>This field is not returned for Places searches</remarks>
             public int ActualArea;
-            /// <summary></summary>
+            /// <summary>The price of the parcel</summary>
+            /// <remarks>This field is not returned for Places searches</remarks>
             public int SalePrice;
-            /// <summary></summary>
+            /// <summary>If True, this parcel is flagged to be auctioned</summary>
             public bool Auction;
-            /// <summary></summary>
+            /// <summary>If true, this parcel is currently set for sale</summary>
             public bool ForSale;
             /// <summary>Parcel traffic</summary>
             public float Dwell;
+
+            /// <summary>
+            /// Display an entry in a one line human readable format
+            /// </summary>
+            /// <returns>A string representing a single parcel entry</returns>
+            public override string ToString()
+            {                
+                return String.Format("Parcel ID: {0}, Name: {1}, Area: {2}, Price: {3}, IsAuction: {4}, IsForSale: {5}, Dwell: {6}" + System.Environment.NewLine,
+                    this.ID, this.Name, this.ActualArea, this.SalePrice, this.Auction, this.ForSale, this.Dwell);
+            }
         }
 
         /// <summary>
@@ -457,8 +496,9 @@ namespace OpenMetaverse
         public DirectoryManager(GridClient client)
         {
             Client = client;
-
+            
             Client.Network.RegisterCallback(PacketType.DirClassifiedReply, new NetworkManager.PacketCallback(DirClassifiedReplyHandler));
+            // Deprecated, replies come in over capabilities
             Client.Network.RegisterCallback(PacketType.DirLandReply, new NetworkManager.PacketCallback(DirLandReplyHandler));
             Client.Network.RegisterEventCallback("DirLandReply", DirLandReplyEventHandler);
             Client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(DirPeopleReplyHandler));
@@ -483,8 +523,10 @@ namespace OpenMetaverse
         /// Defaults to searching for classified placed in any category, and includes PG, Adult and Mature 
         /// results.
         /// 
-        /// Responses are sent 16 at a time, there is no way to know how many results a query reply will contain however assuming
+        /// Responses are sent 16 per response packet, there is no way to know how many results a query reply will contain however assuming
         /// the reply packets arrived ordered, a response with less than 16 entries would indicate all results have been received
+        /// 
+        /// The <see cref="OnClassifiedReply"/> event is raised when a response is received from the simulator
         /// </summary>
         /// <param name="searchText">A string containing a list of keywords to search for</param>
         /// <returns>A UUID to correlate the results when the <see cref="OnClassifiedReply"/> event is raised</returns>
@@ -495,6 +537,8 @@ namespace OpenMetaverse
 
         /// <summary>
         /// Query the data server for a list of classified ads which contain specified keywords (Overload)
+        /// 
+        /// The <see cref="OnClassifiedReply"/> event is raised when a response is received from the simulator
         /// </summary>
         /// <param name="searchText">A string containing a list of keywords to search for</param>
         /// <param name="category">The category to search</param>
@@ -530,27 +574,56 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Starts search for places
+        /// Starts search for places (Overloaded)
+        /// 
+        /// The <see cref="OnDirPlacesReply"/> event is raised when a response is received from the simulator
         /// </summary>
         /// <param name="searchText">Search text</param>
         /// <param name="startAtResult">Start result (we get 100 results at a time, so we start with 0, then 100, etc).</param>
-        /// <returns></returns>
-        public UUID StartDirPlacesSearch(string searchText, int startAtResult)
+        /// <returns>A UUID to correlate the results when the <see cref="OnDirPlacesReply"/> event is raised</returns>
+        public UUID StartDirPlacesSearch(string searchText, int queryStart)
         {
+            return StartDirPlacesSearch(searchText, DirFindFlags.DwellSort | DirFindFlags.IncludePG | DirFindFlags.IncludeMature
+                | DirFindFlags.IncludeAdult, ParcelCategory.Any, queryStart);
+        }
+
+        /// <summary>
+        /// Queries the dataserver for parcels of land which are flagged to be shown in search
+        /// 
+        /// The <see cref="OnDirPlacesReply"/> event is raised when a response is received from the simulator
+        /// </summary>
+        /// <param name="searchText">A string containing a list of keywords to search for separated by a space character</param>
+        /// <param name="queryFlags">A set of flags which can be ORed to modify query options 
+        /// such as classified maturity rating.</param>
+        /// <param name="category">The category to search</param>        
+        /// <param name="queryStart">Each request is limited to 100 places
+        /// being returned. To get the first 100 result entries of a request use 0,
+        /// from 100-199 use 1, 200-299 use 2, etc.</param>        
+        /// <returns>A UUID to correlate the results when the <see cref="OnDirPlacesReply"/> event is raised</returns>
+        /// <example>
+        /// Search places containing the key words "foo" and "bar" in the "Any" category that are either PG or Adult
+        /// <code>
+        /// UUID searchID = StartDirPlacesSearch("foo bar", DirFindFlags.DwellSort | DirFindFlags.IncludePG | DirFindFlags.IncludeAdult, ParcelCategory.Any, 0);
+        /// </code>
+        /// </example>
+        /// <remarks>        
+        /// Additional information on the results can be obtained by using the ParcelManager.InfoRequest method
+        /// </remarks>
+        public UUID StartDirPlacesSearch(string searchText, DirFindFlags queryFlags, ParcelCategory category, int queryStart)
+        {            
             DirPlacesQueryPacket query = new DirPlacesQueryPacket();
+            
+            UUID queryID = UUID.Random();
+            
             query.AgentData.AgentID = Client.Self.AgentID;
             query.AgentData.SessionID = Client.Self.SessionID;
-            UUID queryID = UUID.Random();
 
-            // TODO: need to figure out new enums for Category and Flags that
-            // include all of the settings (including new maturity levels)
-            // For now, hard code all categories, all maturity levels
-            query.QueryData.Category = -1;
-            query.QueryData.QueryFlags = 117441536;
+            query.QueryData.Category = (sbyte)category;
+            query.QueryData.QueryFlags = (uint)queryFlags;
 
             query.QueryData.QueryID = queryID;
             query.QueryData.QueryText = Utils.StringToBytes(searchText);
-            query.QueryData.QueryStart = startAtResult;
+            query.QueryData.QueryStart = queryStart;
             query.QueryData.SimName = Utils.StringToBytes(string.Empty);
 
             Client.Network.SendPacket(query);
@@ -561,6 +634,8 @@ namespace OpenMetaverse
 
         /// <summary>
         /// Starts a search for land sales using the directory
+        /// 
+        /// The <see cref="OnDirLandReply"/> event is raised when a response is received from the simulator
         /// </summary>
         /// <param name="typeFlags">What type of land to search for. Auction, 
         /// estate, mainland, "first land", etc</param>
@@ -578,6 +653,8 @@ namespace OpenMetaverse
 
         /// <summary>
         /// Starts a search for land sales using the directory
+        /// 
+        /// The <seealso cref="OnDirLandReply"/> event is raised when a response is received from the simulator
         /// </summary>
         /// <param name="typeFlags">What type of land to search for. Auction, 
         /// estate, mainland, "first land", etc</param>
@@ -600,32 +677,57 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Starts a search for land sales using the directory
+        /// Request land listed for public sale
         /// </summary>
-        /// <param name="findFlags">A flags parameter that can modify the way
-        /// search results are returned, for example changing the ordering of
-        /// results or limiting based on price or area</param>
+        /// 
+        /// <param name="findFlags">Flags sent to specify query options
+        /// 
+        /// Available flags:
+        /// Specify the parcel rating with one or more of the following:
+        ///     IncludePG IncludeMature IncludeAdult
+        /// 
+        /// Specify the field to pre sort the results with ONLY ONE of the following:
+        ///     PerMeterSort NameSort AreaSort PricesSort
+        ///     
+        /// Specify the order the results are returned in, if not specified the results are pre sorted in a Descending Order
+        ///     SortAsc
+        ///     
+        /// Specify additional filters to limit the results with one or both of the following:
+        ///     LimitByPrice LimitByArea
+        ///     
+        /// Flags can be combined by separating them with the | (pipe) character
+        /// 
+        /// Additional details can be found in <see cref="DirFindFlags"/>
+        /// </param>
         /// <param name="typeFlags">What type of land to search for. Auction, 
-        /// estate, mainland, "first land", etc</param>
-        /// <param name="priceLimit">Maximum price to search for, the 
-        /// DirFindFlags.LimitByPrice flag must be set</param>
-        /// <param name="areaLimit">Maximum area to search for, the
-        /// DirFindFlags.LimitByArea flag must be set</param>
+        /// Estate or Mainland</param>
+        /// <param name="priceLimit">Maximum price to search for when the 
+        /// DirFindFlags.LimitByPrice flag is specified in findFlags</param>
+        /// <param name="areaLimit">Maximum area to search for when the
+        /// DirFindFlags.LimitByArea flag is specified in findFlags</param>
         /// <param name="queryStart">Each request is limited to 100 parcels
         /// being returned. To get the first 100 parcels of a request use 0,
         /// from 100-199 use 100, 200-299 use 200, etc.</param>
         /// <returns>A unique identifier that can identify packets associated
         /// with this query from other queries</returns>
-        /// <remarks>The OnDirLandReply event handler must be registered before
-        /// calling this function. There is no way to determine how many 
-        /// results will be returned, or how many times the callback will be 
+        /// <remarks><para>The <seealso cref="OnDirLandReply"/> event will be raised with the response from the simulator 
+        /// 
+        /// There is no way to determine how many results will be returned, or how many times the callback will be 
         /// fired other than you won't get more than 100 total parcels from 
-        /// each query.</remarks>
+        /// each reply.</para>
+        /// 
+        /// <para>Any land set for sale to either anybody or specific to the connected agent will be included in the
+        /// results if the land is included in the query</para></remarks>
+        /// <example>
+        /// <code>
+        /// // request all mainland, any maturity rating that is larger than 512 sq.m
+        /// StartLandSearch(DirFindFlags.SortAsc | DirFindFlags.PerMeterSort | DirFindFlags.LimitByArea | DirFindFlags.IncludePG | DirFindFlags.IncludeMature | DirFindFlags.IncludeAdult, SearchTypeFlags.Mainland, 0, 512, 0);
+        /// </code></example>
         public UUID StartLandSearch(DirFindFlags findFlags, SearchTypeFlags typeFlags, int priceLimit,
             int areaLimit, int queryStart)
         {
             UUID queryID = UUID.Random();
-
+            
             DirLandQueryPacket query = new DirLandQueryPacket();
             query.AgentData.AgentID = Client.Self.AgentID;
             query.AgentData.SessionID = Client.Self.SessionID;
@@ -645,7 +747,7 @@ namespace OpenMetaverse
         /// Starts a search for a Group in the directory manager
         /// </summary>
         /// <param name="findFlags"></param>
-        /// <param name="searchText">The text to search for</param>
+        /// <param name="searchText">A string containing a list of keywords to search for separated by a space character</param>
         /// <param name="queryStart">Each request is limited to 100 parcels
         /// being returned. To get the first 100 parcels of a request use 0,
         /// from 100-199 use 100, 200-299 use 200, etc.</param>
@@ -684,9 +786,11 @@ namespace OpenMetaverse
 
         /// <summary>
         /// Search the people directory for other avatars
+        /// 
+        /// The <see cref="OnDirPeopleReply"/> event is raised when a response is received from the simulator
         /// </summary>
         /// <param name="findFlags"></param>
-        /// <param name="searchText"></param>
+        /// <param name="searchText">A string containing a list of keywords to search for separated by a space character</param>
         /// <param name="queryStart"></param>
         /// <returns></returns>
         public UUID StartPeopleSearch(DirFindFlags findFlags, string searchText, int queryStart)
@@ -698,7 +802,7 @@ namespace OpenMetaverse
         /// 
         /// </summary>
         /// <param name="findFlags"></param>
-        /// <param name="searchText"></param>
+        /// <param name="searchText">A string containing a list of keywords to search for separated by a space character</param>
         /// <param name="queryStart"></param>
         /// <param name="queryID"></param>
         /// <returns></returns>
@@ -744,7 +848,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="findFlags">One of the Values from the DirFindFlags struct, ie: AgentOwned, GroupOwned, etc.</param>
         /// <param name="searchCategory">One of the values from the SearchCategory Struct, ie: Any, Linden, Newcomer</param>
-        /// <param name="groupID">LLUID of group you want to recieve results for</param>
+        /// <param name="groupID">UUID of group you want to recieve results for</param>
         /// <param name="transactionID">Transaction (Query) ID which can be associated with results from your request.</param>
         /// <returns>Transaction (Query) ID which can be associated with results from your request.</returns>
         public UUID StartPlacesSearch(DirFindFlags findFlags, ParcelCategory searchCategory, UUID groupID, UUID transactionID)
@@ -757,7 +861,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="findFlags">One of the Values from the DirFindFlags struct, ie: AgentOwned, GroupOwned, etc.</param>
         /// <param name="searchCategory">One of the values from the SearchCategory Struct, ie: Any, Linden, Newcomer</param>
-        /// <param name="searchText">String Text to search for</param>
+        /// <param name="searchText">A string containing a list of keywords to search for separated by a space character</param>
         /// <param name="simulatorName">String Simulator Name to search in</param>
         /// <param name="groupID">LLUID of group you want to recieve results for</param>
         /// <param name="transactionID">Transaction (Query) ID which can be associated with results from your request.</param>
@@ -782,53 +886,51 @@ namespace OpenMetaverse
 
 
         /// <summary>
-        /// Search All Events with specifid searchText in all categories, includes Mature
+        /// Search All Events with specifid searchText in all categories, includes PG, Mature and Adult
         /// </summary>
-        /// <param name="searchText">Text to search for</param>
+        /// <param name="searchText">A string containing a list of keywords to search for separated by a space character</param>
+        /// <param name="queryStart">Each request is limited to 100 entries
+        /// being returned. To get the first group of entries of a request use 0,
+        /// from 100-199 use 100, 200-299 use 200, etc.</param>
         /// <returns>UUID of query to correlate results in callback.</returns>
-        public UUID StartEventsSearch(string searchText)
+        public UUID StartEventsSearch(string searchText, uint queryStart)
         {
-            return StartEventsSearch(searchText, true, EventCategories.All);
+            return StartEventsSearch(searchText, DirFindFlags.DateEvents | DirFindFlags.IncludePG | DirFindFlags.IncludeMature | DirFindFlags.IncludeAdult, "u", queryStart, EventCategories.All);
         }
 
         /// <summary>
-        /// Search Events with Options to specify category and Mature events.
+        /// Search Events
         /// </summary>
-        /// <param name="searchText">Text to search for</param>
-        /// <param name="showMature">true to include Mature events</param>
-        /// <param name="category">category to search</param>
-        /// <returns>UUID of query to correlate results in callback.</returns>
-        public UUID StartEventsSearch(string searchText, bool showMature, EventCategories category)
-        {
-            return StartEventsSearch(searchText, showMature, "u", 0, category, UUID.Random());
-        }
-
-        /// <summary>
-        /// Search Events - ALL options
-        /// </summary>
-        /// <param name="searchText">string text to search for e.g.: live music</param>
-        /// <param name="showMature">Include mature events in results</param>
-        /// <param name="eventDay">"u" for now and upcoming events, -or- number of days since/until event is scheduled
+        /// <param name="searchText">A string containing a list of keywords to search for separated by a space character</param>
+        /// <param name="queryFlags">One or more of the following flags: DateEvents, IncludePG, IncludeMature, IncludeAdult
+        /// from the <see cref="DirFindFlags"/> Enum
+        /// 
+        /// Multiple flags can be combined by separating the flags with the | (pipe) character</param>
+        /// <param name="eventDay">"u" for in-progress and upcoming events, -or- number of days since/until event is scheduled
         /// For example "0" = Today, "1" = tomorrow, "2" = following day, "-1" = yesterday, etc.</param>
-        /// <param name="queryStart">Page # to show, 0 for First Page</param>
+        /// <param name="queryStart">Each request is limited to 100 entries
+        /// being returned. To get the first group of entries of a request use 0,
+        /// from 100-199 use 100, 200-299 use 200, etc.</param>
         /// <param name="category">EventCategory event is listed under.</param>
         /// <param name="queryID">a UUID that can be used to track queries with results.</param>
         /// <returns>UUID of query to correlate results in callback.</returns>
-        public UUID StartEventsSearch(string searchText, bool showMature, string eventDay, uint queryStart, EventCategories category, UUID queryID)
+        public UUID StartEventsSearch(string searchText, DirFindFlags queryFlags, string eventDay, uint queryStart, EventCategories category)
         {
             DirFindQueryPacket find = new DirFindQueryPacket();
             find.AgentData.AgentID = Client.Self.AgentID;
             find.AgentData.SessionID = Client.Self.SessionID;
 
+            UUID queryID = UUID.Random();
+
             find.QueryData.QueryID = queryID;
             find.QueryData.QueryText = Utils.StringToBytes(eventDay + "|" + (int)category + "|" + searchText);
-            find.QueryData.QueryFlags = showMature ? (uint)32 : (uint)8224;
+            find.QueryData.QueryFlags = (uint)queryFlags;
             find.QueryData.QueryStart = (int)queryStart;
 
             Client.Network.SendPacket(find);
             return queryID;
         }
-
+      
         /// <summary>Requests Event Details</summary>
         /// <param name="eventID">ID of Event returned from Places Search</param>
         public void EventInfoRequest(uint eventID)
@@ -842,8 +944,10 @@ namespace OpenMetaverse
             Client.Network.SendPacket(find);
         }
 
+
         #region Blocking Functions
 
+        [Obsolete("Use the async StartPeoplSearch method instead")]
         public bool PeopleSearch(DirFindFlags findFlags, string searchText, int queryStart,
             int timeoutMS, out List<AgentSearchData> results)
         {
@@ -1118,7 +1222,7 @@ namespace OpenMetaverse
                     p.Name = Utils.BytesToString(reply.QueryReplies[i].Name);
                     p.Dwell = reply.QueryReplies[i].Dwell;
                     p.Auction = reply.QueryReplies[i].Auction;
-                    p.ForSale = reply.QueryReplies[i].ForSale;
+                    p.ForSale = reply.QueryReplies[i].ForSale;                    
 
                     result.Add(p);
                 }

@@ -705,7 +705,9 @@ namespace OpenMetaverse
         private string InternalLoginMessage = String.Empty;
         private string InternalRawLoginReply = String.Empty;
         private Dictionary<LoginResponseCallback, string[]> CallbackOptions = new Dictionary<LoginResponseCallback, string[]>();
-        /// <summary>A list of packets obtained during the login process which networkmanager will log but not process</summary>
+
+        /// <summary>A list of packets obtained during the login process which 
+        /// networkmanager will log but not process</summary>
         private readonly List<string> UDPBlacklist = new List<string>();
         #endregion
 
@@ -724,7 +726,7 @@ namespace OpenMetaverse
         public LoginParams DefaultLoginParams(string firstName, string lastName, string password,
             string userAgent, string userVersion)
         {
-            List<string> options = new List<string>(15);
+            List<string> options = new List<string>(16);
             options.Add("inventory-root");
             options.Add("inventory-skeleton");
             options.Add("inventory-lib-root");
@@ -740,6 +742,7 @@ namespace OpenMetaverse
             options.Add("tutorial_settings");
             options.Add("login-flags");
             options.Add("global-textures");
+            options.Add("adult_compliant");
 
             LoginParams loginParams = new LoginParams();
             if (Client == null)

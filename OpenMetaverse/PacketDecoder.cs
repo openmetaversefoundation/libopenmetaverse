@@ -121,6 +121,7 @@ namespace OpenMetaverse.Packets
             AddCallback("QueryData.SearchType", SearchTypeFlags);
 
             AddCallback("ClassifiedFlags", DecodeDirClassifiedFlags);
+            AddCallback("EventFlags", DecodeEventFlags);
 
             AddCallback("ParcelAccessListRequest.Data.Flags", DecodeParcelACL);
             AddCallback("ParcelAccessListReply.Data.Flags", DecodeParcelACL);
@@ -838,6 +839,14 @@ namespace OpenMetaverse.Packets
                 fieldName,
                 fieldData,
                 "(" + (ClickAction)(byte)fieldData + ")");
+        }
+
+        private static string DecodeEventFlags(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-2} {2,-37} [EventFlags]",
+                fieldName,
+                fieldData,
+                "(" + (DirectoryManager.EventFlags)(uint)fieldData + ")");
         }
 
         private static string DecodeDirQueryFlags(string fieldName, object fieldData)
