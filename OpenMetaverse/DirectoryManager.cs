@@ -579,7 +579,9 @@ namespace OpenMetaverse
         /// The <see cref="OnDirPlacesReply"/> event is raised when a response is received from the simulator
         /// </summary>
         /// <param name="searchText">Search text</param>
-        /// <param name="startAtResult">Start result (we get 100 results at a time, so we start with 0, then 100, etc).</param>
+        /// <param name="queryStart">Each request is limited to 100 places
+        /// being returned. To get the first 100 result entries of a request use 0,
+        /// from 100-199 use 1, 200-299 use 2, etc.</param>        
         /// <returns>A UUID to correlate the results when the <see cref="OnDirPlacesReply"/> event is raised</returns>
         public UUID StartDirPlacesSearch(string searchText, int queryStart)
         {
@@ -912,7 +914,6 @@ namespace OpenMetaverse
         /// being returned. To get the first group of entries of a request use 0,
         /// from 100-199 use 100, 200-299 use 200, etc.</param>
         /// <param name="category">EventCategory event is listed under.</param>
-        /// <param name="queryID">a UUID that can be used to track queries with results.</param>
         /// <returns>UUID of query to correlate results in callback.</returns>
         public UUID StartEventsSearch(string searchText, DirFindFlags queryFlags, string eventDay, uint queryStart, EventCategories category)
         {
