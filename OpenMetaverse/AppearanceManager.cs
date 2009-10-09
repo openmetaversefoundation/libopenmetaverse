@@ -101,6 +101,9 @@ namespace OpenMetaverse
         const int UPLOAD_TIMEOUT = 1000 * 90;
         /// <summary>Number of times to retry bake upload</summary>
         const int UPLOAD_RETRIES = 2;
+        /// <summary>When changing outfit, kick off rebake after
+        /// 20 seconds has passed since the last change</summary>
+        const int REBAKE_DELAY = 1000 * 20;
 
         /// <summary>Total number of wearables for each avatar</summary>
         public const int WEARABLE_COUNT = 13;
@@ -272,7 +275,10 @@ namespace OpenMetaverse
         private int AppearanceThreadRunning = 0;
         /// <summary>Reference to our agent</summary>
         private GridClient Client;
-
+        /// <summary>
+        /// Timer used for delaying rebake on changing outfit
+        /// </summary>
+        Timer RebakeScheduleTimer;
         #endregion Private Members
 
         /// <summary>
@@ -288,6 +294,7 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.RebakeAvatarTextures, RebakeAvatarTexturesHandler);
 
             Client.Network.OnEventQueueRunning += Network_OnEventQueueRunning;
+            Client.Network.OnDisconnected += Network_OnDisconnected;
         }
 
         #region Publics Methods
@@ -329,6 +336,13 @@ namespace OpenMetaverse
             {
                 Logger.Log("Appearance thread is already running, skipping", Helpers.LogLevel.Warning);
                 return;
+            }
+
+            // If we have an active delayed scheduled appearance bake, we dispose of it
+            if (RebakeScheduleTimer != null)
+            {
+                RebakeScheduleTimer.Dispose();
+                RebakeScheduleTimer = null;
             }
 
             // This is the first time setting appearance, run through the entire sequence
@@ -552,7 +566,7 @@ namespace OpenMetaverse
             if (wearables.Count > 0)
             {
                 SendAgentIsNowWearing();
-                RequestSetAppearance(true);
+                DelayedRequestSetAppearance();
             }
         }
 
@@ -614,7 +628,7 @@ namespace OpenMetaverse
             if (needSetAppearance)
             {
                 SendAgentIsNowWearing();
-                RequestSetAppearance(true);
+                DelayedRequestSetAppearance();
             }
         }
 
@@ -668,7 +682,7 @@ namespace OpenMetaverse
             ReplaceOutfit(wearables);
             AddAttachments(attachments, true);
             SendAgentIsNowWearing();
-            RequestSetAppearance(true);
+            DelayedRequestSetAppearance();
         }
 
         /// <summary>
@@ -1654,6 +1668,20 @@ namespace OpenMetaverse
             Logger.DebugLog("Send AgentSetAppearance packet");
         }
 
+        private void DelayedRequestSetAppearance()
+        {
+            if (RebakeScheduleTimer == null)
+            {
+                RebakeScheduleTimer = new Timer(RebakeScheduleTimerTick);
+            }
+            try { RebakeScheduleTimer.Change(REBAKE_DELAY, Timeout.Infinite); }
+            catch { }
+        }
+
+        private void RebakeScheduleTimerTick(Object state)
+        {
+            RequestSetAppearance(true);
+        }
         #endregion Appearance Helpers
 
         #region Inventory Helpers
@@ -1865,6 +1893,15 @@ namespace OpenMetaverse
             {
                 // Update appearance each time we enter a new sim and capabilities have been retrieved
                 Client.Appearance.RequestSetAppearance();
+            }
+        }
+
+        private void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        {
+            if (RebakeScheduleTimer != null)
+            {
+                RebakeScheduleTimer.Dispose();
+                RebakeScheduleTimer = null;
             }
         }
 
