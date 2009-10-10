@@ -31,21 +31,21 @@ namespace OpenMetaverse.TestClient
             if (masterName.Length == 0)
                 return "Usage: setmaster [name]";
 
-            DirectoryManager.DirPeopleReplyCallback callback = new DirectoryManager.DirPeopleReplyCallback(KeyResolvHandler);
-            Client.Directory.OnDirPeopleReply += callback;
+            EventHandler<DirPeopleReplyEventArgs> callback = KeyResolvHandler;
+            Client.Directory.DirPeopleReply += callback;
 
-            query = Client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, masterName, 0);
+            query = Client.Directory.StartPeopleSearch(masterName, 0);
 
             if (keyResolution.WaitOne(TimeSpan.FromMinutes(1), false))
             {
                 Client.MasterKey = resolvedMasterKey;
                 keyResolution.Reset();
-                Client.Directory.OnDirPeopleReply -= callback;
+                Client.Directory.DirPeopleReply -= callback;
             }
             else
             {
                 keyResolution.Reset();
-                Client.Directory.OnDirPeopleReply -= callback;
+                Client.Directory.DirPeopleReply -= callback;
                 return "Unable to obtain UUID for \"" + masterName + "\". Master unchanged.";
             }
             
@@ -56,12 +56,12 @@ namespace OpenMetaverse.TestClient
             return String.Format("Master set to {0} ({1})", masterName, Client.MasterKey.ToString());
 		}
 
-        private void KeyResolvHandler(UUID queryid, List<DirectoryManager.AgentSearchData> matches)
+        private void KeyResolvHandler(object sender, DirPeopleReplyEventArgs e)
         {
-            if (query != queryid)
+            if (query != e.QueryID)
                 return;
 
-            resolvedMasterKey = matches[0].AgentID;
+            resolvedMasterKey = e.MatchedPeople[0].AgentID;
             keyResolution.Set();
             query = UUID.Zero;
         }

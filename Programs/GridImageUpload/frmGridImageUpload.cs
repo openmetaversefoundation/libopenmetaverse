@@ -293,17 +293,17 @@ namespace GridImageUpload
             if (sendTo.Length > 0)
             {
                 AutoResetEvent lookupEvent = new AutoResetEvent(false);
-                UUID thisQueryID = UUID.Random();
+                UUID thisQueryID = UUID.Zero;
                 bool lookupSuccess = false;
 
-                DirectoryManager.DirPeopleReplyCallback callback =
-                    delegate(UUID queryID, List<DirectoryManager.AgentSearchData> matchedPeople)
+                EventHandler<DirPeopleReplyEventArgs> callback =
+                    delegate(object s, DirPeopleReplyEventArgs ep)
                     {
-                        if (queryID == thisQueryID)
+                        if (ep.QueryID == thisQueryID)
                         {
-                            if (matchedPeople.Count > 0)
+                            if (ep.MatchedPeople.Count > 0)
                             {
-                                SendToID = matchedPeople[0].AgentID;
+                                SendToID = ep.MatchedPeople[0].AgentID;
                                 lookupSuccess = true;
                             }
 
@@ -311,11 +311,11 @@ namespace GridImageUpload
                         }
                     };
 
-                Client.Directory.OnDirPeopleReply += callback;
-                Client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, sendTo, 0, thisQueryID);
+                Client.Directory.DirPeopleReply += callback;
+                thisQueryID = Client.Directory.StartPeopleSearch(sendTo, 0);
 
                 bool eventSuccess = lookupEvent.WaitOne(10 * 1000, false);
-                Client.Directory.OnDirPeopleReply -= callback;
+                Client.Directory.DirPeopleReply -= callback;
 
                 if (eventSuccess && lookupSuccess)
                 {

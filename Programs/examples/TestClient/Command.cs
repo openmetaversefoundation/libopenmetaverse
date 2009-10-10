@@ -20,7 +20,8 @@ namespace OpenMetaverse.TestClient
         Friends,
         Groups,
         Other,
-        Unknown
+        Unknown,
+        Search
     }
 
     public abstract class Command : IComparable

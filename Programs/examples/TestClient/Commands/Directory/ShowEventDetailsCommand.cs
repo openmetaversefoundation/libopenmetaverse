@@ -17,14 +17,14 @@ namespace OpenMetaverse.TestClient.Commands
         {
             if (args.Length < 1)
                 return "Usage: showevent [eventID] (use searchevents to get ID)";
-
-            Client.Directory.OnEventInfo += new DirectoryManager.EventInfoCallback(Directory_OnEventInfo);
+            
+            Client.Directory.EventInfoReply += Directory_EventDetails;
             uint eventID;
 
             if (UInt32.TryParse(args[0], out eventID))
             {
                 Client.Directory.EventInfoRequest(eventID);
-                return "Query Sent";
+                return "Sent query for Event " + eventID;
             }
             else
             {
@@ -32,16 +32,19 @@ namespace OpenMetaverse.TestClient.Commands
             }
         }
 
-        void Directory_OnEventInfo(DirectoryManager.EventInfo matchedEvent)
+        void Directory_EventDetails(object sender, EventInfoReplyEventArgs e)
         {
-            float x,y;
-            Helpers.GlobalPosToRegionHandle((float)matchedEvent.GlobalPos.X, (float)matchedEvent.GlobalPos.Y, out x, out y);
-            StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("       Name: {0} ({1})" + System.Environment.NewLine, matchedEvent.Name, matchedEvent.ID);
-            sb.AppendFormat("   Location: {0}/{1}/{2}" + System.Environment.NewLine, matchedEvent.SimName, x, y);
-            sb.AppendFormat("       Date: {0}" + System.Environment.NewLine, matchedEvent.Date);
-            sb.AppendFormat("Description: {0}" + System.Environment.NewLine, matchedEvent.Desc);
+            float x, y;
+            Helpers.GlobalPosToRegionHandle((float)e.MatchedEvent.GlobalPos.X, (float)e.MatchedEvent.GlobalPos.Y, out x, out y);
+            StringBuilder sb = new StringBuilder("secondlife://" + e.MatchedEvent.SimName + "/" + x + "/" + y + "/0" + System.Environment.NewLine);
+            sb.AppendLine(e.MatchedEvent.ToString());
+            
+            //sb.AppendFormat("       Name: {0} ({1})" + System.Environment.NewLine, e.MatchedEvent.Name, e.MatchedEvent.ID);
+            //sb.AppendFormat("   Location: {0}/{1}/{2}" + System.Environment.NewLine, e.MatchedEvent.SimName, x, y);
+            //sb.AppendFormat("       Date: {0}" + System.Environment.NewLine, e.MatchedEvent.Date);
+            //sb.AppendFormat("Description: {0}" + System.Environment.NewLine, e.MatchedEvent.Desc);
             Console.WriteLine(sb.ToString());
+            Client.Directory.EventInfoReply -= Directory_EventDetails;
         }
     }
 }

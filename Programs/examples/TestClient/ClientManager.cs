@@ -139,26 +139,26 @@ namespace OpenMetaverse.TestClient
 
                         if (client.MasterKey == UUID.Zero)
                         {
-                            UUID query = UUID.Random();
-                            DirectoryManager.DirPeopleReplyCallback peopleDirCallback =
-                                delegate(UUID queryID, List<DirectoryManager.AgentSearchData> matchedPeople)
+                            UUID query = UUID.Zero;
+                            EventHandler<DirPeopleReplyEventArgs> peopleDirCallback =
+                                delegate(object sender, DirPeopleReplyEventArgs e)
                                 {
-                                    if (queryID == query)
+                                    if (e.QueryID == query)
                                     {
-                                        if (matchedPeople.Count != 1)
+                                        if (e.MatchedPeople.Count != 1)
                                         {
                                             Logger.Log("Unable to resolve master key from " + client.MasterName, Helpers.LogLevel.Warning);
                                         }
                                         else
                                         {
-                                            client.MasterKey = matchedPeople[0].AgentID;
+                                            client.MasterKey = e.MatchedPeople[0].AgentID;
                                             Logger.Log("Master key resolved to " + client.MasterKey, Helpers.LogLevel.Info);
                                         }
                                     }
                                 };
 
-                            client.Directory.OnDirPeopleReply += peopleDirCallback;
-                            client.Directory.StartPeopleSearch(DirectoryManager.DirFindFlags.People, client.MasterName, 0, query);
+                            client.Directory.DirPeopleReply += peopleDirCallback;
+                            query = client.Directory.StartPeopleSearch(client.MasterName, 0);
                         }
 
                         Logger.Log("Logged in " + client.ToString(), Helpers.LogLevel.Info);

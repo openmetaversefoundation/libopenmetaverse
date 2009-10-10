@@ -28,23 +28,24 @@ namespace OpenMetaverse.TestClient.Commands
             waitQuery.Reset();
 
             StringBuilder result = new StringBuilder();
-            DirectoryManager.ClassifiedReplyCallback callback = delegate(List<DirectoryManager.Classified> classifieds)
+
+            EventHandler<DirClassifiedsReplyEventArgs> callback = delegate(object sender, DirClassifiedsReplyEventArgs e)
             {
                 result.AppendFormat("Your search string '{0}' returned {1} classified ads" + System.Environment.NewLine,
-                    searchText, classifieds.Count);
-                foreach (DirectoryManager.Classified ad in classifieds)
+                    searchText, e.Classifieds.Count);
+                foreach (DirectoryManager.Classified ad in e.Classifieds)
                 {
                     result.AppendLine(ad.ToString());
                 }
 
                 // classifieds are sent 16 ads at a time
-                if (classifieds.Count < 16)
+                if (e.Classifieds.Count < 16)
                 {
                     waitQuery.Set();
                 }
             };
 
-            Client.Directory.OnClassifiedReply += callback;
+            Client.Directory.DirClassifiedsReply += callback;
 
             UUID searchID = Client.Directory.StartClassifiedSearch(searchText, DirectoryManager.ClassifiedCategories.Any,  DirectoryManager.ClassifiedQueryFlags.Mature | DirectoryManager.ClassifiedQueryFlags.PG);
 
@@ -53,9 +54,9 @@ namespace OpenMetaverse.TestClient.Commands
                 result.AppendLine("Timeout waiting for simulator to respond to query.");
             }
 
-            Client.Directory.OnClassifiedReply -= callback;
+            Client.Directory.DirClassifiedsReply -= callback;
 
             return result.ToString();
-        }
+        }        
     }
 }

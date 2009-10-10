@@ -518,6 +518,38 @@ namespace OpenMetaverse
             }
 
             return prims;
-        }        
+        }
+
+        /// <summary>
+        /// Converts a struct or class object containing fields only into a key value separated string
+        /// </summary>
+        /// <param name="t">The struct object</param>
+        /// <returns>A string containing the struct fields as the keys, and the field value as the value separated</returns>
+        /// <example>
+        /// <code>
+        /// // Add the following code to any struct or class containing only fields to override the ToString() 
+        /// // method to display the values of the passed object
+        /// 
+        /// /// <summary>Print the struct data as a string</summary>
+        /// ///<returns>A string containing the field name, and field value</returns>
+        ///public override string ToString()
+        ///{
+        ///    return Helpers.StructToString(this);
+        ///}
+        /// </code>
+        /// </example>
+        public static string StructToString(object t)
+        {
+            StringBuilder result = new StringBuilder();            
+            Type structType = t.GetType();
+            FieldInfo[] fields = structType.GetFields();
+            
+            foreach (FieldInfo field in fields)
+            {
+                result.Append(field.Name + ": " + field.GetValue(t) + " ");
+            }
+            result.AppendLine();
+            return result.ToString().TrimEnd();
+        }
     }
 }

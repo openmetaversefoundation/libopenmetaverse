@@ -18,6 +18,7 @@ namespace OpenMetaverse.TestClient.Commands
 
         public override string Execute(string[] args, UUID fromAgentID)
         {
+            // process command line arguments
             if (args.Length < 1)
                 return "Usage: searchevents [search text]";
 
@@ -25,9 +26,12 @@ namespace OpenMetaverse.TestClient.Commands
             for (int i = 0; i < args.Length; i++)
                 searchText += args[i] + " ";
             searchText = searchText.TrimEnd();
-            waitQuery.Reset();
 
-            Client.Directory.OnEventsReply += new DirectoryManager.EventReplyCallback(Directory_OnEventsReply);
+            waitQuery.Reset();
+            
+            Client.Directory.DirEventsReply += Directory_DirEvents;
+
+            // send the request to the directory manager
             Client.Directory.StartEventsSearch(searchText, 0);
             string result;
             if (waitQuery.WaitOne(20000, false) && Client.Network.Connected)
@@ -37,25 +41,27 @@ namespace OpenMetaverse.TestClient.Commands
             else
             {
                 result =  "Timeout waiting for simulator to respond.";
-            }            
-            Client.Directory.OnEventsReply -= new DirectoryManager.EventReplyCallback(Directory_OnEventsReply);
+            }
+
+            Client.Directory.DirEventsReply -= Directory_DirEvents;
+            
             return result;
         }
 
-        void Directory_OnEventsReply(UUID queryID, List<DirectoryManager.EventsSearchData> matchedEvents)
+        void Directory_DirEvents(object sender, DirEventsReplyEventArgs e)
         {
-            if (matchedEvents[0].ID == 0 && matchedEvents.Count == 1)
+            if (e.MatchedEvents[0].ID == 0 && e.MatchedEvents.Count == 1)
             {
                 Console.WriteLine("No Results matched your search string");
             }
             else
             {
-                foreach (DirectoryManager.EventsSearchData ev in matchedEvents)
-                {
+                foreach (DirectoryManager.EventsSearchData ev in e.MatchedEvents)
+                {                    
                     Console.WriteLine("Event ID: {0} Event Name: {1} Event Date: {2}", ev.ID, ev.Name, ev.Date);
                 }
             }
-            resultCount = matchedEvents.Count;
+            resultCount = e.MatchedEvents.Count;
             waitQuery.Set();
         }
     }

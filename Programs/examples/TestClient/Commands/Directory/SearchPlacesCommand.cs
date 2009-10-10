@@ -28,12 +28,12 @@ namespace OpenMetaverse.TestClient.Commands
             waitQuery.Reset();
 
             StringBuilder result = new StringBuilder();
-
-            DirectoryManager.DirPlacesReplyCallback callback = delegate(UUID queryID, List<DirectoryManager.DirectoryParcel> matchedParcels)
+         
+            EventHandler<PlacesReplyEventArgs> callback = delegate(object sender, PlacesReplyEventArgs e)
             {
                 result.AppendFormat("Your search string '{0}' returned {1} results" + System.Environment.NewLine,
-                    searchText, matchedParcels.Count);
-                foreach (DirectoryManager.DirectoryParcel place in matchedParcels)
+                    searchText, e.MatchedPlaces.Count);
+                foreach (DirectoryManager.PlacesSearchData place in e.MatchedPlaces)
                 {
                     result.AppendLine(place.ToString());
                 }
@@ -41,18 +41,17 @@ namespace OpenMetaverse.TestClient.Commands
                 waitQuery.Set();
             };
 
-            Client.Directory.OnDirPlacesReply += callback;
-            
-            UUID searchID = Client.Directory.StartClassifiedSearch(searchText, DirectoryManager.ClassifiedCategories.Any, DirectoryManager.ClassifiedQueryFlags.Mature | DirectoryManager.ClassifiedQueryFlags.PG);
+            Client.Directory.PlacesReply += callback;
+            Client.Directory.StartPlacesSearch(searchText);            
 
             if (!waitQuery.WaitOne(20000, false) && Client.Network.Connected)
             {
                 result.AppendLine("Timeout waiting for simulator to respond to query.");
             }
 
-            Client.Directory.OnDirPlacesReply -= callback;
+            Client.Directory.PlacesReply -= callback;
 
             return result.ToString();
-        }
+        }        
     }
 }

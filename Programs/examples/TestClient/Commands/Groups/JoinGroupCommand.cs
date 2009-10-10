@@ -45,13 +45,15 @@ namespace OpenMetaverse.TestClient
                 for (int i = 0; i < args.Length; i++)
                     groupName += args[i] + " ";
                 groupName = groupName.Trim();
-                DirectoryManager.DirGroupsReplyCallback callback = new DirectoryManager.DirGroupsReplyCallback(Directory_OnDirGroupsReply);
-                Client.Directory.OnDirGroupsReply += callback;
-                queryID = Client.Directory.StartGroupSearch(DirectoryManager.DirFindFlags.Groups, groupName, 0);
+
+                Client.Directory.DirGroupsReply += Directory_DirGroups;
+                                
+                queryID = Client.Directory.StartGroupSearch(groupName, 0);
 
                 GetGroupsSearchEvent.WaitOne(60000, false);
 
-                Client.Directory.OnDirGroupsReply -= callback;
+                Client.Directory.DirGroupsReply -= Directory_DirGroups;
+
                 GetGroupsSearchEvent.Reset();
             }
 
@@ -82,6 +84,48 @@ namespace OpenMetaverse.TestClient
             return "Unable to join the group " + resolvedGroupName;
         }
 
+        void Directory_DirGroups(object sender, DirGroupsReplyEventArgs e)
+        {
+            if (queryID == e.QueryID)
+            {
+                queryID = UUID.Zero;
+                if (e.MatchedGroups.Count < 1)
+                {
+                    Console.WriteLine("ERROR: Got an empty reply");
+                }
+                else
+                {
+                    if (e.MatchedGroups.Count > 1)
+                    {
+                        /* A.Biondi 
+                         * The Group search doesn't work as someone could expect...
+                         * It'll give back to you a long list of groups even if the 
+                         * searchText (groupName) matches esactly one of the groups 
+                         * names present on the server, so we need to check each result.
+                         * UUIDs of the matching groups are written on the console.
+                         */
+                        Console.WriteLine("Matching groups are:\n");
+                        foreach (DirectoryManager.GroupSearchData groupRetrieved in e.MatchedGroups)
+                        {
+                            Console.WriteLine(groupRetrieved.GroupName + "\t\t\t(" +
+                                Name + " UUID " + groupRetrieved.GroupID.ToString() + ")");
+
+                            if (groupRetrieved.GroupName.ToLower() == groupName.ToLower())
+                            {
+                                resolvedGroupID = groupRetrieved.GroupID;
+                                resolvedGroupName = groupRetrieved.GroupName;
+                                break;
+                            }
+                        }
+                        if (string.IsNullOrEmpty(resolvedGroupName))
+                            resolvedGroupName = "Ambiguous name. Found " + e.MatchedGroups.Count.ToString() + " groups (UUIDs on console)";
+                    }
+
+                }
+                GetGroupsSearchEvent.Set();
+            }
+        }
+
         void Groups_OnGroupJoined(UUID groupID, bool success)
         {
             Console.WriteLine(Client.ToString() + (success ? " joined " : " failed to join ") + groupID.ToString());
@@ -102,48 +146,6 @@ namespace OpenMetaverse.TestClient
 
             joinedGroup = success;
             GetGroupsSearchEvent.Set();
-        }
-
-        void Directory_OnDirGroupsReply(UUID queryid, List<DirectoryManager.GroupSearchData> matchedGroups)
-        {
-            if (queryID == queryid)
-            {
-                queryID = UUID.Zero;
-                if (matchedGroups.Count < 1)
-                {
-                    Console.WriteLine("ERROR: Got an empty reply");
-                }
-                else
-                {
-                    if (matchedGroups.Count > 1)
-                    {
-                        /* A.Biondi 
-                         * The Group search doesn't work as someone could expect...
-                         * It'll give back to you a long list of groups even if the 
-                         * searchText (groupName) matches esactly one of the groups 
-                         * names present on the server, so we need to check each result.
-                         * UUIDs of the matching groups are written on the console.
-                         */
-                        Console.WriteLine("Matching groups are:\n");
-                        foreach (DirectoryManager.GroupSearchData groupRetrieved in matchedGroups)
-                        {
-                            Console.WriteLine(groupRetrieved.GroupName + "\t\t\t(" +
-                                Name + " UUID " + groupRetrieved.GroupID.ToString() + ")");
-
-                            if (groupRetrieved.GroupName.ToLower() == groupName.ToLower())
-                            {
-                                resolvedGroupID = groupRetrieved.GroupID;
-                                resolvedGroupName = groupRetrieved.GroupName;
-                                break;
-                            }
-                        }
-                        if (string.IsNullOrEmpty(resolvedGroupName))
-                            resolvedGroupName = "Ambiguous name. Found " + matchedGroups.Count.ToString() + " groups (UUIDs on console)";
-                    }
-
-                }
-                GetGroupsSearchEvent.Set();
-            }
-        }
+        }                        
     }
 }
