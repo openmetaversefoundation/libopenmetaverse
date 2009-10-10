@@ -46,7 +46,7 @@ namespace OpenMetaverse
         public event LandPatchCallback OnLandPatch;
 
         public InternalDictionary<ulong, TerrainPatch[]> SimPatches = new InternalDictionary<ulong, TerrainPatch[]>();
-        public Vector2[] WindSpeeds = new Vector2[256];
+        public InternalDictionary<ulong,Vector2[]> WindSpeeds = new InternalDictionary<ulong,Vector2[]>();
 
         private GridClient Client;
 
@@ -180,9 +180,17 @@ namespace OpenMetaverse
             header = TerrainCompressor.DecodePatchHeader(bitpack);
             TerrainCompressor.DecodePatch(patches, bitpack, header, group.PatchSize);
             float[] yvalues = TerrainCompressor.DecompressPatch(patches, header, group);
-
+            ulong handle = simulator.Handle;
+            Vector2[] windSpeeds;
+            lock (WindSpeeds.Dictionary)
+            {
+                if (!WindSpeeds.TryGetValue(handle,out windSpeeds))
+                {
+                    windSpeeds = WindSpeeds[handle] = new Vector2[256]; 
+                }
+            }
             for (int i = 0; i < 256; i++)
-                WindSpeeds[i] = new Vector2(xvalues[i], yvalues[i]);
+                windSpeeds[i] = new Vector2(xvalues[i], yvalues[i]);
         }
 
         private void DecompressCloud(Simulator simulator, BitPack bitpack, TerrainPatch.GroupHeader group)

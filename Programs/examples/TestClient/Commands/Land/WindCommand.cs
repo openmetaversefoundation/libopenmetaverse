@@ -20,7 +20,7 @@ namespace OpenMetaverse.TestClient
             int xPos = (int)Utils.Clamp(agentPos.X, 0.0f, 255.0f) / 16;
             int yPos = (int)Utils.Clamp(agentPos.Y, 0.0f, 255.0f) / 16;
 
-            Vector2 windSpeed = Client.Terrain.WindSpeeds[yPos * 16 + xPos];
+            Vector2 windSpeed = Client.Terrain.WindSpeeds[Client.Network.CurrentSim.Handle][yPos * 16 + xPos];
 
             return "Local wind speed is " + windSpeed.ToString();
         }
