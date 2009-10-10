@@ -1474,9 +1474,7 @@ namespace OpenMetaverse
         /// <summary>A list of "Places" returned by the data server</summary>
         public List<DirectoryManager.PlacesSearchData> MatchedPlaces { get { return m_MatchedPlaces; } }
 
-        /// <summary>
-        /// Construct a new instance of PlacesReplyEventArgs class
-        /// </summary>
+        /// <summary>Construct a new instance of PlacesReplyEventArgs class</summary>
         /// <param name="queryID">The ID of the query returned by the data server. 
         /// This will correlate to the ID returned by the <see cref="StartPlacesSearch"/> method</param>
         /// <param name="matchedPlaces">A list containing the "Places" returned by the data server query</param>
@@ -1499,12 +1497,10 @@ namespace OpenMetaverse
         /// <summary>A list containing Places data returned by the data server</summary>
         public List<DirectoryManager.DirectoryParcel> MatchedParcels { get { return m_MatchedParcels; } }
         
-        /// <summary>
-        /// Construct a new instance of the DirPlacesReplyEventArgs class
-        /// </summary>
+        /// <summary>Construct a new instance of the DirPlacesReplyEventArgs class</summary>
         /// <param name="queryID">The ID of the query returned by the data server. 
         /// This will correlate to the ID returned by the <see cref="StartDirPlacesSearch"/> method</param>
-        /// <param name="matchedParcels">A list containing land sales data returned by the data server</param>
+        /// <param name="matchedParcels">A list containing land data returned by the data server</param>
         public DirPlacesReplyEventArgs(UUID queryID, List<DirectoryManager.DirectoryParcel> matchedParcels)
         {
             this.m_QueryID = queryID;
@@ -1516,9 +1512,11 @@ namespace OpenMetaverse
     public class DirClassifiedsReplyEventArgs : EventArgs
     {
         private readonly List<DirectoryManager.Classified> m_Classifieds;
-        /// <summary></summary>
+        /// <summary>A list containing Classified Ads returned by the data server</summary>
         public List<DirectoryManager.Classified> Classifieds { get { return m_Classifieds; } }
 
+        /// <summary>Construct a new instance of the DirClassifiedsReplyEventArgs class</summary>
+        /// <param name="classifieds">A list of classified ad data returned from the data server</param>
         public DirClassifiedsReplyEventArgs(List<DirectoryManager.Classified> classifieds)
         {
             this.m_Classifieds = classifieds;
@@ -1533,8 +1531,14 @@ namespace OpenMetaverse
         public UUID QueryID { get { return m_QueryID; } }
 
         private readonly List<DirectoryManager.GroupSearchData> m_matchedGroups;
+
+        /// <summary>A list containing Groups data returned by the data server</summary>
         public List<DirectoryManager.GroupSearchData> MatchedGroups { get { return m_matchedGroups; } }
 
+        /// <summary>Construct a new instance of the DirGroupsReplyEventArgs class</summary>
+        /// <param name="queryID">The ID of the query returned by the data server. 
+        /// This will correlate to the ID returned by the <see cref="StartGroupSearch"/> method</param>
+        /// <param name="matchedGroups">A list of groups data returned by the data server</param>
         public DirGroupsReplyEventArgs(UUID queryID, List<DirectoryManager.GroupSearchData> matchedGroups)
         {
             this.m_QueryID = queryID;
@@ -1551,8 +1555,13 @@ namespace OpenMetaverse
 
         private readonly List<DirectoryManager.AgentSearchData> m_MatchedPeople;
 
+        /// <summary>A list containing People data returned by the data server</summary>
         public List<DirectoryManager.AgentSearchData> MatchedPeople { get { return m_MatchedPeople; } }
 
+        /// <summary>Construct a new instance of the DirPeopleReplyEventArgs class</summary>
+        /// <param name="queryID">The ID of the query returned by the data server. 
+        /// This will correlate to the ID returned by the <see cref="StartPeopleSearch"/> method</param>
+        /// <param name="matchedPeople">A list of people data returned by the data server</param>
         public DirPeopleReplyEventArgs(UUID queryID, List<DirectoryManager.AgentSearchData> matchedPeople)
         {
             this.m_QueryID = queryID;
@@ -1564,8 +1573,12 @@ namespace OpenMetaverse
     public class DirLandReplyEventArgs : EventArgs
     {
         private readonly List<DirectoryManager.DirectoryParcel> m_DirParcels;
+
+        /// <summary>A list containing land forsale data returned by the data server</summary>
         public List<DirectoryManager.DirectoryParcel> DirParcels { get { return m_DirParcels; } }
 
+        /// <summary>Construct a new instance of the DirLandReplyEventArgs class</summary>
+        /// <param name="dirParcels">A list of parcels for sale returned by the data server</param>
         public DirLandReplyEventArgs(List<DirectoryManager.DirectoryParcel> dirParcels)
         {
             this.m_DirParcels = dirParcels;
