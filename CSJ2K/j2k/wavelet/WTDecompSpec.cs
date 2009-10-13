@@ -211,7 +211,7 @@ namespace CSJ2K.j2k.wavelet
 			compMainDefLevels[n] = (lev >= 0)?lev:mainDefLevels;
 			// For the moment disable it since other parts of JJ2000 do not
 			// support this
-			throw new NotImplementedError("Currently, in JJ2000, all components " + "and tiles must have the same " + "decomposition type and number of " + "levels");
+			throw new NotImplementedException("Currently, in JJ2000, all components " + "and tiles must have the same " + "decomposition type and number of " + "levels");
 		}
 		
 		/// <summary> Returns the type of specification for the decomposition in the
@@ -266,11 +266,11 @@ namespace CSJ2K.j2k.wavelet
 				case DEC_SPEC_COMP_DEF: 
 					return compMainDefDecompType[n];
 				
-				case DEC_SPEC_TILE_DEF: 
-					throw new NotImplementedError();
+				case DEC_SPEC_TILE_DEF:
+                    throw new NotImplementedException();
 				
-				case DEC_SPEC_TILE_COMP: 
-					throw new NotImplementedError();
+				case DEC_SPEC_TILE_COMP:
+                    throw new NotImplementedException();
 				
 				default: 
 					throw new System.ApplicationException("Internal JJ2000 error");
@@ -306,11 +306,11 @@ namespace CSJ2K.j2k.wavelet
 				case DEC_SPEC_COMP_DEF: 
 					return compMainDefLevels[n];
 				
-				case DEC_SPEC_TILE_DEF: 
-					throw new NotImplementedError();
+				case DEC_SPEC_TILE_DEF:
+                    throw new NotImplementedException();
 				
-				case DEC_SPEC_TILE_COMP: 
-					throw new NotImplementedError();
+				case DEC_SPEC_TILE_COMP:
+                    throw new NotImplementedException();
 				
 				default: 
 					throw new System.ApplicationException("Internal JJ2000 error");

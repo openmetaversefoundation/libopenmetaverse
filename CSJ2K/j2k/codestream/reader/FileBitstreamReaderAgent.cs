@@ -713,7 +713,7 @@ namespace CSJ2K.j2k.codestream.reader
 			isPsotEqualsZero = (psot != 0)?false:true;
 			if (psot < 0)
 			{
-				throw new NotImplementedError("Tile length larger " + "than maximum supported");
+                throw new NotImplementedException("Tile length larger " + "than maximum supported");
 			}
 			// TPsot
 			int tilePart = in_Renamed.read();

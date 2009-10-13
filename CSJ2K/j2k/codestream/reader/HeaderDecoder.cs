@@ -667,7 +667,7 @@ namespace CSJ2K.j2k.codestream.reader
 			kid = filtIdx[0] = ehs.ReadByte();
 			if (kid >= (1 << 7))
 			{
-				throw new NotImplementedError("Custom filters not supported");
+                throw new NotImplementedException("Custom filters not supported");
 			}
 			// Return filter based on ID
 			switch (kid)

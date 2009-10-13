@@ -376,22 +376,27 @@ namespace CSJ2K
         #endregion
 
         #region Static Encoder Methods
+
         public static void ToFile(Bitmap bitmap, string filename)
         {
-            FileStream stream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite);
-            ToStream(bitmap, stream);
-            stream.Close();
+            using (FileStream stream = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            {
+                ToStream(bitmap, stream);
+            }
         }
         public static byte[] ToArray(Bitmap bitmap)
         {
-            MemoryStream stream = new MemoryStream();
-            ToStream(bitmap, stream);
-            return stream.ToArray();
+            using (MemoryStream stream = new MemoryStream())
+            {
+                ToStream(bitmap, stream);
+                return stream.ToArray();
+            }
         }
         public static void ToStream(Bitmap bitmap, Stream stream)
         {
-            throw new NotImplementedError();
+            throw new NotImplementedException();
         }
+
         #endregion
 
         #region Default Parameter Loader
