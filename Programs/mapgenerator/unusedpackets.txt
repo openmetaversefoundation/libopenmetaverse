@@ -113,3 +113,12 @@ RpcScriptReplyInbound
 MailTaskSimRequest
 MailTaskSimReply
 ScriptMailRegistration
+NearestLandingRegionUpdated
+KickUserAck
+RequestInventoryAsset
+InventoryAssetResponse
+FormFriendship
+CreateTrustedCircuit
+DenyTrustedCircuit
+RequestTrustedCircuit
+SystemMessage

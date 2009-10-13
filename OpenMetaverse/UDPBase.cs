@@ -43,16 +43,16 @@ namespace OpenMetaverse
         protected abstract void PacketSent(UDPPacketBuffer buffer, int bytesSent);
 
         // the port to listen on
-        internal int udpPort;
+        protected int udpPort;
+
+        // the remote endpoint to communicate with
+        protected IPEndPoint remoteEndPoint = null;
 
         // the UDP socket
         private Socket udpSocket;
 
         // the all important shutdownFlag.
         private volatile bool shutdownFlag = true;
-
-        // the remote endpoint to communicate with
-        protected IPEndPoint remoteEndPoint = null;
 
         /// <summary>
         /// Initialize the UDP packet handler in server mode

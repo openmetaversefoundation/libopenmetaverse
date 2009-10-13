@@ -222,7 +222,7 @@ namespace PrimWorkshop
             {
                 for (int j = 0; j < 256; j++)
                 {
-                    LookupHeightTable[i + (j * 256)] = new HeightmapLookupValue(i + (j * 256), ((float)i * ((float)j / 127.0f)));
+                    LookupHeightTable[i + (j * 256)] = new HeightmapLookupValue((ushort)(i + (j * 256)), ((float)i * ((float)j / 127.0f)));
                 }
             }
             Array.Sort<HeightmapLookupValue>(LookupHeightTable);
@@ -1823,10 +1823,10 @@ StartRender:
 
     public struct HeightmapLookupValue : IComparable<HeightmapLookupValue>
     {
-        public int Index;
+        public ushort Index;
         public float Value;
 
-        public HeightmapLookupValue(int index, float value)
+        public HeightmapLookupValue(ushort index, float value)
         {
             Index = index;
             Value = value;

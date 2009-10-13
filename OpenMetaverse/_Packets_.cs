@@ -370,7 +370,6 @@ namespace OpenMetaverse.Packets
         RequestRegionInfo = 65677,
         RegionInfo = 65678,
         GodUpdateRegionInfo = 65679,
-        NearestLandingRegionUpdated = 65682,
         RegionHandshake = 65684,
         RegionHandshakeReply = 65685,
         SimulatorViewerTimeMessage = 65686,
@@ -387,7 +386,6 @@ namespace OpenMetaverse.Packets
         RequestPayPrice = 65697,
         PayPriceReply = 65698,
         KickUser = 65699,
-        KickUserAck = 65700,
         GodKickUser = 65701,
         EjectUser = 65703,
         FreezeUser = 65704,
@@ -487,8 +485,6 @@ namespace OpenMetaverse.Packets
         FetchInventory = 65815,
         FetchInventoryReply = 65816,
         BulkUpdateInventory = 65817,
-        RequestInventoryAsset = 65818,
-        InventoryAssetResponse = 65819,
         RemoveInventoryObjects = 65820,
         PurgeInventoryDescendents = 65821,
         UpdateTaskInventory = 65822,
@@ -502,7 +498,6 @@ namespace OpenMetaverse.Packets
         RezObjectFromNotecard = 65830,
         AcceptFriendship = 65833,
         DeclineFriendship = 65834,
-        FormFriendship = 65835,
         TerminateFriendship = 65836,
         OfferCallingCard = 65837,
         AcceptCallingCard = 65838,
@@ -577,9 +572,6 @@ namespace OpenMetaverse.Packets
         GroupDataUpdate = 65924,
         AgentGroupDataUpdate = 65925,
         AgentDropGroup = 65926,
-        CreateTrustedCircuit = 65928,
-        DenyTrustedCircuit = 65929,
-        RequestTrustedCircuit = 65930,
         RezSingleAttachmentFromInv = 65931,
         RezMultipleAttachmentsFromInv = 65932,
         DetachAttachmentIntoInv = 65933,
@@ -588,7 +580,6 @@ namespace OpenMetaverse.Packets
         UserInfoReply = 65936,
         UpdateUserInfo = 65937,
         InitiateDownload = 65939,
-        SystemMessage = 65940,
         MapLayerRequest = 65941,
         MapLayerReply = 65942,
         MapBlockRequest = 65943,
@@ -784,7 +775,6 @@ namespace OpenMetaverse.Packets
                         case 141: return PacketType.RequestRegionInfo;
                         case 142: return PacketType.RegionInfo;
                         case 143: return PacketType.GodUpdateRegionInfo;
-                        case 146: return PacketType.NearestLandingRegionUpdated;
                         case 148: return PacketType.RegionHandshake;
                         case 149: return PacketType.RegionHandshakeReply;
                         case 150: return PacketType.SimulatorViewerTimeMessage;
@@ -801,7 +791,6 @@ namespace OpenMetaverse.Packets
                         case 161: return PacketType.RequestPayPrice;
                         case 162: return PacketType.PayPriceReply;
                         case 163: return PacketType.KickUser;
-                        case 164: return PacketType.KickUserAck;
                         case 165: return PacketType.GodKickUser;
                         case 167: return PacketType.EjectUser;
                         case 168: return PacketType.FreezeUser;
@@ -901,8 +890,6 @@ namespace OpenMetaverse.Packets
                         case 279: return PacketType.FetchInventory;
                         case 280: return PacketType.FetchInventoryReply;
                         case 281: return PacketType.BulkUpdateInventory;
-                        case 282: return PacketType.RequestInventoryAsset;
-                        case 283: return PacketType.InventoryAssetResponse;
                         case 284: return PacketType.RemoveInventoryObjects;
                         case 285: return PacketType.PurgeInventoryDescendents;
                         case 286: return PacketType.UpdateTaskInventory;
@@ -916,7 +903,6 @@ namespace OpenMetaverse.Packets
                         case 294: return PacketType.RezObjectFromNotecard;
                         case 297: return PacketType.AcceptFriendship;
                         case 298: return PacketType.DeclineFriendship;
-                        case 299: return PacketType.FormFriendship;
                         case 300: return PacketType.TerminateFriendship;
                         case 301: return PacketType.OfferCallingCard;
                         case 302: return PacketType.AcceptCallingCard;
@@ -991,9 +977,6 @@ namespace OpenMetaverse.Packets
                         case 388: return PacketType.GroupDataUpdate;
                         case 389: return PacketType.AgentGroupDataUpdate;
                         case 390: return PacketType.AgentDropGroup;
-                        case 392: return PacketType.CreateTrustedCircuit;
-                        case 393: return PacketType.DenyTrustedCircuit;
-                        case 394: return PacketType.RequestTrustedCircuit;
                         case 395: return PacketType.RezSingleAttachmentFromInv;
                         case 396: return PacketType.RezMultipleAttachmentsFromInv;
                         case 397: return PacketType.DetachAttachmentIntoInv;
@@ -1002,7 +985,6 @@ namespace OpenMetaverse.Packets
                         case 400: return PacketType.UserInfoReply;
                         case 401: return PacketType.UpdateUserInfo;
                         case 403: return PacketType.InitiateDownload;
-                        case 404: return PacketType.SystemMessage;
                         case 405: return PacketType.MapLayerRequest;
                         case 406: return PacketType.MapLayerReply;
                         case 407: return PacketType.MapBlockRequest;
@@ -1236,7 +1218,6 @@ namespace OpenMetaverse.Packets
             if(type == PacketType.RequestRegionInfo) return new RequestRegionInfoPacket();
             if(type == PacketType.RegionInfo) return new RegionInfoPacket();
             if(type == PacketType.GodUpdateRegionInfo) return new GodUpdateRegionInfoPacket();
-            if(type == PacketType.NearestLandingRegionUpdated) return new NearestLandingRegionUpdatedPacket();
             if(type == PacketType.RegionHandshake) return new RegionHandshakePacket();
             if(type == PacketType.RegionHandshakeReply) return new RegionHandshakeReplyPacket();
             if(type == PacketType.SimulatorViewerTimeMessage) return new SimulatorViewerTimeMessagePacket();
@@ -1253,7 +1234,6 @@ namespace OpenMetaverse.Packets
             if(type == PacketType.RequestPayPrice) return new RequestPayPricePacket();
             if(type == PacketType.PayPriceReply) return new PayPriceReplyPacket();
             if(type == PacketType.KickUser) return new KickUserPacket();
-            if(type == PacketType.KickUserAck) return new KickUserAckPacket();
             if(type == PacketType.GodKickUser) return new GodKickUserPacket();
             if(type == PacketType.EjectUser) return new EjectUserPacket();
             if(type == PacketType.FreezeUser) return new FreezeUserPacket();
@@ -1353,8 +1333,6 @@ namespace OpenMetaverse.Packets
             if(type == PacketType.FetchInventory) return new FetchInventoryPacket();
             if(type == PacketType.FetchInventoryReply) return new FetchInventoryReplyPacket();
             if(type == PacketType.BulkUpdateInventory) return new BulkUpdateInventoryPacket();
-            if(type == PacketType.RequestInventoryAsset) return new RequestInventoryAssetPacket();
-            if(type == PacketType.InventoryAssetResponse) return new InventoryAssetResponsePacket();
             if(type == PacketType.RemoveInventoryObjects) return new RemoveInventoryObjectsPacket();
             if(type == PacketType.PurgeInventoryDescendents) return new PurgeInventoryDescendentsPacket();
             if(type == PacketType.UpdateTaskInventory) return new UpdateTaskInventoryPacket();
@@ -1368,7 +1346,6 @@ namespace OpenMetaverse.Packets
             if(type == PacketType.RezObjectFromNotecard) return new RezObjectFromNotecardPacket();
             if(type == PacketType.AcceptFriendship) return new AcceptFriendshipPacket();
             if(type == PacketType.DeclineFriendship) return new DeclineFriendshipPacket();
-            if(type == PacketType.FormFriendship) return new FormFriendshipPacket();
             if(type == PacketType.TerminateFriendship) return new TerminateFriendshipPacket();
             if(type == PacketType.OfferCallingCard) return new OfferCallingCardPacket();
             if(type == PacketType.AcceptCallingCard) return new AcceptCallingCardPacket();
@@ -1443,9 +1420,6 @@ namespace OpenMetaverse.Packets
             if(type == PacketType.GroupDataUpdate) return new GroupDataUpdatePacket();
             if(type == PacketType.AgentGroupDataUpdate) return new AgentGroupDataUpdatePacket();
             if(type == PacketType.AgentDropGroup) return new AgentDropGroupPacket();
-            if(type == PacketType.CreateTrustedCircuit) return new CreateTrustedCircuitPacket();
-            if(type == PacketType.DenyTrustedCircuit) return new DenyTrustedCircuitPacket();
-            if(type == PacketType.RequestTrustedCircuit) return new RequestTrustedCircuitPacket();
             if(type == PacketType.RezSingleAttachmentFromInv) return new RezSingleAttachmentFromInvPacket();
             if(type == PacketType.RezMultipleAttachmentsFromInv) return new RezMultipleAttachmentsFromInvPacket();
             if(type == PacketType.DetachAttachmentIntoInv) return new DetachAttachmentIntoInvPacket();
@@ -1454,7 +1428,6 @@ namespace OpenMetaverse.Packets
             if(type == PacketType.UserInfoReply) return new UserInfoReplyPacket();
             if(type == PacketType.UpdateUserInfo) return new UpdateUserInfoPacket();
             if(type == PacketType.InitiateDownload) return new InitiateDownloadPacket();
-            if(type == PacketType.SystemMessage) return new SystemMessagePacket();
             if(type == PacketType.MapLayerRequest) return new MapLayerRequestPacket();
             if(type == PacketType.MapLayerReply) return new MapLayerReplyPacket();
             if(type == PacketType.MapBlockRequest) return new MapBlockRequestPacket();
@@ -1612,7 +1585,6 @@ namespace OpenMetaverse.Packets
                         case 141: return new RequestRegionInfoPacket(header, bytes, ref i);
                         case 142: return new RegionInfoPacket(header, bytes, ref i);
                         case 143: return new GodUpdateRegionInfoPacket(header, bytes, ref i);
-                        case 146: return new NearestLandingRegionUpdatedPacket(header, bytes, ref i);
                         case 148: return new RegionHandshakePacket(header, bytes, ref i);
                         case 149: return new RegionHandshakeReplyPacket(header, bytes, ref i);
                         case 150: return new SimulatorViewerTimeMessagePacket(header, bytes, ref i);
@@ -1629,7 +1601,6 @@ namespace OpenMetaverse.Packets
                         case 161: return new RequestPayPricePacket(header, bytes, ref i);
                         case 162: return new PayPriceReplyPacket(header, bytes, ref i);
                         case 163: return new KickUserPacket(header, bytes, ref i);
-                        case 164: return new KickUserAckPacket(header, bytes, ref i);
                         case 165: return new GodKickUserPacket(header, bytes, ref i);
                         case 167: return new EjectUserPacket(header, bytes, ref i);
                         case 168: return new FreezeUserPacket(header, bytes, ref i);
@@ -1729,8 +1700,6 @@ namespace OpenMetaverse.Packets
                         case 279: return new FetchInventoryPacket(header, bytes, ref i);
                         case 280: return new FetchInventoryReplyPacket(header, bytes, ref i);
                         case 281: return new BulkUpdateInventoryPacket(header, bytes, ref i);
-                        case 282: return new RequestInventoryAssetPacket(header, bytes, ref i);
-                        case 283: return new InventoryAssetResponsePacket(header, bytes, ref i);
                         case 284: return new RemoveInventoryObjectsPacket(header, bytes, ref i);
                         case 285: return new PurgeInventoryDescendentsPacket(header, bytes, ref i);
                         case 286: return new UpdateTaskInventoryPacket(header, bytes, ref i);
@@ -1744,7 +1713,6 @@ namespace OpenMetaverse.Packets
                         case 294: return new RezObjectFromNotecardPacket(header, bytes, ref i);
                         case 297: return new AcceptFriendshipPacket(header, bytes, ref i);
                         case 298: return new DeclineFriendshipPacket(header, bytes, ref i);
-                        case 299: return new FormFriendshipPacket(header, bytes, ref i);
                         case 300: return new TerminateFriendshipPacket(header, bytes, ref i);
                         case 301: return new OfferCallingCardPacket(header, bytes, ref i);
                         case 302: return new AcceptCallingCardPacket(header, bytes, ref i);
@@ -1819,9 +1787,6 @@ namespace OpenMetaverse.Packets
                         case 388: return new GroupDataUpdatePacket(header, bytes, ref i);
                         case 389: return new AgentGroupDataUpdatePacket(header, bytes, ref i);
                         case 390: return new AgentDropGroupPacket(header, bytes, ref i);
-                        case 392: return new CreateTrustedCircuitPacket(header, bytes, ref i);
-                        case 393: return new DenyTrustedCircuitPacket(header, bytes, ref i);
-                        case 394: return new RequestTrustedCircuitPacket(header, bytes, ref i);
                         case 395: return new RezSingleAttachmentFromInvPacket(header, bytes, ref i);
                         case 396: return new RezMultipleAttachmentsFromInvPacket(header, bytes, ref i);
                         case 397: return new DetachAttachmentIntoInvPacket(header, bytes, ref i);
@@ -1830,7 +1795,6 @@ namespace OpenMetaverse.Packets
                         case 400: return new UserInfoReplyPacket(header, bytes, ref i);
                         case 401: return new UpdateUserInfoPacket(header, bytes, ref i);
                         case 403: return new InitiateDownloadPacket(header, bytes, ref i);
-                        case 404: return new SystemMessagePacket(header, bytes, ref i);
                         case 405: return new MapLayerRequestPacket(header, bytes, ref i);
                         case 406: return new MapLayerReplyPacket(header, bytes, ref i);
                         case 407: return new MapBlockRequestPacket(header, bytes, ref i);
@@ -25925,117 +25889,6 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public sealed class NearestLandingRegionUpdatedPacket : Packet
-    {
-        /// <exclude/>
-        public class RegionDataBlock : PacketBlock
-        {
-            public ulong RegionHandle;
-
-            public override int Length
-            {
-                get
-                {
-                    return 8;
-                }
-            }
-
-            public RegionDataBlock() { }
-            public RegionDataBlock(byte[] bytes, ref int i)
-            {
-                FromBytes(bytes, ref i);
-            }
-
-            public override void FromBytes(byte[] bytes, ref int i)
-            {
-                try
-                {
-                    RegionHandle = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public override void ToBytes(byte[] bytes, ref int i)
-            {
-                Utils.UInt64ToBytes(RegionHandle, bytes, i); i += 8;
-            }
-
-        }
-
-        public override int Length
-        {
-            get
-            {
-                int length = 10;
-                length += RegionData.Length;
-                return length;
-            }
-        }
-        public RegionDataBlock RegionData;
-
-        public NearestLandingRegionUpdatedPacket()
-        {
-            HasVariableBlocks = false;
-            Type = PacketType.NearestLandingRegionUpdated;
-            Header = new Header();
-            Header.Frequency = PacketFrequency.Low;
-            Header.ID = 146;
-            Header.Reliable = true;
-            RegionData = new RegionDataBlock();
-        }
-
-        public NearestLandingRegionUpdatedPacket(byte[] bytes, ref int i) : this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(bytes, ref i, ref packetEnd, null);
-        }
-
-        override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
-        {
-            Header.FromBytes(bytes, ref i, ref packetEnd);
-            if (Header.Zerocoded && zeroBuffer != null)
-            {
-                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;
-                bytes = zeroBuffer;
-            }
-            RegionData.FromBytes(bytes, ref i);
-        }
-
-        public NearestLandingRegionUpdatedPacket(Header head, byte[] bytes, ref int i): this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(head, bytes, ref i, ref packetEnd);
-        }
-
-        override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
-        {
-            Header = header;
-            RegionData.FromBytes(bytes, ref i);
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 10;
-            length += RegionData.Length;
-            if (Header.AckList != null && Header.AckList.Length > 0) { length += Header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            Header.ToBytes(bytes, ref i);
-            RegionData.ToBytes(bytes, ref i);
-            if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override byte[][] ToBytesMultiple()
-        {
-            return new byte[][] { ToBytes() };
-        }
-    }
-
-    /// <exclude/>
     public sealed class RegionHandshakePacket : Packet
     {
         /// <exclude/>
@@ -28655,120 +28508,6 @@ namespace OpenMetaverse.Packets
             int i = 0;
             Header.ToBytes(bytes, ref i);
             TargetBlock.ToBytes(bytes, ref i);
-            UserInfo.ToBytes(bytes, ref i);
-            if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override byte[][] ToBytesMultiple()
-        {
-            return new byte[][] { ToBytes() };
-        }
-    }
-
-    /// <exclude/>
-    public sealed class KickUserAckPacket : Packet
-    {
-        /// <exclude/>
-        public class UserInfoBlock : PacketBlock
-        {
-            public UUID SessionID;
-            public uint Flags;
-
-            public override int Length
-            {
-                get
-                {
-                    return 20;
-                }
-            }
-
-            public UserInfoBlock() { }
-            public UserInfoBlock(byte[] bytes, ref int i)
-            {
-                FromBytes(bytes, ref i);
-            }
-
-            public override void FromBytes(byte[] bytes, ref int i)
-            {
-                try
-                {
-                    SessionID.FromBytes(bytes, i); i += 16;
-                    Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public override void ToBytes(byte[] bytes, ref int i)
-            {
-                SessionID.ToBytes(bytes, i); i += 16;
-                Utils.UIntToBytes(Flags, bytes, i); i += 4;
-            }
-
-        }
-
-        public override int Length
-        {
-            get
-            {
-                int length = 10;
-                length += UserInfo.Length;
-                return length;
-            }
-        }
-        public UserInfoBlock UserInfo;
-
-        public KickUserAckPacket()
-        {
-            HasVariableBlocks = false;
-            Type = PacketType.KickUserAck;
-            Header = new Header();
-            Header.Frequency = PacketFrequency.Low;
-            Header.ID = 164;
-            Header.Reliable = true;
-            UserInfo = new UserInfoBlock();
-        }
-
-        public KickUserAckPacket(byte[] bytes, ref int i) : this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(bytes, ref i, ref packetEnd, null);
-        }
-
-        override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
-        {
-            Header.FromBytes(bytes, ref i, ref packetEnd);
-            if (Header.Zerocoded && zeroBuffer != null)
-            {
-                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;
-                bytes = zeroBuffer;
-            }
-            UserInfo.FromBytes(bytes, ref i);
-        }
-
-        public KickUserAckPacket(Header head, byte[] bytes, ref int i): this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(head, bytes, ref i, ref packetEnd);
-        }
-
-        override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
-        {
-            Header = header;
-            UserInfo.FromBytes(bytes, ref i);
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 10;
-            length += UserInfo.Length;
-            if (Header.AckList != null && Header.AckList.Length > 0) { length += Header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            Header.ToBytes(bytes, ref i);
             UserInfo.ToBytes(bytes, ref i);
             if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
             return bytes;
@@ -49182,243 +48921,6 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public sealed class RequestInventoryAssetPacket : Packet
-    {
-        /// <exclude/>
-        public class QueryDataBlock : PacketBlock
-        {
-            public UUID QueryID;
-            public UUID AgentID;
-            public UUID OwnerID;
-            public UUID ItemID;
-
-            public override int Length
-            {
-                get
-                {
-                    return 64;
-                }
-            }
-
-            public QueryDataBlock() { }
-            public QueryDataBlock(byte[] bytes, ref int i)
-            {
-                FromBytes(bytes, ref i);
-            }
-
-            public override void FromBytes(byte[] bytes, ref int i)
-            {
-                try
-                {
-                    QueryID.FromBytes(bytes, i); i += 16;
-                    AgentID.FromBytes(bytes, i); i += 16;
-                    OwnerID.FromBytes(bytes, i); i += 16;
-                    ItemID.FromBytes(bytes, i); i += 16;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public override void ToBytes(byte[] bytes, ref int i)
-            {
-                QueryID.ToBytes(bytes, i); i += 16;
-                AgentID.ToBytes(bytes, i); i += 16;
-                OwnerID.ToBytes(bytes, i); i += 16;
-                ItemID.ToBytes(bytes, i); i += 16;
-            }
-
-        }
-
-        public override int Length
-        {
-            get
-            {
-                int length = 10;
-                length += QueryData.Length;
-                return length;
-            }
-        }
-        public QueryDataBlock QueryData;
-
-        public RequestInventoryAssetPacket()
-        {
-            HasVariableBlocks = false;
-            Type = PacketType.RequestInventoryAsset;
-            Header = new Header();
-            Header.Frequency = PacketFrequency.Low;
-            Header.ID = 282;
-            Header.Reliable = true;
-            QueryData = new QueryDataBlock();
-        }
-
-        public RequestInventoryAssetPacket(byte[] bytes, ref int i) : this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(bytes, ref i, ref packetEnd, null);
-        }
-
-        override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
-        {
-            Header.FromBytes(bytes, ref i, ref packetEnd);
-            if (Header.Zerocoded && zeroBuffer != null)
-            {
-                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;
-                bytes = zeroBuffer;
-            }
-            QueryData.FromBytes(bytes, ref i);
-        }
-
-        public RequestInventoryAssetPacket(Header head, byte[] bytes, ref int i): this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(head, bytes, ref i, ref packetEnd);
-        }
-
-        override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
-        {
-            Header = header;
-            QueryData.FromBytes(bytes, ref i);
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 10;
-            length += QueryData.Length;
-            if (Header.AckList != null && Header.AckList.Length > 0) { length += Header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            Header.ToBytes(bytes, ref i);
-            QueryData.ToBytes(bytes, ref i);
-            if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override byte[][] ToBytesMultiple()
-        {
-            return new byte[][] { ToBytes() };
-        }
-    }
-
-    /// <exclude/>
-    public sealed class InventoryAssetResponsePacket : Packet
-    {
-        /// <exclude/>
-        public class QueryDataBlock : PacketBlock
-        {
-            public UUID QueryID;
-            public UUID AssetID;
-            public bool IsReadable;
-
-            public override int Length
-            {
-                get
-                {
-                    return 33;
-                }
-            }
-
-            public QueryDataBlock() { }
-            public QueryDataBlock(byte[] bytes, ref int i)
-            {
-                FromBytes(bytes, ref i);
-            }
-
-            public override void FromBytes(byte[] bytes, ref int i)
-            {
-                try
-                {
-                    QueryID.FromBytes(bytes, i); i += 16;
-                    AssetID.FromBytes(bytes, i); i += 16;
-                    IsReadable = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public override void ToBytes(byte[] bytes, ref int i)
-            {
-                QueryID.ToBytes(bytes, i); i += 16;
-                AssetID.ToBytes(bytes, i); i += 16;
-                bytes[i++] = (byte)((IsReadable) ? 1 : 0);
-            }
-
-        }
-
-        public override int Length
-        {
-            get
-            {
-                int length = 10;
-                length += QueryData.Length;
-                return length;
-            }
-        }
-        public QueryDataBlock QueryData;
-
-        public InventoryAssetResponsePacket()
-        {
-            HasVariableBlocks = false;
-            Type = PacketType.InventoryAssetResponse;
-            Header = new Header();
-            Header.Frequency = PacketFrequency.Low;
-            Header.ID = 283;
-            Header.Reliable = true;
-            QueryData = new QueryDataBlock();
-        }
-
-        public InventoryAssetResponsePacket(byte[] bytes, ref int i) : this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(bytes, ref i, ref packetEnd, null);
-        }
-
-        override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
-        {
-            Header.FromBytes(bytes, ref i, ref packetEnd);
-            if (Header.Zerocoded && zeroBuffer != null)
-            {
-                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;
-                bytes = zeroBuffer;
-            }
-            QueryData.FromBytes(bytes, ref i);
-        }
-
-        public InventoryAssetResponsePacket(Header head, byte[] bytes, ref int i): this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(head, bytes, ref i, ref packetEnd);
-        }
-
-        override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
-        {
-            Header = header;
-            QueryData.FromBytes(bytes, ref i);
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 10;
-            length += QueryData.Length;
-            if (Header.AckList != null && Header.AckList.Length > 0) { length += Header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            Header.ToBytes(bytes, ref i);
-            QueryData.ToBytes(bytes, ref i);
-            if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override byte[][] ToBytesMultiple()
-        {
-            return new byte[][] { ToBytes() };
-        }
-    }
-
-    /// <exclude/>
     public sealed class RemoveInventoryObjectsPacket : Packet
     {
         /// <exclude/>
@@ -52332,120 +51834,6 @@ namespace OpenMetaverse.Packets
             Header.ToBytes(bytes, ref i);
             AgentData.ToBytes(bytes, ref i);
             TransactionBlock.ToBytes(bytes, ref i);
-            if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override byte[][] ToBytesMultiple()
-        {
-            return new byte[][] { ToBytes() };
-        }
-    }
-
-    /// <exclude/>
-    public sealed class FormFriendshipPacket : Packet
-    {
-        /// <exclude/>
-        public class AgentBlockBlock : PacketBlock
-        {
-            public UUID SourceID;
-            public UUID DestID;
-
-            public override int Length
-            {
-                get
-                {
-                    return 32;
-                }
-            }
-
-            public AgentBlockBlock() { }
-            public AgentBlockBlock(byte[] bytes, ref int i)
-            {
-                FromBytes(bytes, ref i);
-            }
-
-            public override void FromBytes(byte[] bytes, ref int i)
-            {
-                try
-                {
-                    SourceID.FromBytes(bytes, i); i += 16;
-                    DestID.FromBytes(bytes, i); i += 16;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public override void ToBytes(byte[] bytes, ref int i)
-            {
-                SourceID.ToBytes(bytes, i); i += 16;
-                DestID.ToBytes(bytes, i); i += 16;
-            }
-
-        }
-
-        public override int Length
-        {
-            get
-            {
-                int length = 10;
-                length += AgentBlock.Length;
-                return length;
-            }
-        }
-        public AgentBlockBlock AgentBlock;
-
-        public FormFriendshipPacket()
-        {
-            HasVariableBlocks = false;
-            Type = PacketType.FormFriendship;
-            Header = new Header();
-            Header.Frequency = PacketFrequency.Low;
-            Header.ID = 299;
-            Header.Reliable = true;
-            AgentBlock = new AgentBlockBlock();
-        }
-
-        public FormFriendshipPacket(byte[] bytes, ref int i) : this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(bytes, ref i, ref packetEnd, null);
-        }
-
-        override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
-        {
-            Header.FromBytes(bytes, ref i, ref packetEnd);
-            if (Header.Zerocoded && zeroBuffer != null)
-            {
-                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;
-                bytes = zeroBuffer;
-            }
-            AgentBlock.FromBytes(bytes, ref i);
-        }
-
-        public FormFriendshipPacket(Header head, byte[] bytes, ref int i): this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(head, bytes, ref i, ref packetEnd);
-        }
-
-        override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
-        {
-            Header = header;
-            AgentBlock.FromBytes(bytes, ref i);
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 10;
-            length += AgentBlock.Length;
-            if (Header.AckList != null && Header.AckList.Length > 0) { length += Header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            Header.ToBytes(bytes, ref i);
-            AgentBlock.ToBytes(bytes, ref i);
             if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -67403,298 +66791,6 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
-    public sealed class CreateTrustedCircuitPacket : Packet
-    {
-        /// <exclude/>
-        public class DataBlockBlock : PacketBlock
-        {
-            public UUID EndPointID;
-            public byte[] Digest;
-
-            public override int Length
-            {
-                get
-                {
-                    return 48;
-                }
-            }
-
-            public DataBlockBlock() { }
-            public DataBlockBlock(byte[] bytes, ref int i)
-            {
-                FromBytes(bytes, ref i);
-            }
-
-            public override void FromBytes(byte[] bytes, ref int i)
-            {
-                try
-                {
-                    EndPointID.FromBytes(bytes, i); i += 16;
-                    Digest = new byte[32];
-                    Buffer.BlockCopy(bytes, i, Digest, 0, 32); i += 32;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public override void ToBytes(byte[] bytes, ref int i)
-            {
-                EndPointID.ToBytes(bytes, i); i += 16;
-                Buffer.BlockCopy(Digest, 0, bytes, i, 32);i += 32;
-            }
-
-        }
-
-        public override int Length
-        {
-            get
-            {
-                int length = 10;
-                length += DataBlock.Length;
-                return length;
-            }
-        }
-        public DataBlockBlock DataBlock;
-
-        public CreateTrustedCircuitPacket()
-        {
-            HasVariableBlocks = false;
-            Type = PacketType.CreateTrustedCircuit;
-            Header = new Header();
-            Header.Frequency = PacketFrequency.Low;
-            Header.ID = 392;
-            Header.Reliable = true;
-            DataBlock = new DataBlockBlock();
-        }
-
-        public CreateTrustedCircuitPacket(byte[] bytes, ref int i) : this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(bytes, ref i, ref packetEnd, null);
-        }
-
-        override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
-        {
-            Header.FromBytes(bytes, ref i, ref packetEnd);
-            if (Header.Zerocoded && zeroBuffer != null)
-            {
-                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;
-                bytes = zeroBuffer;
-            }
-            DataBlock.FromBytes(bytes, ref i);
-        }
-
-        public CreateTrustedCircuitPacket(Header head, byte[] bytes, ref int i): this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(head, bytes, ref i, ref packetEnd);
-        }
-
-        override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
-        {
-            Header = header;
-            DataBlock.FromBytes(bytes, ref i);
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 10;
-            length += DataBlock.Length;
-            if (Header.AckList != null && Header.AckList.Length > 0) { length += Header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            Header.ToBytes(bytes, ref i);
-            DataBlock.ToBytes(bytes, ref i);
-            if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override byte[][] ToBytesMultiple()
-        {
-            return new byte[][] { ToBytes() };
-        }
-    }
-
-    /// <exclude/>
-    public sealed class DenyTrustedCircuitPacket : Packet
-    {
-        /// <exclude/>
-        public class DataBlockBlock : PacketBlock
-        {
-            public UUID EndPointID;
-
-            public override int Length
-            {
-                get
-                {
-                    return 16;
-                }
-            }
-
-            public DataBlockBlock() { }
-            public DataBlockBlock(byte[] bytes, ref int i)
-            {
-                FromBytes(bytes, ref i);
-            }
-
-            public override void FromBytes(byte[] bytes, ref int i)
-            {
-                try
-                {
-                    EndPointID.FromBytes(bytes, i); i += 16;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public override void ToBytes(byte[] bytes, ref int i)
-            {
-                EndPointID.ToBytes(bytes, i); i += 16;
-            }
-
-        }
-
-        public override int Length
-        {
-            get
-            {
-                int length = 10;
-                length += DataBlock.Length;
-                return length;
-            }
-        }
-        public DataBlockBlock DataBlock;
-
-        public DenyTrustedCircuitPacket()
-        {
-            HasVariableBlocks = false;
-            Type = PacketType.DenyTrustedCircuit;
-            Header = new Header();
-            Header.Frequency = PacketFrequency.Low;
-            Header.ID = 393;
-            Header.Reliable = true;
-            DataBlock = new DataBlockBlock();
-        }
-
-        public DenyTrustedCircuitPacket(byte[] bytes, ref int i) : this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(bytes, ref i, ref packetEnd, null);
-        }
-
-        override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
-        {
-            Header.FromBytes(bytes, ref i, ref packetEnd);
-            if (Header.Zerocoded && zeroBuffer != null)
-            {
-                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;
-                bytes = zeroBuffer;
-            }
-            DataBlock.FromBytes(bytes, ref i);
-        }
-
-        public DenyTrustedCircuitPacket(Header head, byte[] bytes, ref int i): this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(head, bytes, ref i, ref packetEnd);
-        }
-
-        override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
-        {
-            Header = header;
-            DataBlock.FromBytes(bytes, ref i);
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 10;
-            length += DataBlock.Length;
-            if (Header.AckList != null && Header.AckList.Length > 0) { length += Header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            Header.ToBytes(bytes, ref i);
-            DataBlock.ToBytes(bytes, ref i);
-            if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override byte[][] ToBytesMultiple()
-        {
-            return new byte[][] { ToBytes() };
-        }
-    }
-
-    /// <exclude/>
-    public sealed class RequestTrustedCircuitPacket : Packet
-    {
-        public override int Length
-        {
-            get
-            {
-                int length = 10;
-                return length;
-            }
-        }
-
-        public RequestTrustedCircuitPacket()
-        {
-            HasVariableBlocks = false;
-            Type = PacketType.RequestTrustedCircuit;
-            Header = new Header();
-            Header.Frequency = PacketFrequency.Low;
-            Header.ID = 394;
-            Header.Reliable = true;
-        }
-
-        public RequestTrustedCircuitPacket(byte[] bytes, ref int i) : this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(bytes, ref i, ref packetEnd, null);
-        }
-
-        override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
-        {
-            Header.FromBytes(bytes, ref i, ref packetEnd);
-            if (Header.Zerocoded && zeroBuffer != null)
-            {
-                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;
-                bytes = zeroBuffer;
-            }
-        }
-
-        public RequestTrustedCircuitPacket(Header head, byte[] bytes, ref int i): this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(head, bytes, ref i, ref packetEnd);
-        }
-
-        override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
-        {
-            Header = header;
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 10;
-            if (Header.AckList != null && Header.AckList.Length > 0) { length += Header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            Header.ToBytes(bytes, ref i);
-            if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override byte[][] ToBytesMultiple()
-        {
-            return new byte[][] { ToBytes() };
-        }
-    }
-
-    /// <exclude/>
     public sealed class RezSingleAttachmentFromInvPacket : Packet
     {
         /// <exclude/>
@@ -69309,272 +68405,6 @@ namespace OpenMetaverse.Packets
         public override byte[][] ToBytesMultiple()
         {
             return new byte[][] { ToBytes() };
-        }
-    }
-
-    /// <exclude/>
-    public sealed class SystemMessagePacket : Packet
-    {
-        /// <exclude/>
-        public class MethodDataBlock : PacketBlock
-        {
-            private byte[] _method;
-            public byte[] Method
-            {
-                get { return _method; }
-                set
-                {
-                    if (value == null) { _method = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
-                }
-            }
-            public UUID Invoice;
-            public byte[] Digest;
-
-            public override int Length
-            {
-                get
-                {
-                    int length = 49;
-                    if (Method != null) { length += Method.Length; }
-                    return length;
-                }
-            }
-
-            public MethodDataBlock() { }
-            public MethodDataBlock(byte[] bytes, ref int i)
-            {
-                FromBytes(bytes, ref i);
-            }
-
-            public override void FromBytes(byte[] bytes, ref int i)
-            {
-                int length;
-                try
-                {
-                    length = (ushort)bytes[i++];
-                    _method = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _method, 0, length); i += length;
-                    Invoice.FromBytes(bytes, i); i += 16;
-                    Digest = new byte[32];
-                    Buffer.BlockCopy(bytes, i, Digest, 0, 32); i += 32;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public override void ToBytes(byte[] bytes, ref int i)
-            {
-                bytes[i++] = (byte)Method.Length;
-                Buffer.BlockCopy(Method, 0, bytes, i, Method.Length); i += Method.Length;
-                Invoice.ToBytes(bytes, i); i += 16;
-                Buffer.BlockCopy(Digest, 0, bytes, i, 32);i += 32;
-            }
-
-        }
-
-        /// <exclude/>
-        public class ParamListBlock : PacketBlock
-        {
-            private byte[] _parameter;
-            public byte[] Parameter
-            {
-                get { return _parameter; }
-                set
-                {
-                    if (value == null) { _parameter = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _parameter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _parameter, 0, value.Length); }
-                }
-            }
-
-            public override int Length
-            {
-                get
-                {
-                    int length = 1;
-                    if (Parameter != null) { length += Parameter.Length; }
-                    return length;
-                }
-            }
-
-            public ParamListBlock() { }
-            public ParamListBlock(byte[] bytes, ref int i)
-            {
-                FromBytes(bytes, ref i);
-            }
-
-            public override void FromBytes(byte[] bytes, ref int i)
-            {
-                int length;
-                try
-                {
-                    length = (ushort)bytes[i++];
-                    _parameter = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _parameter, 0, length); i += length;
-                }
-                catch (Exception)
-                {
-                    throw new MalformedDataException();
-                }
-            }
-
-            public override void ToBytes(byte[] bytes, ref int i)
-            {
-                bytes[i++] = (byte)Parameter.Length;
-                Buffer.BlockCopy(Parameter, 0, bytes, i, Parameter.Length); i += Parameter.Length;
-            }
-
-        }
-
-        public override int Length
-        {
-            get
-            {
-                int length = 11;
-                length += MethodData.Length;
-                for (int j = 0; j < ParamList.Length; j++)
-                    length += ParamList[j].Length;
-                return length;
-            }
-        }
-        public MethodDataBlock MethodData;
-        public ParamListBlock[] ParamList;
-
-        public SystemMessagePacket()
-        {
-            HasVariableBlocks = true;
-            Type = PacketType.SystemMessage;
-            Header = new Header();
-            Header.Frequency = PacketFrequency.Low;
-            Header.ID = 404;
-            Header.Reliable = true;
-            Header.Zerocoded = true;
-            MethodData = new MethodDataBlock();
-            ParamList = null;
-        }
-
-        public SystemMessagePacket(byte[] bytes, ref int i) : this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(bytes, ref i, ref packetEnd, null);
-        }
-
-        override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
-        {
-            Header.FromBytes(bytes, ref i, ref packetEnd);
-            if (Header.Zerocoded && zeroBuffer != null)
-            {
-                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;
-                bytes = zeroBuffer;
-            }
-            MethodData.FromBytes(bytes, ref i);
-            int count = (int)bytes[i++];
-            if(ParamList == null || ParamList.Length != -1) {
-                ParamList = new ParamListBlock[count];
-                for(int j = 0; j < count; j++)
-                { ParamList[j] = new ParamListBlock(); }
-            }
-            for (int j = 0; j < count; j++)
-            { ParamList[j].FromBytes(bytes, ref i); }
-        }
-
-        public SystemMessagePacket(Header head, byte[] bytes, ref int i): this()
-        {
-            int packetEnd = bytes.Length - 1;
-            FromBytes(head, bytes, ref i, ref packetEnd);
-        }
-
-        override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
-        {
-            Header = header;
-            MethodData.FromBytes(bytes, ref i);
-            int count = (int)bytes[i++];
-            if(ParamList == null || ParamList.Length != count) {
-                ParamList = new ParamListBlock[count];
-                for(int j = 0; j < count; j++)
-                { ParamList[j] = new ParamListBlock(); }
-            }
-            for (int j = 0; j < count; j++)
-            { ParamList[j].FromBytes(bytes, ref i); }
-        }
-
-        public override byte[] ToBytes()
-        {
-            int length = 10;
-            length += MethodData.Length;
-            length++;
-            for (int j = 0; j < ParamList.Length; j++) { length += ParamList[j].Length; }
-            if (Header.AckList != null && Header.AckList.Length > 0) { length += Header.AckList.Length * 4 + 1; }
-            byte[] bytes = new byte[length];
-            int i = 0;
-            Header.ToBytes(bytes, ref i);
-            MethodData.ToBytes(bytes, ref i);
-            bytes[i++] = (byte)ParamList.Length;
-            for (int j = 0; j < ParamList.Length; j++) { ParamList[j].ToBytes(bytes, ref i); }
-            if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
-            return bytes;
-        }
-
-        public override byte[][] ToBytesMultiple()
-        {
-            System.Collections.Generic.List<byte[]> packets = new System.Collections.Generic.List<byte[]>();
-            int i = 0;
-            int fixedLength = 10;
-
-            byte[] ackBytes = null;
-            int acksLength = 0;
-            if (Header.AckList != null && Header.AckList.Length > 0) {
-                Header.AppendedAcks = true;
-                ackBytes = new byte[Header.AckList.Length * 4 + 1];
-                Header.AcksToBytes(ackBytes, ref acksLength);
-            }
-
-            fixedLength += MethodData.Length;
-            byte[] fixedBytes = new byte[fixedLength];
-            Header.ToBytes(fixedBytes, ref i);
-            MethodData.ToBytes(fixedBytes, ref i);
-            fixedLength += 1;
-
-            int ParamListStart = 0;
-            while (
-                ParamListStart < ParamList.Length)
-            {
-                int variableLength = 0;
-                int ParamListCount = 0;
-
-                i = ParamListStart;
-                while (fixedLength + variableLength + acksLength < Packet.MTU && i < ParamList.Length) {
-                    int blockLength = ParamList[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
-                        variableLength += blockLength;
-                        ++ParamListCount;
-                    }
-                    else { break; }
-                    ++i;
-                }
-
-                byte[] packet = new byte[fixedLength + variableLength + acksLength];
-                int length = fixedBytes.Length;
-                Buffer.BlockCopy(fixedBytes, 0, packet, 0, length);
-                if (packets.Count > 0) { packet[0] = (byte)(packet[0] & ~0x10); }
-
-                packet[length++] = (byte)ParamListCount;
-                for (i = ParamListStart; i < ParamListStart + ParamListCount; i++) { ParamList[i].ToBytes(packet, ref length); }
-                ParamListStart += ParamListCount;
-
-                if (acksLength > 0) {
-                    Buffer.BlockCopy(ackBytes, 0, packet, length, acksLength);
-                    acksLength = 0;
-                }
-
-                packets.Add(packet);
-            }
-
-            return packets.ToArray();
         }
     }
 
