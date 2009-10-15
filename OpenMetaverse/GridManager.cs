@@ -68,7 +68,11 @@ namespace OpenMetaverse
         /// <summary>Land for sale</summary>
         LandForSale = 7,
         /// <summary>Classified ad</summary>
-        Classified = 8
+        Classified = 8,
+        /// <summary>Adult rated event</summary>
+        AdultEvent = 9,
+        /// <summary>Adult land for sale</summary>
+        AdultLandForSale = 10
     }
 
     #endregion Enums
