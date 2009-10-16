@@ -819,13 +819,7 @@ namespace OpenMetaverse
             add { lock (m_MoneyBalanceReplyLock) { m_MoneyBalance += value; } }
             remove { lock (m_MoneyBalanceReplyLock) { m_MoneyBalance -= value; } }
         }
-        /// <summary>
-        /// Triggered on incoming instant messages
-        /// </summary>
-        /// <param name="im">Instant message data structure</param>
-        /// <param name="simulator">Simulator where this IM was received from</param>
-        //public delegate void InstantMessageCallback(InstantMessage im, Simulator simulator);
-
+        
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<InstantMessageEventArgs> m_InstantMessage;
 
@@ -916,19 +910,7 @@ namespace OpenMetaverse
         {
             add { lock (m_AnimationsChangedLock) { m_AnimationsChanged += value; } }
             remove { lock (m_AnimationsChangedLock) { m_AnimationsChanged -= value; } }
-        }
-
-        /// <summary>
-        /// Triggered when an object or avatar forcefully collides with our
-        /// agent
-        /// </summary>
-        /// <param name="type">Collision type</param>
-        /// <param name="perp">Colliding object or avatar ID</param>
-        /// <param name="victim">Victim ID, should be our own AgentID</param>
-        /// <param name="magnitude">Velocity or total force of the collision</param>
-        /// <param name="time">Time the collision occurred</param>
-        //public delegate void MeanCollisionCallback(MeanCollisionType type, UUID perp, UUID victim,
-        //    float magnitude, DateTime time);
+        }        
 
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<MeanCollisionEventArgs> m_MeanCollision;
@@ -951,14 +933,7 @@ namespace OpenMetaverse
         {
             add { lock (m_MeanCollisionLock) { m_MeanCollision += value; } }
             remove { lock (m_MeanCollisionLock) { m_MeanCollision -= value; } }
-        }
-
-        /// <summary>
-        /// Triggered when the agent physically moves in to a neighboring region
-        /// </summary>
-        /// <param name="oldSim">Simulator agent was previously occupying</param>
-        /// <param name="newSim">Simulator agent is now currently occupying</param>
-        //public delegate void RegionCrossedCallback(Simulator oldSim, Simulator newSim);
+        }        
 
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<RegionCrossedEventArgs> m_RegionCrossed;
@@ -982,15 +957,7 @@ namespace OpenMetaverse
             add { lock (m_RegionCrossedLock) { m_RegionCrossed += value; } }
             remove { lock (m_RegionCrossedLock) { m_RegionCrossed -= value; } }
         }
-        /// <summary>
-        /// Fired when group chat session confirmed joined</summary>
-        /// <param name="groupChatSessionID">Key of Session (groups UUID)</param>
-        /// <param name="tmpSessionID">Temporary session Key</param>
-        /// <param name="sessionName">A string representation of the session name</param>
-        /// <param name="success"><see langword="true"/> if session start successful, 
-        /// <see langword="false"/> otherwise</param>
-        //public delegate void GroupChatJoinedCallback(UUID groupChatSessionID, string sessionName, UUID tmpSessionID, bool success);GroupChatJoinedEventArgs
-
+        
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<GroupChatJoinedEventArgs> m_GroupChatJoined;
 
@@ -1012,10 +979,7 @@ namespace OpenMetaverse
         {
             add { lock (m_GroupChatJoinedLock) { m_GroupChatJoined += value; } }
             remove { lock (m_GroupChatJoinedLock) { m_GroupChatJoined -= value; } }
-        }
-        /// <summary>Fired when agent group chat session terminated</summary>
-        /// <param name="groupchatSessionID">Key of Session (groups UUID)</param>
-        //public delegate void GroupChatLeftCallback(UUID groupchatSessionID);
+        }        
 
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<GroupChatLeftEventArgs> m_GroupChatLeft;
@@ -1038,12 +1002,7 @@ namespace OpenMetaverse
         {
             add { lock (m_GroupChatLeftLock) { m_GroupChatLeft += value; } }
             remove { lock (m_GroupChatLeftLock) { m_GroupChatLeft -= value; } }
-        }
-        /// <summary>
-        /// Fired when alert message received from simulator
-        /// </summary>
-        /// <param name="message">the message sent from the grid to our avatar.</param>
-        //public delegate void AlertMessageCallback(string message);
+        }        
 
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<AlertMessageEventArgs> m_AlertMessage;
@@ -1067,16 +1026,7 @@ namespace OpenMetaverse
         {
             add { lock (m_AlertMessageLock) { m_AlertMessage += value; } }
             remove { lock (m_AlertMessageLock) { m_AlertMessage -= value; } }
-        }
-
-
-        /// <summary>
-        /// Fired when a script wants to give or release controls.
-        /// </summary>
-        /// <param name="controls">Control to give or take</param>
-        /// <param name="pass">true of passing control to agent</param>
-        /// <param name="take">true of taking control from agent</param>
-        //public delegate void ScriptControlCallback(ScriptControlChange controls, bool pass, bool take); ScriptControlEventArgs
+        }        
 
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<ScriptControlEventArgs> m_ScriptControl;
@@ -1100,13 +1050,7 @@ namespace OpenMetaverse
             add { lock (m_ScriptControlLock) { m_ScriptControl += value; } }
             remove { lock (m_ScriptControlLock) { m_ScriptControl -= value; } }
         }
-
-        /// <summary>
-        /// Fired when camera tries to view beyond its view limits
-        /// </summary>
-        /// <param name="collidePlane"><seealso cref="Vector4"/> representing plane where constraints were hit</param>
-        //public delegate void CameraConstraintCallback(Vector4 collidePlane);
-
+       
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<CameraConstraintEventArgs> m_CameraConstraint;
 
@@ -1130,24 +1074,7 @@ namespace OpenMetaverse
             add { lock (m_CameraConstraintLock) { m_CameraConstraint += value; } }
             remove { lock (m_CameraConstraintLock) { m_CameraConstraint -= value; } }
         }
-        /// <summary>
-        /// Fired when script sensor reply is received
-        /// </summary>
-        /// <param name="requestorID">requestors UUID</param>
-        /// <param name="groupID">Sources Group UUID</param>
-        /// <param name="name">Sources Name</param>
-        /// <param name="objectID">Objects UUID</param>
-        /// <param name="ownerID">Object owners UUID</param>
-        /// <param name="position">Position of Object</param>
-        /// <param name="range">Range of Object</param>
-        /// <param name="rotation">Rotation of object</param>
-        /// <param name="type">Objects Type</param>
-        /// <param name="velocity"><seealso cref="Vector3"/> representing the velocity of object</param>
-        /// TODO: this should probably be a struct, and there should be an enum added for type
-        //public delegate void ScriptSensorReplyCallback(UUID requestorID, UUID groupID, string name,
-        //    UUID objectID, UUID ownerID, Vector3 position, float range, Quaternion rotation,
-        //    ScriptSensorTypeFlags type, Vector3 velocity);
-
+        
         /// <summary>The event subscribers. null if no subcribers</summary>
         public EventHandler<ScriptSensorReplyEventArgs> m_ScriptSensorReply;
 
@@ -1192,13 +1119,7 @@ namespace OpenMetaverse
         {
             add { lock (m_AvatarSitResponseLock) { m_AvatarSitResponse += value; } }
             remove { lock (m_AvatarSitResponseLock) { m_AvatarSitResponse -= value; } }
-        }
-        /// <summary>
-        /// Fired when a new member joins a Group chat session
-        /// </summary>
-        /// <param name="sessionID">the ID of the session</param>
-        /// <param name="agent_key">the ID of the avatar that joined</param>
-        //public delegate void ChatSessionMemberAddedCallback(UUID sessionID, UUID agent_key);
+        }       
 
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<ChatSessionMemberAddedEventArgs> m_ChatSessionMemberAdded;
@@ -1221,13 +1142,7 @@ namespace OpenMetaverse
         {
             add { lock (m_ChatSessionMemberAddedLock) { m_ChatSessionMemberAdded += value; } }
             remove { lock (m_ChatSessionMemberAddedLock) { m_ChatSessionMemberAdded -= value; } }
-        }
-        /// <summary>
-        /// Fired when a member of a Group chat leaves the session
-        /// </summary>
-        /// <param name="sessionID">the ID of the session</param>
-        /// <param name="agent_key">the ID of the avatar that joined</param>
-        //public delegate void ChatSessionMemberLeftCallback(UUID sessionID, UUID agent_key);
+        }       
 
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<ChatSessionMemberLeftEventArgs> m_ChatSessionMemberLeft;
