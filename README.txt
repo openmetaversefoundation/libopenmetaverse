@@ -13,8 +13,8 @@ list). You can find us in-world via the open invitation libsecondlife group
 or at our HQ and testing area in Hooper (SLURL: http://xrl.us/bi233).
 
 Source Code:
-   To checkout a copy of libopenmv trunk
-   svn co http://openmetaverse.org/svn/omf/libopenmetaverse/trunk/ libopenmetaverse
+   To checkout a copy of libopenmetaverse stable branch
+   svn co http://openmetaverse.org/svn/omf/libopenmetaverse/branches/stable libopenmetaverse
 
 For more details see: 
    http://lib.openmetaverse.org/wiki/SVN
