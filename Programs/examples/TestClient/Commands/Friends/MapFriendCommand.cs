@@ -29,25 +29,26 @@ namespace OpenMetaverse.TestClient
 
             StringBuilder sb = new StringBuilder();
 
-            FriendsManager.FriendFoundEvent del = 
-                delegate(UUID agentID, ulong regionHandle, Vector3 location) 
-                {
-                    if (!regionHandle.Equals(0))
-                        sb.AppendFormat("Found Friend {0} in {1} at {2}/{3}", agentID, regionHandle, location.X, location.Y);
-                    else
-                        sb.AppendFormat("Found Friend {0}, But they appear to be offline", agentID);
+            EventHandler<FriendFoundReplyEventArgs> del = delegate(object sender, FriendFoundReplyEventArgs e)
+            {
+                if (!e.RegionHandle.Equals(0))
+                    sb.AppendFormat("Found Friend {0} in {1} at {2}/{3}", e.AgentID, e.RegionHandle, e.Location.X, e.Location.Y);
+                else
+                    sb.AppendFormat("Found Friend {0}, But they appear to be offline", e.AgentID);
 
-                    WaitforFriend.Set();
-                };
+                WaitforFriend.Set();
+            };
 
-            Client.Friends.OnFriendFound += del;
+
+
+            Client.Friends.FriendFoundReply += del;
             WaitforFriend.Reset();
             Client.Friends.MapFriend(targetID);
             if (!WaitforFriend.WaitOne(10000, false))
             {
                 sb.AppendFormat("Timeout waiting for reply, Do you have mapping rights on {0}?", targetID);
             }
-            Client.Friends.OnFriendFound -= del;
+            Client.Friends.FriendFoundReply -= del;
             return sb.ToString();
         }
     }

@@ -90,11 +90,22 @@ namespace OpenMetaverse.GUI
         private void InitializeClient(GridClient client)
         {
             _Client = client;
-            _Client.Friends.OnFriendNamesReceived += new FriendsManager.FriendNamesReceived(Friends_OnFriendNamesReceived);
-            _Client.Friends.OnFriendOffline += new FriendsManager.FriendOfflineEvent(Friends_OnFriendOffline);
-            _Client.Friends.OnFriendOnline += new FriendsManager.FriendOnlineEvent(Friends_OnFriendOnline);
+            _Client.Friends.FriendNames += Friends_FriendNames;
+            _Client.Friends.FriendOffline += Friends_FriendUpdate;
+            _Client.Friends.FriendOnline += Friends_FriendUpdate;
             _Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
         }
+
+        void Friends_FriendNames(object sender, FriendNamesEventArgs e)
+        {
+            RefreshFriends();
+        }
+
+        void Friends_FriendUpdate(object sender, FriendInfoEventArgs e)
+        {
+            RefreshFriends();
+        }
+        
 
         private void RefreshFriends()
         {
@@ -140,21 +151,6 @@ namespace OpenMetaverse.GUI
                     this.Items[key].Tag = friend;
                 });
             }
-        }
-
-        private void Friends_OnFriendOffline(FriendInfo friend)
-        {
-            RefreshFriends();
-        }
-
-        private void Friends_OnFriendOnline(FriendInfo friend)
-        {
-            RefreshFriends();
-        }
-
-        private void Friends_OnFriendNamesReceived(Dictionary<UUID, string> names)
-        {
-            RefreshFriends();
         }
 
         private void FriendList_ColumnClick(object sender, ColumnClickEventArgs e)

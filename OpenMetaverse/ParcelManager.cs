@@ -25,14 +25,14 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Reflection;
+using System.Collections.Generic;
+using OpenMetaverse.Http;
 using OpenMetaverse.Packets;
+using OpenMetaverse.Interfaces;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Messages.Linden;
-using OpenMetaverse.Interfaces;
-using OpenMetaverse.Http;
 
 namespace OpenMetaverse
 {
