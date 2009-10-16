@@ -86,16 +86,21 @@ namespace OpenMetaverse.GUI
             _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
             _Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
             _Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
-            _Client.Self.OnAlertMessage += new AgentManager.AlertMessageCallback(Self_OnAlertMessage);
-            _Client.Self.OnMoneyBalanceReplyReceived += new AgentManager.MoneyBalanceReplyCallback(Self_OnMoneyBalanceReplyReceived);
+            _Client.Self.AlertMessage += Self_AlertMessage;
+            _Client.Self.MoneyBalanceReply += Self_MoneyBalanceReply;
         }
 
-        void Self_OnMoneyBalanceReplyReceived(UUID transactionID, bool transactionSuccess, int balance, int metersCredit, int metersCommitted, string description)
+        void Self_AlertMessage(object sender, AlertMessageEventArgs e)
         {
-            if (description != String.Empty) LogText(description, Color.Green);
-            LogText("Balance: L$" + balance, Color.Green);
+            LogText(e.Message, Color.Gray);
         }
 
+        void Self_MoneyBalanceReply(object sender, MoneyBalanceReplyEventArgs e)
+        {
+            if (e.Description != String.Empty) LogText(e.Description, Color.Green);
+            LogText("Balance: L$" + e.Balance, Color.Green);
+        }
+        
         void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
         {
             if (Client.Network.CurrentSim != null)
@@ -114,11 +119,5 @@ namespace OpenMetaverse.GUI
             if (login == LoginStatus.Failed) LogText("Login failed: " + message, Color.Red);
             else if (login != LoginStatus.Success) LogText(message, Color.Black);
         }
-
-        void Self_OnAlertMessage(string message)
-        {
-            LogText(message, Color.Gray);
-        }
-
     }
 }

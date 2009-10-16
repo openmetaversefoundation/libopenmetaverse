@@ -6,8 +6,7 @@ namespace OpenMetaverse.TestClient.Commands
 {
     class SearchClassifiedsCommand : Command
     {
-        System.Threading.AutoResetEvent waitQuery = new System.Threading.AutoResetEvent(false);
-        int resultCount;
+        System.Threading.AutoResetEvent waitQuery = new System.Threading.AutoResetEvent(false);        
 
         public SearchClassifiedsCommand(TestClient testClient)
         {

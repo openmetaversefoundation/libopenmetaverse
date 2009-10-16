@@ -209,11 +209,16 @@ namespace OpenMetaverse
         [Flags]
         public enum ClassifiedFlags : byte
         {
+            /// <summary></summary>
             None = 1 << 0,
+            /// <summary></summary>
             Mature = 1 << 1,
+            /// <summary></summary>
             Enabled = 1 << 2,
             // HasPrice = 1 << 3, // Deprecated
+            /// <summary></summary>
             UpdateTime = 1 << 4,
+            /// <summary></summary>
             AutoRenew = 1 << 5
         }
 
@@ -446,7 +451,6 @@ namespace OpenMetaverse
                 return Helpers.StructToString(this);
             }
         }
-
 
         /// <summary>
         /// The details of an "Event"

@@ -208,7 +208,26 @@ namespace OpenMetaverse.GUI
         private void InitializeClient(GridClient client)
         {
             _Client = client;
-            _Client.Self.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
+            _Client.Self.IM += Self_IM;
+        }
+
+        void Self_IM(object sender, InstantMessageEventArgs e)
+        {
+            if (e.IM.Dialog == InstantMessageDialog.MessageFromAgent)
+            {
+                lock (_Sessions)
+                {
+                    if (_Sessions.ContainsKey(e.IM.FromAgentID))
+                    {
+                        _Sessions[e.IM.FromAgentID].IMSessionID = e.IM.IMSessionID;
+                        _Sessions[e.IM.FromAgentID].Window.LogText(e.IM.FromAgentName + ": " + e.IM.Message, Color.FromKnownColor(KnownColor.ControlText));
+                    }
+                    else
+                    {
+                        CreateSession(e.IM.FromAgentName, e.IM.FromAgentID, e.IM.IMSessionID, false);
+                    }
+                }
+            }
         }
 
         void button_OnMessageNeedsSending(UUID targetID, string message)
@@ -231,26 +250,7 @@ namespace OpenMetaverse.GUI
             if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { button.Window.Show(); button.Window.Activate(); });
             else { button.Window.Show(); button.Window.Activate(); }
         }
-
-        void Self_OnInstantMessage(InstantMessage im, Simulator simulator)
-        {
-            if (im.Dialog == InstantMessageDialog.MessageFromAgent)
-            {
-                lock (_Sessions)
-                {
-                    if (_Sessions.ContainsKey(im.FromAgentID))
-                    {
-                        _Sessions[im.FromAgentID].IMSessionID = im.IMSessionID;
-                        _Sessions[im.FromAgentID].Window.LogText(im.FromAgentName + ": " + im.Message, Color.FromKnownColor(KnownColor.ControlText));
-                    }
-                    else
-                    {
-                        CreateSession(im.FromAgentName, im.FromAgentID, im.IMSessionID, false);
-                    }                    
-                }
-            }
-        }
-
+     
         void button_Disposed(object sender, EventArgs e)
         {
             MessageBarButton button = (MessageBarButton)sender;

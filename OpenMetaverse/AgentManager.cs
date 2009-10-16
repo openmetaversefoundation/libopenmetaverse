@@ -26,16 +26,16 @@
 
 using System;
 using System.Net;
-using System.Collections.Generic;
-using System.Threading;
 using System.Text;
+using System.Threading;
 using System.Reflection;
+using System.Collections.Generic;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Http;
+using OpenMetaverse.Assets;
 using OpenMetaverse.Packets;
 using OpenMetaverse.Interfaces;
 using OpenMetaverse.Messages.Linden;
-using OpenMetaverse.Assets;
 
 namespace OpenMetaverse
 {
@@ -211,7 +211,7 @@ namespace OpenMetaverse
         StartTyping = 4,
         /// <summary>Event message when an Avatar has stopped typing</summary>
         StopTyping = 5,
-        /// <summary>Unknown</summary>
+        /// <summary>Send the message to the debug channel</summary>
         Debug = 6,
         /// <summary>Event message when an object uses llOwnerSay</summary>
         OwnerSay = 8,
@@ -495,7 +495,7 @@ namespace OpenMetaverse
         Right = 8,
         /// <summary>Up (E or PgUp)</summary>
         Up = 16,
-        /// <summary>Down (C or PgDown</summary>
+        /// <summary>Down (C or PgDown)</summary>
         Down = 32,
         /// <summary>Rotate left (A or left arrow)</summary>
         RotateLeft = 256,
@@ -667,18 +667,11 @@ namespace OpenMetaverse
         /// <summary>Context specific packed data</summary>
         public byte[] BinaryBucket;
 
-        //Print the contents of a message
+        /// <summary>Print the struct data as a string</summary>
+        /// <returns>A string containing the field name, and field value</returns>
         public override string ToString()
         {
-            string result = "";
-            Type imType = this.GetType();
-            FieldInfo[] fields = imType.GetFields();
-            foreach (FieldInfo field in fields)
-            {
-                result += (field.Name + " = " + field.GetValue(this) + " ");
-            }
-            return result;
-
+            return Helpers.StructToString(this);
         }
     }
 
@@ -689,128 +682,241 @@ namespace OpenMetaverse
     /// </summary>
     public partial class AgentManager
     {
-        #region Callbacks
+        #region Event Delegates
 
-        /// <summary>
-        /// Triggered on incoming chat messages
-        /// </summary>
-        /// <param name="message">Text of chat message</param>
-        /// <param name="audible">Audible level of this chat message</param>
-        /// <param name="type">Type of chat (whisper, shout, status, etc.)</param>
-        /// <param name="sourceType">Source of the chat message</param>
-        /// <param name="fromName">Name of the sending object</param>
-        /// <param name="id">Key of source</param>
-        /// <param name="ownerid">Key of the sender</param>
-        /// <param name="position">Senders position</param>
-        public delegate void ChatCallback(string message, ChatAudibleLevel audible, ChatType type,
-            ChatSourceType sourceType, string fromName, UUID id, UUID ownerid, Vector3 position);
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<ChatEventArgs> m_Chat;
 
-        /// <summary>
-        /// Triggered when a script pops up a dialog box
-        /// </summary>
-        /// <param name="message">The dialog box message</param>
-        /// <param name="objectName">Name of the object that sent the dialog</param>
-        /// <param name="imageID">Image to be displayed in the dialog</param>
-        /// <param name="objectID">ID of the object that sent the dialog</param>
-        /// <param name="firstName">First name of the object owner</param>
-        /// <param name="lastName">Last name of the object owner</param>
-        /// <param name="chatChannel">Chat channel that the object is communicating on</param>
-        /// <param name="buttons">List of button labels</param>
-        public delegate void ScriptDialogCallback(string message, string objectName, UUID imageID,
-            UUID objectID, string firstName, string lastName, int chatChannel, List<string> buttons);
+        /// <summary>Raises the ChatFromSimulator event</summary>
+        /// <param name="e">A ChatEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnChat(ChatEventArgs e)
+        {
+            EventHandler<ChatEventArgs> handler = m_Chat;
+            if (handler != null)
+                handler(this, e);
+        }
 
-        /// <summary>
-        /// Triggered when a script asks for permissions
-        /// </summary>
-        /// <param name="simulator">Simulator object this request comes from</param>
-        /// <param name="taskID">Task ID of the script requesting permissions</param>
-        /// <param name="itemID">ID of the object containing the script</param>
-        /// <param name="objectName">Name of the object containing the script</param>
-        /// <param name="objectOwner">Name of the object's owner</param>
-        /// <param name="questions">Bitwise value representing the requested permissions</param>
-        public delegate void ScriptQuestionCallback(Simulator simulator, UUID taskID, UUID itemID, string objectName, string objectOwner, ScriptPermission questions);
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_ChatLock = new object();
 
-        /// <summary>
-        /// Triggered when a script displays a URL via llLoadURL
-        /// </summary>
-        /// <param name="objectName">Name of the scripted object</param>
-        /// <param name="objectID">ID of the scripted object</param>
-        /// <param name="ownerID">ID of the object's owner</param>
-        /// <param name="ownerIsGroup">Whether or not ownerID is a group</param>
-        /// <param name="message">Message displayed along with URL</param>
-        /// <param name="URL">Offered URL</param>
-        public delegate void LoadURLCallback(string objectName, UUID objectID, UUID ownerID, bool ownerIsGroup, string message, string URL);
+        /// <summary>Raised when a scripted object or agent within range sends a public message</summary>
+        public event EventHandler<ChatEventArgs> ChatFromSimulator
+        {
+            add { lock (m_ChatLock) { m_Chat += value; } }
+            remove { lock (m_ChatLock) { m_Chat -= value; } }
+        }
+        
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<ScriptDialogEventArgs> m_ScriptDialog;
 
-        /// <summary>
-        /// Triggered when the L$ account balance for this avatar changes
-        /// </summary>
-        /// <param name="balance">The new account balance</param>
-        public delegate void BalanceCallback(int balance);
+        /// <summary>Raises the ScriptDialog event</summary>
+        /// <param name="e">A SctriptDialogEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnScriptDialog(ScriptDialogEventArgs e)
+        {
+            EventHandler<ScriptDialogEventArgs> handler = m_ScriptDialog;
+            if (handler != null)
+                handler(this, e);
+        }
 
-        /// <summary>
-        /// Triggered on Money Balance Reply
-        /// </summary>
-        /// <param name="transactionID">ID provided in Request Money Balance, or auto-generated by system events</param>
-        /// <param name="transactionSuccess">Was the transaction successful</param>
-        /// <param name="balance">Current balance</param>
-        /// <param name="metersCredit">Land use credits you have</param>
-        /// <param name="metersCommitted">Tier committed to group(s)</param>
-        /// <param name="description">Description of the transaction</param>
-        public delegate void MoneyBalanceReplyCallback(UUID transactionID, bool transactionSuccess, int balance, int metersCredit, int metersCommitted, string description);
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_ScriptDialogLock = new object();
+        /// <summary>Raised when a scripted object sends a dialog box containing possible
+        /// options an agent can respond to</summary>
+        public event EventHandler<ScriptDialogEventArgs> ScriptDialog
+        {
+            add { lock (m_ScriptDialogLock) { m_ScriptDialog += value; } }
+            remove { lock (m_ScriptDialogLock) { m_ScriptDialog -= value; } }
+        }
+        
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<ScriptQuestionEventArgs> m_ScriptQuestion;
 
+        /// <summary>Raises the ScriptQuestion event</summary>
+        /// <param name="e">A ScriptQuestionEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnScriptQuestion(ScriptQuestionEventArgs e)
+        {
+            EventHandler<ScriptQuestionEventArgs> handler = m_ScriptQuestion;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_ScriptQuestionLock = new object();
+        /// <summary>Raised when an object requests a change in the permissions an agent has permitted</summary>
+        public event EventHandler<ScriptQuestionEventArgs> ScriptQuestion
+        {
+            add { lock (m_ScriptQuestionLock) { m_ScriptQuestion += value; } }
+            remove { lock (m_ScriptQuestionLock) { m_ScriptQuestion -= value; } }
+        }        
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<LoadUrlEventArgs> m_LoadURL;
+
+        /// <summary>Raises the LoadURL event</summary>
+        /// <param name="e">A LoadUrlEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnLoadURL(LoadUrlEventArgs e)
+        {
+            EventHandler<LoadUrlEventArgs> handler = m_LoadURL;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_LoadUrlLock = new object();
+        /// <summary>Raised when a script requests an agent open the specified URL</summary>
+        public event EventHandler<LoadUrlEventArgs> LoadURL
+        {
+            add { lock (m_LoadUrlLock) { m_LoadURL += value; } }
+            remove { lock (m_LoadUrlLock) { m_LoadURL -= value; } }
+        }
+        
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        public EventHandler<BalanceEventArgs> m_Balance;
+
+        /// <summary>Raises the MoneyBalance event</summary>
+        /// <param name="e">A BalanceEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnBalance(BalanceEventArgs e)
+        {
+            EventHandler<BalanceEventArgs> handler = m_Balance;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_BalanceLock = new object();
+
+        /// <summary>Raised when an agents currency balance is updated</summary>
+        public event EventHandler<BalanceEventArgs> MoneyBalance
+        {
+            add { lock (m_BalanceLock) { m_Balance += value; } }
+            remove { lock (m_BalanceLock) { m_Balance -= value; } }
+        }
+        
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        public EventHandler<MoneyBalanceReplyEventArgs> m_MoneyBalance;
+
+        /// <summary>Raises the MoneyBalanceReply event</summary>
+        /// <param name="e">A MoneyBalanceReplyEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnMoneyBalanceReply(MoneyBalanceReplyEventArgs e)
+        {
+            EventHandler<MoneyBalanceReplyEventArgs> handler = m_MoneyBalance;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_MoneyBalanceReplyLock = new object();
+
+        /// <summary>Raised when a transaction occurs involving currency such as a land purchase</summary>
+        public event EventHandler<MoneyBalanceReplyEventArgs> MoneyBalanceReply
+        {
+            add { lock (m_MoneyBalanceReplyLock) { m_MoneyBalance += value; } }
+            remove { lock (m_MoneyBalanceReplyLock) { m_MoneyBalance -= value; } }
+        }
         /// <summary>
         /// Triggered on incoming instant messages
         /// </summary>
         /// <param name="im">Instant message data structure</param>
         /// <param name="simulator">Simulator where this IM was received from</param>
-        public delegate void InstantMessageCallback(InstantMessage im, Simulator simulator);
+        //public delegate void InstantMessageCallback(InstantMessage im, Simulator simulator);
 
-        /// <summary>
-        /// Triggered for any status updates of a teleport (progress, failed, succeeded)
-        /// </summary>
-        /// <param name="message">A message about the current teleport status</param>
-        /// <param name="status">The current status of the teleport</param>
-        /// <param name="flags">Various flags describing the teleport</param>
-        public delegate void TeleportCallback(string message, TeleportStatus status, TeleportFlags flags);
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<InstantMessageEventArgs> m_InstantMessage;
 
-        /// <summary>
-        /// Reply to a request to join a group, informs whether it was successful or not
-        /// </summary>
-        /// <param name="groupID">The group we attempted to join</param>
-        /// <param name="success">Whether we joined the group or not</param>
-        public delegate void JoinGroupCallback(UUID groupID, bool success);
+        /// <summary>Raises the IM event</summary>
+        /// <param name="e">A InstantMessageEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnInstantMessage(InstantMessageEventArgs e)
+        {
+            EventHandler<InstantMessageEventArgs> handler = m_InstantMessage;
+            if (handler != null)
+                handler(this, e);
+        }
 
-        /// <summary>
-        /// Reply to a request to leave a group, informs whether it was successful or not
-        /// </summary>
-        /// <param name="groupID">The group we attempted to leave</param>
-        /// <param name="success">Whether we left the group or not</param>
-        public delegate void LeaveGroupCallback(UUID groupID, bool success);
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_InstantMessageLock = new object();
+        /// <summary>Raised when an ImprovedInstantMessage packet is recieved from the simulator, this is used for everything from
+        /// private messaging to friendship offers. The Dialog field defines what type of message has arrived</summary>
+        public event EventHandler<InstantMessageEventArgs> IM
+        {
+            add { lock (m_InstantMessageLock) { m_InstantMessage += value; } }
+            remove { lock (m_InstantMessageLock) { m_InstantMessage -= value; } }
+        }
+    
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<TeleportEventArgs> m_Teleport;
 
-        /// <summary>
-        /// Informs the avatar that it is no longer a member of a group
-        /// </summary>
-        /// <param name="groupID">The group Key we are no longer a member of</param>
-        public delegate void GroupDroppedCallback(UUID groupID);
+        /// <summary>Raises the TeleportProgress event</summary>
+        /// <param name="e">A TeleportEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnTeleport(TeleportEventArgs e)
+        {
+            EventHandler<TeleportEventArgs> handler = m_Teleport;
+            if (handler != null)
+                handler(this, e);
+        }
 
-        /// <summary>
-        /// Reply to an AgentData request
-        /// </summary>
-        /// <param name="firstName">First name of Avatar</param>
-        /// <param name="lastName">Last name of Avatar</param>
-        /// <param name="activeGroupID">Key of Group Avatar has active</param>
-        /// <param name="groupTitle">Avatars Active Title</param>
-        /// <param name="groupPowers">Powers Avatar has in group</param>
-        /// <param name="groupName">Name of the Group</param>
-        public delegate void AgentDataCallback(string firstName, string lastName, UUID activeGroupID,
-            string groupTitle, GroupPowers groupPowers, string groupName);
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_TeleportLock = new object();
+        /// <summary>Raised when an agent has requested a teleport to another location, or when responding to a lure. Raised multiple times
+        /// for each teleport indicating the progress of the request</summary>
+        public event EventHandler<TeleportEventArgs> TeleportProgress
+        {
+            add { lock (m_TeleportLock) { m_Teleport += value; } }
+            remove { lock (m_TeleportLock) { m_Teleport += value; } }
+        }
+    
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<AgentDataReplyEventArgs> m_AgentData;
 
-        /// <summary>
-        /// Triggered when the current agent animations change
-        /// </summary>
-        /// <param name="agentAnimations">A convenience reference to the
-        /// SignaledAnimations collection</param>
-        public delegate void AnimationsChangedCallback(InternalDictionary<UUID, int> agentAnimations);
+        /// <summary>Raises the AgentDataReply event</summary>
+        /// <param name="e">A AgentDataReplyEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnAgentData(AgentDataReplyEventArgs e)
+        {
+            EventHandler<AgentDataReplyEventArgs> handler = m_AgentData;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_AgentDataLock = new object();
+
+        /// <summary>Raised when a simulator sends agent specific information for our avatar.</summary>
+        public event EventHandler<AgentDataReplyEventArgs> AgentDataReply
+        {
+            add { lock (m_AgentDataLock) { m_AgentData += value; } }
+            remove { lock (m_AgentDataLock) { m_AgentData -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<AnimationsChangedEventArgs> m_AnimationsChanged;
+
+        /// <summary>Raises the AnimationsChanged event</summary>
+        /// <param name="e">A AnimationsChangedEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnAnimationsChanged(AnimationsChangedEventArgs e)
+        {
+            EventHandler<AnimationsChangedEventArgs> handler = m_AnimationsChanged;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_AnimationsChangedLock = new object();
+
+        /// <summary>Raised when our agents animation playlist changes</summary>
+        public event EventHandler<AnimationsChangedEventArgs> AnimationsChanged
+        {
+            add { lock (m_AnimationsChangedLock) { m_AnimationsChanged += value; } }
+            remove { lock (m_AnimationsChangedLock) { m_AnimationsChanged -= value; } }
+        }
 
         /// <summary>
         /// Triggered when an object or avatar forcefully collides with our
@@ -821,16 +927,61 @@ namespace OpenMetaverse
         /// <param name="victim">Victim ID, should be our own AgentID</param>
         /// <param name="magnitude">Velocity or total force of the collision</param>
         /// <param name="time">Time the collision occurred</param>
-        public delegate void MeanCollisionCallback(MeanCollisionType type, UUID perp, UUID victim,
-            float magnitude, DateTime time);
+        //public delegate void MeanCollisionCallback(MeanCollisionType type, UUID perp, UUID victim,
+        //    float magnitude, DateTime time);
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<MeanCollisionEventArgs> m_MeanCollision;
+
+        /// <summary>Raises the MeanCollision event</summary>
+        /// <param name="e">A MeanCollisionEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnMeanCollision(MeanCollisionEventArgs e)
+        {
+            EventHandler<MeanCollisionEventArgs> handler = m_MeanCollision;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_MeanCollisionLock = new object();
+
+        /// <summary>Raised when an object or avatar forcefully collides with our agent</summary>
+        public event EventHandler<MeanCollisionEventArgs> MeanCollision
+        {
+            add { lock (m_MeanCollisionLock) { m_MeanCollision += value; } }
+            remove { lock (m_MeanCollisionLock) { m_MeanCollision -= value; } }
+        }
 
         /// <summary>
         /// Triggered when the agent physically moves in to a neighboring region
         /// </summary>
         /// <param name="oldSim">Simulator agent was previously occupying</param>
         /// <param name="newSim">Simulator agent is now currently occupying</param>
-        public delegate void RegionCrossedCallback(Simulator oldSim, Simulator newSim);
+        //public delegate void RegionCrossedCallback(Simulator oldSim, Simulator newSim);
 
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<RegionCrossedEventArgs> m_RegionCrossed;
+
+        /// <summary>Raises the RegionCrossed event</summary>
+        /// <param name="e">A RegionCrossedEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnRegionCrossed(RegionCrossedEventArgs e)
+        {
+            EventHandler<RegionCrossedEventArgs> handler = m_RegionCrossed;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_RegionCrossedLock = new object();
+
+        /// <summary>Raised when our agent crosses a region border into another region</summary>
+        public event EventHandler<RegionCrossedEventArgs> RegionCrossed
+        {
+            add { lock (m_RegionCrossedLock) { m_RegionCrossed += value; } }
+            remove { lock (m_RegionCrossedLock) { m_RegionCrossed -= value; } }
+        }
         /// <summary>
         /// Fired when group chat session confirmed joined</summary>
         /// <param name="groupChatSessionID">Key of Session (groups UUID)</param>
@@ -838,17 +989,86 @@ namespace OpenMetaverse
         /// <param name="sessionName">A string representation of the session name</param>
         /// <param name="success"><see langword="true"/> if session start successful, 
         /// <see langword="false"/> otherwise</param>
-        public delegate void GroupChatJoinedCallback(UUID groupChatSessionID, string sessionName, UUID tmpSessionID, bool success);
+        //public delegate void GroupChatJoinedCallback(UUID groupChatSessionID, string sessionName, UUID tmpSessionID, bool success);GroupChatJoinedEventArgs
 
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupChatJoinedEventArgs> m_GroupChatJoined;
+
+        /// <summary>Raises the GroupChatJoined event</summary>
+        /// <param name="e">A GroupChatJoinedEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnGroupChatJoined(GroupChatJoinedEventArgs e)
+        {
+            EventHandler<GroupChatJoinedEventArgs> handler = m_GroupChatJoined;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupChatJoinedLock = new object();
+
+        /// <summary>Raised when our agent succeeds or fails to join a group chat session</summary>
+        public event EventHandler<GroupChatJoinedEventArgs> GroupChatJoined
+        {
+            add { lock (m_GroupChatJoinedLock) { m_GroupChatJoined += value; } }
+            remove { lock (m_GroupChatJoinedLock) { m_GroupChatJoined -= value; } }
+        }
         /// <summary>Fired when agent group chat session terminated</summary>
         /// <param name="groupchatSessionID">Key of Session (groups UUID)</param>
-        public delegate void GroupChatLeftCallback(UUID groupchatSessionID);
+        //public delegate void GroupChatLeftCallback(UUID groupchatSessionID);
 
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupChatLeftEventArgs> m_GroupChatLeft;
+
+        /// <summary>Raises the GroupChatLeft event</summary>
+        /// <param name="e">A GroupChatLeftEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnGroupChatLeft(GroupChatLeftEventArgs e)
+        {
+            EventHandler<GroupChatLeftEventArgs> handler = m_GroupChatLeft;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupChatLeftLock = new object();
+
+        /// <summary>Raised when our agent exits a group chat session</summary>
+        public event EventHandler<GroupChatLeftEventArgs> GroupChatLeft
+        {
+            add { lock (m_GroupChatLeftLock) { m_GroupChatLeft += value; } }
+            remove { lock (m_GroupChatLeftLock) { m_GroupChatLeft -= value; } }
+        }
         /// <summary>
         /// Fired when alert message received from simulator
         /// </summary>
         /// <param name="message">the message sent from the grid to our avatar.</param>
-        public delegate void AlertMessageCallback(string message);
+        //public delegate void AlertMessageCallback(string message);
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<AlertMessageEventArgs> m_AlertMessage;
+
+        /// <summary>Raises the AlertMessage event</summary>
+        /// <param name="e">A AlertMessageEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnAlertMessage(AlertMessageEventArgs e)
+        {
+            EventHandler<AlertMessageEventArgs> handler = m_AlertMessage;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_AlertMessageLock = new object();
+
+        /// <summary>Raised when a simulator sends an urgent message usually indication the recent failure of
+        /// another action we have attempted to take such as an attempt to enter a parcel where we are denied access</summary>
+        public event EventHandler<AlertMessageEventArgs> AlertMessage
+        {
+            add { lock (m_AlertMessageLock) { m_AlertMessage += value; } }
+            remove { lock (m_AlertMessageLock) { m_AlertMessage -= value; } }
+        }
+
 
         /// <summary>
         /// Fired when a script wants to give or release controls.
@@ -856,14 +1076,60 @@ namespace OpenMetaverse
         /// <param name="controls">Control to give or take</param>
         /// <param name="pass">true of passing control to agent</param>
         /// <param name="take">true of taking control from agent</param>
-        public delegate void ScriptControlCallback(ScriptControlChange controls, bool pass, bool take);
+        //public delegate void ScriptControlCallback(ScriptControlChange controls, bool pass, bool take); ScriptControlEventArgs
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<ScriptControlEventArgs> m_ScriptControl;
+
+        /// <summary>Raises the ScriptControlChange event</summary>
+        /// <param name="e">A ScriptControlEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnScriptControlChange(ScriptControlEventArgs e)
+        {
+            EventHandler<ScriptControlEventArgs> handler = m_ScriptControl;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_ScriptControlLock = new object();
+
+        /// <summary>Raised when a script attempts to take or release specified controls for our agent</summary>
+        public event EventHandler<ScriptControlEventArgs> ScriptControlChange
+        {
+            add { lock (m_ScriptControlLock) { m_ScriptControl += value; } }
+            remove { lock (m_ScriptControlLock) { m_ScriptControl -= value; } }
+        }
 
         /// <summary>
         /// Fired when camera tries to view beyond its view limits
         /// </summary>
         /// <param name="collidePlane"><seealso cref="Vector4"/> representing plane where constraints were hit</param>
-        public delegate void CameraConstraintCallback(Vector4 collidePlane);
+        //public delegate void CameraConstraintCallback(Vector4 collidePlane);
 
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<CameraConstraintEventArgs> m_CameraConstraint;
+
+        /// <summary>Raises the CameraConstraint event</summary>
+        /// <param name="e">A CameraConstraintEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnCameraConstraint(CameraConstraintEventArgs e)
+        {
+            EventHandler<CameraConstraintEventArgs> handler = m_CameraConstraint;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_CameraConstraintLock = new object();
+
+        /// <summary>Raised when the simulator detects our agent is trying to view something
+        /// beyond its limits</summary>
+        public event EventHandler<CameraConstraintEventArgs> CameraConstraint
+        {
+            add { lock (m_CameraConstraintLock) { m_CameraConstraint += value; } }
+            remove { lock (m_CameraConstraintLock) { m_CameraConstraint -= value; } }
+        }
         /// <summary>
         /// Fired when script sensor reply is received
         /// </summary>
@@ -878,108 +1144,133 @@ namespace OpenMetaverse
         /// <param name="type">Objects Type</param>
         /// <param name="velocity"><seealso cref="Vector3"/> representing the velocity of object</param>
         /// TODO: this should probably be a struct, and there should be an enum added for type
-        public delegate void ScriptSensorReplyCallback(UUID requestorID, UUID groupID, string name,
-            UUID objectID, UUID ownerID, Vector3 position, float range, Quaternion rotation,
-            ScriptSensorTypeFlags type, Vector3 velocity);
+        //public delegate void ScriptSensorReplyCallback(UUID requestorID, UUID groupID, string name,
+        //    UUID objectID, UUID ownerID, Vector3 position, float range, Quaternion rotation,
+        //    ScriptSensorTypeFlags type, Vector3 velocity);
 
-        /// <summary>
-        /// Fired in response to a RequestSit()
-        /// </summary>
-        /// <param name="objectID">ID of primitive avatar will be sitting on</param>
-        /// <param name="autoPilot">true of avatar autopiloted there</param>
-        /// <param name="cameraAtOffset">Camera offset when avatar is seated</param>
-        /// <param name="cameraEyeOffset">Camera eye offset when avatar is seated</param>
-        /// <param name="forceMouselook">true of sitting on this object will force mouselook</param>
-        /// <param name="sitPosition">position avatar will be in when seated</param>
-        /// <param name="sitRotation">rotation avatar will be in when seated</param>
-        public delegate void AvatarSitResponseCallback(UUID objectID, bool autoPilot, Vector3 cameraAtOffset,
-            Vector3 cameraEyeOffset, bool forceMouselook, Vector3 sitPosition, Quaternion sitRotation);
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        public EventHandler<ScriptSensorReplyEventArgs> m_ScriptSensorReply;
 
+        /// <summary>Raises the ScriptSensorReply event</summary>
+        /// <param name="e">A ScriptSensorReplyEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnScriptSensorReply(ScriptSensorReplyEventArgs e)
+        {
+            EventHandler<ScriptSensorReplyEventArgs> handler = m_ScriptSensorReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_ScriptSensorReplyLock = new object();
+
+        /// <summary>Raised when a script sensor reply is received from a simulator</summary>
+        public event EventHandler<ScriptSensorReplyEventArgs> ScriptSensorReply
+        {
+            add { lock (m_ScriptSensorReplyLock) { m_ScriptSensorReply += value; } }
+            remove { lock (m_ScriptSensorReplyLock) { m_ScriptSensorReply -= value; } }
+        }        
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<AvatarSitResponseEventArgs> m_AvatarSitResponse;
+
+        /// <summary>Raises the AvatarSitResponse event</summary>
+        /// <param name="e">A AvatarSitResponseEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnAvatarSitResponse(AvatarSitResponseEventArgs e)
+        {
+            EventHandler<AvatarSitResponseEventArgs> handler = m_AvatarSitResponse;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_AvatarSitResponseLock = new object();
+
+        /// <summary>Raised in response to a <see cref="RequestSit"/> request</summary>
+        public event EventHandler<AvatarSitResponseEventArgs> AvatarSitResponse
+        {
+            add { lock (m_AvatarSitResponseLock) { m_AvatarSitResponse += value; } }
+            remove { lock (m_AvatarSitResponseLock) { m_AvatarSitResponse -= value; } }
+        }
         /// <summary>
         /// Fired when a new member joins a Group chat session
         /// </summary>
         /// <param name="sessionID">the ID of the session</param>
         /// <param name="agent_key">the ID of the avatar that joined</param>
-        public delegate void ChatSessionMemberAddedCallback(UUID sessionID, UUID agent_key);
+        //public delegate void ChatSessionMemberAddedCallback(UUID sessionID, UUID agent_key);
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<ChatSessionMemberAddedEventArgs> m_ChatSessionMemberAdded;
+
+        /// <summary>Raises the ChatSessionMemberAdded event</summary>
+        /// <param name="e">A ChatSessionMemberAddedEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnChatSessionMemberAdded(ChatSessionMemberAddedEventArgs e)
+        {
+            EventHandler<ChatSessionMemberAddedEventArgs> handler = m_ChatSessionMemberAdded;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_ChatSessionMemberAddedLock = new object();
+
+        /// <summary>Raised when an avatar enters a group chat session we are participating in</summary>
+        public event EventHandler<ChatSessionMemberAddedEventArgs> ChatSessionMemberAdded
+        {
+            add { lock (m_ChatSessionMemberAddedLock) { m_ChatSessionMemberAdded += value; } }
+            remove { lock (m_ChatSessionMemberAddedLock) { m_ChatSessionMemberAdded -= value; } }
+        }
         /// <summary>
         /// Fired when a member of a Group chat leaves the session
         /// </summary>
         /// <param name="sessionID">the ID of the session</param>
         /// <param name="agent_key">the ID of the avatar that joined</param>
-        public delegate void ChatSessionMemberLeftCallback(UUID sessionID, UUID agent_key);
+        //public delegate void ChatSessionMemberLeftCallback(UUID sessionID, UUID agent_key);
 
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<ChatSessionMemberLeftEventArgs> m_ChatSessionMemberLeft;
+
+        /// <summary>Raises the ChatSessionMemberLeft event</summary>
+        /// <param name="e">A ChatSessionMemberLeftEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnChatSessionMemberLeft(ChatSessionMemberLeftEventArgs e)
+        {
+            EventHandler<ChatSessionMemberLeftEventArgs> handler = m_ChatSessionMemberLeft;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_ChatSessionMemberLeftLock = new object();
+
+        /// <summary>Raised when an agent exits a group chat session we are participating in</summary>
+        public event EventHandler<ChatSessionMemberLeftEventArgs> ChatSessionMemberLeft
+        {
+            add { lock (m_ChatSessionMemberLeftLock) { m_ChatSessionMemberLeft += value; } }
+            remove { lock (m_ChatSessionMemberLeftLock) { m_ChatSessionMemberLeft -= value; } }
+        }
         #endregion Callbacks
 
         #region Events
 
-        /// <summary>Fired when a <see cref="ChatFromSimulatorPacket"/> is received from the simulator, Contains
-        /// Any Whisper, Shout, or Say within range of avatar</summary>
-        public event ChatCallback OnChat;
-        /// <summary>Fired when a <see cref="ScriptDialogPacket"/> is received, use <seealso cref="ReplyToScriptDialog"/> 
-        /// to respond to dialog</summary>
-        public event ScriptDialogCallback OnScriptDialog;
-        /// <summary>Fired when a <seealso cref="ScriptQuestionPacket"/> is received in response to a 
-        /// scripted object requesting permissions, Use <seealso cref="ScriptQuestionReply"/> to reply</summary>
-        public event ScriptQuestionCallback OnScriptQuestion;
-        /// <summary>Fired when a <seealso cref="LoadURLPacket"/> is received, contains a URL pasted in Chat</summary>
-        public event LoadURLCallback OnLoadURL;
-        /// <summary>Fired when a <seealso cref="ImprovedInstantMessagePacket"/> or a ChatterBoxInvitation is received</summary>
-        public event InstantMessageCallback OnInstantMessage;
-        /// <summary>Fired when a <seealso cref="TeleportLocalPacket"/> is received, occurs when a
-        /// <seealso cref="RequestTeleport"/> or <seealso cref="Teleport"/> is called</summary>
-        public event TeleportCallback OnTeleport;
-        /// <summary>Fired when a <seealso cref="MoneyBalanceReplyPacket"/> indicating the agents
-        /// balance has changed by spending, sending, or receiving L$, Contains the Avatars new balance</summary>
-        public event BalanceCallback OnBalanceUpdated;
-        /// <summary>Fired when a <seealso cref="MoneyBalanceReplyPacket"/> is received, contains L$ balance and additional
-        /// details of the transaction</summary>
-        public event MoneyBalanceReplyCallback OnMoneyBalanceReplyReceived;
-        /// <summary>Fired when a <seealso cref="AgentDataUpdatePacket"/> is received, caused by changing the
-        /// Agents active group with <seealso cref="ActivateGroup"/></summary>
-        public event AgentDataCallback OnAgentDataUpdated;
-        /// <summary>Fired when a <seealso cref="AvatarAnimationPacket"/> is received, will contain a Dictionary
-        /// of animations currently being played</summary>
-        public event AnimationsChangedCallback OnAnimationsChanged;
-        /// <summary>Callback for an object or avatar forcefully colliding
-        /// with the agent</summary>
-        public event MeanCollisionCallback OnMeanCollision;
-        /// <summary>Callback for the agent moving in to a neighboring sim</summary>
-        public event RegionCrossedCallback OnRegionCrossed;
-        /// <summary>Callback for when agent is confirmed joined group chat session.</summary>
-        public event GroupChatJoinedCallback OnGroupChatJoin;
-        /// <summary>Callback for when agent is confirmed to have left group chat session.</summary>
-        public event GroupChatLeftCallback OnGroupChatLeft;
-        /// <summary>Alert messages sent to client from simulator</summary>
-        public event AlertMessageCallback OnAlertMessage;
-        /// <summary>Fired when a script wants to take or release control of your avatar.</summary>
-        public event ScriptControlCallback OnScriptControlChange;
-        /// <summary>Fired when our avatar camera reaches the maximum possible point</summary>
-        public event CameraConstraintCallback OnCameraConstraint;
-        /// <summary>Fired when a script sensor reply is received</summary>
-        public event ScriptSensorReplyCallback OnScriptSensorReply;
-        /// <summary>Fired in response to a sit request</summary>
-        public event AvatarSitResponseCallback OnAvatarSitResponse;
-        /// <summary>Fired when a new member joins an active ChatterBoxSession session</summary>
-        public event ChatSessionMemberAddedCallback OnChatSessionMemberAdded;
-        /// <summary>Fired when a member of an active ChatterBoxSession leaves the session</summary>
-        public event ChatSessionMemberLeftCallback OnChatSessionMemberLeft;
-
         #endregion Events
 
         /// <summary>Reference to the GridClient instance</summary>
-        public readonly GridClient Client;
+        private readonly GridClient Client;
         /// <summary>Used for movement and camera tracking</summary>
         public readonly AgentMovement Movement;
         /// <summary>Currently playing animations for the agent. Can be used to
         /// check the current movement status such as walking, hovering, aiming,
-        /// etc. by checking for system animations in the Animations class</summary>
+        /// etc. by checking against system animations found in the Animations class</summary>
         public InternalDictionary<UUID, int> SignaledAnimations = new InternalDictionary<UUID, int>();
         /// <summary>Dictionary containing current Group Chat sessions and members</summary>
         public InternalDictionary<UUID, List<ChatSessionMember>> GroupChatSessions = new InternalDictionary<UUID, List<ChatSessionMember>>();
 
         #region Properties
 
-        /// <summary>Your (client) avatars <seealso cref="UUID"/></summary>
+        /// <summary>Your (client) avatars <see cref="UUID"/></summary>
         /// <remarks>"client", "agent", and "avatar" all represent the same thing</remarks>
         public UUID AgentID { get { return id; } }
         /// <summary>Temporary <seealso cref="UUID"/> assigned to this session, used for 
@@ -1157,18 +1448,18 @@ namespace OpenMetaverse
         public AgentManager(GridClient client)
         {
             Client = client;
+
             Movement = new AgentMovement(Client);
-            NetworkManager.PacketCallback callback;
+            
 
             Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
 
-            // Teleport callbacks
-            callback = new NetworkManager.PacketCallback(TeleportHandler);
-            Client.Network.RegisterCallback(PacketType.TeleportStart, callback);
-            Client.Network.RegisterCallback(PacketType.TeleportProgress, callback);
-            Client.Network.RegisterCallback(PacketType.TeleportFailed, callback);
-            Client.Network.RegisterCallback(PacketType.TeleportCancel, callback);
-            Client.Network.RegisterCallback(PacketType.TeleportLocal, callback);
+            // Teleport callbacks            
+            Client.Network.RegisterCallback(PacketType.TeleportStart, TeleportHandler);
+            Client.Network.RegisterCallback(PacketType.TeleportProgress, TeleportHandler);
+            Client.Network.RegisterCallback(PacketType.TeleportFailed, TeleportHandler);
+            Client.Network.RegisterCallback(PacketType.TeleportCancel, TeleportHandler);
+            Client.Network.RegisterCallback(PacketType.TeleportLocal, TeleportHandler);
             // these come in via the EventQueue
             Client.Network.RegisterEventCallback("TeleportFailed", new Caps.EventQueueCallback(TeleportFailedEventHandler));
             Client.Network.RegisterEventCallback("TeleportFinish", new Caps.EventQueueCallback(TeleportFinishEventHandler));
@@ -1500,17 +1791,17 @@ namespace OpenMetaverse
                 throw new Exception("ChatSessionRequest capability is not currently available");
             }
 
-       }
+        }
 
-       /// <summary>
-       /// Start a friends conference
-       /// </summary>
-       /// <param name="participants"><seealso cref="UUID"/> List of UUIDs to start a conference with</param>
-       /// <param name="tmp_session_id">the temportary session ID returned in the <see cref="OnJoinedGroupChat"/> callback></param>
-       public void StartIMConference(List <UUID> participants,UUID tmp_session_id)
-       {
-           if (Client.Network.CurrentSim == null || Client.Network.CurrentSim.Caps == null)
-               throw new Exception("ChatSessionRequest capability is not currently available");
+        /// <summary>
+        /// Start a friends conference
+        /// </summary>
+        /// <param name="participants"><seealso cref="UUID"/> List of UUIDs to start a conference with</param>
+        /// <param name="tmp_session_id">the temportary session ID returned in the <see cref="OnJoinedGroupChat"/> callback></param>
+        public void StartIMConference(List<UUID> participants, UUID tmp_session_id)
+        {
+            if (Client.Network.CurrentSim == null || Client.Network.CurrentSim.Caps == null)
+                throw new Exception("ChatSessionRequest capability is not currently available");
 
             Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("ChatSessionRequest");
 
@@ -1926,7 +2217,7 @@ namespace OpenMetaverse
 
             grab.AgentData.AgentID = Client.Self.AgentID;
             grab.AgentData.SessionID = Client.Self.SessionID;
-            
+
             grab.ObjectData.LocalID = objectLocalID;
             grab.ObjectData.GrabOffset = grabOffset;
 
@@ -2018,7 +2309,7 @@ namespace OpenMetaverse
             degrab.AgentData.SessionID = Client.Self.SessionID;
 
             degrab.ObjectData.LocalID = objectLocalID;
-            
+
             degrab.SurfaceInfo = new ObjectDeGrabPacket.SurfaceInfoBlock[1];
             degrab.SurfaceInfo[0] = new ObjectDeGrabPacket.SurfaceInfoBlock();
             degrab.SurfaceInfo[0].UVCoord = uvCoord;
@@ -2133,7 +2424,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Give Money to destionation Object or Avatar
+        /// Give Money to destination Object or Avatar
         /// </summary>
         /// <param name="target">UUID of the Target Object/Avatar</param>
         /// <param name="amount">Amount in L$</param>
@@ -2852,7 +3143,7 @@ namespace OpenMetaverse
         /// <param name="name">Name of the classified</param>
         /// <param name="desc">Long description of the classified</param>
         /// <param name="autoRenew">if true, auto renew classified after expiration</param>
-        public void UpdateClassifiedInfo(UUID classifiedID, DirectoryManager.ClassifiedCategories category, 
+        public void UpdateClassifiedInfo(UUID classifiedID, DirectoryManager.ClassifiedCategories category,
             UUID snapshotID, int price, Vector3d position, string name, string desc, bool autoRenew)
         {
             ClassifiedInfoUpdatePacket classified = new ClassifiedInfoUpdatePacket();
@@ -2917,13 +3208,13 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="packet">Incoming ImprovedInstantMessagePacket</param>
         /// <param name="simulator">Unused</param>
-        private void InstantMessageHandler(Packet packet, Simulator simulator)
+        protected void InstantMessageHandler(Packet packet, Simulator simulator)
         {
             if (packet.Type == PacketType.ImprovedInstantMessage)
             {
                 ImprovedInstantMessagePacket im = (ImprovedInstantMessagePacket)packet;
 
-                if (OnInstantMessage != null)
+                if (m_InstantMessage != null)
                 {
                     InstantMessage message;
                     message.FromAgentID = im.AgentData.AgentID;
@@ -2940,8 +3231,7 @@ namespace OpenMetaverse
                     message.Offline = (InstantMessageOnline)im.MessageBlock.Offline;
                     message.BinaryBucket = im.MessageBlock.BinaryBucket;
 
-                    try { OnInstantMessage(message, simulator); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnInstantMessage(new InstantMessageEventArgs(message, simulator));
                 }
             }
         }
@@ -2952,21 +3242,20 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="packet">Incoming ChatFromSimulatorPacket</param>
         /// <param name="simulator">Unused</param>
-        private void ChatHandler(Packet packet, Simulator simulator)
+        protected void ChatHandler(Packet packet, Simulator simulator)
         {
-            if (OnChat != null)
+            if (m_Chat != null)
             {
                 ChatFromSimulatorPacket chat = (ChatFromSimulatorPacket)packet;
 
-                OnChat(Utils.BytesToString(chat.ChatData.Message)
-                    , (ChatAudibleLevel)chat.ChatData.Audible
-                    , (ChatType)chat.ChatData.ChatType
-                    , (ChatSourceType)chat.ChatData.SourceType
-                    , Utils.BytesToString(chat.ChatData.FromName)
-                    , chat.ChatData.SourceID
-                    , chat.ChatData.OwnerID
-                    , chat.ChatData.Position
-                    );
+                OnChat(new ChatEventArgs(Utils.BytesToString(chat.ChatData.Message),
+                    (ChatAudibleLevel)chat.ChatData.Audible,
+                    (ChatType)chat.ChatData.ChatType,
+                    (ChatSourceType)chat.ChatData.SourceType,
+                    Utils.BytesToString(chat.ChatData.FromName),
+                    chat.ChatData.SourceID,
+                    chat.ChatData.OwnerID,
+                    chat.ChatData.Position));
             }
         }
 
@@ -2975,9 +3264,9 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="packet">Incoming ScriptDialog packet</param>
         /// <param name="simulator">Unused</param>
-        private void ScriptDialogHandler(Packet packet, Simulator simulator)
+        protected void ScriptDialogHandler(Packet packet, Simulator simulator)
         {
-            if (OnScriptDialog != null)
+            if (m_ScriptDialog != null)
             {
                 ScriptDialogPacket dialog = (ScriptDialogPacket)packet;
                 List<string> buttons = new List<string>();
@@ -2987,14 +3276,14 @@ namespace OpenMetaverse
                     buttons.Add(Utils.BytesToString(button.ButtonLabel));
                 }
 
-                OnScriptDialog(Utils.BytesToString(dialog.Data.Message),
+                OnScriptDialog(new ScriptDialogEventArgs(Utils.BytesToString(dialog.Data.Message),
                     Utils.BytesToString(dialog.Data.ObjectName),
                     dialog.Data.ImageID,
                     dialog.Data.ObjectID,
                     Utils.BytesToString(dialog.Data.FirstName),
                     Utils.BytesToString(dialog.Data.LastName),
                     dialog.Data.ChatChannel,
-                    buttons);
+                    buttons));
             }
         }
 
@@ -3003,22 +3292,18 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="packet">Incoming ScriptDialog packet</param>
         /// <param name="simulator">Unused</param>
-        private void ScriptQuestionHandler(Packet packet, Simulator simulator)
+        protected void ScriptQuestionHandler(Packet packet, Simulator simulator)
         {
-            if (OnScriptQuestion != null)
+            if (m_ScriptQuestion != null)
             {
                 ScriptQuestionPacket question = (ScriptQuestionPacket)packet;
 
-                try
-                {
-                    OnScriptQuestion(simulator,
+                OnScriptQuestion(new ScriptQuestionEventArgs(simulator,
                         question.Data.TaskID,
                         question.Data.ItemID,
                         Utils.BytesToString(question.Data.ObjectName),
                         Utils.BytesToString(question.Data.ObjectOwner),
-                        (ScriptPermission)question.Data.Questions);
-                }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        (ScriptPermission)question.Data.Questions));
             }
         }
 
@@ -3029,18 +3314,14 @@ namespace OpenMetaverse
         /// <param name="simulator"></param>
         private void ScriptControlChangeHandler(Packet packet, Simulator simulator)
         {
-            if (OnScriptControlChange != null)
+            if (m_ScriptControl != null)
             {
                 ScriptControlChangePacket change = (ScriptControlChangePacket)packet;
                 for (int i = 0; i < change.Data.Length; i++)
                 {
-                    try
-                    {
-                        OnScriptControlChange((ScriptControlChange)change.Data[i].Controls,
+                    OnScriptControlChange(new ScriptControlEventArgs((ScriptControlChange)change.Data[i].Controls,
                             change.Data[i].PassToAgent,
-                            change.Data[i].TakeControls);
-                    }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                            change.Data[i].TakeControls));                    
                 }
             }
         }
@@ -3050,23 +3331,19 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="packet"></param>
         /// <param name="simulator"></param>
-        private void LoadURLHandler(Packet packet, Simulator simulator)
+        protected void LoadURLHandler(Packet packet, Simulator simulator)
         {
             LoadURLPacket loadURL = (LoadURLPacket)packet;
-            if (OnLoadURL != null)
+            if (m_LoadURL != null)
             {
-                try
-                {
-                    OnLoadURL(
-                        Utils.BytesToString(loadURL.Data.ObjectName),
-                        loadURL.Data.ObjectID,
-                        loadURL.Data.OwnerID,
-                        loadURL.Data.OwnerIsGroup,
-                        Utils.BytesToString(loadURL.Data.Message),
-                        Utils.BytesToString(loadURL.Data.URL)
-                    );
-                }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnLoadURL(new LoadUrlEventArgs(
+                    Utils.BytesToString(loadURL.Data.ObjectName),
+                    loadURL.Data.ObjectID,
+                    loadURL.Data.OwnerID,
+                    loadURL.Data.OwnerIsGroup,
+                    Utils.BytesToString(loadURL.Data.Message),
+                    Utils.BytesToString(loadURL.Data.URL)
+                ));
             }
         }
 
@@ -3107,13 +3384,12 @@ namespace OpenMetaverse
                 activeGroup = p.AgentData.ActiveGroupID;
                 activeGroupPowers = (GroupPowers)p.AgentData.GroupPowers;
 
-                if (OnAgentDataUpdated != null)
+                if (m_AgentData != null)
                 {
                     string groupTitle = Utils.BytesToString(p.AgentData.GroupTitle);
                     string groupName = Utils.BytesToString(p.AgentData.GroupName);
 
-                    try { OnAgentDataUpdated(firstName, lastName, activeGroup, groupTitle, (GroupPowers)p.AgentData.GroupPowers, groupName); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnAgentData(new AgentDataReplyEventArgs(firstName, lastName, activeGroup, groupTitle, activeGroupPowers, groupName));
                 }
             }
             else
@@ -3128,30 +3404,27 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="packet">Incoming MoneyBalanceReplyPacket</param>
         /// <param name="simulator">Unused</param>
-        private void BalanceHandler(Packet packet, Simulator simulator)
+        protected void BalanceHandler(Packet packet, Simulator simulator)
         {
             if (packet.Type == PacketType.MoneyBalanceReply)
             {
-                MoneyBalanceReplyPacket mbrp = (MoneyBalanceReplyPacket)packet;
-                balance = mbrp.MoneyData.MoneyBalance;
+                MoneyBalanceReplyPacket reply = (MoneyBalanceReplyPacket)packet;
+                this.balance = reply.MoneyData.MoneyBalance;
 
-                if (OnMoneyBalanceReplyReceived != null)
+                if (m_MoneyBalance != null)
                 {
-                    try
-                    {
-                        OnMoneyBalanceReplyReceived(mbrp.MoneyData.TransactionID,
-                      mbrp.MoneyData.TransactionSuccess, mbrp.MoneyData.MoneyBalance,
-                      mbrp.MoneyData.SquareMetersCredit, mbrp.MoneyData.SquareMetersCommitted,
-                      Utils.BytesToString(mbrp.MoneyData.Description));
-                    }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnMoneyBalanceReply(new MoneyBalanceReplyEventArgs(reply.MoneyData.TransactionID,
+                        reply.MoneyData.TransactionSuccess,
+                        reply.MoneyData.MoneyBalance,
+                        reply.MoneyData.SquareMetersCredit,
+                        reply.MoneyData.SquareMetersCommitted,
+                        Utils.BytesToString(reply.MoneyData.Description)));
                 }
             }
 
-            if (OnBalanceUpdated != null)
+            if (m_Balance != null)
             {
-                try { OnBalanceUpdated(balance); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnBalance(new BalanceEventArgs(balance));
             }
         }
 
@@ -3161,7 +3434,7 @@ namespace OpenMetaverse
 
             if (Client.Settings.MULTIPLE_SIMS)
             {
-                
+
                 IPEndPoint endPoint = new IPEndPoint(msg.Address, msg.Port);
                 Simulator sim = Client.Network.FindSimulator(endPoint);
 
@@ -3190,12 +3463,12 @@ namespace OpenMetaverse
         /// <param name="simulator">The simulator originating the event message</param>
         public void TeleportFailedEventHandler(string messageKey, IMessage message, Simulator simulator)
         {
-            TeleportFailedMessage msg = (TeleportFailedMessage) message;
+            TeleportFailedMessage msg = (TeleportFailedMessage)message;
 
             TeleportFailedPacket failedPacket = new TeleportFailedPacket();
             failedPacket.Info.AgentID = msg.AgentID;
             failedPacket.Info.Reason = Utils.StringToBytes(msg.Reason);
-            
+
             TeleportHandler(failedPacket, simulator);
         }
 
@@ -3319,10 +3592,9 @@ namespace OpenMetaverse
                 Logger.DebugLog("TeleportLocal received, Flags: " + flags.ToString(), Client);
             }
 
-            if (OnTeleport != null)
+            if (m_Teleport != null)
             {
-                try { OnTeleport(teleportMessage, teleportStat, flags); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnTeleport(new TeleportEventArgs(teleportMessage, teleportStat, flags));
             }
 
             if (finished) teleportEvent.Set();
@@ -3333,7 +3605,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="packet"></param>
         /// <param name="sim"></param>
-        private void AvatarAnimationHandler(Packet packet, Simulator sim)
+        protected void AvatarAnimationHandler(Packet packet, Simulator sim)
         {
             AvatarAnimationPacket animation = (AvatarAnimationPacket)packet;
 
@@ -3380,18 +3652,18 @@ namespace OpenMetaverse
                         }
                     }
                 }
-
-                if (OnAnimationsChanged != null)
-                {
-                    try { OnAnimationsChanged(SignaledAnimations); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                }
             }
+
+            if (m_AnimationsChanged != null)
+            {
+                OnAnimationsChanged(new AnimationsChangedEventArgs(this.SignaledAnimations));
+            }
+
         }
 
-        private void MeanCollisionAlertHandler(Packet packet, Simulator sim)
+        protected void MeanCollisionAlertHandler(Packet packet, Simulator sim)
         {
-            if (OnMeanCollision != null)
+            if (m_MeanCollision != null)
             {
                 MeanCollisionAlertPacket collision = (MeanCollisionAlertPacket)packet;
 
@@ -3402,8 +3674,7 @@ namespace OpenMetaverse
                     DateTime time = Utils.UnixTimeToDateTime(block.Time);
                     MeanCollisionType type = (MeanCollisionType)block.Type;
 
-                    try { OnMeanCollision(type, block.Perp, block.Victim, block.Mag, time); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnMeanCollision(new MeanCollisionEventArgs(type, block.Perp, block.Victim, block.Mag, time));
                 }
             }
         }
@@ -3431,8 +3702,6 @@ namespace OpenMetaverse
             fullName = null;
         }
 
-
-
         /// <summary>
         /// Crossed region handler for message that comes across the EventQueue. Sent to an agent
         /// when the agent crosses a sim border into a new region.
@@ -3442,7 +3711,7 @@ namespace OpenMetaverse
         /// <param name="simulator">The <see cref="Simulator"/> which originated the packet</param>
         private void CrossedRegionEventHandler(string capsKey, IMessage message, Simulator simulator)
         {
-            CrossedRegionMessage crossed = (CrossedRegionMessage) message;
+            CrossedRegionMessage crossed = (CrossedRegionMessage)message;
 
             IPEndPoint endPoint = new IPEndPoint(crossed.IP, crossed.Port);
 
@@ -3455,10 +3724,9 @@ namespace OpenMetaverse
             {
                 Logger.Log("Finished crossing over in to region " + newSim.ToString(), Helpers.LogLevel.Info, Client);
 
-                if (OnRegionCrossed != null)
+                if (m_RegionCrossed != null)
                 {
-                    try { OnRegionCrossed(oldSim, newSim); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnRegionCrossed(new RegionCrossedEventArgs(oldSim, newSim));                     
                 }
             }
             else
@@ -3475,7 +3743,7 @@ namespace OpenMetaverse
         /// simulators
         /// </summary>
         /// <remarks>This packet is now being sent via the EventQueue</remarks>
-        private void CrossedRegionHandler(Packet packet, Simulator sim)
+        protected void CrossedRegionHandler(Packet packet, Simulator sim)
         {
             CrossedRegionPacket crossing = (CrossedRegionPacket)packet;
             string seedCap = Utils.BytesToString(crossing.RegionData.SeedCapability);
@@ -3490,10 +3758,9 @@ namespace OpenMetaverse
             {
                 Logger.Log("Finished crossing over in to region " + newSim.ToString(), Helpers.LogLevel.Info, Client);
 
-                if (OnRegionCrossed != null)
+                if (m_RegionCrossed != null)
                 {
-                    try { OnRegionCrossed(oldSim, newSim); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnRegionCrossed(new RegionCrossedEventArgs(oldSim, newSim));
                 }
             }
             else
@@ -3511,11 +3778,11 @@ namespace OpenMetaverse
         /// <param name="capsKey">The capability Key</param>
         /// <param name="message">IMessage object containing decoded data from OSD</param>
         /// <param name="simulator"></param>
-        private void ChatterBoxSessionEventReplyEventHandler(string capsKey, IMessage message, Simulator simulator)
+        protected void ChatterBoxSessionEventReplyEventHandler(string capsKey, IMessage message, Simulator simulator)
         {
             ChatterboxSessionEventReplyMessage msg = (ChatterboxSessionEventReplyMessage)message;
-            
-            if(!msg.Success)
+
+            if (!msg.Success)
             {
                 Logger.Log("Attempt to send group chat to non-existant session for group " + msg.SessionID,
                     Helpers.LogLevel.Info, Client);
@@ -3528,14 +3795,13 @@ namespace OpenMetaverse
         /// <param name="capsKey"></param>
         /// <param name="message">IMessage object containing decoded data from OSD</param>
         /// <param name="simulator"></param>
-        private void ChatterBoxSessionStartReplyEventHandler(string capsKey, IMessage message, Simulator simulator)
+        protected void ChatterBoxSessionStartReplyEventHandler(string capsKey, IMessage message, Simulator simulator)
         {
-            if (OnGroupChatJoin != null)
+            if (m_GroupChatJoined != null)
             {
                 ChatterBoxSessionStartReplyMessage msg = (ChatterBoxSessionStartReplyMessage)message;
 
-                try { OnGroupChatJoin(msg.SessionID, msg.SessionName, msg.TempSessionID, msg.Success); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnGroupChatJoined(new GroupChatJoinedEventArgs(msg.SessionID, msg.SessionName, msg.TempSessionID, msg.Success));                
             }
         }
 
@@ -3576,10 +3842,9 @@ namespace OpenMetaverse
                             lock (GroupChatSessions.Dictionary)
                                 GroupChatSessions[msg.SessionID].Add(fndMbr);
 
-                            if (OnChatSessionMemberAdded != null)
+                            if (m_ChatSessionMemberAdded != null)
                             {
-                                try { OnChatSessionMemberAdded(msg.SessionID, fndMbr.AvatarKey); }
-                                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                OnChatSessionMemberAdded(new ChatSessionMemberAddedEventArgs(msg.SessionID, fndMbr.AvatarKey));
                             }
                         }
                     }
@@ -3589,16 +3854,14 @@ namespace OpenMetaverse
                             lock (GroupChatSessions.Dictionary)
                                 GroupChatSessions[msg.SessionID].Remove(fndMbr);
 
-                        if (OnChatSessionMemberLeft != null)
+                        if (m_ChatSessionMemberLeft != null)
                         {
-                            try { OnChatSessionMemberLeft(msg.SessionID, msg.Updates[i].AgentID); }
-                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                            OnChatSessionMemberLeft(new ChatSessionMemberLeftEventArgs(msg.SessionID, msg.Updates[i].AgentID));
                         }
 
                         if (msg.Updates[i].AgentID == Client.Self.AgentID)
                         {
-                            try { OnGroupChatLeft(msg.SessionID); }
-                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                            OnGroupChatLeft(new GroupChatLeftEventArgs(msg.SessionID));                            
                         }
                     }
                 }
@@ -3609,7 +3872,7 @@ namespace OpenMetaverse
                     return m.AvatarKey == msg.Updates[i].AgentID;
                 });
 
-                
+
                 update_member.MuteText = msg.Updates[i].MuteText;
                 update_member.MuteVoice = msg.Updates[i].MuteVoice;
 
@@ -3638,7 +3901,7 @@ namespace OpenMetaverse
         /// <param name="simulator">Originating Simulator</param>
         private void ChatterBoxInvitationEventHandler(string capsKey, IMessage message, Simulator simulator)
         {
-            if (OnInstantMessage != null)
+            if (m_InstantMessage != null)
             {
                 ChatterBoxInvitationMessage msg = (ChatterBoxInvitationMessage)message;
 
@@ -3658,8 +3921,7 @@ namespace OpenMetaverse
                 im.Offline = msg.Offline;
                 im.BinaryBucket = msg.BinaryBucket;
 
-                try { OnInstantMessage(im, simulator); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnInstantMessage(new InstantMessageEventArgs(im, simulator));
             }
         }
 
@@ -3703,13 +3965,11 @@ namespace OpenMetaverse
         /// <param name="simulator">not used</param>
         private void AlertMessageHandler(Packet packet, Simulator simulator)
         {
-            AlertMessagePacket alert = (AlertMessagePacket)packet;
-            string message = Utils.BytesToString(alert.AlertData.Message);
-
-            if (OnAlertMessage != null)
+            if (m_AlertMessage != null)
             {
-                try { OnAlertMessage(message); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                AlertMessagePacket alert = (AlertMessagePacket)packet;
+
+                OnAlertMessage(new AlertMessageEventArgs(Utils.BytesToString(alert.AlertData.Message)));            
             }
         }
 
@@ -3720,12 +3980,10 @@ namespace OpenMetaverse
         /// <param name="simulator"></param>
         private void CameraConstraintHandler(Packet packet, Simulator simulator)
         {
-            if (OnCameraConstraint != null)
+            if (m_CameraConstraint != null)
             {
                 CameraConstraintPacket camera = (CameraConstraintPacket)packet;
-
-                try { OnCameraConstraint(camera.CameraCollidePlane.Plane); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnCameraConstraint(new CameraConstraintEventArgs(camera.CameraCollidePlane.Plane));
             }
         }
 
@@ -3734,9 +3992,9 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="packet"></param>
         /// <param name="simulator"></param>
-        private void ScriptSensorReplyHandler(Packet packet, Simulator simulator)
+        protected void ScriptSensorReplyHandler(Packet packet, Simulator simulator)
         {
-            if (OnScriptSensorReply != null)
+            if (m_ScriptSensorReply != null)
             {
                 ScriptSensorReplyPacket reply = (ScriptSensorReplyPacket)packet;
 
@@ -3745,12 +4003,8 @@ namespace OpenMetaverse
                     ScriptSensorReplyPacket.SensedDataBlock block = reply.SensedData[i];
                     ScriptSensorReplyPacket.RequesterBlock requestor = reply.Requester;
 
-                    try
-                    {
-                        OnScriptSensorReply(requestor.SourceID, block.GroupID, Utils.BytesToString(block.Name),
-                      block.ObjectID, block.OwnerID, block.Position, block.Range, block.Rotation, (ScriptSensorTypeFlags)block.Type, block.Velocity);
-                    }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnScriptSensorReply(new ScriptSensorReplyEventArgs(requestor.SourceID, block.GroupID, Utils.BytesToString(block.Name),
+                      block.ObjectID, block.OwnerID, block.Position, block.Range, block.Rotation, (ScriptSensorTypeFlags)block.Type, block.Velocity));                    
                 }
             }
 
@@ -3763,20 +4017,724 @@ namespace OpenMetaverse
         /// <param name="simulator"></param>
         private void AvatarSitResponseHandler(Packet packet, Simulator simulator)
         {
-            if (OnAvatarSitResponse != null)
+            if (m_AvatarSitResponse != null)
             {
                 AvatarSitResponsePacket sit = (AvatarSitResponsePacket)packet;
 
-                try
-                {
-                    OnAvatarSitResponse(sit.SitObject.ID, sit.SitTransform.AutoPilot, sit.SitTransform.CameraAtOffset,
+                OnAvatarSitResponse(new AvatarSitResponseEventArgs(sit.SitObject.ID, sit.SitTransform.AutoPilot, sit.SitTransform.CameraAtOffset,
                   sit.SitTransform.CameraEyeOffset, sit.SitTransform.ForceMouselook, sit.SitTransform.SitPosition,
-                  sit.SitTransform.SitRotation);
-                }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                  sit.SitTransform.SitRotation));                
             }
         }
 
         #endregion Packet Handlers
     }
+
+    #region Event Argument Classes
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ChatEventArgs : EventArgs
+    {
+        private readonly string m_Message;
+        private readonly ChatAudibleLevel m_AudibleLevel;
+        private readonly ChatType m_Type;
+        private readonly ChatSourceType m_SourceType;
+        private readonly string m_FromName;
+        private readonly UUID m_SourceID;
+        private readonly UUID m_OwnerID;
+        private readonly Vector3 m_Position;
+
+        /// <summary>Get the message sent</summary>
+        public string Message { get { return m_Message; } }
+        /// <summary>Get the audible level of the message</summary>
+        public ChatAudibleLevel AudibleLevel { get { return m_AudibleLevel; } }
+        /// <summary>Get the type of message sent: whisper, shout, etc</summary>
+        public ChatType Type { get { return m_Type; } }
+        /// <summary>Get the source type of the message sender</summary>
+        public ChatSourceType SourceType { get { return m_SourceType; } }
+        /// <summary>Get the name of the agent or object sending the message</summary>
+        public string FromName { get { return m_FromName; } }
+        /// <summary>Get the ID of the agent or object sending the message</summary>
+        public UUID SourceID { get { return m_SourceID; } }
+        /// <summary>Get the ID of the object owner, or the agent ID sending the message</summary>
+        public UUID OwnerID { get { return m_OwnerID; } }
+        /// <summary>Get the position of the agent or object sending the message</summary>
+        public Vector3 Position { get { return m_Position; } }
+
+        /// <summary>
+        /// Construct a new instance of the ChatEventArgs object
+        /// </summary>
+        /// <param name="message">The message sent</param>
+        /// <param name="audible">The audible level of the message</param>
+        /// <param name="type">The type of message sent: whisper, shout, etc</param>
+        /// <param name="sourceType">The source type of the message sender</param>
+        /// <param name="fromName">The name of the agent or object sending the message</param>
+        /// <param name="sourceId">The ID of the agent or object sending the message</param>
+        /// <param name="ownerid">The ID of the object owner, or the agent ID sending the message</param>
+        /// <param name="position">The position of the agent or object sending the message</param>
+        public ChatEventArgs(string message, ChatAudibleLevel audible, ChatType type,
+        ChatSourceType sourceType, string fromName, UUID sourceId, UUID ownerid, Vector3 position)
+        {
+            this.m_Message = message;
+            this.m_AudibleLevel = audible;
+            this.m_Type = type;
+            this.m_SourceType = sourceType;
+            this.m_FromName = fromName;
+            this.m_SourceID = sourceId;
+            this.m_Position = position;
+            this.m_OwnerID = ownerid;
+        }
+    }
+
+    /// <summary>Contains the data sent when a primitive opens a dialog with this agent</summary>
+    public class ScriptDialogEventArgs : EventArgs
+    {
+        private readonly string m_Message;
+        private readonly string m_ObjectName;
+        private readonly UUID m_ImageID;
+        private readonly UUID m_ObjectID;
+        private readonly string m_FirstName;
+        private readonly string m_LastName;
+        private readonly int m_Channel;
+        private readonly List<string> m_ButtonLabels;
+
+        /// <summary>Get the dialog message</summary>
+        public string Message { get { return m_Message; } }
+        /// <summary>Get the name of the object that sent the dialog request</summary>
+        public string ObjectName { get { return m_ObjectName; } }
+        /// <summary>Get the ID of the image to be displayed</summary>
+        public UUID ImageID { get { return m_ImageID; } }
+        /// <summary>Get the ID of the primitive sending the dialog</summary>
+        public UUID ObjectID { get { return m_ObjectID; } }
+        /// <summary>Get the first name of the senders owner</summary>
+        public string FirstName { get { return m_FirstName; } }
+        /// <summary>Get the last name of the senders owner</summary>
+        public string LastName { get { return m_LastName; } }
+        /// <summary>Get the communication channel the dialog was sent on, responses
+        /// should also send responses on this same channel</summary>
+        public int Channel { get { return m_Channel; } }
+        /// <summary>Get the string labels containing the options presented in this dialog</summary>
+        public List<string> ButtonLabels { get { return m_ButtonLabels; } }
+
+        /// <summary>
+        /// Construct a new instance of the ScriptDialogEventArgs
+        /// </summary>
+        /// <param name="message">The dialog message</param>
+        /// <param name="objectName">The name of the object that sent the dialog request</param>
+        /// <param name="imageID">The ID of the image to be displayed</param>
+        /// <param name="objectID">The ID of the primitive sending the dialog</param>
+        /// <param name="firstName">The first name of the senders owner</param>
+        /// <param name="lastName">The last name of the senders owner</param>
+        /// <param name="chatChannel">The communication channel the dialog was sent on</param>
+        /// <param name="buttons">The string labels containing the options presented in this dialog</param>
+        public ScriptDialogEventArgs(string message, string objectName, UUID imageID,
+            UUID objectID, string firstName, string lastName, int chatChannel, List<string> buttons)
+        {
+            this.m_Message = message;
+            this.m_ObjectName = objectName;
+            this.m_ImageID = imageID;
+            this.m_ObjectID = objectID;
+            this.m_FirstName = firstName;
+            this.m_LastName = lastName;
+            this.m_Channel = chatChannel;
+            this.m_ButtonLabels = buttons;
+        }
+    }
+
+    /// <summary>Contains the data sent when a primitive requests debit or other permissions
+    /// requesting a YES or NO answer</summary>
+    public class ScriptQuestionEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+        private readonly UUID m_TaskID;
+        private readonly UUID m_ItemID;
+        private readonly string m_ObjectName;
+        private readonly string m_ObjectOwnerName;
+        private readonly ScriptPermission m_Questions;
+
+        /// <summary>Get the simulator containing the object sending the request</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
+        /// <summary>Get the ID of the script making the request</summary>
+        public UUID TaskID { get { return m_TaskID; } }
+        /// <summary>Get the ID of the primitive containing the script making the request</summary>
+        public UUID ItemID { get { return m_ItemID; } }
+        /// <summary>Get the name of the primitive making the request</summary>
+        public string ObjectName { get { return m_ObjectName; } }
+        /// <summary>Get the name of the owner of the object making the request</summary>
+        public string ObjectOwnerName { get { return m_ObjectOwnerName; } }
+        /// <summary>Get the permissions being requested</summary>
+        public ScriptPermission Questions { get { return m_Questions; } }
+
+        /// <summary>
+        /// Construct a new instance of the ScriptQuestionEventArgs
+        /// </summary>
+        /// <param name="simulator">The simulator containing the object sending the request</param>
+        /// <param name="taskID">The ID of the script making the request</param>
+        /// <param name="itemID">The ID of the primitive containing the script making the request</param>
+        /// <param name="objectName">The name of the primitive making the request</param>
+        /// <param name="objectOwner">The name of the owner of the object making the request</param>
+        /// <param name="questions">The permissions being requested</param>
+        public ScriptQuestionEventArgs(Simulator simulator, UUID taskID, UUID itemID, string objectName, string objectOwner, ScriptPermission questions)
+        {
+            this.m_Simulator = simulator;
+            this.m_TaskID = taskID;
+            this.m_ItemID = itemID;
+            this.m_ObjectName = objectName;
+            this.m_ObjectOwnerName = objectOwner;
+            this.m_Questions = questions;
+        }
+
+    }
+
+    /// <summary>Contains the data sent when a primitive sends a request 
+    /// to an agent to open the specified URL</summary>
+    public class LoadUrlEventArgs : EventArgs
+    {
+        private readonly string m_ObjectName;
+        private readonly UUID m_ObjectID;
+        private readonly UUID m_OwnerID;
+        private readonly bool m_OwnerIsGroup;
+        private readonly string m_Message;
+        private readonly string m_URL;
+
+        /// <summary>Get the name of the object sending the request</summary>
+        public string ObjectName { get { return m_ObjectName; } }
+        /// <summary>Get the ID of the object sending the request</summary>
+        public UUID ObjectID { get { return m_ObjectID; } }
+        /// <summary>Get the ID of the owner of the object sending the request</summary>
+        public UUID OwnerID { get { return m_OwnerID; } }
+        /// <summary>True if the object is owned by a group</summary>
+        public bool OwnerIsGroup { get { return m_OwnerIsGroup; } }
+        /// <summary>Get the message sent with the request</summary>
+        public string Message { get { return m_Message; } }
+        /// <summary>Get the URL the object sent</summary>
+        public string URL { get { return m_URL; } }
+
+        /// <summary>
+        /// Construct a new instance of the LoadUrlEventArgs
+        /// </summary>
+        /// <param name="objectName">The name of the object sending the request</param>
+        /// <param name="objectID">The ID of the object sending the request</param>
+        /// <param name="ownerID">The ID of the owner of the object sending the request</param>
+        /// <param name="ownerIsGroup">True if the object is owned by a group</param>
+        /// <param name="message">The message sent with the request</param>
+        /// <param name="URL">The URL the object sent</param>
+        public LoadUrlEventArgs(string objectName, UUID objectID, UUID ownerID, bool ownerIsGroup, string message, string URL)
+        {
+            this.m_ObjectName = objectName;
+            this.m_ObjectID = objectID;
+            this.m_OwnerID = ownerID;
+            this.m_OwnerIsGroup = ownerIsGroup;
+            this.m_Message = message;
+            this.m_URL = URL;
+        }
+    }
+
+    /// <summary>The date received from an ImprovedInstantMessage</summary>
+    public class InstantMessageEventArgs : EventArgs
+    {
+        private readonly InstantMessage m_IM;
+        private readonly Simulator m_Simulator;
+
+        /// <summary>Get the InstantMessage object</summary>
+        public InstantMessage IM { get { return m_IM; } }
+        /// <summary>Get the simulator where the InstantMessage origniated</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
+
+        /// <summary>
+        /// Construct a new instance of the InstantMessageEventArgs object
+        /// </summary>
+        /// <param name="im">the InstantMessage object</param>
+        /// <param name="simulator">the simulator where the InstantMessage origniated</param>
+        public InstantMessageEventArgs(InstantMessage im, Simulator simulator)
+        {
+            this.m_IM = im;
+            this.m_Simulator = simulator;
+        }
+    }
+
+    /// <summary>Contains the currency balance</summary>
+    public class BalanceEventArgs : EventArgs
+    {
+        private readonly int m_Balance;
+
+        /// <summary>
+        /// Get the currenct balance
+        /// </summary>
+        public int Balance { get { return m_Balance; } }
+
+        /// <summary>
+        /// Construct a new BalanceEventArgs object
+        /// </summary>
+        /// <param name="balance">The currenct balance</param>
+        public BalanceEventArgs(int balance)
+        {
+            this.m_Balance = balance;
+        }
+    }
+
+    /// <summary>Contains the transaction summary when an item is purchased, 
+    /// money is given, or land is purchased</summary>
+    public class MoneyBalanceReplyEventArgs : EventArgs
+    {
+        private readonly UUID m_TransactionID;
+        private readonly bool m_Success;
+        private readonly int m_Balance;
+        private readonly int m_MetersCredit;
+        private readonly int m_MetersCommitted;
+        private readonly string m_Description;
+
+        /// <summary>Get the ID of the transaction</summary>
+        public UUID TransactionID { get { return m_TransactionID; } }
+        /// <summary>True of the transaction was successful</summary>
+        public bool Success { get { return m_Success; } }
+        /// <summary>Get the remaining currency balance</summary>
+        public int Balance { get { return m_Balance; } }
+        /// <summary>Get the meters credited</summary>
+        public int MetersCredit { get { return m_MetersCredit; } }
+        /// <summary>Get the meters comitted</summary>
+        public int MetersCommitted { get { return m_MetersCommitted; } }
+        /// <summary>Get the description of the transaction</summary>
+        public string Description { get { return m_Description; } }
+
+        /// <summary>
+        /// Construct a new instance of the MoneyBalanceReplyEventArgs object
+        /// </summary>
+        /// <param name="transactionID">The ID of the transaction</param>
+        /// <param name="transactionSuccess">True of the transaction was successful</param>
+        /// <param name="balance">The current currency balance</param>
+        /// <param name="metersCredit">The meters credited</param>
+        /// <param name="metersCommitted">The meters comitted</param>
+        /// <param name="description">A brief description of the transaction</param>
+        public MoneyBalanceReplyEventArgs(UUID transactionID, bool transactionSuccess, int balance, int metersCredit, int metersCommitted, string description)
+        {
+            this.m_TransactionID = transactionID;
+            this.m_Success = transactionSuccess;
+            this.m_Balance = balance;
+            this.m_MetersCredit = metersCredit;
+            this.m_MetersCommitted = metersCommitted;
+            this.m_Description = description;
+        }
+    }
+
+    // string message, TeleportStatus status, TeleportFlags flags
+    public class TeleportEventArgs : EventArgs
+    {
+        private readonly string m_Message;
+        private readonly TeleportStatus m_Status;
+        private readonly TeleportFlags m_Flags;
+
+        public string Message { get { return m_Message; } }
+        public TeleportStatus Status { get { return m_Status; } }
+        public TeleportFlags Flags { get { return m_Flags; } }
+
+        public TeleportEventArgs(string message, TeleportStatus status, TeleportFlags flags)
+        {
+            this.m_Message = message;
+            this.m_Status = status;
+            this.m_Flags = flags;
+        }
+    }
+
+    /// <summary>Data sent from the simulator containing information about your agent and active group information</summary>
+    public class AgentDataReplyEventArgs : EventArgs
+    {
+        private readonly string m_FirstName;
+        private readonly string m_LastName;
+        private readonly UUID m_ActiveGroupID;
+        private readonly string m_GroupTitle;
+        private readonly GroupPowers m_GroupPowers;
+        private readonly string m_GroupName;
+
+        /// <summary>Get the agents first name</summary>
+        public string FirstName { get { return m_FirstName; } }
+        /// <summary>Get the agents last name</summary>
+        public string LastName { get { return m_LastName; } }
+        /// <summary>Get the active group ID of your agent</summary>
+        public UUID ActiveGroupID { get { return m_ActiveGroupID; } }
+        /// <summary>Get the active groups title of your agent</summary>
+        public string GroupTitle { get { return m_GroupTitle; } }
+        /// <summary>Get the combined group powers of your agent</summary>
+        public GroupPowers GroupPowers { get { return m_GroupPowers; } }
+        /// <summary>Get the active group name of your agent</summary>
+        public string GroupName { get { return m_GroupName; } }
+
+        /// <summary>
+        /// Construct a new instance of the AgentDataReplyEventArgs object
+        /// </summary>
+        /// <param name="firstName">The agents first name</param>
+        /// <param name="lastName">The agents last name</param>
+        /// <param name="activeGroupID">The agents active group ID</param>
+        /// <param name="groupTitle">The group title of the agents active group</param>
+        /// <param name="groupPowers">The combined group powers the agent has in the active group</param>
+        /// <param name="groupName">The name of the group the agent has currently active</param>
+        public AgentDataReplyEventArgs(string firstName, string lastName, UUID activeGroupID,
+            string groupTitle, GroupPowers groupPowers, string groupName)
+        {
+            this.m_FirstName = firstName;
+            this.m_LastName = lastName;
+            this.m_ActiveGroupID = activeGroupID;
+            this.m_GroupTitle = groupTitle;
+            this.m_GroupPowers = groupPowers;
+            this.m_GroupName = groupName;
+        }
+    }
+    
+    /// <summary>Data sent by the simulator to indicate the active/changed animations
+    /// applied to your agent</summary>
+    public class AnimationsChangedEventArgs : EventArgs
+    {
+        private readonly InternalDictionary<UUID, int> m_Animations;
+
+        /// <summary>Get the dictionary that contains the changed animations</summary>
+        public InternalDictionary<UUID, int> Animations { get { return m_Animations; } }
+
+        /// <summary>
+        /// Construct a new instance of the AnimationsChangedEventArgs class
+        /// </summary>
+        /// <param name="agentAnimations">The dictionary that contains the changed animations</param>
+        public AnimationsChangedEventArgs(InternalDictionary<UUID, int> agentAnimations)
+        {
+            this.m_Animations = agentAnimations;
+        }
+
+    }
+
+    /// <summary>
+    /// Data sent from a simulator indicating a collision with your agent
+    /// </summary>
+    public class MeanCollisionEventArgs : EventArgs
+    {
+        private readonly MeanCollisionType m_Type;
+        private readonly UUID m_Aggressor;
+        private readonly UUID m_Victim;
+        private readonly float m_Magnitude;
+        private readonly DateTime m_Time;
+
+        /// <summary>Get the Type of collision</summary>
+        public MeanCollisionType Type { get { return m_Type; } }
+        /// <summary>Get the ID of the agent or object that collided with your agent</summary>
+        public UUID Aggressor { get { return m_Aggressor; } }
+        /// <summary>Get the ID of the agent that was attacked</summary>
+        public UUID Victim { get { return m_Victim; } }
+        /// <summary>A value indicating the strength of the collision</summary>
+        public float Magnitude { get { return m_Magnitude; } }
+        /// <summary>Get the time the collision occurred</summary>
+        public DateTime Time { get { return m_Time; } }
+
+        /// <summary>
+        /// Construct a new instance of the MeanCollisionEventArgs class
+        /// </summary>
+        /// <param name="type">The type of collision that occurred</param>
+        /// <param name="perp">The ID of the agent or object that perpetrated the agression</param>
+        /// <param name="victim">The ID of the Victim</param>
+        /// <param name="magnitude">The strength of the collision</param>
+        /// <param name="time">The Time the collision occurred</param>
+        public MeanCollisionEventArgs(MeanCollisionType type, UUID perp, UUID victim,
+            float magnitude, DateTime time)
+        {
+            this.m_Type = type;
+            this.m_Aggressor = perp;
+            this.m_Victim = victim;
+            this.m_Magnitude = magnitude;
+            this.m_Time = time;
+        }
+    }
+
+    /// <summary>Data sent to your agent when it crosses region boundaries</summary>
+    public class RegionCrossedEventArgs : EventArgs
+    {
+        private readonly Simulator m_OldSimulator;
+        private readonly Simulator m_NewSimulator;
+
+        /// <summary>Get the simulator your agent just left</summary>
+        public Simulator OldSimulator { get { return m_OldSimulator; } }
+        /// <summary>Get the simulator your agent is now in</summary>
+        public Simulator NewSimulator { get { return m_NewSimulator; } }
+
+        /// <summary>
+        /// Construct a new instance of the RegionCrossedEventArgs class
+        /// </summary>
+        /// <param name="oldSim">The simulator your agent just left</param>
+        /// <param name="newSim">The simulator your agent is now in</param>
+        public RegionCrossedEventArgs(Simulator oldSim, Simulator newSim)
+        {
+            this.m_OldSimulator = oldSim;
+            this.m_NewSimulator = newSim;            
+        }
+    }
+
+    /// <summary>Data sent from the simulator when your agent joins a group chat session</summary>
+    public class GroupChatJoinedEventArgs : EventArgs
+    {
+        private readonly UUID m_SessionID;
+        private readonly string m_SessionName;
+        private readonly UUID m_TmpSessionID;
+        private readonly bool m_Success;
+
+        /// <summary>Get the ID of the group chat session</summary>
+        public UUID SessionID { get { return m_SessionID; } }
+        /// <summary>Get the name of the session</summary>
+        public string SessionName { get { return m_SessionName; } }
+        /// <summary>Get the temporary session ID used for establishing new sessions</summary>
+        public UUID TmpSessionID { get { return m_TmpSessionID; } }
+        /// <summary>True if your agent successfully joined the session</summary>
+        public bool Success { get { return m_Success; } }
+
+        /// <summary>
+        /// Construct a new instance of the GroupChatJoinedEventArgs class
+        /// </summary>
+        /// <param name="groupChatSessionID">The ID of the session</param>
+        /// <param name="sessionName">The name of the session</param>
+        /// <param name="tmpSessionID">A temporary session id used for establishing new sessions</param>
+        /// <param name="success">True of your agent successfully joined the session</param>
+        public GroupChatJoinedEventArgs(UUID groupChatSessionID, string sessionName, UUID tmpSessionID, bool success)
+        {
+            this.m_SessionID = groupChatSessionID;
+            this.m_SessionName = sessionName;
+            this.m_TmpSessionID = tmpSessionID;
+            this.m_Success = success;
+        }
+    }
+    
+    /// <summary>The session information when your agent exits a group chat session</summary>
+    public class GroupChatLeftEventArgs : EventArgs
+    {
+        private readonly UUID m_SessionID;
+
+        /// <summary>Get the ID of the session your agent left</summary>
+        public UUID SessionID { get { return m_SessionID; } }
+
+        /// <summary>
+        /// Construct a new instance of the GroupChatLeftEventArgs class
+        /// </summary>
+        /// <param name="chatSessionID">The ID of the session your agent left</param>
+        public GroupChatLeftEventArgs(UUID chatSessionID)
+        {
+            this.m_SessionID = chatSessionID;
+        }
+    }
+
+    /// <summary>Data sent by the simulator containing urgent messages</summary>
+    public class AlertMessageEventArgs : EventArgs
+    {
+        private readonly string m_Message;
+
+        /// <summary>Get the alert message</summary>
+        public string Message { get { return m_Message; } }
+
+        /// <summary>
+        /// Construct a new instance of the AlertMessageEventArgs class
+        /// </summary>
+        /// <param name="message">The alert message</param>
+        public AlertMessageEventArgs(string message)
+        {
+            this.m_Message = message;
+        }
+    }
+
+    /// <summary>Data sent by a script requesting to take or release specified controls to your agent</summary>
+    public class ScriptControlEventArgs : EventArgs
+    {
+        private readonly ScriptControlChange m_Controls;
+        private readonly bool m_Pass;
+        private readonly bool m_Take;
+
+        /// <summary>Get the controls the script is attempting to take or release to the agent</summary>
+        public ScriptControlChange Controls { get { return m_Controls; } }
+        /// <summary>True if the script is passing controls back to the agent</summary>
+        public bool Pass { get { return m_Pass; } }
+        /// <summary>True if the script is requesting controls be released to the script</summary>
+        public bool Take { get { return m_Take; } }
+
+        /// <summary>
+        /// Construct a new instance of the ScriptControlEventArgs class
+        /// </summary>
+        /// <param name="controls">The controls the script is attempting to take or release to the agent</param>
+        /// <param name="pass">True if the script is passing controls back to the agent</param>
+        /// <param name="take">True if the script is requesting controls be released to the script</param>
+        public ScriptControlEventArgs(ScriptControlChange controls, bool pass, bool take)
+        {
+            m_Controls = controls;
+            m_Pass = pass;
+            m_Take = take;
+        }
+    }
+
+    /// <summary>
+    /// Data sent from the simulator to an agent to indicate its view limits
+    /// </summary>
+    public class CameraConstraintEventArgs : EventArgs
+    {
+        private readonly Vector4 m_CollidePlane;
+
+        /// <summary>Get the collision plane</summary>
+        public Vector4 CollidePlane { get { return m_CollidePlane; } }
+
+        /// <summary>
+        /// Construct a new instance of the CameraConstraintEventArgs class
+        /// </summary>
+        /// <param name="collidePlane">The collision plane</param>
+        public CameraConstraintEventArgs(Vector4 collidePlane)
+        {
+            m_CollidePlane = collidePlane;
+        }
+    }
+    
+    /// <summary>
+    /// Data containing script sensor requests which allow an agent to know the specific details
+    /// of a primitive sending script sensor requests
+    /// </summary>
+    public class ScriptSensorReplyEventArgs : EventArgs
+    {
+        private readonly UUID m_RequestorID;
+        private readonly UUID m_GroupID;
+        private readonly string m_Name;
+        private readonly UUID m_ObjectID;
+        private readonly UUID m_OwnerID;
+        private readonly Vector3 m_Position;
+        private readonly float m_Range;
+        private readonly Quaternion m_Rotation;
+        private readonly ScriptSensorTypeFlags m_Type;
+        private readonly Vector3 m_Velocity;
+
+        /// <summary>Get the ID of the primitive sending the sensor</summary>
+        public UUID RequestorID { get { return m_RequestorID; } }
+        /// <summary>Get the ID of the group associated with the primitive</summary>
+        public UUID GroupID { get { return m_GroupID; } }
+        /// <summary>Get the name of the primitive sending the sensor</summary>
+        public string Name { get { return m_Name; } }
+        /// <summary>Get the ID of the primitive sending the sensor</summary>
+        public UUID ObjectID { get { return m_ObjectID; } }
+        /// <summary>Get the ID of the owner of the primitive sending the sensor</summary>
+        public UUID OwnerID { get { return m_OwnerID; } }
+        /// <summary>Get the position of the primitive sending the sensor</summary>
+        public Vector3 Position { get { return m_Position; } }
+        /// <summary>Get the range the primitive specified to scan</summary>
+        public float Range { get { return m_Range; } }
+        /// <summary>Get the rotation of the primitive sending the sensor</summary>
+        public Quaternion Rotation { get { return m_Rotation; } }
+        /// <summary>Get the type of sensor the primitive sent</summary>
+        public ScriptSensorTypeFlags Type { get { return m_Type; } }
+        /// <summary>Get the velocity of the primitive sending the sensor</summary>
+        public Vector3 Velocity { get { return m_Velocity; } }
+
+        /// <summary>
+        /// Construct a new instance of the ScriptSensorReplyEventArgs
+        /// </summary>
+        /// <param name="requestorID">The ID of the primitive sending the sensor</param>
+        /// <param name="groupID">The ID of the group associated with the primitive</param>
+        /// <param name="name">The name of the primitive sending the sensor</param>
+        /// <param name="objectID">The ID of the primitive sending the sensor</param>
+        /// <param name="ownerID">The ID of the owner of the primitive sending the sensor</param>
+        /// <param name="position">The position of the primitive sending the sensor</param>
+        /// <param name="range">The range the primitive specified to scan</param>
+        /// <param name="rotation">The rotation of the primitive sending the sensor</param>
+        /// <param name="type">The type of sensor the primitive sent</param>
+        /// <param name="velocity">The velocity of the primitive sending the sensor</param>
+        public ScriptSensorReplyEventArgs(UUID requestorID, UUID groupID, string name,
+            UUID objectID, UUID ownerID, Vector3 position, float range, Quaternion rotation,
+            ScriptSensorTypeFlags type, Vector3 velocity)
+        {
+            this.m_RequestorID = requestorID;
+            this.m_GroupID = groupID;
+            this.m_Name = name;
+            this.m_ObjectID = objectID;
+            this.m_OwnerID = ownerID;
+            this.m_Position = position;
+            this.m_Range = range;
+            this.m_Rotation = rotation;
+            this.m_Type = type;
+            this.m_Velocity = velocity;
+        }
+    }
+    
+    /// <summary>Contains the response data returned from the simulator in response to a <see cref="RequestSit"/></summary>
+    public class AvatarSitResponseEventArgs : EventArgs
+    {        
+        private readonly UUID m_ObjectID;
+        private readonly bool m_Autopilot;
+        private readonly Vector3 m_CameraAtOffset;
+        private readonly Vector3 m_CameraEyeOffset;
+        private readonly bool m_ForceMouselook;
+        private readonly Vector3 m_SitPosition;
+        private readonly Quaternion m_SitRotation;
+
+        /// <summary>Get the ID of the primitive the agent will be sitting on</summary>
+        public UUID ObjectID { get { return m_ObjectID; } }
+        /// <summary>True if the simulator Autopilot functions were involved</summary>
+        public bool Autopilot { get { return m_Autopilot; } }
+        /// <summary>Get the camera offset of the agent when seated</summary>
+        public Vector3 CameraAtOffset { get { return m_CameraAtOffset; } }
+        /// <summary>Get the camera eye offset of the agent when seated</summary>
+        public Vector3 CameraEyeOffset { get { return m_CameraEyeOffset; } }
+        /// <summary>True of the agent will be in mouselook mode when seated</summary>
+        public bool ForceMouselook { get { return m_ForceMouselook; } }
+        /// <summary>Get the position of the agent when seated</summary>
+        public Vector3 SitPosition { get { return m_SitPosition; } }
+        /// <summary>Get the rotation of the agent when seated</summary>
+        public Quaternion SitRotation { get { return m_SitRotation; } }
+
+        /// <summary>Construct a new instance of the AvatarSitResponseEventArgs object</summary>
+        public AvatarSitResponseEventArgs(UUID objectID, bool autoPilot, Vector3 cameraAtOffset,
+            Vector3 cameraEyeOffset, bool forceMouselook, Vector3 sitPosition, Quaternion sitRotation)
+        {
+            this.m_ObjectID = objectID;
+            this.m_Autopilot = autoPilot;
+            this.m_CameraAtOffset = cameraAtOffset;
+            this.m_CameraEyeOffset = cameraEyeOffset;
+            this.m_ForceMouselook = forceMouselook;
+            this.m_SitPosition = sitPosition;
+            this.m_SitRotation = sitRotation;
+        }
+    }
+
+    /// <summary>Data sent when an agent joins a chat session your agent is currently participating in</summary>
+    public class ChatSessionMemberAddedEventArgs : EventArgs
+    {
+        private readonly UUID m_SessionID;
+        private readonly UUID m_AgentID;
+
+        /// <summary>Get the ID of the chat session</summary>
+        public UUID SessionID { get { return m_SessionID; } }
+        /// <summary>Get the ID of the agent that joined</summary>
+        public UUID AgentID { get { return m_AgentID; } }
+
+        /// <summary>
+        /// Construct a new instance of the ChatSessionMemberAddedEventArgs object
+        /// </summary>
+        /// <param name="sessionID">The ID of the chat session</param>
+        /// <param name="agentID">The ID of the agent joining</param>
+        public ChatSessionMemberAddedEventArgs(UUID sessionID, UUID agentID)
+        {
+            this.m_SessionID = sessionID;
+            this.m_AgentID = agentID;
+        }
+    }
+
+    /// <summary>Data sent when an agent exits a chat session your agent is currently participating in</summary>
+    public class ChatSessionMemberLeftEventArgs : EventArgs
+    {
+        private readonly UUID m_SessionID;
+        private readonly UUID m_AgentID;
+
+        /// <summary>Get the ID of the chat session</summary>
+        public UUID SessionID { get { return m_SessionID; } }
+        /// <summary>Get the ID of the agent that left</summary>
+        public UUID AgentID { get { return m_AgentID; } }
+
+        /// <summary>
+        /// Construct a new instance of the ChatSessionMemberLeftEventArgs object
+        /// </summary>
+        /// <param name="sessionID">The ID of the chat session</param>
+        /// <param name="agentID">The ID of the Agent that left</param>
+        public ChatSessionMemberLeftEventArgs(UUID sessionID, UUID agentID)
+        {
+            this.m_SessionID = sessionID;
+            this.m_AgentID = agentID;
+        }
+    }
+    #endregion
 }

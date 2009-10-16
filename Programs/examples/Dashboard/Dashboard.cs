@@ -64,7 +64,7 @@ namespace Dashboard
             Client.Settings.USE_ASSET_CACHE = true;
 
             Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
-            Client.Self.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
+            Client.Self.IM += Self_IM;
 
             //define the client object for each GUI element
             avatarList1.Client = Client;
@@ -76,6 +76,19 @@ namespace Dashboard
             messageBar1.Client = Client;
             miniMap1.Client = Client;
             statusOutput1.Client = Client;
+        }
+
+        void Self_IM(object sender, InstantMessageEventArgs e)
+        {
+            if (e.IM.Dialog == InstantMessageDialog.RequestTeleport)
+            {
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    DialogResult result = MessageBox.Show(this, e.IM.FromAgentName + " has offered you a teleport request:" + Environment.NewLine + e.IM.Message, this.Text, MessageBoxButtons.YesNo);
+                    if (result == DialogResult.Yes)
+                        Client.Self.TeleportLureRespond(e.IM.FromAgentID, true);
+                });
+            }
         }
 
         void Dashboard_FormClosing(object sender, FormClosingEventArgs e)
@@ -103,20 +116,6 @@ namespace Dashboard
         void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
         {
             InitializeClient(!ShuttingDown);
-        }
-
-        void Self_OnInstantMessage(InstantMessage im, Simulator simulator)
-        {
-            if (im.Dialog == InstantMessageDialog.RequestTeleport)
-            {
-                this.BeginInvoke((MethodInvoker)delegate
-                {
-                    DialogResult result = MessageBox.Show(this, im.FromAgentName + " has offered you a teleport request:" + Environment.NewLine + im.Message, this.Text, MessageBoxButtons.YesNo);
-                    if (result == DialogResult.Yes)
-                        Client.Self.TeleportLureRespond(im.FromAgentID, true);
-                });
-            }
-        }
-
+        }        
     }
 }

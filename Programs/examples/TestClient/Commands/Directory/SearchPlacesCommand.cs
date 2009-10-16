@@ -7,7 +7,6 @@ namespace OpenMetaverse.TestClient.Commands
     class SearchPlacesCommand : Command
     {
         System.Threading.AutoResetEvent waitQuery = new System.Threading.AutoResetEvent(false);
-        int resultCount;
 
         public SearchPlacesCommand(TestClient testClient)
         {

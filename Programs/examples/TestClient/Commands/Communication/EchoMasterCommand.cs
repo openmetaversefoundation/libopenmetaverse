@@ -20,22 +20,21 @@ namespace OpenMetaverse.TestClient
 			if (!Active)
 			{
 				Active = true;
-                Client.Self.OnChat += new AgentManager.ChatCallback(Self_OnChat);
+                Client.Self.ChatFromSimulator += Self_ChatFromSimulator;
 				return "Echoing is now on.";
 			}
 			else
 			{
 				Active = false;
-                Client.Self.OnChat -= new AgentManager.ChatCallback(Self_OnChat);
+                Client.Self.ChatFromSimulator -= Self_ChatFromSimulator;
 				return "Echoing is now off.";
 			}
 		}
 
-		void Self_OnChat(string message, ChatAudibleLevel audible, ChatType type, 
-            ChatSourceType sourcetype, string fromName, UUID id, UUID ownerid, Vector3 position)
-		{
-			if (message.Length > 0 && (Client.MasterKey == id || (Client.MasterName == fromName && !Client.AllowObjectMaster)))
-			    Client.Self.Chat(message, 0, ChatType.Normal);
-		}
+        void Self_ChatFromSimulator(object sender, ChatEventArgs e)
+        {
+            if (e.Message.Length > 0 && (Client.MasterKey == e.SourceID || (Client.MasterName == e.FromName && !Client.AllowObjectMaster)))
+                Client.Self.Chat(e.Message, 0, ChatType.Normal);
+        }		
     }
 }

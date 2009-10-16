@@ -327,8 +327,8 @@ namespace OpenMetaverse
             Client = client;
 
             Client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnect);
-            Client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(Avatars_OnAvatarNames);
-            Client.Self.OnInstantMessage += new AgentManager.InstantMessageCallback(MainAvatar_InstantMessage);
+            Client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(Avatars_OnAvatarNames);            
+            Client.Self.IM += Self_IM;
 
             Client.Network.RegisterCallback(PacketType.OnlineNotification, OnlineNotificationHandler);
             Client.Network.RegisterCallback(PacketType.OfflineNotification, OfflineNotificationHandler);
@@ -339,6 +339,8 @@ namespace OpenMetaverse
             Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse),
                 new string[] { "buddy-list" });
         }
+
+        
         #region Public Methods
         
         /// <summary>
@@ -734,46 +736,41 @@ namespace OpenMetaverse
 
         #endregion
 
-        /// <summary>
-        /// Handles relevant messages from the server encapsulated in instant messages.
-        /// </summary>
-        /// <param name="im">InstantMessage object containing encapsalated instant message</param>
-        /// <param name="simulator">Originating Simulator</param>
-        private void MainAvatar_InstantMessage(InstantMessage im, Simulator simulator)
+      void Self_IM(object sender, InstantMessageEventArgs e)
         {
-            if (im.Dialog == InstantMessageDialog.FriendshipOffered)
+            if (e.IM.Dialog == InstantMessageDialog.FriendshipOffered)
             {
                 if (OnFriendshipOffered != null)
                 {
-                    if (FriendRequests.ContainsKey(im.FromAgentID))
-                        FriendRequests[im.FromAgentID] = im.IMSessionID;
+                    if (FriendRequests.ContainsKey(e.IM.FromAgentID))
+                        FriendRequests[e.IM.FromAgentID] = e.IM.IMSessionID;
                     else
-                        FriendRequests.Add(im.FromAgentID, im.IMSessionID);
+                        FriendRequests.Add(e.IM.FromAgentID, e.IM.IMSessionID);
 
-                    try { OnFriendshipOffered(im.FromAgentID, im.FromAgentName, im.IMSessionID); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    try { OnFriendshipOffered(e.IM.FromAgentID, e.IM.FromAgentName, e.IM.IMSessionID); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                 }
             }
-            else if (im.Dialog == InstantMessageDialog.FriendshipAccepted)
+            else if (e.IM.Dialog == InstantMessageDialog.FriendshipAccepted)
             {
-                FriendInfo friend = new FriendInfo(im.FromAgentID, FriendRights.CanSeeOnline,
+                FriendInfo friend = new FriendInfo(e.IM.FromAgentID, FriendRights.CanSeeOnline,
                     FriendRights.CanSeeOnline);
-                friend.Name = im.FromAgentName;
+                friend.Name = e.IM.FromAgentName;
                 lock (FriendList.Dictionary) FriendList[friend.UUID] = friend;
 
                 if (OnFriendshipResponse != null)
                 {
-                    try { OnFriendshipResponse(im.FromAgentID, im.FromAgentName, true); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    try { OnFriendshipResponse(e.IM.FromAgentID, e.IM.FromAgentName, true); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                 }
-                RequestOnlineNotification(im.FromAgentID);
+                RequestOnlineNotification(e.IM.FromAgentID);
             }
-            else if (im.Dialog == InstantMessageDialog.FriendshipDeclined)
+            else if (e.IM.Dialog == InstantMessageDialog.FriendshipDeclined)
             {
                 if (OnFriendshipResponse != null)
                 {
-                    try { OnFriendshipResponse(im.FromAgentID, im.FromAgentName, false); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    try { OnFriendshipResponse(e.IM.FromAgentID, e.IM.FromAgentName, false); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                 }
             }
         }

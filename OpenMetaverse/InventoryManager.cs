@@ -1069,8 +1069,8 @@ namespace OpenMetaverse
             _Client.Network.RegisterCallback(PacketType.ReplyTaskInventory, new NetworkManager.PacketCallback(ReplyTaskInventoryHandler));
             _Client.Network.RegisterEventCallback("ScriptRunningReply", new Caps.EventQueueCallback(ScriptRunningReplyMessageHandler));
 
-            // Watch for inventory given to us through instant message
-            _Client.Self.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
+            // Watch for inventory given to us through instant message            
+            _Client.Self.IM += Self_IM;
 
             // Register extra parameters with login and parse the inventory data that comes back
             _Client.Network.RegisterLoginResponseCallback(
@@ -1079,6 +1079,7 @@ namespace OpenMetaverse
                     "inventory-root", "inventory-skeleton", "inventory-lib-root",
                     "inventory-lib-owner", "inventory-skel-lib"});
         }
+
 
         #region Fetch
 
@@ -3242,6 +3243,113 @@ namespace OpenMetaverse
 
         #region Callbacks
 
+        void Self_IM(object sender, InstantMessageEventArgs e)
+        {
+            // TODO: MainAvatar.InstantMessageDialog.GroupNotice can also be an inventory offer, should we
+            // handle it here?
+
+            if (OnObjectOffered != null &&
+                (e.IM.Dialog == InstantMessageDialog.InventoryOffered
+                || e.IM.Dialog == InstantMessageDialog.TaskInventoryOffered))
+            {
+                AssetType type = AssetType.Unknown;
+                UUID objectID = UUID.Zero;
+                bool fromTask = false;
+
+                if (e.IM.Dialog == InstantMessageDialog.InventoryOffered)
+                {
+                    if (e.IM.BinaryBucket.Length == 17)
+                    {
+                        type = (AssetType)e.IM.BinaryBucket[0];
+                        objectID = new UUID(e.IM.BinaryBucket, 1);
+                        fromTask = false;
+                    }
+                    else
+                    {
+                        Logger.Log("Malformed inventory offer from agent", Helpers.LogLevel.Warning, _Client);
+                        return;
+                    }
+                }
+                else if (e.IM.Dialog == InstantMessageDialog.TaskInventoryOffered)
+                {
+                    if (e.IM.BinaryBucket.Length == 1)
+                    {
+                        type = (AssetType)e.IM.BinaryBucket[0];
+                        fromTask = true;
+                    }
+                    else
+                    {
+                        Logger.Log("Malformed inventory offer from object", Helpers.LogLevel.Warning, _Client);
+                        return;
+                    }
+                }
+
+                // Find the folder where this is going to go
+                UUID destinationFolderID = FindFolderForType(type);
+
+                // Fire the callback
+                try
+                {
+                    ImprovedInstantMessagePacket imp = new ImprovedInstantMessagePacket();
+                    imp.AgentData.AgentID = _Client.Self.AgentID;
+                    imp.AgentData.SessionID = _Client.Self.SessionID;
+                    imp.MessageBlock.FromGroup = false;
+                    imp.MessageBlock.ToAgentID = e.IM.FromAgentID;
+                    imp.MessageBlock.Offline = 0;
+                    imp.MessageBlock.ID = e.IM.IMSessionID;
+                    imp.MessageBlock.Timestamp = 0;
+                    imp.MessageBlock.FromAgentName = Utils.StringToBytes(_Client.Self.Name);
+                    imp.MessageBlock.Message = Utils.EmptyBytes;
+                    imp.MessageBlock.ParentEstateID = 0;
+                    imp.MessageBlock.RegionID = UUID.Zero;
+                    imp.MessageBlock.Position = _Client.Self.SimPosition;
+
+                    if (OnObjectOffered(e.IM, type, objectID, fromTask))
+                    {
+                        // Accept the inventory offer
+                        switch (e.IM.Dialog)
+                        {
+                            case InstantMessageDialog.InventoryOffered:
+                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.InventoryAccepted;
+                                break;
+                            case InstantMessageDialog.TaskInventoryOffered:
+                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.TaskInventoryAccepted;
+                                break;
+                            case InstantMessageDialog.GroupNotice:
+                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.GroupNoticeInventoryAccepted;
+                                break;
+                        }
+
+                        imp.MessageBlock.BinaryBucket = destinationFolderID.GetBytes();
+                    }
+                    else
+                    {
+                        // Decline the inventory offer
+                        switch (e.IM.Dialog)
+                        {
+                            case InstantMessageDialog.InventoryOffered:
+                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.InventoryDeclined;
+                                break;
+                            case InstantMessageDialog.TaskInventoryOffered:
+                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.TaskInventoryDeclined;
+                                break;
+                            case InstantMessageDialog.GroupNotice:
+                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.GroupNoticeInventoryDeclined;
+                                break;
+                        }
+
+                        imp.MessageBlock.BinaryBucket = Utils.EmptyBytes;
+                    }
+
+                    _Client.Network.SendPacket(imp, e.Simulator);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(ex.Message, Helpers.LogLevel.Error, _Client, ex);
+                }
+            }
+        }
+
         private void CreateItemFromAssetResponse(CapsClient client, OSD result, Exception error)
         {
             object[] args = (object[])client.UserData;
@@ -3732,113 +3840,7 @@ namespace OpenMetaverse
             }
         }
 
-        private void Self_OnInstantMessage(InstantMessage im, Simulator simulator)
-        {
-            // TODO: MainAvatar.InstantMessageDialog.GroupNotice can also be an inventory offer, should we
-            // handle it here?
-
-            if (OnObjectOffered != null && 
-                (im.Dialog == InstantMessageDialog.InventoryOffered 
-                || im.Dialog == InstantMessageDialog.TaskInventoryOffered))
-            {
-                AssetType type = AssetType.Unknown;
-                UUID objectID = UUID.Zero;
-                bool fromTask = false;
-
-                if (im.Dialog == InstantMessageDialog.InventoryOffered)
-                {
-                    if (im.BinaryBucket.Length == 17)
-                    {
-                        type = (AssetType)im.BinaryBucket[0];
-                        objectID = new UUID(im.BinaryBucket, 1);
-                        fromTask = false;
-                    }
-                    else
-                    {
-                        Logger.Log("Malformed inventory offer from agent", Helpers.LogLevel.Warning, _Client);
-                        return;
-                    }
-                }
-                else if (im.Dialog == InstantMessageDialog.TaskInventoryOffered)
-                {
-                    if (im.BinaryBucket.Length == 1)
-                    {
-                        type = (AssetType)im.BinaryBucket[0];
-                        fromTask = true;
-                    }
-                    else
-                    {
-                        Logger.Log("Malformed inventory offer from object", Helpers.LogLevel.Warning, _Client);
-                        return;
-                    }
-                }
-
-                // Find the folder where this is going to go
-                UUID destinationFolderID = FindFolderForType(type);
-
-                // Fire the callback
-                try
-                {
-                    ImprovedInstantMessagePacket imp = new ImprovedInstantMessagePacket();
-                    imp.AgentData.AgentID = _Client.Self.AgentID;
-                    imp.AgentData.SessionID = _Client.Self.SessionID;
-                    imp.MessageBlock.FromGroup = false;
-                    imp.MessageBlock.ToAgentID = im.FromAgentID;
-                    imp.MessageBlock.Offline = 0;
-                    imp.MessageBlock.ID = im.IMSessionID;
-                    imp.MessageBlock.Timestamp = 0;
-                    imp.MessageBlock.FromAgentName = Utils.StringToBytes(_Client.Self.Name);
-                    imp.MessageBlock.Message = Utils.EmptyBytes;
-                    imp.MessageBlock.ParentEstateID = 0;
-                    imp.MessageBlock.RegionID = UUID.Zero;
-                    imp.MessageBlock.Position = _Client.Self.SimPosition;
-
-                    if (OnObjectOffered(im, type, objectID, fromTask))
-                    {
-                        // Accept the inventory offer
-                        switch (im.Dialog)
-                        {
-                            case InstantMessageDialog.InventoryOffered:
-                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.InventoryAccepted;
-                                break;
-                            case InstantMessageDialog.TaskInventoryOffered:
-                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.TaskInventoryAccepted;
-                                break;
-                            case InstantMessageDialog.GroupNotice:
-                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.GroupNoticeInventoryAccepted;
-                                break;
-                        }
-
-                        imp.MessageBlock.BinaryBucket = destinationFolderID.GetBytes();
-                    }
-                    else
-                    {
-                        // Decline the inventory offer
-                        switch (im.Dialog)
-                        {
-                            case InstantMessageDialog.InventoryOffered:
-                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.InventoryDeclined;
-                                break;
-                            case InstantMessageDialog.TaskInventoryOffered:
-                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.TaskInventoryDeclined;
-                                break;
-                            case InstantMessageDialog.GroupNotice:
-                                imp.MessageBlock.Dialog = (byte)InstantMessageDialog.GroupNoticeInventoryDeclined;
-                                break;
-                        }
-
-                        imp.MessageBlock.BinaryBucket = Utils.EmptyBytes;
-                    }
-
-                    _Client.Network.SendPacket(imp, simulator);
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e);
-                }
-            }
-        }
-        
+              
         private void Network_OnLoginResponse(bool loginSuccess, bool redirect, string message, string reason, LoginResponseData replyData)
         {
             if (loginSuccess)

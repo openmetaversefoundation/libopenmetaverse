@@ -52,7 +52,7 @@ namespace OpenMetaverse.TestClient
 
             Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
             Network.OnLogin += new NetworkManager.LoginCallback(LoginHandler);
-            Self.OnInstantMessage += new AgentManager.InstantMessageCallback(Self_OnInstantMessage);
+            Self.IM += Self_IM;
             Groups.OnGroupMembers += new GroupManager.GroupMembersCallback(GroupMembersHandler);
             Inventory.OnObjectOffered += new InventoryManager.ObjectOfferedCallback(Inventory_OnInventoryObjectReceived);
 
@@ -62,6 +62,37 @@ namespace OpenMetaverse.TestClient
             VoiceManager = new VoiceManager(this);
 
             updateTimer.Start();
+        }
+
+        void Self_IM(object sender, InstantMessageEventArgs e)
+        {
+            bool groupIM = e.IM.GroupIM && GroupMembers != null && GroupMembers.ContainsKey(e.IM.FromAgentID) ? true : false;
+
+            if (e.IM.FromAgentID == MasterKey || (GroupCommands && groupIM))
+            {
+                // Received an IM from someone that is authenticated
+                Console.WriteLine("<{0} ({1})> {2}: {3} (@{4}:{5})", e.IM.GroupIM ? "GroupIM" : "IM", e.IM.Dialog, e.IM.FromAgentName, e.IM.Message, 
+                    e.IM.RegionID, e.IM.Position);
+
+                if (e.IM.Dialog == InstantMessageDialog.RequestTeleport)
+                {
+                    Console.WriteLine("Accepting teleport lure.");
+                    Self.TeleportLureRespond(e.IM.FromAgentID, true);
+                }
+                else if (
+                    e.IM.Dialog == InstantMessageDialog.MessageFromAgent ||
+                    e.IM.Dialog == InstantMessageDialog.MessageFromObject)
+                {
+                    ClientManager.Instance.DoCommandAll(e.IM.Message, e.IM.FromAgentID);
+                }
+            }
+            else
+            {
+                // Received an IM from someone that is not the bot's master, ignore
+                Console.WriteLine("<{0} ({1})> {2} (not master): {3} (@{4}:{5})", e.IM.GroupIM ? "GroupIM" : "IM", e.IM.Dialog, e.IM.FromAgentName, e.IM.Message,
+                    e.IM.RegionID, e.IM.Position);
+                return;
+            }
         }
 
         /// <summary>
@@ -186,37 +217,7 @@ namespace OpenMetaverse.TestClient
 
             Logger.Log("[AlertMessage] " + Utils.BytesToString(message.AlertData.Message), Helpers.LogLevel.Info, this);
         }
-
-        private void Self_OnInstantMessage(InstantMessage im, Simulator simulator)
-        {
-            bool groupIM = im.GroupIM && GroupMembers != null && GroupMembers.ContainsKey(im.FromAgentID) ? true : false;
-
-            if (im.FromAgentID == MasterKey || (GroupCommands && groupIM))
-            {
-                // Received an IM from someone that is authenticated
-                Console.WriteLine("<{0} ({1})> {2}: {3} (@{4}:{5})", im.GroupIM ? "GroupIM" : "IM", im.Dialog, im.FromAgentName, im.Message, im.RegionID, im.Position);
-
-                if (im.Dialog == InstantMessageDialog.RequestTeleport)
-                {
-                    Console.WriteLine("Accepting teleport lure.");
-                    Self.TeleportLureRespond(im.FromAgentID, true);
-                }
-                else if (
-                    im.Dialog == InstantMessageDialog.MessageFromAgent ||
-                    im.Dialog == InstantMessageDialog.MessageFromObject)
-                {
-                    ClientManager.Instance.DoCommandAll(im.Message, im.FromAgentID);
-                }
-            }
-            else
-            {
-                // Received an IM from someone that is not the bot's master, ignore
-                Console.WriteLine("<{0} ({1})> {2} (not master): {3} (@{4}:{5})", im.GroupIM ? "GroupIM" : "IM", im.Dialog, im.FromAgentName, im.Message,
-                    im.RegionID, im.Position);
-                return;
-            }
-        }
-
+       
         private bool Inventory_OnInventoryObjectReceived(InstantMessage offer, AssetType type,
             UUID objectID, bool fromTask)
         {

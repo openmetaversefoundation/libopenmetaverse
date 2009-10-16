@@ -30,10 +30,16 @@ namespace OpenMetaverse.TestClient
                 string message = String.Empty;
                 for (int ct = 1; ct < args.Length; ct++)
                     message += args[ct] + " ";
-                message = message.TrimEnd();
-                if (message.Length > 1023) message = message.Remove(1023);
 
-                Client.Self.OnGroupChatJoin += new AgentManager.GroupChatJoinedCallback(Self_OnGroupChatJoin);
+                message = message.TrimEnd();
+                if (message.Length > 1023)
+                {
+                    message = message.Remove(1023);
+                    Console.WriteLine("Message truncated at 1024 characters");
+                }
+
+                Client.Self.GroupChatJoined += Self_GroupChatJoined;
+
                 if (!Client.Self.GroupChatSessions.ContainsKey(ToGroupID))
                 {
                     WaitForSessionStart.Reset();
@@ -52,8 +58,8 @@ namespace OpenMetaverse.TestClient
                 {
                     return "Timeout waiting for group session start";
                 }
-                
-                Client.Self.OnGroupChatJoin -= new AgentManager.GroupChatJoinedCallback(Self_OnGroupChatJoin);
+
+                Client.Self.GroupChatJoined -= Self_GroupChatJoined;
                 return "Instant Messaged group " + ToGroupID.ToString() + " with message: " + message;
             }
             else
@@ -62,11 +68,11 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Self_OnGroupChatJoin(UUID groupChatSessionID, string sessionName, UUID tmpSessionID, bool success)
+        void Self_GroupChatJoined(object sender, GroupChatJoinedEventArgs e)
         {
-            if (success)
+            if (e.Success)
             {
-                Console.WriteLine("Joined {0} Group Chat Success!", sessionName);
+                Console.WriteLine("Joined {0} Group Chat Success!", e.SessionName);
                 WaitForSessionStart.Set();
             }
             else
@@ -74,5 +80,7 @@ namespace OpenMetaverse.TestClient
                 Console.WriteLine("Join Group Chat failed :(");
             }
         }
+
+       
     }
 }

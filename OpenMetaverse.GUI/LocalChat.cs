@@ -157,17 +157,17 @@ namespace OpenMetaverse.GUI
         private void InitializeClient(GridClient client)
         {
             _Client = client;
-            _Client.Self.OnChat += new AgentManager.ChatCallback(Self_OnChat);
+            _Client.Self.ChatFromSimulator += new EventHandler<ChatEventArgs>(Self_ChatFromSimulator);
         }
 
-        void Self_OnChat(string message, ChatAudibleLevel audible, ChatType type, ChatSourceType sourceType, string fromName, UUID id, UUID ownerid, Vector3 position)
+        void Self_ChatFromSimulator(object sender, ChatEventArgs e)
         {
-            if (audible == ChatAudibleLevel.Fully && type != ChatType.StartTyping && type != ChatType.StopTyping)
+            if (e.AudibleLevel == ChatAudibleLevel.Fully && e.Type != ChatType.StartTyping && e.Type != ChatType.StopTyping)
             {
                 Color color;
-                if (sourceType == ChatSourceType.Agent) color = Color.FromKnownColor(KnownColor.ControlText);
+                if (e.SourceType == ChatSourceType.Agent) color = Color.FromKnownColor(KnownColor.ControlText);
                 else color = Color.FromKnownColor(KnownColor.GrayText);
-                LogChat(fromName, type, message, color);
+                LogChat(e.FromName, e.Type, e.Message, color);
             }
         }
 

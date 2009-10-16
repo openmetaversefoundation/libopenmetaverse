@@ -19,6 +19,7 @@ namespace OpenMetaverse.TestClient
                 return "Usage: wear [outfit name] eg: 'wear /My Outfit/Dance Party";
 
             string target = String.Empty;
+
             bool bake = true;
 
             for (int ct = 0; ct < args.Length; ct++)
