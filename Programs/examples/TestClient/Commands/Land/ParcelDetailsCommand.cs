@@ -27,7 +27,7 @@ namespace OpenMetaverse.TestClient
             if (Int32.TryParse(args[0], out parcelID) && Client.Network.CurrentSim.Parcels.TryGetValue(parcelID, out parcel))
             {
                 // this request will update the parcels dictionary
-                Client.Parcels.PropertiesRequest(Client.Network.CurrentSim, parcelID, 0);
+                Client.Parcels.RequestParcelProperties(Client.Network.CurrentSim, parcelID, 0);
                 
                 // Use reflection to dynamically get the fields from the Parcel struct
                 Type t = parcel.GetType();

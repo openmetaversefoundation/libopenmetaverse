@@ -13,7 +13,7 @@ namespace OpenMetaverse.TestClient.Commands
         {
             Name = "searchevents";
             Description = "Searches Events list. Usage: searchevents [search text]";
-            Category = CommandCategory.Other;
+            Category = CommandCategory.Search;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

@@ -13,7 +13,7 @@ namespace OpenMetaverse.TestClient.Commands
         {
             Name = "searchpeople";
             Description = "Searches for other avatars. Usage: searchpeople [search text]";
-            Category = CommandCategory.Friends;
+            Category = CommandCategory.Search;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

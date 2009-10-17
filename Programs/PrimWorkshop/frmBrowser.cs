@@ -164,7 +164,7 @@ namespace PrimWorkshop
             Client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
             Client.Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
             Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
-            Client.Parcels.OnSimParcelsDownloaded += new ParcelManager.SimParcelsDownloaded(Parcels_OnSimParcelsDownloaded);
+            Client.Parcels.SimParcelsDownloaded += new EventHandler<SimParcelsDownloadedEventArgs>(Parcels_SimParcelsDownloaded);
 
             Client.Assets.OnImageRecieveProgress += new AssetManager.ImageReceiveProgressCallback(Assets_OnImageRecieveProgress);
             // Initialize the camera object
@@ -189,6 +189,27 @@ namespace PrimWorkshop
             float[] specularLight = { 0.5f, 0.5f, 0.5f, 0.0f };
             Gl.glLightfv(Gl.GL_LIGHT0, Gl.GL_SPECULAR, specularLight);
             */
+        }
+
+        void Parcels_SimParcelsDownloaded(object sender, SimParcelsDownloadedEventArgs e)
+        {
+            TotalPrims = 0;
+
+            e.Parcels.ForEach(
+                delegate(Parcel parcel)
+                {
+                    TotalPrims += parcel.TotalPrims;
+                });
+
+            UpdatePrimProgress(); TotalPrims = 0;
+
+            e.Parcels.ForEach(
+                delegate(Parcel parcel)
+                {
+                    TotalPrims += parcel.TotalPrims;
+                });
+
+            UpdatePrimProgress();
         }
 
 
@@ -989,20 +1010,7 @@ namespace PrimWorkshop
         {
             //
         }
-
-        private void Parcels_OnSimParcelsDownloaded(Simulator simulator, InternalDictionary<int, Parcel> simParcels, int[,] parcelMap)
-        {
-            TotalPrims = 0;
-
-            simParcels.ForEach(
-                delegate(Parcel parcel)
-                {
-                    TotalPrims += parcel.TotalPrims;
-                });
-
-            UpdatePrimProgress();
-        }
-
+     
         private void Terrain_OnLandPatch(Simulator simulator, int x, int y, int width, float[] data)
         {
             if (Client != null && Client.Network.CurrentSim == simulator)

@@ -27,23 +27,25 @@ namespace OpenMetaverse.TestClient
             if (Int32.TryParse(args[0], out parcelID) && Client.Network.CurrentSim.Parcels.TryGetValue(parcelID, out parcel))
             {
                 AutoResetEvent wait = new AutoResetEvent(false);
-                ParcelManager.ParcelObjectOwnersListReplyCallback callback = delegate(Simulator simulator, List<ParcelManager.ParcelPrimOwners> primOwners)
+
+                EventHandler<ParcelObjectOwnersReplyEventArgs> callback = delegate(object sender, ParcelObjectOwnersReplyEventArgs e)
                 {
-                    for(int i = 0; i < primOwners.Count; i++)
+                    for (int i = 0; i < e.PrimOwners.Count; i++)
                     {
-                        result.AppendFormat("Owner: {0} Count: {1}" + System.Environment.NewLine, primOwners[i].OwnerID, primOwners[i].Count);
+                        result.AppendFormat("Owner: {0} Count: {1}" + System.Environment.NewLine, e.PrimOwners[i].OwnerID, e.PrimOwners[i].Count);
                         wait.Set();
                     }
                 };
+
+
+                Client.Parcels.ParcelObjectOwnersReply += callback;
                 
-                Client.Parcels.OnPrimOwnersListReply += callback;
-                
-                Client.Parcels.ObjectOwnersRequest(Client.Network.CurrentSim, parcelID);
+                Client.Parcels.RequestObjectOwners(Client.Network.CurrentSim, parcelID);
                 if (!wait.WaitOne(10000, false))
                 {
                     result.AppendLine("Timed out waiting for packet.");
                 }
-                Client.Parcels.OnPrimOwnersListReply -= callback;
+                Client.Parcels.ParcelObjectOwnersReply -= callback;
                 
                 return result.ToString();
             }

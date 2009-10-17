@@ -18,7 +18,7 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
         {
             if (args.Length < 2)
             {
-                return "Usage: give <agent uuid> <item1> [item2] [item3] [...]";
+                return "Usage: give <agent uuid> itemname";
             }
             UUID dest;
             if (!UUID.TryParse(args[0], out dest))
@@ -29,32 +29,36 @@ namespace OpenMetaverse.TestClient.Commands.Inventory.Shell
             Inventory = Manager.Store;
             string ret = "";
             string nl = "\n";
-            for (int i = 1; i < args.Length; ++i)
+
+            string target = String.Empty;
+            for (int ct = 0; ct < args.Length; ct++)
+                target = target + args[ct] + " ";
+            target = target.TrimEnd();
+
+            string inventoryName = target;
+            // WARNING: Uses local copy of inventory contents, need to download them first.
+            List<InventoryBase> contents = Inventory.GetContents(Client.CurrentDirectory);
+            bool found = false;
+            foreach (InventoryBase b in contents)
             {
-                string inventoryName = args[i];
-                // WARNING: Uses local copy of inventory contents, need to download them first.
-                List<InventoryBase> contents = Inventory.GetContents(Client.CurrentDirectory);
-                bool found = false;
-                foreach (InventoryBase b in contents)
+                if (inventoryName == b.Name || inventoryName == b.UUID.ToString())
                 {
-                    if (inventoryName == b.Name || inventoryName == b.UUID.ToString())
+                    found = true;
+                    if (b is InventoryItem)
                     {
-                        found = true;
-                        if (b is InventoryItem)
-                        {
-                            InventoryItem item = b as InventoryItem;
-                            Manager.GiveItem(item.UUID, item.Name, item.AssetType, dest, true);
-                            ret += "Gave " + item.Name + nl;
-                        }
-                        else
-                        {
-                            ret += "Unable to give folder " + b.Name + nl;
-                        }
+                        InventoryItem item = b as InventoryItem;
+                        Manager.GiveItem(item.UUID, item.Name, item.AssetType, dest, true);
+                        ret += "Gave " + item.Name + " (" + item.AssetType + ")" + nl;
+                    }
+                    else
+                    {
+                        ret += "Unable to give folder " + b.Name + nl;
                     }
                 }
-                if (!found)
-                    ret += "No inventory item named " + inventoryName + " found." + nl;
             }
+            if (!found)
+                ret += "No inventory item named " + inventoryName + " found." + nl;
+
             return ret;
         }
     }

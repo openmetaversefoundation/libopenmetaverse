@@ -30,30 +30,31 @@ namespace OpenMetaverse.TestClient
                 && UUID.TryParse(args[1], out ownerUUID))
             {
                 AutoResetEvent wait = new AutoResetEvent(false);
-                ParcelManager.ForceSelectObjects callback = delegate(Simulator simulator, List<uint> objectIDs, bool resetList)
+                EventHandler<ForceSelectObjectsReplyEventArgs> callback = delegate(object sender, ForceSelectObjectsReplyEventArgs e)
                 {
-                    //result.AppendLine("New List: " + resetList.ToString());
-                    for(int i = 0; i < objectIDs.Count; i++)
+                    
+                    for (int i = 0; i < e.ObjectIDs.Count; i++)
                     {
-                        result.Append(objectIDs[i].ToString() + " ");
+                        result.Append(e.ObjectIDs[i].ToString() + " ");
                         counter++;
                     }
-                    //result.AppendLine("Got " + objectIDs.Count.ToString() + " Objects in packet");
-                    if(objectIDs.Count < 251)
+                    
+                    if (e.ObjectIDs.Count < 251)
                         wait.Set();
                 };
-
-                Client.Parcels.OnParcelSelectedObjects += callback;
-                Client.Parcels.SelectObjects(parcelID, (ObjectReturnType)16, ownerUUID);
                 
 
-                Client.Parcels.ObjectOwnersRequest(Client.Network.CurrentSim, parcelID);
+                Client.Parcels.ForceSelectObjectsReply += callback;
+                Client.Parcels.RequestSelectObjects(parcelID, (ObjectReturnType)16, ownerUUID);
+                
+
+                Client.Parcels.RequestObjectOwners(Client.Network.CurrentSim, parcelID);
                 if (!wait.WaitOne(30000, false))
                 {
                     result.AppendLine("Timed out waiting for packet.");
                 }
                 
-                Client.Parcels.OnParcelSelectedObjects -= callback;
+                Client.Parcels.ForceSelectObjectsReply -= callback;
                 result.AppendLine("Found a total of " + counter + " Objects");
                 return result.ToString();
             }

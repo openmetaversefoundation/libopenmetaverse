@@ -672,48 +672,7 @@ namespace OpenMetaverse
                 req.SnapshotID = this.SnapshotID;
                 req.UserLocation = this.UserLocation;
                 req.UserLookAt = this.UserLookAt;
-
-                //OSDMap body = new OSDMap();
-                //body["auth_buyer_id"] =  OSD.FromUUID(this.AuthBuyerID);
-                //body["auto_scale"] =  OSD.FromBoolean(this.Media.MediaAutoScale);
-                //body["category"] = OSD.FromInteger((byte)this.Category);
-                //body["description"] = OSD.FromString(this.Desc);
-                //body["flags"] =  OSD.FromBinary(Utils.EmptyBytes);
-                //body["group_id"] = OSD.FromUUID(this.GroupID);
-                //body["landing_type"] = OSD.FromInteger((byte)this.Landing);
-                //body["local_id"] = OSD.FromInteger(this.LocalID);
-                //body["media_desc"] = OSD.FromString(this.Media.MediaDesc);
-                //body["media_height"] = OSD.FromInteger(this.Media.MediaHeight);
-                //body["media_id"] = OSD.FromUUID(this.Media.MediaID);
-                //body["media_loop"] = OSD.FromInteger(this.Media.MediaLoop ? 1 : 0);
-                //body["media_type"] = OSD.FromString(this.Media.MediaType);
-                //body["media_url"] = OSD.FromString(this.Media.MediaURL);
-                //body["media_width"] = OSD.FromInteger(this.Media.MediaWidth);
-                //body["music_url"] = OSD.FromString(this.MusicURL);
-                //body["name"] = OSD.FromString(this.Name);
-                //body["obscure_media"]= OSD.FromInteger(this.ObscureMedia ? 1 : 0);
-                //body["obscure_music"] = OSD.FromInteger(this.ObscureMusic ? 1 : 0);
-
-                //byte[] flags = Utils.IntToBytes((int)this.Flags); ;
-                //if (BitConverter.IsLittleEndian)
-                //    Array.Reverse(flags);
-                //body["parcel_flags"] = OSD.FromBinary(flags);
-
-                //body["pass_hours"] = OSD.FromReal(this.PassHours);
-                //body["pass_price"] = OSD.FromInteger(this.PassPrice);
-                //body["sale_price"] = OSD.FromInteger(this.SalePrice);
-                //body["snapshot_id"] = OSD.FromUUID(this.SnapshotID);
-                //OSDArray uloc = new OSDArray();
-                //uloc.Add(OSD.FromReal(this.UserLocation.X));
-                //uloc.Add(OSD.FromReal(this.UserLocation.Y));
-                //uloc.Add(OSD.FromReal(this.UserLocation.Z));
-                //body["user_location"] = uloc;
-                //OSDArray ulat = new OSDArray();
-                //ulat.Add(OSD.FromReal(this.UserLocation.X));
-                //ulat.Add(OSD.FromReal(this.UserLocation.Y));
-                //ulat.Add(OSD.FromReal(this.UserLocation.Z));
-                //body["user_look_at"] = ulat;
-
+               
                 OSDMap body = req.Serialize();
 
                 CapsClient capsPost = new CapsClient(url);
@@ -813,117 +772,214 @@ namespace OpenMetaverse
 
         #region Delegates
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="parcelID">UUID of the requested parcel</param>
-        /// <param name="localID">Simulator-local ID of the requested parcel</param>
-        /// <param name="dwell">Dwell value of the requested parcel</param>
-        public delegate void ParcelDwellCallback(UUID parcelID, int localID, float dwell);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="parcel"></param>
-        public delegate void ParcelInfoCallback(ParcelInfo parcel);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="simulator">Simulator the parcel is in</param>
-        /// <param name="parcel">Full properties for a single parcel. If result
-        /// is NoData this will be incomplete or incorrect data</param>
-        /// <param name="result">Success of the query</param>
-        /// <param name="selectedPrims">Number of primitives your avatar is currently
-        /// selecting and sitting on in this parcel</param>
-        /// <param name="sequenceID">User-assigned identifier for the query</param>
-        /// <param name="snapSelection">User-assigned boolean for the query</param>
-        public delegate void ParcelPropertiesCallback(Simulator simulator, Parcel parcel, ParcelResult result, int selectedPrims,
-            int sequenceID, bool snapSelection);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="simulator">Simulator the parcel is in</param>
-        /// <param name="sequenceID"></param>
-        /// <param name="localID"></param>
-        /// <param name="flags"></param>
-        /// <param name="accessEntries"></param>
-        public delegate void ParcelAccessListReplyCallback(Simulator simulator, int sequenceID, int localID, uint flags,
-            List<ParcelAccessEntry> accessEntries);
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<ParcelDwellReplyEventArgs> m_DwellReply;
 
-        /// <summary>
-        /// Responses to a request for prim owners on a parcel
-        /// </summary>
-        /// <param name="simulator">simulator parcel is in</param>
-        /// <param name="primOwners">List containing details or prim ownership</param>
-        public delegate void ParcelObjectOwnersListReplyCallback(Simulator simulator, List<ParcelPrimOwners> primOwners);
+        /// <summary>Raises the ParcelDwellReply event</summary>
+        /// <param name="e">A ParcelDwellReplyEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnParcelDwellReply(ParcelDwellReplyEventArgs e)
+        {
+            EventHandler<ParcelDwellReplyEventArgs> handler = m_DwellReply;
+            if (handler != null)
+                handler(this, e);
+        }
 
-        /// <summary>
-        /// Fired when all parcels are downloaded from simulator
-        /// </summary>
-        /// <param name="simulator">Simulator the parcel is in</param>
-        /// <param name="simParcels">Read-only dictionary containing parcel details for the simulator</param>
-        /// <param name="parcelMap">64,64 array containing sim position to localID mapping</param>
-        public delegate void SimParcelsDownloaded(Simulator simulator, InternalDictionary<int, Parcel> simParcels, int[,] parcelMap);
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_DwellReplyLock = new object();
+        
+        /// <summary>Raised when the simulator responds to a <see cref="RequestDwell"/> request</summary>
+        public event EventHandler<ParcelDwellReplyEventArgs> ParcelDwellReply
+        {
+            add { lock (m_DwellReplyLock) { m_DwellReply += value; } }
+            remove { lock (m_DwellReplyLock) { m_DwellReply -= value; } }
+        }
 
-        /// <summary>
-        /// Fired in response to SelectParcelObjects
-        /// </summary>
-        /// <param name="simulator">simulator the objects are in</param>
-        /// <param name="objectIDs">Local IDs of the selected objects</param>
-        /// <param name="resetList">If true, list is start of a new selection</param>
-        public delegate void ForceSelectObjects(Simulator simulator, List<uint> objectIDs, bool resetList);
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<ParcelInfoReplyEventArgs> m_ParcelInfo;
 
-        /// <summary>
-        /// Fired when a ParcelMediaUpdate packet is received, this occurs when the media on the parcel an avatar
-        /// is over changes
-        /// </summary>
-        /// <param name="simulator">A reference to the simulator object</param>
-        /// <param name="media">A struct containing updated media information</param>
-        public delegate void ParcelMediaUpdateReplyCallback(Simulator simulator, ParcelMedia media);
+        /// <summary>Raises the ParcelInfoReply event</summary>
+        /// <param name="e">A ParcelInfoReplyEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnParcelInfoReply(ParcelInfoReplyEventArgs e)
+        {
+            EventHandler<ParcelInfoReplyEventArgs> handler = m_ParcelInfo;
+            if (handler != null)
+                handler(this, e);
+        }
 
-        /// <summary>
-        /// Fired when a ParcelMediaCommandMessage packet is received, this occurs when the media on the parcel sends a specialized event
-        /// </summary>
-        /// <param name="simulator">A reference to the simulator object</param>
-        /// <param name="sequence">The sequence the parcel command belongs to</param>
-        /// <param name="flags">Updated parcel information</param>
-        /// <param name="command">The command executed on the Parcel</param>
-        /// <param name="time">The time operand for some parcel commands</param>
-        public delegate void ParcelMediaCommandMessageCallback(Simulator simulator, uint sequence, ParcelFlags flags, ParcelMediaCommand command, float time);
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_ParcelInfoLock = new object();
 
+        /// <summary>Raised when the simulator responds to a <see cref="RequestParcelInfo"/> request</summary>
+        public event EventHandler<ParcelInfoReplyEventArgs> ParcelInfoReply
+        {
+            add { lock (m_ParcelInfoLock) { m_ParcelInfo += value; } }
+            remove { lock (m_ParcelInfoLock) { m_ParcelInfo -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<ParcelPropertiesEventArgs> m_ParcelProperties;
+
+        /// <summary>Raises the ParcelProperties event</summary>
+        /// <param name="e">A ParcelPropertiesEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnParcelProperties(ParcelPropertiesEventArgs e)
+        {
+            EventHandler<ParcelPropertiesEventArgs> handler = m_ParcelProperties;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_ParcelPropertiesLock = new object();
+
+        /// <summary>Raised when the simulator responds to a <see cref="RequestParcelProperties"/> request</summary>
+        public event EventHandler<ParcelPropertiesEventArgs> ParcelProperties
+        {
+            add { lock (m_ParcelPropertiesLock) { m_ParcelProperties += value; } }
+            remove { lock (m_ParcelPropertiesLock) { m_ParcelProperties -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<ParcelAccessListReplyEventArgs> m_ParcelACL;
+
+        /// <summary>Raises the ParcelAccessListReply event</summary>
+        /// <param name="e">A ParcelAccessListReplyEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnParcelAccessListReply(ParcelAccessListReplyEventArgs e)
+        {
+            EventHandler<ParcelAccessListReplyEventArgs> handler = m_ParcelACL;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_ParcelACLLock = new object();
+
+        /// <summary>Raised when the simulator responds to a <see cref="RequestParcelAccessList"/> request</summary>
+        public event EventHandler<ParcelAccessListReplyEventArgs> ParcelAccessListReply
+        {
+            add { lock (m_ParcelACLLock) { m_ParcelACL += value; } }
+            remove { lock (m_ParcelACLLock) { m_ParcelACL -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<ParcelObjectOwnersReplyEventArgs> m_ParcelObjectOwnersReply;
+
+        /// <summary>Raises the ParcelObjectOwnersReply event</summary>
+        /// <param name="e">A ParcelObjectOwnersReplyEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnParcelObjectOwnersReply(ParcelObjectOwnersReplyEventArgs e)
+        {
+            EventHandler<ParcelObjectOwnersReplyEventArgs> handler = m_ParcelObjectOwnersReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_ParcelObjectOwnersLock = new object();
+
+        /// <summary>Raised when the simulator responds to a <see cref="RequestObjectOwners"/> request</summary>
+        public event EventHandler<ParcelObjectOwnersReplyEventArgs> ParcelObjectOwnersReply
+        {
+            add { lock (m_ParcelObjectOwnersLock) { m_ParcelObjectOwnersReply += value; } }
+            remove { lock (m_ParcelObjectOwnersLock) { m_ParcelObjectOwnersReply -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<SimParcelsDownloadedEventArgs> m_SimParcelsDownloaded;
+
+        /// <summary>Raises the SimParcelsDownloaded event</summary>
+        /// <param name="e">A SimParcelsDownloadedEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnSimParcelsDownloaded(SimParcelsDownloadedEventArgs e)
+        {
+            EventHandler<SimParcelsDownloadedEventArgs> handler = m_SimParcelsDownloaded;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_SimParcelsDownloadedLock = new object();
+
+        /// <summary>Raised when the simulator responds to a <see cref="RequestAllSimParcels"/> request</summary>
+        public event EventHandler<SimParcelsDownloadedEventArgs> SimParcelsDownloaded
+        {
+            add { lock (m_SimParcelsDownloadedLock) { m_SimParcelsDownloaded += value; } }
+            remove { lock (m_SimParcelsDownloadedLock) { m_SimParcelsDownloaded -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<ForceSelectObjectsReplyEventArgs> m_ForceSelectObjects;
+
+        /// <summary>Raises the ForceSelectObjectsReply event</summary>
+        /// <param name="e">A ForceSelectObjectsReplyEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnForceSelectObjectsReply(ForceSelectObjectsReplyEventArgs e)
+        {
+            EventHandler<ForceSelectObjectsReplyEventArgs> handler = m_ForceSelectObjects;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_ForceSelectObjectsLock = new object();
+
+        /// <summary>Raised when the simulator responds to a <see cref="RequestForceSelectObjects"/> request</summary>
+        public event EventHandler<ForceSelectObjectsReplyEventArgs> ForceSelectObjectsReply
+        {
+            add { lock (m_ForceSelectObjectsLock) { m_ForceSelectObjects += value; } }
+            remove { lock (m_ForceSelectObjectsLock) { m_ForceSelectObjects -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<ParcelMediaUpdateReplyEventArgs> m_ParcelMediaUpdateReply;
+
+        /// <summary>Raises the ParcelMediaUpdateReply event</summary>
+        /// <param name="e">A ParcelMediaUpdateReplyEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnParcelMediaUpdateReply(ParcelMediaUpdateReplyEventArgs e)
+        {
+            EventHandler<ParcelMediaUpdateReplyEventArgs> handler = m_ParcelMediaUpdateReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_ParcelMediaUpdateReplyLock = new object();
+
+        /// <summary>Raised when the simulator responds to a Parcel Update request</summary>
+        public event EventHandler<ParcelMediaUpdateReplyEventArgs> ParcelMediaUpdateReply
+        {
+            add { lock (m_ParcelMediaUpdateReplyLock) { m_ParcelMediaUpdateReply += value; } }
+            remove { lock (m_ParcelMediaUpdateReplyLock) { m_ParcelMediaUpdateReply -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<ParcelMediaCommandEventArgs> m_ParcelMediaCommand;
+
+        /// <summary>Raises the ParcelMediaCommand event</summary>
+        /// <param name="e">A ParcelMediaCommandEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnParcelMediaCommand(ParcelMediaCommandEventArgs e)
+        {
+            EventHandler<ParcelMediaCommandEventArgs> handler = m_ParcelMediaCommand;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_ParcelMediaCommandLock = new object();
+
+        /// <summary>Raised when the parcel your agent is located sends a ParcelMediaCommand</summary>
+        public event EventHandler<ParcelMediaCommandEventArgs> ParcelMediaCommand
+        {
+            add { lock (m_ParcelMediaCommandLock) { m_ParcelMediaCommand += value; } }
+            remove { lock (m_ParcelMediaCommandLock) { m_ParcelMediaCommand -= value; } }
+        }
         #endregion Delegates
 
-        #region Events
-        
-        /// <summary>Fired when a <seealso cref="Packets.ParcelDwellReplyPacket"/> is received,
-        /// in response to a <seealso cref="DwellRequest"/></summary>
-        public event ParcelDwellCallback OnParcelDwell;
-        /// <summary>Fired when a <seealso cref="Packets.ParcelInfoReplyPacket"/> is received, 
-        /// in response to a <seealso cref="InfoRequest"/></summary>
-        public event ParcelInfoCallback OnParcelInfo;
-        /// <summary>Fired when a ParcelProperties Packet is received over the <seealso cref="OpenMetaverse.Capabilities"/> subsystem,
-        /// in response to a <seealso cref="PropertiesRequest"/></summary>
-        public event ParcelPropertiesCallback OnParcelProperties;
-        /// <summary>Fired when a <seealso cref="Packets.ParcelAccessListReplyPacket"/> is received,
-        /// in response to a <seealso cref="AccessListRequest"/></summary>
-        public event ParcelAccessListReplyCallback OnAccessListReply;
-        /// <summary>Fired when the Agent receives a <seealso cref="Packets.ParcelObjectOwnersReplyPacket"/>,
-        /// in response to <seealso cref="ObjectOwnersRequest"/></summary>
-        public event ParcelObjectOwnersListReplyCallback OnPrimOwnersListReply;
-        /// <summary>Fired when the simulator parcel dictionary is populated in response
-        /// to a <seealso cref="RequestAllSimParcels"/> request</summary>
-        public event SimParcelsDownloaded OnSimParcelsDownloaded;
-        /// <summary>Fired when the Agent receives a <seealso cref="Packets.ParcelSelectObjectsPacket"/>,
-        /// in response to a <seealso cref="SelectObjects"/> request</summary>
-        public event ForceSelectObjects OnParcelSelectedObjects;
-        /// <summary>Fired when the Agent receives a <seealso cref="Packets.ParcelMediaUpdatePacket"/> which
-        /// occurs when the parcel media information is changed for the current parcel the Agent is over</summary>
-        public event ParcelMediaUpdateReplyCallback OnParcelMediaUpdate;
-        /// <summary>Fired when the Agent receives a <seealso cref="Packets.ParcelMediaCommandMessage"/> which
-        /// occurs when the parcel media has a specialized event like starting and looping command on the media is raised
-        ///  for the current parcel the Agent is over</summary>
-        public event ParcelMediaCommandMessageCallback OnParcelMediaCommandMessage;
-
-        #endregion Events
 
         private GridClient Client;
 
@@ -937,6 +993,7 @@ namespace OpenMetaverse
         public ParcelManager(GridClient client)
         {
             Client = client;
+            
             // Setup the callbacks
             Client.Network.RegisterCallback(PacketType.ParcelInfoReply, new NetworkManager.PacketCallback(ParcelInfoReplyHandler));
             Client.Network.RegisterEventCallback("ParcelObjectOwnersReply", new Caps.EventQueueCallback(ParcelObjectOwnersReplyHandler));
@@ -954,7 +1011,7 @@ namespace OpenMetaverse
         /// Request basic information for a single parcel
         /// </summary>
         /// <param name="parcelID">Simulator-local ID of the parcel</param>
-        public void InfoRequest(UUID parcelID)
+        public void RequestParcelInfo(UUID parcelID)
         {
             ParcelInfoRequestPacket request = new ParcelInfoRequestPacket();
             request.AgentData.AgentID = Client.Self.AgentID;
@@ -972,7 +1029,7 @@ namespace OpenMetaverse
         /// <param name="sequenceID">An arbitrary integer that will be returned
         /// with the ParcelProperties reply, useful for distinguishing between
         /// multiple simultaneous requests</param>
-        public void PropertiesRequest(Simulator simulator, int localID, int sequenceID)
+        public void RequestParcelProperties(Simulator simulator, int localID, int sequenceID)
         {
             ParcelPropertiesRequestByIDPacket request = new ParcelPropertiesRequestByIDPacket();
 
@@ -994,7 +1051,7 @@ namespace OpenMetaverse
         /// with the ParcelAccessList reply, useful for distinguishing between
         /// multiple simultaneous requests</param>
         /// <param name="flags"></param>
-        public void AccessListRequest(Simulator simulator, int localID, AccessList flags, int sequenceID)
+        public void RequestParcelAccessList(Simulator simulator, int localID, AccessList flags, int sequenceID)
         {
             ParcelAccessListRequestPacket request = new ParcelAccessListRequestPacket();
 
@@ -1021,7 +1078,7 @@ namespace OpenMetaverse
         /// <param name="snapSelection">A boolean that is returned with the
         /// ParcelProperties reply, useful for snapping focus to a single
         /// parcel</param>
-        public void PropertiesRequest(Simulator simulator, float north, float east, float south, float west,
+        public void RequestParcelProperties(Simulator simulator, float north, float east, float south, float west,
             int sequenceID, bool snapSelection)
         {
             ParcelPropertiesRequestPacket request = new ParcelPropertiesRequestPacket();
@@ -1088,7 +1145,7 @@ namespace OpenMetaverse
 
                         if (simulator.ParcelMap[y, x] == 0)
                         {
-                            Client.Parcels.PropertiesRequest(simulator,
+                            Client.Parcels.RequestParcelProperties(simulator,
                                                              (y + 1) * 4.0f, (x + 1) * 4.0f,
                                                              y * 4.0f, x * 4.0f, int.MaxValue, false);
 
@@ -1116,7 +1173,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">Simulator containing the parcel</param>
         /// <param name="localID">Simulator-local ID of the parcel</param>
-        public void DwellRequest(Simulator simulator, int localID)
+        public void RequestDwell(Simulator simulator, int localID)
         {
             ParcelDwellRequestPacket request = new ParcelDwellRequestPacket();
             request.AgentData.AgentID = Client.Self.AgentID;
@@ -1197,7 +1254,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">Simulator parcel is in</param>
         /// <param name="localID">The parcels region specific local ID</param>
-        public void ObjectOwnersRequest(Simulator simulator, int localID)
+        public void RequestObjectOwners(Simulator simulator, int localID)
         {
             ParcelObjectOwnersRequestPacket request = new ParcelObjectOwnersRequestPacket();
 
@@ -1438,22 +1495,20 @@ namespace OpenMetaverse
         /// <param name="ownerID">List containing keys of avatars objects to select; 
         /// if List is null will return Objects of type <c>selectType</c></param>
         /// <remarks>Response data is returned in the event <seealso cref="E:OnParcelSelectedObjects"/></remarks>
-        public void SelectObjects(int localID, ObjectReturnType selectType, UUID ownerID)
+        public void RequestSelectObjects(int localID, ObjectReturnType selectType, UUID ownerID)
         {
-            if (OnParcelSelectedObjects != null)
-            {
-                ParcelSelectObjectsPacket select = new ParcelSelectObjectsPacket();
-                select.AgentData.AgentID = Client.Self.AgentID;
-                select.AgentData.SessionID = Client.Self.SessionID;
+            ParcelSelectObjectsPacket select = new ParcelSelectObjectsPacket();
+            select.AgentData.AgentID = Client.Self.AgentID;
+            select.AgentData.SessionID = Client.Self.SessionID;
 
-                select.ParcelData.LocalID = localID;
-                select.ParcelData.ReturnType = (uint)selectType;
+            select.ParcelData.LocalID = localID;
+            select.ParcelData.ReturnType = (uint)selectType;
 
-                select.ReturnIDs = new ParcelSelectObjectsPacket.ReturnIDsBlock[1];
-                select.ReturnIDs[0] = new ParcelSelectObjectsPacket.ReturnIDsBlock();
-                select.ReturnIDs[0].ReturnID = ownerID;
-                Client.Network.SendPacket(select);
-            }
+            select.ReturnIDs = new ParcelSelectObjectsPacket.ReturnIDsBlock[1];
+            select.ReturnIDs[0] = new ParcelSelectObjectsPacket.ReturnIDsBlock();
+            select.ReturnIDs[0].ReturnID = ownerID;
+
+            Client.Network.SendPacket(select);
         }
 
         /// <summary>
@@ -1544,9 +1599,13 @@ namespace OpenMetaverse
 
         #region Packet Handlers
 
-        private void ParcelDwellReplyHandler(Packet packet, Simulator simulator)
-        {
-            if (OnParcelDwell != null || Client.Settings.ALWAYS_REQUEST_PARCEL_DWELL == true)
+        /// <summary>Process an incoming <see cref="ParcelDwellReplyPacket"/> packet</summary>
+        /// <param name="packet">The <see cref="ParcelWellReplyPacket"/> packet containing the data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="ParcelDwellReply"/> event</remarks>
+        protected void ParcelDwellReplyHandler(Packet packet, Simulator simulator)
+        {            
+            if (m_DwellReply != null || Client.Settings.ALWAYS_REQUEST_PARCEL_DWELL == true)
             {
                 ParcelDwellReplyPacket dwell = (ParcelDwellReplyPacket)packet;
 
@@ -1560,17 +1619,20 @@ namespace OpenMetaverse
                     }
                 }
 
-                if (OnParcelDwell != null)
+                if (m_DwellReply != null)
                 {
-                    try { OnParcelDwell(dwell.Data.ParcelID, dwell.Data.LocalID, dwell.Data.Dwell); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnParcelDwellReply(new ParcelDwellReplyEventArgs(dwell.Data.ParcelID, dwell.Data.LocalID, dwell.Data.Dwell));
                 }
             }
         }
 
-        private void ParcelInfoReplyHandler(Packet packet, Simulator simulator)
-        {
-            if (OnParcelInfo != null)
+        /// <summary>Process an incoming <see cref="ParcelInfoReplyPacket"/> packet</summary>
+        /// <param name="packet">The <see cref="ParcelInfoReplyPacket"/> packet containing the data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="ParcelInfoReply"/> event</remarks>
+        protected void ParcelInfoReplyHandler(Packet packet, Simulator simulator)
+        {            
+            if (m_ParcelInfo != null)
             {
                 ParcelInfoReplyPacket info = (ParcelInfoReplyPacket)packet;
 
@@ -1592,19 +1654,19 @@ namespace OpenMetaverse
                 parcelInfo.SimName = Utils.BytesToString(info.Data.SimName);
                 parcelInfo.SnapshotID = info.Data.SnapshotID;
 
-                try { OnParcelInfo(parcelInfo); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnParcelInfoReply(new ParcelInfoReplyEventArgs(parcelInfo));                
             }
         }
-        /// <summary>
-        /// ParcelProperties replies sent over CAPS
-        /// </summary>
-        /// <param name="capsKey">Not used (will always be ParcelProperties)</param>
-        /// <param name="message">IMessage object containing decoded data from OSD</param>
-        /// <param name="simulator">Object representing simulator</param>
-        private void ParcelPropertiesReplyHandler(string capsKey, IMessage message, Simulator simulator)
-        {
-            if (OnParcelProperties != null || Client.Settings.PARCEL_TRACKING == true)
+
+        /// <summary>Process an incoming <see cref="ParcelPropertiesMessage"/> message</summary>
+        /// <param name="capsKey">The EventQueue Key</param>
+        /// <param name="message">The <see cref="ParcelPropertiesMessage"/> message containing the data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks><para>Raises the <see cref="ParcelProperties"/> event</para>
+        /// <para>Raises the <see cref="SimParcelsDownloaded"/> event if all parcels in the simulator have been requested</para></remarks>
+        protected void ParcelPropertiesReplyHandler(string capsKey, IMessage message, Simulator simulator)
+        {                        
+            if (m_ParcelProperties != null || Client.Settings.PARCEL_TRACKING == true)
             {
                 ParcelPropertiesMessage msg = (ParcelPropertiesMessage)message;
                 
@@ -1700,37 +1762,34 @@ namespace OpenMetaverse
 
                 // auto request acl, will be stored in parcel tracking dictionary if enabled
                 if (Client.Settings.ALWAYS_REQUEST_PARCEL_ACL)
-                    Client.Parcels.AccessListRequest(simulator, parcel.LocalID,
+                    Client.Parcels.RequestParcelAccessList(simulator, parcel.LocalID,
                         AccessList.Both, sequenceID);
 
                 // auto request dwell, will be stored in parcel tracking dictionary if enables
                 if (Client.Settings.ALWAYS_REQUEST_PARCEL_DWELL)
-                    Client.Parcels.DwellRequest(simulator, parcel.LocalID);
+                    Client.Parcels.RequestDwell(simulator, parcel.LocalID);
 
                 // Fire the callback for parcel properties being received
-                if (OnParcelProperties != null)
+                if (m_ParcelProperties != null)
                 {
-                    try { OnParcelProperties(simulator, parcel, result, selectedPrims, sequenceID, snapSelection); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnParcelProperties(new ParcelPropertiesEventArgs(simulator, parcel, result, selectedPrims, sequenceID, snapSelection));                    
                 }
 
                 // Check if all of the simulator parcels have been retrieved, if so fire another callback
-                if (simulator.IsParcelMapFull() && OnSimParcelsDownloaded != null)
+                if (simulator.IsParcelMapFull() && m_SimParcelsDownloaded != null)
                 {
-                    try { OnSimParcelsDownloaded(simulator, simulator.Parcels, simulator.ParcelMap); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnSimParcelsDownloaded(new SimParcelsDownloadedEventArgs(simulator, simulator.Parcels, simulator.ParcelMap));
                 }
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
+        /// <summary>Process an incoming <see cref="ParcelAccessListReplyPacket"/> packet</summary>
+        /// <param name="packet">The <see cref="ParcelAccessListReplyPacket"/> packet containing the data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="ParcelAccessListReply"/> event</remarks>
         protected void ParcelAccessListReplyHandler(Packet packet, Simulator simulator)
         {
-            if (OnAccessListReply != null || Client.Settings.ALWAYS_REQUEST_PARCEL_ACL == true)
+            if (m_ParcelACL != null || Client.Settings.ALWAYS_REQUEST_PARCEL_ACL == true)
             {
                 ParcelAccessListReplyPacket reply = (ParcelAccessListReplyPacket)packet;
 
@@ -1761,27 +1820,23 @@ namespace OpenMetaverse
                     }
                 
 
-                if (OnAccessListReply != null)
+                if (m_ParcelACL != null)
                 {
-                    try
-                    {
-                        OnAccessListReply(simulator, reply.Data.SequenceID, reply.Data.LocalID, reply.Data.Flags,
-                      accessList);
-                    }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnParcelAccessListReply(new ParcelAccessListReplyEventArgs(simulator, reply.Data.SequenceID, reply.Data.LocalID, 
+                        reply.Data.Flags, accessList));                    
                 }
             }
         }
 
-        /// <summary>
-        /// Decode the prim owner information, send the decoded object to any event subscribers
-        /// </summary>
-        /// <param name="capsKey"></param>
-        /// <param name="message">IMessage object containing decoded data from OSD</param>
-        /// <param name="simulator"></param>
-        private void ParcelObjectOwnersReplyHandler(string capsKey, IMessage message, Simulator simulator)
+        /// <summary>Process an incoming <see cref="ParcelObjectOwnersReplyMessage"/> message</summary>
+        /// <param name="capsKey">The EventQueue Key</param>
+        /// <param name="message">The <see cref="ParcelObjectOwnersReplyMessage"/> message containing the data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks><para>Raises the <see cref="ParcelProperties"/> event</para>
+        /// <para>Raises the <see cref="ParcelObjectOwnersReply"/> event if all parcels in the simulator have been requested</para></remarks>
+        protected void ParcelObjectOwnersReplyHandler(string capsKey, IMessage message, Simulator simulator)
         {
-            if (OnPrimOwnersListReply != null)
+            if (m_ParcelObjectOwnersReply != null)
             {
                 List<ParcelPrimOwners> primOwners = new List<ParcelPrimOwners>();
 
@@ -1799,56 +1854,58 @@ namespace OpenMetaverse
                     primOwners.Add(primOwner);
                 }
 
-                try { OnPrimOwnersListReply(simulator, primOwners); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnParcelObjectOwnersReply(new ParcelObjectOwnersReplyEventArgs(simulator, primOwners));
             }                
         }
-        
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void SelectParcelObjectsReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming <see cref="ForceObjectSelectPacket"/> packet</summary>
+        /// <param name="packet">The <see cref="ForceObjectSelectPacket"/> packet containing the data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="ForceSelectObjectsReply"/> event</remarks>
+        protected void SelectParcelObjectsReplyHandler(Packet packet, Simulator simulator)
         {
-            ForceObjectSelectPacket reply = (ForceObjectSelectPacket)packet;
-            List<uint> objectIDs = new List<uint>(reply.Data.Length);
-
-            for (int i = 0; i < reply.Data.Length; i++)
+            if (m_ForceSelectObjects != null)
             {
-                objectIDs.Add(reply.Data[i].LocalID);
-            }
+                ForceObjectSelectPacket reply = (ForceObjectSelectPacket)packet;
+                List<uint> objectIDs = new List<uint>(reply.Data.Length);
 
-            if (OnParcelSelectedObjects != null)
-            {
-                try { OnParcelSelectedObjects(simulator, objectIDs, reply._Header.ResetList); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                for (int i = 0; i < reply.Data.Length; i++)
+                {
+                    objectIDs.Add(reply.Data[i].LocalID);
+                }
+
+                OnForceSelectObjectsReply(new ForceSelectObjectsReplyEventArgs(simulator, objectIDs, reply._Header.ResetList));
             }
         }
 
-        private void ParcelMediaUpdateHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming <see cref="ParcelMediaUpdatePacket"/> packet</summary>
+        /// <param name="packet">The <see cref="ParcelMediaUpdatePacket"/> packet containing the data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="ParcelMediaUpdateReply"/> event</remarks>
+        protected void ParcelMediaUpdateHandler(Packet packet, Simulator simulator)
         {
-            ParcelMediaUpdatePacket reply = (ParcelMediaUpdatePacket)packet;
-            ParcelMedia media = new ParcelMedia();
-
-            media.MediaAutoScale = (reply.DataBlock.MediaAutoScale == (byte)0x1) ? true : false;
-            media.MediaID = reply.DataBlock.MediaID;
-            media.MediaDesc = Utils.BytesToString(reply.DataBlockExtended.MediaDesc);
-            media.MediaHeight = reply.DataBlockExtended.MediaHeight;
-            media.MediaLoop = ((reply.DataBlockExtended.MediaLoop & 1) != 0) ? true : false;
-            media.MediaType = Utils.BytesToString(reply.DataBlockExtended.MediaType);
-            media.MediaWidth = reply.DataBlockExtended.MediaWidth;
-            media.MediaURL = Utils.BytesToString(reply.DataBlock.MediaURL);
-
-            if (OnParcelMediaUpdate != null)
+            if (m_ParcelMediaUpdateReply != null)
             {
-                try { OnParcelMediaUpdate(simulator, media); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                ParcelMediaUpdatePacket reply = (ParcelMediaUpdatePacket)packet;
+                ParcelMedia media = new ParcelMedia();
+
+                media.MediaAutoScale = (reply.DataBlock.MediaAutoScale == (byte)0x1) ? true : false;
+                media.MediaID = reply.DataBlock.MediaID;
+                media.MediaDesc = Utils.BytesToString(reply.DataBlockExtended.MediaDesc);
+                media.MediaHeight = reply.DataBlockExtended.MediaHeight;
+                media.MediaLoop = ((reply.DataBlockExtended.MediaLoop & 1) != 0) ? true : false;
+                media.MediaType = Utils.BytesToString(reply.DataBlockExtended.MediaType);
+                media.MediaWidth = reply.DataBlockExtended.MediaWidth;
+                media.MediaURL = Utils.BytesToString(reply.DataBlock.MediaURL);
+
+                OnParcelMediaUpdateReply(new ParcelMediaUpdateReplyEventArgs(simulator, media));
             }
         }
 
-        private void ParcelOverlayHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming <see cref="ParcelOverlayPacket"/> packet</summary>
+        /// <param name="packet">The <see cref="ParcelOverlayPacket"/> packet containing the data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        protected void ParcelOverlayHandler(Packet packet, Simulator simulator)
         {
             const int OVERLAY_COUNT = 4;
 
@@ -1875,17 +1932,305 @@ namespace OpenMetaverse
             }
         }
 
-        private void ParcelMediaCommandMessagePacketHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming <see cref="ParcelMediaCommandMessagePacket"/> packet</summary>
+        /// <param name="packet">The <see cref="ParcelMediaCommandMessagePacket"/> packet containing the data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="ParcelMediaCommand"/> event</remarks>
+        protected void ParcelMediaCommandMessagePacketHandler(Packet packet, Simulator simulator)
         {
-            if (OnParcelMediaCommandMessage != null)
+            if (m_ParcelMediaCommand != null)
             {
                 ParcelMediaCommandMessagePacket pmc = (ParcelMediaCommandMessagePacket)packet;
                 ParcelMediaCommandMessagePacket.CommandBlockBlock block = pmc.CommandBlock;
-                try { OnParcelMediaCommandMessage(simulator, pmc.Header.Sequence, (ParcelFlags)block.Flags, (ParcelMediaCommand)block.Command, block.Time); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+
+                OnParcelMediaCommand(new ParcelMediaCommandEventArgs(simulator, pmc.Header.Sequence, (ParcelFlags)block.Flags, 
+                    (ParcelMediaCommand)block.Command, block.Time));                
             }
         }
 
         #endregion Packet Handlers
     }
+    #region EventArgs classes
+    
+    /// <summary>Contains a parcels dwell data returned from the simulator in response to an <see cref="RequestParcelDwell"/></summary>
+    public class ParcelDwellReplyEventArgs : EventArgs
+    {
+        private readonly UUID m_ParcelID;
+        private readonly int m_LocalID;
+        private readonly float m_Dwell;
+
+        /// <summary>Get the global ID of the parcel</summary>
+        public UUID ParcelID { get { return m_ParcelID; } }
+        /// <summary>Get the simulator specific ID of the parcel</summary>
+        public int LocalID { get { return m_LocalID; } }
+        /// <summary>Get the calculated dwell</summary>
+        public float Dwell { get { return m_Dwell; } }
+
+        /// <summary>
+        /// Construct a new instance of the ParcelDwellReplyEventArgs class
+        /// </summary>
+        /// <param name="parcelID">The global ID of the parcel</param>
+        /// <param name="localID">The simulator specific ID of the parcel</param>
+        /// <param name="dwell">The calculated dwell for the parcel</param>
+        public ParcelDwellReplyEventArgs(UUID parcelID, int localID, float dwell)
+        {
+            this.m_ParcelID = parcelID;
+            this.m_LocalID = localID;
+            this.m_Dwell = dwell;
+        }
+    }
+
+    /// <summary>Contains basic parcel information data returned from the 
+    /// simulator in response to an <see cref="RequestParcelInfo"/> request</summary>
+    public class ParcelInfoReplyEventArgs : EventArgs
+    {        
+        private readonly ParcelInfo m_Parcel;
+
+        /// <summary>Get the <see cref="ParcelInfo"/> object containing basic parcel info</summary>
+        public ParcelInfo Parcel { get { return m_Parcel; } }
+
+        /// <summary>
+        /// Construct a new instance of the ParcelInfoReplyEventArgs class
+        /// </summary>
+        /// <param name="parcel">The <see cref="ParcelInfo"/> object containing basic parcel info</param>
+        public ParcelInfoReplyEventArgs(ParcelInfo parcel)
+        {
+            this.m_Parcel = parcel;
+        }
+    }
+
+    /// <summary>Contains basic parcel information data returned from the simulator in response to an <see cref="RequestParcelInfo"/> request</summary>
+    public class ParcelPropertiesEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+        private Parcel m_Parcel;
+        private readonly ParcelResult m_Result;
+        private readonly int m_SelectedPrims;
+        private readonly int m_SequenceID;
+        private readonly bool m_SnapSelection;
+
+        /// <summary>Get the simulator the parcel is located in</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
+        /// <summary>Get the <see cref="Parcel"/> object containing the details</summary>
+        /// <remarks>If Result is NoData, this object will not contain valid data</remarks>
+        public Parcel Parcel { get { return m_Parcel; } }
+        /// <summary>Get the result of the request</summary>
+        public ParcelResult Result { get { return m_Result; } }
+        /// <summary>Get the number of primitieves your agent is 
+        /// currently selecting and or sitting on in this parcel</summary>
+        public int SelectedPrims { get { return m_SelectedPrims; } }
+        /// <summary>Get the user assigned ID used to correlate a request with
+        /// these results</summary>
+        public int SequenceID { get { return m_SequenceID; } }
+        /// <summary>TODO:</summary>
+        public bool SnapSelection { get { return m_SnapSelection; } }
+
+        /// <summary>
+        /// Construct a new instance of the ParcelPropertiesEventArgs class
+        /// </summary>
+        /// <param name="simulator">The <see cref="Parcel"/> object containing the details</param>
+        /// <param name="parcel">The <see cref="Parcel"/> object containing the details</param>
+        /// <param name="result">The result of the request</param>
+        /// <param name="selectedPrims">The number of primitieves your agent is 
+        /// currently selecting and or sitting on in this parcel</param>
+        /// <param name="sequenceID">The user assigned ID used to correlate a request with
+        /// these results</param>
+        /// <param name="snapSelection">TODO:</param>
+        public ParcelPropertiesEventArgs(Simulator simulator, Parcel parcel, ParcelResult result, int selectedPrims,
+            int sequenceID, bool snapSelection)
+        {
+            this.m_Simulator = simulator;
+            this.m_Parcel = parcel;
+            this.m_Result = result;
+            this.m_SelectedPrims = selectedPrims;
+            this.m_SequenceID = sequenceID;
+            this.m_SnapSelection = snapSelection;
+        }
+    }
+    
+    /// <summary>Contains blacklist and whitelist data returned from the simulator in response to an <see cref="RequestParcelAccesslist"/> request</summary>
+    public class ParcelAccessListReplyEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+        private readonly int m_SequenceID;
+        private readonly int m_LocalID;
+        private readonly uint m_Flags;
+        private readonly List<ParcelManager.ParcelAccessEntry> m_AccessList;
+
+        /// <summary>Get the simulator the parcel is located in</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
+        /// <summary>Get the user assigned ID used to correlate a request with
+        /// these results</summary>
+        public int SequenceID { get { return m_SequenceID; } }
+        /// <summary>Get the simulator specific ID of the parcel</summary>
+        public int LocalID { get { return m_LocalID; } }
+        /// <summary>TODO:</summary>
+        public uint Flags { get { return m_Flags; } }
+        /// <summary>Get the list containing the white/blacklisted agents for the parcel</summary>
+        public List<ParcelManager.ParcelAccessEntry> AccessList { get { return m_AccessList; } }
+
+        /// <summary>
+        /// Construct a new instance of the ParcelAccessListReplyEventArgs class
+        /// </summary>
+        /// <param name="simulator">The simulator the parcel is located in</param>
+        /// <param name="sequenceID">The user assigned ID used to correlate a request with
+        /// these results</param>
+        /// <param name="localID">The simulator specific ID of the parcel</param>
+        /// <param name="flags">TODO:</param>
+        /// <param name="accessEntries">The list containing the white/blacklisted agents for the parcel</param>
+        public ParcelAccessListReplyEventArgs(Simulator simulator, int sequenceID, int localID, uint flags, List<ParcelManager.ParcelAccessEntry> accessEntries)
+        {
+            this.m_Simulator = simulator;
+            this.m_SequenceID = sequenceID;
+            this.m_LocalID = localID;
+            this.m_Flags = flags;
+            this.m_AccessList = accessEntries;
+        }
+    }
+    
+    /// <summary>Contains blacklist and whitelist data returned from the 
+    /// simulator in response to an <see cref="RequestParcelAccesslist"/> request</summary>
+    public class ParcelObjectOwnersReplyEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+        private readonly List<ParcelManager.ParcelPrimOwners> m_Owners;
+
+        /// <summary>Get the simulator the parcel is located in</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
+        /// <summary>Get the list containing prim ownership counts</summary>
+        public List<ParcelManager.ParcelPrimOwners> PrimOwners { get { return m_Owners; } }
+
+        /// <summary>
+        /// Construct a new instance of the ParcelObjectOwnersReplyEventArgs class
+        /// </summary>
+        /// <param name="simulator">The simulator the parcel is located in</param>
+        /// <param name="primOwners">The list containing prim ownership counts</param>
+        public ParcelObjectOwnersReplyEventArgs(Simulator simulator, List<ParcelManager.ParcelPrimOwners> primOwners)
+        {
+            this.m_Simulator = simulator;
+            this.m_Owners = primOwners;
+        }
+    }
+
+    /// <summary>Contains the data returned when all parcel data has been retrieved from a simulator</summary>
+    public class SimParcelsDownloadedEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+        private readonly InternalDictionary<int, Parcel> m_Parcels;
+        private readonly int[,] m_ParcelMap;
+
+        /// <summary>Get the simulator the parcel data was retrieved from</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
+        /// <summary>A dictionary containing the parcel data where the key correlates to the ParcelMap entry</summary>
+        public InternalDictionary<int, Parcel> Parcels { get { return m_Parcels; } }
+        /// <summary>Get the multidimensional array containing a x,y grid mapped
+        /// to each 64x64 parcel's LocalID.</summary>
+        public int[,] ParcelMap { get { return m_ParcelMap; } }
+
+        /// <summary>
+        /// Construct a new instance of the SimParcelsDownloadedEventArgs class
+        /// </summary>
+        /// <param name="simulator">The simulator the parcel data was retrieved from</param>
+        /// <param name="simParcels">The dictionary containing the parcel data</param>
+        /// <param name="parcelMap">The multidimensional array containing a x,y grid mapped
+        /// to each 64x64 parcel's LocalID.</param>
+        public SimParcelsDownloadedEventArgs(Simulator simulator, InternalDictionary<int, Parcel> simParcels, int[,] parcelMap)
+        {
+            this.m_Simulator = simulator;
+            this.m_Parcels = simParcels;
+            this.m_ParcelMap = parcelMap;
+        }
+    }
+    
+    /// <summary>Contains the data returned when a <see cref="RequestForceSelectObjects"/> request</summary>
+    public class ForceSelectObjectsReplyEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+        private readonly List<uint> m_ObjectIDs;
+        private readonly bool m_ResetList;
+
+        /// <summary>Get the simulator the parcel data was retrieved from</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
+        /// <summary>Get the list of primitive IDs</summary>
+        public List<uint> ObjectIDs { get { return m_ObjectIDs; } }
+        /// <summary>true if the list is clean and contains the information
+        /// only for a given request</summary>
+        public bool ResetList { get { return m_ResetList; } }
+
+        /// <summary>
+        /// Construct a new instance of the ForceSelectObjectsReplyEventArgs class
+        /// </summary>
+        /// <param name="simulator">The simulator the parcel data was retrieved from</param>
+        /// <param name="objectIDs">The list of primitive IDs</param>
+        /// <param name="resetList">true if the list is clean and contains the information
+        /// only for a given request</param>
+        public ForceSelectObjectsReplyEventArgs(Simulator simulator, List<uint> objectIDs, bool resetList)
+        {
+            this.m_Simulator = simulator;
+            this.m_ObjectIDs = objectIDs;
+            this.m_ResetList = resetList;
+        }
+    }
+   
+    /// <summary>Contains data when the media data for a parcel the avatar is on changes</summary>
+    public class ParcelMediaUpdateReplyEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+        private readonly ParcelMedia m_ParcelMedia;
+
+        /// <summary>Get the simulator the parcel media data was updated in</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
+        /// <summary>Get the updated media information</summary>
+        public ParcelMedia Media { get { return m_ParcelMedia; } }
+        
+        /// <summary>
+        /// Construct a new instance of the ParcelMediaUpdateReplyEventArgs class
+        /// </summary>
+        /// <param name="simulator">the simulator the parcel media data was updated in</param>
+        /// <param name="media">The updated media information</param>
+        public ParcelMediaUpdateReplyEventArgs(Simulator simulator, ParcelMedia media)
+        {
+            this.m_Simulator = simulator;
+            this.m_ParcelMedia = media;
+        }
+    }
+
+    /// <summary>Contains the media command for a parcel the agent is currently on</summary>
+    public class ParcelMediaCommandEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+        private readonly uint m_Sequence;
+        private readonly ParcelFlags m_ParcelFlags;
+        private readonly ParcelMediaCommand m_MediaCommand;
+        private readonly float m_Time;
+
+        /// <summary>Get the simulator the parcel media command was issued in</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
+        /// <summary></summary>
+        public uint Sequence { get { return m_Sequence; } }
+        /// <summary></summary>
+        public ParcelFlags ParcelFlags { get { return m_ParcelFlags; } }
+        /// <summary>Get the media command that was sent</summary>
+        public ParcelMediaCommand MediaCommand { get { return m_MediaCommand; } }
+        /// <summary></summary>
+        public float Time { get { return m_Time; } }
+
+        /// <summary>
+        /// Construct a new instance of the ParcelMediaCommandEventArgs class
+        /// </summary>
+        /// <param name="simulator">The simulator the parcel media command was issued in</param>
+        /// <param name="sequence"></param>
+        /// <param name="flags"></param>
+        /// <param name="command">The media command that was sent</param>
+        /// <param name="time"></param>
+        public ParcelMediaCommandEventArgs(Simulator simulator, uint sequence, ParcelFlags flags, ParcelMediaCommand command, float time)
+        {
+            this.m_Simulator = simulator;
+            this.m_Sequence = sequence;
+            this.m_ParcelFlags = flags;
+            this.m_MediaCommand = command;
+            this.m_Time = time;
+        }
+    }
+    #endregion
 }

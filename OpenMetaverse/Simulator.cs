@@ -358,7 +358,7 @@ namespace OpenMetaverse
 
         /// <summary>
         /// Provides access to an internal thread-safe multidimensional array containing a x,y grid mapped
-        /// each 64x64 parcel's LocalID.
+        /// to each 64x64 parcel's LocalID.
         /// </summary>
         public int[,] ParcelMap
         {
