@@ -230,6 +230,11 @@ namespace OpenMetaverse
         /// estimates for simulated objects</summary>
         public bool USE_INTERPOLATION_TIMER = true;
 
+        /// <summary>
+        /// If true, utilization statistics will be tracked. There is a minor penalty
+        /// in CPU time for enabling this option.
+        /// </summary>
+        public bool TRACK_UTILIZATION = true;
         #endregion
         #region Parcel Tracking
 

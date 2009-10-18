@@ -230,6 +230,13 @@ namespace OpenMetaverse
                     Simulator.Client.Network.CapsEvents.RaiseEvent(eventName, message, Simulator);
                 else
                     Simulator.Client.Network.CapsEvents.BeginRaiseEvent(eventName, message, Simulator);
+
+                #region Stats Tracking
+                if (Simulator.Client.Settings.TRACK_UTILIZATION)
+                {
+                    Simulator.Client.Stats.Update(eventName, OpenMetaverse.Stats.Type.Message, 0, body.ToString().Length);
+                }
+                #endregion
             }
             else
             {
@@ -257,6 +264,6 @@ namespace OpenMetaverse
                     }
                 }
             }
-        }
+        }        
     }
 }

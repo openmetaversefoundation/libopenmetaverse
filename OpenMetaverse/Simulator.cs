@@ -124,7 +124,7 @@ namespace OpenMetaverse
     }
 
     #endregion Enums
-
+    
     /// <summary>
     /// 
     /// </summary>
@@ -228,8 +228,7 @@ namespace OpenMetaverse
 
         #endregion Structs
 
-        #region Public Members
-
+        #region Public Members        
         /// <summary>A public reference to the client that this Simulator object
         /// is attached to</summary>
         public GridClient Client;
@@ -451,8 +450,8 @@ namespace OpenMetaverse
         public Simulator(GridClient client, IPEndPoint address, ulong handle)
             : base(address)
         {
-            Client = client;
-
+            Client = client;            
+            
             Handle = handle;
             Network = Client.Network;
             PacketArchive = new IncomingPacketIDCollection(Settings.PACKET_ARCHIVE_SIZE);
@@ -731,6 +730,13 @@ namespace OpenMetaverse
             }
 
             #endregion Queue or Send
+
+            #region Stats Tracking
+            if (Client.Settings.TRACK_UTILIZATION)
+            {
+                Client.Stats.Update(type.ToString(), OpenMetaverse.Stats.Type.Packet, dataLength, 0);
+            }
+            #endregion
         }
 
         internal void SendPacketFinal(NetworkManager.OutgoingPacket outgoingPacket)
@@ -982,6 +988,13 @@ namespace OpenMetaverse
             Network.PacketInbox.Enqueue(incomingPacket);
 
             #endregion Inbox Insertion
+
+            #region Stats Tracking
+            if (Client.Settings.TRACK_UTILIZATION)
+            {
+                Client.Stats.Update(packet.Type.ToString(), OpenMetaverse.Stats.Type.Packet, 0, packet.Length);
+            }
+            #endregion
         }
 
         protected override void PacketSent(UDPPacketBuffer buffer, int bytesSent)
