@@ -1618,5 +1618,35 @@ namespace WinGridProxy
                 }
             }
         }
+
+        private void asDecodedTextToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                StringBuilder outString = new StringBuilder();
+                foreach (ListViewItem item in listViewSessions.Items)
+                {
+                    if (item.Tag is Packet)
+                    {
+                        outString.AppendLine(DecodePacket.PacketToString((Packet)item.Tag));
+                    }
+
+                    if (item.Tag is IMessage)
+                    {
+                        IMessage msg = (IMessage)item.Tag;
+                        outString.AppendLine(msg.Serialize().ToString());
+                    }
+
+                    try
+                    {
+                        File.WriteAllText(saveFileDialog1.FileName, outString.ToString());
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Exception occurred trying to save session archive: " + ex);
+                    }
+                }
+            }
+        }
     }
 }
