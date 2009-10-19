@@ -162,28 +162,97 @@ namespace OpenMetaverse
 
     #endregion Structs
 
-    #region Grid Item Classes
+    #region Map Item Classes
 
-    public abstract class GridItem
+    /// <summary>
+    /// Base class for Map Items
+    /// </summary>
+    public abstract class MapItem
     {
-    }
-
-    public class GridAgentLocation : GridItem
-    {
+        /// <summary>The Global X position of the item</summary>
         public uint GlobalX;
+        /// <summary>The Global Y position of the item</summary>
         public uint GlobalY;
-        public int AvatarCount;
-        public string Identifier;
 
+        /// <summary>Get the Local X position of the item</summary>
         public uint LocalX { get { return GlobalX % 256; } }
+        /// <summary>Get the Local Y position of the item</summary>
         public uint LocalY { get { return GlobalY % 256; } }
 
+        /// <summary>Get the Handle of the region</summary>
         public ulong RegionHandle
         {
             get { return Utils.UIntsToLong((uint)(GlobalX - (GlobalX % 256)), (uint)(GlobalY - (GlobalY % 256))); }
         }
     }
 
+    /// <summary>
+    /// Represents an agent or group of agents location
+    /// </summary>
+    public class MapAgentLocation : MapItem
+    {       
+        public int AvatarCount;
+        public string Identifier;
+    }
+
+    /// <summary>
+    /// Represents a Telehub location
+    /// </summary>
+    public class MapTelehub : MapItem
+    {        
+    }
+
+    /// <summary>
+    /// Represents a non-adult parcel of land for sale
+    /// </summary>
+    public class MapLandForSale : MapItem
+    {        
+        public int Size;
+        public int Price;
+        public string Name;
+        public UUID ID;        
+    }
+
+    /// <summary>
+    /// Represents an Adult parcel of land for sale
+    /// </summary>
+    public class MapAdultLandForSale : MapItem
+    {     
+        public int Size;
+        public int Price;
+        public string Name;
+        public UUID ID;
+    }
+
+    /// <summary>
+    /// Represents a PG Event
+    /// </summary>
+    public class MapPGEvent : MapItem
+    {
+        public DirectoryManager.EventFlags Flags; // Extra
+        public DirectoryManager.EventCategories Category; // Extra2
+        public string Description;
+    }
+
+    /// <summary>
+    /// Represents a Mature event
+    /// </summary>
+    public class MapMatureEvent : MapItem
+    {
+        public DirectoryManager.EventFlags Flags; // Extra
+        public DirectoryManager.EventCategories Category; // Extra2
+        public string Description;
+    }
+
+    /// <summary>
+    /// Represents an Adult event
+    /// </summary>
+    public class MapAdultEvent : MapItem
+    {
+        public DirectoryManager.EventFlags Flags; // Extra
+        public DirectoryManager.EventCategories Category; // Extra2
+        public string Description;
+    }
     #endregion Grid Item Classes
 
     /// <summary>
@@ -424,9 +493,9 @@ namespace OpenMetaverse
         /// <param name="layer"></param>
         /// <param name="timeoutMS"></param>
         /// <returns></returns>
-        public List<GridItem> MapItems(ulong regionHandle, GridItemType item, GridLayerType layer, int timeoutMS)
+        public List<MapItem> MapItems(ulong regionHandle, GridItemType item, GridLayerType layer, int timeoutMS)
         {
-            List<GridItem> itemList = null;
+            List<MapItem> itemList = null;
             AutoResetEvent itemsEvent = new AutoResetEvent(false);
 
             EventHandler<GridItemsEventArgs> callback =
@@ -621,7 +690,7 @@ namespace OpenMetaverse
             {
                 MapItemReplyPacket reply = (MapItemReplyPacket)packet;
                 GridItemType type = (GridItemType)reply.RequestData.ItemType;
-                List<GridItem> items = new List<GridItem>();
+                List<MapItem> items = new List<MapItem>();
 
                 for (int i = 0; i < reply.Data.Length; i++)
                 {
@@ -630,43 +699,70 @@ namespace OpenMetaverse
                     switch (type)
                     {
                         case GridItemType.AgentLocations:
-                            GridAgentLocation location = new GridAgentLocation();
+                            MapAgentLocation location = new MapAgentLocation();
                             location.GlobalX = reply.Data[i].X;
                             location.GlobalY = reply.Data[i].Y;
                             location.Identifier = name;
                             location.AvatarCount = reply.Data[i].Extra;
-
                             items.Add(location);
-
                             break;
                         case GridItemType.Classified:
                             //FIXME:
                             Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
                             break;
                         case GridItemType.LandForSale:
-                            //FIXME:
-                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
+                            MapLandForSale landsale = new MapLandForSale();
+                            landsale.GlobalX = reply.Data[i].X;
+                            landsale.GlobalY = reply.Data[i].Y;
+                            landsale.ID = reply.Data[i].ID;
+                            landsale.Name = name;
+                            landsale.Size = reply.Data[i].Extra;
+                            landsale.Price = reply.Data[i].Extra2;
+                            items.Add(landsale);
                             break;
                         case GridItemType.MatureEvent:
+                            MapMatureEvent matureEvent = new MapMatureEvent();
+                            matureEvent.GlobalX = reply.Data[i].X;
+                            matureEvent.GlobalY = reply.Data[i].Y;
+                            matureEvent.Description = name;
+                            matureEvent.Flags = (DirectoryManager.EventFlags)reply.Data[i].Extra2;
+                            items.Add(matureEvent);
+                            break;
                         case GridItemType.PgEvent:
-                            //FIXME:
-                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
+                            MapPGEvent PGEvent = new MapPGEvent();
+                            PGEvent.GlobalX = reply.Data[i].X;
+                            PGEvent.GlobalY = reply.Data[i].Y;
+                            PGEvent.Description = name;
+                            PGEvent.Flags = (DirectoryManager.EventFlags)reply.Data[i].Extra2;
+                            items.Add(PGEvent);
                             break;
                         case GridItemType.Popular:
                             //FIXME:
                             Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
                             break;
                         case GridItemType.Telehub:
-                            //FIXME:
-                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
+                            MapTelehub teleHubItem = new MapTelehub();
+                            teleHubItem.GlobalX = reply.Data[i].X;
+                            teleHubItem.GlobalY = reply.Data[i].Y;
+                            items.Add(teleHubItem);
                             break;
                         case GridItemType.AdultLandForSale:
-                            //FIXME:
-                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
+                            MapAdultLandForSale adultLandsale = new MapAdultLandForSale();
+                            adultLandsale.GlobalX = reply.Data[i].X;
+                            adultLandsale.GlobalY = reply.Data[i].Y;
+                            adultLandsale.ID = reply.Data[i].ID;
+                            adultLandsale.Name = name;
+                            adultLandsale.Size = reply.Data[i].Extra;
+                            adultLandsale.Price = reply.Data[i].Extra2;
+                            items.Add(adultLandsale);
                             break;
                         case GridItemType.AdultEvent:
-                            //FIXME:
-                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
+                            MapAdultEvent adultEvent = new MapAdultEvent();
+                            adultEvent.GlobalX = reply.Data[i].X;
+                            adultEvent.GlobalY = reply.Data[i].Y;
+                            adultEvent.Description = Utils.BytesToString(reply.Data[i].Name);
+                            adultEvent.Flags = (DirectoryManager.EventFlags)reply.Data[i].Extra2;
+                            items.Add(adultEvent);
                             break;
                         default:
                             Logger.Log("Unknown map item type " + type, Helpers.LogLevel.Warning, Client);
@@ -794,12 +890,12 @@ namespace OpenMetaverse
     public class GridItemsEventArgs : EventArgs
     {
         private readonly GridItemType m_Type;
-        private readonly List<GridItem> m_Items;
+        private readonly List<MapItem> m_Items;
 
         public GridItemType Type { get { return m_Type; } }
-        public List<GridItem> Items { get { return m_Items; } }
+        public List<MapItem> Items { get { return m_Items; } }
 
-        public GridItemsEventArgs(GridItemType type, List<GridItem> items)
+        public GridItemsEventArgs(GridItemType type, List<MapItem> items)
         {
             this.m_Type = type;
             this.m_Items = items;

@@ -26,7 +26,7 @@ namespace OpenMetaverse.TestClient
             else if (!(args.Length == 1 && UInt64.TryParse(args[0], out regionHandle)))
                 return "Usage: agentlocations [regionhandle]";
 
-            List<GridItem> items = Client.Grid.MapItems(regionHandle, GridItemType.AgentLocations, 
+            List<MapItem> items = Client.Grid.MapItems(regionHandle, GridItemType.AgentLocations, 
                 GridLayerType.Objects, 1000 * 20);
 
             if (items != null)
@@ -36,7 +36,7 @@ namespace OpenMetaverse.TestClient
 
                 for (int i = 0; i < items.Count; i++)
                 {
-                    GridAgentLocation location = (GridAgentLocation)items[i];
+                    MapAgentLocation location = (MapAgentLocation)items[i];
 
                     ret.AppendLine(String.Format("{0} avatar(s) at {1},{2}", location.AvatarCount, location.LocalX,
                         location.LocalY));
