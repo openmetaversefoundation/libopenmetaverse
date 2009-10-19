@@ -193,52 +193,126 @@ namespace OpenMetaverse
     {
         #region Delegates
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sim"></param>
-        /// <param name="newEntries"></param>
-        /// <param name="removedEntries"></param>
-        public delegate void CoarseLocationUpdateCallback(Simulator sim, List<UUID> newEntries, List<UUID> removedEntries);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="region"></param>
-        public delegate void GridRegionCallback(GridRegion region);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="layer"></param>
-        public delegate void GridLayerCallback(GridLayer layer);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="items"></param>
-        public delegate void GridItemsCallback(GridItemType type, List<GridItem> items);
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="regionID"></param>
-        /// <param name="regionHandle"></param>
-        public delegate void RegionHandleReplyCallback(UUID regionID, ulong regionHandle);
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<CoarseLocationUpdateEventArgs> m_CoarseLocationUpdate;
+
+        /// <summary>Raises the CoarseLocationUpdate event</summary>
+        /// <param name="e">A CoarseLocationUpdateEventArgs object containing the
+        /// data sent by simulator</param>
+        protected virtual void OnCoarseLocationUpdate(CoarseLocationUpdateEventArgs e)
+        {
+            EventHandler<CoarseLocationUpdateEventArgs> handler = m_CoarseLocationUpdate;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_CoarseLocationUpdateLock = new object();
+
+        /// <summary>Raised when the simulator sends a <see cref="CoarseLocationUpdatePacket"/> 
+        /// containing the location of agents in the simulator</summary>
+        public event EventHandler<CoarseLocationUpdateEventArgs> CoarseLocationUpdate
+        {
+            add { lock (m_CoarseLocationUpdateLock) { m_CoarseLocationUpdate += value; } }
+            remove { lock (m_CoarseLocationUpdateLock) { m_CoarseLocationUpdate -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GridRegionEventArgs> m_GridRegion;
+
+        /// <summary>Raises the GridRegion event</summary>
+        /// <param name="e">A GridRegionEventArgs object containing the
+        /// data sent by simulator</param>
+        protected virtual void OnGridRegion(GridRegionEventArgs e)
+        {
+            EventHandler<GridRegionEventArgs> handler = m_GridRegion;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GridRegionLock = new object();
+
+        /// <summary>Raised when the simulator sends a Region Data in response to 
+        /// a Map request</summary>
+        public event EventHandler<GridRegionEventArgs> GridRegion
+        {
+            add { lock (m_GridRegionLock) { m_GridRegion += value; } }
+            remove { lock (m_GridRegionLock) { m_GridRegion -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GridLayerEventArgs> m_GridLayer;
+
+        /// <summary>Raises the GridLayer event</summary>
+        /// <param name="e">A GridLayerEventArgs object containing the
+        /// data sent by simulator</param>
+        protected virtual void OnGridLayer(GridLayerEventArgs e)
+        {
+            EventHandler<GridLayerEventArgs> handler = m_GridLayer;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GridLayerLock = new object();
+
+        /// <summary>Raised when the simulator sends GridLayer object containing
+        /// a map tile coordinates and texture information</summary>
+        public event EventHandler<GridLayerEventArgs> GridLayer
+        {
+            add { lock (m_GridLayerLock) { m_GridLayer += value; } }
+            remove { lock (m_GridLayerLock) { m_GridLayer -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GridItemsEventArgs> m_GridItems;
+
+        /// <summary>Raises the GridItems event</summary>
+        /// <param name="e">A GridItemEventArgs object containing the
+        /// data sent by simulator</param>
+        protected virtual void OnGridItems(GridItemsEventArgs e)
+        {
+            EventHandler<GridItemsEventArgs> handler = m_GridItems;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GridItemsLock = new object();
+
+        /// <summary>Raised when the simulator sends GridItems object containing
+        /// details on events, land sales at a specific location</summary>
+        public event EventHandler<GridItemsEventArgs> GridItems
+        {
+            add { lock (m_GridItemsLock) { m_GridItems += value; } }
+            remove { lock (m_GridItemsLock) { m_GridItems -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<RegionHandleReplyEventArgs> m_RegionHandleReply;
+
+        /// <summary>Raises the RegionHandleReply event</summary>
+        /// <param name="e">A RegionHandleReplyEventArgs object containing the
+        /// data sent by simulator</param>
+        protected virtual void OnRegionHandleReply(RegionHandleReplyEventArgs e)
+        {
+            EventHandler<RegionHandleReplyEventArgs> handler = m_RegionHandleReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_RegionHandleReplyLock = new object();
+
+        /// <summary>Raised in response to a Region lookup</summary>
+        public event EventHandler<RegionHandleReplyEventArgs> RegionHandleReply
+        {
+            add { lock (m_RegionHandleReplyLock) { m_RegionHandleReply += value; } }
+            remove { lock (m_RegionHandleReplyLock) { m_RegionHandleReply -= value; } }
+        }
 
         #endregion Delegates
-
-        #region Events
-
-        /// <summary>Triggered when coarse locations (minimap dots) are updated by the simulator</summary>
-        public event CoarseLocationUpdateCallback OnCoarseLocationUpdate;
-        /// <summary>Triggered when a new region is discovered through GridManager</summary>
-        public event GridRegionCallback OnGridRegion;
-        /// <summary></summary>
-        public event GridLayerCallback OnGridLayer;
-        /// <summary></summary>
-        public event GridItemsCallback OnGridItems;
-        /// <summary></summary>
-        public event RegionHandleReplyCallback OnRegionHandleReply;
-
-        #endregion Events
 
         /// <summary>Unknown</summary>
         public float SunPhase { get { return sunPhase; } }
@@ -295,10 +369,10 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// 
+        /// Request a map layer
         /// </summary>
-        /// <param name="regionName"></param>
-        /// <param name="layer"></param>
+        /// <param name="regionName">The name of the region</param>
+        /// <param name="layer">The type of layer</param>
         public void RequestMapRegion(string regionName, GridLayerType layer)
         {
             MapNameRequestPacket request = new MapNameRequestPacket();
@@ -355,22 +429,22 @@ namespace OpenMetaverse
             List<GridItem> itemList = null;
             AutoResetEvent itemsEvent = new AutoResetEvent(false);
 
-            GridItemsCallback callback =
-                delegate(GridItemType type, List<GridItem> items)
+            EventHandler<GridItemsEventArgs> callback =
+                delegate(object sender, GridItemsEventArgs e)
                 {
-                    if (type == GridItemType.AgentLocations)
+                    if (e.Type == GridItemType.AgentLocations)
                     {
-                        itemList = items;
+                        itemList = e.Items;
                         itemsEvent.Set();
                     }
                 };
 
-            OnGridItems += callback;
+            GridItems += callback;
 
             RequestMapItems(regionHandle, item, layer);
             itemsEvent.WaitOne(timeoutMS, false);
 
-            OnGridItems -= callback;
+            GridItems -= callback;
 
             return itemList;
         }
@@ -444,18 +518,18 @@ namespace OpenMetaverse
             else
             {
                 AutoResetEvent regionEvent = new AutoResetEvent(false);
-                GridRegionCallback callback =
-                    delegate(GridRegion gridRegion)
+                EventHandler<GridRegionEventArgs> callback =
+                    delegate(object sender, GridRegionEventArgs e)
                     {
-                        if (gridRegion.Name == name)
+                        if (e.Region.Name == name)
                             regionEvent.Set();
                     };
-                OnGridRegion += callback;
+                GridRegion += callback;
 
                 RequestMapRegion(name, layer);
                 regionEvent.WaitOne(Client.Settings.MAP_REQUEST_TIMEOUT, false);
 
-                OnGridRegion -= callback;
+                GridRegion -= callback;
 
                 if (Regions.ContainsKey(name))
                 {
@@ -471,13 +545,13 @@ namespace OpenMetaverse
                 }
             }
         }
-
-        private void MapLayerResponseHandler(CapsClient client, OSD result, Exception error)
+        
+        protected void MapLayerResponseHandler(CapsClient client, OSD result, Exception error)
         {
             OSDMap body = (OSDMap)result;
             OSDArray layerData = (OSDArray)body["LayerData"];
 
-            if (OnGridLayer != null)
+            if (m_GridLayer != null)
             {
                 for (int i = 0; i < layerData.Count; i++)
                 {
@@ -490,8 +564,7 @@ namespace OpenMetaverse
                     layer.Right = thisLayerData["Right"].AsInteger();
                     layer.ImageID = thisLayerData["ImageID"].AsUUID();
 
-                    try { OnGridLayer(layer); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnGridLayer(new GridLayerEventArgs(layer));                    
                 }
             }
 
@@ -507,7 +580,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="packet">Incoming MapBlockReplyPacket packet</param>
         /// <param name="simulator">Unused</param>
-        private void MapBlockReplyHandler(Packet packet, Simulator simulator)
+        protected void MapBlockReplyHandler(Packet packet, Simulator simulator)
         {
             MapBlockReplyPacket map = (MapBlockReplyPacket)packet;
 
@@ -534,18 +607,17 @@ namespace OpenMetaverse
                         RegionsByHandle[region.RegionHandle] = region;
                     }
 
-                    if (OnGridRegion != null)
+                    if (m_GridRegion != null)
                     {
-                        try { OnGridRegion(region); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        OnGridRegion(new GridRegionEventArgs(region));
                     }
                 }
             }
         }
 
-        private void MapItemReplyHandler(Packet packet, Simulator simulator)
+        protected void MapItemReplyHandler(Packet packet, Simulator simulator)
         {
-            if (OnGridItems != null)
+            if (m_GridItems != null)
             {
                 MapItemReplyPacket reply = (MapItemReplyPacket)packet;
                 GridItemType type = (GridItemType)reply.RequestData.ItemType;
@@ -588,14 +660,21 @@ namespace OpenMetaverse
                             //FIXME:
                             Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
                             break;
+                        case GridItemType.AdultLandForSale:
+                            //FIXME:
+                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
+                            break;
+                        case GridItemType.AdultEvent:
+                            //FIXME:
+                            Logger.Log("FIXME", Helpers.LogLevel.Error, Client);
+                            break;
                         default:
                             Logger.Log("Unknown map item type " + type, Helpers.LogLevel.Warning, Client);
                             break;
                     }
                 }
 
-                try { OnGridItems(type, items); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnGridItems(new GridItemsEventArgs(type, items));
             }
         }
 
@@ -615,7 +694,7 @@ namespace OpenMetaverse
             // TODO: Does anyone have a use for the time stuff?
       }
 
-        private void CoarseLocationHandler(Packet packet, Simulator simulator)
+        protected void CoarseLocationHandler(Packet packet, Simulator simulator)
         {
             CoarseLocationUpdatePacket coarse = (CoarseLocationUpdatePacket)packet;
 
@@ -653,22 +732,94 @@ namespace OpenMetaverse
                 }
             }
 
-            if (OnCoarseLocationUpdate != null)
+            if (m_CoarseLocationUpdate != null)
             {
-                try { OnCoarseLocationUpdate(simulator, newEntries, removedEntries); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnCoarseLocationUpdate(new CoarseLocationUpdateEventArgs(simulator, newEntries, removedEntries));
             }
         }
 
-        private void RegionHandleReplyHandler(Packet packet, Simulator simulator)
-        {
-            RegionIDAndHandleReplyPacket reply = (RegionIDAndHandleReplyPacket)packet;
-            if (OnRegionHandleReply != null)
+        protected void RegionHandleReplyHandler(Packet packet, Simulator simulator)
+        {            
+            if (m_RegionHandleReply != null)
             {
-                try { OnRegionHandleReply(reply.ReplyBlock.RegionID, reply.ReplyBlock.RegionHandle); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                RegionIDAndHandleReplyPacket reply = (RegionIDAndHandleReplyPacket)packet;
+                OnRegionHandleReply(new RegionHandleReplyEventArgs(reply.ReplyBlock.RegionID, reply.ReplyBlock.RegionHandle));
             }
         }
 
     }
+    #region EventArgs classes
+
+    public class CoarseLocationUpdateEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+        private readonly List<UUID> m_NewEntries;
+        private readonly List<UUID> m_RemovedEntries;
+
+        public Simulator Simulator { get { return m_Simulator; } }
+        public List<UUID> NewEntries { get { return m_NewEntries; } }
+        public List<UUID> RemovedEntries { get { return m_RemovedEntries; } }
+
+        public CoarseLocationUpdateEventArgs(Simulator simulator, List<UUID> newEntries, List<UUID> removedEntries)
+        {
+            this.m_Simulator = simulator;
+            this.m_NewEntries = newEntries;
+            this.m_RemovedEntries = removedEntries;
+        }
+    }
+
+    public class GridRegionEventArgs : EventArgs
+    {
+        private readonly GridRegion m_Region;
+        public GridRegion Region { get { return m_Region; } }
+
+        public GridRegionEventArgs(GridRegion region)
+        {
+            this.m_Region = region;
+        }
+    }
+
+    public class GridLayerEventArgs : EventArgs
+    {
+        private readonly GridLayer m_Layer;
+
+        public GridLayer Layer { get { return m_Layer; } }
+
+        public GridLayerEventArgs(GridLayer layer)
+        {
+            this.m_Layer = layer;
+        }
+    }
+
+    public class GridItemsEventArgs : EventArgs
+    {
+        private readonly GridItemType m_Type;
+        private readonly List<GridItem> m_Items;
+
+        public GridItemType Type { get { return m_Type; } }
+        public List<GridItem> Items { get { return m_Items; } }
+
+        public GridItemsEventArgs(GridItemType type, List<GridItem> items)
+        {
+            this.m_Type = type;
+            this.m_Items = items;
+        }
+    }
+
+    public class RegionHandleReplyEventArgs : EventArgs
+    {
+        private readonly UUID m_RegionID;
+        private readonly ulong m_RegionHandle;
+
+        public UUID RegionID { get { return m_RegionID; } }
+        public ulong RegionHandle { get { return m_RegionHandle; } }
+
+        public RegionHandleReplyEventArgs(UUID regionID, ulong regionHandle)
+        {
+            this.m_RegionID = regionID;
+            this.m_RegionHandle = regionHandle;
+        }
+    }
+
+    #endregion
 }

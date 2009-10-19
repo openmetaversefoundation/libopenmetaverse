@@ -155,10 +155,15 @@ namespace OpenMetaverse.GUI
             _Client = client;
             _Client.Avatars.OnAvatarAppearance += new AvatarManager.AvatarAppearanceCallback(Avatars_OnAvatarAppearance);
             _Client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(Avatars_OnAvatarNames);
-            _Client.Grid.OnCoarseLocationUpdate += new GridManager.CoarseLocationUpdateCallback(Grid_OnCoarseLocationUpdate);
+            _Client.Grid.CoarseLocationUpdate += Grid_CoarseLocationUpdate;
             _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
             _Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
             _Client.Objects.OnObjectUpdated += new ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
+        }
+
+        void Grid_CoarseLocationUpdate(object sender, CoarseLocationUpdateEventArgs e)
+        {
+            UpdateCoarseInfo(e.Simulator, e.NewEntries, e.RemovedEntries);
         }
 
         private void AddAvatar(UUID avatarID, Avatar avatar, Vector3 coarsePosition)
@@ -429,11 +434,6 @@ namespace OpenMetaverse.GUI
                     }
                 }
             }
-        }
-
-        void Grid_OnCoarseLocationUpdate(Simulator sim, List<UUID> newEntries, List<UUID> removedEntries)
-        {
-            UpdateCoarseInfo(sim, newEntries, removedEntries);
         }
 
         void Network_OnCurrentSimChanged(Simulator PreviousSimulator)

@@ -61,8 +61,8 @@ namespace OpenMetaverse.TestClient
                         delegate(Simulator simulator, Primitive.ObjectProperties props)
                         {
                             Logger.Log(String.Format(
-                                "Category: {0}\nFolderID: {1}\nFromTaskID: {2}\nInventorySerial: {3}\nItemID: {4}",
-                                props.Category, props.FolderID, props.FromTaskID, props.InventorySerial, props.ItemID), Helpers.LogLevel.Info);
+                                "Category: {0}\nFolderID: {1}\nFromTaskID: {2}\nInventorySerial: {3}\nItemID: {4}\nCreationDate: {5}",
+                                props.Category, props.FolderID, props.FromTaskID, props.InventorySerial, props.ItemID, props.CreationDate), Helpers.LogLevel.Info);
                             propsEvent.Set();
                         };
 

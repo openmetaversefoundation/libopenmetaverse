@@ -2436,7 +2436,7 @@ namespace OpenMetaverse
                 props.AggregatePermTexturesOwner = objectData.AggregatePermTexturesOwner;
                 props.Permissions = new Permissions(objectData.BaseMask, objectData.EveryoneMask, objectData.GroupMask,
                     objectData.NextOwnerMask, objectData.OwnerMask);
-                props.Category = (ObjectCategory)objectData.Category;
+                props.Category = (ObjectCategory)objectData.Category;                                    
                 props.CreationDate = Utils.UnixTimeToDateTime((uint)objectData.CreationDate);
                 props.CreatorID = objectData.CreatorID;
                 props.Description = Utils.BytesToString(objectData.Description);

@@ -11,7 +11,13 @@ namespace OpenMetaverse.TestClient
             Description = "Downloads all of the layer chunks for the grid object map";
             Category = CommandCategory.Simulator;
 
-            testClient.Grid.OnGridLayer += new GridManager.GridLayerCallback(Grid_OnGridLayer);
+            testClient.Grid.GridLayer += Grid_GridLayer;
+        }
+
+        void Grid_GridLayer(object sender, GridLayerEventArgs e)
+        {
+            Console.WriteLine(String.Format("Layer({0}) Bottom: {1} Left: {2} Top: {3} Right: {4}",
+                   e.Layer.ImageID.ToString(), e.Layer.Bottom, e.Layer.Left, e.Layer.Top, e.Layer.Right));
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
@@ -19,12 +25,6 @@ namespace OpenMetaverse.TestClient
             Client.Grid.RequestMapLayer(GridLayerType.Objects);
 
             return "Sent.";
-        }
-
-        private void Grid_OnGridLayer(GridLayer layer)
-        {
-            Console.WriteLine(String.Format("Layer({0}) Bottom: {1} Left: {2} Top: {3} Right: {4}",
-                layer.ImageID.ToString(), layer.Bottom, layer.Left, layer.Top, layer.Right));
         }
     }
 }
