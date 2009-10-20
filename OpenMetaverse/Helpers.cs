@@ -159,7 +159,7 @@ namespace OpenMetaverse
         /// <returns>A terse string representation of the input number</returns>
         public static string FloatToTerseString(float val)
         {
-            string s = string.Format("{0:.00}", val);
+            string s = string.Format(Utils.EnUsCulture, "{0:.00}", val);
 
             if (val == 0)
                 return ".00";
