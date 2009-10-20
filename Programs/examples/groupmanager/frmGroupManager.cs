@@ -28,9 +28,16 @@ namespace groupmanager
 
             Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
             Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);
-            Client.Groups.OnCurrentGroups += new GroupManager.CurrentGroupsCallback(Groups_OnCurrentGroups);
+            Client.Groups.CurrentGroups += Groups_CurrentGroups;
             
             InitializeComponent();
+        }
+
+        void Groups_CurrentGroups(object sender, CurrentGroupsEventArgs e)
+        {
+            Groups = e.Groups;
+
+            Invoke(new MethodInvoker(UpdateGroups));
         }
 
         private void UpdateGroups()
@@ -131,14 +138,7 @@ namespace groupmanager
                     });
             }
         }
-
-        private void Groups_OnCurrentGroups(Dictionary<UUID, Group> groups)
-        {
-            Groups = groups;
-
-            Invoke(new MethodInvoker(UpdateGroups));
-        }
-
+      
         private void Network_OnEventQueueRunning(Simulator simulator)
         {
             if (simulator == Client.Network.CurrentSim)

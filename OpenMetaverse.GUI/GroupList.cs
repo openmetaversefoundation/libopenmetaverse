@@ -84,7 +84,12 @@ namespace OpenMetaverse.GUI
         private void InitializeClient(GridClient client)
         {
             _Client = client;
-            _Client.Groups.OnCurrentGroups += new GroupManager.CurrentGroupsCallback(Groups_OnCurrentGroups);
+            _Client.Groups.CurrentGroups += Groups_CurrentGroups;
+        }
+
+        void Groups_CurrentGroups(object sender, CurrentGroupsEventArgs e)
+        {
+            RefreshGroups(e.Groups);
         }
 
         private void RefreshGroups(Dictionary<UUID, Group> groups)
@@ -97,12 +102,7 @@ namespace OpenMetaverse.GUI
                     this.Items.Add(group.Key.ToString(), group.Value.Name, null).Tag = group.Value;
             }
         }
-
-        private void Groups_OnCurrentGroups(Dictionary<UUID, Group> groups)
-        {
-            RefreshGroups(groups);
-        }
-
+        
         private void GroupList_ColumnClick(object sender, ColumnClickEventArgs e)
         {
             if ((_ColumnSorter.Ascending = (this.Sorting == SortOrder.Ascending))) this.Sorting = SortOrder.Descending;

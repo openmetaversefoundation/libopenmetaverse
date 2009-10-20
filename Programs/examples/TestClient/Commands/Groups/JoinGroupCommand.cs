@@ -64,9 +64,8 @@ namespace OpenMetaverse.TestClient
                 else
                     return resolvedGroupName;
             }
-
-            GroupManager.GroupJoinedCallback gcallback = new GroupManager.GroupJoinedCallback(Groups_OnGroupJoined);
-            Client.Groups.OnGroupJoined += gcallback;
+            
+            Client.Groups.GroupJoinedReply += Groups_OnGroupJoined;
             Client.Groups.RequestJoinGroup(resolvedGroupID);
 
             /* A.Biondi 
@@ -75,13 +74,18 @@ namespace OpenMetaverse.TestClient
 
             GetGroupsSearchEvent.WaitOne(60000, false);
 
-            Client.Groups.OnGroupJoined -= gcallback;
+            Client.Groups.GroupJoinedReply -= Groups_GroupJoined;
             GetGroupsSearchEvent.Reset();
             Client.ReloadGroupsCache();
 
             if (joinedGroup)
                 return "Joined the group " + resolvedGroupName;
             return "Unable to join the group " + resolvedGroupName;
+        }
+
+        void Groups_GroupJoined(object sender, GroupOperationEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         void Directory_DirGroups(object sender, DirGroupsReplyEventArgs e)
@@ -126,9 +130,9 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Groups_OnGroupJoined(UUID groupID, bool success)
+        void Groups_OnGroupJoined(object sender, GroupOperationEventArgs e)
         {
-            Console.WriteLine(Client.ToString() + (success ? " joined " : " failed to join ") + groupID.ToString());
+            Console.WriteLine(Client.ToString() + (e.Success ? " joined " : " failed to join ") + e.GroupID.ToString());
 
             /* A.Biondi 
              * This code is not necessary because it is yet present in the 
@@ -144,7 +148,7 @@ namespace OpenMetaverse.TestClient
                 
             */
 
-            joinedGroup = success;
+            joinedGroup = e.Success;
             GetGroupsSearchEvent.Set();
         }                        
     }

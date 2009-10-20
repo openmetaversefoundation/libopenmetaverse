@@ -142,7 +142,7 @@ namespace OpenMetaverse
         public int GroupRolesCount;
         /// <summary>Show this group in agent's profile</summary>
         public bool ListInProfile;
-       
+
         /// <summary>Returns the name of the group</summary>
         /// <returns>A string containing the name of the group</returns>
         public override string ToString()
@@ -248,7 +248,7 @@ namespace OpenMetaverse
         {
             if (OwnerID == UUID.Zero || AttachmentID == UUID.Zero)
                 return Utils.EmptyBytes;
-            
+
             OpenMetaverse.StructuredData.OSDMap att = new OpenMetaverse.StructuredData.OSDMap();
             att.Add("item_id", OpenMetaverse.StructuredData.OSD.FromUUID(AttachmentID));
             att.Add("owner_id", OpenMetaverse.StructuredData.OSD.FromUUID(OwnerID));
@@ -463,160 +463,331 @@ namespace OpenMetaverse
     {
         #region Delegates
 
-        /// <summary>
-        /// Callback for the list of groups the avatar is currently a member of
-        /// </summary>
-        /// <param name="groups">A dictionary containing the groups an avatar is a member of,
-        /// where the Key is the group <seealso cref="UUID"/>, and the values are the groups</param>
-        public delegate void CurrentGroupsCallback(Dictionary<UUID, Group> groups);
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<CurrentGroupsEventArgs> m_CurrentGroups;
 
-        /// <summary>
-        /// Callback for a list of group names
-        /// </summary>
-        /// <param name="groupNames">A dictionary containing the the group names requested
-        /// where the Key is the group <seealso cref="UUID"/>, and the values are the names</param>
-        public delegate void GroupNamesCallback(Dictionary<UUID, string> groupNames);
+        /// <summary>Raises the CurrentGroups event</summary>
+        /// <param name="e">A CurrentGroupsEventArgs object containing the
+        /// data sent from the simulator</param>
+        protected virtual void OnCurrentGroups(CurrentGroupsEventArgs e)
+        {
+            EventHandler<CurrentGroupsEventArgs> handler = m_CurrentGroups;
+            if (handler != null)
+                handler(this, e);
+        }
 
-        /// <summary>
-        /// Callback for the profile of a group
-        /// </summary>
-        /// <param name="group">The group profile</param>
-        public delegate void GroupProfileCallback(Group group);
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_CurrentGroupsLock = new object();
 
-        /// <summary>
-        /// Callback for the member list of a group
-        /// </summary>
-        /// <param name="requestID"><seealso cref="UUID"/> returned by RequestGroupMembers</param>
-        /// <param name="groupID"><seealso cref="UUID"/> of the group</param>
-        /// <param name="members">A dictionary containing the members of a group
-        /// where key is member <seealso cref="UUID"/> and value is <seealso cref="GroupMember"/> struct</param>
-        public delegate void GroupMembersCallback(UUID requestID, UUID groupID, Dictionary<UUID, GroupMember> members);
+        /// <summary>Raised when the simulator sends us data containing
+        /// our current group membership</summary>
+        public event EventHandler<CurrentGroupsEventArgs> CurrentGroups
+        {
+            add { lock (m_CurrentGroupsLock) { m_CurrentGroups += value; } }
+            remove { lock (m_CurrentGroupsLock) { m_CurrentGroups -= value; } }
+        }
 
-        /// <summary>
-        /// Callback for retrieving group roles
-        /// </summary>
-        /// <param name="requestID"><seealso cref="UUID"/> of the request returned from RequestGroupRoles</param>
-        /// <param name="groupID"><seealso cref="UUID"/> of the group</param>
-        /// <param name="roles">A dictionary containing role <seealso cref="UUID"/>s as the key
-        /// and <seealso cref="GroupRole"/> structs as values</param>
-        public delegate void GroupRolesCallback(UUID requestID, UUID groupID, Dictionary<UUID, GroupRole> roles);
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupNamesEventArgs> m_GroupNames;
 
-        /// <summary>
-        /// Callback for a pairing of roles to members
-        /// </summary>
-        /// <param name="requestID"><seealso cref="UUID"/> of the request returned from RequestGroupRolesMembers</param>
-        /// <param name="groupID"><seealso cref="UUID"/> of the group</param>
-        /// <param name="rolesMembers">List containing role/member pairs</param>
-        public delegate void GroupRolesMembersCallback(UUID requestID, UUID groupID, List<KeyValuePair<UUID, UUID>> rolesMembers);
+        /// <summary>Raises the GroupNamesReply event</summary>
+        /// <param name="e">A GroupNamesEventArgs object containing the
+        /// data response from the simulator</param>
+        protected virtual void OnGroupNamesReply(GroupNamesEventArgs e)
+        {
+            EventHandler<GroupNamesEventArgs> handler = m_GroupNames;
+            if (handler != null)
+                handler(this, e);
+        }
 
-        /// <summary>
-        /// Callback for the title list of a group
-        /// </summary>
-        /// <param name="requestID"><seealso cref="UUID"/> of the request returned from RequestGroupTitles</param>
-        /// <param name="groupID">Group <seealso cref="UUID"/></param>
-        /// <param name="titles">A dictionary containing the titles of a group
-        /// where the Key is the role <seealso cref="UUID"/>, and the values are the title details</param>
-        public delegate void GroupTitlesCallback(UUID requestID, UUID groupID, Dictionary<UUID, GroupTitle> titles);
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupNamesLock = new object();
 
-        /// <summary>
-        /// Callback fired when group account summary information is received
-        /// </summary>
-        /// <param name="groupID">Group <seealso cref="UUID"/></param>
-        /// <param name="summary">The group account summary information</param>
-        public delegate void GroupAccountSummaryCallback(UUID groupID, GroupAccountSummary summary);
+        /// <summary>Raised when the simulator responds to a RequestGroupName 
+        /// or RequestGroupNames request</summary>
+        public event EventHandler<GroupNamesEventArgs> GroupNamesReply
+        {
+            add { lock (m_GroupNamesLock) { m_GroupNames += value; } }
+            remove { lock (m_GroupNamesLock) { m_GroupNames -= value; } }
+        }
 
-        /// <summary>
-        /// Callback fired after an attempt to create a group
-        /// </summary>
-        /// <param name="groupID">The new groups <seealso cref="UUID"/></param>
-        /// <param name="success">True of creation was successful</param>
-        /// <param name="message">A string, containing a message from the simulator</param>
-        public delegate void GroupCreatedCallback(UUID groupID, bool success, string message);
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupProfileEventArgs> m_GroupProfile;
 
-        /// <summary>
-        /// Callback fired when the avatar has joined a group
-        /// </summary>
-        /// <param name="groupID">The <see cref="UUID"/> of the group joined</param>
-        /// <param name="success">True if the join was successful</param>
-        public delegate void GroupJoinedCallback(UUID groupID, bool success);
+        /// <summary>Raises the GroupProfile event</summary>
+        /// <param name="e">An GroupProfileEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnGroupProfile(GroupProfileEventArgs e)
+        {
+            EventHandler<GroupProfileEventArgs> handler = m_GroupProfile;
+            if (handler != null)
+                handler(this, e);
+        }
 
-        /// <summary>
-        /// Callback fired when the avatar leaves a group
-        /// </summary>
-        /// <param name="groupID">The <see cref="UUID"/> of the group joined</param>
-        /// <param name="success">True if the part was successful</param>
-        public delegate void GroupLeftCallback(UUID groupID, bool success);
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupProfileLock = new object();
 
-        /// <summary>
-        /// Fired when a group is dropped, likely because it did not keep the required (2) avatar
-        /// minimum
-        /// </summary>
-        /// <param name="groupID">The <see cref="UUID"/> of the group which was dropped</param>
-        public delegate void GroupDroppedCallback(UUID groupID);
+        /// <summary>Raised when the simulator responds to a <see cref="RequestGroupProfile"/> request</summary>
+        public event EventHandler<GroupProfileEventArgs> GroupProfile
+        {
+            add { lock (m_GroupProfileLock) { m_GroupProfile += value; } }
+            remove { lock (m_GroupProfileLock) { m_GroupProfile -= value; } }
+        }
 
-        /// <summary>
-        /// Fired when a member of a group is ejected, 
-        /// Does not provide member information, only 
-        /// group ID and whether it was successful or not
-        /// </summary>
-        /// <param name="groupID">The Group UUID the member was ejected from</param>
-        /// <param name="success">true of member was successfully ejected</param>
-        public delegate void GroupMemberEjectedCallback(UUID groupID, bool success);
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupMembersReplyEventArgs> m_GroupMembers;
 
-        /// <summary>
-        /// Fired when the list of group notices is recievied
-        /// </summary>
-        /// <param name="groupID">The <see cref="UUID"/> of the group for which the notice list entry was recievied</param>
-        /// <param name="notice">The Notice list entry</param>
-        public delegate void GroupNoticesListCallback(UUID groupID, GroupNoticeList notice);
+        /// <summary>Raises the GroupMembers event</summary>
+        /// <param name="e">A GroupMembersEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnGroupMembersReply(GroupMembersReplyEventArgs e)
+        {
+            EventHandler<GroupMembersReplyEventArgs> handler = m_GroupMembers;
+            if (handler != null)
+                handler(this, e);
+        }
 
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupMembersLock = new object();
+
+        /// <summary>Raised when the simulator responds to a <see cref="RequestGroupMembers"/> request</summary>
+        public event EventHandler<GroupMembersReplyEventArgs> GroupMembersReply
+        {
+            add { lock (m_GroupMembersLock) { m_GroupMembers += value; } }
+            remove { lock (m_GroupMembersLock) { m_GroupMembers -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupRolesDataReplyEventArgs> m_GroupRoles;
+
+        /// <summary>Raises the GroupRolesDataReply event</summary>
+        /// <param name="e">A GroupRolesDataReplyEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnGroupRoleDataReply(GroupRolesDataReplyEventArgs e)
+        {
+            EventHandler<GroupRolesDataReplyEventArgs> handler = m_GroupRoles;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupRolesLock = new object();
+
+        /// <summary>Raised when the simulator responds to a <see cref="RequestGroupRoleData"/> request</summary>
+        public event EventHandler<GroupRolesDataReplyEventArgs> GroupRoleDataReply
+        {
+            add { lock (m_GroupRolesLock) { m_GroupRoles += value; } }
+            remove { lock (m_GroupRolesLock) { m_GroupRoles -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupRolesMembersReplyEventArgs> m_GroupRoleMembers;
+
+        /// <summary>Raises the GroupRoleMembersReply event</summary>
+        /// <param name="e">A GroupRolesRoleMembersReplyEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnGroupRoleMembers(GroupRolesMembersReplyEventArgs e)
+        {
+            EventHandler<GroupRolesMembersReplyEventArgs> handler = m_GroupRoleMembers;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupRolesMembersLock = new object();
+
+        /// <summary>Raised when the simulator responds to a <see cref="RequestGroupRolesMembers"/> request</summary>
+        public event EventHandler<GroupRolesMembersReplyEventArgs> GroupRoleMembersReply
+        {
+            add { lock (m_GroupRolesMembersLock) { m_GroupRoleMembers += value; } }
+            remove { lock (m_GroupRolesMembersLock) { m_GroupRoleMembers -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupTitlesReplyEventArgs> m_GroupTitles;
+
+
+        /// <summary>Raises the GroupTitlesReply event</summary>
+        /// <param name="e">A GroupTitlesReplyEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnGroupTitles(GroupTitlesReplyEventArgs e)
+        {
+            EventHandler<GroupTitlesReplyEventArgs> handler = m_GroupTitles;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupTitlesLock = new object();
+
+        /// <summary>Raised when the simulator responds to a <see cref="RequestGroupTitles"/> request</summary>
+        public event EventHandler<GroupTitlesReplyEventArgs> GroupTitlesReply
+        {
+            add { lock (m_GroupTitlesLock) { m_GroupTitles += value; } }
+            remove { lock (m_GroupTitlesLock) { m_GroupTitles -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupAccountSummaryReplyEventArgs> m_GroupAccountSummary;
+
+        /// <summary>Raises the GroupAccountSummary event</summary>
+        /// <param name="e">A GroupAccountSummaryReplyEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnGroupAccountSummaryReply(GroupAccountSummaryReplyEventArgs e)
+        {
+            EventHandler<GroupAccountSummaryReplyEventArgs> handler = m_GroupAccountSummary;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupAccountSummaryLock = new object();
+
+        /// <summary>Raised when a response to a RequestGroupAccountSummary is returned
+        /// by the simulator</summary>
+        public event EventHandler<GroupAccountSummaryReplyEventArgs> GroupAccountSummaryReply
+        {
+            add { lock (m_GroupAccountSummaryLock) { m_GroupAccountSummary += value; } }
+            remove { lock (m_GroupAccountSummaryLock) { m_GroupAccountSummary -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupCreatedReplyEventArgs> m_GroupCreated;
+
+        /// <summary>Raises the GroupCreated event</summary>
+        /// <param name="e">An GroupCreatedEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnGroupCreatedReply(GroupCreatedReplyEventArgs e)
+        {
+            EventHandler<GroupCreatedReplyEventArgs> handler = m_GroupCreated;
+            if (handler != null)
+                handler(this, e);
+        }
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupCreatedLock = new object();
+
+        /// <summary>Raised when a request to create a group is successful</summary>
+        public event EventHandler<GroupCreatedReplyEventArgs> GroupCreatedReply
+        {
+            add { lock (m_GroupCreatedLock) { m_GroupCreated += value; } }
+            remove { lock (m_GroupCreatedLock) { m_GroupCreated -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupOperationEventArgs> m_GroupJoined;
+
+        /// <summary>Raises the GroupJoined event</summary>
+        /// <param name="e">A GroupOperationEventArgs object containing the
+        /// result of the operation returned from the simulator</param>
+        protected virtual void OnGroupJoinedReply(GroupOperationEventArgs e)
+        {
+            EventHandler<GroupOperationEventArgs> handler = m_GroupJoined;
+            if (handler != null)
+                handler(this, e);
+        }
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupJoinedLock = new object();
+
+        /// <summary>Raised when a request to join a group either
+        /// fails or succeeds</summary>
+        public event EventHandler<GroupOperationEventArgs> GroupJoinedReply
+        {
+            add { lock (m_GroupJoinedLock) { m_GroupJoined += value; } }
+            remove { lock (m_GroupJoinedLock) { m_GroupJoined -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupOperationEventArgs> m_GroupLeft;
+
+        /// <summary>Raises the GroupLeft event</summary>
+        /// <param name="e">A GroupOperationEventArgs object containing the
+        /// result of the operation returned from the simulator</param>
+        protected virtual void OnGroupLeaveReply(GroupOperationEventArgs e)
+        {
+            EventHandler<GroupOperationEventArgs> handler = m_GroupLeft;
+            if (handler != null)
+                handler(this, e);
+        }
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupLeftLock = new object();
+
+        /// <summary>Raised when a request to leave a group either
+        /// fails or succeeds</summary>
+        public event EventHandler<GroupOperationEventArgs> GroupLeaveReply
+        {
+            add { lock (m_GroupLeftLock) { m_GroupLeft += value; } }
+            remove { lock (m_GroupLeftLock) { m_GroupLeft -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupDroppedEventArgs> m_GroupDropped;
+
+        /// <summary>Raises the GroupDropped event</summary>
+        /// <param name="e">An GroupDroppedEventArgs object containing the
+        /// the group your agent left</param>
+        protected virtual void OnGroupDropped(GroupDroppedEventArgs e)
+        {
+            EventHandler<GroupDroppedEventArgs> handler = m_GroupDropped;
+            if (handler != null)
+                handler(this, e);
+        }
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupDroppedLock = new object();
+
+        /// <summary>Raised when A group is removed from the group server</summary>
+        public event EventHandler<GroupDroppedEventArgs> GroupDropped
+        {
+            add { lock (m_GroupDroppedLock) { m_GroupDropped += value; } }
+            remove { lock (m_GroupDroppedLock) { m_GroupDropped -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupOperationEventArgs> m_GroupMemberEjected;
+
+        /// <summary>Raises the GroupMemberEjected event</summary>
+        /// <param name="e">An GroupMemberEjectedEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnGroupMemberEjected(GroupOperationEventArgs e)
+        {
+            EventHandler<GroupOperationEventArgs> handler = m_GroupMemberEjected;
+            if (handler != null)
+                handler(this, e);
+        }
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupMemberEjectedLock = new object();
+
+        /// <summary>Raised when a request to eject a member from a group either
+        /// fails or succeeds</summary>
+        public event EventHandler<GroupOperationEventArgs> GroupMemberEjected
+        {
+            add { lock (m_GroupMemberEjectedLock) { m_GroupMemberEjected += value; } }
+            remove { lock (m_GroupMemberEjectedLock) { m_GroupMemberEjected -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupNoticesListReplyEventArgs> m_GroupNoticesListReply;
+
+        /// <summary>Raises the GroupNoticesListReply event</summary>
+        /// <param name="e">An GroupNoticesListReplyEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnGroupNoticesListReply(GroupNoticesListReplyEventArgs e)
+        {
+            EventHandler<GroupNoticesListReplyEventArgs> handler = m_GroupNoticesListReply;
+            if (handler != null)
+                handler(this, e);
+        }
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupNoticesListReplyLock = new object();
+
+        /// <summary>Raised when ...</summary>
+        public event EventHandler<GroupNoticesListReplyEventArgs> GroupNoticesListReply
+        {
+            add { lock (m_GroupNoticesListReplyLock) { m_GroupNoticesListReply += value; } }
+            remove { lock (m_GroupNoticesListReplyLock) { m_GroupNoticesListReply -= value; } }
+        }
         #endregion Delegates
 
         #region Events
-
-        /// <summary>Fired when a <seealso cref="T:OpenMetaverse.Packets.AgentGroupDataUpdatePacket"/> is received, contains a list of 
-        /// groups avatar is currently a member of</summary>
-        public event CurrentGroupsCallback OnCurrentGroups;
-        /// <summary>Fired when a UUIDGroupNameReply packet is receiived, 
-        /// contains name of group requested</summary>
-        public event GroupNamesCallback OnGroupNames;
-        /// <summary>Fired when a GroupProfileReply packet is received,
-        /// contains group profile information for requested group.</summary>
-        public event GroupProfileCallback OnGroupProfile;
-        /// <summary>Fired when a GroupMembersReply packet is received,
-        /// contains a list of group members for requested group</summary>
-        public event GroupMembersCallback OnGroupMembers;
-        /// <summary>Fired when a GroupRoleDataReply packet is received,
-        /// contains details on roles for requested group</summary>
-        public event GroupRolesCallback OnGroupRoles;
-        /// <summary>Fired when a <seealso cref="T:OpenMetaverse.Packets.GroupRoleMembersReplyPacket"/> is received,
-        /// Contains group member to group role mappings</summary>
-        public event GroupRolesMembersCallback OnGroupRolesMembers;
-        /// <summary>Fired when a GroupTitlesReply packet is received,
-        /// sets the active role title for the current Agent</summary>
-        public event GroupTitlesCallback OnGroupTitles;
-        /// <summary>Fired when a GroupAccountSummaryReply packet is received,
-        /// Contains a summary of group financial information</summary>
-        public event GroupAccountSummaryCallback OnGroupAccountSummary;
-        /// <summary>Fired when a CreateGroupReply packet is received, indicates
-        /// the successful creation of a new group</summary>
-        public event GroupCreatedCallback OnGroupCreated;
-        /// <summary>Fired when a JoinGroupReply packet is received, indicates
-        /// the Avatar has successfully joined a new group either by <seealso cref="RequestJoinGroup"/>
-        /// or by accepting a group join invitation with <seealso cref="AgentManager.GroupInviteRespond"/></summary>
-        public event GroupJoinedCallback OnGroupJoined;
-        /// <summary>Fired when a LeaveGroupReply packet is received, indicates
-        /// the Avatar has successfully left a group</summary>
-        /// <seealso cref="LeaveGroup"/>
-        public event GroupLeftCallback OnGroupLeft;
-        /// <summary>Fired when a AgentDropGroup packet is received, contains
-        /// the <seealso cref="Group.ID"/> of the group dropped</summary>
-        public event GroupDroppedCallback OnGroupDropped;
-        /// <summary>Fired when a GroupMemberEjected packet is received,
-        /// indicates a member of a group has been ejected</summary>
-        public event GroupMemberEjectedCallback OnGroupMemberEjected;
-        /// <summary>Fired when the list of group notices is recievied</summary>
-        public event GroupNoticesListCallback OnGroupNoticesList;
 
         #endregion Events
 
@@ -636,8 +807,9 @@ namespace OpenMetaverse
         private InternalDictionary<UUID, Dictionary<UUID, GroupRole>> TempGroupRoles;
         /// <summary>Caches group name lookups</summary>
         public InternalDictionary<UUID, string> GroupName2KeyCache;
+
         /// <summary>
-        /// Group Management Routines, Methods and Packet Handlers
+        /// Construct a new instance of the GroupManager class
         /// </summary>
         /// <param name="client">A reference to the current <seealso cref="GridClient"/> instance</param>
         public GroupManager(GridClient client)
@@ -650,20 +822,19 @@ namespace OpenMetaverse
             GroupRolesRequests = new List<UUID>();
             TempGroupRolesMembers = new InternalDictionary<UUID, List<KeyValuePair<UUID, UUID>>>();
             GroupRolesMembersRequests = new List<UUID>();
-            GroupName2KeyCache  = new InternalDictionary<UUID, string>();
+            GroupName2KeyCache = new InternalDictionary<UUID, string>();
 
-            Client.Network.RegisterEventCallback("AgentGroupDataUpdate", new Caps.EventQueueCallback(AgentGroupDataUpdateMessageHandler));
-            Client.Network.RegisterCallback(PacketType.AgentGroupDataUpdate, new NetworkManager.PacketCallback(AgentGroupDataUpdateHandler));
+            Client.Network.RegisterEventCallback("AgentGroupDataUpdate", new Caps.EventQueueCallback(AgentGroupDataUpdateMessageHandler));            
             // deprecated in simulator v1.27
             Client.Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(AgentDropGroupHandler));
-            Client.Network.RegisterCallback(PacketType.GroupTitlesReply, new NetworkManager.PacketCallback(GroupTitlesHandler));
-            Client.Network.RegisterCallback(PacketType.GroupProfileReply, new NetworkManager.PacketCallback(GroupProfileHandler));
+            Client.Network.RegisterCallback(PacketType.GroupTitlesReply, new NetworkManager.PacketCallback(GroupTitlesReplyHandler));
+            Client.Network.RegisterCallback(PacketType.GroupProfileReply, new NetworkManager.PacketCallback(GroupProfileReplyHandler));
             Client.Network.RegisterCallback(PacketType.GroupMembersReply, new NetworkManager.PacketCallback(GroupMembersHandler));
-            Client.Network.RegisterCallback(PacketType.GroupRoleDataReply, new NetworkManager.PacketCallback(GroupRoleDataHandler));
-            Client.Network.RegisterCallback(PacketType.GroupRoleMembersReply, new NetworkManager.PacketCallback(GroupRoleMembersHandler));
+            Client.Network.RegisterCallback(PacketType.GroupRoleDataReply, new NetworkManager.PacketCallback(GroupRoleDataReplyHandler));
+            Client.Network.RegisterCallback(PacketType.GroupRoleMembersReply, new NetworkManager.PacketCallback(GroupRoleMembersReplyHandler));
             Client.Network.RegisterCallback(PacketType.GroupActiveProposalItemReply, new NetworkManager.PacketCallback(GroupActiveProposalItemHandler));
             Client.Network.RegisterCallback(PacketType.GroupVoteHistoryItemReply, new NetworkManager.PacketCallback(GroupVoteHistoryItemHandler));
-            Client.Network.RegisterCallback(PacketType.GroupAccountSummaryReply, new NetworkManager.PacketCallback(GroupAccountSummaryHandler));
+            Client.Network.RegisterCallback(PacketType.GroupAccountSummaryReply, new NetworkManager.PacketCallback(GroupAccountSummaryReplyHandler));
             Client.Network.RegisterCallback(PacketType.CreateGroupReply, new NetworkManager.PacketCallback(CreateGroupReplyHandler));
             Client.Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupReplyHandler));
             Client.Network.RegisterCallback(PacketType.LeaveGroupReply, new NetworkManager.PacketCallback(LeaveGroupReplyHandler));
@@ -673,6 +844,9 @@ namespace OpenMetaverse
 
             Client.Network.RegisterEventCallback("AgentDropGroup", new Caps.EventQueueCallback(AgentDropGroupMessageHandler));
         }
+
+
+        #region Public Methods
 
         /// <summary>
         /// Request a current list of groups the avatar is a member of.
@@ -685,7 +859,7 @@ namespace OpenMetaverse
 
             request.AgentData.AgentID = Client.Self.AgentID;
             request.AgentData.SessionID = Client.Self.SessionID;
-            
+
             Client.Network.SendPacket(request);
         }
 
@@ -696,28 +870,27 @@ namespace OpenMetaverse
         public void RequestGroupName(UUID groupID)
         {
             // if we already have this in the cache, return from cache instead of making a request
-                if (GroupName2KeyCache.ContainsKey(groupID))
-                {
-                    Dictionary<UUID, string> groupNames = new Dictionary<UUID, string>();
-                    lock(GroupName2KeyCache.Dictionary)
+            if (GroupName2KeyCache.ContainsKey(groupID))
+            {
+                Dictionary<UUID, string> groupNames = new Dictionary<UUID, string>();
+                lock (GroupName2KeyCache.Dictionary)
                     groupNames.Add(groupID, GroupName2KeyCache.Dictionary[groupID]);
-                    if (OnGroupNames != null)
-                    {
-                           
-                        try { OnGroupNames(groupNames); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                    }
-                }
-            
-                else
+
+                if (m_GroupNames != null)
                 {
-                    UUIDGroupNameRequestPacket req = new UUIDGroupNameRequestPacket();
-                    UUIDGroupNameRequestPacket.UUIDNameBlockBlock[] block = new UUIDGroupNameRequestPacket.UUIDNameBlockBlock[1];
-                    block[0] = new UUIDGroupNameRequestPacket.UUIDNameBlockBlock();
-                    block[0].ID = groupID;
-                    req.UUIDNameBlock = block;
-                    Client.Network.SendPacket(req);
+                    OnGroupNamesReply(new GroupNamesEventArgs(groupNames));
                 }
+            }
+
+            else
+            {
+                UUIDGroupNameRequestPacket req = new UUIDGroupNameRequestPacket();
+                UUIDGroupNameRequestPacket.UUIDNameBlockBlock[] block = new UUIDGroupNameRequestPacket.UUIDNameBlockBlock[1];
+                block[0] = new UUIDGroupNameRequestPacket.UUIDNameBlockBlock();
+                block[0].ID = groupID;
+                req.UUIDNameBlock = block;
+                Client.Network.SendPacket(req);
+            }
         }
 
         /// <summary>
@@ -734,8 +907,8 @@ namespace OpenMetaverse
                     if (GroupName2KeyCache.ContainsKey(groupID))
                         groupNames[groupID] = GroupName2KeyCache.Dictionary[groupID];
                 }
-            }        
-            
+            }
+
             if (groupIDs.Count > 0)
             {
                 UUIDGroupNameRequestPacket req = new UUIDGroupNameRequestPacket();
@@ -752,9 +925,10 @@ namespace OpenMetaverse
             }
 
             // fire handler from cache
-            if(groupNames.Count > 0 && OnGroupNames != null)
-                try { OnGroupNames(groupNames); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            if (groupNames.Count > 0 && m_GroupNames != null)
+            {
+                OnGroupNamesReply(new GroupNamesEventArgs(groupNames));
+            }
         }
 
         /// <summary>Lookup group profile data such as name, enrollment, founder, logo, etc</summary>
@@ -815,7 +989,7 @@ namespace OpenMetaverse
         /// <remarks>Subscribe to <code>OnGroupRolesMembers</code> event to receive the results.</remarks>
         /// <param name="group">group ID (UUID)</param>
         /// <returns>UUID of the request, use to index into cache</returns>
-        public UUID RequestGroupRoleMembers(UUID group)
+        public UUID RequestGroupRolesMembers(UUID group)
         {
             UUID requestID = UUID.Random();
             lock (GroupRolesRequests) GroupRolesMembersRequests.Add(requestID);
@@ -999,7 +1173,7 @@ namespace OpenMetaverse
             cgrp.AgentData = new UpdateGroupInfoPacket.AgentDataBlock();
             cgrp.AgentData.AgentID = Client.Self.AgentID;
             cgrp.AgentData.SessionID = Client.Self.SessionID;
-            
+
             cgrp.GroupData = new UpdateGroupInfoPacket.GroupDataBlock();
             cgrp.GroupData.GroupID = id;
             cgrp.GroupData.AllowPublish = group.AllowPublish;
@@ -1009,7 +1183,7 @@ namespace OpenMetaverse
             cgrp.GroupData.MembershipFee = group.MembershipFee;
             cgrp.GroupData.OpenEnrollment = group.OpenEnrollment;
             cgrp.GroupData.ShowInList = group.ShowInList;
-            
+
             Client.Network.SendPacket(cgrp);
         }
 
@@ -1022,14 +1196,14 @@ namespace OpenMetaverse
             eject.AgentData = new EjectGroupMemberRequestPacket.AgentDataBlock();
             eject.AgentData.AgentID = Client.Self.AgentID;
             eject.AgentData.SessionID = Client.Self.SessionID;
-            
+
             eject.GroupData = new EjectGroupMemberRequestPacket.GroupDataBlock();
             eject.GroupData.GroupID = group;
-            
+
             eject.EjectData = new EjectGroupMemberRequestPacket.EjectDataBlock[1];
             eject.EjectData[0] = new EjectGroupMemberRequestPacket.EjectDataBlock();
             eject.EjectData[0].EjecteeID = member;
-            
+
             Client.Network.SendPacket(eject);
         }
 
@@ -1112,7 +1286,7 @@ namespace OpenMetaverse
 
         /// <summary>Request the group notices list</summary>
         /// <param name="group">Group ID to fetch notices for</param>
-        public void RequestGroupNoticeList(UUID group)
+        public void RequestGroupNoticesList(UUID group)
         {
             OpenMetaverse.Packets.GroupNoticesListRequestPacket gnl = new GroupNoticesListRequestPacket();
             gnl.AgentData.AgentID = Client.Self.AgentID;
@@ -1131,37 +1305,14 @@ namespace OpenMetaverse
             gnr.Data.GroupNoticeID = noticeID;
             Client.Network.SendPacket(gnr);
         }
-
-
-        private void GroupNoticesListReplyHandler(Packet packet, Simulator simulator)
-        {
-            GroupNoticesListReplyPacket reply = (GroupNoticesListReplyPacket)packet;
-           
-            foreach (GroupNoticesListReplyPacket.DataBlock entry in reply.Data)
-            {
-                GroupNoticeList notice = new GroupNoticeList();
-                notice.FromName = Utils.BytesToString(entry.FromName);
-                notice.Subject = Utils.BytesToString(entry.Subject);
-                notice.NoticeID = entry.NoticeID;
-                notice.Timestamp = entry.Timestamp;
-                notice.HasAttachment = entry.HasAttachment;
-                notice.AssetType = (AssetType)entry.AssetType;
-
-                if (OnGroupNoticesList != null)
-                {
-                    try { OnGroupNoticesList(reply.AgentData.GroupID, notice); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                } 
-            } 
-        }
-
+        
         /// <summary>Send out a group notice</summary>
         /// <param name="group">Group ID to update</param>
         /// <param name="notice"><code>GroupNotice</code> structure containing notice data</param>
         public void SendGroupNotice(UUID group, GroupNotice notice)
         {
             Client.Self.InstantMessage(Client.Self.Name, group, notice.Subject + "|" + notice.Message,
-                UUID.Zero, InstantMessageDialog.GroupNotice, InstantMessageOnline.Online, 
+                UUID.Zero, InstantMessageDialog.GroupNotice, InstantMessageOnline.Online,
                 Vector3.Zero, UUID.Zero, notice.SerializeAttachment());
         }
 
@@ -1190,47 +1341,22 @@ namespace OpenMetaverse
             p.AgentData.AgentID = Client.Self.AgentID;
             p.AgentData.SessionID = Client.Self.SessionID;
             p.GroupData.GroupID = groupID;
+
             Client.Network.SendPacket(p);
         }
+#endregion
 
         #region Packet Handlers
-        // When Arriving over UDP (OpenSim still sends it this way)
-        private void AgentGroupDataUpdateHandler(Packet packet, Simulator simulator)
-        {
-            if (OnCurrentGroups != null)
-            {                
-                //AgentGroupDataUpdateMessage msg = (AgentGroupDataUpdateMessage)message;
-                AgentGroupDataUpdatePacket msg = (AgentGroupDataUpdatePacket)packet;
-                //AgentGroupDataUpdatePacket.GroupDataBlock groupDataBlock = msg.GroupData;
-
-                Dictionary<UUID, Group> currentGroups = new Dictionary<UUID, Group>();
-                foreach (AgentGroupDataUpdatePacket.GroupDataBlock block in msg.GroupData)
-                {
-                    Group group = new Group();
-                    group.ID = block.GroupID;
-                    group.Name = Utils.BytesToString(block.GroupName);
-                    group.InsigniaID = block.GroupInsigniaID;
-                    group.AcceptNotices = block.AcceptNotices;
-                    group.Contribution = block.Contribution;                    
-                    group.Powers = (GroupPowers)block.GroupPowers;
-                                        
-                    currentGroups.Add(group.ID, group);
-                    lock (GroupName2KeyCache.Dictionary)
-                    {
-                        if (!GroupName2KeyCache.Dictionary.ContainsKey(group.ID))
-                            GroupName2KeyCache.Dictionary.Add(group.ID, group.Name);
-                    }
-                }                                
-
-                try { OnCurrentGroups(currentGroups); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-            }
-        }
-
-        // When Arriving via Capabilities
-        private void AgentGroupDataUpdateMessageHandler(string capsKey, IMessage message, Simulator simulator)
-        {
-            if (OnCurrentGroups != null)
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="capsKey"></param>
+        /// <param name="message"></param>
+        /// <param name="simulator"></param>
+        protected void AgentGroupDataUpdateMessageHandler(string capsKey, IMessage message, Simulator simulator)
+        {      
+            if (m_CurrentGroups != null)
             {
                 AgentGroupDataUpdateMessage msg = (AgentGroupDataUpdateMessage)message;
 
@@ -1254,37 +1380,45 @@ namespace OpenMetaverse
                             GroupName2KeyCache.Dictionary.Add(group.ID, group.Name);
                     }
                 }
-
-                try { OnCurrentGroups(currentGroups); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnCurrentGroups(new CurrentGroupsEventArgs(currentGroups));
             }
         }
 
-        private void AgentDropGroupHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming <see cref="AgentDropGroupPacket"/> packet sent
+        /// by the simulator in response to your agents request to leave a group</summary>
+        /// <param name="packet">The <see cref="AgentDropGroupPacket"/> packet containing the data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="GroupDropped"/> event confirming the request to leave a group
+        /// was successful</remarks>
+        protected void AgentDropGroupHandler(Packet packet, Simulator simulator)
         {
-            if (OnGroupDropped != null)
+            if (m_GroupDropped != null)
             {
-                try { OnGroupDropped(((AgentDropGroupPacket)packet).AgentData.GroupID); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnGroupDropped(new GroupDroppedEventArgs(((AgentDropGroupPacket)packet).AgentData.GroupID));
             }
         }
 
-        private void AgentDropGroupMessageHandler(string capsKey, IMessage message, Simulator simulator)
+        protected void AgentDropGroupMessageHandler(string capsKey, IMessage message, Simulator simulator)
         {
-            if (OnGroupDropped != null)
+            
+            if (m_GroupDropped != null)
             {
                 AgentDropGroupMessage msg = (AgentDropGroupMessage)message;
                 for (int i = 0; i < msg.AgentDataBlock.Length; i++)
                 {
-                    try { OnGroupDropped(msg.AgentDataBlock[i].GroupID); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnGroupDropped(new GroupDroppedEventArgs(msg.AgentDataBlock[i].GroupID));
                 }
             }
         }
 
-        private void GroupProfileHandler(Packet packet, Simulator simulator)
-        {
-            if (OnGroupProfile != null)
+        /// <summary>Process an incoming <see cref="GroupProfileReplyPacket"/> packet sent
+        /// by the simulator in response to a <see cref="RequestGroupProfile"/></summary>
+        /// <param name="packet">The <see cref="GroupProfileReplyPacket"/> packet containing the reply data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="GroupProfile"/> event with the response data</remarks>
+        protected void GroupProfileReplyHandler(Packet packet, Simulator simulator)
+        {            
+            if (m_GroupProfile != null)
             {
                 GroupProfileReplyPacket profile = (GroupProfileReplyPacket)packet;
                 Group group = new Group();
@@ -1306,14 +1440,45 @@ namespace OpenMetaverse
                 group.Powers = (GroupPowers)profile.GroupData.PowersMask;
                 group.ShowInList = profile.GroupData.ShowInList;
 
-                try { OnGroupProfile(group); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnGroupProfile(new GroupProfileEventArgs(group));
             }
         }
 
-        private void GroupTitlesHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming <see cref="GroupNoticesListReplyPacket"/> packet sent
+        /// by the simulator in response to a <see cref="RequestGroupNoticesList"/></summary>
+        /// <param name="packet">The <see cref="GroupNoticesListReplyPacket"/> packet containing the reply data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="GroupNoticesList"/> event with the response data</remarks>        
+        /// <seealso cref="RequestGroupNotice"/>
+        protected void GroupNoticesListReplyHandler(Packet packet, Simulator simulator)
         {
-            if (OnGroupTitles != null)
+            if (m_GroupNoticesListReply != null)
+            {
+                GroupNoticesListReplyPacket reply = (GroupNoticesListReplyPacket)packet;
+
+                foreach (GroupNoticesListReplyPacket.DataBlock entry in reply.Data)
+                {
+                    GroupNoticeList notice = new GroupNoticeList();
+                    notice.FromName = Utils.BytesToString(entry.FromName);
+                    notice.Subject = Utils.BytesToString(entry.Subject);
+                    notice.NoticeID = entry.NoticeID;
+                    notice.Timestamp = entry.Timestamp;
+                    notice.HasAttachment = entry.HasAttachment;
+                    notice.AssetType = (AssetType)entry.AssetType;
+
+                    OnGroupNoticesListReply(new GroupNoticesListReplyEventArgs(reply.AgentData.GroupID, notice));
+                }
+            }
+        }
+
+        /// <summary>Process an incoming <see cref="GroupTitlesReplyPacket"/> packet sent
+        /// by the simulator in response to a <see cref="RequestGroupTitles"/></summary>
+        /// <param name="packet">The <see cref="GroupTitlesReplyPacket"/> packet containing the reply data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="GroupTitles"/> event with the response data</remarks>        
+        protected void GroupTitlesReplyHandler(Packet packet, Simulator simulator)
+        {
+            if (m_GroupTitles != null)
             {
                 GroupTitlesReplyPacket titles = (GroupTitlesReplyPacket)packet;
                 Dictionary<UUID, GroupTitle> groupTitleCache = new Dictionary<UUID, GroupTitle>();
@@ -1329,13 +1494,16 @@ namespace OpenMetaverse
 
                     groupTitleCache[block.RoleID] = groupTitle;
                 }
-
-                try { OnGroupTitles(titles.AgentData.RequestID, titles.AgentData.GroupID, groupTitleCache); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnGroupTitles(new GroupTitlesReplyEventArgs(titles.AgentData.RequestID, titles.AgentData.GroupID, groupTitleCache));
             }
         }
 
-        private void GroupMembersHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming <see cref="GroupMembersReplyPacket"/> packet sent
+        /// by the simulator in response to a <see cref="RequestGroupMembers"/></summary>
+        /// <param name="packet">The <see cref="GroupMembersReplyPacket"/> packet containing the reply data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="GroupMembers"/> event with the response data</remarks>        
+        protected void GroupMembersHandler(Packet packet, Simulator simulator)
         {
             GroupMembersReplyPacket members = (GroupMembersReplyPacket)packet;
             Dictionary<UUID, GroupMember> groupMemberCache = null;
@@ -1376,14 +1544,18 @@ namespace OpenMetaverse
                 }
             }
 
-            if (OnGroupMembers != null && groupMemberCache != null && groupMemberCache.Count >= members.GroupData.MemberCount)
+            if (m_GroupMembers != null && groupMemberCache != null && groupMemberCache.Count >= members.GroupData.MemberCount)
             {
-                try { OnGroupMembers(members.GroupData.RequestID, members.GroupData.GroupID, groupMemberCache); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnGroupMembersReply(new GroupMembersReplyEventArgs(members.GroupData.RequestID, members.GroupData.GroupID, groupMemberCache));
             }
         }
 
-        private void GroupRoleDataHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming <see cref="GroupRoleDataReplyPacket"/> packet sent
+        /// by the simulator in response to a <see cref="RequestGroupRoles"/></summary>
+        /// <param name="packet">The <see cref="GroupRoleDataReplyPacket"/> packet containing the reply data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="GroupRoleDataReply"/> event with the response data</remarks>
+        protected void GroupRoleDataReplyHandler(Packet packet, Simulator simulator)
         {
             GroupRoleDataReplyPacket roles = (GroupRoleDataReplyPacket)packet;
             Dictionary<UUID, GroupRole> groupRoleCache = null;
@@ -1426,14 +1598,18 @@ namespace OpenMetaverse
                 }
             }
 
-            if (OnGroupRoles != null && groupRoleCache != null && groupRoleCache.Count >= roles.GroupData.RoleCount)
+            if (m_GroupRoles != null && groupRoleCache != null && groupRoleCache.Count >= roles.GroupData.RoleCount)
             {
-                try { OnGroupRoles(roles.GroupData.RequestID, roles.GroupData.GroupID, groupRoleCache); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnGroupRoleDataReply(new GroupRolesDataReplyEventArgs(roles.GroupData.RequestID, roles.GroupData.GroupID, groupRoleCache));
             }
         }
 
-        private void GroupRoleMembersHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming <see cref="GroupRoleMembersReplyPacket"/> packet sent
+        /// by the simulator in response to a <see cref="RequestGroupRoleMembers"/></summary>
+        /// <param name="packet">The <see cref="GroupRoleMembersReplyPacket"/> packet containing the reply data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="GroupRoleMembers"/> event with the response data</remarks>
+        protected void GroupRoleMembersReplyHandler(Packet packet, Simulator simulator)
         {
             GroupRoleMembersReplyPacket members = (GroupRoleMembersReplyPacket)packet;
             List<KeyValuePair<UUID, UUID>> groupRoleMemberCache = null;
@@ -1475,10 +1651,9 @@ namespace OpenMetaverse
                 Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e);
             }
 
-            if (OnGroupRolesMembers != null && groupRoleMemberCache != null && groupRoleMemberCache.Count >= members.AgentData.TotalPairs)
+            if (m_GroupRoleMembers != null && groupRoleMemberCache != null && groupRoleMemberCache.Count >= members.AgentData.TotalPairs)
             {
-                try { OnGroupRolesMembers(members.AgentData.RequestID, members.AgentData.GroupID, groupRoleMemberCache); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnGroupRoleMembers(new GroupRolesMembersReplyEventArgs(members.AgentData.RequestID, members.AgentData.GroupID, groupRoleMemberCache));
             }
         }
 
@@ -1496,9 +1671,14 @@ namespace OpenMetaverse
             // TODO: This was broken in the official viewer when I was last trying to work  on it
         }
 
-        private void GroupAccountSummaryHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming <see cref="GroupAccountSummaryReplyPacket"/> packet sent
+        /// by the simulator in response to a <see cref="RequestGroupAccountSummary"/></summary>
+        /// <param name="packet">The <see cref="GroupAccountSummaryReplyPacket"/> packet containing the reply data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="GroupAccountSummaryReply"/> event with the response data</remarks>
+        protected void GroupAccountSummaryReplyHandler(Packet packet, Simulator simulator)
         {
-            if (OnGroupAccountSummary != null)
+            if (m_GroupAccountSummary != null)
             {
                 GroupAccountSummaryReplyPacket summary = (GroupAccountSummaryReplyPacket)packet;
                 GroupAccountSummary account = new GroupAccountSummary();
@@ -1523,64 +1703,79 @@ namespace OpenMetaverse
                 account.TotalCredits = summary.MoneyData.TotalCredits;
                 account.TotalDebits = summary.MoneyData.TotalDebits;
 
-                try { OnGroupAccountSummary(summary.AgentData.GroupID, account); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnGroupAccountSummaryReply(new GroupAccountSummaryReplyEventArgs(summary.AgentData.GroupID, account));
             }
         }
 
-        private void CreateGroupReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming <see cref="CreateGroupReplyPacket"/> packet sent
+        /// by the simulator in response to a <see cref="RequestGroup"/></summary>
+        /// <param name="packet">The <see cref="CreateGroupReplyPacket"/> packet containing the reply data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="GroupCreatedReply"/> event with the response data</remarks>
+        protected void CreateGroupReplyHandler(Packet packet, Simulator simulator)
         {
-            if (OnGroupCreated != null)
+            if (m_GroupCreated != null)
             {
                 CreateGroupReplyPacket reply = (CreateGroupReplyPacket)packet;
 
                 string message = Utils.BytesToString(reply.ReplyData.Message);
 
-                try { OnGroupCreated(reply.ReplyData.GroupID, reply.ReplyData.Success, message); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnGroupCreatedReply(new GroupCreatedReplyEventArgs(reply.ReplyData.GroupID, reply.ReplyData.Success, message));
             }
         }
 
-        private void JoinGroupReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming <see cref="JoinGroupReplyPacket"/> packet sent
+        /// by the simulator in response to a <see cref="RequestJoinGroup"/></summary>
+        /// <param name="packet">The <see cref="JoinGroupReplyPacket"/> packet containing the reply data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="GroupJoinedReply"/> event with the response data</remarks>
+        protected void JoinGroupReplyHandler(Packet packet, Simulator simulator)
         {
-            if (OnGroupJoined != null)
+            if (m_GroupJoined != null)
             {
                 JoinGroupReplyPacket reply = (JoinGroupReplyPacket)packet;
 
-                try { OnGroupJoined(reply.GroupData.GroupID, reply.GroupData.Success); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnGroupJoinedReply(new GroupOperationEventArgs(reply.GroupData.GroupID, reply.GroupData.Success));
             }
         }
 
-        private void LeaveGroupReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming <see cref="LeaveGroupReplyPacket"/> packet sent
+        /// by the simulator in response to a <see cref="RequestLeaveGroup"/></summary>
+        /// <param name="packet">The <see cref="LeaveGroupReplyPacket"/> packet containing the reply data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="GroupLeaveReply"/> event with the response data</remarks>
+        protected void LeaveGroupReplyHandler(Packet packet, Simulator simulator)
         {
-            if (OnGroupLeft != null)
+            if (m_GroupLeft != null)
             {
                 LeaveGroupReplyPacket reply = (LeaveGroupReplyPacket)packet;
 
-                try { OnGroupLeft(reply.GroupData.GroupID, reply.GroupData.Success); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnGroupLeaveReply(new GroupOperationEventArgs(reply.GroupData.GroupID, reply.GroupData.Success));
             }
         }
 
+        /// <summary>Process an incoming <see cref="UUIDGroupNameReplyPacket"/> packet sent
+        /// by the simulator in response to a <see cref="RequestGroupName"/> or <see cref="RequestGroupNames"/> request</summary>
+        /// <param name="packet">The <see cref="UUIDGroupNameReplyPacket"/> packet containing the reply data</param>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <remarks>Raises the <see cref="GroupNamesReply"/> event with the response data</remarks>
         private void UUIDGroupNameReplyHandler(Packet packet, Simulator simulator)
         {
             UUIDGroupNameReplyPacket reply = (UUIDGroupNameReplyPacket)packet;
             UUIDGroupNameReplyPacket.UUIDNameBlockBlock[] blocks = reply.UUIDNameBlock;
-            
+
             Dictionary<UUID, string> groupNames = new Dictionary<UUID, string>();
 
-            foreach (UUIDGroupNameReplyPacket.UUIDNameBlockBlock block in blocks) 
+            foreach (UUIDGroupNameReplyPacket.UUIDNameBlockBlock block in blocks)
             {
                 groupNames.Add(block.ID, Utils.BytesToString(block.GroupName));
-                    if (!GroupName2KeyCache.ContainsKey(block.ID))
-                        GroupName2KeyCache.Add(block.ID, Utils.BytesToString(block.GroupName));
+                if (!GroupName2KeyCache.ContainsKey(block.ID))
+                    GroupName2KeyCache.Add(block.ID, Utils.BytesToString(block.GroupName));
             }
 
-            if (OnGroupNames != null)
-            {    
-                try { OnGroupNames(groupNames); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+            if (m_GroupNames != null)
+            {
+                OnGroupNamesReply(new GroupNamesEventArgs(groupNames));
             }
         }
 
@@ -1591,19 +1786,287 @@ namespace OpenMetaverse
         /// <param name="packet">The EjectGroupMemberReply packet</param>
         /// <param name="simulator">The simulator where the message originated</param>
         /// <remarks>This is a silly packet, it doesn't provide you with the ejectees UUID</remarks>
-        private void EjectGroupMemberReplyHandler(Packet packet, Simulator simulator)
+        protected void EjectGroupMemberReplyHandler(Packet packet, Simulator simulator)
         {
             EjectGroupMemberReplyPacket reply = (EjectGroupMemberReplyPacket)packet;
 
             // TODO: On Success remove the member from the cache(s)
-            
-            if(OnGroupMemberEjected != null)
+
+            if (m_GroupMemberEjected != null)
             {
-                try { OnGroupMemberEjected(reply.GroupData.GroupID, reply.EjectData.Success); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnGroupMemberEjected(new GroupOperationEventArgs(reply.GroupData.GroupID, reply.EjectData.Success));
             }
         }
 
         #endregion Packet Handlers
     }
+
+    #region EventArgs
+    
+    /// <summary>Contains the current groups your agent is a member of</summary>
+    public class CurrentGroupsEventArgs : EventArgs
+    {
+        private readonly Dictionary<UUID, Group> m_Groups;
+
+        /// <summary>Get the current groups your agent is a member of</summary>
+        public Dictionary<UUID, Group> Groups { get { return m_Groups; } }
+
+        /// <summary>Construct a new instance of the CurrentGroupsEventArgs class</summary>
+        /// <param name="groups">The current groups your agent is a member of</param>
+        public CurrentGroupsEventArgs(Dictionary<UUID, Group> groups)
+        {
+            this.m_Groups = groups;
+        }
+    }
+    
+    /// <summary>A Dictionary of group names, where the Key is the groups ID and the value is the groups name</summary>
+    public class GroupNamesEventArgs : EventArgs
+    {
+        private readonly Dictionary<UUID, string> m_GroupNames;
+
+        /// <summary>Get the Group Names dictionary</summary>
+        public Dictionary<UUID, string> GroupNames { get { return m_GroupNames; } }
+
+        /// <summary>Construct a new instance of the GroupNamesEventArgs class</summary>
+        /// <param name="groupNames">The Group names dictionary</param>
+        public GroupNamesEventArgs(Dictionary<UUID, string> groupNames)
+        {
+            this.m_GroupNames = groupNames;
+        }
+    }
+
+    /// <summary>Represents the members of a group</summary>
+    public class GroupMembersReplyEventArgs : EventArgs
+    {
+        private readonly UUID m_RequestID;
+        private readonly UUID m_GroupID;
+        private readonly Dictionary<UUID, GroupMember> m_Members;
+
+        /// <summary>Get the ID as returned by the request to correlate
+        /// this result set and the request</summary>
+        public UUID RequestID { get { return m_RequestID; } }
+        /// <summary>Get the ID of the group</summary>
+        public UUID GroupID { get { return m_GroupID; } }
+        /// <summary>Get the dictionary of members</summary>
+        public Dictionary<UUID, GroupMember> Members { get { return m_Members; } }
+
+        /// <summary>
+        /// Construct a new instance of the GroupMembersReplyEventArgs class
+        /// </summary>
+        /// <param name="requestID">The ID of the request</param>
+        /// <param name="groupID">The ID of the group</param>
+        /// <param name="members">The membership list of the group</param>
+        public GroupMembersReplyEventArgs(UUID requestID, UUID groupID, Dictionary<UUID, GroupMember> members)
+        {
+            this.m_RequestID = requestID;
+            this.m_GroupID = groupID;
+            this.m_Members = members;
+        }
+    }
+    
+    /// <summary>Represents the roles associated with a group</summary>
+    public class GroupRolesDataReplyEventArgs : EventArgs
+    {
+        private readonly UUID m_RequestID;
+        private readonly UUID m_GroupID;
+        private readonly Dictionary<UUID, GroupRole> m_Roles;
+
+        /// <summary>Get the ID as returned by the request to correlate
+        /// this result set and the request</summary>
+        public UUID RequestID { get { return m_RequestID; } }
+        /// <summary>Get the ID of the group</summary>
+        public UUID GroupID { get { return m_GroupID; } }
+        /// <summary>Get the dictionary containing the roles</summary>
+        public Dictionary<UUID, GroupRole> Roles { get { return m_Roles; } }
+
+        /// <summary>Construct a new instance of the GroupRolesDataReplyEventArgs class</summary>
+        /// <param name="requestID">The ID as returned by the request to correlate
+        /// this result set and the request</param>
+        /// <param name="groupID">The ID of the group</param>
+        /// <param name="roles">The dictionary containing the roles</param>
+        public GroupRolesDataReplyEventArgs(UUID requestID, UUID groupID, Dictionary<UUID, GroupRole> roles)
+        {
+            this.m_RequestID = requestID;
+            this.m_GroupID = groupID;
+            this.m_Roles = roles;
+        }
+    }
+
+    /// <summary>Represents the Role to Member mappings for a group</summary>
+    public class GroupRolesMembersReplyEventArgs : EventArgs
+    {
+        private readonly UUID m_RequestID;
+        private readonly UUID m_GroupID;
+        private readonly List<KeyValuePair<UUID, UUID>> m_RolesMembers;
+
+        /// <summary>Get the ID as returned by the request to correlate
+        /// this result set and the request</summary>
+        public UUID RequestID { get { return m_RequestID; } }
+        /// <summary>Get the ID of the group</summary>
+        public UUID GroupID { get { return m_GroupID; } }
+        /// <summary>Get the member to roles map</summary>
+        public List<KeyValuePair<UUID, UUID>> RolesMembers { get { return m_RolesMembers; } }
+
+        /// <summary>Construct a new instance of the GroupRolesMembersReplyEventArgs class</summary>
+        /// <param name="requestID">The ID as returned by the request to correlate
+        /// this result set and the request</param>
+        /// <param name="groupID">The ID of the group</param>
+        /// <param name="rolesMembers">The member to roles map</param>
+        public GroupRolesMembersReplyEventArgs(UUID requestID, UUID groupID, List<KeyValuePair<UUID, UUID>> rolesMembers)
+        {
+            this.m_RequestID = requestID;
+            this.m_GroupID = groupID;
+            this.m_RolesMembers = rolesMembers;
+        }
+    }
+
+    /// <summary>Represents the titles for a group</summary>
+    public class GroupTitlesReplyEventArgs : EventArgs
+    {
+        private readonly UUID m_RequestID;
+        private readonly UUID m_GroupID;
+        private readonly Dictionary<UUID, GroupTitle> m_Titles;
+
+        /// <summary>Get the ID as returned by the request to correlate
+        /// this result set and the request</summary>
+        public UUID RequestID { get { return m_RequestID; } }
+        /// <summary>Get the ID of the group</summary>
+        public UUID GroupID { get { return m_GroupID; } }
+        /// <summary>Get the titles</summary>
+        public Dictionary<UUID, GroupTitle> Titles { get { return m_Titles; } }
+
+        /// <summary>Construct a new instance of the GroupTitlesReplyEventArgs class</summary>
+        /// <param name="requestID">The ID as returned by the request to correlate
+        /// this result set and the request</param>
+        /// <param name="groupID">The ID of the group</param>
+        /// <param name="titles">The titles</param>
+        public GroupTitlesReplyEventArgs(UUID requestID, UUID groupID, Dictionary<UUID, GroupTitle> titles)
+        {
+            this.m_RequestID = requestID;
+            this.m_GroupID = groupID;
+            this.m_Titles = titles;
+        }
+    }
+
+    /// <summary>Represents the summary data for a group</summary>
+    public class GroupAccountSummaryReplyEventArgs : EventArgs
+    {
+        private readonly UUID m_GroupID;
+        private readonly GroupAccountSummary m_Summary;
+
+        /// <summary>Get the ID of the group</summary>
+        public UUID GroupID { get { return m_GroupID; } }
+        /// <summary>Get the summary data</summary>
+        public GroupAccountSummary Summary { get { return m_Summary; } }
+
+        /// <summary>Construct a new instance of the GroupAccountSummaryReplyEventArgs class</summary>
+        /// <param name="groupID">The ID of the group</param>
+        /// <param name="summary">The summary data</param>
+        public GroupAccountSummaryReplyEventArgs(UUID groupID, GroupAccountSummary summary)
+        {
+            this.m_GroupID = groupID;
+            this.m_Summary = summary;
+        }
+    }
+    
+    /// <summary>A response to a group create request</summary>
+    public class GroupCreatedReplyEventArgs : EventArgs
+    {
+        private readonly UUID m_GroupID;
+        private readonly bool m_Success;
+        private readonly string m_Message;
+
+        /// <summary>Get the ID of the group</summary>
+        public UUID GroupID { get { return m_GroupID; } }
+        /// <summary>true of the  group was created successfully</summary>
+        public bool Success { get { return m_Success; } }
+        /// <summary>A string containing the message</summary>
+        public string Message { get { return m_Message; } }
+
+        /// <summary>Construct a new instance of the GroupCreatedReplyEventArgs class</summary>
+        /// <param name="groupID">The ID of the group</param>
+        /// <param name="success">the success or faulure of the request</param>
+        /// <param name="messsage">A string containing additional information</param>
+        public GroupCreatedReplyEventArgs(UUID groupID, bool success, string messsage)
+        {
+            this.m_GroupID = groupID;
+            this.m_Success = success;
+            this.m_Message = messsage;
+        }
+    }
+    
+    /// <summary>Represents a response to a request</summary>
+    public class GroupOperationEventArgs : EventArgs
+    {
+        private readonly UUID m_GroupID;
+        private readonly bool m_Success;
+
+        /// <summary>Get the ID of the group</summary>
+        public UUID GroupID { get { return m_GroupID; } }
+        /// <summary>true of the request was successful</summary>
+        public bool Success { get { return m_Success; } }
+
+        /// <summary>Construct a new instance of the GroupOperationEventArgs class</summary>
+        /// <param name="groupID">The ID of the group</param>
+        /// <param name="success">true of the request was successful</param>
+        public GroupOperationEventArgs(UUID groupID, bool success)
+        {
+            this.m_GroupID = groupID;
+            this.m_Success = success;
+        }
+    }
+    
+    /// <summary>Represents your agent leaving a group</summary>
+    public class GroupDroppedEventArgs : EventArgs
+    {
+        private readonly UUID m_GroupID;
+        /// <summary>Get the ID of the group</summary>
+        public UUID GroupID { get { return m_GroupID; } }
+
+        /// <summary>Construct a new instance of the GroupDroppedEventArgs class</summary>
+        /// <param name="groupID">The ID of the group</param>
+        public GroupDroppedEventArgs(UUID groupID)
+        {
+            m_GroupID = groupID;
+        }
+    }
+
+    /// <summary>Represents a list of active group notices</summary>
+    public class GroupNoticesListReplyEventArgs : EventArgs
+    {
+        private readonly UUID m_GroupID;
+        private readonly GroupNoticeList m_Notices;
+
+        /// <summary>Get the ID of the group</summary>
+        public UUID GroupID { get { return m_GroupID; } }
+        /// <summary>Get the notices list</summary>
+        public GroupNoticeList Notices { get { return m_Notices; } }
+
+        /// <summary>Construct a new instance of the GroupNoticesListReplyEventArgs class</summary>
+        /// <param name="groupID">The ID of the group</param>
+        /// <param name="notices">The list containing active notices</param>
+        public GroupNoticesListReplyEventArgs(UUID groupID, GroupNoticeList notices)
+        {
+            m_GroupID = groupID;
+            m_Notices = notices;
+        }
+    }
+    
+    /// <summary>Represents the profile of a group</summary>
+    public class GroupProfileEventArgs : EventArgs
+    {
+        private readonly Group m_Group;
+
+        /// <summary>Get the group profile</summary>
+        public Group Group { get { return m_Group; } }
+
+        /// <summary>Construct a new instance of the GroupProfileEventArgs class</summary>
+        /// <param name="group">The group profile</param>
+        public GroupProfileEventArgs(Group group)
+        {
+            this.m_Group = group;
+        }
+    }
+
+    #endregion
 }

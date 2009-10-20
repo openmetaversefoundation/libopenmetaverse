@@ -29,7 +29,7 @@ namespace OpenMetaverse.TestClient.Commands
             waitQuery.Reset();
             
             Client.Avatars.OnAvatarNames += Avatars_OnAvatarNames;
-            Client.Groups.OnGroupProfile += Groups_OnGroupProfile;
+            Client.Groups.GroupProfile += Groups_OnGroupProfile;
             Client.Avatars.RequestAvatarName(key);            
             
             Client.Groups.RequestGroupProfile(key);
@@ -39,13 +39,13 @@ namespace OpenMetaverse.TestClient.Commands
             }
 
             Client.Avatars.OnAvatarNames -= Avatars_OnAvatarNames;
-            Client.Groups.OnGroupProfile -= Groups_OnGroupProfile;
+            Client.Groups.GroupProfile -= Groups_OnGroupProfile;
             return result.ToString();
         }
 
-        void Groups_OnGroupProfile(Group group)
+        void Groups_OnGroupProfile(object sender, GroupProfileEventArgs e)
         {
-            result.AppendLine("Group: " + group.Name + " " + group.ID);
+            result.AppendLine("Group: " + e.Group.Name + " " + e.Group.ID);
             waitQuery.Set();
         }
 

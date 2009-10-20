@@ -21,7 +21,8 @@ namespace OpenMetaverse.TestClient
             testClient.Avatars.OnAvatarInterests += new AvatarManager.AvatarInterestsCallback(Avatars_OnAvatarInterests);
             testClient.Avatars.OnAvatarProperties += new AvatarManager.AvatarPropertiesCallback(Avatars_OnAvatarProperties);
             testClient.Avatars.OnAvatarGroups += new AvatarManager.AvatarGroupsCallback(Avatars_OnAvatarGroups);
-            testClient.Groups.OnGroupJoined += new GroupManager.GroupJoinedCallback(Groups_OnGroupJoined);
+            testClient.Groups.GroupJoinedReply += new EventHandler<GroupOperationEventArgs>(Groups_OnGroupJoined);
+            
             testClient.Avatars.OnAvatarPicks += new AvatarManager.AvatarPicksCallback(Avatars_OnAvatarPicks);
             testClient.Avatars.OnPickInfo += new AvatarManager.PickInfoCallback(Avatars_OnPickInfo);
 
@@ -29,7 +30,7 @@ namespace OpenMetaverse.TestClient
             Description = "Clones another avatars profile as closely as possible. WARNING: This command will " +
                 "destroy your existing profile! Usage: cloneprofile [targetuuid]";
             Category = CommandCategory.Other;
-        }
+        }        
 
         public override string Execute(string[] args, UUID fromAgentID)
         {
@@ -141,16 +142,16 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Groups_OnGroupJoined(UUID groupID, bool success)
+        void Groups_OnGroupJoined(object sender, GroupOperationEventArgs e)
         {
-            Console.WriteLine(Client.ToString() + (success ? " joined " : " failed to join ") +
-                groupID.ToString());
+            Console.WriteLine(Client.ToString() + (e.Success ? " joined " : " failed to join ") +
+                e.GroupID.ToString());
 
-            if (success)
+            if (e.Success)
             {
-                Console.WriteLine(Client.ToString() + " setting " + groupID.ToString() +
+                Console.WriteLine(Client.ToString() + " setting " + e.GroupID.ToString() +
                     " as the active group");
-                Client.Groups.ActivateGroup(groupID);
+                Client.Groups.ActivateGroup(e.GroupID);
             }
         }
     }

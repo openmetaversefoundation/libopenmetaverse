@@ -786,9 +786,9 @@ namespace OpenMetaverse
             sunPhase = time.TimeInfo.SunPhase;
             sunDirection = time.TimeInfo.SunDirection;
             sunAngVelocity = time.TimeInfo.SunAngVelocity;
-
+            
             // TODO: Does anyone have a use for the time stuff?
-      }
+        }
 
         protected void CoarseLocationHandler(Packet packet, Simulator simulator)
         {

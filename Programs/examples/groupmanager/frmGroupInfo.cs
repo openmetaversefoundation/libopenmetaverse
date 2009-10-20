@@ -21,9 +21,9 @@ namespace groupmanager
         Dictionary<UUID, GroupTitle> Titles = new Dictionary<UUID,GroupTitle>();
         Dictionary<UUID, GroupMemberData> MemberData = new Dictionary<UUID, GroupMemberData>();
         Dictionary<UUID, string> Names = new Dictionary<UUID, string>();
-        GroupManager.GroupProfileCallback GroupProfileCallback;
-        GroupManager.GroupMembersCallback GroupMembersCallback;
-        GroupManager.GroupTitlesCallback GroupTitlesCallback;
+        EventHandler<GroupProfileEventArgs> GroupProfileCallback;
+        EventHandler<GroupMembersReplyEventArgs> GroupMembersCallback;
+        EventHandler<GroupTitlesReplyEventArgs> GroupTitlesCallback;
         AvatarManager.AvatarNamesCallback AvatarNamesCallback;
         
         public frmGroupInfo(Group group, GridClient client)
@@ -37,18 +37,18 @@ namespace groupmanager
                 IntPtr temp = Handle;
             }
 
-            GroupProfileCallback = new GroupManager.GroupProfileCallback(GroupProfileHandler);
-            GroupMembersCallback = new GroupManager.GroupMembersCallback(GroupMembersHandler);
-            GroupTitlesCallback = new GroupManager.GroupTitlesCallback(GroupTitlesHandler);
+            GroupMembersCallback = new EventHandler<GroupMembersReplyEventArgs>(GroupMembersHandler);
+            GroupProfileCallback = new EventHandler<GroupProfileEventArgs>(GroupProfileHandler);
+            GroupTitlesCallback = new EventHandler<GroupTitlesReplyEventArgs>(GroupTitlesHandler);
             AvatarNamesCallback = new AvatarManager.AvatarNamesCallback(AvatarNamesHandler);
 
             Group = group;
             Client = client;
             
             // Register the callbacks for this form
-            Client.Groups.OnGroupProfile += GroupProfileCallback;
-            Client.Groups.OnGroupMembers += GroupMembersCallback;
-            Client.Groups.OnGroupTitles += GroupTitlesCallback;
+            Client.Groups.GroupProfile += GroupProfileCallback;
+            Client.Groups.GroupMembersReply += GroupMembersCallback;
+            Client.Groups.GroupTitlesReply += GroupTitlesCallback;
             Client.Avatars.OnAvatarNames += AvatarNamesCallback;
 
             // Request the group information
@@ -60,15 +60,15 @@ namespace groupmanager
         ~frmGroupInfo()
         {
             // Unregister the callbacks for this form
-            Client.Groups.OnGroupProfile -= GroupProfileCallback;
-            Client.Groups.OnGroupMembers -= GroupMembersCallback;
-            Client.Groups.OnGroupTitles -= GroupTitlesCallback;
+            Client.Groups.GroupProfile -= GroupProfileCallback;
+            Client.Groups.GroupMembersReply -= GroupMembersCallback;
+            Client.Groups.GroupTitlesReply -= GroupTitlesCallback;
             Client.Avatars.OnAvatarNames -= AvatarNamesCallback;
         }
 
-        private void GroupProfileHandler(Group profile)
+        private void GroupProfileHandler(object sender, GroupProfileEventArgs e)
         {
-            Profile = profile;
+            Profile = e.Group;
 
             if (Group.InsigniaID != UUID.Zero)
                 Client.Assets.RequestImage(Group.InsigniaID, ImageType.Normal,
@@ -213,9 +213,9 @@ namespace groupmanager
             }
         }
 
-        private void GroupMembersHandler(UUID requestID, UUID groupID, Dictionary<UUID, GroupMember> members)
+        private void GroupMembersHandler(object sender, GroupMembersReplyEventArgs e)
         {
-            Members = members;
+            Members = e.Members;
 
             UpdateMembers();
         }
@@ -256,9 +256,9 @@ namespace groupmanager
             }
         }
 
-        private void GroupTitlesHandler(UUID requestID, UUID groupID, Dictionary<UUID, GroupTitle> titles)
+        private void GroupTitlesHandler(object sender, GroupTitlesReplyEventArgs e)
         {
-            Titles = titles;
+            Titles = e.Titles;
 
             UpdateTitles();
         }

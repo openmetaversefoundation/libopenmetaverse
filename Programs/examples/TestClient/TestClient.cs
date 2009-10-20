@@ -53,7 +53,7 @@ namespace OpenMetaverse.TestClient
             Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
             Network.OnLogin += new NetworkManager.LoginCallback(LoginHandler);
             Self.IM += Self_IM;
-            Groups.OnGroupMembers += new GroupManager.GroupMembersCallback(GroupMembersHandler);
+            Groups.GroupMembersReply += GroupMembersHandler;
             Inventory.OnObjectOffered += new InventoryManager.ObjectOfferedCallback(Inventory_OnInventoryObjectReceived);
 
             Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
@@ -140,13 +140,20 @@ namespace OpenMetaverse.TestClient
 
         public void ReloadGroupsCache()
         {
-            GroupManager.CurrentGroupsCallback callback =
-                    new GroupManager.CurrentGroupsCallback(Groups_OnCurrentGroups);
-            Groups.OnCurrentGroups += callback;
+            Groups.CurrentGroups += Groups_CurrentGroups;            
             Groups.RequestCurrentGroups();
             GroupsEvent.WaitOne(10000, false);
-            Groups.OnCurrentGroups -= callback;
+            Groups.CurrentGroups -= Groups_CurrentGroups;
             GroupsEvent.Reset();
+        }
+
+        void Groups_CurrentGroups(object sender, CurrentGroupsEventArgs e)
+        {
+            if (null == GroupsCache)
+                GroupsCache = e.Groups;
+            else
+                lock (GroupsCache) { GroupsCache = e.Groups; }
+            GroupsEvent.Set();
         }
 
         public UUID GroupName2UUID(String groupName)
@@ -167,17 +174,7 @@ namespace OpenMetaverse.TestClient
                 }
             }
             return UUID.Zero;
-        }
-
-        private void Groups_OnCurrentGroups(Dictionary<UUID, Group> pGroups)
-        {
-            if (null == GroupsCache)
-                GroupsCache = pGroups;
-            else
-                lock(GroupsCache) { GroupsCache = pGroups; }
-            GroupsEvent.Set();
-        }
-
+        }      
 
         private void updateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
@@ -197,11 +194,11 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        private void GroupMembersHandler(UUID requestID, UUID groupID, Dictionary<UUID, GroupMember> members)
+        private void GroupMembersHandler(object sender, GroupMembersReplyEventArgs e)
         {
-            if (requestID != GroupMembersRequestID) return;
+            if (e.RequestID != GroupMembersRequestID) return;
 
-            GroupMembers = members;
+            GroupMembers = e.Members;
         }
 
         private void AvatarAppearanceHandler(Packet packet, Simulator simulator)

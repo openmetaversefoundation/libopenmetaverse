@@ -29,14 +29,13 @@ namespace OpenMetaverse.TestClient
             groupName = groupName.Trim();
 
             UUID groupUUID = Client.GroupName2UUID(groupName);
-            if (UUID.Zero != groupUUID) {
-                GroupManager.GroupLeftCallback lcallback = new GroupManager.GroupLeftCallback(Groups_OnGroupLeft);
-                Client.Groups.OnGroupLeft += lcallback;
+            if (UUID.Zero != groupUUID) {                
+                Client.Groups.GroupLeaveReply += Groups_GroupLeft;
                 Client.Groups.LeaveGroup(groupUUID);
 
                 GroupsEvent.WaitOne(30000, false);
+                Client.Groups.GroupLeaveReply -= Groups_GroupLeft;
 
-                Client.Groups.OnGroupLeft -= lcallback;
                 GroupsEvent.Reset();
                 Client.ReloadGroupsCache();
 
@@ -47,13 +46,13 @@ namespace OpenMetaverse.TestClient
             return Client.ToString() + " doesn't seem to be member of the group " + groupName;
         }
 
-
-        void Groups_OnGroupLeft(UUID groupID, bool success)
+        void Groups_GroupLeft(object sender, GroupOperationEventArgs e)
         {
-            Console.WriteLine(Client.ToString() + (success ? " has left group " : " failed to left group ") + groupID.ToString());
+            Console.WriteLine(Client.ToString() + (e.Success ? " has left group " : " failed to left group ") + e.GroupID.ToString());
 
-            leftGroup = success;
+            leftGroup = e.Success;
             GroupsEvent.Set();
         }
+
     }
 }

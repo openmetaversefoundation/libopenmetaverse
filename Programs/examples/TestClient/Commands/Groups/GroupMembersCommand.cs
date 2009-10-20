@@ -35,31 +35,29 @@ namespace OpenMetaverse.TestClient
             GroupName = GroupName.Trim();
 
             GroupUUID = Client.GroupName2UUID(GroupName);
-            if (UUID.Zero != GroupUUID) {
-                GroupManager.GroupMembersCallback callback =
-                    new GroupManager.GroupMembersCallback(GroupMembersHandler);
-                Client.Groups.OnGroupMembers += callback;
+            if (UUID.Zero != GroupUUID) {                
+                Client.Groups.GroupMembersReply += GroupMembersHandler;                
                 GroupRequestID = Client.Groups.RequestGroupMembers(GroupUUID);
                 GroupsEvent.WaitOne(30000, false);
                 GroupsEvent.Reset();
-                Client.Groups.OnGroupMembers -= callback;
+                Client.Groups.GroupMembersReply -= GroupMembersHandler;
                 return Client.ToString() + " got group members";
             }
             return Client.ToString() + " doesn't seem to be member of the group " + GroupName;
         }
 
-        private void GroupMembersHandler(UUID requestID, UUID groupID, Dictionary<UUID, GroupMember> members)
+        private void GroupMembersHandler(object sender, GroupMembersReplyEventArgs e)
         {
-            if (requestID == GroupRequestID) {
+            if (e.RequestID == GroupRequestID) {
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine();
-                sb.AppendFormat("GroupMembers: RequestID {0}", requestID).AppendLine();
+                sb.AppendFormat("GroupMembers: RequestID {0}", e.RequestID).AppendLine();
                 sb.AppendFormat("GroupMembers: GroupUUID {0}", GroupUUID).AppendLine();
                 sb.AppendFormat("GroupMembers: GroupName {0}", GroupName).AppendLine();
-                if (members.Count > 0)
-                    foreach (KeyValuePair<UUID, GroupMember> member in members)
+                if (e.Members.Count > 0)
+                    foreach (KeyValuePair<UUID, GroupMember> member in e.Members)
                         sb.AppendFormat("GroupMembers: MemberUUID {0}", member.Key.ToString()).AppendLine();
-                sb.AppendFormat("GroupMembers: MemberCount {0}", members.Count).AppendLine();
+                sb.AppendFormat("GroupMembers: MemberCount {0}", e.Members.Count).AppendLine();
                 Console.WriteLine(sb.ToString());
                 GroupsEvent.Set();
             } 
