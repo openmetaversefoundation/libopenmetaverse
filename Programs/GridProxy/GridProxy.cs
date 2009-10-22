@@ -369,12 +369,19 @@ namespace GridProxy
                         connThread.Name = "ProxyHTTP";
                         connThread.Start();
                     }
-                    catch (Exception e)
+                    catch (SocketException e)
                     {
+                        // indicates we've told the listener to shutdown
+                        if (e.SocketErrorCode == SocketError.Interrupted)
+                            break;
+
                         OpenMetaverse.Logger.Log("Login Failed", Helpers.LogLevel.Error, e);
+                        break;
                     }
-
-
+                    catch (ObjectDisposedException e)
+                    {
+                        break;
+                    }
                     // send any packets queued for injection
                     if (activeCircuit != null) lock (this)
                         {
