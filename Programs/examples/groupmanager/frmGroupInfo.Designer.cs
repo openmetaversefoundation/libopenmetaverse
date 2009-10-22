@@ -30,6 +30,7 @@ namespace groupmanager
         {
             this.tabs = new System.Windows.Forms.TabControl();
             this.tabGeneral = new System.Windows.Forms.TabPage();
+            this.labelInsigniaProgress = new System.Windows.Forms.Label();
             this.grpPreferences = new System.Windows.Forms.GroupBox();
             this.chkMature = new System.Windows.Forms.CheckBox();
             this.numFee = new System.Windows.Forms.NumericUpDown();
@@ -93,7 +94,6 @@ namespace groupmanager
             this.cmdCancel = new System.Windows.Forms.Button();
             this.cmdOK = new System.Windows.Forms.Button();
             this.cmdRefresh = new System.Windows.Forms.Button();
-            this.labelInsigniaProgress = new System.Windows.Forms.Label();
             this.tabs.SuspendLayout();
             this.tabGeneral.SuspendLayout();
             this.grpPreferences.SuspendLayout();
@@ -139,6 +139,15 @@ namespace groupmanager
             this.tabGeneral.TabIndex = 0;
             this.tabGeneral.Text = "General";
             this.tabGeneral.UseVisualStyleBackColor = true;
+            // 
+            // labelInsigniaProgress
+            // 
+            this.labelInsigniaProgress.AutoSize = true;
+            this.labelInsigniaProgress.Location = new System.Drawing.Point(23, 149);
+            this.labelInsigniaProgress.Name = "labelInsigniaProgress";
+            this.labelInsigniaProgress.Size = new System.Drawing.Size(54, 13);
+            this.labelInsigniaProgress.TabIndex = 7;
+            this.labelInsigniaProgress.Text = "Loading...";
             // 
             // grpPreferences
             // 
@@ -716,16 +725,7 @@ namespace groupmanager
             this.cmdRefresh.Size = new System.Drawing.Size(121, 23);
             this.cmdRefresh.TabIndex = 13;
             this.cmdRefresh.Text = "Refresh from server";
-            this.cmdRefresh.UseVisualStyleBackColor = true;
-            // 
-            // labelInsigniaProgress
-            // 
-            this.labelInsigniaProgress.AutoSize = true;
-            this.labelInsigniaProgress.Location = new System.Drawing.Point(23, 149);
-            this.labelInsigniaProgress.Name = "labelInsigniaProgress";
-            this.labelInsigniaProgress.Size = new System.Drawing.Size(54, 13);
-            this.labelInsigniaProgress.TabIndex = 7;
-            this.labelInsigniaProgress.Text = "Loading...";
+            this.cmdRefresh.UseVisualStyleBackColor = true;            
             // 
             // frmGroupInfo
             // 

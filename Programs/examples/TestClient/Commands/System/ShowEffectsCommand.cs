@@ -13,9 +13,36 @@ namespace OpenMetaverse.TestClient
             Description = "Prints out information for every viewer effect that is received. Usage: showeffects [on/off]";
             Category = CommandCategory.Other;
 
-            testClient.Avatars.OnEffect += new AvatarManager.EffectCallback(Avatars_OnEffect);
-            testClient.Avatars.OnLookAt += new AvatarManager.LookAtCallback(Avatars_OnLookAt);
-            testClient.Avatars.OnPointAt += new AvatarManager.PointAtCallback(Avatars_OnPointAt);
+            testClient.Avatars.ViewerEffect += new EventHandler<ViewerEffectEventArgs>(Avatars_ViewerEffect);
+            testClient.Avatars.ViewerEffectPointAt += new EventHandler<ViewerEffectPointAtEventArgs>(Avatars_ViewerEffectPointAt);
+            testClient.Avatars.ViewerEffectLookAt += new EventHandler<ViewerEffectLookAtEventArgs>(Avatars_ViewerEffectLookAt);            
+        }
+
+        void Avatars_ViewerEffectLookAt(object sender, ViewerEffectLookAtEventArgs e)
+        {
+            if (ShowEffects)
+                Console.WriteLine(
+                "ViewerEffect [LookAt]: SourceID: {0} TargetID: {1} TargetPos: {2} Type: {3} Duration: {4} ID: {5}",
+                e.SourceID.ToString(), e.TargetID.ToString(), e.TargetPosition, e.LookType, e.Duration,
+                e.EffectID.ToString());
+        }
+
+        void Avatars_ViewerEffectPointAt(object sender, ViewerEffectPointAtEventArgs e)
+        {
+            if (ShowEffects)
+                Console.WriteLine(
+                "ViewerEffect [PointAt]: SourceID: {0} TargetID: {1} TargetPos: {2} Type: {3} Duration: {4} ID: {5}",
+                e.SourceID.ToString(), e.TargetID.ToString(), e.TargetPosition, e.PointType, e.Duration,
+                e.EffectID.ToString());
+        }
+
+        void Avatars_ViewerEffect(object sender, ViewerEffectEventArgs e)
+        {
+            if (ShowEffects)
+                Console.WriteLine(
+                "ViewerEffect [{0}]: SourceID: {1} TargetID: {2} TargetPos: {3} Duration: {4} ID: {5}",
+                e.Type, e.SourceID.ToString(), e.TargetID.ToString(), e.TargetPosition, e.Duration,
+                e.EffectID.ToString());
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
@@ -42,36 +69,7 @@ namespace OpenMetaverse.TestClient
             {
                 return "Usage: showeffects [on/off]";
             }
-        }
+        }        
 
-        private void Avatars_OnPointAt(UUID sourceID, UUID targetID, Vector3d targetPos, 
-            PointAtType pointType, float duration, UUID id)
-        {
-            if (ShowEffects)
-                Console.WriteLine(
-                "ViewerEffect [PointAt]: SourceID: {0} TargetID: {1} TargetPos: {2} Type: {3} Duration: {4} ID: {5}",
-                sourceID.ToString(), targetID.ToString(), targetPos, pointType, duration, 
-                id.ToString());
-        }
-
-        private void Avatars_OnLookAt(UUID sourceID, UUID targetID, Vector3d targetPos, 
-            LookAtType lookType, float duration, UUID id)
-        {
-            if (ShowEffects)
-                Console.WriteLine(
-                "ViewerEffect [LookAt]: SourceID: {0} TargetID: {1} TargetPos: {2} Type: {3} Duration: {4} ID: {5}",
-                sourceID.ToString(), targetID.ToString(), targetPos, lookType, duration,
-                id.ToString());
-        }
-
-        private void Avatars_OnEffect(EffectType type, UUID sourceID, UUID targetID, 
-            Vector3d targetPos, float duration, UUID id)
-        {
-            if (ShowEffects)
-                Console.WriteLine(
-                "ViewerEffect [{0}]: SourceID: {1} TargetID: {2} TargetPos: {3} Duration: {4} ID: {5}",
-                type, sourceID.ToString(), targetID.ToString(), targetPos, duration,
-                id.ToString());
-        }
     }
 }

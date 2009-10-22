@@ -23,11 +23,20 @@ namespace OpenMetaverse.TestClient
         {
             testClient.Objects.OnObjectPropertiesFamily += new ObjectManager.ObjectPropertiesFamilyCallback(Objects_OnObjectPropertiesFamily);
             testClient.Objects.OnObjectProperties += new ObjectManager.ObjectPropertiesCallback(Objects_OnObjectProperties);
-            testClient.Avatars.OnPointAt += new AvatarManager.PointAtCallback(Avatars_OnPointAt);
+            testClient.Avatars.ViewerEffectPointAt += new EventHandler<ViewerEffectPointAtEventArgs>(Avatars_ViewerEffectPointAt);
 
             Name = "export";
             Description = "Exports an object to an xml file. Usage: export uuid outputfile.xml";
             Category = CommandCategory.Objects;
+        }
+
+        void Avatars_ViewerEffectPointAt(object sender, ViewerEffectPointAtEventArgs e)
+        {
+            if (e.SourceID == Client.MasterKey)
+            {
+                //Client.DebugLog("Master is now selecting " + targetID.ToString());
+                SelectedObject = e.TargetID;
+            }
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
@@ -208,16 +217,6 @@ namespace OpenMetaverse.TestClient
                 {
                     Logger.Log("Failed to download image " + asset.AssetID + ":" + state, Helpers.LogLevel.Warning, Client);
                 }
-            }
-        }
-
-        void Avatars_OnPointAt(UUID sourceID, UUID targetID, Vector3d targetPos, 
-            PointAtType pointType, float duration, UUID id)
-        {
-            if (sourceID == Client.MasterKey)
-            {
-                //Client.DebugLog("Master is now selecting " + targetID.ToString());
-                SelectedObject = targetID;
             }
         }
 

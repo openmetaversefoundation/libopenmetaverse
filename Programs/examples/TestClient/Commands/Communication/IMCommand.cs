@@ -14,13 +14,13 @@ namespace OpenMetaverse.TestClient
 
         public ImCommand(TestClient testClient)
         {
-            testClient.Avatars.OnAvatarNameSearch += new AvatarManager.AvatarNameSearchCallback(Avatars_OnAvatarNameSearch);
+            testClient.Avatars.AvatarPickerReply += Avatars_AvatarPickerReply;
 
             Name = "im";
             Description = "Instant message someone. Usage: im [firstname] [lastname] [message]";
             Category = CommandCategory.Communication;
         }
-
+        
         public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length < 3)
@@ -56,9 +56,9 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Avatars_OnAvatarNameSearch(UUID queryID, Dictionary<UUID, string> avatars)
+        void Avatars_AvatarPickerReply(object sender, AvatarPickerReplyEventArgs e)
         {
-            foreach (KeyValuePair<UUID, string> kvp in avatars)
+            foreach (KeyValuePair<UUID, string> kvp in e.Avatars)
             {
                 if (kvp.Value.ToLower() == ToAvatarName.ToLower())
                 {

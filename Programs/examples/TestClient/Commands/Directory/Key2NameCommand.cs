@@ -28,7 +28,7 @@ namespace OpenMetaverse.TestClient.Commands
             result.Remove(0, result.Length);
             waitQuery.Reset();
             
-            Client.Avatars.OnAvatarNames += Avatars_OnAvatarNames;
+            Client.Avatars.UUIDNameReply += Avatars_OnAvatarNames;
             Client.Groups.GroupProfile += Groups_OnGroupProfile;
             Client.Avatars.RequestAvatarName(key);            
             
@@ -38,7 +38,7 @@ namespace OpenMetaverse.TestClient.Commands
                 result.AppendLine("Timeout waiting for reply, this could mean the Key is not an avatar or a group");
             }
 
-            Client.Avatars.OnAvatarNames -= Avatars_OnAvatarNames;
+            Client.Avatars.UUIDNameReply -= Avatars_OnAvatarNames;
             Client.Groups.GroupProfile -= Groups_OnGroupProfile;
             return result.ToString();
         }
@@ -49,9 +49,9 @@ namespace OpenMetaverse.TestClient.Commands
             waitQuery.Set();
         }
 
-        void Avatars_OnAvatarNames(Dictionary<UUID, string> names)
+        void Avatars_OnAvatarNames(object sender, UUIDNameReplyEventArgs e)
         {
-            foreach (KeyValuePair<UUID, string> kvp in names)
+            foreach (KeyValuePair<UUID, string> kvp in e.Names)
                 result.AppendLine("Avatar: " + kvp.Value + " " + kvp.Key);
             waitQuery.Set();
         }        

@@ -24,7 +24,7 @@ namespace groupmanager
         EventHandler<GroupProfileEventArgs> GroupProfileCallback;
         EventHandler<GroupMembersReplyEventArgs> GroupMembersCallback;
         EventHandler<GroupTitlesReplyEventArgs> GroupTitlesCallback;
-        AvatarManager.AvatarNamesCallback AvatarNamesCallback;
+        EventHandler<UUIDNameReplyEventArgs> AvatarNamesCallback;
         
         public frmGroupInfo(Group group, GridClient client)
         {
@@ -40,7 +40,7 @@ namespace groupmanager
             GroupMembersCallback = new EventHandler<GroupMembersReplyEventArgs>(GroupMembersHandler);
             GroupProfileCallback = new EventHandler<GroupProfileEventArgs>(GroupProfileHandler);
             GroupTitlesCallback = new EventHandler<GroupTitlesReplyEventArgs>(GroupTitlesHandler);
-            AvatarNamesCallback = new AvatarManager.AvatarNamesCallback(AvatarNamesHandler);
+            AvatarNamesCallback = new EventHandler<UUIDNameReplyEventArgs>(AvatarNamesHandler);
 
             Group = group;
             Client = client;
@@ -49,7 +49,7 @@ namespace groupmanager
             Client.Groups.GroupProfile += GroupProfileCallback;
             Client.Groups.GroupMembersReply += GroupMembersCallback;
             Client.Groups.GroupTitlesReply += GroupTitlesCallback;
-            Client.Avatars.OnAvatarNames += AvatarNamesCallback;
+            Client.Avatars.UUIDNameReply += AvatarNamesCallback;
 
             // Request the group information
             Client.Groups.RequestGroupProfile(Group.ID);
@@ -63,7 +63,7 @@ namespace groupmanager
             Client.Groups.GroupProfile -= GroupProfileCallback;
             Client.Groups.GroupMembersReply -= GroupMembersCallback;
             Client.Groups.GroupTitlesReply -= GroupTitlesCallback;
-            Client.Avatars.OnAvatarNames -= AvatarNamesCallback;
+            Client.Avatars.UUIDNameReply -= AvatarNamesCallback;
         }
 
         private void GroupProfileHandler(object sender, GroupProfileEventArgs e)
@@ -120,11 +120,11 @@ namespace groupmanager
             Client.Avatars.RequestAvatarName(Profile.FounderID);
         }
 
-        private void AvatarNamesHandler(Dictionary<UUID, string> names)
+        private void AvatarNamesHandler(object sender, UUIDNameReplyEventArgs e)
         {
             lock (Names)
             {
-                foreach (KeyValuePair<UUID, string> agent in names)
+                foreach (KeyValuePair<UUID, string> agent in e.Names)
                 {
                     Names[agent.Key] = agent.Value;
                 }

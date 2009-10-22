@@ -454,7 +454,7 @@ namespace OpenMetaverse
             Client = client;
 
             Client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnect);
-            Client.Avatars.OnAvatarNames += new AvatarManager.AvatarNamesCallback(Avatars_OnAvatarNames);
+            Client.Avatars.UUIDNameReply += new EventHandler<UUIDNameReplyEventArgs>(Avatars_OnAvatarNames);
             Client.Self.IM += Self_IM;
 
             Client.Network.RegisterCallback(PacketType.OnlineNotification, OnlineNotificationHandler);
@@ -466,7 +466,6 @@ namespace OpenMetaverse
             Client.Network.RegisterLoginResponseCallback(new NetworkManager.LoginResponseCallback(Network_OnLoginResponse),
                 new string[] { "buddy-list" });
         }
-
 
         #region Public Methods
 
@@ -692,12 +691,13 @@ namespace OpenMetaverse
         /// <summary>
         /// This handles the asynchronous response of a RequestAvatarNames call.
         /// </summary>
-        /// <param name="names">names cooresponding to the the list of IDs sent the the RequestAvatarNames call.</param>
-        private void Avatars_OnAvatarNames(Dictionary<UUID, string> names)
+        /// <param name="sender"></param>
+        /// <param name="e">names cooresponding to the the list of IDs sent the the RequestAvatarNames call.</param>
+        private void Avatars_OnAvatarNames(object sender, UUIDNameReplyEventArgs e)
         {
             Dictionary<UUID, string> newNames = new Dictionary<UUID, string>();
 
-            foreach (KeyValuePair<UUID, string> kvp in names)
+            foreach (KeyValuePair<UUID, string> kvp in e.Names)
             {
                 FriendInfo friend;
                 lock (FriendList.Dictionary)
@@ -705,9 +705,9 @@ namespace OpenMetaverse
                     if (FriendList.TryGetValue(kvp.Key, out friend))
                     {
                         if (friend.Name == null)
-                            newNames.Add(kvp.Key, names[kvp.Key]);
+                            newNames.Add(kvp.Key, e.Names[kvp.Key]);
 
-                        friend.Name = names[kvp.Key];
+                        friend.Name = e.Names[kvp.Key];
                         FriendList[kvp.Key] = friend;
                     }
                 }
