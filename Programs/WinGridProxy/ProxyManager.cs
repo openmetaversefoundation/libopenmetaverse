@@ -102,8 +102,7 @@ namespace WinGridProxy
             ProxyConfig pc = new ProxyConfig("WinGridProxy", "Jim Radford", args);
 
             Proxy = new ProxyFrame(args, pc);
-
-
+            
             Proxy.proxy.AddLoginRequestDelegate(new XmlRpcRequestDelegate(LoginRequest));
             Proxy.proxy.AddLoginResponseDelegate(new XmlRpcResponseDelegate(LoginResponse));
 
@@ -128,7 +127,7 @@ namespace WinGridProxy
             if (OnCapabilityAdded != null)
                 OnCapabilityAdded((CapInfo)de.Value);
         }
-
+        
         private void LoginRequest(XmlRpcRequest request)
         {
             if (OnLoginResponse != null)

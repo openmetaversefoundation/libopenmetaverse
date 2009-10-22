@@ -246,6 +246,7 @@
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="OpenMetaverse.Http"/>
+      <Reference name="XMLRPC"/>
       <Reference name="log4net"/>
       
       <Files>
@@ -608,6 +609,7 @@
       <Reference name="OpenMetaverse.Http"/>
       <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="GridProxy"/>
+      <Reference name="XMLRPC"/>
       <Reference name="Be.Windows.Forms.HexBox"/>
       <Reference name="log4net"/>
       <Files>

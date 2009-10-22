@@ -31,20 +31,20 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Xml;
-using Nwc.XmlRpc;
+using System.Text;
+using System.Threading;
+using System.Net.Sockets;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using OpenMetaverse;
 using OpenMetaverse.Http;
-using OpenMetaverse.StructuredData;
 using OpenMetaverse.Packets;
+using OpenMetaverse.StructuredData;
 using log4net;
+using Nwc.XmlRpc;
 using Logger=Nwc.XmlRpc.Logger;
 
 namespace GridProxy
@@ -109,6 +109,7 @@ namespace GridProxy
             argumentParsers["proxy-remote-login-uri"] = new ArgumentParser(ParseRemoteLoginUri);
 
             foreach (string arg in args)
+            {
                 foreach (string argument in argumentParsers.Keys)
                 {
                     Match match = (new Regex("^--" + argument + "(?:=(.*))?$")).Match(arg);
@@ -130,6 +131,7 @@ namespace GridProxy
                         }
                     }
                 }
+            }
         }
 
         private delegate void ArgumentParser(string value);
@@ -360,13 +362,13 @@ namespace GridProxy
 
                         Thread connThread = new Thread((ThreadStart)delegate
                         {
-                            OpenMetaverse.Logger.Log(">T> ProxyHTTP", Helpers.LogLevel.Debug);
+                            OpenMetaverse.Logger.Log(">T> LoginProxy", Helpers.LogLevel.Debug);
                             ProxyHTTP(client);
-                            OpenMetaverse.Logger.Log("<T< ProxyHTTP", Helpers.LogLevel.Debug);
+                            OpenMetaverse.Logger.Log("<T< LoginProxy", Helpers.LogLevel.Debug);
                         });
 
                         connThread.IsBackground = true;
-                        connThread.Name = "ProxyHTTP";
+                        connThread.Name = "LoginProxy";
                         connThread.Start();
                     }
                     catch (SocketException e)
@@ -383,13 +385,16 @@ namespace GridProxy
                         break;
                     }
                     // send any packets queued for injection
-                    if (activeCircuit != null) lock (this)
+                    if (activeCircuit != null)
+                    {
+                        lock (this)
                         {
                             SimProxy activeProxy = (SimProxy)simProxies[activeCircuit];
                             foreach (Packet packet in queuedOutgoingInjections)
                                 activeProxy.Inject(packet, Direction.Outgoing);
                             queuedOutgoingInjections = new List<Packet>();
                         }
+                    }
                 }
             }
             catch (Exception e)
