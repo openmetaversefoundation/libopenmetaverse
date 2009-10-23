@@ -2443,7 +2443,7 @@ namespace OpenMetaverse
                                     break;
 
                                 case GestureStepType.Sound:
-                                    Client.Sound.SendSoundTrigger(((GestureStepSound)step).ID);
+                                    Client.Sound.PlaySound(((GestureStepSound)step).ID);
                                     break;
 
                                 case GestureStepType.Wait:
