@@ -775,7 +775,7 @@ namespace OpenMetaverse
         }
         
         /// <summary>The event subscribers. null if no subcribers</summary>
-        public EventHandler<BalanceEventArgs> m_Balance;
+        private EventHandler<BalanceEventArgs> m_Balance;
 
         /// <summary>Raises the MoneyBalance event</summary>
         /// <param name="e">A BalanceEventArgs object containing the
@@ -798,7 +798,7 @@ namespace OpenMetaverse
         }
         
         /// <summary>The event subscribers. null if no subcribers</summary>
-        public EventHandler<MoneyBalanceReplyEventArgs> m_MoneyBalance;
+        private EventHandler<MoneyBalanceReplyEventArgs> m_MoneyBalance;
 
         /// <summary>Raises the MoneyBalanceReply event</summary>
         /// <param name="e">A MoneyBalanceReplyEventArgs object containing the
@@ -1076,7 +1076,7 @@ namespace OpenMetaverse
         }
         
         /// <summary>The event subscribers. null if no subcribers</summary>
-        public EventHandler<ScriptSensorReplyEventArgs> m_ScriptSensorReply;
+        private EventHandler<ScriptSensorReplyEventArgs> m_ScriptSensorReply;
 
         /// <summary>Raises the ScriptSensorReply event</summary>
         /// <param name="e">A ScriptSensorReplyEventArgs object containing the
@@ -2443,7 +2443,7 @@ namespace OpenMetaverse
                                     break;
 
                                 case GestureStepType.Sound:
-                                    Client.Sound.SoundTrigger(((GestureStepSound)step).ID);
+                                    Client.Sound.SendSoundTrigger(((GestureStepSound)step).ID);
                                     break;
 
                                 case GestureStepType.Wait:

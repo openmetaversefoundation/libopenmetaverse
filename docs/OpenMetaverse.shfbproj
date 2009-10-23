@@ -26,18 +26,11 @@
     <PresentationStyle>Prototype</PresentationStyle>
     <DocumentationSources>
       <DocumentationSource sourceFile="..\bin\OpenMetaverse.dll" />
-      <DocumentationSource sourceFile="..\bin\OpenMetaverse.GUI.dll" />
-      <DocumentationSource sourceFile="..\bin\OpenMetaverse.GUI.xml" />
-      <DocumentationSource sourceFile="..\bin\OpenMetaverse.Http.dll" />
-      <DocumentationSource sourceFile="..\bin\OpenMetaverse.Http.xml" />
-      <DocumentationSource sourceFile="..\bin\OpenMetaverse.StructuredData.dll" />
-      <DocumentationSource sourceFile="..\bin\OpenMetaverse.StructuredData.xml" />
-      <DocumentationSource sourceFile="..\bin\OpenMetaverse.Utilities.dll" />
-      <DocumentationSource sourceFile="..\bin\OpenMetaverse.Utilities.xml" />
-      <DocumentationSource sourceFile="..\bin\OpenMetaverse.xml" />
-      <DocumentationSource sourceFile="..\bin\OpenMetaverseTypes.dll" />
-      <DocumentationSource sourceFile="..\bin\OpenMetaverseTypes.xml" />
-    </DocumentationSources>
+<DocumentationSource sourceFile="..\bin\OpenMetaverse.StructuredData.dll" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverse.StructuredData.xml" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverse.xml" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverseTypes.dll" />
+<DocumentationSource sourceFile="..\bin\OpenMetaverseTypes.xml" /></DocumentationSources>
     <FrameworkVersion>3.5</FrameworkVersion>
     <ApiFilter>
       <Filter entryType="Namespace" fullName="" isExposed="False" xmlns="" />
@@ -47,6 +40,59 @@
     </ApiFilter>
     <VisibleItems>None</VisibleItems>
     <SyntaxFilters>CSharp</SyntaxFilters>
+    <ComponentConfigurations>
+      <ComponentConfig id="Cached MSDN URL References" enabled="True" xmlns="">
+        <component id="Cached MSDN URL References" type="SandcastleBuilder.Components.CachedResolveReferenceLinksComponent" assembly="{@SHFBFolder}SandcastleBuilder.Components.dll" locale="{@Locale}" linkTarget="{@SdkLinkTarget}">
+<cache filename="{@LocalDataFolder}Cache\MsdnUrl.cache" />
+<targets base="{@SandcastlePath}Data\Reflection" recurse="true" files="*.xml" type="{@SDKLinks}" />
+<targets files="reflection.xml" type="{@ProjectLinks}" />
+</component>
+      </ComponentConfig>
+<ComponentConfig id="Cached Reflection Index Data" enabled="True" xmlns=""><component id="Cached Reflection Index Data" type="SandcastleBuilder.Components.CachedCopyFromIndexComponent" assembly="{@SHFBFolder}SandcastleBuilder.Components.dll">
+<index name="reflection" value="/reflection/apis/api" key="@id" cache="10">
+  <cache base="{@SandcastlePath}Data\Reflection" recurse="true" files="*.xml" cacheFile="{@LocalDataFolder}Cache\Reflection.cache" />
+  <data files="reflection.xml" />
+</index>
+<copy name="reflection" source="*" target="/document/reference" />
+</component></ComponentConfig>
+<ComponentConfig id="Code Block Component" enabled="True" xmlns=""><component id="Code Block Component" type="SandcastleBuilder.Components.CodeBlockComponent" assembly="{@SHFBFolder}SandcastleBuilder.Components.dll">
+<!-- Base path for relative filenames in source attributes
+                 (optional) -->
+<basePath value="{@HtmlEncProjectFolder}" />
+<!-- Connect to language filter (optional).  If omitted,
+                 language filtering is enabled by default. -->
+<languageFilter value="true" />
+<!-- Allow missing source files (Optional).  If omitted,
+                 it will generate errors if referenced source files
+                 are missing. -->
+<allowMissingSource value="false" />
+<!-- Remove region markers from imported code blocks.  If omitted,
+                 region markers in imported code blocks are left alone. -->
+<removeRegionMarkers value="false" />
+<!-- Code colorizer options (required).
+                 Attributes:
+                    Language syntax configuration file (required)
+                    XSLT style file (required)
+                    "Copy" image file URL (required)
+                    Default language (optional)
+                    Enable line numbering (optional)
+                    Enable outlining (optional)
+                    Keep XML comment "see" tags within the code (optional)
+                    Tab size override (optional, 0 = Use syntax file setting)
+                    Use language name as default title (optional) -->
+<colorizer syntaxFile="{@SHFBFolder}Colorizer\highlight.xml" styleFile="{@SHFBFolder}Colorizer\highlight.xsl" copyImageUrl="../icons/CopyCode.gif" language="cs" numberLines="false" outlining="false" keepSeeTags="false" tabSize="0" defaultTitle="true" />
+</component></ComponentConfig>
+<ComponentConfig id="Cached Framework Comments Index Data" enabled="True" xmlns=""><component id="Cached Framework Comments Index Data" type="SandcastleBuilder.Components.CachedCopyFromIndexComponent" assembly="{@SHFBFolder}SandcastleBuilder.Components.dll">
+<index name="comments" value="/doc/members/member" key="@name" cache="100">
+{@CachedFrameworkCommentList}
+{@CommentFileList}
+            </index>
+<copy name="comments" source="*" target="/document/comments" />
+</component></ComponentConfig></ComponentConfigurations>
+    <NamespaceSummaries>
+      <NamespaceSummaryItem name="OpenMetaverse" isDocumented="True" xmlns="">The Primary namespace used by libOpenMetaverse. Common classes, Structs and Enums are all located within this namespace.</NamespaceSummaryItem>
+    </NamespaceSummaries>
+    <ShowFeedbackControl>True</ShowFeedbackControl>
   </PropertyGroup>
   <!-- There are no properties for these two groups but they need to appear in
        order for Visual Studio to perform the build. -->

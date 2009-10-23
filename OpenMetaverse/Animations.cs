@@ -25,6 +25,8 @@
  */
 
 using System;
+using System.Reflection;
+using System.Collections.Generic;
 
 namespace OpenMetaverse
 {
@@ -303,5 +305,22 @@ namespace OpenMetaverse
         public readonly static UUID YES_HAPPY = new UUID("b8c8b2a3-9008-1771-3bfc-90924955ab2d");
         /// <summary>Agent floating with legs and arms crossed</summary>
         public readonly static UUID YOGA_FLOAT = new UUID("42ecd00b-9947-a97c-400a-bbc9174c7aeb");
+
+        /// <summary>
+        /// A dictionary containing all pre-defined animations
+        /// </summary>
+        /// <returns>A dictionary containing the pre-defined animations, 
+        /// where the key is the animations ID, and the value is a string
+        /// containing a name to identify the purpose of the animation</returns>
+        public static Dictionary<UUID, string> ToDictionary()
+        {
+            Dictionary<UUID, string> dict = new Dictionary<UUID, string>();
+            Type type = typeof(Animations);
+            foreach (FieldInfo field in type.GetFields(BindingFlags.Public | BindingFlags.Static))
+            {
+                dict.Add((UUID)field.GetValue(type), field.Name);
+            }
+            return dict;
+        }
     }
 }
