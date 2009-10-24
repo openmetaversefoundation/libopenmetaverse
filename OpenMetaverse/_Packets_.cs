@@ -2174,17 +2174,7 @@ namespace OpenMetaverse.Packets
         public class TelehubBlockBlock : PacketBlock
         {
             public UUID ObjectID;
-            private byte[] _objectname;
-            public byte[] ObjectName
-            {
-                get { return _objectname; }
-                set
-                {
-                    if (value == null) { _objectname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
-                }
-            }
+            public byte[] ObjectName;
             public Vector3 TelehubPos;
             public Quaternion TelehubRot;
 
@@ -2210,9 +2200,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     ObjectID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _objectname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _objectname, 0, length); i += length;
+                    length = bytes[i++];
+                    ObjectName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ObjectName, 0, length); i += length;
                     TelehubPos.FromBytes(bytes, i); i += 12;
                     TelehubRot.FromBytes(bytes, i, true); i += 12;
                 }
@@ -2694,17 +2684,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
 
             public override int Length
             {
@@ -2727,9 +2707,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -2870,28 +2850,8 @@ namespace OpenMetaverse.Packets
         public class DataBlock : PacketBlock
         {
             public UUID AvatarID;
-            private byte[] _firstname;
-            public byte[] FirstName
-            {
-                get { return _firstname; }
-                set
-                {
-                    if (value == null) { _firstname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _firstname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _firstname, 0, value.Length); }
-                }
-            }
-            private byte[] _lastname;
-            public byte[] LastName
-            {
-                get { return _lastname; }
-                set
-                {
-                    if (value == null) { _lastname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _lastname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _lastname, 0, value.Length); }
-                }
-            }
+            public byte[] FirstName;
+            public byte[] LastName;
 
             public override int Length
             {
@@ -2916,12 +2876,12 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     AvatarID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _firstname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _firstname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _lastname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _lastname, 0, length); i += length;
+                    length = bytes[i++];
+                    FirstName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, FirstName, 0, length); i += length;
+                    length = bytes[i++];
+                    LastName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, LastName, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -3175,30 +3135,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class QueryDataBlock : PacketBlock
         {
-            private byte[] _querytext;
-            public byte[] QueryText
-            {
-                get { return _querytext; }
-                set
-                {
-                    if (value == null) { _querytext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _querytext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _querytext, 0, value.Length); }
-                }
-            }
+            public byte[] QueryText;
             public uint QueryFlags;
             public sbyte Category;
-            private byte[] _simname;
-            public byte[] SimName
-            {
-                get { return _simname; }
-                set
-                {
-                    if (value == null) { _simname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
-                }
-            }
+            public byte[] SimName;
 
             public override int Length
             {
@@ -3222,14 +3162,14 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _querytext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _querytext, 0, length); i += length;
+                    length = bytes[i++];
+                    QueryText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, QueryText, 0, length); i += length;
                     QueryFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Category = (sbyte)bytes[i++];
-                    length = (ushort)bytes[i++];
-                    _simname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
+                    length = bytes[i++];
+                    SimName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SimName, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -3420,45 +3360,15 @@ namespace OpenMetaverse.Packets
         public class QueryDataBlock : PacketBlock
         {
             public UUID OwnerID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _desc;
-            public byte[] Desc
-            {
-                get { return _desc; }
-                set
-                {
-                    if (value == null) { _desc = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Desc;
             public int ActualArea;
             public int BillableArea;
             public byte Flags;
             public float GlobalX;
             public float GlobalY;
             public float GlobalZ;
-            private byte[] _simname;
-            public byte[] SimName
-            {
-                get { return _simname; }
-                set
-                {
-                    if (value == null) { _simname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
-                }
-            }
+            public byte[] SimName;
             public UUID SnapshotID;
             public float Dwell;
             public int Price;
@@ -3487,21 +3397,21 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     OwnerID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _desc = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Desc = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Desc, 0, length); i += length;
                     ActualArea = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     BillableArea = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Flags = (byte)bytes[i++];
                     GlobalX = Utils.BytesToFloat(bytes, i); i += 4;
                     GlobalY = Utils.BytesToFloat(bytes, i); i += 4;
                     GlobalZ = Utils.BytesToFloat(bytes, i); i += 4;
-                    length = (ushort)bytes[i++];
-                    _simname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
+                    length = bytes[i++];
+                    SimName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SimName, 0, length); i += length;
                     SnapshotID.FromBytes(bytes, i); i += 16;
                     Dwell = Utils.BytesToFloat(bytes, i); i += 4;
                     Price = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -3739,17 +3649,7 @@ namespace OpenMetaverse.Packets
         public class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
-            private byte[] _querytext;
-            public byte[] QueryText
-            {
-                get { return _querytext; }
-                set
-                {
-                    if (value == null) { _querytext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _querytext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _querytext, 0, value.Length); }
-                }
-            }
+            public byte[] QueryText;
             public uint QueryFlags;
             public int QueryStart;
 
@@ -3775,9 +3675,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     QueryID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _querytext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _querytext, 0, length); i += length;
+                    length = bytes[i++];
+                    QueryText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, QueryText, 0, length); i += length;
                     QueryFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     QueryStart = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -3924,30 +3824,10 @@ namespace OpenMetaverse.Packets
         public class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
-            private byte[] _querytext;
-            public byte[] QueryText
-            {
-                get { return _querytext; }
-                set
-                {
-                    if (value == null) { _querytext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _querytext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _querytext, 0, value.Length); }
-                }
-            }
+            public byte[] QueryText;
             public uint QueryFlags;
             public sbyte Category;
-            private byte[] _simname;
-            public byte[] SimName
-            {
-                get { return _simname; }
-                set
-                {
-                    if (value == null) { _simname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
-                }
-            }
+            public byte[] SimName;
             public int QueryStart;
 
             public override int Length
@@ -3973,14 +3853,14 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     QueryID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _querytext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _querytext, 0, length); i += length;
+                    length = bytes[i++];
+                    QueryText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, QueryText, 0, length); i += length;
                     QueryFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Category = (sbyte)bytes[i++];
-                    length = (ushort)bytes[i++];
-                    _simname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
+                    length = bytes[i++];
+                    SimName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SimName, 0, length); i += length;
                     QueryStart = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -4164,17 +4044,7 @@ namespace OpenMetaverse.Packets
         public class QueryRepliesBlock : PacketBlock
         {
             public UUID ParcelID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
             public bool ForSale;
             public bool Auction;
             public float Dwell;
@@ -4201,9 +4071,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     ParcelID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                     ForSale = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     Auction = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     Dwell = Utils.BytesToFloat(bytes, i); i += 4;
@@ -4579,39 +4449,9 @@ namespace OpenMetaverse.Packets
         public class QueryRepliesBlock : PacketBlock
         {
             public UUID AgentID;
-            private byte[] _firstname;
-            public byte[] FirstName
-            {
-                get { return _firstname; }
-                set
-                {
-                    if (value == null) { _firstname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _firstname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _firstname, 0, value.Length); }
-                }
-            }
-            private byte[] _lastname;
-            public byte[] LastName
-            {
-                get { return _lastname; }
-                set
-                {
-                    if (value == null) { _lastname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _lastname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _lastname, 0, value.Length); }
-                }
-            }
-            private byte[] _group;
-            public byte[] Group
-            {
-                get { return _group; }
-                set
-                {
-                    if (value == null) { _group = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _group = new byte[value.Length]; Buffer.BlockCopy(value, 0, _group, 0, value.Length); }
-                }
-            }
+            public byte[] FirstName;
+            public byte[] LastName;
+            public byte[] Group;
             public bool Online;
             public int Reputation;
 
@@ -4639,15 +4479,15 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     AgentID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _firstname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _firstname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _lastname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _lastname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _group = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _group, 0, length); i += length;
+                    length = bytes[i++];
+                    FirstName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, FirstName, 0, length); i += length;
+                    length = bytes[i++];
+                    LastName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, LastName, 0, length); i += length;
+                    length = bytes[i++];
+                    Group = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Group, 0, length); i += length;
                     Online = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     Reputation = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -4912,29 +4752,9 @@ namespace OpenMetaverse.Packets
         public class QueryRepliesBlock : PacketBlock
         {
             public UUID OwnerID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
             public uint EventID;
-            private byte[] _date;
-            public byte[] Date
-            {
-                get { return _date; }
-                set
-                {
-                    if (value == null) { _date = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _date = new byte[value.Length]; Buffer.BlockCopy(value, 0, _date, 0, value.Length); }
-                }
-            }
+            public byte[] Date;
             public uint UnixTime;
             public uint EventFlags;
 
@@ -4961,13 +4781,13 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     OwnerID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                     EventID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _date = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _date, 0, length); i += length;
+                    length = bytes[i++];
+                    Date = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Date, 0, length); i += length;
                     UnixTime = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     EventFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -5311,17 +5131,7 @@ namespace OpenMetaverse.Packets
         public class QueryRepliesBlock : PacketBlock
         {
             public UUID GroupID;
-            private byte[] _groupname;
-            public byte[] GroupName
-            {
-                get { return _groupname; }
-                set
-                {
-                    if (value == null) { _groupname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _groupname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _groupname, 0, value.Length); }
-                }
-            }
+            public byte[] GroupName;
             public int Members;
             public float SearchOrder;
 
@@ -5347,9 +5157,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     GroupID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _groupname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _groupname, 0, length); i += length;
+                    length = bytes[i++];
+                    GroupName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, GroupName, 0, length); i += length;
                     Members = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SearchOrder = Utils.BytesToFloat(bytes, i); i += 4;
                 }
@@ -5575,17 +5385,7 @@ namespace OpenMetaverse.Packets
         public class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
-            private byte[] _querytext;
-            public byte[] QueryText
-            {
-                get { return _querytext; }
-                set
-                {
-                    if (value == null) { _querytext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _querytext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _querytext, 0, value.Length); }
-                }
-            }
+            public byte[] QueryText;
             public uint QueryFlags;
             public uint Category;
             public int QueryStart;
@@ -5612,9 +5412,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     QueryID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _querytext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _querytext, 0, length); i += length;
+                    length = bytes[i++];
+                    QueryText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, QueryText, 0, length); i += length;
                     QueryFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Category = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     QueryStart = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -5798,17 +5598,7 @@ namespace OpenMetaverse.Packets
         public class QueryRepliesBlock : PacketBlock
         {
             public UUID ClassifiedID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
             public byte ClassifiedFlags;
             public uint CreationDate;
             public uint ExpirationDate;
@@ -5836,9 +5626,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     ClassifiedID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                     ClassifiedFlags = (byte)bytes[i++];
                     CreationDate = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ExpirationDate = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -6148,17 +5938,7 @@ namespace OpenMetaverse.Packets
         public class DataBlock : PacketBlock
         {
             public UUID ClassifiedID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
 
             public override int Length
             {
@@ -6182,9 +5962,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     ClassifiedID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -6557,54 +6337,14 @@ namespace OpenMetaverse.Packets
             public uint CreationDate;
             public uint ExpirationDate;
             public uint Category;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _desc;
-            public byte[] Desc
-            {
-                get { return _desc; }
-                set
-                {
-                    if (value == null) { _desc = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Desc;
             public UUID ParcelID;
             public uint ParentEstate;
             public UUID SnapshotID;
-            private byte[] _simname;
-            public byte[] SimName
-            {
-                get { return _simname; }
-                set
-                {
-                    if (value == null) { _simname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
-                }
-            }
+            public byte[] SimName;
             public Vector3d PosGlobal;
-            private byte[] _parcelname;
-            public byte[] ParcelName
-            {
-                get { return _parcelname; }
-                set
-                {
-                    if (value == null) { _parcelname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _parcelname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _parcelname, 0, value.Length); }
-                }
-            }
+            public byte[] ParcelName;
             public byte ClassifiedFlags;
             public int PriceForListing;
 
@@ -6637,22 +6377,22 @@ namespace OpenMetaverse.Packets
                     CreationDate = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ExpirationDate = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Category = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _desc = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Desc = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Desc, 0, length); i += length;
                     ParcelID.FromBytes(bytes, i); i += 16;
                     ParentEstate = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SnapshotID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _simname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
+                    length = bytes[i++];
+                    SimName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SimName, 0, length); i += length;
                     PosGlobal.FromBytes(bytes, i); i += 24;
-                    length = (ushort)bytes[i++];
-                    _parcelname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _parcelname, 0, length); i += length;
+                    length = bytes[i++];
+                    ParcelName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ParcelName, 0, length); i += length;
                     ClassifiedFlags = (byte)bytes[i++];
                     PriceForListing = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -6814,28 +6554,8 @@ namespace OpenMetaverse.Packets
         {
             public UUID ClassifiedID;
             public uint Category;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _desc;
-            public byte[] Desc
-            {
-                get { return _desc; }
-                set
-                {
-                    if (value == null) { _desc = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Desc;
             public UUID ParcelID;
             public uint ParentEstate;
             public UUID SnapshotID;
@@ -6867,12 +6587,12 @@ namespace OpenMetaverse.Packets
                 {
                     ClassifiedID.FromBytes(bytes, i); i += 16;
                     Category = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _desc = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Desc = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Desc, 0, length); i += length;
                     ParcelID.FromBytes(bytes, i); i += 16;
                     ParentEstate = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SnapshotID.FromBytes(bytes, i); i += 16;
@@ -7561,17 +7281,7 @@ namespace OpenMetaverse.Packets
         public class QueryRepliesBlock : PacketBlock
         {
             public UUID ParcelID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
             public bool Auction;
             public bool ForSale;
             public int SalePrice;
@@ -7599,9 +7309,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     ParcelID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                     Auction = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     ForSale = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -8029,17 +7739,7 @@ namespace OpenMetaverse.Packets
         public class QueryRepliesBlock : PacketBlock
         {
             public UUID ParcelID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
             public float Dwell;
 
             public override int Length
@@ -8064,9 +7764,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     ParcelID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                     Dwell = Utils.BytesToFloat(bytes, i); i += 4;
                 }
                 catch (Exception)
@@ -8447,45 +8147,15 @@ namespace OpenMetaverse.Packets
         {
             public UUID ParcelID;
             public UUID OwnerID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _desc;
-            public byte[] Desc
-            {
-                get { return _desc; }
-                set
-                {
-                    if (value == null) { _desc = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Desc;
             public int ActualArea;
             public int BillableArea;
             public byte Flags;
             public float GlobalX;
             public float GlobalY;
             public float GlobalZ;
-            private byte[] _simname;
-            public byte[] SimName
-            {
-                get { return _simname; }
-                set
-                {
-                    if (value == null) { _simname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
-                }
-            }
+            public byte[] SimName;
             public UUID SnapshotID;
             public float Dwell;
             public int SalePrice;
@@ -8516,21 +8186,21 @@ namespace OpenMetaverse.Packets
                 {
                     ParcelID.FromBytes(bytes, i); i += 16;
                     OwnerID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _desc = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Desc = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Desc, 0, length); i += length;
                     ActualArea = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     BillableArea = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Flags = (byte)bytes[i++];
                     GlobalX = Utils.BytesToFloat(bytes, i); i += 4;
                     GlobalY = Utils.BytesToFloat(bytes, i); i += 4;
                     GlobalZ = Utils.BytesToFloat(bytes, i); i += 4;
-                    length = (ushort)bytes[i++];
-                    _simname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
+                    length = bytes[i++];
+                    SimName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SimName, 0, length); i += length;
                     SnapshotID.FromBytes(bytes, i); i += 16;
                     Dwell = Utils.BytesToFloat(bytes, i); i += 4;
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -9200,28 +8870,8 @@ namespace OpenMetaverse.Packets
         {
             public UUID NoticeID;
             public uint Timestamp;
-            private byte[] _fromname;
-            public byte[] FromName
-            {
-                get { return _fromname; }
-                set
-                {
-                    if (value == null) { _fromname = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _fromname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _fromname, 0, value.Length); }
-                }
-            }
-            private byte[] _subject;
-            public byte[] Subject
-            {
-                get { return _subject; }
-                set
-                {
-                    if (value == null) { _subject = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _subject = new byte[value.Length]; Buffer.BlockCopy(value, 0, _subject, 0, value.Length); }
-                }
-            }
+            public byte[] FromName;
+            public byte[] Subject;
             public bool HasAttachment;
             public byte AssetType;
 
@@ -9249,12 +8899,12 @@ namespace OpenMetaverse.Packets
                 {
                     NoticeID.FromBytes(bytes, i); i += 16;
                     Timestamp = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _fromname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _fromname, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _subject = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _subject, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    FromName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, FromName, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Subject = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Subject, 0, length); i += length;
                     HasAttachment = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     AssetType = (byte)bytes[i++];
                 }
@@ -10202,17 +9852,7 @@ namespace OpenMetaverse.Packets
         public class InfoBlock : PacketBlock
         {
             public uint TeleportFlags;
-            private byte[] _message;
-            public byte[] Message
-            {
-                get { return _message; }
-                set
-                {
-                    if (value == null) { _message = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
-                }
-            }
+            public byte[] Message;
 
             public override int Length
             {
@@ -10236,9 +9876,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     TeleportFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _message = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
+                    length = bytes[i++];
+                    Message = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Message, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -10343,17 +9983,7 @@ namespace OpenMetaverse.Packets
             public uint SimIP;
             public ushort SimPort;
             public ulong RegionHandle;
-            private byte[] _seedcapability;
-            public byte[] SeedCapability
-            {
-                get { return _seedcapability; }
-                set
-                {
-                    if (value == null) { _seedcapability = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _seedcapability = new byte[value.Length]; Buffer.BlockCopy(value, 0, _seedcapability, 0, value.Length); }
-                }
-            }
+            public byte[] SeedCapability;
             public byte SimAccess;
             public uint TeleportFlags;
 
@@ -10383,9 +10013,9 @@ namespace OpenMetaverse.Packets
                     SimIP = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SimPort = (ushort)((bytes[i++] << 8) + bytes[i++]);
                     RegionHandle = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _seedcapability = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _seedcapability, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    SeedCapability = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SeedCapability, 0, length); i += length;
                     SimAccess = (byte)bytes[i++];
                     TeleportFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -10530,17 +10160,7 @@ namespace OpenMetaverse.Packets
         public class InfoBlock : PacketBlock
         {
             public byte LureType;
-            private byte[] _message;
-            public byte[] Message
-            {
-                get { return _message; }
-                set
-                {
-                    if (value == null) { _message = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
-                }
-            }
+            public byte[] Message;
 
             public override int Length
             {
@@ -10564,9 +10184,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     LureType = (byte)bytes[i++];
-                    length = (ushort)bytes[i++];
-                    _message = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
+                    length = bytes[i++];
+                    Message = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Message, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -11129,17 +10749,7 @@ namespace OpenMetaverse.Packets
         public class InfoBlock : PacketBlock
         {
             public UUID AgentID;
-            private byte[] _reason;
-            public byte[] Reason
-            {
-                get { return _reason; }
-                set
-                {
-                    if (value == null) { _reason = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _reason = new byte[value.Length]; Buffer.BlockCopy(value, 0, _reason, 0, value.Length); }
-                }
-            }
+            public byte[] Reason;
 
             public override int Length
             {
@@ -11163,9 +10773,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     AgentID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _reason = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _reason, 0, length); i += length;
+                    length = bytes[i++];
+                    Reason = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Reason, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -11185,28 +10795,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AlertInfoBlock : PacketBlock
         {
-            private byte[] _message;
-            public byte[] Message
-            {
-                get { return _message; }
-                set
-                {
-                    if (value == null) { _message = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
-                }
-            }
-            private byte[] _extraparams;
-            public byte[] ExtraParams
-            {
-                get { return _extraparams; }
-                set
-                {
-                    if (value == null) { _extraparams = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _extraparams = new byte[value.Length]; Buffer.BlockCopy(value, 0, _extraparams, 0, value.Length); }
-                }
-            }
+            public byte[] Message;
+            public byte[] ExtraParams;
 
             public override int Length
             {
@@ -11230,12 +10820,12 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _message = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _extraparams = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _extraparams, 0, length); i += length;
+                    length = bytes[i++];
+                    Message = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Message, 0, length); i += length;
+                    length = bytes[i++];
+                    ExtraParams = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ExtraParams, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -12259,17 +11849,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ChatDataBlock : PacketBlock
         {
-            private byte[] _message;
-            public byte[] Message
-            {
-                get { return _message; }
-                set
-                {
-                    if (value == null) { _message = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
-                }
-            }
+            public byte[] Message;
             public byte Type;
             public int Channel;
 
@@ -12294,9 +11874,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _message = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Message = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Message, 0, length); i += length;
                     Type = (byte)bytes[i++];
                     Channel = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -12446,17 +12026,7 @@ namespace OpenMetaverse.Packets
         public class ThrottleBlock : PacketBlock
         {
             public uint GenCounter;
-            private byte[] _throttles;
-            public byte[] Throttles
-            {
-                get { return _throttles; }
-                set
-                {
-                    if (value == null) { _throttles = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _throttles = new byte[value.Length]; Buffer.BlockCopy(value, 0, _throttles, 0, value.Length); }
-                }
-            }
+            public byte[] Throttles;
 
             public override int Length
             {
@@ -12480,9 +12050,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     GenCounter = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _throttles = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _throttles, 0, length); i += length;
+                    length = bytes[i++];
+                    Throttles = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Throttles, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -13006,17 +12576,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            private byte[] _textureentry;
-            public byte[] TextureEntry
-            {
-                get { return _textureentry; }
-                set
-                {
-                    if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
-                }
-            }
+            public byte[] TextureEntry;
 
             public override int Length
             {
@@ -13039,9 +12599,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _textureentry = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _textureentry, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    TextureEntry = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TextureEntry, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -15370,28 +14930,8 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
-            private byte[] _mediaurl;
-            public byte[] MediaURL
-            {
-                get { return _mediaurl; }
-                set
-                {
-                    if (value == null) { _mediaurl = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
-                }
-            }
-            private byte[] _textureentry;
-            public byte[] TextureEntry
-            {
-                get { return _textureentry; }
-                set
-                {
-                    if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
-                }
-            }
+            public byte[] MediaURL;
+            public byte[] TextureEntry;
 
             public override int Length
             {
@@ -15416,12 +14956,12 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     ObjectLocalID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _mediaurl = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _mediaurl, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _textureentry = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _textureentry, 0, length); i += length;
+                    length = bytes[i++];
+                    MediaURL = new byte[length];
+                    Buffer.BlockCopy(bytes, i, MediaURL, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    TextureEntry = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TextureEntry, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -16162,17 +15702,7 @@ namespace OpenMetaverse.Packets
             public ushort ParamType;
             public bool ParamInUse;
             public uint ParamSize;
-            private byte[] _paramdata;
-            public byte[] ParamData
-            {
-                get { return _paramdata; }
-                set
-                {
-                    if (value == null) { _paramdata = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _paramdata = new byte[value.Length]; Buffer.BlockCopy(value, 0, _paramdata, 0, value.Length); }
-                }
-            }
+            public byte[] ParamData;
 
             public override int Length
             {
@@ -16199,9 +15729,9 @@ namespace OpenMetaverse.Packets
                     ParamType = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     ParamInUse = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     ParamSize = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _paramdata = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _paramdata, 0, length); i += length;
+                    length = bytes[i++];
+                    ParamData = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ParamData, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -17979,17 +17509,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock : PacketBlock
         {
             public uint LocalID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
 
             public override int Length
             {
@@ -18013,9 +17533,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     LocalID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -18228,17 +17748,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock : PacketBlock
         {
             public uint LocalID;
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Description;
 
             public override int Length
             {
@@ -18262,9 +17772,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     LocalID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -22531,17 +22041,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockBlock : PacketBlock
         {
-            private byte[] _filename;
-            public byte[] Filename
-            {
-                get { return _filename; }
-                set
-                {
-                    if (value == null) { _filename = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _filename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _filename, 0, value.Length); }
-                }
-            }
+            public byte[] Filename;
 
             public override int Length
             {
@@ -22564,9 +22064,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _filename = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _filename, 0, length); i += length;
+                    length = bytes[i++];
+                    Filename = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Filename, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -23112,39 +22612,9 @@ namespace OpenMetaverse.Packets
             public double MetersTraveled;
             public int RegionsVisited;
             public uint SysRAM;
-            private byte[] _sysos;
-            public byte[] SysOS
-            {
-                get { return _sysos; }
-                set
-                {
-                    if (value == null) { _sysos = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _sysos = new byte[value.Length]; Buffer.BlockCopy(value, 0, _sysos, 0, value.Length); }
-                }
-            }
-            private byte[] _syscpu;
-            public byte[] SysCPU
-            {
-                get { return _syscpu; }
-                set
-                {
-                    if (value == null) { _syscpu = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _syscpu = new byte[value.Length]; Buffer.BlockCopy(value, 0, _syscpu, 0, value.Length); }
-                }
-            }
-            private byte[] _sysgpu;
-            public byte[] SysGPU
-            {
-                get { return _sysgpu; }
-                set
-                {
-                    if (value == null) { _sysgpu = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _sysgpu = new byte[value.Length]; Buffer.BlockCopy(value, 0, _sysgpu, 0, value.Length); }
-                }
-            }
+            public byte[] SysOS;
+            public byte[] SysCPU;
+            public byte[] SysGPU;
 
             public override int Length
             {
@@ -23181,15 +22651,15 @@ namespace OpenMetaverse.Packets
                     MetersTraveled = Utils.BytesToDouble(bytes, i); i += 8;
                     RegionsVisited = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SysRAM = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _sysos = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _sysos, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _syscpu = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _syscpu, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _sysgpu = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _sysgpu, 0, length); i += length;
+                    length = bytes[i++];
+                    SysOS = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SysOS, 0, length); i += length;
+                    length = bytes[i++];
+                    SysCPU = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SysCPU, 0, length); i += length;
+                    length = bytes[i++];
+                    SysGPU = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SysGPU, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -23813,51 +23283,11 @@ namespace OpenMetaverse.Packets
             public UUID ScreenshotID;
             public UUID ObjectID;
             public UUID AbuserID;
-            private byte[] _abuseregionname;
-            public byte[] AbuseRegionName
-            {
-                get { return _abuseregionname; }
-                set
-                {
-                    if (value == null) { _abuseregionname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _abuseregionname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _abuseregionname, 0, value.Length); }
-                }
-            }
+            public byte[] AbuseRegionName;
             public UUID AbuseRegionID;
-            private byte[] _summary;
-            public byte[] Summary
-            {
-                get { return _summary; }
-                set
-                {
-                    if (value == null) { _summary = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _summary = new byte[value.Length]; Buffer.BlockCopy(value, 0, _summary, 0, value.Length); }
-                }
-            }
-            private byte[] _details;
-            public byte[] Details
-            {
-                get { return _details; }
-                set
-                {
-                    if (value == null) { _details = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _details = new byte[value.Length]; Buffer.BlockCopy(value, 0, _details, 0, value.Length); }
-                }
-            }
-            private byte[] _versionstring;
-            public byte[] VersionString
-            {
-                get { return _versionstring; }
-                set
-                {
-                    if (value == null) { _versionstring = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _versionstring = new byte[value.Length]; Buffer.BlockCopy(value, 0, _versionstring, 0, value.Length); }
-                }
-            }
+            public byte[] Summary;
+            public byte[] Details;
+            public byte[] VersionString;
 
             public override int Length
             {
@@ -23890,19 +23320,19 @@ namespace OpenMetaverse.Packets
                     ScreenshotID.FromBytes(bytes, i); i += 16;
                     ObjectID.FromBytes(bytes, i); i += 16;
                     AbuserID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _abuseregionname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _abuseregionname, 0, length); i += length;
+                    length = bytes[i++];
+                    AbuseRegionName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, AbuseRegionName, 0, length); i += length;
                     AbuseRegionID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _summary = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _summary, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _details = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _details, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _versionstring = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _versionstring, 0, length); i += length;
+                    length = bytes[i++];
+                    Summary = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Summary, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Details = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Details, 0, length); i += length;
+                    length = bytes[i++];
+                    VersionString = new byte[length];
+                    Buffer.BlockCopy(bytes, i, VersionString, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -24017,17 +23447,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AlertDataBlock : PacketBlock
         {
-            private byte[] _message;
-            public byte[] Message
-            {
-                get { return _message; }
-                set
-                {
-                    if (value == null) { _message = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
-                }
-            }
+            public byte[] Message;
 
             public override int Length
             {
@@ -24050,9 +23470,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _message = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
+                    length = bytes[i++];
+                    Message = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Message, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -24071,28 +23491,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class AlertInfoBlock : PacketBlock
         {
-            private byte[] _message;
-            public byte[] Message
-            {
-                get { return _message; }
-                set
-                {
-                    if (value == null) { _message = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
-                }
-            }
-            private byte[] _extraparams;
-            public byte[] ExtraParams
-            {
-                get { return _extraparams; }
-                set
-                {
-                    if (value == null) { _extraparams = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _extraparams = new byte[value.Length]; Buffer.BlockCopy(value, 0, _extraparams, 0, value.Length); }
-                }
-            }
+            public byte[] Message;
+            public byte[] ExtraParams;
 
             public override int Length
             {
@@ -24116,12 +23516,12 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _message = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _extraparams = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _extraparams, 0, length); i += length;
+                    length = bytes[i++];
+                    Message = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Message, 0, length); i += length;
+                    length = bytes[i++];
+                    ExtraParams = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ExtraParams, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -24331,17 +23731,7 @@ namespace OpenMetaverse.Packets
         public class AlertDataBlock : PacketBlock
         {
             public bool Modal;
-            private byte[] _message;
-            public byte[] Message
-            {
-                get { return _message; }
-                set
-                {
-                    if (value == null) { _message = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
-                }
-            }
+            public byte[] Message;
 
             public override int Length
             {
@@ -24365,9 +23755,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     Modal = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    length = (ushort)bytes[i++];
-                    _message = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
+                    length = bytes[i++];
+                    Message = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Message, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -24882,34 +24272,14 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ChatDataBlock : PacketBlock
         {
-            private byte[] _fromname;
-            public byte[] FromName
-            {
-                get { return _fromname; }
-                set
-                {
-                    if (value == null) { _fromname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _fromname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _fromname, 0, value.Length); }
-                }
-            }
+            public byte[] FromName;
             public UUID SourceID;
             public UUID OwnerID;
             public byte SourceType;
             public byte ChatType;
             public byte Audible;
             public Vector3 Position;
-            private byte[] _message;
-            public byte[] Message
-            {
-                get { return _message; }
-                set
-                {
-                    if (value == null) { _message = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
-                }
-            }
+            public byte[] Message;
 
             public override int Length
             {
@@ -24933,18 +24303,18 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _fromname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _fromname, 0, length); i += length;
+                    length = bytes[i++];
+                    FromName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, FromName, 0, length); i += length;
                     SourceID.FromBytes(bytes, i); i += 16;
                     OwnerID.FromBytes(bytes, i); i += 16;
                     SourceType = (byte)bytes[i++];
                     ChatType = (byte)bytes[i++];
                     Audible = (byte)bytes[i++];
                     Position.FromBytes(bytes, i); i += 12;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _message = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Message = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Message, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -25430,17 +24800,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RegionInfoBlock : PacketBlock
         {
-            private byte[] _simname;
-            public byte[] SimName
-            {
-                get { return _simname; }
-                set
-                {
-                    if (value == null) { _simname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
-                }
-            }
+            public byte[] SimName;
             public uint EstateID;
             public uint ParentEstateID;
             public uint RegionFlags;
@@ -25478,9 +24838,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _simname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
+                    length = bytes[i++];
+                    SimName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SimName, 0, length); i += length;
                     EstateID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ParentEstateID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     RegionFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -25529,28 +24889,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RegionInfo2Block : PacketBlock
         {
-            private byte[] _productsku;
-            public byte[] ProductSKU
-            {
-                get { return _productsku; }
-                set
-                {
-                    if (value == null) { _productsku = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _productsku = new byte[value.Length]; Buffer.BlockCopy(value, 0, _productsku, 0, value.Length); }
-                }
-            }
-            private byte[] _productname;
-            public byte[] ProductName
-            {
-                get { return _productname; }
-                set
-                {
-                    if (value == null) { _productname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _productname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _productname, 0, value.Length); }
-                }
-            }
+            public byte[] ProductSKU;
+            public byte[] ProductName;
             public uint MaxAgents32;
             public uint HardMaxAgents;
             public uint HardMaxObjects;
@@ -25577,12 +24917,12 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _productsku = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _productsku, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _productname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _productname, 0, length); i += length;
+                    length = bytes[i++];
+                    ProductSKU = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ProductSKU, 0, length); i += length;
+                    length = bytes[i++];
+                    ProductName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ProductName, 0, length); i += length;
                     MaxAgents32 = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     HardMaxAgents = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     HardMaxObjects = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -25738,17 +25078,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class RegionInfoBlock : PacketBlock
         {
-            private byte[] _simname;
-            public byte[] SimName
-            {
-                get { return _simname; }
-                set
-                {
-                    if (value == null) { _simname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
-                }
-            }
+            public byte[] SimName;
             public uint EstateID;
             public uint ParentEstateID;
             public uint RegionFlags;
@@ -25778,9 +25108,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _simname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
+                    length = bytes[i++];
+                    SimName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SimName, 0, length); i += length;
                     EstateID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ParentEstateID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     RegionFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -25896,17 +25226,7 @@ namespace OpenMetaverse.Packets
         {
             public uint RegionFlags;
             public byte SimAccess;
-            private byte[] _simname;
-            public byte[] SimName
-            {
-                get { return _simname; }
-                set
-                {
-                    if (value == null) { _simname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
-                }
-            }
+            public byte[] SimName;
             public UUID SimOwner;
             public bool IsEstateManager;
             public float WaterHeight;
@@ -25952,9 +25272,9 @@ namespace OpenMetaverse.Packets
                 {
                     RegionFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SimAccess = (byte)bytes[i++];
-                    length = (ushort)bytes[i++];
-                    _simname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
+                    length = bytes[i++];
+                    SimName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SimName, 0, length); i += length;
                     SimOwner.FromBytes(bytes, i); i += 16;
                     IsEstateManager = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     WaterHeight = Utils.BytesToFloat(bytes, i); i += 4;
@@ -26057,39 +25377,9 @@ namespace OpenMetaverse.Packets
         {
             public int CPUClassID;
             public int CPURatio;
-            private byte[] _coloname;
-            public byte[] ColoName
-            {
-                get { return _coloname; }
-                set
-                {
-                    if (value == null) { _coloname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _coloname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _coloname, 0, value.Length); }
-                }
-            }
-            private byte[] _productsku;
-            public byte[] ProductSKU
-            {
-                get { return _productsku; }
-                set
-                {
-                    if (value == null) { _productsku = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _productsku = new byte[value.Length]; Buffer.BlockCopy(value, 0, _productsku, 0, value.Length); }
-                }
-            }
-            private byte[] _productname;
-            public byte[] ProductName
-            {
-                get { return _productname; }
-                set
-                {
-                    if (value == null) { _productname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _productname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _productname, 0, value.Length); }
-                }
-            }
+            public byte[] ColoName;
+            public byte[] ProductSKU;
+            public byte[] ProductName;
 
             public override int Length
             {
@@ -26116,15 +25406,15 @@ namespace OpenMetaverse.Packets
                 {
                     CPUClassID = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CPURatio = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _coloname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _coloname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _productsku = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _productsku, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _productname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _productname, 0, length); i += length;
+                    length = bytes[i++];
+                    ColoName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ColoName, 0, length); i += length;
+                    length = bytes[i++];
+                    ProductSKU = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ProductSKU, 0, length); i += length;
+                    length = bytes[i++];
+                    ProductName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ProductName, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -26711,17 +26001,7 @@ namespace OpenMetaverse.Packets
             public int ChannelType;
             public int SourceType;
             public float Priority;
-            private byte[] _params;
-            public byte[] Params
-            {
-                get { return _params; }
-                set
-                {
-                    if (value == null) { _params = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _params = new byte[value.Length]; Buffer.BlockCopy(value, 0, _params, 0, value.Length); }
-                }
-            }
+            public byte[] Params;
 
             public override int Length
             {
@@ -26748,9 +26028,9 @@ namespace OpenMetaverse.Packets
                     ChannelType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SourceType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Priority = Utils.BytesToFloat(bytes, i); i += 4;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _params = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _params, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Params = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Params, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -26853,17 +26133,7 @@ namespace OpenMetaverse.Packets
             public int TargetType;
             public int Status;
             public int Size;
-            private byte[] _params;
-            public byte[] Params
-            {
-                get { return _params; }
-                set
-                {
-                    if (value == null) { _params = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _params = new byte[value.Length]; Buffer.BlockCopy(value, 0, _params, 0, value.Length); }
-                }
-            }
+            public byte[] Params;
 
             public override int Length
             {
@@ -26891,9 +26161,9 @@ namespace OpenMetaverse.Packets
                     TargetType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Status = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Size = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _params = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _params, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Params = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Params, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -27108,17 +26378,7 @@ namespace OpenMetaverse.Packets
         public class XferIDBlock : PacketBlock
         {
             public ulong ID;
-            private byte[] _filename;
-            public byte[] Filename
-            {
-                get { return _filename; }
-                set
-                {
-                    if (value == null) { _filename = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _filename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _filename, 0, value.Length); }
-                }
-            }
+            public byte[] Filename;
             public byte FilePath;
             public bool DeleteOnCompletion;
             public bool UseBigPackets;
@@ -27147,9 +26407,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     ID = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
-                    length = (ushort)bytes[i++];
-                    _filename = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _filename, 0, length); i += length;
+                    length = bytes[i++];
+                    Filename = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Filename, 0, length); i += length;
                     FilePath = (byte)bytes[i++];
                     DeleteOnCompletion = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     UseBigPackets = (bytes[i++] != 0) ? (bool)true : (bool)false;
@@ -27409,17 +26669,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            private byte[] _textureentry;
-            public byte[] TextureEntry
-            {
-                get { return _textureentry; }
-                set
-                {
-                    if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
-                }
-            }
+            public byte[] TextureEntry;
 
             public override int Length
             {
@@ -27442,9 +26692,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _textureentry = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _textureentry, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    TextureEntry = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TextureEntry, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -28386,17 +27636,7 @@ namespace OpenMetaverse.Packets
         {
             public UUID AgentID;
             public UUID SessionID;
-            private byte[] _reason;
-            public byte[] Reason
-            {
-                get { return _reason; }
-                set
-                {
-                    if (value == null) { _reason = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _reason = new byte[value.Length]; Buffer.BlockCopy(value, 0, _reason, 0, value.Length); }
-                }
-            }
+            public byte[] Reason;
 
             public override int Length
             {
@@ -28421,9 +27661,9 @@ namespace OpenMetaverse.Packets
                 {
                     AgentID.FromBytes(bytes, i); i += 16;
                     SessionID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _reason = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _reason, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Reason = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Reason, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -28529,17 +27769,7 @@ namespace OpenMetaverse.Packets
             public UUID GodSessionID;
             public UUID AgentID;
             public uint KickFlags;
-            private byte[] _reason;
-            public byte[] Reason
-            {
-                get { return _reason; }
-                set
-                {
-                    if (value == null) { _reason = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _reason = new byte[value.Length]; Buffer.BlockCopy(value, 0, _reason, 0, value.Length); }
-                }
-            }
+            public byte[] Reason;
 
             public override int Length
             {
@@ -28566,9 +27796,9 @@ namespace OpenMetaverse.Packets
                     GodSessionID.FromBytes(bytes, i); i += 16;
                     AgentID.FromBytes(bytes, i); i += 16;
                     KickFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _reason = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _reason, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Reason = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Reason, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -29150,61 +28380,11 @@ namespace OpenMetaverse.Packets
             public UUID ImageID;
             public UUID FLImageID;
             public UUID PartnerID;
-            private byte[] _abouttext;
-            public byte[] AboutText
-            {
-                get { return _abouttext; }
-                set
-                {
-                    if (value == null) { _abouttext = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _abouttext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _abouttext, 0, value.Length); }
-                }
-            }
-            private byte[] _flabouttext;
-            public byte[] FLAboutText
-            {
-                get { return _flabouttext; }
-                set
-                {
-                    if (value == null) { _flabouttext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _flabouttext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _flabouttext, 0, value.Length); }
-                }
-            }
-            private byte[] _bornon;
-            public byte[] BornOn
-            {
-                get { return _bornon; }
-                set
-                {
-                    if (value == null) { _bornon = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _bornon = new byte[value.Length]; Buffer.BlockCopy(value, 0, _bornon, 0, value.Length); }
-                }
-            }
-            private byte[] _profileurl;
-            public byte[] ProfileURL
-            {
-                get { return _profileurl; }
-                set
-                {
-                    if (value == null) { _profileurl = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _profileurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _profileurl, 0, value.Length); }
-                }
-            }
-            private byte[] _chartermember;
-            public byte[] CharterMember
-            {
-                get { return _chartermember; }
-                set
-                {
-                    if (value == null) { _chartermember = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _chartermember = new byte[value.Length]; Buffer.BlockCopy(value, 0, _chartermember, 0, value.Length); }
-                }
-            }
+            public byte[] AboutText;
+            public byte[] FLAboutText;
+            public byte[] BornOn;
+            public byte[] ProfileURL;
+            public byte[] CharterMember;
             public uint Flags;
 
             public override int Length
@@ -29235,21 +28415,21 @@ namespace OpenMetaverse.Packets
                     ImageID.FromBytes(bytes, i); i += 16;
                     FLImageID.FromBytes(bytes, i); i += 16;
                     PartnerID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _abouttext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _abouttext, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _flabouttext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _flabouttext, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _bornon = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _bornon, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _profileurl = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _profileurl, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _chartermember = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _chartermember, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    AboutText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, AboutText, 0, length); i += length;
+                    length = bytes[i++];
+                    FLAboutText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, FLAboutText, 0, length); i += length;
+                    length = bytes[i++];
+                    BornOn = new byte[length];
+                    Buffer.BlockCopy(bytes, i, BornOn, 0, length); i += length;
+                    length = bytes[i++];
+                    ProfileURL = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ProfileURL, 0, length); i += length;
+                    length = bytes[i++];
+                    CharterMember = new byte[length];
+                    Buffer.BlockCopy(bytes, i, CharterMember, 0, length); i += length;
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -29405,40 +28585,10 @@ namespace OpenMetaverse.Packets
         public class PropertiesDataBlock : PacketBlock
         {
             public uint WantToMask;
-            private byte[] _wanttotext;
-            public byte[] WantToText
-            {
-                get { return _wanttotext; }
-                set
-                {
-                    if (value == null) { _wanttotext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _wanttotext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _wanttotext, 0, value.Length); }
-                }
-            }
+            public byte[] WantToText;
             public uint SkillsMask;
-            private byte[] _skillstext;
-            public byte[] SkillsText
-            {
-                get { return _skillstext; }
-                set
-                {
-                    if (value == null) { _skillstext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _skillstext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _skillstext, 0, value.Length); }
-                }
-            }
-            private byte[] _languagestext;
-            public byte[] LanguagesText
-            {
-                get { return _languagestext; }
-                set
-                {
-                    if (value == null) { _languagestext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _languagestext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _languagestext, 0, value.Length); }
-                }
-            }
+            public byte[] SkillsText;
+            public byte[] LanguagesText;
 
             public override int Length
             {
@@ -29464,16 +28614,16 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     WantToMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _wanttotext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _wanttotext, 0, length); i += length;
+                    length = bytes[i++];
+                    WantToText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, WantToText, 0, length); i += length;
                     SkillsMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _skillstext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _skillstext, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _languagestext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _languagestext, 0, length); i += length;
+                    length = bytes[i++];
+                    SkillsText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SkillsText, 0, length); i += length;
+                    length = bytes[i++];
+                    LanguagesText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, LanguagesText, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -29622,29 +28772,9 @@ namespace OpenMetaverse.Packets
         {
             public ulong GroupPowers;
             public bool AcceptNotices;
-            private byte[] _grouptitle;
-            public byte[] GroupTitle
-            {
-                get { return _grouptitle; }
-                set
-                {
-                    if (value == null) { _grouptitle = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _grouptitle = new byte[value.Length]; Buffer.BlockCopy(value, 0, _grouptitle, 0, value.Length); }
-                }
-            }
+            public byte[] GroupTitle;
             public UUID GroupID;
-            private byte[] _groupname;
-            public byte[] GroupName
-            {
-                get { return _groupname; }
-                set
-                {
-                    if (value == null) { _groupname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _groupname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _groupname, 0, value.Length); }
-                }
-            }
+            public byte[] GroupName;
             public UUID GroupInsigniaID;
 
             public override int Length
@@ -29671,13 +28801,13 @@ namespace OpenMetaverse.Packets
                 {
                     GroupPowers = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
                     AcceptNotices = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    length = (ushort)bytes[i++];
-                    _grouptitle = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _grouptitle, 0, length); i += length;
+                    length = bytes[i++];
+                    GroupTitle = new byte[length];
+                    Buffer.BlockCopy(bytes, i, GroupTitle, 0, length); i += length;
                     GroupID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _groupname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _groupname, 0, length); i += length;
+                    length = bytes[i++];
+                    GroupName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, GroupName, 0, length); i += length;
                     GroupInsigniaID.FromBytes(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -29889,41 +29019,11 @@ namespace OpenMetaverse.Packets
         {
             public UUID ImageID;
             public UUID FLImageID;
-            private byte[] _abouttext;
-            public byte[] AboutText
-            {
-                get { return _abouttext; }
-                set
-                {
-                    if (value == null) { _abouttext = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _abouttext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _abouttext, 0, value.Length); }
-                }
-            }
-            private byte[] _flabouttext;
-            public byte[] FLAboutText
-            {
-                get { return _flabouttext; }
-                set
-                {
-                    if (value == null) { _flabouttext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _flabouttext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _flabouttext, 0, value.Length); }
-                }
-            }
+            public byte[] AboutText;
+            public byte[] FLAboutText;
             public bool AllowPublish;
             public bool MaturePublish;
-            private byte[] _profileurl;
-            public byte[] ProfileURL
-            {
-                get { return _profileurl; }
-                set
-                {
-                    if (value == null) { _profileurl = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _profileurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _profileurl, 0, value.Length); }
-                }
-            }
+            public byte[] ProfileURL;
 
             public override int Length
             {
@@ -29950,17 +29050,17 @@ namespace OpenMetaverse.Packets
                 {
                     ImageID.FromBytes(bytes, i); i += 16;
                     FLImageID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _abouttext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _abouttext, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _flabouttext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _flabouttext, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    AboutText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, AboutText, 0, length); i += length;
+                    length = bytes[i++];
+                    FLAboutText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, FLAboutText, 0, length); i += length;
                     AllowPublish = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     MaturePublish = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    length = (ushort)bytes[i++];
-                    _profileurl = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _profileurl, 0, length); i += length;
+                    length = bytes[i++];
+                    ProfileURL = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ProfileURL, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -30111,40 +29211,10 @@ namespace OpenMetaverse.Packets
         public class PropertiesDataBlock : PacketBlock
         {
             public uint WantToMask;
-            private byte[] _wanttotext;
-            public byte[] WantToText
-            {
-                get { return _wanttotext; }
-                set
-                {
-                    if (value == null) { _wanttotext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _wanttotext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _wanttotext, 0, value.Length); }
-                }
-            }
+            public byte[] WantToText;
             public uint SkillsMask;
-            private byte[] _skillstext;
-            public byte[] SkillsText
-            {
-                get { return _skillstext; }
-                set
-                {
-                    if (value == null) { _skillstext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _skillstext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _skillstext, 0, value.Length); }
-                }
-            }
-            private byte[] _languagestext;
-            public byte[] LanguagesText
-            {
-                get { return _languagestext; }
-                set
-                {
-                    if (value == null) { _languagestext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _languagestext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _languagestext, 0, value.Length); }
-                }
-            }
+            public byte[] SkillsText;
+            public byte[] LanguagesText;
 
             public override int Length
             {
@@ -30170,16 +29240,16 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     WantToMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _wanttotext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _wanttotext, 0, length); i += length;
+                    length = bytes[i++];
+                    WantToText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, WantToText, 0, length); i += length;
                     SkillsMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _skillstext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _skillstext, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _languagestext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _languagestext, 0, length); i += length;
+                    length = bytes[i++];
+                    SkillsText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SkillsText, 0, length); i += length;
+                    length = bytes[i++];
+                    LanguagesText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, LanguagesText, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -30324,17 +29394,7 @@ namespace OpenMetaverse.Packets
         public class DataBlock : PacketBlock
         {
             public UUID TargetID;
-            private byte[] _notes;
-            public byte[] Notes
-            {
-                get { return _notes; }
-                set
-                {
-                    if (value == null) { _notes = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _notes = new byte[value.Length]; Buffer.BlockCopy(value, 0, _notes, 0, value.Length); }
-                }
-            }
+            public byte[] Notes;
 
             public override int Length
             {
@@ -30358,9 +29418,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     TargetID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _notes = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _notes, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Notes = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Notes, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -30503,17 +29563,7 @@ namespace OpenMetaverse.Packets
         public class DataBlock : PacketBlock
         {
             public UUID TargetID;
-            private byte[] _notes;
-            public byte[] Notes
-            {
-                get { return _notes; }
-                set
-                {
-                    if (value == null) { _notes = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _notes = new byte[value.Length]; Buffer.BlockCopy(value, 0, _notes, 0, value.Length); }
-                }
-            }
+            public byte[] Notes;
 
             public override int Length
             {
@@ -30537,9 +29587,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     TargetID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _notes = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _notes, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Notes = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Notes, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -30682,17 +29732,7 @@ namespace OpenMetaverse.Packets
         public class DataBlock : PacketBlock
         {
             public UUID PickID;
-            private byte[] _pickname;
-            public byte[] PickName
-            {
-                get { return _pickname; }
-                set
-                {
-                    if (value == null) { _pickname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _pickname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _pickname, 0, value.Length); }
-                }
-            }
+            public byte[] PickName;
 
             public override int Length
             {
@@ -30716,9 +29756,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     PickID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _pickname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _pickname, 0, length); i += length;
+                    length = bytes[i++];
+                    PickName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, PickName, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -31086,76 +30126,16 @@ namespace OpenMetaverse.Packets
         public class EventDataBlock : PacketBlock
         {
             public uint EventID;
-            private byte[] _creator;
-            public byte[] Creator
-            {
-                get { return _creator; }
-                set
-                {
-                    if (value == null) { _creator = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _creator = new byte[value.Length]; Buffer.BlockCopy(value, 0, _creator, 0, value.Length); }
-                }
-            }
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _category;
-            public byte[] Category
-            {
-                get { return _category; }
-                set
-                {
-                    if (value == null) { _category = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _category = new byte[value.Length]; Buffer.BlockCopy(value, 0, _category, 0, value.Length); }
-                }
-            }
-            private byte[] _desc;
-            public byte[] Desc
-            {
-                get { return _desc; }
-                set
-                {
-                    if (value == null) { _desc = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
-                }
-            }
-            private byte[] _date;
-            public byte[] Date
-            {
-                get { return _date; }
-                set
-                {
-                    if (value == null) { _date = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _date = new byte[value.Length]; Buffer.BlockCopy(value, 0, _date, 0, value.Length); }
-                }
-            }
+            public byte[] Creator;
+            public byte[] Name;
+            public byte[] Category;
+            public byte[] Desc;
+            public byte[] Date;
             public uint DateUTC;
             public uint Duration;
             public uint Cover;
             public uint Amount;
-            private byte[] _simname;
-            public byte[] SimName
-            {
-                get { return _simname; }
-                set
-                {
-                    if (value == null) { _simname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
-                }
-            }
+            public byte[] SimName;
             public Vector3d GlobalPos;
             public uint EventFlags;
 
@@ -31186,28 +30166,28 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     EventID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _creator = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _creator, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _category = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _category, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _desc = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _date = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _date, 0, length); i += length;
+                    length = bytes[i++];
+                    Creator = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Creator, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Category = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Category, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Desc = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Desc, 0, length); i += length;
+                    length = bytes[i++];
+                    Date = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Date, 0, length); i += length;
                     DateUTC = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Duration = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Cover = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Amount = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _simname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
+                    length = bytes[i++];
+                    SimName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SimName, 0, length); i += length;
                     GlobalPos.FromBytes(bytes, i); i += 24;
                     EventFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -31724,17 +30704,7 @@ namespace OpenMetaverse.Packets
         public class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
-            private byte[] _querytext;
-            public byte[] QueryText
-            {
-                get { return _querytext; }
-                set
-                {
-                    if (value == null) { _querytext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _querytext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _querytext, 0, value.Length); }
-                }
-            }
+            public byte[] QueryText;
             public uint QueryFlags;
             public int QueryStart;
 
@@ -31760,9 +30730,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     QueryID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _querytext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _querytext, 0, length); i += length;
+                    length = bytes[i++];
+                    QueryText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, QueryText, 0, length); i += length;
                     QueryFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     QueryStart = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -31915,62 +30885,12 @@ namespace OpenMetaverse.Packets
             public UUID CreatorID;
             public bool TopPick;
             public UUID ParcelID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _desc;
-            public byte[] Desc
-            {
-                get { return _desc; }
-                set
-                {
-                    if (value == null) { _desc = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Desc;
             public UUID SnapshotID;
-            private byte[] _user;
-            public byte[] User
-            {
-                get { return _user; }
-                set
-                {
-                    if (value == null) { _user = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _user = new byte[value.Length]; Buffer.BlockCopy(value, 0, _user, 0, value.Length); }
-                }
-            }
-            private byte[] _originalname;
-            public byte[] OriginalName
-            {
-                get { return _originalname; }
-                set
-                {
-                    if (value == null) { _originalname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _originalname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _originalname, 0, value.Length); }
-                }
-            }
-            private byte[] _simname;
-            public byte[] SimName
-            {
-                get { return _simname; }
-                set
-                {
-                    if (value == null) { _simname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
-                }
-            }
+            public byte[] User;
+            public byte[] OriginalName;
+            public byte[] SimName;
             public Vector3d PosGlobal;
             public int SortOrder;
             public bool Enabled;
@@ -32004,22 +30924,22 @@ namespace OpenMetaverse.Packets
                     CreatorID.FromBytes(bytes, i); i += 16;
                     TopPick = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     ParcelID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _desc = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Desc = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Desc, 0, length); i += length;
                     SnapshotID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _user = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _user, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _originalname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _originalname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _simname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
+                    length = bytes[i++];
+                    User = new byte[length];
+                    Buffer.BlockCopy(bytes, i, User, 0, length); i += length;
+                    length = bytes[i++];
+                    OriginalName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, OriginalName, 0, length); i += length;
+                    length = bytes[i++];
+                    SimName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SimName, 0, length); i += length;
                     PosGlobal.FromBytes(bytes, i); i += 24;
                     SortOrder = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Enabled = (bytes[i++] != 0) ? (bool)true : (bool)false;
@@ -32183,28 +31103,8 @@ namespace OpenMetaverse.Packets
             public UUID CreatorID;
             public bool TopPick;
             public UUID ParcelID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _desc;
-            public byte[] Desc
-            {
-                get { return _desc; }
-                set
-                {
-                    if (value == null) { _desc = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Desc;
             public UUID SnapshotID;
             public Vector3d PosGlobal;
             public int SortOrder;
@@ -32236,12 +31136,12 @@ namespace OpenMetaverse.Packets
                     CreatorID.FromBytes(bytes, i); i += 16;
                     TopPick = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     ParcelID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _desc = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Desc = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Desc, 0, length); i += length;
                     SnapshotID.FromBytes(bytes, i); i += 16;
                     PosGlobal.FromBytes(bytes, i); i += 24;
                     SortOrder = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -32678,28 +31578,8 @@ namespace OpenMetaverse.Packets
         {
             public UUID TaskID;
             public UUID ItemID;
-            private byte[] _objectname;
-            public byte[] ObjectName
-            {
-                get { return _objectname; }
-                set
-                {
-                    if (value == null) { _objectname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
-                }
-            }
-            private byte[] _objectowner;
-            public byte[] ObjectOwner
-            {
-                get { return _objectowner; }
-                set
-                {
-                    if (value == null) { _objectowner = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectowner = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectowner, 0, value.Length); }
-                }
-            }
+            public byte[] ObjectName;
+            public byte[] ObjectOwner;
             public int Questions;
 
             public override int Length
@@ -32726,12 +31606,12 @@ namespace OpenMetaverse.Packets
                 {
                     TaskID.FromBytes(bytes, i); i += 16;
                     ItemID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _objectname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _objectname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _objectowner = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _objectowner, 0, length); i += length;
+                    length = bytes[i++];
+                    ObjectName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ObjectName, 0, length); i += length;
+                    length = bytes[i++];
+                    ObjectOwner = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ObjectOwner, 0, length); i += length;
                     Questions = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -33015,50 +31895,10 @@ namespace OpenMetaverse.Packets
         public class DataBlock : PacketBlock
         {
             public UUID ObjectID;
-            private byte[] _firstname;
-            public byte[] FirstName
-            {
-                get { return _firstname; }
-                set
-                {
-                    if (value == null) { _firstname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _firstname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _firstname, 0, value.Length); }
-                }
-            }
-            private byte[] _lastname;
-            public byte[] LastName
-            {
-                get { return _lastname; }
-                set
-                {
-                    if (value == null) { _lastname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _lastname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _lastname, 0, value.Length); }
-                }
-            }
-            private byte[] _objectname;
-            public byte[] ObjectName
-            {
-                get { return _objectname; }
-                set
-                {
-                    if (value == null) { _objectname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
-                }
-            }
-            private byte[] _message;
-            public byte[] Message
-            {
-                get { return _message; }
-                set
-                {
-                    if (value == null) { _message = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
-                }
-            }
+            public byte[] FirstName;
+            public byte[] LastName;
+            public byte[] ObjectName;
+            public byte[] Message;
             public int ChatChannel;
             public UUID ImageID;
 
@@ -33087,18 +31927,18 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     ObjectID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _firstname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _firstname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _lastname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _lastname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _objectname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _objectname, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _message = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
+                    length = bytes[i++];
+                    FirstName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, FirstName, 0, length); i += length;
+                    length = bytes[i++];
+                    LastName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, LastName, 0, length); i += length;
+                    length = bytes[i++];
+                    ObjectName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ObjectName, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Message = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Message, 0, length); i += length;
                     ChatChannel = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ImageID.FromBytes(bytes, i); i += 16;
                 }
@@ -33129,17 +31969,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ButtonsBlock : PacketBlock
         {
-            private byte[] _buttonlabel;
-            public byte[] ButtonLabel
-            {
-                get { return _buttonlabel; }
-                set
-                {
-                    if (value == null) { _buttonlabel = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _buttonlabel = new byte[value.Length]; Buffer.BlockCopy(value, 0, _buttonlabel, 0, value.Length); }
-                }
-            }
+            public byte[] ButtonLabel;
 
             public override int Length
             {
@@ -33162,9 +31992,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _buttonlabel = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _buttonlabel, 0, length); i += length;
+                    length = bytes[i++];
+                    ButtonLabel = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ButtonLabel, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -33378,17 +32208,7 @@ namespace OpenMetaverse.Packets
             public UUID ObjectID;
             public int ChatChannel;
             public int ButtonIndex;
-            private byte[] _buttonlabel;
-            public byte[] ButtonLabel
-            {
-                get { return _buttonlabel; }
-                set
-                {
-                    if (value == null) { _buttonlabel = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _buttonlabel = new byte[value.Length]; Buffer.BlockCopy(value, 0, _buttonlabel, 0, value.Length); }
-                }
-            }
+            public byte[] ButtonLabel;
 
             public override int Length
             {
@@ -33414,9 +32234,9 @@ namespace OpenMetaverse.Packets
                     ObjectID.FromBytes(bytes, i); i += 16;
                     ChatChannel = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ButtonIndex = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _buttonlabel = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _buttonlabel, 0, length); i += length;
+                    length = bytes[i++];
+                    ButtonLabel = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ButtonLabel, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -33795,42 +32615,12 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            private byte[] _objectname;
-            public byte[] ObjectName
-            {
-                get { return _objectname; }
-                set
-                {
-                    if (value == null) { _objectname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
-                }
-            }
+            public byte[] ObjectName;
             public UUID ObjectID;
             public UUID OwnerID;
             public bool OwnerIsGroup;
-            private byte[] _message;
-            public byte[] Message
-            {
-                get { return _message; }
-                set
-                {
-                    if (value == null) { _message = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
-                }
-            }
-            private byte[] _url;
-            public byte[] URL
-            {
-                get { return _url; }
-                set
-                {
-                    if (value == null) { _url = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _url = new byte[value.Length]; Buffer.BlockCopy(value, 0, _url, 0, value.Length); }
-                }
-            }
+            public byte[] Message;
+            public byte[] URL;
 
             public override int Length
             {
@@ -33855,18 +32645,18 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _objectname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _objectname, 0, length); i += length;
+                    length = bytes[i++];
+                    ObjectName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ObjectName, 0, length); i += length;
                     ObjectID.FromBytes(bytes, i); i += 16;
                     OwnerID.FromBytes(bytes, i); i += 16;
                     OwnerIsGroup = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    length = (ushort)bytes[i++];
-                    _message = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _url = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _url, 0, length); i += length;
+                    length = bytes[i++];
+                    Message = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Message, 0, length); i += length;
+                    length = bytes[i++];
+                    URL = new byte[length];
+                    Buffer.BlockCopy(bytes, i, URL, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -33965,28 +32755,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlock : PacketBlock
         {
-            private byte[] _objectname;
-            public byte[] ObjectName
-            {
-                get { return _objectname; }
-                set
-                {
-                    if (value == null) { _objectname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectname, 0, value.Length); }
-                }
-            }
-            private byte[] _simname;
-            public byte[] SimName
-            {
-                get { return _simname; }
-                set
-                {
-                    if (value == null) { _simname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
-                }
-            }
+            public byte[] ObjectName;
+            public byte[] SimName;
             public Vector3 SimPosition;
             public Vector3 LookAt;
 
@@ -34012,12 +32782,12 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _objectname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _objectname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _simname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
+                    length = bytes[i++];
+                    ObjectName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ObjectName, 0, length); i += length;
+                    length = bytes[i++];
+                    SimName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SimName, 0, length); i += length;
                     SimPosition.FromBytes(bytes, i); i += 12;
                     LookAt.FromBytes(bytes, i); i += 12;
                 }
@@ -34116,17 +32886,7 @@ namespace OpenMetaverse.Packets
         public class ParcelDataBlock : PacketBlock
         {
             public int SequenceID;
-            private byte[] _data;
-            public byte[] Data
-            {
-                get { return _data; }
-                set
-                {
-                    if (value == null) { _data = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
-                }
-            }
+            public byte[] Data;
 
             public override int Length
             {
@@ -34150,9 +32910,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     SequenceID = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _data = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Data = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Data, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -34455,50 +33215,10 @@ namespace OpenMetaverse.Packets
             public uint Flags;
             public uint ParcelFlags;
             public int SalePrice;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _desc;
-            public byte[] Desc
-            {
-                get { return _desc; }
-                set
-                {
-                    if (value == null) { _desc = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
-                }
-            }
-            private byte[] _musicurl;
-            public byte[] MusicURL
-            {
-                get { return _musicurl; }
-                set
-                {
-                    if (value == null) { _musicurl = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _musicurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _musicurl, 0, value.Length); }
-                }
-            }
-            private byte[] _mediaurl;
-            public byte[] MediaURL
-            {
-                get { return _mediaurl; }
-                set
-                {
-                    if (value == null) { _mediaurl = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Desc;
+            public byte[] MusicURL;
+            public byte[] MediaURL;
             public UUID MediaID;
             public byte MediaAutoScale;
             public UUID GroupID;
@@ -34539,18 +33259,18 @@ namespace OpenMetaverse.Packets
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ParcelFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _desc = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _musicurl = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _musicurl, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _mediaurl = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _mediaurl, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Desc = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Desc, 0, length); i += length;
+                    length = bytes[i++];
+                    MusicURL = new byte[length];
+                    Buffer.BlockCopy(bytes, i, MusicURL, 0, length); i += length;
+                    length = bytes[i++];
+                    MediaURL = new byte[length];
+                    Buffer.BlockCopy(bytes, i, MediaURL, 0, length); i += length;
                     MediaID.FromBytes(bytes, i); i += 16;
                     MediaAutoScale = (byte)bytes[i++];
                     GroupID.FromBytes(bytes, i); i += 16;
@@ -35961,17 +34681,7 @@ namespace OpenMetaverse.Packets
         {
             public UUID CovenantID;
             public uint CovenantTimestamp;
-            private byte[] _estatename;
-            public byte[] EstateName
-            {
-                get { return _estatename; }
-                set
-                {
-                    if (value == null) { _estatename = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _estatename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _estatename, 0, value.Length); }
-                }
-            }
+            public byte[] EstateName;
             public UUID EstateOwnerID;
 
             public override int Length
@@ -35997,9 +34707,9 @@ namespace OpenMetaverse.Packets
                 {
                     CovenantID.FromBytes(bytes, i); i += 16;
                     CovenantTimestamp = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _estatename = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _estatename, 0, length); i += length;
+                    length = bytes[i++];
+                    EstateName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, EstateName, 0, length); i += length;
                     EstateOwnerID.FromBytes(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -39499,28 +38209,8 @@ namespace OpenMetaverse.Packets
         public class UUIDNameBlockBlock : PacketBlock
         {
             public UUID ID;
-            private byte[] _firstname;
-            public byte[] FirstName
-            {
-                get { return _firstname; }
-                set
-                {
-                    if (value == null) { _firstname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _firstname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _firstname, 0, value.Length); }
-                }
-            }
-            private byte[] _lastname;
-            public byte[] LastName
-            {
-                get { return _lastname; }
-                set
-                {
-                    if (value == null) { _lastname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _lastname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _lastname, 0, value.Length); }
-                }
-            }
+            public byte[] FirstName;
+            public byte[] LastName;
 
             public override int Length
             {
@@ -39545,12 +38235,12 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     ID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _firstname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _firstname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _lastname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _lastname, 0, length); i += length;
+                    length = bytes[i++];
+                    FirstName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, FirstName, 0, length); i += length;
+                    length = bytes[i++];
+                    LastName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, LastName, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -39893,17 +38583,7 @@ namespace OpenMetaverse.Packets
         public class UUIDNameBlockBlock : PacketBlock
         {
             public UUID ID;
-            private byte[] _groupname;
-            public byte[] GroupName
-            {
-                get { return _groupname; }
-                set
-                {
-                    if (value == null) { _groupname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _groupname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _groupname, 0, value.Length); }
-                }
-            }
+            public byte[] GroupName;
 
             public override int Length
             {
@@ -39927,9 +38607,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     ID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _groupname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _groupname, 0, length); i += length;
+                    length = bytes[i++];
+                    GroupName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, GroupName, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -40882,17 +39562,7 @@ namespace OpenMetaverse.Packets
             public UUID SearchID;
             public Vector3 SearchPos;
             public Quaternion SearchDir;
-            private byte[] _searchname;
-            public byte[] SearchName
-            {
-                get { return _searchname; }
-                set
-                {
-                    if (value == null) { _searchname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _searchname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _searchname, 0, value.Length); }
-                }
-            }
+            public byte[] SearchName;
             public int Type;
             public float Range;
             public float Arc;
@@ -40925,9 +39595,9 @@ namespace OpenMetaverse.Packets
                     SearchID.FromBytes(bytes, i); i += 16;
                     SearchPos.FromBytes(bytes, i); i += 12;
                     SearchDir.FromBytes(bytes, i, true); i += 12;
-                    length = (ushort)bytes[i++];
-                    _searchname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _searchname, 0, length); i += length;
+                    length = bytes[i++];
+                    SearchName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SearchName, 0, length); i += length;
                     Type = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Range = Utils.BytesToFloat(bytes, i); i += 4;
                     Arc = Utils.BytesToFloat(bytes, i); i += 4;
@@ -41079,17 +39749,7 @@ namespace OpenMetaverse.Packets
             public Vector3 Position;
             public Vector3 Velocity;
             public Quaternion Rotation;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
             public int Type;
             public float Range;
 
@@ -41120,9 +39780,9 @@ namespace OpenMetaverse.Packets
                     Position.FromBytes(bytes, i); i += 12;
                     Velocity.FromBytes(bytes, i); i += 12;
                     Rotation.FromBytes(bytes, i, true); i += 12;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                     Type = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Range = Utils.BytesToFloat(bytes, i); i += 4;
                 }
@@ -41507,17 +40167,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class SimDataBlock : PacketBlock
         {
-            private byte[] _channelversion;
-            public byte[] ChannelVersion
-            {
-                get { return _channelversion; }
-                set
-                {
-                    if (value == null) { _channelversion = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _channelversion = new byte[value.Length]; Buffer.BlockCopy(value, 0, _channelversion, 0, value.Length); }
-                }
-            }
+            public byte[] ChannelVersion;
 
             public override int Length
             {
@@ -41540,9 +40190,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _channelversion = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _channelversion, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    ChannelVersion = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ChannelVersion, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -42043,39 +40693,9 @@ namespace OpenMetaverse.Packets
             public byte Dialog;
             public UUID ID;
             public uint Timestamp;
-            private byte[] _fromagentname;
-            public byte[] FromAgentName
-            {
-                get { return _fromagentname; }
-                set
-                {
-                    if (value == null) { _fromagentname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _fromagentname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _fromagentname, 0, value.Length); }
-                }
-            }
-            private byte[] _message;
-            public byte[] Message
-            {
-                get { return _message; }
-                set
-                {
-                    if (value == null) { _message = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
-                }
-            }
-            private byte[] _binarybucket;
-            public byte[] BinaryBucket
-            {
-                get { return _binarybucket; }
-                set
-                {
-                    if (value == null) { _binarybucket = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _binarybucket = new byte[value.Length]; Buffer.BlockCopy(value, 0, _binarybucket, 0, value.Length); }
-                }
-            }
+            public byte[] FromAgentName;
+            public byte[] Message;
+            public byte[] BinaryBucket;
 
             public override int Length
             {
@@ -42109,15 +40729,15 @@ namespace OpenMetaverse.Packets
                     Dialog = (byte)bytes[i++];
                     ID.FromBytes(bytes, i); i += 16;
                     Timestamp = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _fromagentname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _fromagentname, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _message = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _binarybucket = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _binarybucket, 0, length); i += length;
+                    length = bytes[i++];
+                    FromAgentName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, FromAgentName, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Message = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Message, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    BinaryBucket = new byte[length];
+                    Buffer.BlockCopy(bytes, i, BinaryBucket, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -42949,17 +41569,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MethodDataBlock : PacketBlock
         {
-            private byte[] _method;
-            public byte[] Method
-            {
-                get { return _method; }
-                set
-                {
-                    if (value == null) { _method = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
-                }
-            }
+            public byte[] Method;
             public UUID Invoice;
 
             public override int Length
@@ -42983,9 +41593,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _method = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _method, 0, length); i += length;
+                    length = bytes[i++];
+                    Method = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Method, 0, length); i += length;
                     Invoice.FromBytes(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -43006,17 +41616,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ParamListBlock : PacketBlock
         {
-            private byte[] _parameter;
-            public byte[] Parameter
-            {
-                get { return _parameter; }
-                set
-                {
-                    if (value == null) { _parameter = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _parameter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _parameter, 0, value.Length); }
-                }
-            }
+            public byte[] Parameter;
 
             public override int Length
             {
@@ -43039,9 +41639,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _parameter = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _parameter, 0, length); i += length;
+                    length = bytes[i++];
+                    Parameter = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Parameter, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -43264,17 +41864,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MethodDataBlock : PacketBlock
         {
-            private byte[] _method;
-            public byte[] Method
-            {
-                get { return _method; }
-                set
-                {
-                    if (value == null) { _method = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
-                }
-            }
+            public byte[] Method;
             public UUID Invoice;
 
             public override int Length
@@ -43298,9 +41888,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _method = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _method, 0, length); i += length;
+                    length = bytes[i++];
+                    Method = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Method, 0, length); i += length;
                     Invoice.FromBytes(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -43321,17 +41911,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ParamListBlock : PacketBlock
         {
-            private byte[] _parameter;
-            public byte[] Parameter
-            {
-                get { return _parameter; }
-                set
-                {
-                    if (value == null) { _parameter = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _parameter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _parameter, 0, value.Length); }
-                }
-            }
+            public byte[] Parameter;
 
             public override int Length
             {
@@ -43354,9 +41934,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _parameter = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _parameter, 0, length); i += length;
+                    length = bytes[i++];
+                    Parameter = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Parameter, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -43579,17 +42159,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class MethodDataBlock : PacketBlock
         {
-            private byte[] _method;
-            public byte[] Method
-            {
-                get { return _method; }
-                set
-                {
-                    if (value == null) { _method = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _method = new byte[value.Length]; Buffer.BlockCopy(value, 0, _method, 0, value.Length); }
-                }
-            }
+            public byte[] Method;
             public UUID Invoice;
 
             public override int Length
@@ -43613,9 +42183,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _method = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _method, 0, length); i += length;
+                    length = bytes[i++];
+                    Method = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Method, 0, length); i += length;
                     Invoice.FromBytes(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -43636,17 +42206,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ParamListBlock : PacketBlock
         {
-            private byte[] _parameter;
-            public byte[] Parameter
-            {
-                get { return _parameter; }
-                set
-                {
-                    if (value == null) { _parameter = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _parameter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _parameter, 0, value.Length); }
-                }
-            }
+            public byte[] Parameter;
 
             public override int Length
             {
@@ -43669,9 +42229,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _parameter = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _parameter, 0, length); i += length;
+                    length = bytes[i++];
+                    Parameter = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Parameter, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -44051,17 +42611,7 @@ namespace OpenMetaverse.Packets
         public class MuteDataBlock : PacketBlock
         {
             public UUID MuteID;
-            private byte[] _mutename;
-            public byte[] MuteName
-            {
-                get { return _mutename; }
-                set
-                {
-                    if (value == null) { _mutename = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mutename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mutename, 0, value.Length); }
-                }
-            }
+            public byte[] MuteName;
             public int MuteType;
             public uint MuteFlags;
 
@@ -44087,9 +42637,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     MuteID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _mutename = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _mutename, 0, length); i += length;
+                    length = bytes[i++];
+                    MuteName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, MuteName, 0, length); i += length;
                     MuteType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     MuteFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -44235,17 +42785,7 @@ namespace OpenMetaverse.Packets
         public class MuteDataBlock : PacketBlock
         {
             public UUID MuteID;
-            private byte[] _mutename;
-            public byte[] MuteName
-            {
-                get { return _mutename; }
-                set
-                {
-                    if (value == null) { _mutename = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mutename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mutename, 0, value.Length); }
-                }
-            }
+            public byte[] MuteName;
 
             public override int Length
             {
@@ -44269,9 +42809,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     MuteID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _mutename = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _mutename, 0, length); i += length;
+                    length = bytes[i++];
+                    MuteName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, MuteName, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -44716,28 +43256,8 @@ namespace OpenMetaverse.Packets
             public uint Flags;
             public byte SaleType;
             public int SalePrice;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
             public int CreationDate;
             public uint CRC;
 
@@ -44781,12 +43301,12 @@ namespace OpenMetaverse.Packets
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SaleType = (byte)bytes[i++];
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                     CreationDate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CRC = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -45042,28 +43562,8 @@ namespace OpenMetaverse.Packets
             public uint Flags;
             public byte SaleType;
             public int SalePrice;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
             public int CreationDate;
             public uint CRC;
 
@@ -45107,12 +43607,12 @@ namespace OpenMetaverse.Packets
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SaleType = (byte)bytes[i++];
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                     CreationDate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CRC = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -45352,17 +43852,7 @@ namespace OpenMetaverse.Packets
         {
             public UUID ItemID;
             public UUID FolderID;
-            private byte[] _newname;
-            public byte[] NewName
-            {
-                get { return _newname; }
-                set
-                {
-                    if (value == null) { _newname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _newname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _newname, 0, value.Length); }
-                }
-            }
+            public byte[] NewName;
 
             public override int Length
             {
@@ -45387,9 +43877,9 @@ namespace OpenMetaverse.Packets
                 {
                     ItemID.FromBytes(bytes, i); i += 16;
                     FolderID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _newname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _newname, 0, length); i += length;
+                    length = bytes[i++];
+                    NewName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, NewName, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -45606,17 +44096,7 @@ namespace OpenMetaverse.Packets
             public UUID OldAgentID;
             public UUID OldItemID;
             public UUID NewFolderID;
-            private byte[] _newname;
-            public byte[] NewName
-            {
-                get { return _newname; }
-                set
-                {
-                    if (value == null) { _newname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _newname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _newname, 0, value.Length); }
-                }
-            }
+            public byte[] NewName;
 
             public override int Length
             {
@@ -45643,9 +44123,9 @@ namespace OpenMetaverse.Packets
                     OldAgentID.FromBytes(bytes, i); i += 16;
                     OldItemID.FromBytes(bytes, i); i += 16;
                     NewFolderID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _newname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _newname, 0, length); i += length;
+                    length = bytes[i++];
+                    NewName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, NewName, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -46483,17 +44963,7 @@ namespace OpenMetaverse.Packets
             public UUID FolderID;
             public UUID ParentID;
             public sbyte Type;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
 
             public override int Length
             {
@@ -46519,9 +44989,9 @@ namespace OpenMetaverse.Packets
                     FolderID.FromBytes(bytes, i); i += 16;
                     ParentID.FromBytes(bytes, i); i += 16;
                     Type = (sbyte)bytes[i++];
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -46667,17 +45137,7 @@ namespace OpenMetaverse.Packets
             public UUID FolderID;
             public UUID ParentID;
             public sbyte Type;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
 
             public override int Length
             {
@@ -46703,9 +45163,9 @@ namespace OpenMetaverse.Packets
                     FolderID.FromBytes(bytes, i); i += 16;
                     ParentID.FromBytes(bytes, i); i += 16;
                     Type = (sbyte)bytes[i++];
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -47567,17 +46027,7 @@ namespace OpenMetaverse.Packets
             public UUID FolderID;
             public UUID ParentID;
             public sbyte Type;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
 
             public override int Length
             {
@@ -47603,9 +46053,9 @@ namespace OpenMetaverse.Packets
                     FolderID.FromBytes(bytes, i); i += 16;
                     ParentID.FromBytes(bytes, i); i += 16;
                     Type = (sbyte)bytes[i++];
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -47644,28 +46094,8 @@ namespace OpenMetaverse.Packets
             public uint Flags;
             public byte SaleType;
             public int SalePrice;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
             public int CreationDate;
             public uint CRC;
 
@@ -47708,12 +46138,12 @@ namespace OpenMetaverse.Packets
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SaleType = (byte)bytes[i++];
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                     CreationDate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CRC = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -48236,28 +46666,8 @@ namespace OpenMetaverse.Packets
             public uint Flags;
             public byte SaleType;
             public int SalePrice;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
             public int CreationDate;
             public uint CRC;
 
@@ -48300,12 +46710,12 @@ namespace OpenMetaverse.Packets
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SaleType = (byte)bytes[i++];
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                     CreationDate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CRC = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -48542,17 +46952,7 @@ namespace OpenMetaverse.Packets
             public UUID FolderID;
             public UUID ParentID;
             public sbyte Type;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
 
             public override int Length
             {
@@ -48578,9 +46978,9 @@ namespace OpenMetaverse.Packets
                     FolderID.FromBytes(bytes, i); i += 16;
                     ParentID.FromBytes(bytes, i); i += 16;
                     Type = (sbyte)bytes[i++];
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -48620,28 +47020,8 @@ namespace OpenMetaverse.Packets
             public uint Flags;
             public byte SaleType;
             public int SalePrice;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
             public int CreationDate;
             public uint CRC;
 
@@ -48685,12 +47065,12 @@ namespace OpenMetaverse.Packets
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SaleType = (byte)bytes[i++];
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                     CreationDate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CRC = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -49494,28 +47874,8 @@ namespace OpenMetaverse.Packets
             public uint Flags;
             public byte SaleType;
             public int SalePrice;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
             public int CreationDate;
             public uint CRC;
 
@@ -49558,12 +47918,12 @@ namespace OpenMetaverse.Packets
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SaleType = (byte)bytes[i++];
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                     CreationDate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CRC = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -50182,17 +48542,7 @@ namespace OpenMetaverse.Packets
         {
             public UUID TaskID;
             public short Serial;
-            private byte[] _filename;
-            public byte[] Filename
-            {
-                get { return _filename; }
-                set
-                {
-                    if (value == null) { _filename = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _filename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _filename, 0, value.Length); }
-                }
-            }
+            public byte[] Filename;
 
             public override int Length
             {
@@ -50217,9 +48567,9 @@ namespace OpenMetaverse.Packets
                 {
                     TaskID.FromBytes(bytes, i); i += 16;
                     Serial = (short)(bytes[i++] + (bytes[i++] << 8));
-                    length = (ushort)bytes[i++];
-                    _filename = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _filename, 0, length); i += length;
+                    length = bytes[i++];
+                    Filename = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Filename, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -50853,28 +49203,8 @@ namespace OpenMetaverse.Packets
             public uint Flags;
             public byte SaleType;
             public int SalePrice;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
             public int CreationDate;
             public uint CRC;
 
@@ -50917,12 +49247,12 @@ namespace OpenMetaverse.Packets
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SaleType = (byte)bytes[i++];
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                     CreationDate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CRC = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -52708,28 +51038,8 @@ namespace OpenMetaverse.Packets
             public uint Flags;
             public byte SaleType;
             public int SalePrice;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
             public int CreationDate;
             public uint CRC;
 
@@ -52772,12 +51082,12 @@ namespace OpenMetaverse.Packets
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SaleType = (byte)bytes[i++];
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                     CreationDate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CRC = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -52955,28 +51265,8 @@ namespace OpenMetaverse.Packets
             public sbyte Type;
             public sbyte InvType;
             public byte WearableType;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
 
             public override int Length
             {
@@ -53007,12 +51297,12 @@ namespace OpenMetaverse.Packets
                     Type = (sbyte)bytes[i++];
                     InvType = (sbyte)bytes[i++];
                     WearableType = (byte)bytes[i++];
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -53201,17 +51491,7 @@ namespace OpenMetaverse.Packets
         public class InventoryBlockBlock : PacketBlock
         {
             public UUID FolderID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
 
             public override int Length
             {
@@ -53235,9 +51515,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     FolderID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -53618,17 +51898,7 @@ namespace OpenMetaverse.Packets
             public byte AggregatePermNextOwner;
             public byte AggregatePermInventory;
             public int TransactionType;
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Description;
 
             public override int Length
             {
@@ -53658,9 +51928,9 @@ namespace OpenMetaverse.Packets
                     AggregatePermNextOwner = (byte)bytes[i++];
                     AggregatePermInventory = (byte)bytes[i++];
                     TransactionType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -53933,17 +52203,7 @@ namespace OpenMetaverse.Packets
             public int MoneyBalance;
             public int SquareMetersCredit;
             public int SquareMetersCommitted;
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Description;
 
             public override int Length
             {
@@ -53972,9 +52232,9 @@ namespace OpenMetaverse.Packets
                     MoneyBalance = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SquareMetersCredit = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SquareMetersCommitted = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -54121,17 +52381,7 @@ namespace OpenMetaverse.Packets
             public int MoneyBalance;
             public int SquareMetersCredit;
             public int SquareMetersCommitted;
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Description;
 
             public override int Length
             {
@@ -54160,9 +52410,9 @@ namespace OpenMetaverse.Packets
                     MoneyBalance = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SquareMetersCredit = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SquareMetersCommitted = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -54742,17 +52992,7 @@ namespace OpenMetaverse.Packets
         public class MuteDataBlock : PacketBlock
         {
             public UUID AgentID;
-            private byte[] _filename;
-            public byte[] Filename
-            {
-                get { return _filename; }
-                set
-                {
-                    if (value == null) { _filename = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _filename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _filename, 0, value.Length); }
-                }
-            }
+            public byte[] Filename;
 
             public override int Length
             {
@@ -54776,9 +53016,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     AgentID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _filename = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _filename, 0, length); i += length;
+                    length = bytes[i++];
+                    Filename = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Filename, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -55842,17 +54082,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class StartLocationDataBlock : PacketBlock
         {
-            private byte[] _simname;
-            public byte[] SimName
-            {
-                get { return _simname; }
-                set
-                {
-                    if (value == null) { _simname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simname, 0, value.Length); }
-                }
-            }
+            public byte[] SimName;
             public uint LocationID;
             public Vector3 LocationPos;
             public Vector3 LocationLookAt;
@@ -55878,9 +54108,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _simname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _simname, 0, length); i += length;
+                    length = bytes[i++];
+                    SimName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SimName, 0, length); i += length;
                     LocationID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     LocationPos.FromBytes(bytes, i); i += 12;
                     LocationLookAt.FromBytes(bytes, i); i += 12;
@@ -55990,17 +54220,7 @@ namespace OpenMetaverse.Packets
             public sbyte Type;
             public bool Tempfile;
             public bool StoreLocal;
-            private byte[] _assetdata;
-            public byte[] AssetData
-            {
-                get { return _assetdata; }
-                set
-                {
-                    if (value == null) { _assetdata = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _assetdata = new byte[value.Length]; Buffer.BlockCopy(value, 0, _assetdata, 0, value.Length); }
-                }
-            }
+            public byte[] AssetData;
 
             public override int Length
             {
@@ -56027,9 +54247,9 @@ namespace OpenMetaverse.Packets
                     Type = (sbyte)bytes[i++];
                     Tempfile = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     StoreLocal = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _assetdata = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _assetdata, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    AssetData = new byte[length];
+                    Buffer.BlockCopy(bytes, i, AssetData, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -56284,28 +54504,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _charter;
-            public byte[] Charter
-            {
-                get { return _charter; }
-                set
-                {
-                    if (value == null) { _charter = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _charter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _charter, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Charter;
             public bool ShowInList;
             public UUID InsigniaID;
             public int MembershipFee;
@@ -56335,12 +54535,12 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _charter = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _charter, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Charter = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Charter, 0, length); i += length;
                     ShowInList = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     InsigniaID.FromBytes(bytes, i); i += 16;
                     MembershipFee = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -56495,17 +54695,7 @@ namespace OpenMetaverse.Packets
         {
             public UUID GroupID;
             public bool Success;
-            private byte[] _message;
-            public byte[] Message
-            {
-                get { return _message; }
-                set
-                {
-                    if (value == null) { _message = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
-                }
-            }
+            public byte[] Message;
 
             public override int Length
             {
@@ -56530,9 +54720,9 @@ namespace OpenMetaverse.Packets
                 {
                     GroupID.FromBytes(bytes, i); i += 16;
                     Success = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    length = (ushort)bytes[i++];
-                    _message = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
+                    length = bytes[i++];
+                    Message = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Message, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -56675,17 +54865,7 @@ namespace OpenMetaverse.Packets
         public class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
-            private byte[] _charter;
-            public byte[] Charter
-            {
-                get { return _charter; }
-                set
-                {
-                    if (value == null) { _charter = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _charter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _charter, 0, value.Length); }
-                }
-            }
+            public byte[] Charter;
             public bool ShowInList;
             public UUID InsigniaID;
             public int MembershipFee;
@@ -56715,9 +54895,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     GroupID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _charter = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _charter, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Charter = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Charter, 0, length); i += length;
                     ShowInList = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     InsigniaID.FromBytes(bytes, i); i += 16;
                     MembershipFee = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -58660,40 +56840,10 @@ namespace OpenMetaverse.Packets
         public class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _charter;
-            public byte[] Charter
-            {
-                get { return _charter; }
-                set
-                {
-                    if (value == null) { _charter = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _charter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _charter, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Charter;
             public bool ShowInList;
-            private byte[] _membertitle;
-            public byte[] MemberTitle
-            {
-                get { return _membertitle; }
-                set
-                {
-                    if (value == null) { _membertitle = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _membertitle = new byte[value.Length]; Buffer.BlockCopy(value, 0, _membertitle, 0, value.Length); }
-                }
-            }
+            public byte[] MemberTitle;
             public ulong PowersMask;
             public UUID InsigniaID;
             public UUID FounderID;
@@ -58730,16 +56880,16 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     GroupID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _charter = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _charter, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Charter = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Charter, 0, length); i += length;
                     ShowInList = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    length = (ushort)bytes[i++];
-                    _membertitle = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _membertitle, 0, length); i += length;
+                    length = bytes[i++];
+                    MemberTitle = new byte[length];
+                    Buffer.BlockCopy(bytes, i, MemberTitle, 0, length); i += length;
                     PowersMask = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
                     InsigniaID.FromBytes(bytes, i); i += 16;
                     FounderID.FromBytes(bytes, i); i += 16;
@@ -59081,17 +57231,7 @@ namespace OpenMetaverse.Packets
             public UUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
-            private byte[] _startdate;
-            public byte[] StartDate
-            {
-                get { return _startdate; }
-                set
-                {
-                    if (value == null) { _startdate = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _startdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _startdate, 0, value.Length); }
-                }
-            }
+            public byte[] StartDate;
             public int Balance;
             public int TotalCredits;
             public int TotalDebits;
@@ -59106,28 +57246,8 @@ namespace OpenMetaverse.Packets
             public int GroupTaxEstimate;
             public int ParcelDirFeeEstimate;
             public int NonExemptMembers;
-            private byte[] _lasttaxdate;
-            public byte[] LastTaxDate
-            {
-                get { return _lasttaxdate; }
-                set
-                {
-                    if (value == null) { _lasttaxdate = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _lasttaxdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _lasttaxdate, 0, value.Length); }
-                }
-            }
-            private byte[] _taxdate;
-            public byte[] TaxDate
-            {
-                get { return _taxdate; }
-                set
-                {
-                    if (value == null) { _taxdate = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _taxdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _taxdate, 0, value.Length); }
-                }
-            }
+            public byte[] LastTaxDate;
+            public byte[] TaxDate;
 
             public override int Length
             {
@@ -59155,9 +57275,9 @@ namespace OpenMetaverse.Packets
                     RequestID.FromBytes(bytes, i); i += 16;
                     IntervalDays = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CurrentInterval = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _startdate = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _startdate, 0, length); i += length;
+                    length = bytes[i++];
+                    StartDate = new byte[length];
+                    Buffer.BlockCopy(bytes, i, StartDate, 0, length); i += length;
                     Balance = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     TotalCredits = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     TotalDebits = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -59172,12 +57292,12 @@ namespace OpenMetaverse.Packets
                     GroupTaxEstimate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ParcelDirFeeEstimate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     NonExemptMembers = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _lasttaxdate = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _lasttaxdate, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _taxdate = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _taxdate, 0, length); i += length;
+                    length = bytes[i++];
+                    LastTaxDate = new byte[length];
+                    Buffer.BlockCopy(bytes, i, LastTaxDate, 0, length); i += length;
+                    length = bytes[i++];
+                    TaxDate = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TaxDate, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -59511,17 +57631,7 @@ namespace OpenMetaverse.Packets
             public UUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
-            private byte[] _startdate;
-            public byte[] StartDate
-            {
-                get { return _startdate; }
-                set
-                {
-                    if (value == null) { _startdate = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _startdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _startdate, 0, value.Length); }
-                }
-            }
+            public byte[] StartDate;
 
             public override int Length
             {
@@ -59547,9 +57657,9 @@ namespace OpenMetaverse.Packets
                     RequestID.FromBytes(bytes, i); i += 16;
                     IntervalDays = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CurrentInterval = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _startdate = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _startdate, 0, length); i += length;
+                    length = bytes[i++];
+                    StartDate = new byte[length];
+                    Buffer.BlockCopy(bytes, i, StartDate, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -59571,17 +57681,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class HistoryDataBlock : PacketBlock
         {
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Description;
             public int Amount;
 
             public override int Length
@@ -59605,9 +57705,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                     Amount = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -60001,17 +58101,7 @@ namespace OpenMetaverse.Packets
             public UUID RequestID;
             public int IntervalDays;
             public int CurrentInterval;
-            private byte[] _startdate;
-            public byte[] StartDate
-            {
-                get { return _startdate; }
-                set
-                {
-                    if (value == null) { _startdate = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _startdate = new byte[value.Length]; Buffer.BlockCopy(value, 0, _startdate, 0, value.Length); }
-                }
-            }
+            public byte[] StartDate;
 
             public override int Length
             {
@@ -60037,9 +58127,9 @@ namespace OpenMetaverse.Packets
                     RequestID.FromBytes(bytes, i); i += 16;
                     IntervalDays = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CurrentInterval = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _startdate = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _startdate, 0, length); i += length;
+                    length = bytes[i++];
+                    StartDate = new byte[length];
+                    Buffer.BlockCopy(bytes, i, StartDate, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -60061,40 +58151,10 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class HistoryDataBlock : PacketBlock
         {
-            private byte[] _time;
-            public byte[] Time
-            {
-                get { return _time; }
-                set
-                {
-                    if (value == null) { _time = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _time = new byte[value.Length]; Buffer.BlockCopy(value, 0, _time, 0, value.Length); }
-                }
-            }
-            private byte[] _user;
-            public byte[] User
-            {
-                get { return _user; }
-                set
-                {
-                    if (value == null) { _user = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _user = new byte[value.Length]; Buffer.BlockCopy(value, 0, _user, 0, value.Length); }
-                }
-            }
+            public byte[] Time;
+            public byte[] User;
             public int Type;
-            private byte[] _item;
-            public byte[] Item
-            {
-                get { return _item; }
-                set
-                {
-                    if (value == null) { _item = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _item = new byte[value.Length]; Buffer.BlockCopy(value, 0, _item, 0, value.Length); }
-                }
-            }
+            public byte[] Item;
             public int Amount;
 
             public override int Length
@@ -60120,16 +58180,16 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _time = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _time, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _user = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _user, 0, length); i += length;
+                    length = bytes[i++];
+                    Time = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Time, 0, length); i += length;
+                    length = bytes[i++];
+                    User = new byte[length];
+                    Buffer.BlockCopy(bytes, i, User, 0, length); i += length;
                     Type = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _item = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _item, 0, length); i += length;
+                    length = bytes[i++];
+                    Item = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Item, 0, length); i += length;
                     Amount = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -60603,64 +58663,14 @@ namespace OpenMetaverse.Packets
         {
             public UUID VoteID;
             public UUID VoteInitiator;
-            private byte[] _tersedateid;
-            public byte[] TerseDateID
-            {
-                get { return _tersedateid; }
-                set
-                {
-                    if (value == null) { _tersedateid = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _tersedateid = new byte[value.Length]; Buffer.BlockCopy(value, 0, _tersedateid, 0, value.Length); }
-                }
-            }
-            private byte[] _startdatetime;
-            public byte[] StartDateTime
-            {
-                get { return _startdatetime; }
-                set
-                {
-                    if (value == null) { _startdatetime = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _startdatetime = new byte[value.Length]; Buffer.BlockCopy(value, 0, _startdatetime, 0, value.Length); }
-                }
-            }
-            private byte[] _enddatetime;
-            public byte[] EndDateTime
-            {
-                get { return _enddatetime; }
-                set
-                {
-                    if (value == null) { _enddatetime = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _enddatetime = new byte[value.Length]; Buffer.BlockCopy(value, 0, _enddatetime, 0, value.Length); }
-                }
-            }
+            public byte[] TerseDateID;
+            public byte[] StartDateTime;
+            public byte[] EndDateTime;
             public bool AlreadyVoted;
-            private byte[] _votecast;
-            public byte[] VoteCast
-            {
-                get { return _votecast; }
-                set
-                {
-                    if (value == null) { _votecast = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _votecast = new byte[value.Length]; Buffer.BlockCopy(value, 0, _votecast, 0, value.Length); }
-                }
-            }
+            public byte[] VoteCast;
             public float Majority;
             public int Quorum;
-            private byte[] _proposaltext;
-            public byte[] ProposalText
-            {
-                get { return _proposaltext; }
-                set
-                {
-                    if (value == null) { _proposaltext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _proposaltext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _proposaltext, 0, value.Length); }
-                }
-            }
+            public byte[] ProposalText;
 
             public override int Length
             {
@@ -60689,24 +58699,24 @@ namespace OpenMetaverse.Packets
                 {
                     VoteID.FromBytes(bytes, i); i += 16;
                     VoteInitiator.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _tersedateid = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _tersedateid, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _startdatetime = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _startdatetime, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _enddatetime = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _enddatetime, 0, length); i += length;
+                    length = bytes[i++];
+                    TerseDateID = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TerseDateID, 0, length); i += length;
+                    length = bytes[i++];
+                    StartDateTime = new byte[length];
+                    Buffer.BlockCopy(bytes, i, StartDateTime, 0, length); i += length;
+                    length = bytes[i++];
+                    EndDateTime = new byte[length];
+                    Buffer.BlockCopy(bytes, i, EndDateTime, 0, length); i += length;
                     AlreadyVoted = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    length = (ushort)bytes[i++];
-                    _votecast = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _votecast, 0, length); i += length;
+                    length = bytes[i++];
+                    VoteCast = new byte[length];
+                    Buffer.BlockCopy(bytes, i, VoteCast, 0, length); i += length;
                     Majority = Utils.BytesToFloat(bytes, i); i += 4;
                     Quorum = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _proposaltext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _proposaltext, 0, length); i += length;
+                    length = bytes[i++];
+                    ProposalText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ProposalText, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -61185,75 +59195,15 @@ namespace OpenMetaverse.Packets
         public class HistoryItemDataBlock : PacketBlock
         {
             public UUID VoteID;
-            private byte[] _tersedateid;
-            public byte[] TerseDateID
-            {
-                get { return _tersedateid; }
-                set
-                {
-                    if (value == null) { _tersedateid = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _tersedateid = new byte[value.Length]; Buffer.BlockCopy(value, 0, _tersedateid, 0, value.Length); }
-                }
-            }
-            private byte[] _startdatetime;
-            public byte[] StartDateTime
-            {
-                get { return _startdatetime; }
-                set
-                {
-                    if (value == null) { _startdatetime = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _startdatetime = new byte[value.Length]; Buffer.BlockCopy(value, 0, _startdatetime, 0, value.Length); }
-                }
-            }
-            private byte[] _enddatetime;
-            public byte[] EndDateTime
-            {
-                get { return _enddatetime; }
-                set
-                {
-                    if (value == null) { _enddatetime = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _enddatetime = new byte[value.Length]; Buffer.BlockCopy(value, 0, _enddatetime, 0, value.Length); }
-                }
-            }
+            public byte[] TerseDateID;
+            public byte[] StartDateTime;
+            public byte[] EndDateTime;
             public UUID VoteInitiator;
-            private byte[] _votetype;
-            public byte[] VoteType
-            {
-                get { return _votetype; }
-                set
-                {
-                    if (value == null) { _votetype = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _votetype = new byte[value.Length]; Buffer.BlockCopy(value, 0, _votetype, 0, value.Length); }
-                }
-            }
-            private byte[] _voteresult;
-            public byte[] VoteResult
-            {
-                get { return _voteresult; }
-                set
-                {
-                    if (value == null) { _voteresult = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _voteresult = new byte[value.Length]; Buffer.BlockCopy(value, 0, _voteresult, 0, value.Length); }
-                }
-            }
+            public byte[] VoteType;
+            public byte[] VoteResult;
             public float Majority;
             public int Quorum;
-            private byte[] _proposaltext;
-            public byte[] ProposalText
-            {
-                get { return _proposaltext; }
-                set
-                {
-                    if (value == null) { _proposaltext = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _proposaltext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _proposaltext, 0, value.Length); }
-                }
-            }
+            public byte[] ProposalText;
 
             public override int Length
             {
@@ -61282,27 +59232,27 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     VoteID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _tersedateid = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _tersedateid, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _startdatetime = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _startdatetime, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _enddatetime = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _enddatetime, 0, length); i += length;
+                    length = bytes[i++];
+                    TerseDateID = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TerseDateID, 0, length); i += length;
+                    length = bytes[i++];
+                    StartDateTime = new byte[length];
+                    Buffer.BlockCopy(bytes, i, StartDateTime, 0, length); i += length;
+                    length = bytes[i++];
+                    EndDateTime = new byte[length];
+                    Buffer.BlockCopy(bytes, i, EndDateTime, 0, length); i += length;
                     VoteInitiator.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _votetype = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _votetype, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _voteresult = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _voteresult, 0, length); i += length;
+                    length = bytes[i++];
+                    VoteType = new byte[length];
+                    Buffer.BlockCopy(bytes, i, VoteType, 0, length); i += length;
+                    length = bytes[i++];
+                    VoteResult = new byte[length];
+                    Buffer.BlockCopy(bytes, i, VoteResult, 0, length); i += length;
                     Majority = Utils.BytesToFloat(bytes, i); i += 4;
                     Quorum = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _proposaltext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _proposaltext, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    ProposalText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ProposalText, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -61337,17 +59287,7 @@ namespace OpenMetaverse.Packets
         public class VoteItemBlock : PacketBlock
         {
             public UUID CandidateID;
-            private byte[] _votecast;
-            public byte[] VoteCast
-            {
-                get { return _votecast; }
-                set
-                {
-                    if (value == null) { _votecast = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _votecast = new byte[value.Length]; Buffer.BlockCopy(value, 0, _votecast, 0, value.Length); }
-                }
-            }
+            public byte[] VoteCast;
             public int NumVotes;
 
             public override int Length
@@ -61372,9 +59312,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     CandidateID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _votecast = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _votecast, 0, length); i += length;
+                    length = bytes[i++];
+                    VoteCast = new byte[length];
+                    Buffer.BlockCopy(bytes, i, VoteCast, 0, length); i += length;
                     NumVotes = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -61610,17 +59550,7 @@ namespace OpenMetaverse.Packets
             public int Quorum;
             public float Majority;
             public int Duration;
-            private byte[] _proposaltext;
-            public byte[] ProposalText
-            {
-                get { return _proposaltext; }
-                set
-                {
-                    if (value == null) { _proposaltext = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _proposaltext = new byte[value.Length]; Buffer.BlockCopy(value, 0, _proposaltext, 0, value.Length); }
-                }
-            }
+            public byte[] ProposalText;
 
             public override int Length
             {
@@ -61647,9 +59577,9 @@ namespace OpenMetaverse.Packets
                     Quorum = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Majority = Utils.BytesToFloat(bytes, i); i += 4;
                     Duration = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _proposaltext = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _proposaltext, 0, length); i += length;
+                    length = bytes[i++];
+                    ProposalText = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ProposalText, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -61796,17 +59726,7 @@ namespace OpenMetaverse.Packets
         {
             public UUID ProposalID;
             public UUID GroupID;
-            private byte[] _votecast;
-            public byte[] VoteCast
-            {
-                get { return _votecast; }
-                set
-                {
-                    if (value == null) { _votecast = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _votecast = new byte[value.Length]; Buffer.BlockCopy(value, 0, _votecast, 0, value.Length); }
-                }
-            }
+            public byte[] VoteCast;
 
             public override int Length
             {
@@ -61831,9 +59751,9 @@ namespace OpenMetaverse.Packets
                 {
                     ProposalID.FromBytes(bytes, i); i += 16;
                     GroupID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _votecast = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _votecast, 0, length); i += length;
+                    length = bytes[i++];
+                    VoteCast = new byte[length];
+                    Buffer.BlockCopy(bytes, i, VoteCast, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -62180,29 +60100,9 @@ namespace OpenMetaverse.Packets
         {
             public UUID AgentID;
             public int Contribution;
-            private byte[] _onlinestatus;
-            public byte[] OnlineStatus
-            {
-                get { return _onlinestatus; }
-                set
-                {
-                    if (value == null) { _onlinestatus = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _onlinestatus = new byte[value.Length]; Buffer.BlockCopy(value, 0, _onlinestatus, 0, value.Length); }
-                }
-            }
+            public byte[] OnlineStatus;
             public ulong AgentPowers;
-            private byte[] _title;
-            public byte[] Title
-            {
-                get { return _title; }
-                set
-                {
-                    if (value == null) { _title = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _title = new byte[value.Length]; Buffer.BlockCopy(value, 0, _title, 0, value.Length); }
-                }
-            }
+            public byte[] Title;
             public bool IsOwner;
 
             public override int Length
@@ -62229,13 +60129,13 @@ namespace OpenMetaverse.Packets
                 {
                     AgentID.FromBytes(bytes, i); i += 16;
                     Contribution = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _onlinestatus = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _onlinestatus, 0, length); i += length;
+                    length = bytes[i++];
+                    OnlineStatus = new byte[length];
+                    Buffer.BlockCopy(bytes, i, OnlineStatus, 0, length); i += length;
                     AgentPowers = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
-                    length = (ushort)bytes[i++];
-                    _title = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _title, 0, length); i += length;
+                    length = bytes[i++];
+                    Title = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Title, 0, length); i += length;
                     IsOwner = (bytes[i++] != 0) ? (bool)true : (bool)false;
                 }
                 catch (Exception)
@@ -63153,39 +61053,9 @@ namespace OpenMetaverse.Packets
         public class RoleDataBlock : PacketBlock
         {
             public UUID RoleID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _title;
-            public byte[] Title
-            {
-                get { return _title; }
-                set
-                {
-                    if (value == null) { _title = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _title = new byte[value.Length]; Buffer.BlockCopy(value, 0, _title, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Title;
+            public byte[] Description;
             public ulong Powers;
             public uint Members;
 
@@ -63213,15 +61083,15 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     RoleID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _title = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _title, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Title = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Title, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                     Powers = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
                     Members = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -63972,17 +61842,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class GroupDataBlock : PacketBlock
         {
-            private byte[] _title;
-            public byte[] Title
-            {
-                get { return _title; }
-                set
-                {
-                    if (value == null) { _title = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _title = new byte[value.Length]; Buffer.BlockCopy(value, 0, _title, 0, value.Length); }
-                }
-            }
+            public byte[] Title;
             public UUID RoleID;
             public bool Selected;
 
@@ -64007,9 +61867,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _title = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _title, 0, length); i += length;
+                    length = bytes[i++];
+                    Title = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Title, 0, length); i += length;
                     RoleID.FromBytes(bytes, i); i += 16;
                     Selected = (bytes[i++] != 0) ? (bool)true : (bool)false;
                 }
@@ -64348,39 +62208,9 @@ namespace OpenMetaverse.Packets
         public class RoleDataBlock : PacketBlock
         {
             public UUID RoleID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
-            private byte[] _title;
-            public byte[] Title
-            {
-                get { return _title; }
-                set
-                {
-                    if (value == null) { _title = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _title = new byte[value.Length]; Buffer.BlockCopy(value, 0, _title, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
+            public byte[] Title;
             public ulong Powers;
             public byte UpdateType;
 
@@ -64408,15 +62238,15 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     RoleID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _title = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _title, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
+                    length = bytes[i++];
+                    Title = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Title, 0, length); i += length;
                     Powers = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
                     UpdateType = (byte)bytes[i++];
                 }
@@ -64710,17 +62540,7 @@ namespace OpenMetaverse.Packets
         {
             public UUID RequestID;
             public UUID GroupID;
-            private byte[] _selection;
-            public byte[] Selection
-            {
-                get { return _selection; }
-                set
-                {
-                    if (value == null) { _selection = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _selection = new byte[value.Length]; Buffer.BlockCopy(value, 0, _selection, 0, value.Length); }
-                }
-            }
+            public byte[] Selection;
 
             public override int Length
             {
@@ -64745,9 +62565,9 @@ namespace OpenMetaverse.Packets
                 {
                     RequestID.FromBytes(bytes, i); i += 16;
                     GroupID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _selection = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _selection, 0, length); i += length;
+                    length = bytes[i++];
+                    Selection = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Selection, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -65708,17 +63528,7 @@ namespace OpenMetaverse.Packets
         {
             public UUID TextureID;
             public byte TextureIndex;
-            private byte[] _hostname;
-            public byte[] HostName
-            {
-                get { return _hostname; }
-                set
-                {
-                    if (value == null) { _hostname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _hostname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _hostname, 0, value.Length); }
-                }
-            }
+            public byte[] HostName;
 
             public override int Length
             {
@@ -65743,9 +63553,9 @@ namespace OpenMetaverse.Packets
                 {
                     TextureID.FromBytes(bytes, i); i += 16;
                     TextureIndex = (byte)bytes[i++];
-                    length = (ushort)bytes[i++];
-                    _hostname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _hostname, 0, length); i += length;
+                    length = bytes[i++];
+                    HostName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, HostName, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -66031,52 +63841,12 @@ namespace OpenMetaverse.Packets
         public class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
-            private byte[] _firstname;
-            public byte[] FirstName
-            {
-                get { return _firstname; }
-                set
-                {
-                    if (value == null) { _firstname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _firstname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _firstname, 0, value.Length); }
-                }
-            }
-            private byte[] _lastname;
-            public byte[] LastName
-            {
-                get { return _lastname; }
-                set
-                {
-                    if (value == null) { _lastname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _lastname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _lastname, 0, value.Length); }
-                }
-            }
-            private byte[] _grouptitle;
-            public byte[] GroupTitle
-            {
-                get { return _grouptitle; }
-                set
-                {
-                    if (value == null) { _grouptitle = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _grouptitle = new byte[value.Length]; Buffer.BlockCopy(value, 0, _grouptitle, 0, value.Length); }
-                }
-            }
+            public byte[] FirstName;
+            public byte[] LastName;
+            public byte[] GroupTitle;
             public UUID ActiveGroupID;
             public ulong GroupPowers;
-            private byte[] _groupname;
-            public byte[] GroupName
-            {
-                get { return _groupname; }
-                set
-                {
-                    if (value == null) { _groupname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _groupname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _groupname, 0, value.Length); }
-                }
-            }
+            public byte[] GroupName;
 
             public override int Length
             {
@@ -66103,20 +63873,20 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     AgentID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _firstname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _firstname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _lastname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _lastname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _grouptitle = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _grouptitle, 0, length); i += length;
+                    length = bytes[i++];
+                    FirstName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, FirstName, 0, length); i += length;
+                    length = bytes[i++];
+                    LastName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, LastName, 0, length); i += length;
+                    length = bytes[i++];
+                    GroupTitle = new byte[length];
+                    Buffer.BlockCopy(bytes, i, GroupTitle, 0, length); i += length;
                     ActiveGroupID.FromBytes(bytes, i); i += 16;
                     GroupPowers = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
-                    length = (ushort)bytes[i++];
-                    _groupname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _groupname, 0, length); i += length;
+                    length = bytes[i++];
+                    GroupName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, GroupName, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -66221,17 +63991,7 @@ namespace OpenMetaverse.Packets
             public UUID AgentID;
             public UUID GroupID;
             public ulong AgentPowers;
-            private byte[] _grouptitle;
-            public byte[] GroupTitle
-            {
-                get { return _grouptitle; }
-                set
-                {
-                    if (value == null) { _grouptitle = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _grouptitle = new byte[value.Length]; Buffer.BlockCopy(value, 0, _grouptitle, 0, value.Length); }
-                }
-            }
+            public byte[] GroupTitle;
 
             public override int Length
             {
@@ -66257,9 +64017,9 @@ namespace OpenMetaverse.Packets
                     AgentID.FromBytes(bytes, i); i += 16;
                     GroupID.FromBytes(bytes, i); i += 16;
                     AgentPowers = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
-                    length = (ushort)bytes[i++];
-                    _grouptitle = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _grouptitle, 0, length); i += length;
+                    length = bytes[i++];
+                    GroupTitle = new byte[length];
+                    Buffer.BlockCopy(bytes, i, GroupTitle, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -66466,17 +64226,7 @@ namespace OpenMetaverse.Packets
             public bool AcceptNotices;
             public UUID GroupInsigniaID;
             public int Contribution;
-            private byte[] _groupname;
-            public byte[] GroupName
-            {
-                get { return _groupname; }
-                set
-                {
-                    if (value == null) { _groupname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _groupname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _groupname, 0, value.Length); }
-                }
-            }
+            public byte[] GroupName;
 
             public override int Length
             {
@@ -66504,9 +64254,9 @@ namespace OpenMetaverse.Packets
                     AcceptNotices = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     GroupInsigniaID.FromBytes(bytes, i); i += 16;
                     Contribution = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _groupname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _groupname, 0, length); i += length;
+                    length = bytes[i++];
+                    GroupName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, GroupName, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -66844,28 +64594,8 @@ namespace OpenMetaverse.Packets
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
 
             public override int Length
             {
@@ -66896,12 +64626,12 @@ namespace OpenMetaverse.Packets
                     GroupMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     EveryoneMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -67102,28 +64832,8 @@ namespace OpenMetaverse.Packets
             public uint GroupMask;
             public uint EveryoneMask;
             public uint NextOwnerMask;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
 
             public override int Length
             {
@@ -67154,12 +64864,12 @@ namespace OpenMetaverse.Packets
                     GroupMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     EveryoneMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     NextOwnerMask = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -67893,28 +65603,8 @@ namespace OpenMetaverse.Packets
         public class UserDataBlock : PacketBlock
         {
             public bool IMViaEMail;
-            private byte[] _directoryvisibility;
-            public byte[] DirectoryVisibility
-            {
-                get { return _directoryvisibility; }
-                set
-                {
-                    if (value == null) { _directoryvisibility = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _directoryvisibility = new byte[value.Length]; Buffer.BlockCopy(value, 0, _directoryvisibility, 0, value.Length); }
-                }
-            }
-            private byte[] _email;
-            public byte[] EMail
-            {
-                get { return _email; }
-                set
-                {
-                    if (value == null) { _email = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _email = new byte[value.Length]; Buffer.BlockCopy(value, 0, _email, 0, value.Length); }
-                }
-            }
+            public byte[] DirectoryVisibility;
+            public byte[] EMail;
 
             public override int Length
             {
@@ -67939,12 +65629,12 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     IMViaEMail = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    length = (ushort)bytes[i++];
-                    _directoryvisibility = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _directoryvisibility, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _email = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _email, 0, length); i += length;
+                    length = bytes[i++];
+                    DirectoryVisibility = new byte[length];
+                    Buffer.BlockCopy(bytes, i, DirectoryVisibility, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    EMail = new byte[length];
+                    Buffer.BlockCopy(bytes, i, EMail, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -68089,17 +65779,7 @@ namespace OpenMetaverse.Packets
         public class UserDataBlock : PacketBlock
         {
             public bool IMViaEMail;
-            private byte[] _directoryvisibility;
-            public byte[] DirectoryVisibility
-            {
-                get { return _directoryvisibility; }
-                set
-                {
-                    if (value == null) { _directoryvisibility = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _directoryvisibility = new byte[value.Length]; Buffer.BlockCopy(value, 0, _directoryvisibility, 0, value.Length); }
-                }
-            }
+            public byte[] DirectoryVisibility;
 
             public override int Length
             {
@@ -68123,9 +65803,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     IMViaEMail = (bytes[i++] != 0) ? (bool)true : (bool)false;
-                    length = (ushort)bytes[i++];
-                    _directoryvisibility = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _directoryvisibility, 0, length); i += length;
+                    length = bytes[i++];
+                    DirectoryVisibility = new byte[length];
+                    Buffer.BlockCopy(bytes, i, DirectoryVisibility, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -68263,28 +65943,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class FileDataBlock : PacketBlock
         {
-            private byte[] _simfilename;
-            public byte[] SimFilename
-            {
-                get { return _simfilename; }
-                set
-                {
-                    if (value == null) { _simfilename = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _simfilename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _simfilename, 0, value.Length); }
-                }
-            }
-            private byte[] _viewerfilename;
-            public byte[] ViewerFilename
-            {
-                get { return _viewerfilename; }
-                set
-                {
-                    if (value == null) { _viewerfilename = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _viewerfilename = new byte[value.Length]; Buffer.BlockCopy(value, 0, _viewerfilename, 0, value.Length); }
-                }
-            }
+            public byte[] SimFilename;
+            public byte[] ViewerFilename;
 
             public override int Length
             {
@@ -68308,12 +65968,12 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _simfilename = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _simfilename, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _viewerfilename = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _viewerfilename, 0, length); i += length;
+                    length = bytes[i++];
+                    SimFilename = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SimFilename, 0, length); i += length;
+                    length = bytes[i++];
+                    ViewerFilename = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ViewerFilename, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -69009,17 +66669,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class NameDataBlock : PacketBlock
         {
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
 
             public override int Length
             {
@@ -69042,9 +66692,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -69186,17 +66836,7 @@ namespace OpenMetaverse.Packets
         {
             public ushort X;
             public ushort Y;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
             public byte Access;
             public uint RegionFlags;
             public byte WaterHeight;
@@ -69226,9 +66866,9 @@ namespace OpenMetaverse.Packets
                 {
                     X = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     Y = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                     Access = (byte)bytes[i++];
                     RegionFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     WaterHeight = (byte)bytes[i++];
@@ -69666,17 +67306,7 @@ namespace OpenMetaverse.Packets
             public UUID ID;
             public int Extra;
             public int Extra2;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
 
             public override int Length
             {
@@ -69704,9 +67334,9 @@ namespace OpenMetaverse.Packets
                     ID.FromBytes(bytes, i); i += 16;
                     Extra = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Extra2 = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -69893,61 +67523,11 @@ namespace OpenMetaverse.Packets
             public UUID SessionID;
             public UUID AssetID;
             public Vector3d PosGlobal;
-            private byte[] _to;
-            public byte[] To
-            {
-                get { return _to; }
-                set
-                {
-                    if (value == null) { _to = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _to = new byte[value.Length]; Buffer.BlockCopy(value, 0, _to, 0, value.Length); }
-                }
-            }
-            private byte[] _from;
-            public byte[] From
-            {
-                get { return _from; }
-                set
-                {
-                    if (value == null) { _from = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _from = new byte[value.Length]; Buffer.BlockCopy(value, 0, _from, 0, value.Length); }
-                }
-            }
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _subject;
-            public byte[] Subject
-            {
-                get { return _subject; }
-                set
-                {
-                    if (value == null) { _subject = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _subject = new byte[value.Length]; Buffer.BlockCopy(value, 0, _subject, 0, value.Length); }
-                }
-            }
-            private byte[] _msg;
-            public byte[] Msg
-            {
-                get { return _msg; }
-                set
-                {
-                    if (value == null) { _msg = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _msg = new byte[value.Length]; Buffer.BlockCopy(value, 0, _msg, 0, value.Length); }
-                }
-            }
+            public byte[] To;
+            public byte[] From;
+            public byte[] Name;
+            public byte[] Subject;
+            public byte[] Msg;
             public bool AllowPublish;
             public bool MaturePublish;
 
@@ -69980,21 +67560,21 @@ namespace OpenMetaverse.Packets
                     SessionID.FromBytes(bytes, i); i += 16;
                     AssetID.FromBytes(bytes, i); i += 16;
                     PosGlobal.FromBytes(bytes, i); i += 24;
-                    length = (ushort)bytes[i++];
-                    _to = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _to, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _from = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _from, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _subject = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _subject, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _msg = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _msg, 0, length); i += length;
+                    length = bytes[i++];
+                    To = new byte[length];
+                    Buffer.BlockCopy(bytes, i, To, 0, length); i += length;
+                    length = bytes[i++];
+                    From = new byte[length];
+                    Buffer.BlockCopy(bytes, i, From, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Subject = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Subject, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Msg = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Msg, 0, length); i += length;
                     AllowPublish = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     MaturePublish = (bytes[i++] != 0) ? (bool)true : (bool)false;
                 }
@@ -70220,17 +67800,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockBlock : PacketBlock
         {
-            private byte[] _mediaurl;
-            public byte[] MediaURL
-            {
-                get { return _mediaurl; }
-                set
-                {
-                    if (value == null) { _mediaurl = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
-                }
-            }
+            public byte[] MediaURL;
             public UUID MediaID;
             public byte MediaAutoScale;
 
@@ -70255,9 +67825,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _mediaurl = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _mediaurl, 0, length); i += length;
+                    length = bytes[i++];
+                    MediaURL = new byte[length];
+                    Buffer.BlockCopy(bytes, i, MediaURL, 0, length); i += length;
                     MediaID.FromBytes(bytes, i); i += 16;
                     MediaAutoScale = (byte)bytes[i++];
                 }
@@ -70280,28 +67850,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataBlockExtendedBlock : PacketBlock
         {
-            private byte[] _mediatype;
-            public byte[] MediaType
-            {
-                get { return _mediatype; }
-                set
-                {
-                    if (value == null) { _mediatype = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mediatype = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediatype, 0, value.Length); }
-                }
-            }
-            private byte[] _mediadesc;
-            public byte[] MediaDesc
-            {
-                get { return _mediadesc; }
-                set
-                {
-                    if (value == null) { _mediadesc = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mediadesc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediadesc, 0, value.Length); }
-                }
-            }
+            public byte[] MediaType;
+            public byte[] MediaDesc;
             public int MediaWidth;
             public int MediaHeight;
             public byte MediaLoop;
@@ -70328,12 +67878,12 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _mediatype = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _mediatype, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _mediadesc = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _mediadesc, 0, length); i += length;
+                    length = bytes[i++];
+                    MediaType = new byte[length];
+                    Buffer.BlockCopy(bytes, i, MediaType, 0, length); i += length;
+                    length = bytes[i++];
+                    MediaDesc = new byte[length];
+                    Buffer.BlockCopy(bytes, i, MediaDesc, 0, length); i += length;
                     MediaWidth = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     MediaHeight = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     MediaLoop = (byte)bytes[i++];
@@ -70483,17 +68033,7 @@ namespace OpenMetaverse.Packets
         {
             public uint ReportType;
             public uint RequestFlags;
-            private byte[] _filter;
-            public byte[] Filter
-            {
-                get { return _filter; }
-                set
-                {
-                    if (value == null) { _filter = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _filter = new byte[value.Length]; Buffer.BlockCopy(value, 0, _filter, 0, value.Length); }
-                }
-            }
+            public byte[] Filter;
             public int ParcelLocalID;
 
             public override int Length
@@ -70519,9 +68059,9 @@ namespace OpenMetaverse.Packets
                 {
                     ReportType = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     RequestFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _filter = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _filter, 0, length); i += length;
+                    length = bytes[i++];
+                    Filter = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Filter, 0, length); i += length;
                     ParcelLocalID = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
                 catch (Exception)
@@ -70674,28 +68214,8 @@ namespace OpenMetaverse.Packets
             public float LocationY;
             public float LocationZ;
             public float Score;
-            private byte[] _taskname;
-            public byte[] TaskName
-            {
-                get { return _taskname; }
-                set
-                {
-                    if (value == null) { _taskname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _taskname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _taskname, 0, value.Length); }
-                }
-            }
-            private byte[] _ownername;
-            public byte[] OwnerName
-            {
-                get { return _ownername; }
-                set
-                {
-                    if (value == null) { _ownername = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _ownername = new byte[value.Length]; Buffer.BlockCopy(value, 0, _ownername, 0, value.Length); }
-                }
-            }
+            public byte[] TaskName;
+            public byte[] OwnerName;
 
             public override int Length
             {
@@ -70725,12 +68245,12 @@ namespace OpenMetaverse.Packets
                     LocationY = Utils.BytesToFloat(bytes, i); i += 4;
                     LocationZ = Utils.BytesToFloat(bytes, i); i += 4;
                     Score = Utils.BytesToFloat(bytes, i); i += 4;
-                    length = (ushort)bytes[i++];
-                    _taskname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _taskname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _ownername = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _ownername, 0, length); i += length;
+                    length = bytes[i++];
+                    TaskName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TaskName, 0, length); i += length;
+                    length = bytes[i++];
+                    OwnerName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, OwnerName, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -70946,51 +68466,11 @@ namespace OpenMetaverse.Packets
         public class DataBlock : PacketBlock
         {
             public int Code;
-            private byte[] _token;
-            public byte[] Token
-            {
-                get { return _token; }
-                set
-                {
-                    if (value == null) { _token = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _token = new byte[value.Length]; Buffer.BlockCopy(value, 0, _token, 0, value.Length); }
-                }
-            }
+            public byte[] Token;
             public UUID ID;
-            private byte[] _system;
-            public byte[] System
-            {
-                get { return _system; }
-                set
-                {
-                    if (value == null) { _system = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _system = new byte[value.Length]; Buffer.BlockCopy(value, 0, _system, 0, value.Length); }
-                }
-            }
-            private byte[] _message;
-            public byte[] Message
-            {
-                get { return _message; }
-                set
-                {
-                    if (value == null) { _message = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _message = new byte[value.Length]; Buffer.BlockCopy(value, 0, _message, 0, value.Length); }
-                }
-            }
-            private byte[] _data;
-            public byte[] Data
-            {
-                get { return _data; }
-                set
-                {
-                    if (value == null) { _data = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
-                }
-            }
+            public byte[] System;
+            public byte[] Message;
+            public byte[] Data;
 
             public override int Length
             {
@@ -71017,19 +68497,19 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     Code = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _token = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _token, 0, length); i += length;
+                    length = bytes[i++];
+                    Token = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Token, 0, length); i += length;
                     ID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _system = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _system, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _message = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _message, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _data = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
+                    length = bytes[i++];
+                    System = new byte[length];
+                    Buffer.BlockCopy(bytes, i, System, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Message = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Message, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Data = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Data, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -71429,28 +68909,8 @@ namespace OpenMetaverse.Packets
             public uint Flags;
             public byte SaleType;
             public int SalePrice;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
             public int CreationDate;
             public uint CRC;
 
@@ -71493,12 +68953,12 @@ namespace OpenMetaverse.Packets
                     Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SaleType = (byte)bytes[i++];
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                     CreationDate = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     CRC = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                 }
@@ -72275,17 +69735,7 @@ namespace OpenMetaverse.Packets
         {
             public uint ObjectLocalID;
             public byte Type;
-            private byte[] _data;
-            public byte[] Data
-            {
-                get { return _data; }
-                set
-                {
-                    if (value == null) { _data = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
-                }
-            }
+            public byte[] Data;
 
             public override int Length
             {
@@ -72310,9 +69760,9 @@ namespace OpenMetaverse.Packets
                 {
                     ObjectLocalID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Type = (byte)bytes[i++];
-                    length = (ushort)bytes[i++];
-                    _data = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
+                    length = bytes[i++];
+                    Data = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Data, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -73403,17 +70853,7 @@ namespace OpenMetaverse.Packets
             public uint SimIP;
             public ushort SimPort;
             public ulong RegionHandle;
-            private byte[] _seedcapability;
-            public byte[] SeedCapability
-            {
-                get { return _seedcapability; }
-                set
-                {
-                    if (value == null) { _seedcapability = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _seedcapability = new byte[value.Length]; Buffer.BlockCopy(value, 0, _seedcapability, 0, value.Length); }
-                }
-            }
+            public byte[] SeedCapability;
 
             public override int Length
             {
@@ -73439,9 +70879,9 @@ namespace OpenMetaverse.Packets
                     SimIP = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SimPort = (ushort)((bytes[i++] << 8) + bytes[i++]);
                     RegionHandle = (ulong)((ulong)bytes[i++] + ((ulong)bytes[i++] << 8) + ((ulong)bytes[i++] << 16) + ((ulong)bytes[i++] << 24) + ((ulong)bytes[i++] << 32) + ((ulong)bytes[i++] << 40) + ((ulong)bytes[i++] << 48) + ((ulong)bytes[i++] << 56));
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _seedcapability = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _seedcapability, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    SeedCapability = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SeedCapability, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -73729,61 +71169,11 @@ namespace OpenMetaverse.Packets
             public UUID FolderID;
             public UUID FromTaskID;
             public UUID LastOwnerID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
-            private byte[] _touchname;
-            public byte[] TouchName
-            {
-                get { return _touchname; }
-                set
-                {
-                    if (value == null) { _touchname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _touchname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _touchname, 0, value.Length); }
-                }
-            }
-            private byte[] _sitname;
-            public byte[] SitName
-            {
-                get { return _sitname; }
-                set
-                {
-                    if (value == null) { _sitname = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _sitname = new byte[value.Length]; Buffer.BlockCopy(value, 0, _sitname, 0, value.Length); }
-                }
-            }
-            private byte[] _textureid;
-            public byte[] TextureID
-            {
-                get { return _textureid; }
-                set
-                {
-                    if (value == null) { _textureid = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _textureid = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureid, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
+            public byte[] TouchName;
+            public byte[] SitName;
+            public byte[] TextureID;
 
             public override int Length
             {
@@ -73832,21 +71222,21 @@ namespace OpenMetaverse.Packets
                     FolderID.FromBytes(bytes, i); i += 16;
                     FromTaskID.FromBytes(bytes, i); i += 16;
                     LastOwnerID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _touchname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _touchname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _sitname = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _sitname, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _textureid = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _textureid, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
+                    length = bytes[i++];
+                    TouchName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TouchName, 0, length); i += length;
+                    length = bytes[i++];
+                    SitName = new byte[length];
+                    Buffer.BlockCopy(bytes, i, SitName, 0, length); i += length;
+                    length = bytes[i++];
+                    TextureID = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TextureID, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -74052,28 +71442,8 @@ namespace OpenMetaverse.Packets
             public int SalePrice;
             public uint Category;
             public UUID LastOwnerID;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _description;
-            public byte[] Description
-            {
-                get { return _description; }
-                set
-                {
-                    if (value == null) { _description = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _description = new byte[value.Length]; Buffer.BlockCopy(value, 0, _description, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Description;
 
             public override int Length
             {
@@ -74111,12 +71481,12 @@ namespace OpenMetaverse.Packets
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Category = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     LastOwnerID.FromBytes(bytes, i); i += 16;
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _description = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _description, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -74868,17 +72238,7 @@ namespace OpenMetaverse.Packets
             public byte Type;
             public float Duration;
             public byte[] Color;
-            private byte[] _typedata;
-            public byte[] TypeData
-            {
-                get { return _typedata; }
-                set
-                {
-                    if (value == null) { _typedata = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _typedata = new byte[value.Length]; Buffer.BlockCopy(value, 0, _typedata, 0, value.Length); }
-                }
-            }
+            public byte[] TypeData;
 
             public override int Length
             {
@@ -74907,9 +72267,9 @@ namespace OpenMetaverse.Packets
                     Duration = Utils.BytesToFloat(bytes, i); i += 4;
                     Color = new byte[4];
                     Buffer.BlockCopy(bytes, i, Color, 0, 4); i += 4;
-                    length = (ushort)bytes[i++];
-                    _typedata = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _typedata, 0, length); i += length;
+                    length = bytes[i++];
+                    TypeData = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TypeData, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -75536,17 +72896,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class PhysicalAvatarEventListBlock : PacketBlock
         {
-            private byte[] _typedata;
-            public byte[] TypeData
-            {
-                get { return _typedata; }
-                set
-                {
-                    if (value == null) { _typedata = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _typedata = new byte[value.Length]; Buffer.BlockCopy(value, 0, _typedata, 0, value.Length); }
-                }
-            }
+            public byte[] TypeData;
 
             public override int Length
             {
@@ -75569,9 +72919,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _typedata = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _typedata, 0, length); i += length;
+                    length = bytes[i++];
+                    TypeData = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TypeData, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -76348,17 +73698,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ImageDataBlock : PacketBlock
         {
-            private byte[] _data;
-            public byte[] Data
-            {
-                get { return _data; }
-                set
-                {
-                    if (value == null) { _data = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
-                }
-            }
+            public byte[] Data;
 
             public override int Length
             {
@@ -76381,9 +73721,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _data = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Data = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Data, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -76525,17 +73865,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ImageDataBlock : PacketBlock
         {
-            private byte[] _data;
-            public byte[] Data
-            {
-                get { return _data; }
-                set
-                {
-                    if (value == null) { _data = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
-                }
-            }
+            public byte[] Data;
 
             public override int Length
             {
@@ -76558,9 +73888,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _data = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Data = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Data, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -76698,17 +74028,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class LayerDataBlock : PacketBlock
         {
-            private byte[] _data;
-            public byte[] Data
-            {
-                get { return _data; }
-                set
-                {
-                    if (value == null) { _data = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
-                }
-            }
+            public byte[] Data;
 
             public override int Length
             {
@@ -76731,9 +74051,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _data = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Data = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Data, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -76883,17 +74203,7 @@ namespace OpenMetaverse.Packets
             public byte Material;
             public byte ClickAction;
             public Vector3 Scale;
-            private byte[] _objectdata;
-            public byte[] ObjectData
-            {
-                get { return _objectdata; }
-                set
-                {
-                    if (value == null) { _objectdata = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _objectdata = new byte[value.Length]; Buffer.BlockCopy(value, 0, _objectdata, 0, value.Length); }
-                }
-            }
+            public byte[] ObjectData;
             public uint ParentID;
             public uint UpdateFlags;
             public byte PathCurve;
@@ -76914,95 +74224,15 @@ namespace OpenMetaverse.Packets
             public ushort ProfileBegin;
             public ushort ProfileEnd;
             public ushort ProfileHollow;
-            private byte[] _textureentry;
-            public byte[] TextureEntry
-            {
-                get { return _textureentry; }
-                set
-                {
-                    if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
-                }
-            }
-            private byte[] _textureanim;
-            public byte[] TextureAnim
-            {
-                get { return _textureanim; }
-                set
-                {
-                    if (value == null) { _textureanim = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _textureanim = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureanim, 0, value.Length); }
-                }
-            }
-            private byte[] _namevalue;
-            public byte[] NameValue
-            {
-                get { return _namevalue; }
-                set
-                {
-                    if (value == null) { _namevalue = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _namevalue = new byte[value.Length]; Buffer.BlockCopy(value, 0, _namevalue, 0, value.Length); }
-                }
-            }
-            private byte[] _data;
-            public byte[] Data
-            {
-                get { return _data; }
-                set
-                {
-                    if (value == null) { _data = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
-                }
-            }
-            private byte[] _text;
-            public byte[] Text
-            {
-                get { return _text; }
-                set
-                {
-                    if (value == null) { _text = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _text = new byte[value.Length]; Buffer.BlockCopy(value, 0, _text, 0, value.Length); }
-                }
-            }
+            public byte[] TextureEntry;
+            public byte[] TextureAnim;
+            public byte[] NameValue;
+            public byte[] Data;
+            public byte[] Text;
             public byte[] TextColor;
-            private byte[] _mediaurl;
-            public byte[] MediaURL
-            {
-                get { return _mediaurl; }
-                set
-                {
-                    if (value == null) { _mediaurl = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
-                }
-            }
-            private byte[] _psblock;
-            public byte[] PSBlock
-            {
-                get { return _psblock; }
-                set
-                {
-                    if (value == null) { _psblock = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _psblock = new byte[value.Length]; Buffer.BlockCopy(value, 0, _psblock, 0, value.Length); }
-                }
-            }
-            private byte[] _extraparams;
-            public byte[] ExtraParams
-            {
-                get { return _extraparams; }
-                set
-                {
-                    if (value == null) { _extraparams = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _extraparams = new byte[value.Length]; Buffer.BlockCopy(value, 0, _extraparams, 0, value.Length); }
-                }
-            }
+            public byte[] MediaURL;
+            public byte[] PSBlock;
+            public byte[] ExtraParams;
             public UUID Sound;
             public UUID OwnerID;
             public float Gain;
@@ -77049,9 +74279,9 @@ namespace OpenMetaverse.Packets
                     Material = (byte)bytes[i++];
                     ClickAction = (byte)bytes[i++];
                     Scale.FromBytes(bytes, i); i += 12;
-                    length = (ushort)bytes[i++];
-                    _objectdata = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _objectdata, 0, length); i += length;
+                    length = bytes[i++];
+                    ObjectData = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ObjectData, 0, length); i += length;
                     ParentID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     UpdateFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     PathCurve = (byte)bytes[i++];
@@ -77072,32 +74302,32 @@ namespace OpenMetaverse.Packets
                     ProfileBegin = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     ProfileEnd = (ushort)(bytes[i++] + (bytes[i++] << 8));
                     ProfileHollow = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _textureentry = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _textureentry, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _textureanim = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _textureanim, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _namevalue = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _namevalue, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _data = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _text = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _text, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    TextureEntry = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TextureEntry, 0, length); i += length;
+                    length = bytes[i++];
+                    TextureAnim = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TextureAnim, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    NameValue = new byte[length];
+                    Buffer.BlockCopy(bytes, i, NameValue, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Data = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Data, 0, length); i += length;
+                    length = bytes[i++];
+                    Text = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Text, 0, length); i += length;
                     TextColor = new byte[4];
                     Buffer.BlockCopy(bytes, i, TextColor, 0, 4); i += 4;
-                    length = (ushort)bytes[i++];
-                    _mediaurl = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _mediaurl, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _psblock = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _psblock, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _extraparams = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _extraparams, 0, length); i += length;
+                    length = bytes[i++];
+                    MediaURL = new byte[length];
+                    Buffer.BlockCopy(bytes, i, MediaURL, 0, length); i += length;
+                    length = bytes[i++];
+                    PSBlock = new byte[length];
+                    Buffer.BlockCopy(bytes, i, PSBlock, 0, length); i += length;
+                    length = bytes[i++];
+                    ExtraParams = new byte[length];
+                    Buffer.BlockCopy(bytes, i, ExtraParams, 0, length); i += length;
                     Sound.FromBytes(bytes, i); i += 16;
                     OwnerID.FromBytes(bytes, i); i += 16;
                     Gain = Utils.BytesToFloat(bytes, i); i += 4;
@@ -77379,17 +74609,7 @@ namespace OpenMetaverse.Packets
         public class ObjectDataBlock : PacketBlock
         {
             public uint UpdateFlags;
-            private byte[] _data;
-            public byte[] Data
-            {
-                get { return _data; }
-                set
-                {
-                    if (value == null) { _data = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
-                }
-            }
+            public byte[] Data;
 
             public override int Length
             {
@@ -77413,9 +74633,9 @@ namespace OpenMetaverse.Packets
                 try
                 {
                     UpdateFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _data = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Data = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Data, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -77864,28 +75084,8 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class ObjectDataBlock : PacketBlock
         {
-            private byte[] _data;
-            public byte[] Data
-            {
-                get { return _data; }
-                set
-                {
-                    if (value == null) { _data = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
-                }
-            }
-            private byte[] _textureentry;
-            public byte[] TextureEntry
-            {
-                get { return _textureentry; }
-                set
-                {
-                    if (value == null) { _textureentry = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _textureentry = new byte[value.Length]; Buffer.BlockCopy(value, 0, _textureentry, 0, value.Length); }
-                }
-            }
+            public byte[] Data;
+            public byte[] TextureEntry;
 
             public override int Length
             {
@@ -77909,12 +75109,12 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _data = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _textureentry = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _textureentry, 0, length); i += length;
+                    length = bytes[i++];
+                    Data = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Data, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    TextureEntry = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TextureEntry, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -78269,17 +75469,7 @@ namespace OpenMetaverse.Packets
             public int ChannelType;
             public int Packet;
             public int Status;
-            private byte[] _data;
-            public byte[] Data
-            {
-                get { return _data; }
-                set
-                {
-                    if (value == null) { _data = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
-                }
-            }
+            public byte[] Data;
 
             public override int Length
             {
@@ -78306,9 +75496,9 @@ namespace OpenMetaverse.Packets
                     ChannelType = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Packet = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Status = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _data = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Data = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Data, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -78446,17 +75636,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class DataPacketBlock : PacketBlock
         {
-            private byte[] _data;
-            public byte[] Data
-            {
-                get { return _data; }
-                set
-                {
-                    if (value == null) { _data = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _data = new byte[value.Length]; Buffer.BlockCopy(value, 0, _data, 0, value.Length); }
-                }
-            }
+            public byte[] Data;
 
             public override int Length
             {
@@ -78479,9 +75659,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _data = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _data, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Data = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Data, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -78812,17 +75992,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class PhysicalAvatarEventListBlock : PacketBlock
         {
-            private byte[] _typedata;
-            public byte[] TypeData
-            {
-                get { return _typedata; }
-                set
-                {
-                    if (value == null) { _typedata = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _typedata = new byte[value.Length]; Buffer.BlockCopy(value, 0, _typedata, 0, value.Length); }
-                }
-            }
+            public byte[] TypeData;
 
             public override int Length
             {
@@ -78845,9 +76015,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)bytes[i++];
-                    _typedata = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _typedata, 0, length); i += length;
+                    length = bytes[i++];
+                    TypeData = new byte[length];
+                    Buffer.BlockCopy(bytes, i, TypeData, 0, length); i += length;
                 }
                 catch (Exception)
                 {
@@ -79399,17 +76569,7 @@ namespace OpenMetaverse.Packets
             public int RentPrice;
             public Vector3 AABBMin;
             public Vector3 AABBMax;
-            private byte[] _bitmap;
-            public byte[] Bitmap
-            {
-                get { return _bitmap; }
-                set
-                {
-                    if (value == null) { _bitmap = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _bitmap = new byte[value.Length]; Buffer.BlockCopy(value, 0, _bitmap, 0, value.Length); }
-                }
-            }
+            public byte[] Bitmap;
             public int Area;
             public byte Status;
             public int SimWideMaxPrims;
@@ -79424,50 +76584,10 @@ namespace OpenMetaverse.Packets
             public int OtherCleanTime;
             public uint ParcelFlags;
             public int SalePrice;
-            private byte[] _name;
-            public byte[] Name
-            {
-                get { return _name; }
-                set
-                {
-                    if (value == null) { _name = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _name = new byte[value.Length]; Buffer.BlockCopy(value, 0, _name, 0, value.Length); }
-                }
-            }
-            private byte[] _desc;
-            public byte[] Desc
-            {
-                get { return _desc; }
-                set
-                {
-                    if (value == null) { _desc = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _desc = new byte[value.Length]; Buffer.BlockCopy(value, 0, _desc, 0, value.Length); }
-                }
-            }
-            private byte[] _musicurl;
-            public byte[] MusicURL
-            {
-                get { return _musicurl; }
-                set
-                {
-                    if (value == null) { _musicurl = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _musicurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _musicurl, 0, value.Length); }
-                }
-            }
-            private byte[] _mediaurl;
-            public byte[] MediaURL
-            {
-                get { return _mediaurl; }
-                set
-                {
-                    if (value == null) { _mediaurl = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _mediaurl = new byte[value.Length]; Buffer.BlockCopy(value, 0, _mediaurl, 0, value.Length); }
-                }
-            }
+            public byte[] Name;
+            public byte[] Desc;
+            public byte[] MusicURL;
+            public byte[] MediaURL;
             public UUID MediaID;
             public byte MediaAutoScale;
             public UUID GroupID;
@@ -79524,9 +76644,9 @@ namespace OpenMetaverse.Packets
                     RentPrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     AABBMin.FromBytes(bytes, i); i += 12;
                     AABBMax.FromBytes(bytes, i); i += 12;
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _bitmap = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _bitmap, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    Bitmap = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Bitmap, 0, length); i += length;
                     Area = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     Status = (byte)bytes[i++];
                     SimWideMaxPrims = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
@@ -79541,18 +76661,18 @@ namespace OpenMetaverse.Packets
                     OtherCleanTime = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     ParcelFlags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     SalePrice = (int)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
-                    length = (ushort)bytes[i++];
-                    _name = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _name, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _desc = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _desc, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _musicurl = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _musicurl, 0, length); i += length;
-                    length = (ushort)bytes[i++];
-                    _mediaurl = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _mediaurl, 0, length); i += length;
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Desc = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Desc, 0, length); i += length;
+                    length = bytes[i++];
+                    MusicURL = new byte[length];
+                    Buffer.BlockCopy(bytes, i, MusicURL, 0, length); i += length;
+                    length = bytes[i++];
+                    MediaURL = new byte[length];
+                    Buffer.BlockCopy(bytes, i, MediaURL, 0, length); i += length;
                     MediaID.FromBytes(bytes, i); i += 16;
                     MediaAutoScale = (byte)bytes[i++];
                     GroupID.FromBytes(bytes, i); i += 16;
@@ -79772,17 +76892,7 @@ namespace OpenMetaverse.Packets
             public bool ChangedGrid;
             public float Far;
             public float Aspect;
-            private byte[] _throttles;
-            public byte[] Throttles
-            {
-                get { return _throttles; }
-                set
-                {
-                    if (value == null) { _throttles = null; return; }
-                    if (value.Length > 255) { throw new OverflowException("Value exceeds 255 characters"); }
-                    else { _throttles = new byte[value.Length]; Buffer.BlockCopy(value, 0, _throttles, 0, value.Length); }
-                }
-            }
+            public byte[] Throttles;
             public uint LocomotionState;
             public Quaternion HeadRotation;
             public Quaternion BodyRotation;
@@ -79792,17 +76902,7 @@ namespace OpenMetaverse.Packets
             public bool AlwaysRun;
             public UUID PreyAgent;
             public byte AgentAccess;
-            private byte[] _agenttextures;
-            public byte[] AgentTextures
-            {
-                get { return _agenttextures; }
-                set
-                {
-                    if (value == null) { _agenttextures = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _agenttextures = new byte[value.Length]; Buffer.BlockCopy(value, 0, _agenttextures, 0, value.Length); }
-                }
-            }
+            public byte[] AgentTextures;
             public UUID ActiveGroupID;
 
             public override int Length
@@ -79841,9 +76941,9 @@ namespace OpenMetaverse.Packets
                     ChangedGrid = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     Far = Utils.BytesToFloat(bytes, i); i += 4;
                     Aspect = Utils.BytesToFloat(bytes, i); i += 4;
-                    length = (ushort)bytes[i++];
-                    _throttles = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _throttles, 0, length); i += length;
+                    length = bytes[i++];
+                    Throttles = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Throttles, 0, length); i += length;
                     LocomotionState = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
                     HeadRotation.FromBytes(bytes, i, true); i += 12;
                     BodyRotation.FromBytes(bytes, i, true); i += 12;
@@ -79853,9 +76953,9 @@ namespace OpenMetaverse.Packets
                     AlwaysRun = (bytes[i++] != 0) ? (bool)true : (bool)false;
                     PreyAgent.FromBytes(bytes, i); i += 16;
                     AgentAccess = (byte)bytes[i++];
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _agenttextures = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _agenttextures, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    AgentTextures = new byte[length];
+                    Buffer.BlockCopy(bytes, i, AgentTextures, 0, length); i += length;
                     ActiveGroupID.FromBytes(bytes, i); i += 16;
                 }
                 catch (Exception)
@@ -80025,17 +77125,7 @@ namespace OpenMetaverse.Packets
         /// <exclude/>
         public class NVPairDataBlock : PacketBlock
         {
-            private byte[] _nvpairs;
-            public byte[] NVPairs
-            {
-                get { return _nvpairs; }
-                set
-                {
-                    if (value == null) { _nvpairs = null; return; }
-                    if (value.Length > 1100) { throw new OverflowException("Value exceeds 1100 characters"); }
-                    else { _nvpairs = new byte[value.Length]; Buffer.BlockCopy(value, 0, _nvpairs, 0, value.Length); }
-                }
-            }
+            public byte[] NVPairs;
 
             public override int Length
             {
@@ -80058,9 +77148,9 @@ namespace OpenMetaverse.Packets
                 int length;
                 try
                 {
-                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));
-                    _nvpairs = new byte[length];
-                    Buffer.BlockCopy(bytes, i, _nvpairs, 0, length); i += length;
+                    length = (bytes[i++] + (bytes[i++] << 8));
+                    NVPairs = new byte[length];
+                    Buffer.BlockCopy(bytes, i, NVPairs, 0, length); i += length;
                 }
                 catch (Exception)
                 {

@@ -39,11 +39,13 @@ namespace OpenMetaverse
 
         SingleLinkNode head;
         SingleLinkNode tail;
+        int count;
+
+        public int Count { get { return count; } }
 
         public LocklessQueue()
         {
-            head = new SingleLinkNode();
-            tail = head;
+            Init();
         }
 
         public void Enqueue(T item)
@@ -71,6 +73,7 @@ namespace OpenMetaverse
             }
 
             CAS(ref tail, oldTail, newNode);
+            Interlocked.Increment(ref count);
         }
 
         public bool Dequeue(out T item)
@@ -94,7 +97,6 @@ namespace OpenMetaverse
 
                         CAS(ref tail, oldTail, oldHeadNext);
                     }
-
                     else
                     {
                         item = oldHeadNext.Item;
@@ -103,7 +105,19 @@ namespace OpenMetaverse
                 }
             }
 
+            Interlocked.Decrement(ref count);
             return true;
+        }
+
+        public void Clear()
+        {
+            Init();
+        }
+
+        private void Init()
+        {
+            count = 0;
+            head = tail = new SingleLinkNode();
         }
 
         private static bool CAS(ref SingleLinkNode location, SingleLinkNode comparand, SingleLinkNode newValue)

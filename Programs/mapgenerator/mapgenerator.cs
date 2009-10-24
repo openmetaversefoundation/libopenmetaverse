@@ -70,20 +70,22 @@ namespace mapgenerator
             }
             else
             {
-                writer.WriteLine("            private byte[] _" + field.Name.ToLower() + ";");
-                //writer.WriteLine("            /// <summary>" + field.Name + " field</summary>");
-                writer.WriteLine("            public byte[] " + field.Name + Environment.NewLine + "            {");
-                writer.WriteLine("                get { return _" + field.Name.ToLower() + "; }");
-                writer.WriteLine("                set" + Environment.NewLine + "                {");
-                writer.WriteLine("                    if (value == null) { _" +
-                    field.Name.ToLower() + " = null; return; }");
-                writer.WriteLine("                    if (value.Length > " +
-                    ((field.Count == 1) ? "255" : "1100") + ") { throw new OverflowException(" +
-                    "\"Value exceeds " + ((field.Count == 1) ? "255" : "1100") + " characters\"); }");
-                writer.WriteLine("                    else { _" + field.Name.ToLower() +
-                    " = new byte[value.Length]; Buffer.BlockCopy(value, 0, _" +
-                    field.Name.ToLower() + ", 0, value.Length); }");
-                writer.WriteLine("                }" + Environment.NewLine + "            }");
+                writer.WriteLine("            public byte[] " + field.Name + ";");
+
+                //writer.WriteLine("            private byte[] _" + field.Name.ToLower() + ";");
+                ////writer.WriteLine("            /// <summary>" + field.Name + " field</summary>");
+                //writer.WriteLine("            public byte[] " + field.Name + Environment.NewLine + "            {");
+                //writer.WriteLine("                get { return _" + field.Name.ToLower() + "; }");
+                //writer.WriteLine("                set" + Environment.NewLine + "                {");
+                //writer.WriteLine("                    if (value == null) { _" +
+                //    field.Name.ToLower() + " = null; return; }");
+                //writer.WriteLine("                    if (value.Length > " +
+                //    ((field.Count == 1) ? "255" : "1100") + ") { throw new OverflowException(" +
+                //    "\"Value exceeds " + ((field.Count == 1) ? "255" : "1100") + " characters\"); }");
+                //writer.WriteLine("                    else { _" + field.Name.ToLower() +
+                //    " = new byte[value.Length]; Buffer.BlockCopy(value, 0, _" +
+                //    field.Name.ToLower() + ", 0, value.Length); }");
+                //writer.WriteLine("                }" + Environment.NewLine + "            }");
             }
         }
 
@@ -163,15 +165,14 @@ namespace mapgenerator
                 case FieldType.Variable:
                     if (field.Count == 1)
                     {
-                        writer.WriteLine("                    length = (ushort)bytes[i++];");
+                        writer.WriteLine("                    length = bytes[i++];");
                     }
                     else
                     {
-                        writer.WriteLine("                    length = (ushort)(bytes[i++] + (bytes[i++] << 8));");
+                        writer.WriteLine("                    length = (bytes[i++] + (bytes[i++] << 8));");
                     }
-                    writer.WriteLine("                    _" + field.Name.ToLower() + " = new byte[length];");
-                    writer.WriteLine("                    Buffer.BlockCopy(bytes, i, _" + field.Name.ToLower() +
-                        ", 0, length); i += length;");
+                    writer.WriteLine("                    " + field.Name + " = new byte[length];");
+                    writer.WriteLine("                    Buffer.BlockCopy(bytes, i, " + field.Name + ", 0, length); i += length;");
                     break;
                 default:
                     writer.WriteLine("!!! ERROR: Unhandled FieldType: " + field.Type.ToString() + " !!!");

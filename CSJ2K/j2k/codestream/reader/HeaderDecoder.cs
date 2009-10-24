@@ -2594,6 +2594,7 @@ namespace CSJ2K.j2k.codestream.reader
 			{
 				bais = new System.IO.MemoryStream((byte[])ht["SIZ"]);
 				readSIZ(new CSJ2K.Util.EndianBinaryReader(bais, true));
+                bais.Dispose();
 			}
 			
 			// COM marker segments
@@ -2603,6 +2604,7 @@ namespace CSJ2K.j2k.codestream.reader
 				{
 					bais = new System.IO.MemoryStream((byte[])ht["COM" + i]);
 					readCOM(new CSJ2K.Util.EndianBinaryReader(bais, true), true, 0, i);
+                    bais.Dispose();
 				}
 			}
 			
@@ -2611,6 +2613,7 @@ namespace CSJ2K.j2k.codestream.reader
 			{
 				bais = new System.IO.MemoryStream((byte[])ht["CRG"]);
 				readCRG(new CSJ2K.Util.EndianBinaryReader(bais, true));
+                bais.Dispose();
 			}
 			
 			// COD marker segment
@@ -2618,6 +2621,7 @@ namespace CSJ2K.j2k.codestream.reader
 			{
 				bais = new System.IO.MemoryStream((byte[])ht["COD"]);
 				readCOD(new CSJ2K.Util.EndianBinaryReader(bais, true), true, 0, 0);
+                bais.Dispose();
 			}
 			
 			// COC marker segments
@@ -2627,6 +2631,7 @@ namespace CSJ2K.j2k.codestream.reader
 				{
 					bais = new System.IO.MemoryStream((byte[])ht["COC" + i]);
 					readCOC(new CSJ2K.Util.EndianBinaryReader(bais, true), true, 0, 0);
+                    bais.Dispose();
 				}
 			}
 			
@@ -2637,6 +2642,7 @@ namespace CSJ2K.j2k.codestream.reader
 				{
 					bais = new System.IO.MemoryStream((byte[])ht["RGN" + i]);
 					readRGN(new CSJ2K.Util.EndianBinaryReader(bais, true), true, 0, 0);
+                    bais.Dispose();
 				}
 			}
 			
@@ -2645,6 +2651,7 @@ namespace CSJ2K.j2k.codestream.reader
 			{
 				bais = new System.IO.MemoryStream((byte[])ht["QCD"]);
 				readQCD(new CSJ2K.Util.EndianBinaryReader(bais, true), true, 0, 0);
+                bais.Dispose();
 			}
 			
 			// QCC marker segments
@@ -2654,6 +2661,7 @@ namespace CSJ2K.j2k.codestream.reader
 				{
 					bais = new System.IO.MemoryStream((byte[])ht["QCC" + i]);
 					readQCC(new CSJ2K.Util.EndianBinaryReader(bais, true), true, 0, 0);
+                    bais.Dispose();
 				}
 			}
 			
@@ -2662,6 +2670,7 @@ namespace CSJ2K.j2k.codestream.reader
 			{
 				bais = new System.IO.MemoryStream((byte[])ht["POC"]);
 				readPOC(new CSJ2K.Util.EndianBinaryReader(bais, true), true, 0, 0);
+                bais.Dispose();
 			}
 			
 			// PPM marker segments
@@ -2671,6 +2680,7 @@ namespace CSJ2K.j2k.codestream.reader
 				{
 					bais = new System.IO.MemoryStream((byte[])ht["PPM" + i]);
 					readPPM(new CSJ2K.Util.EndianBinaryReader(bais));
+                    bais.Dispose();
 				}
 			}
 			

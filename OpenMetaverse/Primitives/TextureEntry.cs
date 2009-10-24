@@ -904,222 +904,224 @@ namespace OpenMetaverse
                 if (DefaultTexture == null)
                     return Utils.EmptyBytes;
 
-                MemoryStream memStream = new MemoryStream();
-                using (BinaryWriter binWriter = new BinaryWriter(memStream))
+                using (MemoryStream memStream = new MemoryStream())
                 {
-                    #region Bitfield Setup
-
-                    uint[] textures = new uint[FaceTextures.Length];
-                    InitializeArray(ref textures);
-                    uint[] rgbas = new uint[FaceTextures.Length];
-                    InitializeArray(ref rgbas);
-                    uint[] repeatus = new uint[FaceTextures.Length];
-                    InitializeArray(ref repeatus);
-                    uint[] repeatvs = new uint[FaceTextures.Length];
-                    InitializeArray(ref repeatvs);
-                    uint[] offsetus = new uint[FaceTextures.Length];
-                    InitializeArray(ref offsetus);
-                    uint[] offsetvs = new uint[FaceTextures.Length];
-                    InitializeArray(ref offsetvs);
-                    uint[] rotations = new uint[FaceTextures.Length];
-                    InitializeArray(ref rotations);
-                    uint[] materials = new uint[FaceTextures.Length];
-                    InitializeArray(ref materials);
-                    uint[] medias = new uint[FaceTextures.Length];
-                    InitializeArray(ref medias);
-                    uint[] glows = new uint[FaceTextures.Length];
-                    InitializeArray(ref glows);
-
-                    for (int i = 0; i < FaceTextures.Length; i++)
+                    using (BinaryWriter binWriter = new BinaryWriter(memStream))
                     {
-                        if (FaceTextures[i] == null) continue;
+                        #region Bitfield Setup
 
-                        if (FaceTextures[i].TextureID != DefaultTexture.TextureID)
+                        uint[] textures = new uint[FaceTextures.Length];
+                        InitializeArray(ref textures);
+                        uint[] rgbas = new uint[FaceTextures.Length];
+                        InitializeArray(ref rgbas);
+                        uint[] repeatus = new uint[FaceTextures.Length];
+                        InitializeArray(ref repeatus);
+                        uint[] repeatvs = new uint[FaceTextures.Length];
+                        InitializeArray(ref repeatvs);
+                        uint[] offsetus = new uint[FaceTextures.Length];
+                        InitializeArray(ref offsetus);
+                        uint[] offsetvs = new uint[FaceTextures.Length];
+                        InitializeArray(ref offsetvs);
+                        uint[] rotations = new uint[FaceTextures.Length];
+                        InitializeArray(ref rotations);
+                        uint[] materials = new uint[FaceTextures.Length];
+                        InitializeArray(ref materials);
+                        uint[] medias = new uint[FaceTextures.Length];
+                        InitializeArray(ref medias);
+                        uint[] glows = new uint[FaceTextures.Length];
+                        InitializeArray(ref glows);
+
+                        for (int i = 0; i < FaceTextures.Length; i++)
                         {
-                            if (textures[i] == UInt32.MaxValue) textures[i] = 0;
-                            textures[i] |= (uint)(1 << i);
+                            if (FaceTextures[i] == null) continue;
+
+                            if (FaceTextures[i].TextureID != DefaultTexture.TextureID)
+                            {
+                                if (textures[i] == UInt32.MaxValue) textures[i] = 0;
+                                textures[i] |= (uint)(1 << i);
+                            }
+                            if (FaceTextures[i].RGBA != DefaultTexture.RGBA)
+                            {
+                                if (rgbas[i] == UInt32.MaxValue) rgbas[i] = 0;
+                                rgbas[i] |= (uint)(1 << i);
+                            }
+                            if (FaceTextures[i].RepeatU != DefaultTexture.RepeatU)
+                            {
+                                if (repeatus[i] == UInt32.MaxValue) repeatus[i] = 0;
+                                repeatus[i] |= (uint)(1 << i);
+                            }
+                            if (FaceTextures[i].RepeatV != DefaultTexture.RepeatV)
+                            {
+                                if (repeatvs[i] == UInt32.MaxValue) repeatvs[i] = 0;
+                                repeatvs[i] |= (uint)(1 << i);
+                            }
+                            if (Helpers.TEOffsetShort(FaceTextures[i].OffsetU) != Helpers.TEOffsetShort(DefaultTexture.OffsetU))
+                            {
+                                if (offsetus[i] == UInt32.MaxValue) offsetus[i] = 0;
+                                offsetus[i] |= (uint)(1 << i);
+                            }
+                            if (Helpers.TEOffsetShort(FaceTextures[i].OffsetV) != Helpers.TEOffsetShort(DefaultTexture.OffsetV))
+                            {
+                                if (offsetvs[i] == UInt32.MaxValue) offsetvs[i] = 0;
+                                offsetvs[i] |= (uint)(1 << i);
+                            }
+                            if (Helpers.TERotationShort(FaceTextures[i].Rotation) != Helpers.TERotationShort(DefaultTexture.Rotation))
+                            {
+                                if (rotations[i] == UInt32.MaxValue) rotations[i] = 0;
+                                rotations[i] |= (uint)(1 << i);
+                            }
+                            if (FaceTextures[i].material != DefaultTexture.material)
+                            {
+                                if (materials[i] == UInt32.MaxValue) materials[i] = 0;
+                                materials[i] |= (uint)(1 << i);
+                            }
+                            if (FaceTextures[i].media != DefaultTexture.media)
+                            {
+                                if (medias[i] == UInt32.MaxValue) medias[i] = 0;
+                                medias[i] |= (uint)(1 << i);
+                            }
+                            if (Helpers.TEGlowByte(FaceTextures[i].Glow) != Helpers.TEGlowByte(DefaultTexture.Glow))
+                            {
+                                if (glows[i] == UInt32.MaxValue) glows[i] = 0;
+                                glows[i] |= (uint)(1 << i);
+                            }
                         }
-                        if (FaceTextures[i].RGBA != DefaultTexture.RGBA)
+
+                        #endregion Bitfield Setup
+
+                        #region Texture
+                        binWriter.Write(DefaultTexture.TextureID.GetBytes());
+                        for (int i = 0; i < textures.Length; i++)
                         {
-                            if (rgbas[i] == UInt32.MaxValue) rgbas[i] = 0;
-                            rgbas[i] |= (uint)(1 << i);
+                            if (textures[i] != UInt32.MaxValue)
+                            {
+                                binWriter.Write(GetFaceBitfieldBytes(textures[i]));
+                                binWriter.Write(FaceTextures[i].TextureID.GetBytes());
+                            }
                         }
-                        if (FaceTextures[i].RepeatU != DefaultTexture.RepeatU)
+                        binWriter.Write((byte)0);
+                        #endregion Texture
+
+                        #region Color
+                        // Serialize the color bytes inverted to optimize for zerocoding
+                        binWriter.Write(DefaultTexture.RGBA.GetBytes(true));
+                        for (int i = 0; i < rgbas.Length; i++)
                         {
-                            if (repeatus[i] == UInt32.MaxValue) repeatus[i] = 0;
-                            repeatus[i] |= (uint)(1 << i);
+                            if (rgbas[i] != UInt32.MaxValue)
+                            {
+                                binWriter.Write(GetFaceBitfieldBytes(rgbas[i]));
+                                // Serialize the color bytes inverted to optimize for zerocoding
+                                binWriter.Write(FaceTextures[i].RGBA.GetBytes(true));
+                            }
                         }
-                        if (FaceTextures[i].RepeatV != DefaultTexture.RepeatV)
+                        binWriter.Write((byte)0);
+                        #endregion Color
+
+                        #region RepeatU
+                        binWriter.Write(DefaultTexture.RepeatU);
+                        for (int i = 0; i < repeatus.Length; i++)
                         {
-                            if (repeatvs[i] == UInt32.MaxValue) repeatvs[i] = 0;
-                            repeatvs[i] |= (uint)(1 << i);
+                            if (repeatus[i] != UInt32.MaxValue)
+                            {
+                                binWriter.Write(GetFaceBitfieldBytes(repeatus[i]));
+                                binWriter.Write(FaceTextures[i].RepeatU);
+                            }
                         }
-                        if (Helpers.TEOffsetShort(FaceTextures[i].OffsetU) != Helpers.TEOffsetShort(DefaultTexture.OffsetU))
+                        binWriter.Write((byte)0);
+                        #endregion RepeatU
+
+                        #region RepeatV
+                        binWriter.Write(DefaultTexture.RepeatV);
+                        for (int i = 0; i < repeatvs.Length; i++)
                         {
-                            if (offsetus[i] == UInt32.MaxValue) offsetus[i] = 0;
-                            offsetus[i] |= (uint)(1 << i);
+                            if (repeatvs[i] != UInt32.MaxValue)
+                            {
+                                binWriter.Write(GetFaceBitfieldBytes(repeatvs[i]));
+                                binWriter.Write(FaceTextures[i].RepeatV);
+                            }
                         }
-                        if (Helpers.TEOffsetShort(FaceTextures[i].OffsetV) != Helpers.TEOffsetShort(DefaultTexture.OffsetV))
+                        binWriter.Write((byte)0);
+                        #endregion RepeatV
+
+                        #region OffsetU
+                        binWriter.Write(Helpers.TEOffsetShort(DefaultTexture.OffsetU));
+                        for (int i = 0; i < offsetus.Length; i++)
                         {
-                            if (offsetvs[i] == UInt32.MaxValue) offsetvs[i] = 0;
-                            offsetvs[i] |= (uint)(1 << i);
+                            if (offsetus[i] != UInt32.MaxValue)
+                            {
+                                binWriter.Write(GetFaceBitfieldBytes(offsetus[i]));
+                                binWriter.Write(Helpers.TEOffsetShort(FaceTextures[i].OffsetU));
+                            }
                         }
-                        if (Helpers.TERotationShort(FaceTextures[i].Rotation) != Helpers.TERotationShort(DefaultTexture.Rotation))
+                        binWriter.Write((byte)0);
+                        #endregion OffsetU
+
+                        #region OffsetV
+                        binWriter.Write(Helpers.TEOffsetShort(DefaultTexture.OffsetV));
+                        for (int i = 0; i < offsetvs.Length; i++)
                         {
-                            if (rotations[i] == UInt32.MaxValue) rotations[i] = 0;
-                            rotations[i] |= (uint)(1 << i);
+                            if (offsetvs[i] != UInt32.MaxValue)
+                            {
+                                binWriter.Write(GetFaceBitfieldBytes(offsetvs[i]));
+                                binWriter.Write(Helpers.TEOffsetShort(FaceTextures[i].OffsetV));
+                            }
                         }
-                        if (FaceTextures[i].material != DefaultTexture.material)
+                        binWriter.Write((byte)0);
+                        #endregion OffsetV
+
+                        #region Rotation
+                        binWriter.Write(Helpers.TERotationShort(DefaultTexture.Rotation));
+                        for (int i = 0; i < rotations.Length; i++)
                         {
-                            if (materials[i] == UInt32.MaxValue) materials[i] = 0;
-                            materials[i] |= (uint)(1 << i);
+                            if (rotations[i] != UInt32.MaxValue)
+                            {
+                                binWriter.Write(GetFaceBitfieldBytes(rotations[i]));
+                                binWriter.Write(Helpers.TERotationShort(FaceTextures[i].Rotation));
+                            }
                         }
-                        if (FaceTextures[i].media != DefaultTexture.media)
+                        binWriter.Write((byte)0);
+                        #endregion Rotation
+
+                        #region Material
+                        binWriter.Write(DefaultTexture.material);
+                        for (int i = 0; i < materials.Length; i++)
                         {
-                            if (medias[i] == UInt32.MaxValue) medias[i] = 0;
-                            medias[i] |= (uint)(1 << i);
+                            if (materials[i] != UInt32.MaxValue)
+                            {
+                                binWriter.Write(GetFaceBitfieldBytes(materials[i]));
+                                binWriter.Write(FaceTextures[i].material);
+                            }
                         }
-                        if (Helpers.TEGlowByte(FaceTextures[i].Glow) != Helpers.TEGlowByte(DefaultTexture.Glow))
+                        binWriter.Write((byte)0);
+                        #endregion Material
+
+                        #region Media
+                        binWriter.Write(DefaultTexture.media);
+                        for (int i = 0; i < medias.Length; i++)
                         {
-                            if (glows[i] == UInt32.MaxValue) glows[i] = 0;
-                            glows[i] |= (uint)(1 << i);
+                            if (medias[i] != UInt32.MaxValue)
+                            {
+                                binWriter.Write(GetFaceBitfieldBytes(medias[i]));
+                                binWriter.Write(FaceTextures[i].media);
+                            }
                         }
+                        binWriter.Write((byte)0);
+                        #endregion Media
+
+                        #region Glow
+                        binWriter.Write(Helpers.TEGlowByte(DefaultTexture.Glow));
+                        for (int i = 0; i < glows.Length; i++)
+                        {
+                            if (glows[i] != UInt32.MaxValue)
+                            {
+                                binWriter.Write(GetFaceBitfieldBytes(glows[i]));
+                                binWriter.Write(Helpers.TEGlowByte(FaceTextures[i].Glow));
+                            }
+                        }
+                        #endregion Glow
+
+                        return memStream.ToArray();
                     }
-
-                    #endregion Bitfield Setup
-
-                    #region Texture
-                    binWriter.Write(DefaultTexture.TextureID.GetBytes());
-                    for (int i = 0; i < textures.Length; i++)
-                    {
-                        if (textures[i] != UInt32.MaxValue)
-                        {
-                            binWriter.Write(GetFaceBitfieldBytes(textures[i]));
-                            binWriter.Write(FaceTextures[i].TextureID.GetBytes());
-                        }
-                    }
-                    binWriter.Write((byte)0);
-                    #endregion Texture
-
-                    #region Color
-                    // Serialize the color bytes inverted to optimize for zerocoding
-                    binWriter.Write(DefaultTexture.RGBA.GetBytes(true));
-                    for (int i = 0; i < rgbas.Length; i++)
-                    {
-                        if (rgbas[i] != UInt32.MaxValue)
-                        {
-                            binWriter.Write(GetFaceBitfieldBytes(rgbas[i]));
-                            // Serialize the color bytes inverted to optimize for zerocoding
-                            binWriter.Write(FaceTextures[i].RGBA.GetBytes(true));
-                        }
-                    }
-                    binWriter.Write((byte)0);
-                    #endregion Color
-
-                    #region RepeatU
-                    binWriter.Write(DefaultTexture.RepeatU);
-                    for (int i = 0; i < repeatus.Length; i++)
-                    {
-                        if (repeatus[i] != UInt32.MaxValue)
-                        {
-                            binWriter.Write(GetFaceBitfieldBytes(repeatus[i]));
-                            binWriter.Write(FaceTextures[i].RepeatU);
-                        }
-                    }
-                    binWriter.Write((byte)0);
-                    #endregion RepeatU
-
-                    #region RepeatV
-                    binWriter.Write(DefaultTexture.RepeatV);
-                    for (int i = 0; i < repeatvs.Length; i++)
-                    {
-                        if (repeatvs[i] != UInt32.MaxValue)
-                        {
-                            binWriter.Write(GetFaceBitfieldBytes(repeatvs[i]));
-                            binWriter.Write(FaceTextures[i].RepeatV);
-                        }
-                    }
-                    binWriter.Write((byte)0);
-                    #endregion RepeatV
-
-                    #region OffsetU
-                    binWriter.Write(Helpers.TEOffsetShort(DefaultTexture.OffsetU));
-                    for (int i = 0; i < offsetus.Length; i++)
-                    {
-                        if (offsetus[i] != UInt32.MaxValue)
-                        {
-                            binWriter.Write(GetFaceBitfieldBytes(offsetus[i]));
-                            binWriter.Write(Helpers.TEOffsetShort(FaceTextures[i].OffsetU));
-                        }
-                    }
-                    binWriter.Write((byte)0);
-                    #endregion OffsetU
-
-                    #region OffsetV
-                    binWriter.Write(Helpers.TEOffsetShort(DefaultTexture.OffsetV));
-                    for (int i = 0; i < offsetvs.Length; i++)
-                    {
-                        if (offsetvs[i] != UInt32.MaxValue)
-                        {
-                            binWriter.Write(GetFaceBitfieldBytes(offsetvs[i]));
-                            binWriter.Write(Helpers.TEOffsetShort(FaceTextures[i].OffsetV));
-                        }
-                    }
-                    binWriter.Write((byte)0);
-                    #endregion OffsetV
-
-                    #region Rotation
-                    binWriter.Write(Helpers.TERotationShort(DefaultTexture.Rotation));
-                    for (int i = 0; i < rotations.Length; i++)
-                    {
-                        if (rotations[i] != UInt32.MaxValue)
-                        {
-                            binWriter.Write(GetFaceBitfieldBytes(rotations[i]));
-                            binWriter.Write(Helpers.TERotationShort(FaceTextures[i].Rotation));
-                        }
-                    }
-                    binWriter.Write((byte)0);
-                    #endregion Rotation
-
-                    #region Material
-                    binWriter.Write(DefaultTexture.material);
-                    for (int i = 0; i < materials.Length; i++)
-                    {
-                        if (materials[i] != UInt32.MaxValue)
-                        {
-                            binWriter.Write(GetFaceBitfieldBytes(materials[i]));
-                            binWriter.Write(FaceTextures[i].material);
-                        }
-                    }
-                    binWriter.Write((byte)0);
-                    #endregion Material
-
-                    #region Media
-                    binWriter.Write(DefaultTexture.media);
-                    for (int i = 0; i < medias.Length; i++)
-                    {
-                        if (medias[i] != UInt32.MaxValue)
-                        {
-                            binWriter.Write(GetFaceBitfieldBytes(medias[i]));
-                            binWriter.Write(FaceTextures[i].media);
-                        }
-                    }
-                    binWriter.Write((byte)0);
-                    #endregion Media
-
-                    #region Glow
-                    binWriter.Write(Helpers.TEGlowByte(DefaultTexture.Glow));
-                    for (int i = 0; i < glows.Length; i++)
-                    {
-                        if (glows[i] != UInt32.MaxValue)
-                        {
-                            binWriter.Write(GetFaceBitfieldBytes(glows[i]));
-                            binWriter.Write(Helpers.TEGlowByte(FaceTextures[i].Glow));
-                        }
-                    }
-                    #endregion Glow
-
-                    return memStream.ToArray();
                 }
             }
 
