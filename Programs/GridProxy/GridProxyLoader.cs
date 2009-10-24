@@ -213,9 +213,20 @@ namespace GridProxy
         /// <param name="message">A string containing the message to send</param>
         public void SayToUser(string message)
         {
+            SayToUser("GridProxy", message);
+        }
+
+
+        /// <summary>
+        /// Send a message to the viewer
+        /// </summary>
+        /// <param name="fromName">A string containing text indicating the origin of the message</param>
+        /// <param name="message">A string containing the message to send</param>
+        public void SayToUser(string fromName, string message)
+        {
             ChatFromSimulatorPacket packet = new ChatFromSimulatorPacket();
-            packet.ChatData.FromName = Utils.StringToBytes("GridProxy");
             packet.ChatData.SourceID = UUID.Random();
+            packet.ChatData.FromName = Utils.StringToBytes(fromName);
             packet.ChatData.OwnerID = agentID;
             packet.ChatData.SourceType = (byte)2;
             packet.ChatData.ChatType = (byte)1;
