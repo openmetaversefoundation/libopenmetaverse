@@ -267,7 +267,7 @@ namespace OpenMetaverse
     /// <summary>
     /// Struct representing a group notice list entry
     /// </summary>
-    public struct GroupNoticeList
+    public struct GroupNoticesListEntry
     {
         /// <summary>Notice ID</summary>
         public UUID NoticeID;
@@ -1456,9 +1456,11 @@ namespace OpenMetaverse
             {
                 GroupNoticesListReplyPacket reply = (GroupNoticesListReplyPacket)packet;
 
+                List<GroupNoticesListEntry> notices = new List<GroupNoticesListEntry>();
+
                 foreach (GroupNoticesListReplyPacket.DataBlock entry in reply.Data)
                 {
-                    GroupNoticeList notice = new GroupNoticeList();
+                    GroupNoticesListEntry notice = new GroupNoticesListEntry();
                     notice.FromName = Utils.BytesToString(entry.FromName);
                     notice.Subject = Utils.BytesToString(entry.Subject);
                     notice.NoticeID = entry.NoticeID;
@@ -1466,8 +1468,10 @@ namespace OpenMetaverse
                     notice.HasAttachment = entry.HasAttachment;
                     notice.AssetType = (AssetType)entry.AssetType;
 
-                    OnGroupNoticesListReply(new GroupNoticesListReplyEventArgs(reply.AgentData.GroupID, notice));
+                    notices.Add(notice);
                 }
+
+                OnGroupNoticesListReply(new GroupNoticesListReplyEventArgs(reply.AgentData.GroupID, notices));
             }
         }
 
@@ -2035,17 +2039,17 @@ namespace OpenMetaverse
     public class GroupNoticesListReplyEventArgs : EventArgs
     {
         private readonly UUID m_GroupID;
-        private readonly GroupNoticeList m_Notices;
+        private readonly List<GroupNoticesListEntry> m_Notices;
 
         /// <summary>Get the ID of the group</summary>
         public UUID GroupID { get { return m_GroupID; } }
         /// <summary>Get the notices list</summary>
-        public GroupNoticeList Notices { get { return m_Notices; } }
+        public List<GroupNoticesListEntry> Notices { get { return m_Notices; } }
 
         /// <summary>Construct a new instance of the GroupNoticesListReplyEventArgs class</summary>
         /// <param name="groupID">The ID of the group</param>
         /// <param name="notices">The list containing active notices</param>
-        public GroupNoticesListReplyEventArgs(UUID groupID, GroupNoticeList notices)
+        public GroupNoticesListReplyEventArgs(UUID groupID, List<GroupNoticesListEntry> notices)
         {
             m_GroupID = groupID;
             m_Notices = notices;
