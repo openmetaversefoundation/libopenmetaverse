@@ -726,12 +726,19 @@ namespace OpenMetaverse
         /// <seealso cref="AddToOutfit"/> depending on the value of
         /// replaceItems
         /// </summary>
-        /// <param name="wearableItems">List of wearable inventory items to add
+        /// <param name="wearables">List of wearable inventory items to add
         /// to the outfit or become a new outfit</param>
         /// <param name="replaceItems">True to replace existing items with the
         /// new list of items, false to add these items to the existing outfit</param>
-        public void WearOutfit(List<InventoryItem> wearableItems, bool replaceItems)
+        public void WearOutfit(List<InventoryBase> wearables, bool replaceItems)
         {
+            List<InventoryItem> wearableItems = new List<InventoryItem>(wearables.Count);
+            for (int i = 0; i < wearables.Count; i++)
+            {
+                if (wearables[i] is InventoryItem)
+                    wearableItems.Add((InventoryItem)wearables[i]);
+            }
+
             if (replaceItems)
                 ReplaceOutfit(wearableItems);
             else

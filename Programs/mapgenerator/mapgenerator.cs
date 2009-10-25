@@ -302,7 +302,7 @@ namespace mapgenerator
 
             //writer.WriteLine("        /// <summary>" + block.Name + " block</summary>");
             writer.WriteLine("        /// <exclude/>");
-            writer.WriteLine("        public class " + block.Name + "Block : PacketBlock" + Environment.NewLine + "        {");
+            writer.WriteLine("        public sealed class " + block.Name + "Block : PacketBlock" + Environment.NewLine + "        {");
 
             foreach (MapField field in block.Fields)
             {

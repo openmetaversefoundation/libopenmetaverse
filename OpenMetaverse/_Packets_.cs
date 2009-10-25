@@ -1878,7 +1878,7 @@ namespace OpenMetaverse.Packets
     public sealed class TestMessagePacket : Packet
     {
         /// <exclude/>
-        public class TestBlock1Block : PacketBlock
+        public sealed class TestBlock1Block : PacketBlock
         {
             public uint Test1;
 
@@ -1916,7 +1916,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class NeighborBlockBlock : PacketBlock
+        public sealed class NeighborBlockBlock : PacketBlock
         {
             public uint Test0;
             public uint Test1;
@@ -2054,7 +2054,7 @@ namespace OpenMetaverse.Packets
     public sealed class UseCircuitCodePacket : Packet
     {
         /// <exclude/>
-        public class CircuitCodeBlock : PacketBlock
+        public sealed class CircuitCodeBlock : PacketBlock
         {
             public uint Code;
             public UUID SessionID;
@@ -2171,7 +2171,7 @@ namespace OpenMetaverse.Packets
     public sealed class TelehubInfoPacket : Packet
     {
         /// <exclude/>
-        public class TelehubBlockBlock : PacketBlock
+        public sealed class TelehubBlockBlock : PacketBlock
         {
             public UUID ObjectID;
             public byte[] ObjectName;
@@ -2224,7 +2224,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class SpawnPointBlockBlock : PacketBlock
+        public sealed class SpawnPointBlockBlock : PacketBlock
         {
             public Vector3 SpawnPointPos;
 
@@ -2478,7 +2478,7 @@ namespace OpenMetaverse.Packets
     public sealed class EconomyDataPacket : Packet
     {
         /// <exclude/>
-        public class InfoBlock : PacketBlock
+        public sealed class InfoBlock : PacketBlock
         {
             public int ObjectCapacity;
             public int ObjectCount;
@@ -2638,7 +2638,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarPickerRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -2682,7 +2682,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public byte[] Name;
 
@@ -2806,7 +2806,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarPickerReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID QueryID;
@@ -2847,7 +2847,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID AvatarID;
             public byte[] FirstName;
@@ -3051,7 +3051,7 @@ namespace OpenMetaverse.Packets
     public sealed class PlacesQueryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -3095,7 +3095,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TransactionDataBlock : PacketBlock
+        public sealed class TransactionDataBlock : PacketBlock
         {
             public UUID TransactionID;
 
@@ -3133,7 +3133,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public byte[] QueryText;
             public uint QueryFlags;
@@ -3278,7 +3278,7 @@ namespace OpenMetaverse.Packets
     public sealed class PlacesReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID QueryID;
@@ -3319,7 +3319,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TransactionDataBlock : PacketBlock
+        public sealed class TransactionDataBlock : PacketBlock
         {
             public UUID TransactionID;
 
@@ -3357,7 +3357,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public UUID OwnerID;
             public byte[] Name;
@@ -3605,7 +3605,7 @@ namespace OpenMetaverse.Packets
     public sealed class DirFindQueryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -3646,7 +3646,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
             public byte[] QueryText;
@@ -3780,7 +3780,7 @@ namespace OpenMetaverse.Packets
     public sealed class DirPlacesQueryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -3821,7 +3821,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
             public byte[] QueryText;
@@ -3965,7 +3965,7 @@ namespace OpenMetaverse.Packets
     public sealed class DirPlacesReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -4003,7 +4003,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
 
@@ -4041,7 +4041,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryRepliesBlock : PacketBlock
+        public sealed class QueryRepliesBlock : PacketBlock
         {
             public UUID ParcelID;
             public byte[] Name;
@@ -4097,7 +4097,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class StatusDataBlock : PacketBlock
+        public sealed class StatusDataBlock : PacketBlock
         {
             public uint Status;
 
@@ -4370,7 +4370,7 @@ namespace OpenMetaverse.Packets
     public sealed class DirPeopleReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -4408,7 +4408,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
 
@@ -4446,7 +4446,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryRepliesBlock : PacketBlock
+        public sealed class QueryRepliesBlock : PacketBlock
         {
             public UUID AgentID;
             public byte[] FirstName;
@@ -4673,7 +4673,7 @@ namespace OpenMetaverse.Packets
     public sealed class DirEventsReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -4711,7 +4711,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
 
@@ -4749,7 +4749,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryRepliesBlock : PacketBlock
+        public sealed class QueryRepliesBlock : PacketBlock
         {
             public UUID OwnerID;
             public byte[] Name;
@@ -4812,7 +4812,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class StatusDataBlock : PacketBlock
+        public sealed class StatusDataBlock : PacketBlock
         {
             public uint Status;
 
@@ -5052,7 +5052,7 @@ namespace OpenMetaverse.Packets
     public sealed class DirGroupsReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -5090,7 +5090,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
 
@@ -5128,7 +5128,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryRepliesBlock : PacketBlock
+        public sealed class QueryRepliesBlock : PacketBlock
         {
             public UUID GroupID;
             public byte[] GroupName;
@@ -5341,7 +5341,7 @@ namespace OpenMetaverse.Packets
     public sealed class DirClassifiedQueryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -5382,7 +5382,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
             public byte[] QueryText;
@@ -5519,7 +5519,7 @@ namespace OpenMetaverse.Packets
     public sealed class DirClassifiedReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -5557,7 +5557,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
 
@@ -5595,7 +5595,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryRepliesBlock : PacketBlock
+        public sealed class QueryRepliesBlock : PacketBlock
         {
             public UUID ClassifiedID;
             public byte[] Name;
@@ -5654,7 +5654,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class StatusDataBlock : PacketBlock
+        public sealed class StatusDataBlock : PacketBlock
         {
             public uint Status;
 
@@ -5894,7 +5894,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarClassifiedReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID TargetID;
@@ -5935,7 +5935,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ClassifiedID;
             public byte[] Name;
@@ -6132,7 +6132,7 @@ namespace OpenMetaverse.Packets
     public sealed class ClassifiedInfoRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -6173,7 +6173,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ClassifiedID;
 
@@ -6292,7 +6292,7 @@ namespace OpenMetaverse.Packets
     public sealed class ClassifiedInfoReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -6330,7 +6330,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ClassifiedID;
             public UUID CreatorID;
@@ -6509,7 +6509,7 @@ namespace OpenMetaverse.Packets
     public sealed class ClassifiedInfoUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -6550,7 +6550,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ClassifiedID;
             public uint Category;
@@ -6706,7 +6706,7 @@ namespace OpenMetaverse.Packets
     public sealed class ClassifiedDeletePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -6747,7 +6747,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ClassifiedID;
 
@@ -6865,7 +6865,7 @@ namespace OpenMetaverse.Packets
     public sealed class ClassifiedGodDeletePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -6906,7 +6906,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ClassifiedID;
             public UUID QueryID;
@@ -7027,7 +7027,7 @@ namespace OpenMetaverse.Packets
     public sealed class DirLandQueryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -7068,7 +7068,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
             public uint QueryFlags;
@@ -7202,7 +7202,7 @@ namespace OpenMetaverse.Packets
     public sealed class DirLandReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -7240,7 +7240,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
 
@@ -7278,7 +7278,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryRepliesBlock : PacketBlock
+        public sealed class QueryRepliesBlock : PacketBlock
         {
             public UUID ParcelID;
             public byte[] Name;
@@ -7497,7 +7497,7 @@ namespace OpenMetaverse.Packets
     public sealed class DirPopularQueryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -7538,7 +7538,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
             public uint QueryFlags;
@@ -7660,7 +7660,7 @@ namespace OpenMetaverse.Packets
     public sealed class DirPopularReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -7698,7 +7698,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
 
@@ -7736,7 +7736,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryRepliesBlock : PacketBlock
+        public sealed class QueryRepliesBlock : PacketBlock
         {
             public UUID ParcelID;
             public byte[] Name;
@@ -7946,7 +7946,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelInfoRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -7987,7 +7987,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ParcelID;
 
@@ -8105,7 +8105,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelInfoReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -8143,7 +8143,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ParcelID;
             public UUID OwnerID;
@@ -8318,7 +8318,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelObjectOwnersRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -8359,7 +8359,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int LocalID;
 
@@ -8477,7 +8477,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelObjectOwnersReplyPacket : Packet
     {
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID OwnerID;
             public bool IsGroupOwned;
@@ -8666,7 +8666,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupNoticesListRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -8707,7 +8707,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID GroupID;
 
@@ -8825,7 +8825,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupNoticesListReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID GroupID;
@@ -8866,7 +8866,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID NoticeID;
             public uint Timestamp;
@@ -9081,7 +9081,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupNoticeRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -9122,7 +9122,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID GroupNoticeID;
 
@@ -9240,7 +9240,7 @@ namespace OpenMetaverse.Packets
     public sealed class TeleportRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -9281,7 +9281,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InfoBlock : PacketBlock
+        public sealed class InfoBlock : PacketBlock
         {
             public UUID RegionID;
             public Vector3 Position;
@@ -9405,7 +9405,7 @@ namespace OpenMetaverse.Packets
     public sealed class TeleportLocationRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -9446,7 +9446,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InfoBlock : PacketBlock
+        public sealed class InfoBlock : PacketBlock
         {
             public ulong RegionHandle;
             public Vector3 Position;
@@ -9570,7 +9570,7 @@ namespace OpenMetaverse.Packets
     public sealed class TeleportLocalPacket : Packet
     {
         /// <exclude/>
-        public class InfoBlock : PacketBlock
+        public sealed class InfoBlock : PacketBlock
         {
             public UUID AgentID;
             public uint LocationID;
@@ -9693,7 +9693,7 @@ namespace OpenMetaverse.Packets
     public sealed class TeleportLandmarkRequestPacket : Packet
     {
         /// <exclude/>
-        public class InfoBlock : PacketBlock
+        public sealed class InfoBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -9811,7 +9811,7 @@ namespace OpenMetaverse.Packets
     public sealed class TeleportProgressPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -9849,7 +9849,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InfoBlock : PacketBlock
+        public sealed class InfoBlock : PacketBlock
         {
             public uint TeleportFlags;
             public byte[] Message;
@@ -9976,7 +9976,7 @@ namespace OpenMetaverse.Packets
     public sealed class TeleportFinishPacket : Packet
     {
         /// <exclude/>
-        public class InfoBlock : PacketBlock
+        public sealed class InfoBlock : PacketBlock
         {
             public UUID AgentID;
             public uint LocationID;
@@ -10116,7 +10116,7 @@ namespace OpenMetaverse.Packets
     public sealed class StartLurePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -10157,7 +10157,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InfoBlock : PacketBlock
+        public sealed class InfoBlock : PacketBlock
         {
             public byte LureType;
             public byte[] Message;
@@ -10204,7 +10204,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TargetDataBlock : PacketBlock
+        public sealed class TargetDataBlock : PacketBlock
         {
             public UUID TargetID;
 
@@ -10401,7 +10401,7 @@ namespace OpenMetaverse.Packets
     public sealed class TeleportLureRequestPacket : Packet
     {
         /// <exclude/>
-        public class InfoBlock : PacketBlock
+        public sealed class InfoBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -10521,7 +10521,7 @@ namespace OpenMetaverse.Packets
     public sealed class TeleportCancelPacket : Packet
     {
         /// <exclude/>
-        public class InfoBlock : PacketBlock
+        public sealed class InfoBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -10635,7 +10635,7 @@ namespace OpenMetaverse.Packets
     public sealed class TeleportStartPacket : Packet
     {
         /// <exclude/>
-        public class InfoBlock : PacketBlock
+        public sealed class InfoBlock : PacketBlock
         {
             public uint TeleportFlags;
 
@@ -10746,7 +10746,7 @@ namespace OpenMetaverse.Packets
     public sealed class TeleportFailedPacket : Packet
     {
         /// <exclude/>
-        public class InfoBlock : PacketBlock
+        public sealed class InfoBlock : PacketBlock
         {
             public UUID AgentID;
             public byte[] Reason;
@@ -10793,7 +10793,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class AlertInfoBlock : PacketBlock
+        public sealed class AlertInfoBlock : PacketBlock
         {
             public byte[] Message;
             public byte[] ExtraParams;
@@ -10994,7 +10994,7 @@ namespace OpenMetaverse.Packets
     public sealed class UndoPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -11038,7 +11038,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ObjectID;
 
@@ -11226,7 +11226,7 @@ namespace OpenMetaverse.Packets
     public sealed class RedoPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -11270,7 +11270,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ObjectID;
 
@@ -11458,7 +11458,7 @@ namespace OpenMetaverse.Packets
     public sealed class UndoLandPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -11572,7 +11572,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentPausePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -11689,7 +11689,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentResumePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -11806,7 +11806,7 @@ namespace OpenMetaverse.Packets
     public sealed class ChatFromViewerPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -11847,7 +11847,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ChatDataBlock : PacketBlock
+        public sealed class ChatDataBlock : PacketBlock
         {
             public byte[] Message;
             public byte Type;
@@ -11979,7 +11979,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentThrottlePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -12023,7 +12023,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ThrottleBlock : PacketBlock
+        public sealed class ThrottleBlock : PacketBlock
         {
             public uint GenCounter;
             public byte[] Throttles;
@@ -12151,7 +12151,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentFOVPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -12195,7 +12195,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class FOVBlockBlock : PacketBlock
+        public sealed class FOVBlockBlock : PacketBlock
         {
             public uint GenCounter;
             public float VerticalAngle;
@@ -12316,7 +12316,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentHeightWidthPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -12360,7 +12360,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class HeightWidthBlockBlock : PacketBlock
+        public sealed class HeightWidthBlockBlock : PacketBlock
         {
             public uint GenCounter;
             public ushort Height;
@@ -12486,7 +12486,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentSetAppearancePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -12533,7 +12533,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class WearableDataBlock : PacketBlock
+        public sealed class WearableDataBlock : PacketBlock
         {
             public UUID CacheID;
             public byte TextureIndex;
@@ -12574,7 +12574,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public byte[] TextureEntry;
 
@@ -12619,7 +12619,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class VisualParamBlock : PacketBlock
+        public sealed class VisualParamBlock : PacketBlock
         {
             public byte ParamValue;
 
@@ -12786,7 +12786,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentQuitCopyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -12827,7 +12827,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class FuseBlockBlock : PacketBlock
+        public sealed class FuseBlockBlock : PacketBlock
         {
             public uint ViewerCircuitCode;
 
@@ -12945,7 +12945,7 @@ namespace OpenMetaverse.Packets
     public sealed class ImageNotInDatabasePacket : Packet
     {
         /// <exclude/>
-        public class ImageIDBlock : PacketBlock
+        public sealed class ImageIDBlock : PacketBlock
         {
             public UUID ID;
 
@@ -13056,7 +13056,7 @@ namespace OpenMetaverse.Packets
     public sealed class RebakeAvatarTexturesPacket : Packet
     {
         /// <exclude/>
-        public class TextureDataBlock : PacketBlock
+        public sealed class TextureDataBlock : PacketBlock
         {
             public UUID TextureID;
 
@@ -13167,7 +13167,7 @@ namespace OpenMetaverse.Packets
     public sealed class SetAlwaysRunPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -13284,7 +13284,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectDeletePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -13328,7 +13328,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
 
@@ -13517,7 +13517,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectDuplicatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -13561,7 +13561,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class SharedDataBlock : PacketBlock
+        public sealed class SharedDataBlock : PacketBlock
         {
             public Vector3 Offset;
             public uint DuplicateFlags;
@@ -13602,7 +13602,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
 
@@ -13800,7 +13800,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectDuplicateOnRayPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -13868,7 +13868,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
 
@@ -14057,7 +14057,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectScalePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -14098,7 +14098,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
             public Vector3 Scale;
@@ -14290,7 +14290,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectRotationPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -14331,7 +14331,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
             public Quaternion Rotation;
@@ -14523,7 +14523,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectFlagUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -14653,7 +14653,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectClickActionPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -14694,7 +14694,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
             public byte ClickAction;
@@ -14886,7 +14886,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectImagePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -14927,7 +14927,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
             public byte[] MediaURL;
@@ -15133,7 +15133,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectMaterialPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -15174,7 +15174,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
             public byte Material;
@@ -15366,7 +15366,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectShapePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -15407,7 +15407,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
             public byte PathCurve;
@@ -15655,7 +15655,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectExtraParamsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -15696,7 +15696,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
             public ushort ParamType;
@@ -15904,7 +15904,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectOwnerPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -15945,7 +15945,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class HeaderDataBlock : PacketBlock
+        public sealed class HeaderDataBlock : PacketBlock
         {
             public bool Override;
             public UUID OwnerID;
@@ -15989,7 +15989,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
 
@@ -16187,7 +16187,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectGroupPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -16231,7 +16231,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
 
@@ -16420,7 +16420,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectBuyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -16467,7 +16467,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
             public byte SaleType;
@@ -16662,7 +16662,7 @@ namespace OpenMetaverse.Packets
     public sealed class BuyObjectInventoryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -16703,7 +16703,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ObjectID;
             public UUID ItemID;
@@ -16828,7 +16828,7 @@ namespace OpenMetaverse.Packets
     public sealed class DerezContainerPacket : Packet
     {
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ObjectID;
             public bool Delete;
@@ -16943,7 +16943,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectPermissionsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -16984,7 +16984,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class HeaderDataBlock : PacketBlock
+        public sealed class HeaderDataBlock : PacketBlock
         {
             public bool Override;
 
@@ -17022,7 +17022,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
             public byte Field;
@@ -17229,7 +17229,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectSaleInfoPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -17270,7 +17270,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint LocalID;
             public byte SaleType;
@@ -17465,7 +17465,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectNamePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -17506,7 +17506,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint LocalID;
             public byte[] Name;
@@ -17704,7 +17704,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectDescriptionPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -17745,7 +17745,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint LocalID;
             public byte[] Description;
@@ -17943,7 +17943,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectCategoryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -17984,7 +17984,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint LocalID;
             public uint Category;
@@ -18176,7 +18176,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectSelectPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -18217,7 +18217,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
 
@@ -18406,7 +18406,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectDeselectPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -18447,7 +18447,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
 
@@ -18636,7 +18636,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectAttachPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -18680,7 +18680,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
             public Quaternion Rotation;
@@ -18872,7 +18872,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectDetachPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -18913,7 +18913,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
 
@@ -19101,7 +19101,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectDropPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -19142,7 +19142,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
 
@@ -19330,7 +19330,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectLinkPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -19371,7 +19371,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
 
@@ -19559,7 +19559,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectDelinkPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -19600,7 +19600,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
 
@@ -19788,7 +19788,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectGrabPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -19829,7 +19829,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint LocalID;
             public Vector3 GrabOffset;
@@ -19870,7 +19870,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class SurfaceInfoBlock : PacketBlock
+        public sealed class SurfaceInfoBlock : PacketBlock
         {
             public Vector3 UVCoord;
             public Vector3 STCoord;
@@ -20083,7 +20083,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectGrabUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -20124,7 +20124,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ObjectID;
             public Vector3 GrabOffsetInitial;
@@ -20171,7 +20171,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class SurfaceInfoBlock : PacketBlock
+        public sealed class SurfaceInfoBlock : PacketBlock
         {
             public Vector3 UVCoord;
             public Vector3 STCoord;
@@ -20384,7 +20384,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectDeGrabPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -20425,7 +20425,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint LocalID;
 
@@ -20463,7 +20463,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class SurfaceInfoBlock : PacketBlock
+        public sealed class SurfaceInfoBlock : PacketBlock
         {
             public Vector3 UVCoord;
             public Vector3 STCoord;
@@ -20675,7 +20675,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectSpinStartPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -20716,7 +20716,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ObjectID;
 
@@ -20835,7 +20835,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectSpinUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -20876,7 +20876,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ObjectID;
             public Quaternion Rotation;
@@ -20998,7 +20998,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectSpinStopPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -21039,7 +21039,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ObjectID;
 
@@ -21158,7 +21158,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectExportSelectedPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID RequestID;
@@ -21203,7 +21203,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ObjectID;
 
@@ -21392,7 +21392,7 @@ namespace OpenMetaverse.Packets
     public sealed class ModifyLandPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -21433,7 +21433,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ModifyBlockBlock : PacketBlock
+        public sealed class ModifyBlockBlock : PacketBlock
         {
             public byte Action;
             public byte BrushSize;
@@ -21480,7 +21480,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int LocalID;
             public float West;
@@ -21530,7 +21530,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ModifyBlockExtendedBlock : PacketBlock
+        public sealed class ModifyBlockExtendedBlock : PacketBlock
         {
             public float BrushSize;
 
@@ -21770,7 +21770,7 @@ namespace OpenMetaverse.Packets
     public sealed class VelocityInterpolateOnPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -21884,7 +21884,7 @@ namespace OpenMetaverse.Packets
     public sealed class VelocityInterpolateOffPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -21998,7 +21998,7 @@ namespace OpenMetaverse.Packets
     public sealed class StateSavePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -22039,7 +22039,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlockBlock : PacketBlock
+        public sealed class DataBlockBlock : PacketBlock
         {
             public byte[] Filename;
 
@@ -22163,7 +22163,7 @@ namespace OpenMetaverse.Packets
     public sealed class ReportAutosaveCrashPacket : Packet
     {
         /// <exclude/>
-        public class AutosaveDataBlock : PacketBlock
+        public sealed class AutosaveDataBlock : PacketBlock
         {
             public int PID;
             public int Status;
@@ -22277,7 +22277,7 @@ namespace OpenMetaverse.Packets
     public sealed class SimWideDeletesPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -22318,7 +22318,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlockBlock : PacketBlock
+        public sealed class DataBlockBlock : PacketBlock
         {
             public UUID TargetID;
             public uint Flags;
@@ -22439,7 +22439,7 @@ namespace OpenMetaverse.Packets
     public sealed class TrackAgentPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -22480,7 +22480,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TargetDataBlock : PacketBlock
+        public sealed class TargetDataBlock : PacketBlock
         {
             public UUID PreyID;
 
@@ -22598,7 +22598,7 @@ namespace OpenMetaverse.Packets
     public sealed class ViewerStatsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -22692,7 +22692,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DownloadTotalsBlock : PacketBlock
+        public sealed class DownloadTotalsBlock : PacketBlock
         {
             public uint World;
             public uint Objects;
@@ -22736,7 +22736,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class NetStatsBlock : PacketBlock
+        public sealed class NetStatsBlock : PacketBlock
         {
             public uint Bytes;
             public uint Packets;
@@ -22783,7 +22783,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class FailStatsBlock : PacketBlock
+        public sealed class FailStatsBlock : PacketBlock
         {
             public uint SendPacket;
             public uint Dropped;
@@ -22836,7 +22836,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MiscStatsBlock : PacketBlock
+        public sealed class MiscStatsBlock : PacketBlock
         {
             public uint Type;
             public double Value;
@@ -23068,7 +23068,7 @@ namespace OpenMetaverse.Packets
     public sealed class ScriptAnswerYesPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -23109,7 +23109,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID TaskID;
             public UUID ItemID;
@@ -23233,7 +23233,7 @@ namespace OpenMetaverse.Packets
     public sealed class UserReportPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -23274,7 +23274,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ReportDataBlock : PacketBlock
+        public sealed class ReportDataBlock : PacketBlock
         {
             public byte ReportType;
             public byte Category;
@@ -23445,7 +23445,7 @@ namespace OpenMetaverse.Packets
     public sealed class AlertMessagePacket : Packet
     {
         /// <exclude/>
-        public class AlertDataBlock : PacketBlock
+        public sealed class AlertDataBlock : PacketBlock
         {
             public byte[] Message;
 
@@ -23489,7 +23489,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class AlertInfoBlock : PacketBlock
+        public sealed class AlertInfoBlock : PacketBlock
         {
             public byte[] Message;
             public byte[] ExtraParams;
@@ -23690,7 +23690,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentAlertMessagePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -23728,7 +23728,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class AlertDataBlock : PacketBlock
+        public sealed class AlertDataBlock : PacketBlock
         {
             public bool Modal;
             public byte[] Message;
@@ -23855,7 +23855,7 @@ namespace OpenMetaverse.Packets
     public sealed class MeanCollisionAlertPacket : Packet
     {
         /// <exclude/>
-        public class MeanCollisionBlock : PacketBlock
+        public sealed class MeanCollisionBlock : PacketBlock
         {
             public UUID Victim;
             public UUID Perp;
@@ -24047,7 +24047,7 @@ namespace OpenMetaverse.Packets
     public sealed class ViewerFrozenMessagePacket : Packet
     {
         /// <exclude/>
-        public class FrozenDataBlock : PacketBlock
+        public sealed class FrozenDataBlock : PacketBlock
         {
             public bool Data;
 
@@ -24158,7 +24158,7 @@ namespace OpenMetaverse.Packets
     public sealed class HealthMessagePacket : Packet
     {
         /// <exclude/>
-        public class HealthDataBlock : PacketBlock
+        public sealed class HealthDataBlock : PacketBlock
         {
             public float Health;
 
@@ -24270,7 +24270,7 @@ namespace OpenMetaverse.Packets
     public sealed class ChatFromSimulatorPacket : Packet
     {
         /// <exclude/>
-        public class ChatDataBlock : PacketBlock
+        public sealed class ChatDataBlock : PacketBlock
         {
             public byte[] FromName;
             public UUID SourceID;
@@ -24413,7 +24413,7 @@ namespace OpenMetaverse.Packets
     public sealed class SimStatsPacket : Packet
     {
         /// <exclude/>
-        public class RegionBlock : PacketBlock
+        public sealed class RegionBlock : PacketBlock
         {
             public uint RegionX;
             public uint RegionY;
@@ -24460,7 +24460,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class StatBlock : PacketBlock
+        public sealed class StatBlock : PacketBlock
         {
             public uint StatID;
             public float StatValue;
@@ -24501,7 +24501,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class PidStatBlock : PacketBlock
+        public sealed class PidStatBlock : PacketBlock
         {
             public int PID;
 
@@ -24643,7 +24643,7 @@ namespace OpenMetaverse.Packets
     public sealed class RequestRegionInfoPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -24757,7 +24757,7 @@ namespace OpenMetaverse.Packets
     public sealed class RegionInfoPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -24798,7 +24798,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RegionInfoBlock : PacketBlock
+        public sealed class RegionInfoBlock : PacketBlock
         {
             public byte[] SimName;
             public uint EstateID;
@@ -24887,7 +24887,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RegionInfo2Block : PacketBlock
+        public sealed class RegionInfo2Block : PacketBlock
         {
             public byte[] ProductSKU;
             public byte[] ProductName;
@@ -25035,7 +25035,7 @@ namespace OpenMetaverse.Packets
     public sealed class GodUpdateRegionInfoPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -25076,7 +25076,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RegionInfoBlock : PacketBlock
+        public sealed class RegionInfoBlock : PacketBlock
         {
             public byte[] SimName;
             public uint EstateID;
@@ -25222,7 +25222,7 @@ namespace OpenMetaverse.Packets
     public sealed class RegionHandshakePacket : Packet
     {
         /// <exclude/>
-        public class RegionInfoBlock : PacketBlock
+        public sealed class RegionInfoBlock : PacketBlock
         {
             public uint RegionFlags;
             public byte SimAccess;
@@ -25335,7 +25335,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RegionInfo2Block : PacketBlock
+        public sealed class RegionInfo2Block : PacketBlock
         {
             public UUID RegionID;
 
@@ -25373,7 +25373,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RegionInfo3Block : PacketBlock
+        public sealed class RegionInfo3Block : PacketBlock
         {
             public int CPUClassID;
             public int CPURatio;
@@ -25525,7 +25525,7 @@ namespace OpenMetaverse.Packets
     public sealed class RegionHandshakeReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -25566,7 +25566,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RegionInfoBlock : PacketBlock
+        public sealed class RegionInfoBlock : PacketBlock
         {
             public uint Flags;
 
@@ -25685,7 +25685,7 @@ namespace OpenMetaverse.Packets
     public sealed class SimulatorViewerTimeMessagePacket : Packet
     {
         /// <exclude/>
-        public class TimeInfoBlock : PacketBlock
+        public sealed class TimeInfoBlock : PacketBlock
         {
             public ulong UsecSinceStart;
             public uint SecPerDay;
@@ -25811,7 +25811,7 @@ namespace OpenMetaverse.Packets
     public sealed class EnableSimulatorPacket : Packet
     {
         /// <exclude/>
-        public class SimulatorInfoBlock : PacketBlock
+        public sealed class SimulatorInfoBlock : PacketBlock
         {
             public ulong Handle;
             public uint IP;
@@ -25995,7 +25995,7 @@ namespace OpenMetaverse.Packets
     public sealed class TransferRequestPacket : Packet
     {
         /// <exclude/>
-        public class TransferInfoBlock : PacketBlock
+        public sealed class TransferInfoBlock : PacketBlock
         {
             public UUID TransferID;
             public int ChannelType;
@@ -26126,7 +26126,7 @@ namespace OpenMetaverse.Packets
     public sealed class TransferInfoPacket : Packet
     {
         /// <exclude/>
-        public class TransferInfoBlock : PacketBlock
+        public sealed class TransferInfoBlock : PacketBlock
         {
             public UUID TransferID;
             public int ChannelType;
@@ -26260,7 +26260,7 @@ namespace OpenMetaverse.Packets
     public sealed class TransferAbortPacket : Packet
     {
         /// <exclude/>
-        public class TransferInfoBlock : PacketBlock
+        public sealed class TransferInfoBlock : PacketBlock
         {
             public UUID TransferID;
             public int ChannelType;
@@ -26375,7 +26375,7 @@ namespace OpenMetaverse.Packets
     public sealed class RequestXferPacket : Packet
     {
         /// <exclude/>
-        public class XferIDBlock : PacketBlock
+        public sealed class XferIDBlock : PacketBlock
         {
             public ulong ID;
             public byte[] Filename;
@@ -26512,7 +26512,7 @@ namespace OpenMetaverse.Packets
     public sealed class AbortXferPacket : Packet
     {
         /// <exclude/>
-        public class XferIDBlock : PacketBlock
+        public sealed class XferIDBlock : PacketBlock
         {
             public ulong ID;
             public int Result;
@@ -26626,7 +26626,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarAppearancePacket : Packet
     {
         /// <exclude/>
-        public class SenderBlock : PacketBlock
+        public sealed class SenderBlock : PacketBlock
         {
             public UUID ID;
             public bool IsTrial;
@@ -26667,7 +26667,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public byte[] TextureEntry;
 
@@ -26712,7 +26712,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class VisualParamBlock : PacketBlock
+        public sealed class VisualParamBlock : PacketBlock
         {
             public byte ParamValue;
 
@@ -26910,7 +26910,7 @@ namespace OpenMetaverse.Packets
     public sealed class SetFollowCamPropertiesPacket : Packet
     {
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ObjectID;
 
@@ -26948,7 +26948,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class CameraPropertyBlock : PacketBlock
+        public sealed class CameraPropertyBlock : PacketBlock
         {
             public int Type;
             public float Value;
@@ -27139,7 +27139,7 @@ namespace OpenMetaverse.Packets
     public sealed class ClearFollowCamPropertiesPacket : Packet
     {
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ObjectID;
 
@@ -27250,7 +27250,7 @@ namespace OpenMetaverse.Packets
     public sealed class RequestPayPricePacket : Packet
     {
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ObjectID;
 
@@ -27361,7 +27361,7 @@ namespace OpenMetaverse.Packets
     public sealed class PayPriceReplyPacket : Packet
     {
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ObjectID;
             public int DefaultPayPrice;
@@ -27402,7 +27402,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ButtonDataBlock : PacketBlock
+        public sealed class ButtonDataBlock : PacketBlock
         {
             public int PayButton;
 
@@ -27590,7 +27590,7 @@ namespace OpenMetaverse.Packets
     public sealed class KickUserPacket : Packet
     {
         /// <exclude/>
-        public class TargetBlockBlock : PacketBlock
+        public sealed class TargetBlockBlock : PacketBlock
         {
             public uint TargetIP;
             public ushort TargetPort;
@@ -27632,7 +27632,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class UserInfoBlock : PacketBlock
+        public sealed class UserInfoBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -27763,7 +27763,7 @@ namespace OpenMetaverse.Packets
     public sealed class GodKickUserPacket : Packet
     {
         /// <exclude/>
-        public class UserInfoBlock : PacketBlock
+        public sealed class UserInfoBlock : PacketBlock
         {
             public UUID GodID;
             public UUID GodSessionID;
@@ -27893,7 +27893,7 @@ namespace OpenMetaverse.Packets
     public sealed class EjectUserPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -27934,7 +27934,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID TargetID;
             public uint Flags;
@@ -28055,7 +28055,7 @@ namespace OpenMetaverse.Packets
     public sealed class FreezeUserPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -28096,7 +28096,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID TargetID;
             public uint Flags;
@@ -28217,7 +28217,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarPropertiesRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -28334,7 +28334,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarPropertiesReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID AvatarID;
@@ -28375,7 +28375,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class PropertiesDataBlock : PacketBlock
+        public sealed class PropertiesDataBlock : PacketBlock
         {
             public UUID ImageID;
             public UUID FLImageID;
@@ -28541,7 +28541,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarInterestsReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID AvatarID;
@@ -28582,7 +28582,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class PropertiesDataBlock : PacketBlock
+        public sealed class PropertiesDataBlock : PacketBlock
         {
             public uint WantToMask;
             public byte[] WantToText;
@@ -28727,7 +28727,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarGroupsReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID AvatarID;
@@ -28768,7 +28768,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public ulong GroupPowers;
             public bool AcceptNotices;
@@ -28831,7 +28831,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class NewGroupDataBlock : PacketBlock
+        public sealed class NewGroupDataBlock : PacketBlock
         {
             public bool ListInProfile;
 
@@ -28974,7 +28974,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarPropertiesUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -29015,7 +29015,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class PropertiesDataBlock : PacketBlock
+        public sealed class PropertiesDataBlock : PacketBlock
         {
             public UUID ImageID;
             public UUID FLImageID;
@@ -29167,7 +29167,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarInterestsUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -29208,7 +29208,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class PropertiesDataBlock : PacketBlock
+        public sealed class PropertiesDataBlock : PacketBlock
         {
             public uint WantToMask;
             public byte[] WantToText;
@@ -29353,7 +29353,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarNotesReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -29391,7 +29391,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID TargetID;
             public byte[] Notes;
@@ -29519,7 +29519,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarNotesUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -29560,7 +29560,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID TargetID;
             public byte[] Notes;
@@ -29688,7 +29688,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarPicksReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID TargetID;
@@ -29729,7 +29729,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID PickID;
             public byte[] PickName;
@@ -29926,7 +29926,7 @@ namespace OpenMetaverse.Packets
     public sealed class EventInfoRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -29967,7 +29967,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class EventDataBlock : PacketBlock
+        public sealed class EventDataBlock : PacketBlock
         {
             public uint EventID;
 
@@ -30085,7 +30085,7 @@ namespace OpenMetaverse.Packets
     public sealed class EventInfoReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -30123,7 +30123,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class EventDataBlock : PacketBlock
+        public sealed class EventDataBlock : PacketBlock
         {
             public uint EventID;
             public byte[] Creator;
@@ -30304,7 +30304,7 @@ namespace OpenMetaverse.Packets
     public sealed class EventNotificationAddRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -30345,7 +30345,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class EventDataBlock : PacketBlock
+        public sealed class EventDataBlock : PacketBlock
         {
             public uint EventID;
 
@@ -30463,7 +30463,7 @@ namespace OpenMetaverse.Packets
     public sealed class EventNotificationRemoveRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -30504,7 +30504,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class EventDataBlock : PacketBlock
+        public sealed class EventDataBlock : PacketBlock
         {
             public uint EventID;
 
@@ -30622,7 +30622,7 @@ namespace OpenMetaverse.Packets
     public sealed class EventGodDeletePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -30663,7 +30663,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class EventDataBlock : PacketBlock
+        public sealed class EventDataBlock : PacketBlock
         {
             public uint EventID;
 
@@ -30701,7 +30701,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class QueryDataBlock : PacketBlock
+        public sealed class QueryDataBlock : PacketBlock
         {
             public UUID QueryID;
             public byte[] QueryText;
@@ -30841,7 +30841,7 @@ namespace OpenMetaverse.Packets
     public sealed class PickInfoReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -30879,7 +30879,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID PickID;
             public UUID CreatorID;
@@ -31056,7 +31056,7 @@ namespace OpenMetaverse.Packets
     public sealed class PickInfoUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -31097,7 +31097,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID PickID;
             public UUID CreatorID;
@@ -31253,7 +31253,7 @@ namespace OpenMetaverse.Packets
     public sealed class PickDeletePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -31294,7 +31294,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID PickID;
 
@@ -31412,7 +31412,7 @@ namespace OpenMetaverse.Packets
     public sealed class PickGodDeletePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -31453,7 +31453,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID PickID;
             public UUID QueryID;
@@ -31574,7 +31574,7 @@ namespace OpenMetaverse.Packets
     public sealed class ScriptQuestionPacket : Packet
     {
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID TaskID;
             public UUID ItemID;
@@ -31707,7 +31707,7 @@ namespace OpenMetaverse.Packets
     public sealed class ScriptControlChangePacket : Packet
     {
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public bool TakeControls;
             public uint Controls;
@@ -31892,7 +31892,7 @@ namespace OpenMetaverse.Packets
     public sealed class ScriptDialogPacket : Packet
     {
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ObjectID;
             public byte[] FirstName;
@@ -31967,7 +31967,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ButtonsBlock : PacketBlock
+        public sealed class ButtonsBlock : PacketBlock
         {
             public byte[] ButtonLabel;
 
@@ -32162,7 +32162,7 @@ namespace OpenMetaverse.Packets
     public sealed class ScriptDialogReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -32203,7 +32203,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ObjectID;
             public int ChatChannel;
@@ -32337,7 +32337,7 @@ namespace OpenMetaverse.Packets
     public sealed class ForceScriptControlReleasePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -32451,7 +32451,7 @@ namespace OpenMetaverse.Packets
     public sealed class RevokePermissionsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -32492,7 +32492,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ObjectID;
             public uint ObjectPermissions;
@@ -32613,7 +32613,7 @@ namespace OpenMetaverse.Packets
     public sealed class LoadURLPacket : Packet
     {
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public byte[] ObjectName;
             public UUID ObjectID;
@@ -32753,7 +32753,7 @@ namespace OpenMetaverse.Packets
     public sealed class ScriptTeleportRequestPacket : Packet
     {
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public byte[] ObjectName;
             public byte[] SimName;
@@ -32883,7 +32883,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelOverlayPacket : Packet
     {
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int SequenceID;
             public byte[] Data;
@@ -33005,7 +33005,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelPropertiesRequestByIDPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -33046,7 +33046,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int SequenceID;
             public int LocalID;
@@ -33168,7 +33168,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelPropertiesUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -33209,7 +33209,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int LocalID;
             public uint Flags;
@@ -33400,7 +33400,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelReturnObjectsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -33441,7 +33441,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int LocalID;
             public uint ReturnType;
@@ -33482,7 +33482,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TaskIDsBlock : PacketBlock
+        public sealed class TaskIDsBlock : PacketBlock
         {
             public UUID TaskID;
 
@@ -33520,7 +33520,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class OwnerIDsBlock : PacketBlock
+        public sealed class OwnerIDsBlock : PacketBlock
         {
             public UUID OwnerID;
 
@@ -33760,7 +33760,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelSetOtherCleanTimePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -33801,7 +33801,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int LocalID;
             public int OtherCleanTime;
@@ -33923,7 +33923,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelDisableObjectsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -33964,7 +33964,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int LocalID;
             public uint ReturnType;
@@ -34005,7 +34005,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TaskIDsBlock : PacketBlock
+        public sealed class TaskIDsBlock : PacketBlock
         {
             public UUID TaskID;
 
@@ -34043,7 +34043,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class OwnerIDsBlock : PacketBlock
+        public sealed class OwnerIDsBlock : PacketBlock
         {
             public UUID OwnerID;
 
@@ -34283,7 +34283,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelSelectObjectsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -34324,7 +34324,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int LocalID;
             public uint ReturnType;
@@ -34365,7 +34365,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ReturnIDsBlock : PacketBlock
+        public sealed class ReturnIDsBlock : PacketBlock
         {
             public UUID ReturnID;
 
@@ -34563,7 +34563,7 @@ namespace OpenMetaverse.Packets
     public sealed class EstateCovenantRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -34677,7 +34677,7 @@ namespace OpenMetaverse.Packets
     public sealed class EstateCovenantReplyPacket : Packet
     {
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID CovenantID;
             public uint CovenantTimestamp;
@@ -34803,7 +34803,7 @@ namespace OpenMetaverse.Packets
     public sealed class ForceObjectSelectPacket : Packet
     {
         /// <exclude/>
-        public class HeaderBlock : PacketBlock
+        public sealed class HeaderBlock : PacketBlock
         {
             public bool ResetList;
 
@@ -34841,7 +34841,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public uint LocalID;
 
@@ -35029,7 +35029,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelBuyPassPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -35070,7 +35070,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int LocalID;
 
@@ -35188,7 +35188,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelDeedToGroupPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -35229,7 +35229,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID GroupID;
             public int LocalID;
@@ -35350,7 +35350,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelReclaimPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -35391,7 +35391,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public int LocalID;
 
@@ -35509,7 +35509,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelClaimPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -35550,7 +35550,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID GroupID;
             public bool IsGroupOwned;
@@ -35594,7 +35594,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public float West;
             public float South;
@@ -35801,7 +35801,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelJoinPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -35842,7 +35842,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public float West;
             public float South;
@@ -35969,7 +35969,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelDividePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -36010,7 +36010,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public float West;
             public float South;
@@ -36137,7 +36137,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelReleasePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -36178,7 +36178,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public int LocalID;
 
@@ -36296,7 +36296,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelBuyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -36337,7 +36337,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID GroupID;
             public bool IsGroupOwned;
@@ -36387,7 +36387,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int Price;
             public int Area;
@@ -36516,7 +36516,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelGodForceOwnerPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -36557,7 +36557,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID OwnerID;
             public int LocalID;
@@ -36679,7 +36679,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelAccessListRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -36720,7 +36720,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public int SequenceID;
             public uint Flags;
@@ -36845,7 +36845,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelAccessListReplyPacket : Packet
     {
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID AgentID;
             public int SequenceID;
@@ -36892,7 +36892,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ListBlock : PacketBlock
+        public sealed class ListBlock : PacketBlock
         {
             public UUID ID;
             public int Time;
@@ -37087,7 +37087,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelAccessListUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -37128,7 +37128,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public uint Flags;
             public int LocalID;
@@ -37178,7 +37178,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ListBlock : PacketBlock
+        public sealed class ListBlock : PacketBlock
         {
             public UUID ID;
             public int Time;
@@ -37382,7 +37382,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelDwellRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -37423,7 +37423,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public int LocalID;
             public UUID ParcelID;
@@ -37544,7 +37544,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelDwellReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -37582,7 +37582,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public int LocalID;
             public UUID ParcelID;
@@ -37706,7 +37706,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelGodMarkAsContentPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -37747,7 +37747,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int LocalID;
 
@@ -37865,7 +37865,7 @@ namespace OpenMetaverse.Packets
     public sealed class ViewerStartAuctionPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -37906,7 +37906,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int LocalID;
             public UUID SnapshotID;
@@ -38027,7 +38027,7 @@ namespace OpenMetaverse.Packets
     public sealed class UUIDNameRequestPacket : Packet
     {
         /// <exclude/>
-        public class UUIDNameBlockBlock : PacketBlock
+        public sealed class UUIDNameBlockBlock : PacketBlock
         {
             public UUID ID;
 
@@ -38206,7 +38206,7 @@ namespace OpenMetaverse.Packets
     public sealed class UUIDNameReplyPacket : Packet
     {
         /// <exclude/>
-        public class UUIDNameBlockBlock : PacketBlock
+        public sealed class UUIDNameBlockBlock : PacketBlock
         {
             public UUID ID;
             public byte[] FirstName;
@@ -38401,7 +38401,7 @@ namespace OpenMetaverse.Packets
     public sealed class UUIDGroupNameRequestPacket : Packet
     {
         /// <exclude/>
-        public class UUIDNameBlockBlock : PacketBlock
+        public sealed class UUIDNameBlockBlock : PacketBlock
         {
             public UUID ID;
 
@@ -38580,7 +38580,7 @@ namespace OpenMetaverse.Packets
     public sealed class UUIDGroupNameReplyPacket : Packet
     {
         /// <exclude/>
-        public class UUIDNameBlockBlock : PacketBlock
+        public sealed class UUIDNameBlockBlock : PacketBlock
         {
             public UUID ID;
             public byte[] GroupName;
@@ -38768,7 +38768,7 @@ namespace OpenMetaverse.Packets
     public sealed class ChildAgentDyingPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -38883,7 +38883,7 @@ namespace OpenMetaverse.Packets
     public sealed class ChildAgentUnknownPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -38997,7 +38997,7 @@ namespace OpenMetaverse.Packets
     public sealed class GetScriptRunningPacket : Packet
     {
         /// <exclude/>
-        public class ScriptBlock : PacketBlock
+        public sealed class ScriptBlock : PacketBlock
         {
             public UUID ObjectID;
             public UUID ItemID;
@@ -39111,7 +39111,7 @@ namespace OpenMetaverse.Packets
     public sealed class ScriptRunningReplyPacket : Packet
     {
         /// <exclude/>
-        public class ScriptBlock : PacketBlock
+        public sealed class ScriptBlock : PacketBlock
         {
             public UUID ObjectID;
             public UUID ItemID;
@@ -39228,7 +39228,7 @@ namespace OpenMetaverse.Packets
     public sealed class SetScriptRunningPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -39269,7 +39269,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ScriptBlock : PacketBlock
+        public sealed class ScriptBlock : PacketBlock
         {
             public UUID ObjectID;
             public UUID ItemID;
@@ -39393,7 +39393,7 @@ namespace OpenMetaverse.Packets
     public sealed class ScriptResetPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -39434,7 +39434,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ScriptBlock : PacketBlock
+        public sealed class ScriptBlock : PacketBlock
         {
             public UUID ObjectID;
             public UUID ItemID;
@@ -39555,7 +39555,7 @@ namespace OpenMetaverse.Packets
     public sealed class ScriptSensorRequestPacket : Packet
     {
         /// <exclude/>
-        public class RequesterBlock : PacketBlock
+        public sealed class RequesterBlock : PacketBlock
         {
             public UUID SourceID;
             public UUID RequestID;
@@ -39703,7 +39703,7 @@ namespace OpenMetaverse.Packets
     public sealed class ScriptSensorReplyPacket : Packet
     {
         /// <exclude/>
-        public class RequesterBlock : PacketBlock
+        public sealed class RequesterBlock : PacketBlock
         {
             public UUID SourceID;
 
@@ -39741,7 +39741,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class SensedDataBlock : PacketBlock
+        public sealed class SensedDataBlock : PacketBlock
         {
             public UUID ObjectID;
             public UUID OwnerID;
@@ -39960,7 +39960,7 @@ namespace OpenMetaverse.Packets
     public sealed class CompleteAgentMovementPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -40077,7 +40077,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentMovementCompletePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -40118,7 +40118,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public Vector3 Position;
             public Vector3 LookAt;
@@ -40165,7 +40165,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class SimDataBlock : PacketBlock
+        public sealed class SimDataBlock : PacketBlock
         {
             public byte[] ChannelVersion;
 
@@ -40297,7 +40297,7 @@ namespace OpenMetaverse.Packets
     public sealed class LogoutRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -40411,7 +40411,7 @@ namespace OpenMetaverse.Packets
     public sealed class LogoutReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -40452,7 +40452,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID ItemID;
 
@@ -40641,7 +40641,7 @@ namespace OpenMetaverse.Packets
     public sealed class ImprovedInstantMessagePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -40682,7 +40682,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MessageBlockBlock : PacketBlock
+        public sealed class MessageBlockBlock : PacketBlock
         {
             public bool FromGroup;
             public UUID ToAgentID;
@@ -40850,7 +40850,7 @@ namespace OpenMetaverse.Packets
     public sealed class RetrieveInstantMessagesPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -40964,7 +40964,7 @@ namespace OpenMetaverse.Packets
     public sealed class FindAgentPacket : Packet
     {
         /// <exclude/>
-        public class AgentBlockBlock : PacketBlock
+        public sealed class AgentBlockBlock : PacketBlock
         {
             public UUID Hunter;
             public UUID Prey;
@@ -41008,7 +41008,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class LocationBlockBlock : PacketBlock
+        public sealed class LocationBlockBlock : PacketBlock
         {
             public double GlobalX;
             public double GlobalY;
@@ -41199,7 +41199,7 @@ namespace OpenMetaverse.Packets
     public sealed class RequestGodlikePowersPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -41240,7 +41240,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RequestBlockBlock : PacketBlock
+        public sealed class RequestBlockBlock : PacketBlock
         {
             public bool Godlike;
             public UUID Token;
@@ -41361,7 +41361,7 @@ namespace OpenMetaverse.Packets
     public sealed class GrantGodlikePowersPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -41402,7 +41402,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GrantDataBlock : PacketBlock
+        public sealed class GrantDataBlock : PacketBlock
         {
             public byte GodLevel;
             public UUID Token;
@@ -41523,7 +41523,7 @@ namespace OpenMetaverse.Packets
     public sealed class GodlikeMessagePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -41567,7 +41567,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MethodDataBlock : PacketBlock
+        public sealed class MethodDataBlock : PacketBlock
         {
             public byte[] Method;
             public UUID Invoice;
@@ -41614,7 +41614,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParamListBlock : PacketBlock
+        public sealed class ParamListBlock : PacketBlock
         {
             public byte[] Parameter;
 
@@ -41818,7 +41818,7 @@ namespace OpenMetaverse.Packets
     public sealed class EstateOwnerMessagePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -41862,7 +41862,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MethodDataBlock : PacketBlock
+        public sealed class MethodDataBlock : PacketBlock
         {
             public byte[] Method;
             public UUID Invoice;
@@ -41909,7 +41909,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParamListBlock : PacketBlock
+        public sealed class ParamListBlock : PacketBlock
         {
             public byte[] Parameter;
 
@@ -42113,7 +42113,7 @@ namespace OpenMetaverse.Packets
     public sealed class GenericMessagePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -42157,7 +42157,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MethodDataBlock : PacketBlock
+        public sealed class MethodDataBlock : PacketBlock
         {
             public byte[] Method;
             public UUID Invoice;
@@ -42204,7 +42204,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParamListBlock : PacketBlock
+        public sealed class ParamListBlock : PacketBlock
         {
             public byte[] Parameter;
 
@@ -42408,7 +42408,7 @@ namespace OpenMetaverse.Packets
     public sealed class MuteListRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -42449,7 +42449,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MuteDataBlock : PacketBlock
+        public sealed class MuteDataBlock : PacketBlock
         {
             public uint MuteCRC;
 
@@ -42567,7 +42567,7 @@ namespace OpenMetaverse.Packets
     public sealed class UpdateMuteListEntryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -42608,7 +42608,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MuteDataBlock : PacketBlock
+        public sealed class MuteDataBlock : PacketBlock
         {
             public UUID MuteID;
             public byte[] MuteName;
@@ -42741,7 +42741,7 @@ namespace OpenMetaverse.Packets
     public sealed class RemoveMuteListEntryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -42782,7 +42782,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MuteDataBlock : PacketBlock
+        public sealed class MuteDataBlock : PacketBlock
         {
             public UUID MuteID;
             public byte[] MuteName;
@@ -42909,7 +42909,7 @@ namespace OpenMetaverse.Packets
     public sealed class CopyInventoryFromNotecardPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -42950,7 +42950,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class NotecardDataBlock : PacketBlock
+        public sealed class NotecardDataBlock : PacketBlock
         {
             public UUID NotecardItemID;
             public UUID ObjectID;
@@ -42991,7 +42991,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID FolderID;
@@ -43192,7 +43192,7 @@ namespace OpenMetaverse.Packets
     public sealed class UpdateInventoryItemPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -43236,7 +43236,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID FolderID;
@@ -43498,7 +43498,7 @@ namespace OpenMetaverse.Packets
     public sealed class UpdateCreateInventoryItemPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public bool SimApproved;
@@ -43542,7 +43542,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID FolderID;
@@ -43804,7 +43804,7 @@ namespace OpenMetaverse.Packets
     public sealed class MoveInventoryItemPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -43848,7 +43848,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID FolderID;
@@ -44049,7 +44049,7 @@ namespace OpenMetaverse.Packets
     public sealed class CopyInventoryItemPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -44090,7 +44090,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public uint CallbackID;
             public UUID OldAgentID;
@@ -44297,7 +44297,7 @@ namespace OpenMetaverse.Packets
     public sealed class RemoveInventoryItemPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -44338,7 +44338,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID ItemID;
 
@@ -44526,7 +44526,7 @@ namespace OpenMetaverse.Packets
     public sealed class ChangeInventoryItemFlagsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -44567,7 +44567,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID ItemID;
             public uint Flags;
@@ -44758,7 +44758,7 @@ namespace OpenMetaverse.Packets
     public sealed class SaveAssetIntoInventoryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -44796,7 +44796,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID NewAssetID;
@@ -44917,7 +44917,7 @@ namespace OpenMetaverse.Packets
     public sealed class CreateInventoryFolderPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -44958,7 +44958,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class FolderDataBlock : PacketBlock
+        public sealed class FolderDataBlock : PacketBlock
         {
             public UUID FolderID;
             public UUID ParentID;
@@ -45091,7 +45091,7 @@ namespace OpenMetaverse.Packets
     public sealed class UpdateInventoryFolderPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -45132,7 +45132,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class FolderDataBlock : PacketBlock
+        public sealed class FolderDataBlock : PacketBlock
         {
             public UUID FolderID;
             public UUID ParentID;
@@ -45335,7 +45335,7 @@ namespace OpenMetaverse.Packets
     public sealed class MoveInventoryFolderPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -45379,7 +45379,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID FolderID;
             public UUID ParentID;
@@ -45571,7 +45571,7 @@ namespace OpenMetaverse.Packets
     public sealed class RemoveInventoryFolderPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -45612,7 +45612,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class FolderDataBlock : PacketBlock
+        public sealed class FolderDataBlock : PacketBlock
         {
             public UUID FolderID;
 
@@ -45800,7 +45800,7 @@ namespace OpenMetaverse.Packets
     public sealed class FetchInventoryDescendentsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -45841,7 +45841,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID FolderID;
             public UUID OwnerID;
@@ -45972,7 +45972,7 @@ namespace OpenMetaverse.Packets
     public sealed class InventoryDescendentsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID FolderID;
@@ -46022,7 +46022,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class FolderDataBlock : PacketBlock
+        public sealed class FolderDataBlock : PacketBlock
         {
             public UUID FolderID;
             public UUID ParentID;
@@ -46075,7 +46075,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ItemDataBlock : PacketBlock
+        public sealed class ItemDataBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID FolderID;
@@ -46376,7 +46376,7 @@ namespace OpenMetaverse.Packets
     public sealed class FetchInventoryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -46417,7 +46417,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID OwnerID;
             public UUID ItemID;
@@ -46609,7 +46609,7 @@ namespace OpenMetaverse.Packets
     public sealed class FetchInventoryReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -46647,7 +46647,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID FolderID;
@@ -46906,7 +46906,7 @@ namespace OpenMetaverse.Packets
     public sealed class BulkUpdateInventoryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID TransactionID;
@@ -46947,7 +46947,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class FolderDataBlock : PacketBlock
+        public sealed class FolderDataBlock : PacketBlock
         {
             public UUID FolderID;
             public UUID ParentID;
@@ -47000,7 +47000,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ItemDataBlock : PacketBlock
+        public sealed class ItemDataBlock : PacketBlock
         {
             public UUID ItemID;
             public uint CallbackID;
@@ -47304,7 +47304,7 @@ namespace OpenMetaverse.Packets
     public sealed class RemoveInventoryObjectsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -47345,7 +47345,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class FolderDataBlock : PacketBlock
+        public sealed class FolderDataBlock : PacketBlock
         {
             public UUID FolderID;
 
@@ -47383,7 +47383,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ItemDataBlock : PacketBlock
+        public sealed class ItemDataBlock : PacketBlock
         {
             public UUID ItemID;
 
@@ -47613,7 +47613,7 @@ namespace OpenMetaverse.Packets
     public sealed class PurgeInventoryDescendentsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -47654,7 +47654,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID FolderID;
 
@@ -47773,7 +47773,7 @@ namespace OpenMetaverse.Packets
     public sealed class UpdateTaskInventoryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -47814,7 +47814,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class UpdateDataBlock : PacketBlock
+        public sealed class UpdateDataBlock : PacketBlock
         {
             public uint LocalID;
             public byte Key;
@@ -47855,7 +47855,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID FolderID;
@@ -48051,7 +48051,7 @@ namespace OpenMetaverse.Packets
     public sealed class RemoveTaskInventoryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -48092,7 +48092,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public uint LocalID;
             public UUID ItemID;
@@ -48214,7 +48214,7 @@ namespace OpenMetaverse.Packets
     public sealed class MoveTaskInventoryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -48258,7 +48258,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public uint LocalID;
             public UUID ItemID;
@@ -48379,7 +48379,7 @@ namespace OpenMetaverse.Packets
     public sealed class RequestTaskInventoryPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -48420,7 +48420,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public uint LocalID;
 
@@ -48538,7 +48538,7 @@ namespace OpenMetaverse.Packets
     public sealed class ReplyTaskInventoryPacket : Packet
     {
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID TaskID;
             public short Serial;
@@ -48663,7 +48663,7 @@ namespace OpenMetaverse.Packets
     public sealed class DeRezObjectPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -48704,7 +48704,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class AgentBlockBlock : PacketBlock
+        public sealed class AgentBlockBlock : PacketBlock
         {
             public UUID GroupID;
             public byte Destination;
@@ -48757,7 +48757,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
 
@@ -48955,7 +48955,7 @@ namespace OpenMetaverse.Packets
     public sealed class DeRezAckPacket : Packet
     {
         /// <exclude/>
-        public class TransactionDataBlock : PacketBlock
+        public sealed class TransactionDataBlock : PacketBlock
         {
             public UUID TransactionID;
             public bool Success;
@@ -49069,7 +49069,7 @@ namespace OpenMetaverse.Packets
     public sealed class RezObjectPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -49113,7 +49113,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RezDataBlock : PacketBlock
+        public sealed class RezDataBlock : PacketBlock
         {
             public UUID FromTaskID;
             public byte BypassRaycast;
@@ -49184,7 +49184,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID FolderID;
@@ -49380,7 +49380,7 @@ namespace OpenMetaverse.Packets
     public sealed class RezObjectFromNotecardPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -49424,7 +49424,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RezDataBlock : PacketBlock
+        public sealed class RezDataBlock : PacketBlock
         {
             public UUID FromTaskID;
             public byte BypassRaycast;
@@ -49495,7 +49495,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class NotecardDataBlock : PacketBlock
+        public sealed class NotecardDataBlock : PacketBlock
         {
             public UUID NotecardItemID;
             public UUID ObjectID;
@@ -49536,7 +49536,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID ItemID;
 
@@ -49743,7 +49743,7 @@ namespace OpenMetaverse.Packets
     public sealed class AcceptFriendshipPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -49784,7 +49784,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TransactionBlockBlock : PacketBlock
+        public sealed class TransactionBlockBlock : PacketBlock
         {
             public UUID TransactionID;
 
@@ -49822,7 +49822,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class FolderDataBlock : PacketBlock
+        public sealed class FolderDataBlock : PacketBlock
         {
             public UUID FolderID;
 
@@ -50019,7 +50019,7 @@ namespace OpenMetaverse.Packets
     public sealed class DeclineFriendshipPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -50060,7 +50060,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TransactionBlockBlock : PacketBlock
+        public sealed class TransactionBlockBlock : PacketBlock
         {
             public UUID TransactionID;
 
@@ -50178,7 +50178,7 @@ namespace OpenMetaverse.Packets
     public sealed class TerminateFriendshipPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -50219,7 +50219,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ExBlockBlock : PacketBlock
+        public sealed class ExBlockBlock : PacketBlock
         {
             public UUID OtherID;
 
@@ -50337,7 +50337,7 @@ namespace OpenMetaverse.Packets
     public sealed class OfferCallingCardPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -50378,7 +50378,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class AgentBlockBlock : PacketBlock
+        public sealed class AgentBlockBlock : PacketBlock
         {
             public UUID DestID;
             public UUID TransactionID;
@@ -50499,7 +50499,7 @@ namespace OpenMetaverse.Packets
     public sealed class AcceptCallingCardPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -50540,7 +50540,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TransactionBlockBlock : PacketBlock
+        public sealed class TransactionBlockBlock : PacketBlock
         {
             public UUID TransactionID;
 
@@ -50578,7 +50578,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class FolderDataBlock : PacketBlock
+        public sealed class FolderDataBlock : PacketBlock
         {
             public UUID FolderID;
 
@@ -50775,7 +50775,7 @@ namespace OpenMetaverse.Packets
     public sealed class DeclineCallingCardPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -50816,7 +50816,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TransactionBlockBlock : PacketBlock
+        public sealed class TransactionBlockBlock : PacketBlock
         {
             public UUID TransactionID;
 
@@ -50934,7 +50934,7 @@ namespace OpenMetaverse.Packets
     public sealed class RezScriptPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -50978,7 +50978,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class UpdateBlockBlock : PacketBlock
+        public sealed class UpdateBlockBlock : PacketBlock
         {
             public uint ObjectLocalID;
             public bool Enabled;
@@ -51019,7 +51019,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryBlockBlock : PacketBlock
+        public sealed class InventoryBlockBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID FolderID;
@@ -51215,7 +51215,7 @@ namespace OpenMetaverse.Packets
     public sealed class CreateInventoryItemPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -51256,7 +51256,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryBlockBlock : PacketBlock
+        public sealed class InventoryBlockBlock : PacketBlock
         {
             public uint CallbackID;
             public UUID FolderID;
@@ -51409,7 +51409,7 @@ namespace OpenMetaverse.Packets
     public sealed class CreateLandmarkForEventPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -51450,7 +51450,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class EventDataBlock : PacketBlock
+        public sealed class EventDataBlock : PacketBlock
         {
             public uint EventID;
 
@@ -51488,7 +51488,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryBlockBlock : PacketBlock
+        public sealed class InventoryBlockBlock : PacketBlock
         {
             public UUID FolderID;
             public byte[] Name;
@@ -51623,7 +51623,7 @@ namespace OpenMetaverse.Packets
     public sealed class RegionHandleRequestPacket : Packet
     {
         /// <exclude/>
-        public class RequestBlockBlock : PacketBlock
+        public sealed class RequestBlockBlock : PacketBlock
         {
             public UUID RegionID;
 
@@ -51734,7 +51734,7 @@ namespace OpenMetaverse.Packets
     public sealed class RegionIDAndHandleReplyPacket : Packet
     {
         /// <exclude/>
-        public class ReplyBlockBlock : PacketBlock
+        public sealed class ReplyBlockBlock : PacketBlock
         {
             public UUID RegionID;
             public ulong RegionHandle;
@@ -51848,7 +51848,7 @@ namespace OpenMetaverse.Packets
     public sealed class MoneyTransferRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -51889,7 +51889,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MoneyDataBlock : PacketBlock
+        public sealed class MoneyDataBlock : PacketBlock
         {
             public UUID SourceID;
             public UUID DestID;
@@ -52035,7 +52035,7 @@ namespace OpenMetaverse.Packets
     public sealed class MoneyBalanceRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -52076,7 +52076,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MoneyDataBlock : PacketBlock
+        public sealed class MoneyDataBlock : PacketBlock
         {
             public UUID TransactionID;
 
@@ -52195,7 +52195,7 @@ namespace OpenMetaverse.Packets
     public sealed class MoneyBalanceReplyPacket : Packet
     {
         /// <exclude/>
-        public class MoneyDataBlock : PacketBlock
+        public sealed class MoneyDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID TransactionID;
@@ -52331,7 +52331,7 @@ namespace OpenMetaverse.Packets
     public sealed class RoutedMoneyBalanceReplyPacket : Packet
     {
         /// <exclude/>
-        public class TargetBlockBlock : PacketBlock
+        public sealed class TargetBlockBlock : PacketBlock
         {
             public uint TargetIP;
             public ushort TargetPort;
@@ -52373,7 +52373,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MoneyDataBlock : PacketBlock
+        public sealed class MoneyDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID TransactionID;
@@ -52516,7 +52516,7 @@ namespace OpenMetaverse.Packets
     public sealed class ActivateGesturesPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -52560,7 +52560,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID AssetID;
@@ -52754,7 +52754,7 @@ namespace OpenMetaverse.Packets
     public sealed class DeactivateGesturesPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -52798,7 +52798,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID ItemID;
             public uint GestureFlags;
@@ -52989,7 +52989,7 @@ namespace OpenMetaverse.Packets
     public sealed class MuteListUpdatePacket : Packet
     {
         /// <exclude/>
-        public class MuteDataBlock : PacketBlock
+        public sealed class MuteDataBlock : PacketBlock
         {
             public UUID AgentID;
             public byte[] Filename;
@@ -53109,7 +53109,7 @@ namespace OpenMetaverse.Packets
     public sealed class UseCachedMuteListPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -53220,7 +53220,7 @@ namespace OpenMetaverse.Packets
     public sealed class GrantUserRightsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -53261,7 +53261,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RightsBlock : PacketBlock
+        public sealed class RightsBlock : PacketBlock
         {
             public UUID AgentRelated;
             public int RelatedRights;
@@ -53452,7 +53452,7 @@ namespace OpenMetaverse.Packets
     public sealed class ChangeUserRightsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -53490,7 +53490,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RightsBlock : PacketBlock
+        public sealed class RightsBlock : PacketBlock
         {
             public UUID AgentRelated;
             public int RelatedRights;
@@ -53681,7 +53681,7 @@ namespace OpenMetaverse.Packets
     public sealed class OnlineNotificationPacket : Packet
     {
         /// <exclude/>
-        public class AgentBlockBlock : PacketBlock
+        public sealed class AgentBlockBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -53860,7 +53860,7 @@ namespace OpenMetaverse.Packets
     public sealed class OfflineNotificationPacket : Packet
     {
         /// <exclude/>
-        public class AgentBlockBlock : PacketBlock
+        public sealed class AgentBlockBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -54039,7 +54039,7 @@ namespace OpenMetaverse.Packets
     public sealed class SetStartLocationRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -54080,7 +54080,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class StartLocationDataBlock : PacketBlock
+        public sealed class StartLocationDataBlock : PacketBlock
         {
             public byte[] SimName;
             public uint LocationID;
@@ -54214,7 +54214,7 @@ namespace OpenMetaverse.Packets
     public sealed class AssetUploadRequestPacket : Packet
     {
         /// <exclude/>
-        public class AssetBlockBlock : PacketBlock
+        public sealed class AssetBlockBlock : PacketBlock
         {
             public UUID TransactionID;
             public sbyte Type;
@@ -54344,7 +54344,7 @@ namespace OpenMetaverse.Packets
     public sealed class AssetUploadCompletePacket : Packet
     {
         /// <exclude/>
-        public class AssetBlockBlock : PacketBlock
+        public sealed class AssetBlockBlock : PacketBlock
         {
             public UUID UUID;
             public sbyte Type;
@@ -54461,7 +54461,7 @@ namespace OpenMetaverse.Packets
     public sealed class CreateGroupRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -54502,7 +54502,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public byte[] Name;
             public byte[] Charter;
@@ -54653,7 +54653,7 @@ namespace OpenMetaverse.Packets
     public sealed class CreateGroupReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -54691,7 +54691,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ReplyDataBlock : PacketBlock
+        public sealed class ReplyDataBlock : PacketBlock
         {
             public UUID GroupID;
             public bool Success;
@@ -54821,7 +54821,7 @@ namespace OpenMetaverse.Packets
     public sealed class UpdateGroupInfoPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -54862,7 +54862,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
             public byte[] Charter;
@@ -55009,7 +55009,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupRoleChangesPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -55053,7 +55053,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RoleChangeBlock : PacketBlock
+        public sealed class RoleChangeBlock : PacketBlock
         {
             public UUID RoleID;
             public UUID MemberID;
@@ -55247,7 +55247,7 @@ namespace OpenMetaverse.Packets
     public sealed class JoinGroupRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -55288,7 +55288,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
 
@@ -55407,7 +55407,7 @@ namespace OpenMetaverse.Packets
     public sealed class JoinGroupReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -55445,7 +55445,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
             public bool Success;
@@ -55566,7 +55566,7 @@ namespace OpenMetaverse.Packets
     public sealed class EjectGroupMemberRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -55607,7 +55607,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
 
@@ -55645,7 +55645,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class EjectDataBlock : PacketBlock
+        public sealed class EjectDataBlock : PacketBlock
         {
             public UUID EjecteeID;
 
@@ -55842,7 +55842,7 @@ namespace OpenMetaverse.Packets
     public sealed class EjectGroupMemberReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -55880,7 +55880,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
 
@@ -55918,7 +55918,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class EjectDataBlock : PacketBlock
+        public sealed class EjectDataBlock : PacketBlock
         {
             public bool Success;
 
@@ -56043,7 +56043,7 @@ namespace OpenMetaverse.Packets
     public sealed class LeaveGroupRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -56084,7 +56084,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
 
@@ -56202,7 +56202,7 @@ namespace OpenMetaverse.Packets
     public sealed class LeaveGroupReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -56240,7 +56240,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
             public bool Success;
@@ -56361,7 +56361,7 @@ namespace OpenMetaverse.Packets
     public sealed class InviteGroupRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -56402,7 +56402,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
 
@@ -56440,7 +56440,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InviteDataBlock : PacketBlock
+        public sealed class InviteDataBlock : PacketBlock
         {
             public UUID InviteeID;
             public UUID RoleID;
@@ -56640,7 +56640,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupProfileRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -56681,7 +56681,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
 
@@ -56799,7 +56799,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupProfileReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -56837,7 +56837,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
             public byte[] Name;
@@ -57016,7 +57016,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupAccountSummaryRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -57060,7 +57060,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MoneyDataBlock : PacketBlock
+        public sealed class MoneyDataBlock : PacketBlock
         {
             public UUID RequestID;
             public int IntervalDays;
@@ -57185,7 +57185,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupAccountSummaryReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID GroupID;
@@ -57226,7 +57226,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MoneyDataBlock : PacketBlock
+        public sealed class MoneyDataBlock : PacketBlock
         {
             public UUID RequestID;
             public int IntervalDays;
@@ -57416,7 +57416,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupAccountDetailsRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -57460,7 +57460,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MoneyDataBlock : PacketBlock
+        public sealed class MoneyDataBlock : PacketBlock
         {
             public UUID RequestID;
             public int IntervalDays;
@@ -57585,7 +57585,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupAccountDetailsReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID GroupID;
@@ -57626,7 +57626,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MoneyDataBlock : PacketBlock
+        public sealed class MoneyDataBlock : PacketBlock
         {
             public UUID RequestID;
             public int IntervalDays;
@@ -57679,7 +57679,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class HistoryDataBlock : PacketBlock
+        public sealed class HistoryDataBlock : PacketBlock
         {
             public byte[] Description;
             public int Amount;
@@ -57886,7 +57886,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupAccountTransactionsRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -57930,7 +57930,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MoneyDataBlock : PacketBlock
+        public sealed class MoneyDataBlock : PacketBlock
         {
             public UUID RequestID;
             public int IntervalDays;
@@ -58055,7 +58055,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupAccountTransactionsReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID GroupID;
@@ -58096,7 +58096,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MoneyDataBlock : PacketBlock
+        public sealed class MoneyDataBlock : PacketBlock
         {
             public UUID RequestID;
             public int IntervalDays;
@@ -58149,7 +58149,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class HistoryDataBlock : PacketBlock
+        public sealed class HistoryDataBlock : PacketBlock
         {
             public byte[] Time;
             public byte[] User;
@@ -58373,7 +58373,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupActiveProposalsRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -58414,7 +58414,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
 
@@ -58452,7 +58452,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TransactionDataBlock : PacketBlock
+        public sealed class TransactionDataBlock : PacketBlock
         {
             public UUID TransactionID;
 
@@ -58577,7 +58577,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupActiveProposalItemReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID GroupID;
@@ -58618,7 +58618,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TransactionDataBlock : PacketBlock
+        public sealed class TransactionDataBlock : PacketBlock
         {
             public UUID TransactionID;
             public uint TotalNumItems;
@@ -58659,7 +58659,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ProposalDataBlock : PacketBlock
+        public sealed class ProposalDataBlock : PacketBlock
         {
             public UUID VoteID;
             public UUID VoteInitiator;
@@ -58906,7 +58906,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupVoteHistoryRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -58947,7 +58947,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
 
@@ -58985,7 +58985,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TransactionDataBlock : PacketBlock
+        public sealed class TransactionDataBlock : PacketBlock
         {
             public UUID TransactionID;
 
@@ -59110,7 +59110,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupVoteHistoryItemReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID GroupID;
@@ -59151,7 +59151,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TransactionDataBlock : PacketBlock
+        public sealed class TransactionDataBlock : PacketBlock
         {
             public UUID TransactionID;
             public uint TotalNumItems;
@@ -59192,7 +59192,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class HistoryItemDataBlock : PacketBlock
+        public sealed class HistoryItemDataBlock : PacketBlock
         {
             public UUID VoteID;
             public byte[] TerseDateID;
@@ -59284,7 +59284,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class VoteItemBlock : PacketBlock
+        public sealed class VoteItemBlock : PacketBlock
         {
             public UUID CandidateID;
             public byte[] VoteCast;
@@ -59503,7 +59503,7 @@ namespace OpenMetaverse.Packets
     public sealed class StartGroupProposalPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -59544,7 +59544,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ProposalDataBlock : PacketBlock
+        public sealed class ProposalDataBlock : PacketBlock
         {
             public UUID GroupID;
             public int Quorum;
@@ -59681,7 +59681,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupProposalBallotPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -59722,7 +59722,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ProposalDataBlock : PacketBlock
+        public sealed class ProposalDataBlock : PacketBlock
         {
             public UUID ProposalID;
             public UUID GroupID;
@@ -59852,7 +59852,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupMembersRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -59893,7 +59893,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
             public UUID RequestID;
@@ -60014,7 +60014,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupMembersReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -60052,7 +60052,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
             public UUID RequestID;
@@ -60096,7 +60096,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MemberDataBlock : PacketBlock
+        public sealed class MemberDataBlock : PacketBlock
         {
             public UUID AgentID;
             public int Contribution;
@@ -60319,7 +60319,7 @@ namespace OpenMetaverse.Packets
     public sealed class ActivateGroupPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -60437,7 +60437,7 @@ namespace OpenMetaverse.Packets
     public sealed class SetGroupContributionPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -60478,7 +60478,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID GroupID;
             public int Contribution;
@@ -60599,7 +60599,7 @@ namespace OpenMetaverse.Packets
     public sealed class SetGroupAcceptNoticesPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -60640,7 +60640,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public UUID GroupID;
             public bool AcceptNotices;
@@ -60681,7 +60681,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class NewDataBlock : PacketBlock
+        public sealed class NewDataBlock : PacketBlock
         {
             public bool ListInProfile;
 
@@ -60806,7 +60806,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupRoleDataRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -60847,7 +60847,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
             public UUID RequestID;
@@ -60968,7 +60968,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupRoleDataReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -61006,7 +61006,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
             public UUID RequestID;
@@ -61050,7 +61050,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RoleDataBlock : PacketBlock
+        public sealed class RoleDataBlock : PacketBlock
         {
             public UUID RoleID;
             public byte[] Name;
@@ -61276,7 +61276,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupRoleMembersRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -61317,7 +61317,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
             public UUID RequestID;
@@ -61438,7 +61438,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupRoleMembersReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID GroupID;
@@ -61485,7 +61485,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class MemberDataBlock : PacketBlock
+        public sealed class MemberDataBlock : PacketBlock
         {
             public UUID RoleID;
             public UUID MemberID;
@@ -61676,7 +61676,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupTitlesRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -61796,7 +61796,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupTitlesReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID GroupID;
@@ -61840,7 +61840,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public byte[] Title;
             public UUID RoleID;
@@ -62041,7 +62041,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupTitleUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -62161,7 +62161,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupRoleUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -62205,7 +62205,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RoleDataBlock : PacketBlock
+        public sealed class RoleDataBlock : PacketBlock
         {
             public UUID RoleID;
             public byte[] Name;
@@ -62422,7 +62422,7 @@ namespace OpenMetaverse.Packets
     public sealed class LiveHelpGroupRequestPacket : Packet
     {
         /// <exclude/>
-        public class RequestDataBlock : PacketBlock
+        public sealed class RequestDataBlock : PacketBlock
         {
             public UUID RequestID;
             public UUID AgentID;
@@ -62536,7 +62536,7 @@ namespace OpenMetaverse.Packets
     public sealed class LiveHelpGroupReplyPacket : Packet
     {
         /// <exclude/>
-        public class ReplyDataBlock : PacketBlock
+        public sealed class ReplyDataBlock : PacketBlock
         {
             public UUID RequestID;
             public UUID GroupID;
@@ -62659,7 +62659,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentWearablesRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -62773,7 +62773,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentWearablesUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -62817,7 +62817,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class WearableDataBlock : PacketBlock
+        public sealed class WearableDataBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID AssetID;
@@ -63012,7 +63012,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentIsNowWearingPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -63053,7 +63053,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class WearableDataBlock : PacketBlock
+        public sealed class WearableDataBlock : PacketBlock
         {
             public UUID ItemID;
             public byte WearableType;
@@ -63245,7 +63245,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentCachedTexturePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -63289,7 +63289,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class WearableDataBlock : PacketBlock
+        public sealed class WearableDataBlock : PacketBlock
         {
             public UUID ID;
             public byte TextureIndex;
@@ -63480,7 +63480,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentCachedTextureResponsePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -63524,7 +63524,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class WearableDataBlock : PacketBlock
+        public sealed class WearableDataBlock : PacketBlock
         {
             public UUID TextureID;
             public byte TextureIndex;
@@ -63724,7 +63724,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentDataUpdateRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -63838,7 +63838,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentDataUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public byte[] FirstName;
@@ -63986,7 +63986,7 @@ namespace OpenMetaverse.Packets
     public sealed class GroupDataUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentGroupDataBlock : PacketBlock
+        public sealed class AgentGroupDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID GroupID;
@@ -64181,7 +64181,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentGroupDataUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -64219,7 +64219,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
             public ulong GroupPowers;
@@ -64429,7 +64429,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentDropGroupPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID GroupID;
@@ -64544,7 +64544,7 @@ namespace OpenMetaverse.Packets
     public sealed class RezSingleAttachmentFromInvPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -64585,7 +64585,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID OwnerID;
@@ -64738,7 +64738,7 @@ namespace OpenMetaverse.Packets
     public sealed class RezMultipleAttachmentsFromInvPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -64779,7 +64779,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class HeaderDataBlock : PacketBlock
+        public sealed class HeaderDataBlock : PacketBlock
         {
             public UUID CompoundMsgID;
             public byte TotalObjects;
@@ -64823,7 +64823,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID OwnerID;
@@ -65055,7 +65055,7 @@ namespace OpenMetaverse.Packets
     public sealed class DetachAttachmentIntoInvPacket : Packet
     {
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID ItemID;
@@ -65169,7 +65169,7 @@ namespace OpenMetaverse.Packets
     public sealed class CreateNewOutfitAttachmentsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -65210,7 +65210,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class HeaderDataBlock : PacketBlock
+        public sealed class HeaderDataBlock : PacketBlock
         {
             public UUID NewFolderID;
 
@@ -65248,7 +65248,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID OldItemID;
             public UUID OldFolderID;
@@ -65448,7 +65448,7 @@ namespace OpenMetaverse.Packets
     public sealed class UserInfoRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -65562,7 +65562,7 @@ namespace OpenMetaverse.Packets
     public sealed class UserInfoReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -65600,7 +65600,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class UserDataBlock : PacketBlock
+        public sealed class UserDataBlock : PacketBlock
         {
             public bool IMViaEMail;
             public byte[] DirectoryVisibility;
@@ -65735,7 +65735,7 @@ namespace OpenMetaverse.Packets
     public sealed class UpdateUserInfoPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -65776,7 +65776,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class UserDataBlock : PacketBlock
+        public sealed class UserDataBlock : PacketBlock
         {
             public bool IMViaEMail;
             public byte[] DirectoryVisibility;
@@ -65903,7 +65903,7 @@ namespace OpenMetaverse.Packets
     public sealed class InitiateDownloadPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -65941,7 +65941,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class FileDataBlock : PacketBlock
+        public sealed class FileDataBlock : PacketBlock
         {
             public byte[] SimFilename;
             public byte[] ViewerFilename;
@@ -66072,7 +66072,7 @@ namespace OpenMetaverse.Packets
     public sealed class MapLayerRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -66195,7 +66195,7 @@ namespace OpenMetaverse.Packets
     public sealed class MapLayerReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public uint Flags;
@@ -66236,7 +66236,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class LayerDataBlock : PacketBlock
+        public sealed class LayerDataBlock : PacketBlock
         {
             public uint Left;
             public uint Right;
@@ -66436,7 +66436,7 @@ namespace OpenMetaverse.Packets
     public sealed class MapBlockRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -66486,7 +66486,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class PositionDataBlock : PacketBlock
+        public sealed class PositionDataBlock : PacketBlock
         {
             public ushort MinX;
             public ushort MaxX;
@@ -66617,7 +66617,7 @@ namespace OpenMetaverse.Packets
     public sealed class MapNameRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -66667,7 +66667,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class NameDataBlock : PacketBlock
+        public sealed class NameDataBlock : PacketBlock
         {
             public byte[] Name;
 
@@ -66791,7 +66791,7 @@ namespace OpenMetaverse.Packets
     public sealed class MapBlockReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public uint Flags;
@@ -66832,7 +66832,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public ushort X;
             public ushort Y;
@@ -67049,7 +67049,7 @@ namespace OpenMetaverse.Packets
     public sealed class MapItemRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -67099,7 +67099,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RequestDataBlock : PacketBlock
+        public sealed class RequestDataBlock : PacketBlock
         {
             public uint ItemType;
             public ulong RegionHandle;
@@ -67220,7 +67220,7 @@ namespace OpenMetaverse.Packets
     public sealed class MapItemReplyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public uint Flags;
@@ -67261,7 +67261,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RequestDataBlock : PacketBlock
+        public sealed class RequestDataBlock : PacketBlock
         {
             public uint ItemType;
 
@@ -67299,7 +67299,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public uint X;
             public uint Y;
@@ -67517,7 +67517,7 @@ namespace OpenMetaverse.Packets
     public sealed class SendPostcardPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -67681,7 +67681,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelMediaCommandMessagePacket : Packet
     {
         /// <exclude/>
-        public class CommandBlockBlock : PacketBlock
+        public sealed class CommandBlockBlock : PacketBlock
         {
             public uint Flags;
             public uint Command;
@@ -67798,7 +67798,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelMediaUpdatePacket : Packet
     {
         /// <exclude/>
-        public class DataBlockBlock : PacketBlock
+        public sealed class DataBlockBlock : PacketBlock
         {
             public byte[] MediaURL;
             public UUID MediaID;
@@ -67848,7 +67848,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlockExtendedBlock : PacketBlock
+        public sealed class DataBlockExtendedBlock : PacketBlock
         {
             public byte[] MediaType;
             public byte[] MediaDesc;
@@ -67988,7 +67988,7 @@ namespace OpenMetaverse.Packets
     public sealed class LandStatRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -68029,7 +68029,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RequestDataBlock : PacketBlock
+        public sealed class RequestDataBlock : PacketBlock
         {
             public uint ReportType;
             public uint RequestFlags;
@@ -68162,7 +68162,7 @@ namespace OpenMetaverse.Packets
     public sealed class LandStatReplyPacket : Packet
     {
         /// <exclude/>
-        public class RequestDataBlock : PacketBlock
+        public sealed class RequestDataBlock : PacketBlock
         {
             public uint ReportType;
             public uint RequestFlags;
@@ -68206,7 +68206,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ReportDataBlock : PacketBlock
+        public sealed class ReportDataBlock : PacketBlock
         {
             public uint TaskLocalID;
             public UUID TaskID;
@@ -68425,7 +68425,7 @@ namespace OpenMetaverse.Packets
     public sealed class ErrorPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -68463,7 +68463,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataBlock : PacketBlock
+        public sealed class DataBlock : PacketBlock
         {
             public int Code;
             public byte[] Token;
@@ -68617,7 +68617,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectIncludeInSearchPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -68658,7 +68658,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
             public bool IncludeInSearch;
@@ -68849,7 +68849,7 @@ namespace OpenMetaverse.Packets
     public sealed class RezRestoreToWorldPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -68890,7 +68890,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InventoryDataBlock : PacketBlock
+        public sealed class InventoryDataBlock : PacketBlock
         {
             public UUID ItemID;
             public UUID FolderID;
@@ -69078,7 +69078,7 @@ namespace OpenMetaverse.Packets
     public sealed class PacketAckPacket : Packet
     {
         /// <exclude/>
-        public class PacketsBlock : PacketBlock
+        public sealed class PacketsBlock : PacketBlock
         {
             public uint ID;
 
@@ -69257,7 +69257,7 @@ namespace OpenMetaverse.Packets
     public sealed class OpenCircuitPacket : Packet
     {
         /// <exclude/>
-        public class CircuitInfoBlock : PacketBlock
+        public sealed class CircuitInfoBlock : PacketBlock
         {
             public uint IP;
             public ushort Port;
@@ -69438,7 +69438,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectAddPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -69482,7 +69482,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public byte PCode;
             public byte Material;
@@ -69690,7 +69690,7 @@ namespace OpenMetaverse.Packets
     public sealed class MultipleObjectUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -69731,7 +69731,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
             public byte Type;
@@ -69932,7 +69932,7 @@ namespace OpenMetaverse.Packets
     public sealed class RequestMultipleObjectsPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -69973,7 +69973,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public byte CacheMissType;
             public uint ID;
@@ -70165,7 +70165,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectPositionPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -70206,7 +70206,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ObjectLocalID;
             public Vector3 Position;
@@ -70398,7 +70398,7 @@ namespace OpenMetaverse.Packets
     public sealed class RequestObjectPropertiesFamilyPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -70439,7 +70439,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint RequestFlags;
             public UUID ObjectID;
@@ -70561,7 +70561,7 @@ namespace OpenMetaverse.Packets
     public sealed class CoarseLocationUpdatePacket : Packet
     {
         /// <exclude/>
-        public class LocationBlock : PacketBlock
+        public sealed class LocationBlock : PacketBlock
         {
             public byte X;
             public byte Y;
@@ -70605,7 +70605,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class IndexBlock : PacketBlock
+        public sealed class IndexBlock : PacketBlock
         {
             public short You;
             public short Prey;
@@ -70648,7 +70648,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
 
@@ -70807,7 +70807,7 @@ namespace OpenMetaverse.Packets
     public sealed class CrossedRegionPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -70848,7 +70848,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RegionDataBlock : PacketBlock
+        public sealed class RegionDataBlock : PacketBlock
         {
             public uint SimIP;
             public ushort SimPort;
@@ -70903,7 +70903,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class InfoBlock : PacketBlock
+        public sealed class InfoBlock : PacketBlock
         {
             public Vector3 Position;
             public Vector3 LookAt;
@@ -71031,7 +71031,7 @@ namespace OpenMetaverse.Packets
     public sealed class ConfirmEnableSimulatorPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -71145,7 +71145,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectPropertiesPacket : Packet
     {
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public UUID ObjectID;
             public UUID CreatorID;
@@ -71426,7 +71426,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectPropertiesFamilyPacket : Packet
     {
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint RequestFlags;
             public UUID ObjectID;
@@ -71593,7 +71593,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelPropertiesRequestPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -71634,7 +71634,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int SequenceID;
             public float West;
@@ -71768,7 +71768,7 @@ namespace OpenMetaverse.Packets
     public sealed class AttachedSoundPacket : Packet
     {
         /// <exclude/>
-        public class DataBlockBlock : PacketBlock
+        public sealed class DataBlockBlock : PacketBlock
         {
             public UUID SoundID;
             public UUID ObjectID;
@@ -71891,7 +71891,7 @@ namespace OpenMetaverse.Packets
     public sealed class AttachedSoundGainChangePacket : Packet
     {
         /// <exclude/>
-        public class DataBlockBlock : PacketBlock
+        public sealed class DataBlockBlock : PacketBlock
         {
             public UUID ObjectID;
             public float Gain;
@@ -72005,7 +72005,7 @@ namespace OpenMetaverse.Packets
     public sealed class PreloadSoundPacket : Packet
     {
         /// <exclude/>
-        public class DataBlockBlock : PacketBlock
+        public sealed class DataBlockBlock : PacketBlock
         {
             public UUID ObjectID;
             public UUID OwnerID;
@@ -72190,7 +72190,7 @@ namespace OpenMetaverse.Packets
     public sealed class ViewerEffectPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -72231,7 +72231,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class EffectBlock : PacketBlock
+        public sealed class EffectBlock : PacketBlock
         {
             public UUID ID;
             public UUID AgentID;
@@ -72442,7 +72442,7 @@ namespace OpenMetaverse.Packets
     public sealed class StartPingCheckPacket : Packet
     {
         /// <exclude/>
-        public class PingIDBlock : PacketBlock
+        public sealed class PingIDBlock : PacketBlock
         {
             public byte PingID;
             public uint OldestUnacked;
@@ -72556,7 +72556,7 @@ namespace OpenMetaverse.Packets
     public sealed class CompletePingCheckPacket : Packet
     {
         /// <exclude/>
-        public class PingIDBlock : PacketBlock
+        public sealed class PingIDBlock : PacketBlock
         {
             public byte PingID;
 
@@ -72667,7 +72667,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -72812,7 +72812,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentAnimationPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -72853,7 +72853,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class AnimationListBlock : PacketBlock
+        public sealed class AnimationListBlock : PacketBlock
         {
             public UUID AnimID;
             public bool StartAnim;
@@ -72894,7 +72894,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class PhysicalAvatarEventListBlock : PacketBlock
+        public sealed class PhysicalAvatarEventListBlock : PacketBlock
         {
             public byte[] TypeData;
 
@@ -73130,7 +73130,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentRequestSitPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -73171,7 +73171,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class TargetObjectBlock : PacketBlock
+        public sealed class TargetObjectBlock : PacketBlock
         {
             public UUID TargetID;
             public Vector3 Offset;
@@ -73293,7 +73293,7 @@ namespace OpenMetaverse.Packets
     public sealed class AgentSitPacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -73407,7 +73407,7 @@ namespace OpenMetaverse.Packets
     public sealed class RequestImagePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public UUID AgentID;
             public UUID SessionID;
@@ -73448,7 +73448,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class RequestImageBlock : PacketBlock
+        public sealed class RequestImageBlock : PacketBlock
         {
             public UUID Image;
             public sbyte DiscardLevel;
@@ -73648,7 +73648,7 @@ namespace OpenMetaverse.Packets
     public sealed class ImageDataPacket : Packet
     {
         /// <exclude/>
-        public class ImageIDBlock : PacketBlock
+        public sealed class ImageIDBlock : PacketBlock
         {
             public UUID ID;
             public byte Codec;
@@ -73696,7 +73696,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ImageDataBlock : PacketBlock
+        public sealed class ImageDataBlock : PacketBlock
         {
             public byte[] Data;
 
@@ -73821,7 +73821,7 @@ namespace OpenMetaverse.Packets
     public sealed class ImagePacketPacket : Packet
     {
         /// <exclude/>
-        public class ImageIDBlock : PacketBlock
+        public sealed class ImageIDBlock : PacketBlock
         {
             public UUID ID;
             public ushort Packet;
@@ -73863,7 +73863,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ImageDataBlock : PacketBlock
+        public sealed class ImageDataBlock : PacketBlock
         {
             public byte[] Data;
 
@@ -73988,7 +73988,7 @@ namespace OpenMetaverse.Packets
     public sealed class LayerDataPacket : Packet
     {
         /// <exclude/>
-        public class LayerIDBlock : PacketBlock
+        public sealed class LayerIDBlock : PacketBlock
         {
             public byte Type;
 
@@ -74026,7 +74026,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class LayerDataBlock : PacketBlock
+        public sealed class LayerDataBlock : PacketBlock
         {
             public byte[] Data;
 
@@ -74151,7 +74151,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectUpdatePacket : Packet
     {
         /// <exclude/>
-        public class RegionDataBlock : PacketBlock
+        public sealed class RegionDataBlock : PacketBlock
         {
             public ulong RegionHandle;
             public ushort TimeDilation;
@@ -74193,7 +74193,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ID;
             public byte State;
@@ -74564,7 +74564,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectUpdateCompressedPacket : Packet
     {
         /// <exclude/>
-        public class RegionDataBlock : PacketBlock
+        public sealed class RegionDataBlock : PacketBlock
         {
             public ulong RegionHandle;
             public ushort TimeDilation;
@@ -74606,7 +74606,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint UpdateFlags;
             public byte[] Data;
@@ -74804,7 +74804,7 @@ namespace OpenMetaverse.Packets
     public sealed class ObjectUpdateCachedPacket : Packet
     {
         /// <exclude/>
-        public class RegionDataBlock : PacketBlock
+        public sealed class RegionDataBlock : PacketBlock
         {
             public ulong RegionHandle;
             public ushort TimeDilation;
@@ -74846,7 +74846,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ID;
             public uint CRC;
@@ -75040,7 +75040,7 @@ namespace OpenMetaverse.Packets
     public sealed class ImprovedTerseObjectUpdatePacket : Packet
     {
         /// <exclude/>
-        public class RegionDataBlock : PacketBlock
+        public sealed class RegionDataBlock : PacketBlock
         {
             public ulong RegionHandle;
             public ushort TimeDilation;
@@ -75082,7 +75082,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public byte[] Data;
             public byte[] TextureEntry;
@@ -75284,7 +75284,7 @@ namespace OpenMetaverse.Packets
     public sealed class KillObjectPacket : Packet
     {
         /// <exclude/>
-        public class ObjectDataBlock : PacketBlock
+        public sealed class ObjectDataBlock : PacketBlock
         {
             public uint ID;
 
@@ -75463,7 +75463,7 @@ namespace OpenMetaverse.Packets
     public sealed class TransferPacketPacket : Packet
     {
         /// <exclude/>
-        public class TransferDataBlock : PacketBlock
+        public sealed class TransferDataBlock : PacketBlock
         {
             public UUID TransferID;
             public int ChannelType;
@@ -75593,7 +75593,7 @@ namespace OpenMetaverse.Packets
     public sealed class SendXferPacketPacket : Packet
     {
         /// <exclude/>
-        public class XferIDBlock : PacketBlock
+        public sealed class XferIDBlock : PacketBlock
         {
             public ulong ID;
             public uint Packet;
@@ -75634,7 +75634,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class DataPacketBlock : PacketBlock
+        public sealed class DataPacketBlock : PacketBlock
         {
             public byte[] Data;
 
@@ -75759,7 +75759,7 @@ namespace OpenMetaverse.Packets
     public sealed class ConfirmXferPacketPacket : Packet
     {
         /// <exclude/>
-        public class XferIDBlock : PacketBlock
+        public sealed class XferIDBlock : PacketBlock
         {
             public ulong ID;
             public uint Packet;
@@ -75873,7 +75873,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarAnimationPacket : Packet
     {
         /// <exclude/>
-        public class SenderBlock : PacketBlock
+        public sealed class SenderBlock : PacketBlock
         {
             public UUID ID;
 
@@ -75911,7 +75911,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class AnimationListBlock : PacketBlock
+        public sealed class AnimationListBlock : PacketBlock
         {
             public UUID AnimID;
             public int AnimSequenceID;
@@ -75952,7 +75952,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class AnimationSourceListBlock : PacketBlock
+        public sealed class AnimationSourceListBlock : PacketBlock
         {
             public UUID ObjectID;
 
@@ -75990,7 +75990,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class PhysicalAvatarEventListBlock : PacketBlock
+        public sealed class PhysicalAvatarEventListBlock : PacketBlock
         {
             public byte[] TypeData;
 
@@ -76268,7 +76268,7 @@ namespace OpenMetaverse.Packets
     public sealed class AvatarSitResponsePacket : Packet
     {
         /// <exclude/>
-        public class SitObjectBlock : PacketBlock
+        public sealed class SitObjectBlock : PacketBlock
         {
             public UUID ID;
 
@@ -76306,7 +76306,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class SitTransformBlock : PacketBlock
+        public sealed class SitTransformBlock : PacketBlock
         {
             public bool AutoPilot;
             public Vector3 SitPosition;
@@ -76440,7 +76440,7 @@ namespace OpenMetaverse.Packets
     public sealed class CameraConstraintPacket : Packet
     {
         /// <exclude/>
-        public class CameraCollidePlaneBlock : PacketBlock
+        public sealed class CameraCollidePlaneBlock : PacketBlock
         {
             public Vector4 Plane;
 
@@ -76552,7 +76552,7 @@ namespace OpenMetaverse.Packets
     public sealed class ParcelPropertiesPacket : Packet
     {
         /// <exclude/>
-        public class ParcelDataBlock : PacketBlock
+        public sealed class ParcelDataBlock : PacketBlock
         {
             public int RequestResult;
             public int SequenceID;
@@ -76757,7 +76757,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class AgeVerificationBlockBlock : PacketBlock
+        public sealed class AgeVerificationBlockBlock : PacketBlock
         {
             public bool RegionDenyAgeUnverified;
 
@@ -76876,7 +76876,7 @@ namespace OpenMetaverse.Packets
     public sealed class ChildAgentUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public ulong RegionHandle;
             public uint ViewerCircuitCode;
@@ -77000,7 +77000,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GroupDataBlock : PacketBlock
+        public sealed class GroupDataBlock : PacketBlock
         {
             public UUID GroupID;
             public ulong GroupPowers;
@@ -77044,7 +77044,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class AnimationDataBlock : PacketBlock
+        public sealed class AnimationDataBlock : PacketBlock
         {
             public UUID Animation;
             public UUID ObjectID;
@@ -77085,7 +77085,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class GranterBlockBlock : PacketBlock
+        public sealed class GranterBlockBlock : PacketBlock
         {
             public UUID GranterID;
 
@@ -77123,7 +77123,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class NVPairDataBlock : PacketBlock
+        public sealed class NVPairDataBlock : PacketBlock
         {
             public byte[] NVPairs;
 
@@ -77168,7 +77168,7 @@ namespace OpenMetaverse.Packets
         }
 
         /// <exclude/>
-        public class VisualParamBlock : PacketBlock
+        public sealed class VisualParamBlock : PacketBlock
         {
             public byte ParamValue;
 
@@ -77525,7 +77525,7 @@ namespace OpenMetaverse.Packets
     public sealed class ChildAgentAlivePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public ulong RegionHandle;
             public uint ViewerCircuitCode;
@@ -77645,7 +77645,7 @@ namespace OpenMetaverse.Packets
     public sealed class ChildAgentPositionUpdatePacket : Packet
     {
         /// <exclude/>
-        public class AgentDataBlock : PacketBlock
+        public sealed class AgentDataBlock : PacketBlock
         {
             public ulong RegionHandle;
             public uint ViewerCircuitCode;
@@ -77789,7 +77789,7 @@ namespace OpenMetaverse.Packets
     public sealed class SoundTriggerPacket : Packet
     {
         /// <exclude/>
-        public class SoundDataBlock : PacketBlock
+        public sealed class SoundDataBlock : PacketBlock
         {
             public UUID SoundID;
             public UUID OwnerID;
