@@ -177,7 +177,7 @@ namespace GridProxy
     // A Proxy instance is only prepared to deal with one client at a time.
     public class Proxy
     {
-        private ProxyConfig proxyConfig;
+        public ProxyConfig proxyConfig;
         private string loginURI;
 
         /*
