@@ -520,8 +520,7 @@ namespace OpenMetaverse
         /// <param name="wearableItem">Wearable to be added to the outfit</param>
         public void AddToOutfit(InventoryItem wearableItem)
         {
-            List<InventoryItem> wearableItems = new List<InventoryItem>();
-            wearableItems.Add(wearableItem);
+            List<InventoryItem> wearableItems = new List<InventoryItem> { wearableItem };
             AddToOutfit(wearableItems);
         }
 
@@ -720,6 +719,23 @@ namespace OpenMetaverse
         {
             lock (Wearables)
                 return new Dictionary<WearableType, WearableData>(Wearables);
+        }
+
+        /// <summary>
+        /// Calls either <seealso cref="ReplaceOutfit"/> or
+        /// <seealso cref="AddToOutfit"/> depending on the value of
+        /// replaceItems
+        /// </summary>
+        /// <param name="wearableItems">List of wearable inventory items to add
+        /// to the outfit or become a new outfit</param>
+        /// <param name="replaceItems">True to replace existing items with the
+        /// new list of items, false to add these items to the existing outfit</param>
+        public void WearOutfit(List<InventoryItem> wearableItems, bool replaceItems)
+        {
+            if (replaceItems)
+                ReplaceOutfit(wearableItems);
+            else
+                AddToOutfit(wearableItems);
         }
 
         #endregion Publics Methods
