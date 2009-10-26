@@ -19,7 +19,7 @@ namespace OpenMetaverse.TestClient.Commands.Movement
             Description = "Fly the avatar toward the specified position for a maximum of seconds. Usage: FlyTo x y z [seconds]";
             Category = CommandCategory.Movement;
 
-            client.Objects.OnObjectUpdated += new ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
+            client.Objects.ObjectUpdated += Objects_OnObjectUpdated;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
@@ -54,10 +54,10 @@ namespace OpenMetaverse.TestClient.Commands.Movement
             return string.Format("flying to {0} in {1} seconds", target.ToString(), duration / 1000);
         }
 
-        private void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
+        private void Objects_OnObjectUpdated(object sender, ObjectUpdatedEventArgs e)
         {
             if (startTime == 0) return;
-            if (update.LocalID == Client.Self.LocalID)
+            if (e.Update.LocalID == Client.Self.LocalID)
             {
                 XYMovement();
                 ZMovement();

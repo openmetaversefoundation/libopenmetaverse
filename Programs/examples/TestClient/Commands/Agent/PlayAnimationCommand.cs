@@ -9,20 +9,12 @@ namespace OpenMetaverse.TestClient
 {
     public class PlayAnimationCommand : Command
     {        
-        private Dictionary<UUID, string> m_BuiltInAnimations = new Dictionary<UUID, string>();
+        private Dictionary<UUID, string> m_BuiltInAnimations = new Dictionary<UUID, string>(Animations.ToDictionary());
         public PlayAnimationCommand(TestClient testClient)
         {
             Name = "play";
             Description = "Attempts to play an animation";
-            Category = CommandCategory.Appearance;
-            
-            Type t = typeof(Animations);
-            FieldInfo[] f = t.GetFields(BindingFlags.Public | BindingFlags.Static);
-            foreach (FieldInfo field in f)
-            {
-                m_BuiltInAnimations.Add((UUID)field.GetValue(t), field.Name);                              
-            }
-            Console.WriteLine(f);
+            Category = CommandCategory.Appearance;                        
         }
 
         private string Usage()

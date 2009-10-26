@@ -65,7 +65,7 @@ namespace importprimscript
             }
 
             // Add callback handlers for asset uploads finishing. new prims spotted, and logging
-            Client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
+            Client.Objects.NewPrim += new EventHandler<PrimEventArgs>(Objects_OnNewPrim);
             Logger.OnLogMessage += new Logger.LogCallback(Client_OnLogMessage);
 
             // Optimize the connection for our purposes
@@ -239,8 +239,9 @@ namespace importprimscript
             return newAssetID;
         }
 
-        static void Objects_OnNewPrim(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
+        static void Objects_OnNewPrim(object sender, PrimEventArgs e)
         {
+            Primitive prim = e.Prim;
             if (CurrentSculpt != null && (prim.Flags & PrimFlags.CreateSelected) != 0 &&
                 !RezzedPrims.Contains(prim.LocalID))
             {

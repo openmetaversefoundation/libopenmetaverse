@@ -14,7 +14,7 @@ namespace OpenMetaverse.TestClient
 
         public FindObjectsCommand(TestClient testClient)
         {
-            testClient.Objects.OnObjectProperties += new ObjectManager.ObjectPropertiesCallback(Objects_OnObjectProperties);
+            testClient.Objects.ObjectProperties += new EventHandler<ObjectPropertiesEventArgs>(Objects_OnObjectProperties);
 
             Name = "findobjects";
             Description = "Finds all objects, which name contains search-string. " +
@@ -83,16 +83,16 @@ namespace OpenMetaverse.TestClient
             return AllPropertiesReceived.WaitOne(2000 + msPerRequest * objects.Count, false);
         }
 
-        void Objects_OnObjectProperties(Simulator simulator, Primitive.ObjectProperties properties)
+        void Objects_OnObjectProperties(object sender, ObjectPropertiesEventArgs e)
         {
             lock (PrimsWaiting)
             {
                 Primitive prim;
-                if (PrimsWaiting.TryGetValue(properties.ObjectID, out prim))
+                if (PrimsWaiting.TryGetValue(e.Properties.ObjectID, out prim))
                 {
-                    prim.Properties = properties;
+                    prim.Properties = e.Properties;
                 }
-                PrimsWaiting.Remove(properties.ObjectID);
+                PrimsWaiting.Remove(e.Properties.ObjectID);
 
                 if (PrimsWaiting.Count == 0)
                     AllPropertiesReceived.Set();

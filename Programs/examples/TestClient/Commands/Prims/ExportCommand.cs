@@ -21,14 +21,15 @@ namespace OpenMetaverse.TestClient
 
         public ExportCommand(TestClient testClient)
         {
-            testClient.Objects.OnObjectPropertiesFamily += new ObjectManager.ObjectPropertiesFamilyCallback(Objects_OnObjectPropertiesFamily);
-            testClient.Objects.OnObjectProperties += new ObjectManager.ObjectPropertiesCallback(Objects_OnObjectProperties);
+            testClient.Objects.ObjectPropertiesFamily += new EventHandler<ObjectPropertiesFamilyEventArgs>(Objects_OnObjectPropertiesFamily);
+
+            testClient.Objects.ObjectProperties += new EventHandler<ObjectPropertiesEventArgs>(Objects_OnObjectProperties);
             testClient.Avatars.ViewerEffectPointAt += new EventHandler<ViewerEffectPointAtEventArgs>(Avatars_ViewerEffectPointAt);
 
             Name = "export";
             Description = "Exports an object to an xml file. Usage: export uuid outputfile.xml";
             Category = CommandCategory.Objects;
-        }
+        }        
 
         void Avatars_ViewerEffectPointAt(object sender, ViewerEffectPointAtEventArgs e)
         {
@@ -220,20 +221,19 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Objects_OnObjectPropertiesFamily(Simulator simulator, Primitive.ObjectProperties properties,
-            ReportType type)
+        void Objects_OnObjectPropertiesFamily(object sender, ObjectPropertiesFamilyEventArgs e)
         {
             Properties = new Primitive.ObjectProperties();
-            Properties.SetFamilyProperties(properties);
+            Properties.SetFamilyProperties(e.Properties);
             GotPermissions = true;
             GotPermissionsEvent.Set();
         }
 
-        void Objects_OnObjectProperties(Simulator simulator, Primitive.ObjectProperties properties)
+        void Objects_OnObjectProperties(object sender, ObjectPropertiesEventArgs e)
         {
             lock (PrimsWaiting)
             {
-                PrimsWaiting.Remove(properties.ObjectID);
+                PrimsWaiting.Remove(e.Properties.ObjectID);
 
                 if (PrimsWaiting.Count == 0)
                     AllPropertiesReceived.Set();

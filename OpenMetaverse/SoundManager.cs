@@ -81,7 +81,7 @@ namespace OpenMetaverse
         private readonly object m_AttachedSoundGainChangeLock = new object();
 
         /// <summary>Raised when the simulator sends us data containing
-        /// ...</summary></summary>
+        /// ...</summary>
         public event EventHandler<AttachedSoundGainChangeEventArgs> AttachedSoundGainChange
         {
             add { lock (m_AttachedSoundGainChangeLock) { m_AttachedSoundGainChange += value; } }
@@ -91,7 +91,7 @@ namespace OpenMetaverse
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<SoundTriggerEventArgs> m_SoundTrigger;
 
-        ///<summary>Raises the SoundTrigger Event
+        ///<summary>Raises the SoundTrigger Event</summary>
         /// <param name="e">A SoundTriggerEventArgs object containing
         /// the data sent from the simulator</param>
         protected virtual void OnSoundTrigger(SoundTriggerEventArgs e)

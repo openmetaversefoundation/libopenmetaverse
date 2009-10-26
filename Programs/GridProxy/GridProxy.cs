@@ -380,7 +380,7 @@ namespace GridProxy
                         OpenMetaverse.Logger.Log("Login Failed", Helpers.LogLevel.Error, e);
                         break;
                     }
-                    catch (ObjectDisposedException e)
+                    catch (ObjectDisposedException)
                     {
                         break;
                     }

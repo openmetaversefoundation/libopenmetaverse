@@ -13,8 +13,8 @@ namespace OpenMetaverse.TestClient
         private int PermCount;
 
         public ChangePermsCommand(TestClient testClient)
-        {
-            testClient.Objects.OnObjectProperties += new ObjectManager.ObjectPropertiesCallback(Objects_OnObjectProperties);
+        {            
+            testClient.Objects.ObjectProperties += new EventHandler<ObjectPropertiesEventArgs>(Objects_OnObjectProperties);
 
             Name = "changeperms";
             Description = "Recursively changes all of the permissions for child and task inventory objects. Usage prim-uuid [copy] [mod] [xfer]";
@@ -152,11 +152,11 @@ namespace OpenMetaverse.TestClient
             return "Set permissions to " + Perms.ToString() + " on " + localIDs.Count + " objects and " + taskItems + " inventory items";
         }
 
-        void Objects_OnObjectProperties(Simulator simulator, Primitive.ObjectProperties properties)
+        void Objects_OnObjectProperties(object sender, ObjectPropertiesEventArgs e)
         {
             if (PermsSent)
             {
-                if (Objects.ContainsKey(properties.ObjectID))
+                if (Objects.ContainsKey(e.Properties.ObjectID))
                 {
                     // FIXME: Confirm the current operation against properties.Permissions.NextOwnerMask
 

@@ -1129,6 +1129,23 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+
+    public class WebFetchInventoryDescendentsMessage : IMessage
+    {        
+        #region IMessage Members
+
+        public OSDMap Serialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+    }
     #endregion
 
     #region Agent Messages

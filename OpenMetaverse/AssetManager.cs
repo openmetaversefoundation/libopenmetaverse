@@ -904,7 +904,7 @@ namespace OpenMetaverse
         /// </example>
         public void RequestImage(UUID textureID, ImageType imageType, float priority, int discardLevel, 
             uint packetStart, TextureDownloadCallback callback, bool progress)
-        {
+        {            
             Texture.RequestTexture(textureID, imageType, priority, discardLevel, packetStart, callback, progress);
         }
 

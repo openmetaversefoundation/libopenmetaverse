@@ -57,21 +57,22 @@ namespace OpenMetaverse.TestClient
                     }
 
                     AutoResetEvent propsEvent = new AutoResetEvent(false);
-                    ObjectManager.ObjectPropertiesCallback propsCallback =
-                        delegate(Simulator simulator, Primitive.ObjectProperties props)
+                    EventHandler<ObjectPropertiesEventArgs> propsCallback =
+                        delegate(object sender, ObjectPropertiesEventArgs e)
                         {
                             Logger.Log(String.Format(
                                 "Category: {0}\nFolderID: {1}\nFromTaskID: {2}\nInventorySerial: {3}\nItemID: {4}\nCreationDate: {5}",
-                                props.Category, props.FolderID, props.FromTaskID, props.InventorySerial, props.ItemID, props.CreationDate), Helpers.LogLevel.Info);
+                                e.Properties.Category, e.Properties.FolderID, e.Properties.FromTaskID, e.Properties.InventorySerial, 
+                                e.Properties.ItemID, e.Properties.CreationDate), Helpers.LogLevel.Info);
                             propsEvent.Set();
                         };
 
-                    Client.Objects.OnObjectProperties += propsCallback;
+                    Client.Objects.ObjectProperties += propsCallback;
 
                     Client.Objects.SelectObject(Client.Network.CurrentSim, target.LocalID, true);
 
                     propsEvent.WaitOne(1000 * 10, false);
-                    Client.Objects.OnObjectProperties -= propsCallback;
+                    Client.Objects.ObjectProperties -= propsCallback;
 
                     return "Done.";
                 }

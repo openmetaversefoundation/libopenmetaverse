@@ -46,8 +46,8 @@ namespace OpenMetaverse.TestClient
             Name = "import";
             Description = "Import prims from an exported xml file. Usage: import inputfile.xml [usegroup]";
             Category = CommandCategory.Objects;
-
-            testClient.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
+            
+            testClient.Objects.NewPrim += Objects_OnNewPrim;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
@@ -182,8 +182,10 @@ namespace OpenMetaverse.TestClient
             return "Import complete.";
         }
 
-        void Objects_OnNewPrim(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
+        void Objects_OnNewPrim(object sender, PrimEventArgs e)
         {
+            Primitive prim = e.Prim;
+
             if ((prim.Flags & PrimFlags.CreateSelected) == 0)
                 return; // We received an update for an object we didn't create
 
@@ -197,23 +199,23 @@ namespace OpenMetaverse.TestClient
                     {
                         Console.WriteLine("Setting properties for " + prim.LocalID);
                         // TODO: Is there a way to set all of this at once, and update more ObjectProperties stuff?
-                        Client.Objects.SetPosition(simulator, prim.LocalID, currentPosition);
-                        Client.Objects.SetTextures(simulator, prim.LocalID, currentPrim.Textures);
+                        Client.Objects.SetPosition(e.Simulator, prim.LocalID, currentPosition);
+                        Client.Objects.SetTextures(e.Simulator, prim.LocalID, currentPrim.Textures);
 
                         if (currentPrim.Light.Intensity > 0) {
-                            Client.Objects.SetLight(simulator, prim.LocalID, currentPrim.Light);
+                            Client.Objects.SetLight(e.Simulator, prim.LocalID, currentPrim.Light);
                         }
 
-                        Client.Objects.SetFlexible(simulator, prim.LocalID, currentPrim.Flexible);
+                        Client.Objects.SetFlexible(e.Simulator, prim.LocalID, currentPrim.Flexible);
  
                         if (currentPrim.Sculpt.SculptTexture != UUID.Zero) {
-                            Client.Objects.SetSculpt(simulator, prim.LocalID, currentPrim.Sculpt);
+                            Client.Objects.SetSculpt(e.Simulator, prim.LocalID, currentPrim.Sculpt);
                         }
 
                         if (!String.IsNullOrEmpty(currentPrim.Properties.Name))
-                            Client.Objects.SetName(simulator, prim.LocalID, currentPrim.Properties.Name);
+                            Client.Objects.SetName(e.Simulator, prim.LocalID, currentPrim.Properties.Name);
                         if (!String.IsNullOrEmpty(currentPrim.Properties.Description))
-                            Client.Objects.SetDescription(simulator, prim.LocalID, currentPrim.Properties.Description);
+                            Client.Objects.SetDescription(e.Simulator, prim.LocalID, currentPrim.Properties.Description);
 
                         primsCreated.Add(prim);
                         primDone.Set();

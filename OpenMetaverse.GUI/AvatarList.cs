@@ -157,8 +157,8 @@ namespace OpenMetaverse.GUI
             _Client.Avatars.UUIDNameReply += new EventHandler<UUIDNameReplyEventArgs>(Avatars_UUIDNameReply);
             _Client.Grid.CoarseLocationUpdate += Grid_CoarseLocationUpdate;
             _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
-            _Client.Objects.OnNewAvatar += new ObjectManager.NewAvatarCallback(Objects_OnNewAvatar);
-            _Client.Objects.OnObjectUpdated += new ObjectManager.ObjectUpdatedCallback(Objects_OnObjectUpdated);
+            _Client.Objects.NewAvatar += Objects_OnNewAvatar;            
+            _Client.Objects.ObjectUpdated += Objects_OnObjectUpdated;
         }
 
         void Avatars_UUIDNameReply(object sender, UUIDNameReplyEventArgs e)
@@ -446,19 +446,19 @@ namespace OpenMetaverse.GUI
             ClearItems();
         }
 
-        void Objects_OnNewAvatar(Simulator simulator, Avatar avatar, ulong regionHandle, ushort timeDilation)
+        void Objects_OnNewAvatar(object sender, NewAvatarEventArgs e)
         {
-            UpdateAvatar(avatar);
+            UpdateAvatar(e.Avatar);
         }
 
-        void Objects_OnObjectUpdated(Simulator simulator, ObjectUpdate update, ulong regionHandle, ushort timeDilation)
+        void Objects_OnObjectUpdated(object sender, ObjectUpdatedEventArgs e)
         {
             lock (_TrackedAvatars)
             {
-                if (_TrackedAvatars.ContainsKey(update.LocalID))
+                if (_TrackedAvatars.ContainsKey(e.Update.LocalID))
                 {
                     Avatar av;
-                    if (simulator.ObjectsAvatars.TryGetValue(update.LocalID, out av))
+                    if (e.Simulator.ObjectsAvatars.TryGetValue(e.Update.LocalID, out av))
                         UpdateAvatar(av);
                 }
             }

@@ -160,9 +160,8 @@ namespace PrimWorkshop
             Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
             Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
             Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
-            Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);
-            Client.Objects.OnNewPrim += new ObjectManager.NewPrimCallback(Objects_OnNewPrim);
-            Client.Objects.OnObjectKilled += new ObjectManager.KillObjectCallback(Objects_OnObjectKilled);
+            Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);            
+            Client.Objects.NewPrim += Objects_OnNewPrim;
             Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
             Client.Parcels.SimParcelsDownloaded += new EventHandler<SimParcelsDownloadedEventArgs>(Parcels_SimParcelsDownloaded);
 
@@ -189,6 +188,11 @@ namespace PrimWorkshop
             float[] specularLight = { 0.5f, 0.5f, 0.5f, 0.0f };
             Gl.glLightfv(Gl.GL_LIGHT0, Gl.GL_SPECULAR, specularLight);
             */
+        }
+
+        void Objects_NewPrim(object sender, PrimEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         void Parcels_SimParcelsDownloaded(object sender, SimParcelsDownloadedEventArgs e)
@@ -940,8 +944,9 @@ namespace PrimWorkshop
             }
         }
 
-        private void Objects_OnNewPrim(Simulator simulator, Primitive prim, ulong regionHandle, ushort timeDilation)
+        private void Objects_OnNewPrim(object sender, PrimEventArgs e)
         {
+            Primitive prim = e.Prim;
             if (prim.PrimData.PCode == PCode.Grass || prim.PrimData.PCode == PCode.Tree || prim.PrimData.PCode == PCode.NewTree)
             {
                 lock (RenderFoliageList)
@@ -1005,12 +1010,7 @@ namespace PrimWorkshop
 
             lock (RenderPrimList) RenderPrimList[prim.LocalID] = render;
         }
-
-        private void Objects_OnObjectKilled(Simulator simulator, uint objectID)
-        {
-            //
-        }
-     
+             
         private void Terrain_OnLandPatch(Simulator simulator, int x, int y, int width, float[] data)
         {
             if (Client != null && Client.Network.CurrentSim == simulator)

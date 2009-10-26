@@ -85,6 +85,7 @@ namespace OpenMetaverse.Messages
                 case "AgentDropGroup": message = new AgentDropGroupMessage(); break;
                 case "ForceCloseChatterBoxSession": message = new ForceCloseChatterBoxSessionMessage(); break;
                 case "UploadBakedTexture": message = new UploadBakedTextureMessage(); break;
+                case "WebFetchInventoryDescendents": message = new WebFetchInventoryDescendentsMessage(); break;
                 //case "ProductInfoRequest": message = new ProductInfoRequestMessage(); break;
 
                 // Capabilities TODO:
