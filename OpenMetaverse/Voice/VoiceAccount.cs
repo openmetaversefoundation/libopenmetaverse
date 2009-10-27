@@ -37,6 +37,7 @@ namespace OpenMetaverse.Voice
             sb.Append(VoiceGateway.MakeXML("AccountURI", AccountURI));
             sb.Append(VoiceGateway.MakeXML("ParticipantPropertyFrequency", ParticipantPropertyFrequency.ToString()));
             sb.Append(VoiceGateway.MakeXML("EnableBuddiesAndPresence", EnableBuddiesAndPresence ? "true" : "false"));
+            sb.Append(VoiceGateway.MakeXML("BuddyManagementMode", "Application"));
             return Request("Account.Login.1", sb.ToString());
         }
 

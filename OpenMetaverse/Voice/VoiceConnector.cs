@@ -25,6 +25,7 @@ namespace OpenMetaverse.Voice
             sb.Append(VoiceGateway.MakeXML("AccountManagementServer", AccountManagementServer));
             sb.Append(VoiceGateway.MakeXML("MinimumPort", MinimumPort.ToString()));
             sb.Append(VoiceGateway.MakeXML("MaximumPort", MaximumPort.ToString()));
+            sb.Append(VoiceGateway.MakeXML("Mode", "Normal"));
             sb.Append("<Logging>");
             sb.Append(VoiceGateway.MakeXML("Enabled", Logging.Enabled ? "true" : "false"));
             sb.Append(VoiceGateway.MakeXML("Folder", Logging.Folder));

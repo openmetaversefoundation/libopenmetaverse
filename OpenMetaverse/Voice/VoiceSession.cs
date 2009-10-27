@@ -34,10 +34,17 @@ namespace OpenMetaverse.Voice
             sb.Append(VoiceGateway.MakeXML("AccountHandle", AccountHandle));
             sb.Append(VoiceGateway.MakeXML("URI", URI));
             sb.Append(VoiceGateway.MakeXML("Name", Name));
-            sb.Append(VoiceGateway.MakeXML("Password", Password));
+            if (Password != null && Password != "")
+            {
+                sb.Append(VoiceGateway.MakeXML("Password", Password));
+                sb.Append(VoiceGateway.MakeXML("PasswordHashAlgorithm", PasswordHashAlgorithm));
+            }
+            sb.Append(VoiceGateway.MakeXML("ConnectAudio", JoinAudio ? "true" : "false"));
+            sb.Append(VoiceGateway.MakeXML("ConnectText", JoinText ? "true" : "false"));
             sb.Append(VoiceGateway.MakeXML("JoinAudio", JoinAudio ? "true" : "false"));
             sb.Append(VoiceGateway.MakeXML("JoinText", JoinText ? "true" : "false"));
-            sb.Append(VoiceGateway.MakeXML("PasswordHashAlgorithm", PasswordHashAlgorithm));
+            sb.Append(VoiceGateway.MakeXML("VoiceFontID", "0"));
+
             return Request("Session.Create.1", sb.ToString());
         }
 

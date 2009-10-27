@@ -99,13 +99,45 @@ namespace OpenMetaverse.Voice
         /// <summary>Response to Session.Terminate request</summary>
         public delegate void SessionTerminateResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
         /// <summary>Response to Session.SetParticipantVolumeForMe request</summary>
-        public delegate void SessionSetParticipantVolumeForMeResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
         public delegate void SessionNewEventCallback(string AccountHandle, string SessionHandle, string URI, bool IsChannel, string Name, string AudioMedia);
+        public delegate void SessionMediaEventCallback(string SessionHandle, bool HasText, bool HasAudio, bool HasVideo, bool Terminated);
         public delegate void SessionStateChangeEventCallback(string SessionHandle, int StatusCode, string StatusString, SessionState State, string URI, bool IsChannel, string ChannelName);
+        // Participants
+        public delegate void SessionParticipantAddedEventCallback(
+                string SessionGroupHandle,
+                string SessionHandle,
+                string ParticipantUri,
+                string AccountName,
+                string DisplayName,
+                ParticipantType type,
+                string Application );
+        public delegate void SessionParticipantRemovedEventCallback(
+                string SessionGroupHandle,
+                string SessionHandle,
+                string ParticipantUri,
+                string AccountName,
+                string Reason );
         public delegate void SessionParticipantStateChangeEventCallback(string SessionHandle, int StatusCode, string StatusString, ParticipantState State, string ParticipantURI, string AccountName, string DisplayName, ParticipantType ParticipantType);
         public delegate void SessionParticipantPropertiesEventCallback(string SessionHandle, string ParticipantURI, bool IsLocallyMuted, bool IsModeratorMuted, bool IsSpeaking, int Volume, float Energy);
-        public delegate void SessionMediaEventCallback(string SessionHandle, bool HasText, bool HasAudio, bool HasVideo, bool Terminated);
+        public delegate void SessionParticipantUpdatedEventCallback(string sessionHandle, string URI, bool isMuted, bool isSpeaking, int volume, float energy);
+        public delegate void SessionSetParticipantVolumeForMeResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
+        public delegate void SessionSetPositionResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
 
+        public delegate void SessionAddedEventCallback(string sessionGroupHandle, string sessionHandle, string URI, bool isChannel, bool isIncoming);
+        public delegate void SessionRemovedEventCallback(
+            string SessionGroupHandle,
+            string SessionHandle,
+            string Uri);
+        public delegate void SessionUpdatedEventCallback(
+            string SessionGroupHandle,
+            string SessionHandle,
+            string Uri,
+            bool isMuted,
+            int Volume,
+            bool TransmitEnabled,
+            bool IsFocused );
+ 
+        public delegate void SessionGroupAddedEventCallback( string acctHandle, string sessionGroupHandle, string type );
         #endregion Session Delegates
 
         #region Connector Delegates
@@ -163,6 +195,7 @@ namespace OpenMetaverse.Voice
         public event SessionTerminateResponseCallback OnSessionTerminateResponse;
         /// <summary>Response to Session.SetParticipantVolumeForMe request</summary>
         public event SessionSetParticipantVolumeForMeResponseCallback OnSessionSetParticipantVolumeForMeResponse;
+        public event SessionSetPositionResponseCallback OnSessionSetPositionResponse;
         /// <summary>Sent when an incoming session occurs</summary>
         public event SessionNewEventCallback OnSessionNewEvent;
         /// <summary>Sent for specific Session state changes (connected, disconnected)</summary>
@@ -171,6 +204,13 @@ namespace OpenMetaverse.Voice
         public event SessionParticipantStateChangeEventCallback OnSessionParticipantStateChangeEvent;
         /// <summary>Sent for specific Participant Property changes (IsSpeaking, Volume, Energy, etc.)</summary>
         public event SessionParticipantPropertiesEventCallback OnSessionParticipantPropertiesEvent;
+        public event SessionParticipantUpdatedEventCallback OnSessionParticipantUpdatedEvent;
+        public event SessionParticipantAddedEventCallback OnSessionParticipantAddedEvent;
+        public event SessionParticipantRemovedEventCallback OnSessionParticipantRemovedEvent;
+        public event SessionGroupAddedEventCallback OnSessionGroupAddedEvent;
+        public event SessionAddedEventCallback OnSessionAddedEvent;
+        public event SessionRemovedEventCallback OnSessionRemovedEvent;
+        public event SessionUpdatedEventCallback OnSessionUpdatedEvent;
         /// <summary></summary>
         public event SessionMediaEventCallback OnSessionMediaEvent;
 
@@ -239,16 +279,22 @@ namespace OpenMetaverse.Voice
         {
             [XmlAttribute("type")] public string Type;
             public string AccountHandle;
+            public string Application;
             public string StatusCode;
             public string StatusString;
             public string State;
             public string SessionHandle;
+            public string SessionGroupHandle;
             public string URI;
+            public string Uri;  // Yes, they send it with both capitalizations
             public string IsChannel;
+            public string IsIncoming;
+            public string Incoming;
+            public string IsMuted;
             public string Name;
             public string AudioMedia;
             public string ChannelName;
-            public string ParticipantURI;
+            public string ParticipantUri;
             public string AccountName;
             public string DisplayName;
             public string ParticipantType;
@@ -265,6 +311,9 @@ namespace OpenMetaverse.Voice
             public string HasAudio;
             public string HasVideo;
             public string Terminated;
+            public string Reason;
+            public string TransmitEnabled;
+            public string IsFocused;
         }
 
         [XmlRoot("Response")]
