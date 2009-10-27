@@ -179,7 +179,7 @@ namespace OpenMetaverse
         private readonly object m_ObjectUpdateLock = new object();
 
         /// <summary>Raised when the simulator sends us data containing
-        /// A Primitive or Foliage updates</summary>
+        /// A Primitive, Foliage or Attachment</summary>
         public event EventHandler<PrimEventArgs> ObjectUpdate
         {
             add { lock (m_ObjectUpdateLock) { m_ObjectUpdate += value; } }
@@ -281,31 +281,7 @@ namespace OpenMetaverse
             add { lock (m_AvatarUpdateLock) { m_AvatarUpdate += value; } }
             remove { lock (m_AvatarUpdateLock) { m_AvatarUpdate -= value; } }
         }
-             
-        ///// <summary>The event subscribers, null of no subscribers</summary>
-        //private EventHandler<ObjectMovementUpdatedEventArgs> m_ObjectMovementUpdated;
-
-        /////<summary>Raises the ObjectUpdated Event</summary>
-        ///// <param name="e">A ObjectUpdatedEventArgs object containing
-        ///// the data sent from the simulator</param>
-        //protected virtual void OnObjectMovementUpdated(ObjectMovementUpdatedEventArgs e)
-        //{
-        //    EventHandler<ObjectMovementUpdatedEventArgs> handler = m_ObjectMovementUpdated;
-        //    if (handler != null)
-        //        handler(this, e);
-        //}
-
-        ///// <summary>Thread sync lock object</summary>
-        //private readonly object m_ObjectUpdatedLock = new object();
-
-        ///// <summary>Raised when the simulator sends us data containing
-        ///// an object that has moved</summary>
-        //public event EventHandler<ObjectMovementUpdatedEventArgs> ObjectMovementUpdated
-        //{
-        //    add { lock (m_ObjectUpdatedLock) { m_ObjectMovementUpdated += value; } }
-        //    remove { lock (m_ObjectUpdatedLock) { m_ObjectMovementUpdated -= value; } }
-        //}
-        
+                     
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<TerseObjectUpdateEventArgs> m_TerseObjectUpdate;
 
@@ -2947,39 +2923,28 @@ namespace OpenMetaverse
     }
     #region EventArgs classes
     
-    /// <summary>Provides data for the <see cref="ObjectManager.ObjectUpdate"/> and <see cref="ObjectManager.AttachmentUpdate"/> events</summary>
+    /// <summary>Provides data for the <see cref="ObjectManager.ObjectUpdate"/> event</summary>
     /// <remarks><para>The <see cref="ObjectManager.ObjectUpdate"/> event occurs when the simulator sends
-    /// an <see cref="ObjectUpdatePacket"/> containing a Primitive or Foliage data</para>
-    /// <para>The <see cref="ObjectManager.AttachmentUpdate"/> event occurs when the simulator sends
-    /// an <see cref="ObjectUpdatePacket"/> containing a Primitive data which is attached to an avatar</para>
+    /// an <see cref="ObjectUpdatePacket"/> containing a Primitive, Foliage or Attachment data</para>
     /// <para>Note 1: The <see cref="ObjectManager.ObjectUpdate"/> event will not be raised when the object is an Avatar</para>
     /// <para>Note 2: It is possible for the <see cref="ObjectManager.ObjectUpdate"/> or <see cref="ObjectManager.AttachmentUpdate"/> to be 
     /// raised twice for the same object if for example the primitive moved to a new simulator, then returned to the current simulator or
     /// if an Avatar crosses the border into a new simulator and returns to the current simulator</para>
     /// </remarks>
     /// <example>
-    /// The following code example uses the <see cref="PrimEventArgs.Prim"/> and <see cref="PrimEventArgs.Simulator"/>
+    /// The following code example uses the <see cref="PrimEventArgs.Prim"/>, <see cref="PrimEventArgs.Simulator"/>, and <see cref="PrimEventArgs.IsAttachment"/>
     /// properties to display new Primitives and Attachments on the <see cref="Console"/> window.
     /// <code>
     ///     // Subscribe to the event that gives us new prims and foliage
     ///     Client.Objects.ObjectUpdate += Objects_ObjectUpdate;
     ///     
-    ///     // Subscribe to the event that gives us new Attachments worn
-    ///     // by yours or another agent
-    ///     Client.Objects.AttachmentUpdate += Objects_AttachmentUpdate;
-    ///     
-    ///     private void Objects_AttachmentUpdate(object sender, PrimEventArgs e)
-    ///     {
-    ///         Console.WriteLine("Attachment {0} {1} in {2}", e.Prim.ID, e.Prim.LocalID, e.Simulator.Name);
-    ///     }
     ///
     ///     private void Objects_ObjectUpdate(object sender, PrimEventArgs e)
     ///     {
-    ///         Console.WriteLine("Primitive {0} {1} in {2}", e.Prim.ID, e.Prim.LocalID, e.Simulator.Name);
+    ///         Console.WriteLine("Primitive {0} {1} in {2} is an attachment {3}", e.Prim.ID, e.Prim.LocalID, e.Simulator.Name, e.IsAttachment);
     ///     }
     /// </code>
     /// </example>
-    /// <seealso cref="ObjectManager.AttachmentUpdate"/>
     /// <seealso cref="ObjectManager.AvatarUpdate"/>
     /// <seealso cref="AvatarUpdateEventArgs"/>
     public class PrimEventArgs : EventArgs
