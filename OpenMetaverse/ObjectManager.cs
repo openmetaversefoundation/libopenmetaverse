@@ -185,31 +185,7 @@ namespace OpenMetaverse
             add { lock (m_ObjectUpdateLock) { m_ObjectUpdate += value; } }
             remove { lock (m_ObjectUpdateLock) { m_ObjectUpdate -= value; } }
         }
-       
-        /// <summary>The event subscribers, null of no subscribers</summary>
-        private EventHandler<PrimEventArgs> m_AttachmentUpdate;
-
-        ///<summary>Raises the AttachmentUpdate Event</summary>
-        /// <param name="e">A AttachmentUpdateEventArgs object containing
-        /// the data sent from the simulator</param>
-        protected virtual void OnAttachmentUpdate(PrimEventArgs e)
-        {
-            EventHandler<PrimEventArgs> handler = m_AttachmentUpdate;
-            if (handler != null)
-                handler(this, e);
-        }
-
-        /// <summary>Thread sync lock object</summary>
-        private readonly object m_AttachmentUpdateLock = new object();
-
-        /// <summary>Raised when the simulator sends us data containing
-        /// a new primitive that is an Attachment</summary>
-        public event EventHandler<PrimEventArgs> AttachmentUpdate
-        {
-            add { lock (m_AttachmentUpdateLock) { m_AttachmentUpdate += value; } }
-            remove { lock (m_AttachmentUpdateLock) { m_AttachmentUpdate -= value; } }
-        }
-        
+                     
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<ObjectPropertiesEventArgs> m_ObjectProperties;
 
@@ -1880,10 +1856,7 @@ namespace OpenMetaverse
                         prim.AngularVelocity = objectupdate.AngularVelocity;
                         #endregion
 
-                        if (attachment)
-                            OnAttachmentUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation));
-                        else
-                            OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation));      
+                        OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, attachment));                        
 
                         break;
                     #endregion Prim and Foliage
@@ -2352,11 +2325,11 @@ namespace OpenMetaverse
 
                     if ((flags & CompressedFlags.HasNameValues) != 0 && prim.ParentID != 0)
                     {
-                        OnAttachmentUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation));
+                        OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, true));
                     }
                     else
                     {
-                        OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation));
+                        OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, false));
                     }
 
                     #endregion
@@ -3012,6 +2985,7 @@ namespace OpenMetaverse
     public class PrimEventArgs : EventArgs
     {
         private readonly Simulator m_Simulator;
+        private readonly bool m_IsAttachment;
         private readonly Primitive m_Prim;
         private readonly ushort m_TimeDilation;
 
@@ -3019,6 +2993,7 @@ namespace OpenMetaverse
         public Simulator Simulator { get { return m_Simulator; } }
         /// <summary>Get the primitive details</summary>
         public Primitive Prim { get { return m_Prim; } }
+        public bool IsAttachment { get { return m_IsAttachment; } }
         /// <summary>Get the simulator Time Dilation</summary>
         public ushort TimeDilation { get { return m_TimeDilation; } } 
 
@@ -3027,10 +3002,12 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">The simulator the object originated from</param>
         /// <param name="prim">The Primitive</param>
+        /// <param name="isAttachment">true of the primitive represents an attachment to an agent</param>
         /// <param name="timeDilation">The simulator time dilation</param>
-        public PrimEventArgs(Simulator simulator, Primitive prim, ushort timeDilation)
+        public PrimEventArgs(Simulator simulator, Primitive prim, ushort timeDilation, bool isAttachment)
         {
             this.m_Simulator = simulator;
+            this.m_IsAttachment = IsAttachment;
             this.m_Prim = prim;
             this.m_TimeDilation = timeDilation;
         }
