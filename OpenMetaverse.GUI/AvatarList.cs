@@ -157,8 +157,9 @@ namespace OpenMetaverse.GUI
             _Client.Avatars.UUIDNameReply += new EventHandler<UUIDNameReplyEventArgs>(Avatars_UUIDNameReply);
             _Client.Grid.CoarseLocationUpdate += Grid_CoarseLocationUpdate;
             _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
-            _Client.Objects.NewAvatar += Objects_OnNewAvatar;            
-            _Client.Objects.ObjectUpdated += Objects_OnObjectUpdated;
+            _Client.Objects.AvatarUpdate += Objects_OnNewAvatar;
+            _Client.Objects.TerseObjectUpdate += Objects_OnObjectUpdated;
+            
         }
 
         void Avatars_UUIDNameReply(object sender, UUIDNameReplyEventArgs e)
@@ -446,12 +447,12 @@ namespace OpenMetaverse.GUI
             ClearItems();
         }
 
-        void Objects_OnNewAvatar(object sender, NewAvatarEventArgs e)
+        void Objects_OnNewAvatar(object sender, AvatarUpdateEventArgs e)
         {
             UpdateAvatar(e.Avatar);
         }
 
-        void Objects_OnObjectUpdated(object sender, ObjectUpdatedEventArgs e)
+        void Objects_OnObjectUpdated(object sender, TerseObjectUpdateEventArgs e)
         {
             lock (_TrackedAvatars)
             {

@@ -65,7 +65,7 @@ namespace importprimscript
             }
 
             // Add callback handlers for asset uploads finishing. new prims spotted, and logging
-            Client.Objects.NewPrim += new EventHandler<PrimEventArgs>(Objects_OnNewPrim);
+            Client.Objects.ObjectUpdate += new EventHandler<PrimEventArgs>(Objects_OnNewPrim);
             Logger.OnLogMessage += new Logger.LogCallback(Client_OnLogMessage);
 
             // Optimize the connection for our purposes

@@ -47,7 +47,7 @@ namespace OpenMetaverse.TestClient
             Description = "Import prims from an exported xml file. Usage: import inputfile.xml [usegroup]";
             Category = CommandCategory.Objects;
             
-            testClient.Objects.NewPrim += Objects_OnNewPrim;
+            testClient.Objects.ObjectUpdate += Objects_OnNewPrim;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)

@@ -1259,7 +1259,7 @@ namespace OpenMetaverse
             TextColor = prim.TextColor;
             MediaURL = prim.MediaURL;
             Joint = prim.Joint;
-            JointPivot = prim.JointPivot;
+            JointPivot = prim.JointPivot;            
             JointAxisOrAnchor = prim.JointAxisOrAnchor;
             if (prim.NameValues != null)
             {

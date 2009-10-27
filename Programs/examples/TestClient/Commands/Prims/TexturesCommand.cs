@@ -18,8 +18,8 @@ namespace OpenMetaverse.TestClient
             Description = "Turns automatic texture downloading on or off. Usage: textures [on/off]";
             Category = CommandCategory.Objects;
             
-            testClient.Objects.NewPrim += new EventHandler<PrimEventArgs>(Objects_OnNewPrim);            
-            testClient.Objects.NewAvatar += Objects_OnNewAvatar;
+            testClient.Objects.ObjectUpdate += new EventHandler<PrimEventArgs>(Objects_OnNewPrim);            
+            testClient.Objects.AvatarUpdate += Objects_OnNewAvatar;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
@@ -43,7 +43,7 @@ namespace OpenMetaverse.TestClient
             }
         }
 
-        void Objects_OnNewAvatar(object sender, NewAvatarEventArgs e)
+        void Objects_OnNewAvatar(object sender, AvatarUpdateEventArgs e)
         {
             Avatar avatar = e.Avatar;
             if (enabled)

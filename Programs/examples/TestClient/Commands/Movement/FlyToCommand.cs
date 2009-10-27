@@ -13,13 +13,12 @@ namespace OpenMetaverse.TestClient.Commands.Movement
         int startTime = 0;
         int duration = 10000;
 
-        public FlyToCommand(TestClient client)
+        public FlyToCommand(TestClient Client)
         {
             Name = "FlyTo";
             Description = "Fly the avatar toward the specified position for a maximum of seconds. Usage: FlyTo x y z [seconds]";
             Category = CommandCategory.Movement;
-
-            client.Objects.ObjectUpdated += Objects_OnObjectUpdated;
+            Client.Objects.TerseObjectUpdate += Objects_OnObjectUpdated;            
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
@@ -45,16 +44,11 @@ namespace OpenMetaverse.TestClient.Commands.Movement
             Client.Self.Movement.AtNeg = false;
             ZMovement();
             Client.Self.Movement.TurnToward(target);
-            //System.Threading.Thread.Sleep(100);
-
-            //XYMovement();
-            //ZMovement();
-            //Client.Self.Movement.SendUpdate(false);
 
             return string.Format("flying to {0} in {1} seconds", target.ToString(), duration / 1000);
         }
 
-        private void Objects_OnObjectUpdated(object sender, ObjectUpdatedEventArgs e)
+        private void Objects_OnObjectUpdated(object sender, TerseObjectUpdateEventArgs e)
         {
             if (startTime == 0) return;
             if (e.Update.LocalID == Client.Self.LocalID)
@@ -98,14 +92,7 @@ namespace OpenMetaverse.TestClient.Commands.Movement
             if (diff >= 10.0)
             {
                 Client.Self.Movement.AtPos = true;
-                //  Client.Self.Movement.AtNeg = false;
-                //if (Math.Abs(diff - olddiff) > 1.5) {
-                //  Client.Self.Movement.AtPos = diff < olddiff;
-                //  Client.Self.Movement.AtNeg = diff > olddiff;
-                //} else if (!Client.Self.Movement.AtPos && !Client.Self.Movement.AtNeg) {
-                //  Client.Self.Movement.AtPos = true;
-                //  Client.Self.Movement.AtNeg = false;
-                //}
+                
                 res = true;
             }
             else if (diff >= 2 && vel < 5)

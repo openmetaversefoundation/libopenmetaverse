@@ -28,6 +28,10 @@ namespace OpenMetaverse.TestClient
 
                 if (target != null)
                 {
+                    if (target.Text != String.Empty)
+                    {
+                        Logger.Log("Text: " + target.Text, Helpers.LogLevel.Info, Client);
+                    }
                     if(target.Light != null)
                         Logger.Log("Light: " + target.Light.ToString(), Helpers.LogLevel.Info, Client);
 
