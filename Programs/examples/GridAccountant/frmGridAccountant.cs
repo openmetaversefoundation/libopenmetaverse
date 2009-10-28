@@ -369,14 +369,17 @@ namespace GridAccountant
             }
         }
 
-		private void BalanceHandler(Packet packet, Simulator simulator)
+		protected void BalanceHandler(object sender, PacketReceivedEventArgs e)
 		{
+            Packet packet = e.Packet;
             string value = ((MoneyBalanceReplyPacket)packet).MoneyData.MoneyBalance.ToString();
             this.BeginInvoke(new StringParamInvoker(UpdateBalance), new object[] { value });
 		}
 
-		private void DirPeopleHandler(Packet packet, Simulator simulator)
+		private void DirPeopleHandler(object sender, PacketReceivedEventArgs e)
 		{
+            Packet packet = e.Packet;
+            
             DirPeopleReplyPacket reply = (DirPeopleReplyPacket)packet;
 
             foreach (DirPeopleReplyPacket.QueryRepliesBlock block in reply.QueryReplies)
@@ -395,18 +398,18 @@ namespace GridAccountant
 
             Client.Settings.MULTIPLE_SIMS = false;
 
-            Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
+            Client.Network.LoginProgress += Network_OnLogin;
 
 			// Install our packet handlers
-            Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, new NetworkManager.PacketCallback(BalanceHandler));
-            Client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(DirPeopleHandler));
+            Client.Network.RegisterCallback(PacketType.MoneyBalanceReply, BalanceHandler);
+            Client.Network.RegisterCallback(PacketType.DirPeopleReply, DirPeopleHandler);
 
 			grpLogin.Enabled = true;
 		}
 
-        private void Network_OnLogin(LoginStatus login, string message)
+        private void Network_OnLogin(object sender, LoginProgressEventArgs e)
         {
-            if (login == LoginStatus.Success)
+            if (e.Status == LoginStatus.Success)
             {
                 Random rand = new Random();
 
@@ -438,7 +441,7 @@ namespace GridAccountant
                         txtTransfer.Enabled = cmdTransfer.Enabled = true;
                     });
             }
-            else if (login == LoginStatus.Failed)
+            else if (e.Status == LoginStatus.Failed)
             {
                 BeginInvoke(
                     (MethodInvoker)delegate()

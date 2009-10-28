@@ -60,11 +60,11 @@ namespace PacketDump
             client.Throttle.Cloud = 0;
 
 			// Setup a packet callback that is called for every packet (PacketType.Default)
-            client.Network.RegisterCallback(PacketType.Default, new NetworkManager.PacketCallback(DefaultHandler));
+            client.Network.RegisterCallback(PacketType.Default, DefaultHandler);
             
             // Register handlers for when we login, and when we are disconnected
-            client.Network.OnLogin += new NetworkManager.LoginCallback(LoginHandler);
-            client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(DisconnectHandler);
+            client.Network.LoginProgress += LoginHandler;
+            client.Network.Disconnected += DisconnectHandler;
 
             // Start the login process
             client.Network.BeginLogin(client.Network.DefaultLoginParams(args[0], args[1], args[2], "PacketDump", "1.0.0"));
@@ -106,11 +106,11 @@ namespace PacketDump
             }
 		}
 
-        static void LoginHandler(LoginStatus login, string message)
+        static void LoginHandler(object sender, LoginProgressEventArgs e)
         {
-            Logger.Log(String.Format("Login: {0} ({1})", login, message), Helpers.LogLevel.Info);
+            Logger.Log(String.Format("Login: {0} ({1})", e.Status, e.Message), Helpers.LogLevel.Info);
 
-            switch (login)
+            switch (e.Status)
             {
                 case LoginStatus.Failed:
                     LoginEvent.Set();
@@ -122,21 +122,21 @@ namespace PacketDump
             }
         }
 
-        public static void DisconnectHandler(NetworkManager.DisconnectType type, string message)
+        public static void DisconnectHandler(object sender, DisconnectedEventArgs e)
         {
-            if (type == NetworkManager.DisconnectType.NetworkTimeout)
+            if (e.Reason == NetworkManager.DisconnectType.NetworkTimeout)
             {
                 Console.WriteLine("Network connection timed out, disconnected");
             }
-            else if (type == NetworkManager.DisconnectType.ServerInitiated)
+            else if (e.Reason == NetworkManager.DisconnectType.ServerInitiated)
             {
-                Console.WriteLine("Server disconnected us: " + message);
+                Console.WriteLine("Server disconnected us: " + e.Message);
             }
         }
 
-        public static void DefaultHandler(Packet packet, Simulator simulator)
+        public static void DefaultHandler(object sender, PacketReceivedEventArgs e)
         {
-            Logger.Log(packet.ToString(), Helpers.LogLevel.Info);
+            Logger.Log(e.Packet.ToString(), Helpers.LogLevel.Info);
         }
 	}
 }

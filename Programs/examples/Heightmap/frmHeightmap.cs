@@ -26,7 +26,7 @@ namespace Heightmap
             LastName = lastName;
             Password = password;
 
-            Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
+            Client.Network.LoginProgress += Network_OnLogin;
 
             // Throttle land up and other things down
             Client.Throttle.Cloud = 0;
@@ -60,14 +60,14 @@ namespace Heightmap
             InitializeComponent();
         }
 
-        private void Network_OnLogin(LoginStatus login, string message)
+        private void Network_OnLogin(object sender, LoginProgressEventArgs e)
         {
-            if (login == LoginStatus.Success)
+            if (e.Status == LoginStatus.Success)
             {
                 UpdateTimer.Elapsed += new System.Timers.ElapsedEventHandler(UpdateTimer_Elapsed);
                 UpdateTimer.Start();
             }
-            else if (login == LoginStatus.Failed)
+            else if (e.Status == LoginStatus.Failed)
             {
                 Console.WriteLine("Login failed: " + Client.Network.LoginMessage);
                 Console.ReadKey();

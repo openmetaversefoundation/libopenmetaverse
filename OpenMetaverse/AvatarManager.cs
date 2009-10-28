@@ -459,31 +459,31 @@ namespace OpenMetaverse
             Client = client;
 
             // Avatar appearance callback
-            Client.Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
+            Client.Network.RegisterCallback(PacketType.AvatarAppearance, AvatarAppearanceHandler);
 
             // Avatar profile callbacks
-            Client.Network.RegisterCallback(PacketType.AvatarPropertiesReply, new NetworkManager.PacketCallback(AvatarPropertiesHandler));
-            // Client.Network.RegisterCallback(PacketType.AvatarStatisticsReply, new NetworkManager.PacketCallback(AvatarStatisticsHandler));
-            Client.Network.RegisterCallback(PacketType.AvatarInterestsReply, new NetworkManager.PacketCallback(AvatarInterestsHandler));
+            Client.Network.RegisterCallback(PacketType.AvatarPropertiesReply, AvatarPropertiesHandler);
+            // Client.Network.RegisterCallback(PacketType.AvatarStatisticsReply, AvatarStatisticsHandler);
+            Client.Network.RegisterCallback(PacketType.AvatarInterestsReply, AvatarInterestsHandler);
 
             // Avatar group callback
-            Client.Network.RegisterCallback(PacketType.AvatarGroupsReply, new NetworkManager.PacketCallback(AvatarGroupsReplyHandler));
+            Client.Network.RegisterCallback(PacketType.AvatarGroupsReply, AvatarGroupsReplyHandler);
 
             // Viewer effect callback
-            Client.Network.RegisterCallback(PacketType.ViewerEffect, new NetworkManager.PacketCallback(ViewerEffectHandler));
+            Client.Network.RegisterCallback(PacketType.ViewerEffect, ViewerEffectHandler);
 
             // Other callbacks
-            Client.Network.RegisterCallback(PacketType.UUIDNameReply, new NetworkManager.PacketCallback(UUIDNameReplyHandler));
-            Client.Network.RegisterCallback(PacketType.AvatarPickerReply, new NetworkManager.PacketCallback(AvatarPickerReplyHandler));
-            Client.Network.RegisterCallback(PacketType.AvatarAnimation, new NetworkManager.PacketCallback(AvatarAnimationHandler));
+            Client.Network.RegisterCallback(PacketType.UUIDNameReply, UUIDNameReplyHandler);
+            Client.Network.RegisterCallback(PacketType.AvatarPickerReply, AvatarPickerReplyHandler);
+            Client.Network.RegisterCallback(PacketType.AvatarAnimation, AvatarAnimationHandler);
 
             // Picks callbacks
-            Client.Network.RegisterCallback(PacketType.AvatarPicksReply, new NetworkManager.PacketCallback(AvatarPicksReplyHandler));
-            Client.Network.RegisterCallback(PacketType.PickInfoReply, new NetworkManager.PacketCallback(PickInfoReplyHandler));
+            Client.Network.RegisterCallback(PacketType.AvatarPicksReply, AvatarPicksReplyHandler);
+            Client.Network.RegisterCallback(PacketType.PickInfoReply, PickInfoReplyHandler);
 
             // Classifieds callbacks
-            Client.Network.RegisterCallback(PacketType.AvatarClassifiedReply, new NetworkManager.PacketCallback(AvatarClassifiedReplyHandler));
-            Client.Network.RegisterCallback(PacketType.ClassifiedInfoReply, new NetworkManager.PacketCallback(ClassifiedInfoReplyHandler));
+            Client.Network.RegisterCallback(PacketType.AvatarClassifiedReply, AvatarClassifiedReplyHandler);
+            Client.Network.RegisterCallback(PacketType.ClassifiedInfoReply, ClassifiedInfoReplyHandler);
         }
 
         /// <summary>Tracks the specified avatar on your map</summary>
@@ -677,15 +677,14 @@ namespace OpenMetaverse
 
         #region Packet Handlers
 
-        /// <summary>
-        /// Process an incoming UUIDNameReply Packet and insert Full Names into the Avatars Dictionary
-        /// </summary>
-        /// <param name="packet">Incoming Packet to process</param>
-        /// <param name="simulator">Unused</param>
-        protected void UUIDNameReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void UUIDNameReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_UUIDNameReply != null)
             {
+                Packet packet = e.Packet;
                 Dictionary<UUID, string> names = new Dictionary<UUID, string>();
                 UUIDNameReplyPacket reply = (UUIDNameReplyPacket)packet;
 
@@ -699,13 +698,13 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>
-        /// Process incoming avatar animations
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="sim"></param>
-        protected void AvatarAnimationHandler(Packet packet, Simulator sim)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void AvatarAnimationHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
+
             if (m_AvatarAnimation != null)
             {
                 AvatarAnimationPacket data = (AvatarAnimationPacket)packet;
@@ -726,13 +725,16 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="AvatarAppearancePacket"/> packet</summary>
-        /// <param name="packet">The <see cref="AvatarAppearancePacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void AvatarAppearanceHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void AvatarAppearanceHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_AvatarAppearance != null || Client.Settings.AVATAR_TRACKING)
             {
+                Packet packet = e.Packet;
+                Simulator simulator = e.Simulator;
+
                 AvatarAppearancePacket appearance = (AvatarAppearancePacket)packet;
                 simulator.ObjectsAvatars.ForEach(delegate(Avatar av)
                 {
@@ -762,13 +764,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="AvatarPropertiesReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="AvatarPropertiesReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void AvatarPropertiesHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void AvatarPropertiesHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_AvatarPropertiesReply != null)
             {
+                Packet packet = e.Packet;
                 AvatarPropertiesReplyPacket reply = (AvatarPropertiesReplyPacket)packet;
                 Avatar.AvatarProperties properties = new Avatar.AvatarProperties();
 
@@ -803,13 +806,15 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="AvatarInterestsReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="AvatarInterestsReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void AvatarInterestsHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void AvatarInterestsHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_AvatarInterestsReply != null)
             {
+                Packet packet = e.Packet;
+
                 AvatarInterestsReplyPacket airp = (AvatarInterestsReplyPacket)packet;
                 Avatar.Interests interests = new Avatar.Interests();
 
@@ -823,14 +828,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="AvatarGroupsReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="AvatarGroupsReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void AvatarGroupsReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void AvatarGroupsReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_AvatarGroupsReply != null)
             {
-
+                Packet packet = e.Packet;
                 AvatarGroupsReplyPacket groups = (AvatarGroupsReplyPacket)packet;
                 List<AvatarGroup> avatarGroups = new List<AvatarGroup>(groups.GroupData.Length);
 
@@ -853,13 +858,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="AvatarPickerReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="AvatarPickerReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void AvatarPickerReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void AvatarPickerReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_AvatarPickerReply != null)
             {
+                Packet packet = e.Packet;
                 AvatarPickerReplyPacket reply = (AvatarPickerReplyPacket)packet;
                 Dictionary<UUID, string> avatars = new Dictionary<UUID, string>();
 
@@ -872,11 +878,12 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="ViewerEffectPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="ViewerEffectPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void ViewerEffectHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void ViewerEffectHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
             ViewerEffectPacket effect = (ViewerEffectPacket)packet;
 
             foreach (ViewerEffectPacket.EffectBlock block in effect.Effect)
@@ -988,15 +995,17 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="AvatarPicksReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="AvatarPicksReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void AvatarPicksReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void AvatarPicksReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_AvatarPicksReply == null)
             {
                 return;
             }
+            Packet packet = e.Packet;
+
             AvatarPicksReplyPacket p = (AvatarPicksReplyPacket)packet;
             Dictionary<UUID, string> picks = new Dictionary<UUID, string>();
 
@@ -1008,14 +1017,14 @@ namespace OpenMetaverse
             OnAvatarPicksReply(new AvatarPicksReplyEventArgs(p.AgentData.TargetID, picks));
         }
 
-        /// <summary>Process an incoming <see cref="PickInfoReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="PickInfoReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void PickInfoReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void PickInfoReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_PickInfoReply != null)
             {
-
+                Packet packet = e.Packet;
                 PickInfoReplyPacket p = (PickInfoReplyPacket)packet;
                 ProfilePick ret = new ProfilePick();
                 ret.CreatorID = p.Data.CreatorID;
@@ -1036,14 +1045,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="AvatarClassifiedReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="AvatarClassifiedReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void AvatarClassifiedReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void AvatarClassifiedReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_AvatarClassifiedReply != null)
             {
-
+                Packet packet = e.Packet;
                 AvatarClassifiedReplyPacket p = (AvatarClassifiedReplyPacket)packet;
                 Dictionary<UUID, string> classifieds = new Dictionary<UUID, string>();
 
@@ -1056,13 +1065,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="ClassifiedInfoReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="ClassifiedInfoReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void ClassifiedInfoReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void ClassifiedInfoReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_AvatarClassifiedReply != null)
             {
+                Packet packet = e.Packet;
                 ClassifiedInfoReplyPacket p = (ClassifiedInfoReplyPacket)packet;
                 ClassifiedAd ret = new ClassifiedAd();
                 ret.Desc = Utils.BytesToString(p.Data.Desc);

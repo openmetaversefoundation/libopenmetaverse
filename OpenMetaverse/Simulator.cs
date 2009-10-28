@@ -996,16 +996,17 @@ namespace OpenMetaverse
             }
             #endregion
         }
-
+        
         protected override void PacketSent(UDPPacketBuffer buffer, int bytesSent)
         {
             // Stats tracking
             Interlocked.Add(ref Stats.SentBytes, bytesSent);
             Interlocked.Increment(ref Stats.SentPackets);
-
-            Client.Network.PacketSent(buffer.Data, bytesSent, this);
+            
+            Client.Network.RaisePacketSentEvent(buffer.Data, bytesSent, this);
         }
 
+        
         /// <summary>
         /// Sends out pending acknowledgements
         /// </summary>

@@ -51,7 +51,7 @@ namespace OpenMetaverse.Tests
             Client = new GridClient();
             Client.Self.Movement.Fly = true;
             // Register callbacks
-            Client.Network.RegisterCallback(PacketType.ObjectUpdate, new NetworkManager.PacketCallback(ObjectUpdateHandler));
+            Client.Network.RegisterCallback(PacketType.ObjectUpdate, ObjectUpdateHandler);
             //Client.Self.OnTeleport += new MainAvatar.TeleportCallback(OnTeleportHandler)
         }
 
@@ -150,12 +150,12 @@ namespace OpenMetaverse.Tests
             bool Success = false;
             // make sure caps event queue is running
             System.Threading.AutoResetEvent waitforCAPS = new System.Threading.AutoResetEvent(false);
-            NetworkManager.EventQueueRunningCallback capsRunning = delegate(Simulator sim)
+            EventHandler<EventQueueRunningEventArgs> capsRunning = delegate(object sender, EventQueueRunningEventArgs e)
             {
                 waitforCAPS.Set();
-            };
+            };            
 
-            Client.Network.OnEventQueueRunning += capsRunning;
+            Client.Network.EventQueueRunning += capsRunning;
             if (waitforCAPS.WaitOne(10000, false))
             {
                 Success = true;
@@ -165,11 +165,11 @@ namespace OpenMetaverse.Tests
                 Success = false;
                 Assert.Fail("Timeout waiting for event Queue to startup");
             }
-            Client.Network.OnEventQueueRunning -= capsRunning;
+            Client.Network.EventQueueRunning -= capsRunning;
             return Success;
         }
 
-        private void ObjectUpdateHandler(Packet packet, Simulator sim)
+        private void ObjectUpdateHandler(object sender, PacketReceivedEventArgs e)
         {
             //ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
 

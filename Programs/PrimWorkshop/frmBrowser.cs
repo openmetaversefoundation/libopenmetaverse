@@ -157,10 +157,10 @@ namespace PrimWorkshop
             Client.Settings.OBJECT_TRACKING = false; // We use our own object tracking system
             Client.Settings.AVATAR_TRACKING = true; //but we want to use the libsl avatar system
 
-            Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
-            Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
-            Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
-            Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);            
+            Client.Network.LoginProgress += Network_OnLogin;
+            Client.Network.Disconnected += Network_OnDisconnected;
+            Client.Network.SimChanged += Network_OnCurrentSimChanged;
+            Client.Network.EventQueueRunning += Network_OnEventQueueRunning;            
             Client.Objects.ObjectUpdate += Objects_OnNewPrim;
             Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
             Client.Parcels.SimParcelsDownloaded += new EventHandler<SimParcelsDownloadedEventArgs>(Parcels_SimParcelsDownloaded);
@@ -1026,13 +1026,13 @@ namespace PrimWorkshop
             }
         }
 
-        private void Network_OnLogin(LoginStatus login, string message)
+        private void Network_OnLogin(object sender, LoginProgressEventArgs e)
         {
-            if (login == LoginStatus.Success)
+            if (e.Status == LoginStatus.Success)
             {
                 // Success!
             }
-            else if (login == LoginStatus.Failed)
+            else if (e.Status == LoginStatus.Failed)
             {
                 BeginInvoke(
                     (MethodInvoker)delegate()
@@ -1045,7 +1045,7 @@ namespace PrimWorkshop
             }
         }
 
-        private void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        private void Network_OnDisconnected(object sender, DisconnectedEventArgs e)
         {
             BeginInvoke(
                 (MethodInvoker)delegate()
@@ -1055,7 +1055,7 @@ namespace PrimWorkshop
                 });
         }
 
-        private void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
+        private void Network_OnCurrentSimChanged(object sender, SimChangedEventArgs e)
         {
             Console.WriteLine("CurrentSim set to " + Client.Network.CurrentSim + ", downloading parcel information");
             
@@ -1069,9 +1069,9 @@ namespace PrimWorkshop
                 BeginInvoke((MethodInvoker)delegate() { cmdTeleport.Enabled = false; });
         }
 
-        private void Network_OnEventQueueRunning(Simulator simulator)
+        private void Network_OnEventQueueRunning(object sender, EventQueueRunningEventArgs e)
         {
-            if (simulator == Client.Network.CurrentSim)
+            if (e.Simulator == Client.Network.CurrentSim)
                 BeginInvoke((MethodInvoker)delegate() { cmdTeleport.Enabled = true; });
 
             // Now seems like a good time to start requesting parcel information

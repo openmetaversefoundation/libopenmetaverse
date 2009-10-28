@@ -147,10 +147,10 @@ namespace OpenMetaverse
         {
             Client = client;
             
-            Client.Network.RegisterCallback(PacketType.AttachedSound, new NetworkManager.PacketCallback(AttachedSoundHandler));
-            Client.Network.RegisterCallback(PacketType.AttachedSoundGainChange, new NetworkManager.PacketCallback(AttachedSoundGainChangeHandler));
-            Client.Network.RegisterCallback(PacketType.PreloadSound, new NetworkManager.PacketCallback(PreloadSoundHandler));
-            Client.Network.RegisterCallback(PacketType.SoundTrigger, new NetworkManager.PacketCallback(SoundTriggerHandler));
+            Client.Network.RegisterCallback(PacketType.AttachedSound, AttachedSoundHandler);
+            Client.Network.RegisterCallback(PacketType.AttachedSoundGainChange, AttachedSoundGainChangeHandler);
+            Client.Network.RegisterCallback(PacketType.PreloadSound, PreloadSoundHandler);
+            Client.Network.RegisterCallback(PacketType.SoundTrigger, SoundTriggerHandler);
         }
 
         #region public methods
@@ -214,47 +214,48 @@ namespace OpenMetaverse
             soundtrigger.SoundData.Handle = handle;
             soundtrigger.SoundData.Position = position;
             soundtrigger.SoundData.Gain = gain;
+
             Client.Network.SendPacket(soundtrigger);
         }
 
         #endregion
         #region Packet Handlers
 
-        /// <summary>Process an incoming <see cref="AttachedSoundPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="AttachedSoundPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void AttachedSoundHandler(Packet packet, Simulator simulator)
+
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void AttachedSoundHandler(object sender, PacketReceivedEventArgs e)
         {            
             if (m_AttachedSound != null)
             {
-                AttachedSoundPacket sound = (AttachedSoundPacket)packet;
+                AttachedSoundPacket sound = (AttachedSoundPacket)e.Packet;
 
                 OnAttachedSound(new AttachedSoundEventArgs(sound.DataBlock.SoundID, sound.DataBlock.OwnerID, sound.DataBlock.ObjectID, 
                     sound.DataBlock.Gain, (SoundFlags)sound.DataBlock.Flags));                
             }
         }
 
-        /// <summary>Process an incoming <see cref="AttachedSoundGainChangePacket"/> packet</summary>
-        /// <param name="packet">The <see cref="AttachedSoundGainChangePacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void AttachedSoundGainChangeHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void AttachedSoundGainChangeHandler(object sender, PacketReceivedEventArgs e)
         {            
             if (m_AttachedSoundGainChange != null)
             {
-                AttachedSoundGainChangePacket change = (AttachedSoundGainChangePacket)packet;
+                AttachedSoundGainChangePacket change = (AttachedSoundGainChangePacket)e.Packet;
                 OnAttachedSoundGainChange(new AttachedSoundGainChangeEventArgs(change.DataBlock.ObjectID, change.DataBlock.Gain));                
             }
         }
 
-        /// <summary>Process an incoming <see cref="PreloadSoundPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="PreloadSoundPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void PreloadSoundHandler(Packet packet, Simulator simulator)
-        {
-            
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void PreloadSoundHandler(object sender, PacketReceivedEventArgs e)
+        {            
             if (m_PreloadSound != null)
             {
-                PreloadSoundPacket preload = (PreloadSoundPacket)packet;
+                PreloadSoundPacket preload = (PreloadSoundPacket)e.Packet;
 
                 foreach (PreloadSoundPacket.DataBlockBlock data in preload.DataBlock)
                 {
@@ -263,14 +264,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="SoundTriggerPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="SoundTriggerPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void SoundTriggerHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void SoundTriggerHandler(object sender, PacketReceivedEventArgs e)
         {            
             if (m_SoundTrigger != null)
             {
-                SoundTriggerPacket trigger = (SoundTriggerPacket)packet;
+                SoundTriggerPacket trigger = (SoundTriggerPacket)e.Packet;
                 OnSoundTrigger(new SoundTriggerEventArgs(trigger.SoundData.SoundID,
                         trigger.SoundData.OwnerID,
                         trigger.SoundData.ObjectID,

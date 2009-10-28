@@ -190,8 +190,8 @@ namespace OpenMetaverse.GUI
         {
             _Client = client;
 
-            _Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
-            _Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
+            _Client.Network.Disconnected += Network_OnDisconnected;
+            _Client.Network.LoginProgress += Network_OnLogin;
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
@@ -248,7 +248,7 @@ namespace OpenMetaverse.GUI
             else txtPass.Text = String.Empty;
         }
 
-        private void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        private void Network_OnDisconnected(object sender, DisconnectedEventArgs e)
         {
             if (!this.IsHandleCreated) return;
 
@@ -258,7 +258,7 @@ namespace OpenMetaverse.GUI
             });
         }
 
-        private void Network_OnLogin(LoginStatus login, string message)
+        private void Network_OnLogin(object sender, LoginProgressEventArgs e)
         {
             if (!this.IsHandleCreated) return;
 
@@ -267,7 +267,7 @@ namespace OpenMetaverse.GUI
                 btnLogin.Text = "Logout";
             });
 
-            if (login == LoginStatus.Success)
+            if (e.Status == LoginStatus.Success)
             {
                 lock (_Accounts)
                 {
@@ -283,7 +283,7 @@ namespace OpenMetaverse.GUI
                     }
                 }
             }
-            else if (login == LoginStatus.Failed)
+            else if (e.Status == LoginStatus.Failed)
             {
                 this.BeginInvoke((MethodInvoker)delegate
                 {

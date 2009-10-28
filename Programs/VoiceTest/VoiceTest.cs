@@ -88,7 +88,7 @@ namespace VoiceTest
             voice.OnProvisionAccount += voice_OnProvisionAccount;
             voice.OnParcelVoiceInfo += voice_OnParcelVoiceInfo;
 
-            client.Network.OnEventQueueRunning += client_OnEventQueueRunning;
+            client.Network.EventQueueRunning += client_OnEventQueueRunning;
 
             try {
                 if (!voice.ConnectToDaemon()) throw new VoiceException("Failed to connect to the voice daemon");
@@ -171,8 +171,9 @@ namespace VoiceTest
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
         }
-        
-        static void client_OnEventQueueRunning(Simulator sim) {
+
+        static void client_OnEventQueueRunning(object sender, EventQueueRunningEventArgs e)
+        {
             EventQueueRunningEvent.Set();
         }
 

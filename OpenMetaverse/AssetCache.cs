@@ -89,16 +89,16 @@ namespace OpenMetaverse
         public AssetCache(GridClient client)
         {
             Client = client;
-            Client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnected);
-            Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
+            Client.Network.LoggedIn += Network_OnConnected;                        
+            Client.Network.Disconnected += Network_OnDisconnected;
         }
 
-        void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        private void Network_OnDisconnected(object sender, DisconnectedEventArgs e)
         {
             DestroyTimer();
         }
 
-        void Network_OnConnected(object sender)
+        private void Network_OnConnected(object sender, LoggedInEventArgs e)
         {
             SetupTimer();
         }

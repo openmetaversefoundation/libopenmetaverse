@@ -297,8 +297,8 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.AgentCachedTextureResponse, AgentCachedTextureResponseHandler);
             Client.Network.RegisterCallback(PacketType.RebakeAvatarTextures, RebakeAvatarTexturesHandler);
 
-            Client.Network.OnEventQueueRunning += Network_OnEventQueueRunning;
-            Client.Network.OnDisconnected += Network_OnDisconnected;
+            Client.Network.EventQueueRunning += Network_OnEventQueueRunning;
+            Client.Network.Disconnected += Network_OnDisconnected;
         }
 
         #region Publics Methods
@@ -1776,10 +1776,10 @@ namespace OpenMetaverse
 
         #region Callbacks
 
-        private void AgentWearablesUpdateHandler(Packet packet, Simulator simulator)
+        protected void AgentWearablesUpdateHandler(object sender, PacketReceivedEventArgs e)
         {
             bool changed = false;
-            AgentWearablesUpdatePacket update = (AgentWearablesUpdatePacket)packet;
+            AgentWearablesUpdatePacket update = (AgentWearablesUpdatePacket)e.Packet;
 
             lock (Wearables)
             {
@@ -1861,9 +1861,9 @@ namespace OpenMetaverse
             }
         }
 
-        private void RebakeAvatarTexturesHandler(Packet packet, Simulator simulator)
+        protected void RebakeAvatarTexturesHandler(object sender, PacketReceivedEventArgs e)
         {
-            RebakeAvatarTexturesPacket rebake = (RebakeAvatarTexturesPacket)packet;
+            RebakeAvatarTexturesPacket rebake = (RebakeAvatarTexturesPacket)e.Packet;
 
             // allow the library to do the rebake
             if (Client.Settings.SEND_AGENT_APPEARANCE)
@@ -1878,9 +1878,9 @@ namespace OpenMetaverse
             }
         }
 
-        private void AgentCachedTextureResponseHandler(Packet packet, Simulator simulator)
+        protected void AgentCachedTextureResponseHandler(object sender, PacketReceivedEventArgs e)
         {
-            AgentCachedTextureResponsePacket response = (AgentCachedTextureResponsePacket)packet;
+            AgentCachedTextureResponsePacket response = (AgentCachedTextureResponsePacket)e.Packet;
 
             for (int i = 0; i < response.WearableData.Length; i++)
             {
@@ -1914,16 +1914,16 @@ namespace OpenMetaverse
             }
         }
 
-        private void Network_OnEventQueueRunning(Simulator simulator)
+        private void Network_OnEventQueueRunning(object sender, EventQueueRunningEventArgs e)
         {
-            if (simulator == Client.Network.CurrentSim && Client.Settings.SEND_AGENT_APPEARANCE)
+            if (e.Simulator == Client.Network.CurrentSim && Client.Settings.SEND_AGENT_APPEARANCE)
             {
                 // Update appearance each time we enter a new sim and capabilities have been retrieved
                 Client.Appearance.RequestSetAppearance();
             }
         }
 
-        private void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        private void Network_OnDisconnected(object sender, DisconnectedEventArgs e)
         {
             if (RebakeScheduleTimer != null)
             {

@@ -128,9 +128,9 @@ namespace OpenMetaverse
             GroundTextureLimits = new GroundTextureHeightSettings();
 
             Client = client;
-            Client.Network.RegisterCallback(PacketType.LandStatReply, new NetworkManager.PacketCallback(LandStatReplyHandler));
-            Client.Network.RegisterCallback(PacketType.EstateOwnerMessage, new NetworkManager.PacketCallback(EstateOwnerMessageHandler));
-            Client.Network.RegisterCallback(PacketType.EstateCovenantReply, new NetworkManager.PacketCallback(EstateCovenantReplyHandler));
+            Client.Network.RegisterCallback(PacketType.LandStatReply, LandStatReplyHandler);
+            Client.Network.RegisterCallback(PacketType.EstateOwnerMessage, EstateOwnerMessageHandler);
+            Client.Network.RegisterCallback(PacketType.EstateCovenantReply, EstateCovenantReplyHandler);
         }
 
         #region Enums
@@ -618,12 +618,12 @@ namespace OpenMetaverse
 
         #region Packet Handlers
 
-        /// <summary></summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void EstateCovenantReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void EstateCovenantReplyHandler(object sender, PacketReceivedEventArgs e)
         {
-            EstateCovenantReplyPacket reply = (EstateCovenantReplyPacket)packet;
+            EstateCovenantReplyPacket reply = (EstateCovenantReplyPacket)e.Packet;
             if (OnGetCovenant != null)
             {
                 try
@@ -634,16 +634,16 @@ namespace OpenMetaverse
                        Utils.BytesToString(reply.Data.EstateName),
                        reply.Data.EstateOwnerID);
                 }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
             }
         }
 
-        /// <summary></summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void EstateOwnerMessageHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void EstateOwnerMessageHandler(object sender, PacketReceivedEventArgs e)
         {
-            EstateOwnerMessagePacket message = (EstateOwnerMessagePacket)packet;
+            EstateOwnerMessagePacket message = (EstateOwnerMessagePacket)e.Packet;
             uint estateID;
             string method = Utils.BytesToString(message.MethodData.Method);
             //List<string> parameters = new List<string>();
@@ -669,7 +669,7 @@ namespace OpenMetaverse
                     {
                         OnGetEstateUpdateInfo(estateName, estateOwner, estateID, denyNoPaymentInfo);
                     }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                 }
             }
 
@@ -701,10 +701,10 @@ namespace OpenMetaverse
                                             UUID managerID = new UUID(message.ParamList[i].Parameter, 0);
                                             managers.Add(managerID);
                                         }
-                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                                     }
                                     try { OnGetEstateManagers(estateID, count, managers); }
-                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                                 }
                             }
                             break;
@@ -723,10 +723,10 @@ namespace OpenMetaverse
                                             UUID bannedID = new UUID(message.ParamList[i].Parameter, 0);
                                             bannedUsers.Add(bannedID);
                                         }
-                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                                     }
                                     try { OnGetEstateBans(estateID, count, bannedUsers); }
-                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                                 }
                             }
                             break;
@@ -745,10 +745,10 @@ namespace OpenMetaverse
                                             UUID allowedID = new UUID(message.ParamList[i].Parameter, 0);
                                             allowedUsers.Add(allowedID);
                                         }
-                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                                     }
                                     try { OnGetAllowedUsers(estateID, count, allowedUsers); }
-                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                                 }
                             }
                             break;
@@ -767,10 +767,10 @@ namespace OpenMetaverse
                                             UUID groupID = new UUID(message.ParamList[i].Parameter, 0);
                                             allowedGroups.Add(groupID);
                                         }
-                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                                     }
                                     try { OnGetAllowedGroups(estateID, count, allowedGroups); }
-                                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                                 }
                             }
                             break;
@@ -779,15 +779,15 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary></summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void LandStatReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void LandStatReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             //if (OnLandStatReply != null || OnGetTopScripts != null || OnGetTopColliders != null)
             if (OnGetTopScripts != null || OnGetTopColliders != null)
             {
-                LandStatReplyPacket p = (LandStatReplyPacket)packet;
+                LandStatReplyPacket p = (LandStatReplyPacket)e.Packet;
                 Dictionary<UUID, EstateTask> Tasks = new Dictionary<UUID, EstateTask>();
 
                 foreach (LandStatReplyPacket.ReportDataBlock rep in p.ReportData)
@@ -807,12 +807,12 @@ namespace OpenMetaverse
                 if (OnGetTopScripts != null && type == LandStatReportType.TopScripts)
                 {
                     try { OnGetTopScripts((int)p.RequestData.TotalObjectCount, Tasks); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                 }
                 else if (OnGetTopColliders != null && type == LandStatReportType.TopColliders)
                 {
                     try { OnGetTopColliders((int)p.RequestData.TotalObjectCount, Tasks); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                 }
 
                 /*
@@ -831,7 +831,5 @@ namespace OpenMetaverse
             }
         }
         #endregion
-
     }
-
 }

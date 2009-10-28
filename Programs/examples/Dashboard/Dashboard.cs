@@ -63,7 +63,7 @@ namespace Dashboard
             Client.Settings.USE_LLSD_LOGIN = true;
             Client.Settings.USE_ASSET_CACHE = true;
 
-            Client.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
+            Client.Network.Disconnected += Network_OnDisconnected;
             Client.Self.IM += Self_IM;
 
             //define the client object for each GUI element
@@ -113,7 +113,7 @@ namespace Dashboard
             MessageBox.Show(group.Name + " = " + group.ID);
         }
 
-        void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        void Network_OnDisconnected(object sender, DisconnectedEventArgs e)
         {
             InitializeClient(!ShuttingDown);
         }        

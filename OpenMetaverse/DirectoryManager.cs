@@ -704,18 +704,18 @@ namespace OpenMetaverse
         {
             Client = client;
 
-            Client.Network.RegisterCallback(PacketType.DirClassifiedReply, new NetworkManager.PacketCallback(DirClassifiedReplyHandler));
+            Client.Network.RegisterCallback(PacketType.DirClassifiedReply, DirClassifiedReplyHandler);
             // Deprecated, replies come in over capabilities
-            Client.Network.RegisterCallback(PacketType.DirLandReply, new NetworkManager.PacketCallback(DirLandReplyHandler));
+            Client.Network.RegisterCallback(PacketType.DirLandReply, DirLandReplyHandler);
             Client.Network.RegisterEventCallback("DirLandReply", DirLandReplyEventHandler);
-            Client.Network.RegisterCallback(PacketType.DirPeopleReply, new NetworkManager.PacketCallback(DirPeopleReplyHandler));
-            Client.Network.RegisterCallback(PacketType.DirGroupsReply, new NetworkManager.PacketCallback(DirGroupsReplyHandler));
+            Client.Network.RegisterCallback(PacketType.DirPeopleReply, DirPeopleReplyHandler);
+            Client.Network.RegisterCallback(PacketType.DirGroupsReply, DirGroupsReplyHandler);
             // Deprecated as of viewer 1.2.3
-            Client.Network.RegisterCallback(PacketType.PlacesReply, new NetworkManager.PacketCallback(PlacesReplyHandler));
+            Client.Network.RegisterCallback(PacketType.PlacesReply, PlacesReplyHandler);
             Client.Network.RegisterEventCallback("PlacesReply", PlacesReplyEventHandler);
-            Client.Network.RegisterCallback(PacketType.DirEventsReply, new NetworkManager.PacketCallback(EventsReplyHandler));
-            Client.Network.RegisterCallback(PacketType.EventInfoReply, new NetworkManager.PacketCallback(EventInfoReplyHandler));
-            Client.Network.RegisterCallback(PacketType.DirPlacesReply, new NetworkManager.PacketCallback(DirPlacesReplyHandler));
+            Client.Network.RegisterCallback(PacketType.DirEventsReply, EventsReplyHandler);
+            Client.Network.RegisterCallback(PacketType.EventInfoReply, EventInfoReplyHandler);
+            Client.Network.RegisterCallback(PacketType.DirPlacesReply, DirPlacesReplyHandler);
         }
 
         #endregion
@@ -1141,14 +1141,14 @@ namespace OpenMetaverse
 
         #region Packet Handlers
 
-        /// <summary>Process an incoming <see cref="DirClassifiedReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="DirClassifiedReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void DirClassifiedReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void DirClassifiedReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_DirClassifieds != null)
             {
-                DirClassifiedReplyPacket reply = (DirClassifiedReplyPacket)packet;
+                DirClassifiedReplyPacket reply = (DirClassifiedReplyPacket)e.Packet;
                 List<Classified> classifieds = new List<Classified>();
 
                 foreach (DirClassifiedReplyPacket.QueryRepliesBlock block in reply.QueryReplies)
@@ -1169,15 +1169,15 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="DirLandReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="DirLandReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void DirLandReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void DirLandReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_DirLandReply != null)
             {
                 List<DirectoryParcel> parcelsForSale = new List<DirectoryParcel>();
-                DirLandReplyPacket reply = (DirLandReplyPacket)packet;
+                DirLandReplyPacket reply = (DirLandReplyPacket)e.Packet;
 
                 foreach (DirLandReplyPacket.QueryRepliesBlock block in reply.QueryReplies)
                 {
@@ -1226,14 +1226,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="DirPeopleReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="DirPeopleReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void DirPeopleReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void DirPeopleReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_DirPeople != null)
             {
-                DirPeopleReplyPacket peopleReply = packet as DirPeopleReplyPacket;
+                DirPeopleReplyPacket peopleReply = e.Packet as DirPeopleReplyPacket;
                 List<AgentSearchData> matches = new List<AgentSearchData>(peopleReply.QueryReplies.Length);
                 foreach (DirPeopleReplyPacket.QueryRepliesBlock reply in peopleReply.QueryReplies)
                 {
@@ -1249,13 +1249,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="DirGroupsReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="DirGroupsReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void DirGroupsReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void DirGroupsReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_DirGroups != null)
             {
+                Packet packet = e.Packet;
                 DirGroupsReplyPacket groupsReply = (DirGroupsReplyPacket)packet;
                 List<GroupSearchData> matches = new List<GroupSearchData>(groupsReply.QueryReplies.Length);
                 foreach (DirGroupsReplyPacket.QueryRepliesBlock reply in groupsReply.QueryReplies)
@@ -1306,13 +1307,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="PlacesReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="PlacesReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void PlacesReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void PlacesReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_Places != null)
             {
+                Packet packet = e.Packet;
                 PlacesReplyPacket placesReply = packet as PlacesReplyPacket;
                 List<PlacesSearchData> places = new List<PlacesSearchData>();
 
@@ -1340,13 +1342,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="DirEventsReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="DirEventsReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void EventsReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void EventsReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_DirEvents != null)
             {
+                Packet packet = e.Packet;
                 DirEventsReplyPacket eventsReply = (DirEventsReplyPacket)packet;
                 List<EventsSearchData> matches = new List<EventsSearchData>(eventsReply.QueryReplies.Length);
 
@@ -1366,13 +1369,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="EventInfoReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="EventInfoReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void EventInfoReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void EventInfoReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_EventInfoReply != null)
             {
+                Packet packet = e.Packet;
                 EventInfoReplyPacket eventReply = (EventInfoReplyPacket)packet;
                 EventInfo evinfo = new EventInfo();
                 evinfo.ID = eventReply.EventData.EventID;
@@ -1393,13 +1397,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="DirPlacesReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="DirPlacesReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void DirPlacesReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void DirPlacesReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_DirPlaces != null)
             {
+                Packet packet = e.Packet;
                 DirPlacesReplyPacket reply = (DirPlacesReplyPacket)packet;
                 List<DirectoryParcel> result = new List<DirectoryParcel>();
 

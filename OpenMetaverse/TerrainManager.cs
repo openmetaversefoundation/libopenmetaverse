@@ -41,7 +41,7 @@ namespace OpenMetaverse
         /// <param name="width"></param>
         /// <param name="data"></param>
         public delegate void LandPatchCallback(Simulator simulator, int x, int y, int width, float[] data);
-
+        
         /// <summary></summary>
         public event LandPatchCallback OnLandPatch;
 
@@ -57,7 +57,7 @@ namespace OpenMetaverse
         public TerrainManager(GridClient client)
         {
             Client = client;
-            Client.Network.RegisterCallback(PacketType.LayerData, new NetworkManager.PacketCallback(LayerDataHandler));
+            Client.Network.RegisterCallback(PacketType.LayerData, LayerDataHandler);
         }
 
         /// <summary>
@@ -92,7 +92,6 @@ namespace OpenMetaverse
                     height = patch.Data[y * 16 + x];
                     return true;
                 }
-
             }
 
             height = 0.0f;
@@ -198,9 +197,9 @@ namespace OpenMetaverse
             // FIXME:
         }
 
-        private void LayerDataHandler(Packet packet, Simulator simulator)
+        private void LayerDataHandler(object sender, PacketReceivedEventArgs e)
         {
-            LayerDataPacket layer = (LayerDataPacket)packet;
+            LayerDataPacket layer = (LayerDataPacket)e.Packet;
             BitPack bitpack = new BitPack(layer.LayerData.Data, 0);
             TerrainPatch.GroupHeader header = new TerrainPatch.GroupHeader();
             TerrainPatch.LayerType type = (TerrainPatch.LayerType)layer.LayerID.Type;
@@ -216,16 +215,16 @@ namespace OpenMetaverse
             {
                 case TerrainPatch.LayerType.Land:
                     if (OnLandPatch != null || Client.Settings.STORE_LAND_PATCHES)
-                        DecompressLand(simulator, bitpack, header);
+                        DecompressLand(e.Simulator, bitpack, header);
                     break;
                 case TerrainPatch.LayerType.Water:
                     Logger.Log("Got a Water LayerData packet, implement me!", Helpers.LogLevel.Error, Client);
                     break;
                 case TerrainPatch.LayerType.Wind:
-                    DecompressWind(simulator, bitpack, header);
+                    DecompressWind(e.Simulator, bitpack, header);
                     break;
                 case TerrainPatch.LayerType.Cloud:
-                    DecompressCloud(simulator, bitpack, header);
+                    DecompressCloud(e.Simulator, bitpack, header);
                     break;
                 default:
                     Logger.Log("Unrecognized LayerData type " + type.ToString(), Helpers.LogLevel.Warning, Client);

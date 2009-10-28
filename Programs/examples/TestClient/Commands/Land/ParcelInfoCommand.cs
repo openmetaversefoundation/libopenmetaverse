@@ -16,7 +16,7 @@ namespace OpenMetaverse.TestClient
             Description = "Prints out info about all the parcels in this simulator";
             Category = CommandCategory.Parcel;
 
-            testClient.Network.OnDisconnected += new NetworkManager.DisconnectedCallback(Network_OnDisconnected);
+            testClient.Network.Disconnected += Network_OnDisconnected;
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
@@ -56,7 +56,7 @@ namespace OpenMetaverse.TestClient
             return result;
         }
 
-        void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
+        void Network_OnDisconnected(object sender, DisconnectedEventArgs e)
         {
             ParcelsDownloaded.Set();
         }

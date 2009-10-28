@@ -35,7 +35,7 @@ namespace OpenMetaverse.TestClient
 
             UUID groupUUID = Client.GroupName2UUID(groupName);
             if (UUID.Zero != groupUUID) {
-                NetworkManager.PacketCallback pcallback = new NetworkManager.PacketCallback(AgentDataUpdateHandler);
+                EventHandler<PacketReceivedEventArgs> pcallback = AgentDataUpdateHandler;
                 Client.Network.RegisterCallback(PacketType.AgentDataUpdate, pcallback);
 
                 Console.WriteLine("setting " + groupName + " as active group");
@@ -57,9 +57,9 @@ namespace OpenMetaverse.TestClient
             return Client.ToString() + " doesn't seem to be member of the group " + groupName;
         }
 
-        private void AgentDataUpdateHandler(Packet packet, Simulator sim)
+        private void AgentDataUpdateHandler(object sender, PacketReceivedEventArgs e)
         {
-            AgentDataUpdatePacket p = (AgentDataUpdatePacket)packet;
+            AgentDataUpdatePacket p = (AgentDataUpdatePacket)e.Packet;
             if (p.AgentData.AgentID == Client.Self.AgentID)
             {
                 activeGroup = Utils.BytesToString(p.AgentData.GroupName) + " ( " + Utils.BytesToString(p.AgentData.GroupTitle) + " )";

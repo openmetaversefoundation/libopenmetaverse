@@ -413,7 +413,7 @@ namespace OpenMetaverse
             //Client.Network.RegisterCallback(PacketType.MapLayerReply, MapLayerReplyHandler);
             Client.Network.RegisterCallback(PacketType.MapBlockReply, MapBlockReplyHandler);
             Client.Network.RegisterCallback(PacketType.MapItemReply, MapItemReplyHandler);
-            Client.Network.RegisterCallback(PacketType.SimulatorViewerTimeMessage, TimeMessageHandler);
+            Client.Network.RegisterCallback(PacketType.SimulatorViewerTimeMessage, SimulatorViewerTimeMessageHandler);
             Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, CoarseLocationHandler);
             Client.Network.RegisterCallback(PacketType.RegionIDAndHandleReply, RegionHandleReplyHandler);
 		}
@@ -644,14 +644,12 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>
-        /// Populate Grid info based on data from MapBlockReplyPacket
-        /// </summary>
-        /// <param name="packet">Incoming MapBlockReplyPacket packet</param>
-        /// <param name="simulator">Unused</param>
-        protected void MapBlockReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void MapBlockReplyHandler(object sender, PacketReceivedEventArgs e)
         {
-            MapBlockReplyPacket map = (MapBlockReplyPacket)packet;
+            MapBlockReplyPacket map = (MapBlockReplyPacket)e.Packet;
 
             foreach (MapBlockReplyPacket.DataBlock block in map.Data)
             {
@@ -684,11 +682,14 @@ namespace OpenMetaverse
             }
         }
 
-        protected void MapItemReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void MapItemReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_GridItems != null)
             {
-                MapItemReplyPacket reply = (MapItemReplyPacket)packet;
+                MapItemReplyPacket reply = (MapItemReplyPacket)e.Packet;
                 GridItemType type = (GridItemType)reply.RequestData.ItemType;
                 List<MapItem> items = new List<MapItem>();
 
@@ -774,14 +775,12 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>
-        /// Get sim time from the appropriate packet
-        /// </summary>
-        /// <param name="packet">Incoming SimulatorViewerTimeMessagePacket from SL</param>
-        /// <param name="simulator">Unused</param>
-        private void TimeMessageHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void SimulatorViewerTimeMessageHandler(object sender, PacketReceivedEventArgs e)
         {
-            SimulatorViewerTimeMessagePacket time = (SimulatorViewerTimeMessagePacket)packet;
+            SimulatorViewerTimeMessagePacket time = (SimulatorViewerTimeMessagePacket)e.Packet;
             
             sunPhase = time.TimeInfo.SunPhase;
             sunDirection = time.TimeInfo.SunDirection;
@@ -790,9 +789,12 @@ namespace OpenMetaverse
             // TODO: Does anyone have a use for the time stuff?
         }
 
-        protected void CoarseLocationHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void CoarseLocationHandler(object sender, PacketReceivedEventArgs e)
         {
-            CoarseLocationUpdatePacket coarse = (CoarseLocationUpdatePacket)packet;
+            CoarseLocationUpdatePacket coarse = (CoarseLocationUpdatePacket)e.Packet;
 
             // populate a dictionary from the packet, for local use
             Dictionary<UUID, Vector3> coarseEntries = new Dictionary<UUID, Vector3>();
@@ -803,42 +805,45 @@ namespace OpenMetaverse
 
                 // the friend we are tracking on radar
                 if (i == coarse.Index.Prey)
-                    simulator.preyID = coarse.AgentData[i].AgentID;
+                    e.Simulator.preyID = coarse.AgentData[i].AgentID;
             }
 
             // find stale entries (people who left the sim)
-            List<UUID> removedEntries = simulator.avatarPositions.FindAll(delegate(UUID findID) { return !coarseEntries.ContainsKey(findID); });
+            List<UUID> removedEntries = e.Simulator.avatarPositions.FindAll(delegate(UUID findID) { return !coarseEntries.ContainsKey(findID); });
 
             // anyone who was not listed in the previous update
             List<UUID> newEntries = new List<UUID>();
 
-            lock (simulator.avatarPositions.Dictionary)
+            lock (e.Simulator.avatarPositions.Dictionary)
             {
                 // remove stale entries
                 foreach(UUID trackedID in removedEntries)
-                    simulator.avatarPositions.Dictionary.Remove(trackedID);
+                    e.Simulator.avatarPositions.Dictionary.Remove(trackedID);
 
                 // add or update tracked info, and record who is new
                 foreach (KeyValuePair<UUID, Vector3> entry in coarseEntries)
                 {
-                    if (!simulator.avatarPositions.Dictionary.ContainsKey(entry.Key))
+                    if (!e.Simulator.avatarPositions.Dictionary.ContainsKey(entry.Key))
                         newEntries.Add(entry.Key);
 
-                    simulator.avatarPositions.Dictionary[entry.Key] = entry.Value;
+                    e.Simulator.avatarPositions.Dictionary[entry.Key] = entry.Value;
                 }
             }
 
             if (m_CoarseLocationUpdate != null)
             {
-                OnCoarseLocationUpdate(new CoarseLocationUpdateEventArgs(simulator, newEntries, removedEntries));
+                OnCoarseLocationUpdate(new CoarseLocationUpdateEventArgs(e.Simulator, newEntries, removedEntries));
             }
         }
 
-        protected void RegionHandleReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void RegionHandleReplyHandler(object sender, PacketReceivedEventArgs e)
         {            
             if (m_RegionHandleReply != null)
             {
-                RegionIDAndHandleReplyPacket reply = (RegionIDAndHandleReplyPacket)packet;
+                RegionIDAndHandleReplyPacket reply = (RegionIDAndHandleReplyPacket)e.Packet;
                 OnRegionHandleReply(new RegionHandleReplyEventArgs(reply.ReplyBlock.RegionID, reply.ReplyBlock.RegionHandle));
             }
         }

@@ -50,14 +50,14 @@ namespace OpenMetaverse.TestClient
             Settings.SEND_AGENT_UPDATES = true;
             Settings.USE_ASSET_CACHE = true;
 
-            Network.RegisterCallback(PacketType.AgentDataUpdate, new NetworkManager.PacketCallback(AgentDataUpdateHandler));
-            Network.OnLogin += new NetworkManager.LoginCallback(LoginHandler);
+            Network.RegisterCallback(PacketType.AgentDataUpdate, AgentDataUpdateHandler);
+            Network.LoginProgress += LoginHandler;
             Self.IM += Self_IM;
             Groups.GroupMembersReply += GroupMembersHandler;
             Inventory.OnObjectOffered += new InventoryManager.ObjectOfferedCallback(Inventory_OnInventoryObjectReceived);
 
-            Network.RegisterCallback(PacketType.AvatarAppearance, new NetworkManager.PacketCallback(AvatarAppearanceHandler));
-            Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
+            Network.RegisterCallback(PacketType.AvatarAppearance, AvatarAppearanceHandler);
+            Network.RegisterCallback(PacketType.AlertMessage, AlertMessageHandler);
 
             VoiceManager = new VoiceManager(this);
 
@@ -100,9 +100,9 @@ namespace OpenMetaverse.TestClient
         /// </summary>
         /// <param name="login">The status of the login</param>
         /// <param name="message">Error message on failure, MOTD on success.</param>
-        public void LoginHandler(LoginStatus login, string message)
+        public void LoginHandler(object sender, LoginProgressEventArgs e)
         {
-            if (login == LoginStatus.Success)
+            if (e.Status == LoginStatus.Success)
             {
                 // Start in the inventory root folder.
                 CurrentDirectory = Inventory.Store.RootFolder;
@@ -183,14 +183,14 @@ namespace OpenMetaverse.TestClient
                     c.Think();
         }
 
-        private void AgentDataUpdateHandler(Packet packet, Simulator sim)
+        private void AgentDataUpdateHandler(object sender, PacketReceivedEventArgs e)
         {
-            AgentDataUpdatePacket p = (AgentDataUpdatePacket)packet;
-            if (p.AgentData.AgentID == sim.Client.Self.AgentID)
+            AgentDataUpdatePacket p = (AgentDataUpdatePacket)e.Packet;
+            if (p.AgentData.AgentID == e.Simulator.Client.Self.AgentID)
             {
                 GroupID = p.AgentData.ActiveGroupID;
 
-                GroupMembersRequestID = sim.Client.Groups.RequestGroupMembers(GroupID);
+                GroupMembersRequestID = e.Simulator.Client.Groups.RequestGroupMembers(GroupID);
             }
         }
 
@@ -201,15 +201,19 @@ namespace OpenMetaverse.TestClient
             GroupMembers = e.Members;
         }
 
-        private void AvatarAppearanceHandler(Packet packet, Simulator simulator)
+        private void AvatarAppearanceHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
+            
             AvatarAppearancePacket appearance = (AvatarAppearancePacket)packet;
 
             lock (Appearances) Appearances[appearance.Sender.ID] = appearance;
         }
 
-        private void AlertMessageHandler(Packet packet, Simulator simulator)
+        private void AlertMessageHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
+            
             AlertMessagePacket message = (AlertMessagePacket)packet;
 
             Logger.Log("[AlertMessage] " + Utils.BytesToString(message.AlertData.Message), Helpers.LogLevel.Info, this);

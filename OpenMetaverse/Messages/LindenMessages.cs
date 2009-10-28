@@ -1131,7 +1131,17 @@ namespace OpenMetaverse.Messages.Linden
 
 
     public class WebFetchInventoryDescendentsMessage : IMessage
-    {        
+    {
+
+        //public class Folder : InventoryBase
+        //{
+
+        //}
+
+        //public class Item : InventoryBase
+        //{
+
+        //}
         #region IMessage Members
 
         public OSDMap Serialize()

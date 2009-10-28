@@ -51,7 +51,7 @@ namespace OpenMetaverse
     /// outgoing traffic and deserializes incoming traffic, and provides
     /// instances of delegates for network-related events.
     /// </summary>
-    public partial class NetworkManager : INetworkManager
+    public partial class NetworkManager
     {
         #region Enums
 
@@ -119,145 +119,223 @@ namespace OpenMetaverse
         #endregion Structs
 
         #region Delegates
+              
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<PacketSentEventArgs> m_PacketSent;
 
-        /// <summary>
-        /// Coupled with RegisterCallback(), this is triggered whenever a packet
-        /// of a registered type is received
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        public delegate void PacketCallback(Packet packet, Simulator simulator);
-        /// <summary>
-        /// Triggered whenever an outgoing packet is sent
-        /// </summary>
-        /// <param name="data">Buffer holding the outgoing packet payload</param>
-        /// <param name="bytesSent">Number of bytes of the data buffer that were sent</param>
-        /// <param name="simulator">Simulator this packet was sent to</param>
-        public delegate void PacketSentCallback(byte[] data, int bytesSent, Simulator simulator);
-        /// <summary>
-        /// Assigned by the OnConnected event. Raised when login was a success
-        /// </summary>
-        /// <param name="sender">Reference to the GridClient object that called the event</param>
-        public delegate void ConnectedCallback(object sender);
-        /// <summary>
-        /// Assigned by the OnLogoutReply callback. Raised upone receipt of a LogoutReply packet during logout process.
-        /// </summary>
-        /// <param name="inventoryItems"></param>
-        public delegate void LogoutCallback(List<UUID> inventoryItems);
-        /// <summary>
-        /// Triggered before a new connection to a simulator is established
-        /// </summary>
-        /// <remarks>The connection to the new simulator won't be established
-        /// until this callback returns</remarks>
-        /// <param name="simulator">The simulator that is being connected to</param>
-        /// <returns>Whether to continue connecting to the simulator or abort
-        /// the connection</returns>
-        public delegate bool SimConnectingCallback(Simulator simulator);
-        /// <summary>
-        /// Triggered when a new connection to a simulator is established
-        /// </summary>
-        /// <param name="simulator">The simulator that is being connected to</param>
-        public delegate void SimConnectedCallback(Simulator simulator);
-        /// <summary>
-        /// Triggered when a simulator other than the simulator that is currently
-        /// being occupied disconnects for whatever reason
-        /// </summary>
-        /// <param name="simulator">The simulator that disconnected, which will become a null
-        /// reference after the callback is finished</param>
-        /// <param name="reason">Enumeration explaining the reason for the disconnect</param>
-        public delegate void SimDisconnectedCallback(Simulator simulator, DisconnectType reason);
-        /// <summary>
-        /// Triggered when we are logged out of the grid due to a simulator request,
-        /// client request, network timeout, or any other cause
-        /// </summary>
-        /// <param name="reason">Enumeration explaining the reason for the disconnect</param>
-        /// <param name="message">If we were logged out by the simulator, this 
-        /// is a message explaining why</param>
-        public delegate void DisconnectedCallback(DisconnectType reason, string message);
-        /// <summary>
-        /// Triggered when CurrentSim changes
-        /// </summary>
-        /// <param name="PreviousSimulator">A reference to the old value of CurrentSim</param>
-        public delegate void CurrentSimChangedCallback(Simulator PreviousSimulator);
-        /// <summary>
-        /// Triggered when an event queue makes the initial connection
-        /// </summary>
-        /// <param name="simulator">Simulator this event queue is tied to</param>
-        public delegate void EventQueueRunningCallback(Simulator simulator);
+        ///<summary>Raises the PacketSent Event</summary>
+        /// <param name="e">A PacketSentEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnPacketSent(PacketSentEventArgs e)
+        {
+            EventHandler<PacketSentEventArgs> handler = m_PacketSent;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_PacketSentLock = new object();
+
+        /// <summary>Raised when the simulator sends us data containing
+        /// ...</summary>
+        public event EventHandler<PacketSentEventArgs> PacketSent
+        {
+            add { lock (m_PacketSentLock) { m_PacketSent += value; } }
+            remove { lock (m_PacketSentLock) { m_PacketSent -= value; } }
+        }
+      
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<LoggedInEventArgs> m_LoggedIn;
+
+        ///<summary>Raises the LoggedIn Event</summary>
+        /// <param name="e">A LoggedInEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnLoggedIn(LoggedInEventArgs e)
+        {
+            EventHandler<LoggedInEventArgs> handler = m_LoggedIn;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_LoggedInLock = new object();
+
+        /// <summary>Raised when the login server confirms we are logged in</summary>
+        public event EventHandler<LoggedInEventArgs> LoggedIn
+        {
+            add { lock (m_LoggedInLock) { m_LoggedIn += value; } }
+            remove { lock (m_LoggedInLock) { m_LoggedIn -= value; } }
+        }
+       
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<LoggedOutEventArgs> m_LoggedOut;
+
+        ///<summary>Raises the LoggedOut Event</summary>
+        /// <param name="e">A LoggedOutEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnLoggedOut(LoggedOutEventArgs e)
+        {
+            EventHandler<LoggedOutEventArgs> handler = m_LoggedOut;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_LoggedOutLock = new object();
+
+        /// <summary>Raised when the simulator sends us data containing
+        /// ...</summary>
+        public event EventHandler<LoggedOutEventArgs> LoggedOut
+        {
+            add { lock (m_LoggedOutLock) { m_LoggedOut += value; } }
+            remove { lock (m_LoggedOutLock) { m_LoggedOut -= value; } }
+        }
+       
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<SimConnectingEventArgs> m_SimConnecting;
+
+        ///<summary>Raises the SimConnecting Event</summary>
+        /// <param name="e">A SimConnectingEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnSimConnecting(SimConnectingEventArgs e)
+        {
+            EventHandler<SimConnectingEventArgs> handler = m_SimConnecting;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_SimConnectingLock = new object();
+
+        /// <summary>Raised when the simulator sends us data containing
+        /// ...</summary>
+        public event EventHandler<SimConnectingEventArgs> SimConnecting
+        {
+            add { lock (m_SimConnectingLock) { m_SimConnecting += value; } }
+            remove { lock (m_SimConnectingLock) { m_SimConnecting -= value; } }
+        }
+        
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<SimConnectedEventArgs> m_SimConnected;
+
+        ///<summary>Raises the SimConnected Event</summary>
+        /// <param name="e">A SimConnectedEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnSimConnected(SimConnectedEventArgs e)
+        {
+            EventHandler<SimConnectedEventArgs> handler = m_SimConnected;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_SimConnectedLock = new object();
+
+        /// <summary>Raised when the simulator sends us data containing
+        /// ...</summary>
+        public event EventHandler<SimConnectedEventArgs> SimConnected
+        {
+            add { lock (m_SimConnectedLock) { m_SimConnected += value; } }
+            remove { lock (m_SimConnectedLock) { m_SimConnected -= value; } }
+        }
+    
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<SimDisconnectedEventArgs> m_SimDisconnected;
+
+        ///<summary>Raises the SimDisconnected Event</summary>
+        /// <param name="e">A SimDisconnectedEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnSimDisconnected(SimDisconnectedEventArgs e)
+        {
+            EventHandler<SimDisconnectedEventArgs> handler = m_SimDisconnected;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_SimDisconnectedLock = new object();
+
+        /// <summary>Raised when the simulator sends us data containing
+        /// ...</summary>
+        public event EventHandler<SimDisconnectedEventArgs> SimDisconnected
+        {
+            add { lock (m_SimDisconnectedLock) { m_SimDisconnected += value; } }
+            remove { lock (m_SimDisconnectedLock) { m_SimDisconnected -= value; } }
+        }
+        
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<DisconnectedEventArgs> m_Disconnected;
+
+        ///<summary>Raises the Disconnected Event</summary>
+        /// <param name="e">A DisconnectedEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnDisconnected(DisconnectedEventArgs e)
+        {
+            EventHandler<DisconnectedEventArgs> handler = m_Disconnected;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_DisconnectedLock = new object();
+
+        /// <summary>Raised when the simulator sends us data containing
+        /// ...</summary>
+        public event EventHandler<DisconnectedEventArgs> Disconnected
+        {
+            add { lock (m_DisconnectedLock) { m_Disconnected += value; } }
+            remove { lock (m_DisconnectedLock) { m_Disconnected -= value; } }
+        }
+        
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<SimChangedEventArgs> m_SimChanged;
+
+        ///<summary>Raises the SimChanged Event</summary>
+        /// <param name="e">A SimChangedEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnSimChanged(SimChangedEventArgs e)
+        {
+            EventHandler<SimChangedEventArgs> handler = m_SimChanged;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_SimChangedLock = new object();
+
+        /// <summary>Raised when the simulator sends us data containing
+        /// ...</summary>
+        public event EventHandler<SimChangedEventArgs> SimChanged
+        {
+            add { lock (m_SimChangedLock) { m_SimChanged += value; } }
+            remove { lock (m_SimChangedLock) { m_SimChanged -= value; } }
+        }
+       
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<EventQueueRunningEventArgs> m_EventQueueRunning;
+
+        ///<summary>Raises the EventQueueRunning Event</summary>
+        /// <param name="e">A EventQueueRunningEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnEventQueueRunning(EventQueueRunningEventArgs e)
+        {
+            EventHandler<EventQueueRunningEventArgs> handler = m_EventQueueRunning;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_EventQueueRunningLock = new object();
+
+        /// <summary>Raised when the simulator sends us data containing
+        /// ...</summary>
+        public event EventHandler<EventQueueRunningEventArgs> EventQueueRunning
+        {
+            add { lock (m_EventQueueRunningLock) { m_EventQueueRunning += value; } }
+            remove { lock (m_EventQueueRunningLock) { m_EventQueueRunning -= value; } }
+        }
 
         #endregion Delegates
-
-        #region Events
-
-        /// <summary>
-        /// Event raised when an outgoing packet is sent to a simulator
-        /// </summary>
-        public event PacketSentCallback OnPacketSent;
-        /// <summary>
-        /// Event raised when the client was able to connected successfully.
-        /// </summary>
-        /// <remarks>Uses the ConnectedCallback delegate.</remarks>
-        public event ConnectedCallback OnConnected;
-        /// <summary>Event raised when a logout is confirmed by the simulator</summary>
-        /// <example>
-        /// request a logout, print a message when the simulator confirms
-        /// <code>
-        /// // subscribe to the logout reply event
-        /// Client.Network.OnLogoutReply += Network_OnLogoutReply;
-        /// 
-        /// // tell the simulator we want to logout
-        /// Client.Network.Logout();
-        /// 
-        /// // event handler for the logout reply event
-        /// void Network_OnLogoutReply(List&lt;UUID&gt; inventoryItems)
-        ///{
-        ///    Console.WriteLine("Simulator confirmed logout");
-        ///}
-        /// </code>
-        /// Same as above but using inline delegates
-        /// <code>
-        /// Client.Network.OnLogoutReply += delegate(List&lt;UUID&gt; inventoryItems)
-        /// {
-        ///    Console.WriteLine("Simulator confirmed logout");
-        /// };
-        /// 
-        ///  tell the simulator we want to logout
-        /// Client.Network.Logout();
-        /// </code>
-        /// </example>
-        public event LogoutCallback OnLogoutReply;
-        /// <summary>
-        /// Event raised when a before a connection to a simulator is 
-        /// initialized
-        /// </summary>
-        public event SimConnectingCallback OnSimConnecting;
-        /// <summary>
-        /// Event raised when a connection to a simulator is established
-        /// </summary>
-        public event SimConnectedCallback OnSimConnected;
-        /// <summary>
-        /// An event for the connection to a simulator other than the currently
-        /// occupied one disconnecting
-        /// </summary>
-        /// <remarks>The Simulators list is locked when this event is 
-        /// triggered, do not attempt to modify the collection or acquire a
-        /// lock on it when this callback is fired</remarks>
-        public event SimDisconnectedCallback OnSimDisconnected;
-        /// <summary>
-        /// An event for being logged out either through client request, server
-        /// forced, or network error
-        /// </summary>
-        public event DisconnectedCallback OnDisconnected;
-        /// <summary>
-        /// An event for when CurrentSim changes
-        /// </summary>
-        public event CurrentSimChangedCallback OnCurrentSimChanged;
-        /// <summary>
-        /// Triggered when an event queue makes the initial connection
-        /// </summary>
-        public event EventQueueRunningCallback OnEventQueueRunning;
-
-        #endregion Events
 
         #region Properties
 
@@ -302,7 +380,7 @@ namespace OpenMetaverse
         private uint _CircuitCode;
         private Simulator _CurrentSim = null;
         private bool connected = false;
-
+        
         /// <summary>
         /// Default constructor
         /// </summary>
@@ -310,7 +388,7 @@ namespace OpenMetaverse
         public NetworkManager(GridClient client)
         {
             Client = client;
-
+            
             PacketEvents = new PacketEventDictionary(client);
             CapsEvents = new CapsEventDictionary(client);
 
@@ -318,14 +396,13 @@ namespace OpenMetaverse
             RegisterEventCallback("EnableSimulator", new Caps.EventQueueCallback(EnableSimulatorHandler));
 
             // Register the internal callbacks
-            RegisterCallback(PacketType.RegionHandshake, new PacketCallback(RegionHandshakeHandler));
-            RegisterCallback(PacketType.StartPingCheck, new PacketCallback(StartPingCheckHandler));
-            
-            RegisterCallback(PacketType.DisableSimulator, new PacketCallback(DisableSimulatorHandler));
-            RegisterCallback(PacketType.KickUser, new PacketCallback(KickUserHandler));
-            RegisterCallback(PacketType.LogoutReply, new PacketCallback(LogoutReplyHandler));
-            RegisterCallback(PacketType.CompletePingCheck, new PacketCallback(PongHandler));
-			RegisterCallback(PacketType.SimStats, new PacketCallback(SimStatsHandler));
+            RegisterCallback(PacketType.RegionHandshake, RegionHandshakeHandler);
+            RegisterCallback(PacketType.StartPingCheck, StartPingCheckHandler);            
+            RegisterCallback(PacketType.DisableSimulator, DisableSimulatorHandler);
+            RegisterCallback(PacketType.KickUser, KickUserHandler);
+            RegisterCallback(PacketType.LogoutReply, LogoutReplyHandler);
+            RegisterCallback(PacketType.CompletePingCheck, CompletePingCheckHandler);
+			RegisterCallback(PacketType.SimStats, SimStatsHandler);
 
             // GLOBAL SETTING: Don't force Expect-100: Continue headers on HTTP POST calls
             ServicePointManager.Expect100Continue = false;
@@ -339,7 +416,7 @@ namespace OpenMetaverse
         /// <param name="type">Packet type to trigger events for</param>
         /// <param name="callback">Callback to fire when a packet of this type
         /// is received</param>
-        public void RegisterCallback(PacketType type, PacketCallback callback)
+        public void RegisterCallback(PacketType type, EventHandler<PacketReceivedEventArgs> callback)
         {
             PacketEvents.RegisterEvent(type, callback);
         }
@@ -351,7 +428,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="type">Packet type this callback is registered with</param>
         /// <param name="callback">Callback to stop firing events for</param>
-        public void UnregisterCallback(PacketType type, PacketCallback callback)
+        public void UnregisterCallback(PacketType type, EventHandler<PacketReceivedEventArgs> callback)
         {
             PacketEvents.UnregisterEvent(type, callback);
         }
@@ -466,16 +543,19 @@ namespace OpenMetaverse
                 }
 
                 // Fire the OnSimConnecting event
-                if (OnSimConnecting != null)
+                if (m_SimConnecting != null)
                 {
                     try
                     {
-                        if (!OnSimConnecting(simulator))
+                        SimConnectingEventArgs args = new SimConnectingEventArgs(simulator);
+                        OnSimConnecting(args);
+
+                        if (args.Cancel)
                         {
                             // Callback is requesting that we abort this connection
                             lock (Simulators) Simulators.Remove(simulator);
                             return null;
-                        }
+                        }                        
                     }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
@@ -492,11 +572,10 @@ namespace OpenMetaverse
 
                     if (setDefault) SetCurrentSim(simulator, seedcaps);
 
-                    // Fire the simulator connection callback if one is registered
-                    if (OnSimConnected != null)
+                    // Raise the SimConnected event
+                    if (m_SimConnected != null)
                     {
-                        try { OnSimConnected(simulator); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                        OnSimConnected(new SimConnectedEventArgs(simulator));
                     }
 
                     // If enabled, send an AgentThrottle packet to the server to increase our bandwidth
@@ -539,11 +618,11 @@ namespace OpenMetaverse
         /// has expired and the network layer is manually shut down
         /// </summary>
         public void Logout()
-        {
+        {            
             AutoResetEvent logoutEvent = new AutoResetEvent(false);
-            LogoutCallback callback = 
-                delegate(List<UUID> inventoryItems) { logoutEvent.Set(); };
-            OnLogoutReply += callback;
+            EventHandler<LoggedOutEventArgs> callback = delegate(object sender, LoggedOutEventArgs e) { logoutEvent.Set(); };
+
+            LoggedOut += callback;
 
             // Send the packet requesting a clean logout
             RequestLogout();
@@ -554,7 +633,7 @@ namespace OpenMetaverse
             if (!logoutEvent.WaitOne(Client.Settings.LOGOUT_TIMEOUT, false))
                 Shutdown(DisconnectType.NetworkTimeout);
 
-            OnLogoutReply -= callback;
+            LoggedOut -= callback;
         }
 
         /// <summary>
@@ -588,24 +667,23 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// 
+        /// Close a connection to the given simulator
         /// </summary>
-        /// <param name="sim"></param>
+        /// <param name="simulator"></param>
         /// <param name="sendCloseCircuit"></param>
-        public void DisconnectSim(Simulator sim, bool sendCloseCircuit)
+        public void DisconnectSim(Simulator simulator, bool sendCloseCircuit)
         {
-            if (sim != null)
+            if (simulator != null)
             {
-                sim.Disconnect(sendCloseCircuit);
+                simulator.Disconnect(sendCloseCircuit);
 
                 // Fire the SimDisconnected event if a handler is registered
-                if (OnSimDisconnected != null)
+                if (m_SimDisconnected != null)
                 {
-                    try { OnSimDisconnected(sim, DisconnectType.NetworkTimeout); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnSimDisconnected(new SimDisconnectedEventArgs(simulator, DisconnectType.NetworkTimeout));
                 }
 
-                lock (Simulators) Simulators.Remove(sim);
+                lock (Simulators) Simulators.Remove(simulator);
 
                 if (Simulators.Count == 0) Shutdown(DisconnectType.SimShutdown);
             }
@@ -637,10 +715,9 @@ namespace OpenMetaverse
                         Simulators[i].Disconnect(sendCloseCircuit);
 
                         // Fire the SimDisconnected event if a handler is registered
-                        if (OnSimDisconnected != null)
+                        if (m_SimDisconnected != null)
                         {
-                            try { OnSimDisconnected(Simulators[i], type); }
-                            catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                            OnSimDisconnected(new SimDisconnectedEventArgs(Simulators[i], type));
                         }
                     }
                 }
@@ -654,10 +731,9 @@ namespace OpenMetaverse
                 CurrentSim.Disconnect(sendCloseCircuit);
 
                 // Fire the SimDisconnected event if a handler is registered
-                if (OnSimDisconnected != null)
+                if (m_SimDisconnected != null)
                 {
-                    try { OnSimDisconnected(CurrentSim, type); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnSimDisconnected(new SimDisconnectedEventArgs(CurrentSim, type));
                 }
             }
 
@@ -668,10 +744,9 @@ namespace OpenMetaverse
             connected = false;
 
             // Fire the disconnected callback
-            if (OnDisconnected != null)
+            if (m_Disconnected != null)
             {
-                try { OnDisconnected(type, type.ToString()); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnDisconnected(new DisconnectedEventArgs(type, type.ToString()));
             }
         }
 
@@ -695,10 +770,12 @@ namespace OpenMetaverse
             return null;
         }
 
-        internal void PacketSent(byte[] data, int bytesSent, Simulator simulator)
+        internal void RaisePacketSentEvent(byte[] data, int bytesSent, Simulator simulator)
         {
-            if (OnPacketSent != null)
-                OnPacketSent(data, bytesSent, simulator);
+            if (m_PacketSent != null)
+            {
+                OnPacketSent(new PacketSentEventArgs(data, bytesSent, simulator));
+            }
         }
 
         /// <summary>
@@ -707,10 +784,9 @@ namespace OpenMetaverse
         /// <param name="simulator">Simulator the event queue is attached to</param>
         internal void RaiseConnectedEvent(Simulator simulator)
         {
-            if (OnEventQueueRunning != null)
+            if (m_EventQueueRunning != null)
             {
-                try { OnEventQueueRunning(simulator); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnEventQueueRunning(new EventQueueRunningEventArgs(simulator));
             }
         }
 
@@ -791,10 +867,9 @@ namespace OpenMetaverse
 		        simulator.SetSeedCaps(seedcaps);
 
                 // If the current simulator changed fire the callback
-                if (OnCurrentSimChanged != null && simulator != oldSim)
+                if (m_SimChanged != null && simulator != oldSim)
                 {
-                    try { OnCurrentSimChanged(oldSim); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnSimChanged(new SimChangedEventArgs(oldSim));
                 }
             }
         }
@@ -842,21 +917,19 @@ namespace OpenMetaverse
 
         #region Packet Callbacks
 
-        /// <summary>
-        /// Called to deal with LogoutReply packet and fires off callback
-        /// </summary>
-        /// <param name="packet">Full packet of type LogoutReplyPacket</param>
-        /// <param name="simulator"></param>
-        private void LogoutReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void LogoutReplyHandler(object sender, PacketReceivedEventArgs e)
         {
-            LogoutReplyPacket logout = (LogoutReplyPacket)packet;
+            LogoutReplyPacket logout = (LogoutReplyPacket)e.Packet;
 
             if ((logout.AgentData.SessionID == Client.Self.SessionID) && (logout.AgentData.AgentID == Client.Self.AgentID))
             {
                 Logger.DebugLog("Logout reply received", Client);
 
                 // Deal with callbacks, if any
-                if (OnLogoutReply != null)
+                if (m_LoggedOut != null)
                 {
                     List<UUID> itemIDs = new List<UUID>();
 
@@ -865,8 +938,7 @@ namespace OpenMetaverse
                         itemIDs.Add(InventoryData.ItemID);
                     }
 
-                    try { OnLogoutReply(itemIDs); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                    OnLoggedOut(new LoggedOutEventArgs(itemIDs));
                 }
 
                 // If we are receiving a LogoutReply packet assume this is a client initiated shutdown
@@ -878,9 +950,12 @@ namespace OpenMetaverse
             }
         }
 
-        private void StartPingCheckHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void StartPingCheckHandler(object sender, PacketReceivedEventArgs e)
         {
-            StartPingCheckPacket incomingPing = (StartPingCheckPacket)packet;
+            StartPingCheckPacket incomingPing = (StartPingCheckPacket)e.Packet;
             CompletePingCheckPacket ping = new CompletePingCheckPacket();
             ping.PingID.PingID = incomingPing.PingID.PingID;
             ping.Header.Reliable = false;
@@ -888,115 +963,124 @@ namespace OpenMetaverse
             //   I don't think that's right.  As far as I can tell, the Viewer
             //   only uses this to prune its duplicate-checking buffer. -bushing
 
-            SendPacket(ping, simulator);
+            SendPacket(ping, e.Simulator);
         }
 
-        private void PongHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void CompletePingCheckHandler(object sender, PacketReceivedEventArgs e)
         {
-            CompletePingCheckPacket pong = (CompletePingCheckPacket)packet;
-            String retval = "Pong2: " + (Environment.TickCount - simulator.Stats.LastPingSent);
-            if ((pong.PingID.PingID - simulator.Stats.LastPingID + 1) != 0)
-                retval += " (gap of " + (pong.PingID.PingID - simulator.Stats.LastPingID + 1) + ")";
+            CompletePingCheckPacket pong = (CompletePingCheckPacket)e.Packet;
+            String retval = "Pong2: " + (Environment.TickCount - e.Simulator.Stats.LastPingSent);
+            if ((pong.PingID.PingID - e.Simulator.Stats.LastPingID + 1) != 0)
+                retval += " (gap of " + (pong.PingID.PingID - e.Simulator.Stats.LastPingID + 1) + ")";
 
-            simulator.Stats.LastLag = Environment.TickCount - simulator.Stats.LastPingSent;
-            simulator.Stats.ReceivedPongs++;
+            e.Simulator.Stats.LastLag = Environment.TickCount - e.Simulator.Stats.LastPingSent;
+            e.Simulator.Stats.ReceivedPongs++;
             //			Client.Log(retval, Helpers.LogLevel.Info);
         }
-		
-		private void SimStatsHandler(Packet packet, Simulator simulator)
+
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void SimStatsHandler(object sender, PacketReceivedEventArgs e)
 		{
 			if ( ! Client.Settings.ENABLE_SIMSTATS ) {
 				return;
 			}
-			SimStatsPacket stats = (SimStatsPacket)packet;
+			SimStatsPacket stats = (SimStatsPacket)e.Packet;
 			for ( int i = 0 ; i < stats.Stat.Length ; i++ ) {
 				SimStatsPacket.StatBlock s = stats.Stat[i];
 				switch (s.StatID )
 				{
 					case 0:
-                        simulator.Stats.Dilation = s.StatValue;
+                        e.Simulator.Stats.Dilation = s.StatValue;
 						break;
 					case 1:
-                        simulator.Stats.FPS = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.FPS = Convert.ToInt32(s.StatValue);
 						break;
 					case 2:
-                        simulator.Stats.PhysicsFPS = s.StatValue;
+                        e.Simulator.Stats.PhysicsFPS = s.StatValue;
 						break;
 					case 3:
-                        simulator.Stats.AgentUpdates = s.StatValue;
+                        e.Simulator.Stats.AgentUpdates = s.StatValue;
 						break;
 					case 4:
-                        simulator.Stats.FrameTime = s.StatValue;
+                        e.Simulator.Stats.FrameTime = s.StatValue;
 						break;
 					case 5:
-                        simulator.Stats.NetTime = s.StatValue;
+                        e.Simulator.Stats.NetTime = s.StatValue;
 						break;
                     case 6:
-                        simulator.Stats.OtherTime = s.StatValue;
+                        e.Simulator.Stats.OtherTime = s.StatValue;
                         break;
 					case 7:
-                        simulator.Stats.PhysicsTime = s.StatValue;
+                        e.Simulator.Stats.PhysicsTime = s.StatValue;
 						break;
 					case 8:
-                        simulator.Stats.AgentTime = s.StatValue;
+                        e.Simulator.Stats.AgentTime = s.StatValue;
 						break;
 					case 9:
-                        simulator.Stats.ImageTime = s.StatValue;
+                        e.Simulator.Stats.ImageTime = s.StatValue;
 						break;
 					case 10:
-                        simulator.Stats.ScriptTime = s.StatValue;
+                        e.Simulator.Stats.ScriptTime = s.StatValue;
                         break;
 					case 11:
-                        simulator.Stats.Objects = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.Objects = Convert.ToInt32(s.StatValue);
 						break;
 					case 12:
-                        simulator.Stats.ScriptedObjects = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.ScriptedObjects = Convert.ToInt32(s.StatValue);
 						break;
 					case 13:
-                        simulator.Stats.Agents = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.Agents = Convert.ToInt32(s.StatValue);
 						break;
 					case 14:
-                        simulator.Stats.ChildAgents = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.ChildAgents = Convert.ToInt32(s.StatValue);
 						break;
 					case 15:
-                        simulator.Stats.ActiveScripts = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.ActiveScripts = Convert.ToInt32(s.StatValue);
 						break;
 					case 16:
-                        simulator.Stats.LSLIPS = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.LSLIPS = Convert.ToInt32(s.StatValue);
 						break;
 					case 17:
-                        simulator.Stats.INPPS = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.INPPS = Convert.ToInt32(s.StatValue);
 						break;
 					case 18:
-                        simulator.Stats.OUTPPS = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.OUTPPS = Convert.ToInt32(s.StatValue);
 						break;
 					case 19:
-                        simulator.Stats.PendingDownloads = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.PendingDownloads = Convert.ToInt32(s.StatValue);
 						break;
 					case 20:
-                        simulator.Stats.PendingUploads = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.PendingUploads = Convert.ToInt32(s.StatValue);
 						break;
 					case 21:
-                        simulator.Stats.VirtualSize = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.VirtualSize = Convert.ToInt32(s.StatValue);
 						break;
 					case 22:
-                        simulator.Stats.ResidentSize = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.ResidentSize = Convert.ToInt32(s.StatValue);
 						break;
 					case 23:
-                        simulator.Stats.PendingLocalUploads = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.PendingLocalUploads = Convert.ToInt32(s.StatValue);
 						break;
 					case 24:
-                        simulator.Stats.UnackedBytes = Convert.ToInt32(s.StatValue);
+                        e.Simulator.Stats.UnackedBytes = Convert.ToInt32(s.StatValue);
 						break;
 				}
 			}
 		}
 
-        private void RegionHandshakeHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void RegionHandshakeHandler(object sender, PacketReceivedEventArgs e)
         {
-            RegionHandshakePacket handshake = (RegionHandshakePacket)packet;
-
-            simulator.ID = handshake.RegionInfo.CacheID;
+            RegionHandshakePacket handshake = (RegionHandshakePacket)e.Packet;
+            Simulator simulator = e.Simulator;
+            e.Simulator.ID = handshake.RegionInfo.CacheID;
 
             simulator.IsEstateManager = handshake.RegionInfo.IsEstateManager;
             simulator.Name = Utils.BytesToString(handshake.RegionInfo.SimName);
@@ -1022,16 +1106,12 @@ namespace OpenMetaverse
             simulator.BillableFactor = handshake.RegionInfo.BillableFactor;
             simulator.Access = (SimAccess)handshake.RegionInfo.SimAccess;
 
-
             simulator.RegionID = handshake.RegionInfo2.RegionID;
             simulator.ColoLocation = Utils.BytesToString(handshake.RegionInfo3.ColoName);
             simulator.CPUClass = handshake.RegionInfo3.CPUClassID;
             simulator.CPURatio = handshake.RegionInfo3.CPURatio;
             simulator.ProductName = Utils.BytesToString(handshake.RegionInfo3.ProductName);
-            simulator.ProductSku = Utils.BytesToString(handshake.RegionInfo3.ProductSKU);
-            
-
-            Logger.Log("Received a region handshake for " + simulator.ToString(), Helpers.LogLevel.Info, Client);
+            simulator.ProductSku = Utils.BytesToString(handshake.RegionInfo3.ProductSKU);            
 
             // Send a RegionHandshakeReply
             RegionHandshakeReplyPacket reply = new RegionHandshakeReplyPacket();
@@ -1044,8 +1124,8 @@ namespace OpenMetaverse
             simulator.connected = true;
             simulator.ConnectedEvent.Set();
         }
-
-        private void EnableSimulatorHandler(string capsKey, IMessage message, Simulator simulator)
+        
+        protected void EnableSimulatorHandler(string capsKey, IMessage message, Simulator simulator)
         {
             if (!Client.Settings.MULTIPLE_SIMS) return;
 
@@ -1069,22 +1149,25 @@ namespace OpenMetaverse
             }
         }
 
-        private void DisableSimulatorHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void DisableSimulatorHandler(object sender, PacketReceivedEventArgs e)
         {
-            Logger.DebugLog("Received a DisableSimulator packet from " + simulator + ", shutting it down", Client);
-
-            DisconnectSim(simulator, false);
+            DisconnectSim(e.Simulator, false);
         }
 
-        private void KickUserHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void KickUserHandler(object sender, PacketReceivedEventArgs e)
         {
-            string message = Utils.BytesToString(((KickUserPacket)packet).UserInfo.Reason);
+            string message = Utils.BytesToString(((KickUserPacket)e.Packet).UserInfo.Reason);
 
             // Fire the callback to let client apps know we are shutting down
-            if (OnDisconnected != null)
+            if (m_Disconnected != null)
             {
-                try { OnDisconnected(DisconnectType.ServerInitiated, message); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnDisconnected(new DisconnectedEventArgs(DisconnectType.ServerInitiated, message));
             }
 
             // Shutdown the network layer
@@ -1093,4 +1176,138 @@ namespace OpenMetaverse
 
         #endregion Packet Callbacks
     }
+    #region EventArgs
+    
+    public class PacketReceivedEventArgs : EventArgs
+    {
+        private readonly Packet m_Packet;
+        private readonly Simulator m_Simulator;
+
+        public Packet Packet { get { return m_Packet; } }
+        public Simulator Simulator { get { return m_Simulator; } } 
+
+        public PacketReceivedEventArgs(Packet packet, Simulator simulator)
+        {
+            this.m_Packet = packet;
+            this.m_Simulator = simulator;
+        }
+    }
+    
+    public class LoggedInEventArgs : EventArgs
+    {
+    }
+
+    public class LoggedOutEventArgs : EventArgs
+    {
+        private readonly List<UUID> m_InventoryItems;
+        public List<UUID> InventoryItems;
+
+        public LoggedOutEventArgs(List<UUID> inventoryItems)
+        {
+            this.m_InventoryItems = inventoryItems;
+        }
+    }
+
+    public class PacketSentEventArgs : EventArgs
+    {
+        private readonly byte[] m_Data;
+        private readonly int m_SentBytes;
+        private readonly Simulator m_Simulator;
+
+        public byte[] Data { get { return m_Data; } }
+        public int SentBytes { get { return m_SentBytes; } }
+        public Simulator Simulator { get { return m_Simulator; } } 
+
+        public PacketSentEventArgs(byte[] data, int bytesSent, Simulator simulator)
+        {
+            this.m_Data = data;
+            this.m_SentBytes = bytesSent;
+            this.m_Simulator = simulator;
+        }
+    }
+
+    public class SimConnectingEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+        private bool m_Cancel;
+
+        public Simulator Simulator { get { return m_Simulator; } }
+
+        public bool Cancel { 
+            get { return m_Cancel; }     
+            set { m_Cancel = value; }
+        }
+
+        public SimConnectingEventArgs(Simulator simulator)
+        {
+            this.m_Simulator = simulator;
+            this.m_Cancel = false;
+        }
+    }
+
+    public class SimConnectedEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+        public Simulator Simulator { get { return m_Simulator; } }
+
+        public SimConnectedEventArgs(Simulator simulator)
+        {
+            this.m_Simulator = simulator;
+        }
+    }
+
+    public class SimDisconnectedEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+        private readonly NetworkManager.DisconnectType m_Reason;
+
+        public Simulator Simulator { get { return m_Simulator; } }       
+        public NetworkManager.DisconnectType Reason { get { return m_Reason; } } 
+
+        public SimDisconnectedEventArgs(Simulator simulator, NetworkManager.DisconnectType reason)
+        {
+            this.m_Simulator = simulator;
+            this.m_Reason = reason;
+        }
+    }
+
+    public class DisconnectedEventArgs : EventArgs
+    {
+        private readonly NetworkManager.DisconnectType m_Reason;
+        private readonly String m_Message;
+
+        public NetworkManager.DisconnectType Reason { get { return m_Reason; } }        
+        public String Message { get { return m_Message; } } 
+
+        public DisconnectedEventArgs(NetworkManager.DisconnectType reason, String message)
+        {
+            this.m_Reason = reason;
+            this.m_Message = message;
+        }
+    }
+
+    public class SimChangedEventArgs : EventArgs
+    {
+        private readonly Simulator m_PreviousSimulator;
+
+        public Simulator PreviousSimulator { get { return m_PreviousSimulator; } } 
+
+        public SimChangedEventArgs(Simulator previousSimulator)
+        {
+            this.m_PreviousSimulator = previousSimulator;
+        }
+    }
+
+    public class EventQueueRunningEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+
+        public Simulator Simulator { get { return m_Simulator; } } 
+
+        public EventQueueRunningEventArgs(Simulator simulator)
+        {
+            this.m_Simulator = simulator;
+        }
+    }
+    #endregion
 }

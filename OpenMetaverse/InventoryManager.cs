@@ -1060,13 +1060,13 @@ namespace OpenMetaverse
         {
             _Client = client;
 
-            _Client.Network.RegisterCallback(PacketType.UpdateCreateInventoryItem, new NetworkManager.PacketCallback(UpdateCreateInventoryItemHandler));
-            _Client.Network.RegisterCallback(PacketType.SaveAssetIntoInventory, new NetworkManager.PacketCallback(SaveAssetIntoInventoryHandler));
-            _Client.Network.RegisterCallback(PacketType.BulkUpdateInventory, new NetworkManager.PacketCallback(BulkUpdateInventoryHandler));
-            _Client.Network.RegisterCallback(PacketType.MoveInventoryItem, new NetworkManager.PacketCallback(MoveInventoryItemHandler));
-            _Client.Network.RegisterCallback(PacketType.InventoryDescendents, new NetworkManager.PacketCallback(InventoryDescendentsHandler));
-            _Client.Network.RegisterCallback(PacketType.FetchInventoryReply, new NetworkManager.PacketCallback(FetchInventoryReplyHandler));
-            _Client.Network.RegisterCallback(PacketType.ReplyTaskInventory, new NetworkManager.PacketCallback(ReplyTaskInventoryHandler));
+            _Client.Network.RegisterCallback(PacketType.UpdateCreateInventoryItem, UpdateCreateInventoryItemHandler);
+            _Client.Network.RegisterCallback(PacketType.SaveAssetIntoInventory, SaveAssetIntoInventoryHandler);
+            _Client.Network.RegisterCallback(PacketType.BulkUpdateInventory, BulkUpdateInventoryHandler);
+            _Client.Network.RegisterCallback(PacketType.MoveInventoryItem, MoveInventoryItemHandler);
+            _Client.Network.RegisterCallback(PacketType.InventoryDescendents, InventoryDescendentsHandler);
+            _Client.Network.RegisterCallback(PacketType.FetchInventoryReply, FetchInventoryReplyHandler);
+            _Client.Network.RegisterCallback(PacketType.ReplyTaskInventory, ReplyTaskInventoryHandler);
             _Client.Network.RegisterEventCallback("ScriptRunningReply", new Caps.EventQueueCallback(ScriptRunningReplyMessageHandler));
 
             // Watch for inventory given to us through instant message            
@@ -3408,18 +3408,22 @@ namespace OpenMetaverse
             }
         }
 
-        private void SaveAssetIntoInventoryHandler(Packet packet, Simulator simulator)
+        private void SaveAssetIntoInventoryHandler(object sender, PacketReceivedEventArgs e)
         {
             if (OnSaveAssetToInventory != null)
             {
+                Packet packet = e.Packet;
+                
                 SaveAssetIntoInventoryPacket save = (SaveAssetIntoInventoryPacket)packet;
                 try { OnSaveAssetToInventory(save.InventoryData.ItemID, save.InventoryData.NewAssetID); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, _Client, ex); }
             }
         }
 
-        private void InventoryDescendentsHandler(Packet packet, Simulator simulator)
+        protected void InventoryDescendentsHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
+
             InventoryDescendentsPacket reply = (InventoryDescendentsPacket)packet;
 
             if (reply.AgentData.Descendents > 0)
@@ -3557,7 +3561,7 @@ namespace OpenMetaverse
                                     if (OnFindObjectByPath != null)
                                     {
                                         try { OnFindObjectByPath(String.Join("/", search.Path), folderContents[j].UUID); }
-                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, _Client, ex); }
                                     }
 
                                     // Remove this entry and restart the loop since we are changing the collection size
@@ -3589,7 +3593,7 @@ namespace OpenMetaverse
             if (OnFolderUpdated != null)
             {
                 try { OnFolderUpdated(parentFolder.UUID); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, _Client, ex); }
             }
         }
 
@@ -3599,8 +3603,10 @@ namespace OpenMetaverse
         /// taken into inventory, when an item is created using the CreateInventoryItem
         /// packet, or when an object is purchased
         /// </summary>
-        private void UpdateCreateInventoryItemHandler(Packet packet, Simulator simulator)
+        protected void UpdateCreateInventoryItemHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
+            
             UpdateCreateInventoryItemPacket reply = packet as UpdateCreateInventoryItemPacket;
 
             foreach (UpdateCreateInventoryItemPacket.InventoryDataBlock dataBlock in reply.InventoryData)
@@ -3661,7 +3667,7 @@ namespace OpenMetaverse
                     _ItemCreatedCallbacks.Remove(dataBlock.CallbackID);
 
                     try { createdCallback(true, item); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, _Client, ex); }
                 }
 
                 // TODO: Is this callback even triggered when items are copied?
@@ -3672,7 +3678,7 @@ namespace OpenMetaverse
                     _ItemCopiedCallbacks.Remove(dataBlock.CallbackID);
 
                     try { copyCallback(item); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, _Client, ex); }
                 }
                 
                 //This is triggered when an item is received from a task
@@ -3680,13 +3686,15 @@ namespace OpenMetaverse
                 {
                     try { OnTaskItemReceived(item.UUID, dataBlock.FolderID, item.CreatorID, item.AssetUUID, 
                         item.InventoryType); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, _Client, ex); }
                 }
             }
         }
 
-        private void MoveInventoryItemHandler(Packet packet, Simulator simulator)
+        protected void MoveInventoryItemHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
+            
             MoveInventoryItemPacket move = (MoveInventoryItemPacket)packet;
 
             for (int i = 0; i < move.InventoryData.Length; i++)
@@ -3701,8 +3709,10 @@ namespace OpenMetaverse
             }
         }
 
-        private void BulkUpdateInventoryHandler(Packet packet, Simulator simulator)
+        private void BulkUpdateInventoryHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
+            
             BulkUpdateInventoryPacket update = packet as BulkUpdateInventoryPacket;
 
             if (update.FolderData.Length > 0 && update.FolderData[0].FolderID != UUID.Zero)
@@ -3762,7 +3772,7 @@ namespace OpenMetaverse
                         _ItemCreatedCallbacks.Remove(dataBlock.CallbackID);
 
                         try { callback(true, item); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, _Client, ex); }
                     }
 
                     // Look for an "item copied" callback
@@ -3772,14 +3782,16 @@ namespace OpenMetaverse
                         _ItemCopiedCallbacks.Remove(dataBlock.CallbackID);
 
                         try { copyCallback(item); }
-                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                        catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, _Client, ex); }
                     }
                 }
             }
         }
 
-        private void FetchInventoryReplyHandler(Packet packet, Simulator simulator)
+        private void FetchInventoryReplyHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
+            
             FetchInventoryReplyPacket reply = packet as FetchInventoryReplyPacket;
 
             foreach (FetchInventoryReplyPacket.InventoryDataBlock dataBlock in reply.InventoryData) 
@@ -3820,15 +3832,17 @@ namespace OpenMetaverse
                 if (OnItemReceived != null)
                 {
                     try { OnItemReceived(item); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, _Client, ex); }
                 }
             }
         }
 
-        private void ReplyTaskInventoryHandler(Packet packet, Simulator simulator)
+        private void ReplyTaskInventoryHandler(object sender, PacketReceivedEventArgs e)
         {
             if (OnTaskInventoryReply != null)
             {
+                Packet packet = e.Packet;
+                
                 ReplyTaskInventoryPacket reply = (ReplyTaskInventoryPacket)packet;
 
                 try
@@ -3836,7 +3850,7 @@ namespace OpenMetaverse
                     OnTaskInventoryReply(reply.InventoryData.TaskID, reply.InventoryData.Serial,
                         Utils.BytesToString(reply.InventoryData.Filename));
                 }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, _Client, e); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, _Client, ex); }
             }
         }
 

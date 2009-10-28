@@ -164,8 +164,8 @@ namespace OpenMetaverse
             }
 
             // Handle client connected and disconnected events
-            client.Network.OnConnected += delegate { Startup(); };
-            client.Network.OnDisconnected += delegate { Shutdown(); };
+            client.Network.LoggedIn += delegate { Startup(); };
+            client.Network.Disconnected += delegate { Shutdown(); };
         }
 
         /// <summary>
@@ -608,11 +608,11 @@ namespace OpenMetaverse
         /// Handle responses from the simulator that tell us a texture we have requested is unable to be located
         /// or no longer exists. This will remove the request from the pipeline and free up a slot if one is in use
         /// </summary>
-        /// <param name="packet">The <see cref="ImageNotInDatabasePacket"/></param>
-        /// <param name="simulator">The <see cref="Simulator"/> sending this packet</param>
-        private void ImageNotInDatabaseHandler(Packet packet, Simulator simulator)
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void ImageNotInDatabaseHandler(object sender, PacketReceivedEventArgs e)
         {
-            ImageNotInDatabasePacket imageNotFoundData = (ImageNotInDatabasePacket)packet;
+            ImageNotInDatabasePacket imageNotFoundData = (ImageNotInDatabasePacket)e.Packet;
             TaskInfo task;
 
             if (TryGetTransferValue(imageNotFoundData.ImageID.ID, out task))
@@ -638,9 +638,11 @@ namespace OpenMetaverse
         /// <summary>
         /// Handles the remaining Image data that did not fit in the initial ImageData packet
         /// </summary>
-        private void ImagePacketHandler(Packet packet, Simulator simulator)
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void ImagePacketHandler(object sender, PacketReceivedEventArgs e)
         {
-            ImagePacketPacket image = (ImagePacketPacket)packet;
+            ImagePacketPacket image = (ImagePacketPacket)e.Packet;
             TaskInfo task;
 
             if (TryGetTransferValue(image.ImageID.ID, out task))
@@ -727,11 +729,11 @@ namespace OpenMetaverse
         /// <summary>
         /// Handle the initial ImageDataPacket sent from the simulator
         /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void ImageDataHandler(Packet packet, Simulator simulator)
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void ImageDataHandler(object sender, PacketReceivedEventArgs e)
         {
-            ImageDataPacket data = (ImageDataPacket)packet;
+            ImageDataPacket data = (ImageDataPacket)e.Packet;
             TaskInfo task;
 
             if (TryGetTransferValue(data.ImageID.ID, out task))

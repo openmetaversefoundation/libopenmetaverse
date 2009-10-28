@@ -26,8 +26,8 @@ namespace groupmanager
             Client.Throttle.Wind = 0;
             Client.Throttle.Cloud = 0;
 
-            Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
-            Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);
+            Client.Network.LoginProgress += Network_OnLogin;
+            Client.Network.EventQueueRunning += Network_OnEventQueueRunning;
             Client.Groups.CurrentGroups += Groups_CurrentGroups;
             
             InitializeComponent();
@@ -115,9 +115,9 @@ namespace groupmanager
 
         #region Network Callbacks
 
-        private void Network_OnLogin(LoginStatus login, string message)
+        private void Network_OnLogin(object sender, LoginProgressEventArgs e)
         {
-            if (login == LoginStatus.Success)
+            if (e.Status == LoginStatus.Success)
             {
                 BeginInvoke(
                     (MethodInvoker)delegate()
@@ -125,7 +125,7 @@ namespace groupmanager
                         groupBox.Enabled = true;
                     });
             }
-            else if (login == LoginStatus.Failed)
+            else if (e.Status == LoginStatus.Failed)
             {
                 BeginInvoke(
                     (MethodInvoker)delegate()
@@ -138,10 +138,10 @@ namespace groupmanager
                     });
             }
         }
-      
-        private void Network_OnEventQueueRunning(Simulator simulator)
+
+        private void Network_OnEventQueueRunning(object sender, EventQueueRunningEventArgs e)
         {
-            if (simulator == Client.Network.CurrentSim)
+            if (e.Simulator == Client.Network.CurrentSim)
             {
                 Console.WriteLine("Event queue connected for the primary simulator, requesting group info");
 

@@ -156,7 +156,7 @@ namespace OpenMetaverse.GUI
             _Client.Avatars.AvatarAppearance += Avatars_OnAvatarAppearance;
             _Client.Avatars.UUIDNameReply += new EventHandler<UUIDNameReplyEventArgs>(Avatars_UUIDNameReply);
             _Client.Grid.CoarseLocationUpdate += Grid_CoarseLocationUpdate;
-            _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
+            _Client.Network.SimChanged += Network_OnCurrentSimChanged;
             _Client.Objects.AvatarUpdate += Objects_OnNewAvatar;
             _Client.Objects.TerseObjectUpdate += Objects_OnObjectUpdated;
             
@@ -436,7 +436,7 @@ namespace OpenMetaverse.GUI
             }
         }
 
-        void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
+        void Network_OnCurrentSimChanged(object sender, SimChangedEventArgs e)
         {
             lock (_TrackedAvatars)
                 _TrackedAvatars.Clear();

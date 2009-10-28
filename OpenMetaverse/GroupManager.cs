@@ -826,21 +826,21 @@ namespace OpenMetaverse
 
             Client.Network.RegisterEventCallback("AgentGroupDataUpdate", new Caps.EventQueueCallback(AgentGroupDataUpdateMessageHandler));            
             // deprecated in simulator v1.27
-            Client.Network.RegisterCallback(PacketType.AgentDropGroup, new NetworkManager.PacketCallback(AgentDropGroupHandler));
-            Client.Network.RegisterCallback(PacketType.GroupTitlesReply, new NetworkManager.PacketCallback(GroupTitlesReplyHandler));
-            Client.Network.RegisterCallback(PacketType.GroupProfileReply, new NetworkManager.PacketCallback(GroupProfileReplyHandler));
-            Client.Network.RegisterCallback(PacketType.GroupMembersReply, new NetworkManager.PacketCallback(GroupMembersHandler));
-            Client.Network.RegisterCallback(PacketType.GroupRoleDataReply, new NetworkManager.PacketCallback(GroupRoleDataReplyHandler));
-            Client.Network.RegisterCallback(PacketType.GroupRoleMembersReply, new NetworkManager.PacketCallback(GroupRoleMembersReplyHandler));
-            Client.Network.RegisterCallback(PacketType.GroupActiveProposalItemReply, new NetworkManager.PacketCallback(GroupActiveProposalItemHandler));
-            Client.Network.RegisterCallback(PacketType.GroupVoteHistoryItemReply, new NetworkManager.PacketCallback(GroupVoteHistoryItemHandler));
-            Client.Network.RegisterCallback(PacketType.GroupAccountSummaryReply, new NetworkManager.PacketCallback(GroupAccountSummaryReplyHandler));
-            Client.Network.RegisterCallback(PacketType.CreateGroupReply, new NetworkManager.PacketCallback(CreateGroupReplyHandler));
-            Client.Network.RegisterCallback(PacketType.JoinGroupReply, new NetworkManager.PacketCallback(JoinGroupReplyHandler));
-            Client.Network.RegisterCallback(PacketType.LeaveGroupReply, new NetworkManager.PacketCallback(LeaveGroupReplyHandler));
-            Client.Network.RegisterCallback(PacketType.UUIDGroupNameReply, new NetworkManager.PacketCallback(UUIDGroupNameReplyHandler));
-            Client.Network.RegisterCallback(PacketType.EjectGroupMemberReply, new NetworkManager.PacketCallback(EjectGroupMemberReplyHandler));
-            Client.Network.RegisterCallback(PacketType.GroupNoticesListReply, new NetworkManager.PacketCallback(GroupNoticesListReplyHandler));
+            Client.Network.RegisterCallback(PacketType.AgentDropGroup, AgentDropGroupHandler);
+            Client.Network.RegisterCallback(PacketType.GroupTitlesReply, GroupTitlesReplyHandler);
+            Client.Network.RegisterCallback(PacketType.GroupProfileReply, GroupProfileReplyHandler);
+            Client.Network.RegisterCallback(PacketType.GroupMembersReply, GroupMembersHandler);
+            Client.Network.RegisterCallback(PacketType.GroupRoleDataReply, GroupRoleDataReplyHandler);
+            Client.Network.RegisterCallback(PacketType.GroupRoleMembersReply, GroupRoleMembersReplyHandler);
+            Client.Network.RegisterCallback(PacketType.GroupActiveProposalItemReply, GroupActiveProposalItemHandler);
+            Client.Network.RegisterCallback(PacketType.GroupVoteHistoryItemReply, GroupVoteHistoryItemHandler);
+            Client.Network.RegisterCallback(PacketType.GroupAccountSummaryReply, GroupAccountSummaryReplyHandler);
+            Client.Network.RegisterCallback(PacketType.CreateGroupReply, CreateGroupReplyHandler);
+            Client.Network.RegisterCallback(PacketType.JoinGroupReply, JoinGroupReplyHandler);
+            Client.Network.RegisterCallback(PacketType.LeaveGroupReply, LeaveGroupReplyHandler);
+            Client.Network.RegisterCallback(PacketType.UUIDGroupNameReply, UUIDGroupNameReplyHandler);
+            Client.Network.RegisterCallback(PacketType.EjectGroupMemberReply, EjectGroupMemberReplyHandler);
+            Client.Network.RegisterCallback(PacketType.GroupNoticesListReply, GroupNoticesListReplyHandler);
 
             Client.Network.RegisterEventCallback("AgentDropGroup", new Caps.EventQueueCallback(AgentDropGroupMessageHandler));
         }
@@ -1348,12 +1348,6 @@ namespace OpenMetaverse
 
         #region Packet Handlers
         
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="capsKey"></param>
-        /// <param name="message"></param>
-        /// <param name="simulator"></param>
         protected void AgentGroupDataUpdateMessageHandler(string capsKey, IMessage message, Simulator simulator)
         {      
             if (m_CurrentGroups != null)
@@ -1384,16 +1378,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="AgentDropGroupPacket"/> packet sent
-        /// by the simulator in response to your agents request to leave a group</summary>
-        /// <param name="packet">The <see cref="AgentDropGroupPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        /// <remarks>Raises the <see cref="GroupDropped"/> event confirming the request to leave a group
-        /// was successful</remarks>
-        protected void AgentDropGroupHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void AgentDropGroupHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_GroupDropped != null)
             {
+                Packet packet = e.Packet;
                 OnGroupDropped(new GroupDroppedEventArgs(((AgentDropGroupPacket)packet).AgentData.GroupID));
             }
         }
@@ -1411,15 +1403,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="GroupProfileReplyPacket"/> packet sent
-        /// by the simulator in response to a <see cref="RequestGroupProfile"/></summary>
-        /// <param name="packet">The <see cref="GroupProfileReplyPacket"/> packet containing the reply data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        /// <remarks>Raises the <see cref="GroupProfile"/> event with the response data</remarks>
-        protected void GroupProfileReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void GroupProfileReplyHandler(object sender, PacketReceivedEventArgs e)
         {            
             if (m_GroupProfile != null)
             {
+                Packet packet = e.Packet;
                 GroupProfileReplyPacket profile = (GroupProfileReplyPacket)packet;
                 Group group = new Group();
 
@@ -1444,16 +1435,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="GroupNoticesListReplyPacket"/> packet sent
-        /// by the simulator in response to a <see cref="RequestGroupNoticesList"/></summary>
-        /// <param name="packet">The <see cref="GroupNoticesListReplyPacket"/> packet containing the reply data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        /// <remarks>Raises the <see cref="GroupNoticesList"/> event with the response data</remarks>        
-        /// <seealso cref="RequestGroupNotice"/>
-        protected void GroupNoticesListReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void GroupNoticesListReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_GroupNoticesListReply != null)
             {
+                Packet packet = e.Packet;
                 GroupNoticesListReplyPacket reply = (GroupNoticesListReplyPacket)packet;
 
                 List<GroupNoticesListEntry> notices = new List<GroupNoticesListEntry>();
@@ -1475,15 +1464,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="GroupTitlesReplyPacket"/> packet sent
-        /// by the simulator in response to a <see cref="RequestGroupTitles"/></summary>
-        /// <param name="packet">The <see cref="GroupTitlesReplyPacket"/> packet containing the reply data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        /// <remarks>Raises the <see cref="GroupTitles"/> event with the response data</remarks>        
-        protected void GroupTitlesReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void GroupTitlesReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_GroupTitles != null)
             {
+                Packet packet = e.Packet;
                 GroupTitlesReplyPacket titles = (GroupTitlesReplyPacket)packet;
                 Dictionary<UUID, GroupTitle> groupTitleCache = new Dictionary<UUID, GroupTitle>();
 
@@ -1502,13 +1490,12 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="GroupMembersReplyPacket"/> packet sent
-        /// by the simulator in response to a <see cref="RequestGroupMembers"/></summary>
-        /// <param name="packet">The <see cref="GroupMembersReplyPacket"/> packet containing the reply data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        /// <remarks>Raises the <see cref="GroupMembers"/> event with the response data</remarks>        
-        protected void GroupMembersHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void GroupMembersHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
             GroupMembersReplyPacket members = (GroupMembersReplyPacket)packet;
             Dictionary<UUID, GroupMember> groupMemberCache = null;
 
@@ -1554,13 +1541,12 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="GroupRoleDataReplyPacket"/> packet sent
-        /// by the simulator in response to a <see cref="RequestGroupRoles"/></summary>
-        /// <param name="packet">The <see cref="GroupRoleDataReplyPacket"/> packet containing the reply data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        /// <remarks>Raises the <see cref="GroupRoleDataReply"/> event with the response data</remarks>
-        protected void GroupRoleDataReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void GroupRoleDataReplyHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
             GroupRoleDataReplyPacket roles = (GroupRoleDataReplyPacket)packet;
             Dictionary<UUID, GroupRole> groupRoleCache = null;
 
@@ -1608,13 +1594,12 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="GroupRoleMembersReplyPacket"/> packet sent
-        /// by the simulator in response to a <see cref="RequestGroupRoleMembers"/></summary>
-        /// <param name="packet">The <see cref="GroupRoleMembersReplyPacket"/> packet containing the reply data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        /// <remarks>Raises the <see cref="GroupRoleMembers"/> event with the response data</remarks>
-        protected void GroupRoleMembersReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void GroupRoleMembersReplyHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
             GroupRoleMembersReplyPacket members = (GroupRoleMembersReplyPacket)packet;
             List<KeyValuePair<UUID, UUID>> groupRoleMemberCache = null;
 
@@ -1650,9 +1635,9 @@ namespace OpenMetaverse
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e);
+                Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex);
             }
 
             if (m_GroupRoleMembers != null && groupRoleMemberCache != null && groupRoleMemberCache.Count >= members.AgentData.TotalPairs)
@@ -1661,29 +1646,34 @@ namespace OpenMetaverse
             }
         }
 
-        private void GroupActiveProposalItemHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void GroupActiveProposalItemHandler(object sender, PacketReceivedEventArgs e)
         {
             //GroupActiveProposalItemReplyPacket proposal = (GroupActiveProposalItemReplyPacket)packet;
 
             // TODO: Create a proposal struct to represent the fields in a proposal item
         }
 
-        private void GroupVoteHistoryItemHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void GroupVoteHistoryItemHandler(object sender, PacketReceivedEventArgs e)
         {
             //GroupVoteHistoryItemReplyPacket history = (GroupVoteHistoryItemReplyPacket)packet;
 
             // TODO: This was broken in the official viewer when I was last trying to work  on it
         }
 
-        /// <summary>Process an incoming <see cref="GroupAccountSummaryReplyPacket"/> packet sent
-        /// by the simulator in response to a <see cref="RequestGroupAccountSummary"/></summary>
-        /// <param name="packet">The <see cref="GroupAccountSummaryReplyPacket"/> packet containing the reply data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        /// <remarks>Raises the <see cref="GroupAccountSummaryReply"/> event with the response data</remarks>
-        protected void GroupAccountSummaryReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void GroupAccountSummaryReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_GroupAccountSummary != null)
             {
+                Packet packet = e.Packet;
                 GroupAccountSummaryReplyPacket summary = (GroupAccountSummaryReplyPacket)packet;
                 GroupAccountSummary account = new GroupAccountSummary();
 
@@ -1711,15 +1701,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="CreateGroupReplyPacket"/> packet sent
-        /// by the simulator in response to a <see cref="RequestGroup"/></summary>
-        /// <param name="packet">The <see cref="CreateGroupReplyPacket"/> packet containing the reply data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        /// <remarks>Raises the <see cref="GroupCreatedReply"/> event with the response data</remarks>
-        protected void CreateGroupReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void CreateGroupReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_GroupCreated != null)
             {
+                Packet packet = e.Packet;
                 CreateGroupReplyPacket reply = (CreateGroupReplyPacket)packet;
 
                 string message = Utils.BytesToString(reply.ReplyData.Message);
@@ -1728,43 +1717,40 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="JoinGroupReplyPacket"/> packet sent
-        /// by the simulator in response to a <see cref="RequestJoinGroup"/></summary>
-        /// <param name="packet">The <see cref="JoinGroupReplyPacket"/> packet containing the reply data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        /// <remarks>Raises the <see cref="GroupJoinedReply"/> event with the response data</remarks>
-        protected void JoinGroupReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void JoinGroupReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_GroupJoined != null)
             {
+                Packet packet = e.Packet;
                 JoinGroupReplyPacket reply = (JoinGroupReplyPacket)packet;
 
                 OnGroupJoinedReply(new GroupOperationEventArgs(reply.GroupData.GroupID, reply.GroupData.Success));
             }
         }
 
-        /// <summary>Process an incoming <see cref="LeaveGroupReplyPacket"/> packet sent
-        /// by the simulator in response to a <see cref="RequestLeaveGroup"/></summary>
-        /// <param name="packet">The <see cref="LeaveGroupReplyPacket"/> packet containing the reply data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        /// <remarks>Raises the <see cref="GroupLeaveReply"/> event with the response data</remarks>
-        protected void LeaveGroupReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void LeaveGroupReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_GroupLeft != null)
             {
+                Packet packet = e.Packet;
                 LeaveGroupReplyPacket reply = (LeaveGroupReplyPacket)packet;
 
                 OnGroupLeaveReply(new GroupOperationEventArgs(reply.GroupData.GroupID, reply.GroupData.Success));
             }
         }
 
-        /// <summary>Process an incoming <see cref="UUIDGroupNameReplyPacket"/> packet sent
-        /// by the simulator in response to a <see cref="RequestGroupName"/> or <see cref="RequestGroupNames"/> request</summary>
-        /// <param name="packet">The <see cref="UUIDGroupNameReplyPacket"/> packet containing the reply data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        /// <remarks>Raises the <see cref="GroupNamesReply"/> event with the response data</remarks>
-        private void UUIDGroupNameReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        private void UUIDGroupNameReplyHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
             UUIDGroupNameReplyPacket reply = (UUIDGroupNameReplyPacket)packet;
             UUIDGroupNameReplyPacket.UUIDNameBlockBlock[] blocks = reply.UUIDNameBlock;
 
@@ -1783,15 +1769,12 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>
-        /// Packet Handler for EjectGroupMemberReply, fired when an avatar is ejected from 
-        /// a group.
-        /// </summary>
-        /// <param name="packet">The EjectGroupMemberReply packet</param>
-        /// <param name="simulator">The simulator where the message originated</param>
-        /// <remarks>This is a silly packet, it doesn't provide you with the ejectees UUID</remarks>
-        protected void EjectGroupMemberReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void EjectGroupMemberReplyHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
             EjectGroupMemberReplyPacket reply = (EjectGroupMemberReplyPacket)packet;
 
             // TODO: On Success remove the member from the cache(s)

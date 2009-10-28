@@ -643,16 +643,60 @@ namespace OpenMetaverse
     /// <summary>
     /// Login Routines
     /// </summary>
-    public partial class NetworkManager : INetworkManager
+    public partial class NetworkManager
     {
         #region Delegates
+        
 
-        /// <summary>
-        /// Fired when a login request is successful or not
-        /// </summary>
-        /// <param name="login"></param>
-        /// <param name="message"></param>
-        public delegate void LoginCallback(LoginStatus login, string message);
+        //////LoginProgress
+        //// LoginProgress
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<LoginProgressEventArgs> m_LoginProgress;
+
+        ///<summary>Raises the LoginProgress Event</summary>
+        /// <param name="e">A LoginProgressEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnLoginProgress(LoginProgressEventArgs e)
+        {
+            EventHandler<LoginProgressEventArgs> handler = m_LoginProgress;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_LoginProgressLock = new object();
+
+        /// <summary>Raised when the simulator sends us data containing
+        /// ...</summary>
+        public event EventHandler<LoginProgressEventArgs> LoginProgress
+        {
+            add { lock (m_LoginProgressLock) { m_LoginProgress += value; } }
+            remove { lock (m_LoginProgressLock) { m_LoginProgress -= value; } }
+        }
+
+        ///// <summary>The event subscribers, null of no subscribers</summary>
+        //private EventHandler<LoggedInEventArgs> m_LoggedIn;
+
+        /////<summary>Raises the LoggedIn Event</summary>
+        ///// <param name="e">A LoggedInEventArgs object containing
+        ///// the data sent from the simulator</param>
+        //protected virtual void OnLoggedIn(LoggedInEventArgs e)
+        //{
+        //    EventHandler<LoggedInEventArgs> handler = m_LoggedIn;
+        //    if (handler != null)
+        //        handler(this, e);
+        //}
+
+        ///// <summary>Thread sync lock object</summary>
+        //private readonly object m_LoggedInLock = new object();
+
+        ///// <summary>Raised when the simulator sends us data containing
+        ///// ...</summary>
+        //public event EventHandler<LoggedInEventArgs> LoggedIn
+        //{
+        //    add { lock (m_LoggedInLock) { m_LoggedIn += value; } }
+        //    remove { lock (m_LoggedInLock) { m_LoggedIn -= value; } }
+        //}
 
         /// <summary>
         /// 
@@ -667,11 +711,7 @@ namespace OpenMetaverse
         #endregion Delegates
 
         #region Events
-
-        /// <summary>Called any time the login status changes, will eventually
-        /// return LoginStatus.Success or LoginStatus.Failure</summary>
-        public event LoginCallback OnLogin;
-
+        
         /// <summary>Called when a reply is received from the login server, the
         /// login sequence will block until this event returns</summary>
         private event LoginResponseCallback OnLoginResponse;
@@ -1075,10 +1115,9 @@ namespace OpenMetaverse
             }
 
             // Fire the login status callback
-            if (OnLogin != null)
+            if (m_LoginProgress != null)
             {
-                try { OnLogin(status, message); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                OnLoginProgress(new LoginProgressEventArgs(status, message));
             }
         }
 
@@ -1217,10 +1256,9 @@ namespace OpenMetaverse
                     UpdateLoginStatus(LoginStatus.Success, message);
 
                     // Fire an event for connecting to the grid
-                    if (OnConnected != null)
+                    if (m_LoggedIn != null)
                     {
-                        try { OnConnected(this.Client); }
-                        catch (Exception e) { Logger.Log(e.ToString(), Helpers.LogLevel.Error); }
+                        OnLoggedIn(new LoggedInEventArgs());
                     }
                 }
                 else
@@ -1318,10 +1356,9 @@ namespace OpenMetaverse
                                     UpdateLoginStatus(LoginStatus.Success, data.Message);
 
                                     // Fire an event for connecting to the grid
-                                    if (OnConnected != null)
+                                    if (m_LoggedIn != null)
                                     {
-                                        try { OnConnected(this.Client); }
-                                        catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
+                                        OnLoggedIn(new LoggedInEventArgs());
                                     }
                                 }
                                 else
@@ -1411,4 +1448,23 @@ namespace OpenMetaverse
 
         #endregion
     }
+    #region EventArgs
+    
+    public class LoginProgressEventArgs : EventArgs
+    {
+        private readonly LoginStatus m_Status;
+        private readonly String m_Message;
+
+        public LoginStatus Status { get { return m_Status; } }        
+        public String Message { get { return m_Message; } } 
+
+
+        public LoginProgressEventArgs(LoginStatus login, String message)
+        {
+            this.m_Status = login;
+            this.m_Message = message;
+        }
+    }
+    
+    #endregion EventArgs
 }

@@ -21,8 +21,8 @@ namespace IRCGateway
             else
             {
                 _Client = new GridClient();
-                _Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
-                _Client.Self.ChatFromSimulator += new EventHandler<ChatEventArgs>(Self_ChatFromSimulator);                
+                _Client.Network.LoginProgress += Network_OnLogin;
+                _Client.Self.ChatFromSimulator += Self_ChatFromSimulator;                
                 _Client.Self.IM += Self_IM;
                 _ClientLogin = _Client.Network.DefaultLoginParams(args[0], args[1], args[2], "", "IRCGateway");
 
@@ -74,10 +74,10 @@ namespace IRCGateway
                 Console.WriteLine("[IRC->SL] " + str);
             }
         }
-       
-        static void Network_OnLogin(LoginStatus login, string message)
+
+        static void Network_OnLogin(object sender, LoginProgressEventArgs e)
         {
-            _IRC.SendMessage(_AutoJoinChannel, message);
+            _IRC.SendMessage(_AutoJoinChannel, e.Message);
         }
     }
 }

@@ -87,13 +87,14 @@ namespace importprimscript
             // Create a handler for the event queue connecting, so we know when
             // it is safe to start uploading
             AutoResetEvent eventQueueEvent = new AutoResetEvent(false);
-            NetworkManager.EventQueueRunningCallback eventQueueCallback =
-                delegate(Simulator simulator)
+            EventHandler<EventQueueRunningEventArgs> eventQueueCallback =
+                delegate(object sender, EventQueueRunningEventArgs e)
                 {
-                    if (simulator == Client.Network.CurrentSim)
+                    if (e.Simulator == Client.Network.CurrentSim)
                         eventQueueEvent.Set();
                 };
-            Client.Network.OnEventQueueRunning += eventQueueCallback;
+            
+            Client.Network.EventQueueRunning += eventQueueCallback;
 
             int x = Int32.Parse(args[args.Length - 4]);
             int y = Int32.Parse(args[args.Length - 3]);
@@ -122,7 +123,7 @@ namespace importprimscript
             }
 
             // Don't need this anymore
-            Client.Network.OnEventQueueRunning -= eventQueueCallback;
+            Client.Network.EventQueueRunning -= eventQueueCallback;
 
             // Set the root position for the import
             RootPosition = Client.Self.SimPosition;

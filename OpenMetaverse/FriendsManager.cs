@@ -453,7 +453,7 @@ namespace OpenMetaverse
         {
             Client = client;
 
-            Client.Network.OnConnected += new NetworkManager.ConnectedCallback(Network_OnConnect);
+            Client.Network.LoggedIn += Network_OnConnect;            
             Client.Avatars.UUIDNameReply += new EventHandler<UUIDNameReplyEventArgs>(Avatars_OnAvatarNames);
             Client.Self.IM += Self_IM;
 
@@ -564,14 +564,12 @@ namespace OpenMetaverse
                     FriendList.Remove(agentID);
             }
         }
-        /// <summary>
-        /// Fired when another friend terminates friendship. We need to remove them from
-        /// our cached list.
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void TerminateFriendshipHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        private void TerminateFriendshipHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
             TerminateFriendshipPacket itsOver = (TerminateFriendshipPacket)packet;
             string name = String.Empty;
 
@@ -663,13 +661,11 @@ namespace OpenMetaverse
         #endregion
 
         #region Internal events
-        /// <summary>
-        /// Called when a connection to the SL server is established.  The list of friend avatars 
-        /// is populated from XML returned by the login server.  That list contains the avatar's id 
-        /// and right, but no names.  Here is where those names are requested.
-        /// </summary>
-        /// <param name="sender"></param>
-        private void Network_OnConnect(object sender)
+
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        private void Network_OnConnect(object sender, LoggedInEventArgs e)
         {
             List<UUID> names = new List<UUID>();
 
@@ -722,13 +718,12 @@ namespace OpenMetaverse
 
         #region Packet Handlers
 
-        /// <summary>
-        /// Handle notifications sent when a friends has come online.
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void OnlineNotificationHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void OnlineNotificationHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
             if (packet.Type == PacketType.OnlineNotification)
             {
                 OnlineNotificationPacket notification = ((OnlineNotificationPacket)packet);
@@ -761,13 +756,12 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>
-        /// Handle notifications sent when a friends has gone offline.
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        protected void OfflineNotificationHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void OfflineNotificationHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
             if (packet.Type == PacketType.OfflineNotification)
             {
                 OfflineNotificationPacket notification = (OfflineNotificationPacket)packet;
@@ -795,14 +789,12 @@ namespace OpenMetaverse
         }
 
 
-        /// <summary>
-        /// Handle notifications sent when a friend rights change.  This notification is also received
-        /// when my own rights change.
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        private void ChangeUserRightsHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        private void ChangeUserRightsHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
             if (packet.Type == PacketType.ChangeUserRights)
             {
                 FriendInfo friend;
@@ -834,15 +826,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>
-        /// Handle friend location updates
-        /// </summary>
-        /// <param name="packet">The Packet</param>
-        /// <param name="simulator">The Simulator</param>
-        public void OnFindAgentReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        public void OnFindAgentReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_FriendFound != null)
             {
+                Packet packet = e.Packet;
                 FindAgentPacket reply = (FindAgentPacket)packet;
 
                 float x, y;
@@ -857,7 +848,7 @@ namespace OpenMetaverse
 
         #endregion
 
-        void Self_IM(object sender, InstantMessageEventArgs e)
+        private void Self_IM(object sender, InstantMessageEventArgs e)
         {
             if (e.IM.Dialog == InstantMessageDialog.FriendshipOffered)
             {

@@ -995,16 +995,16 @@ namespace OpenMetaverse
             Client = client;
             
             // Setup the callbacks
-            Client.Network.RegisterCallback(PacketType.ParcelInfoReply, new NetworkManager.PacketCallback(ParcelInfoReplyHandler));
+            Client.Network.RegisterCallback(PacketType.ParcelInfoReply, ParcelInfoReplyHandler);
             Client.Network.RegisterEventCallback("ParcelObjectOwnersReply", new Caps.EventQueueCallback(ParcelObjectOwnersReplyHandler));
             // CAPS packet handler, to allow for Media Data not contained in the message template
             Client.Network.RegisterEventCallback("ParcelProperties", new Caps.EventQueueCallback(ParcelPropertiesReplyHandler));
-            Client.Network.RegisterCallback(PacketType.ParcelDwellReply, new NetworkManager.PacketCallback(ParcelDwellReplyHandler));
-            Client.Network.RegisterCallback(PacketType.ParcelAccessListReply, new NetworkManager.PacketCallback(ParcelAccessListReplyHandler));
-            Client.Network.RegisterCallback(PacketType.ForceObjectSelect, new NetworkManager.PacketCallback(SelectParcelObjectsReplyHandler));
-            Client.Network.RegisterCallback(PacketType.ParcelMediaUpdate, new NetworkManager.PacketCallback(ParcelMediaUpdateHandler));
-            Client.Network.RegisterCallback(PacketType.ParcelOverlay, new NetworkManager.PacketCallback(ParcelOverlayHandler));
-            Client.Network.RegisterCallback(PacketType.ParcelMediaCommandMessage, new NetworkManager.PacketCallback(ParcelMediaCommandMessagePacketHandler));
+            Client.Network.RegisterCallback(PacketType.ParcelDwellReply, ParcelDwellReplyHandler);
+            Client.Network.RegisterCallback(PacketType.ParcelAccessListReply, ParcelAccessListReplyHandler);
+            Client.Network.RegisterCallback(PacketType.ForceObjectSelect, SelectParcelObjectsReplyHandler);
+            Client.Network.RegisterCallback(PacketType.ParcelMediaUpdate, ParcelMediaUpdateHandler);
+            Client.Network.RegisterCallback(PacketType.ParcelOverlay, ParcelOverlayHandler);
+            Client.Network.RegisterCallback(PacketType.ParcelMediaCommandMessage, ParcelMediaCommandMessagePacketHandler);
         }
 
         /// <summary>
@@ -1599,14 +1599,17 @@ namespace OpenMetaverse
 
         #region Packet Handlers
 
-        /// <summary>Process an incoming <see cref="ParcelDwellReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="ParcelWellReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
         /// <remarks>Raises the <see cref="ParcelDwellReply"/> event</remarks>
-        protected void ParcelDwellReplyHandler(Packet packet, Simulator simulator)
+        protected void ParcelDwellReplyHandler(object sender, PacketReceivedEventArgs e)
         {            
             if (m_DwellReply != null || Client.Settings.ALWAYS_REQUEST_PARCEL_DWELL == true)
             {
+                Packet packet = e.Packet;
+                Simulator simulator = e.Simulator;
+
                 ParcelDwellReplyPacket dwell = (ParcelDwellReplyPacket)packet;
 
                 lock (simulator.Parcels.Dictionary)
@@ -1626,14 +1629,15 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="ParcelInfoReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="ParcelInfoReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
         /// <remarks>Raises the <see cref="ParcelInfoReply"/> event</remarks>
-        protected void ParcelInfoReplyHandler(Packet packet, Simulator simulator)
+        protected void ParcelInfoReplyHandler(object sender, PacketReceivedEventArgs e)
         {            
             if (m_ParcelInfo != null)
             {
+                Packet packet = e.Packet;
                 ParcelInfoReplyPacket info = (ParcelInfoReplyPacket)packet;
 
                 ParcelInfo parcelInfo = new ParcelInfo();
@@ -1658,12 +1662,6 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="ParcelPropertiesMessage"/> message</summary>
-        /// <param name="capsKey">The EventQueue Key</param>
-        /// <param name="message">The <see cref="ParcelPropertiesMessage"/> message containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        /// <remarks><para>Raises the <see cref="ParcelProperties"/> event</para>
-        /// <para>Raises the <see cref="SimParcelsDownloaded"/> event if all parcels in the simulator have been requested</para></remarks>
         protected void ParcelPropertiesReplyHandler(string capsKey, IMessage message, Simulator simulator)
         {                        
             if (m_ParcelProperties != null || Client.Settings.PARCEL_TRACKING == true)
@@ -1783,14 +1781,17 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="ParcelAccessListReplyPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="ParcelAccessListReplyPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
         /// <remarks>Raises the <see cref="ParcelAccessListReply"/> event</remarks>
-        protected void ParcelAccessListReplyHandler(Packet packet, Simulator simulator)
+        protected void ParcelAccessListReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_ParcelACL != null || Client.Settings.ALWAYS_REQUEST_PARCEL_ACL == true)
             {
+                Packet packet = e.Packet;
+                Simulator simulator = e.Simulator;
+
                 ParcelAccessListReplyPacket reply = (ParcelAccessListReplyPacket)packet;
 
                 List<ParcelAccessEntry> accessList = new List<ParcelAccessEntry>(reply.List.Length);
@@ -1827,13 +1828,7 @@ namespace OpenMetaverse
                 }
             }
         }
-
-        /// <summary>Process an incoming <see cref="ParcelObjectOwnersReplyMessage"/> message</summary>
-        /// <param name="capsKey">The EventQueue Key</param>
-        /// <param name="message">The <see cref="ParcelObjectOwnersReplyMessage"/> message containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        /// <remarks><para>Raises the <see cref="ParcelProperties"/> event</para>
-        /// <para>Raises the <see cref="ParcelObjectOwnersReply"/> event if all parcels in the simulator have been requested</para></remarks>
+        
         protected void ParcelObjectOwnersReplyHandler(string capsKey, IMessage message, Simulator simulator)
         {
             if (m_ParcelObjectOwnersReply != null)
@@ -1858,14 +1853,17 @@ namespace OpenMetaverse
             }                
         }
 
-        /// <summary>Process an incoming <see cref="ForceObjectSelectPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="ForceObjectSelectPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
         /// <remarks>Raises the <see cref="ForceSelectObjectsReply"/> event</remarks>
-        protected void SelectParcelObjectsReplyHandler(Packet packet, Simulator simulator)
+        protected void SelectParcelObjectsReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_ForceSelectObjects != null)
             {
+                Packet packet = e.Packet;
+                Simulator simulator = e.Simulator;
+
                 ForceObjectSelectPacket reply = (ForceObjectSelectPacket)packet;
                 List<uint> objectIDs = new List<uint>(reply.Data.Length);
 
@@ -1878,14 +1876,17 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="ParcelMediaUpdatePacket"/> packet</summary>
-        /// <param name="packet">The <see cref="ParcelMediaUpdatePacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
         /// <remarks>Raises the <see cref="ParcelMediaUpdateReply"/> event</remarks>
-        protected void ParcelMediaUpdateHandler(Packet packet, Simulator simulator)
+        protected void ParcelMediaUpdateHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_ParcelMediaUpdateReply != null)
             {
+                Packet packet = e.Packet;
+                Simulator simulator = e.Simulator;
+
                 ParcelMediaUpdatePacket reply = (ParcelMediaUpdatePacket)packet;
                 ParcelMedia media = new ParcelMedia();
 
@@ -1902,12 +1903,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="ParcelOverlayPacket"/> packet</summary>
-        /// <param name="packet">The <see cref="ParcelOverlayPacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
-        protected void ParcelOverlayHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void ParcelOverlayHandler(object sender, PacketReceivedEventArgs e)
         {
             const int OVERLAY_COUNT = 4;
+            Packet packet = e.Packet;
+            Simulator simulator = e.Simulator;
 
             ParcelOverlayPacket overlay = (ParcelOverlayPacket)packet;
 
@@ -1932,14 +1935,17 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Process an incoming <see cref="ParcelMediaCommandMessagePacket"/> packet</summary>
-        /// <param name="packet">The <see cref="ParcelMediaCommandMessagePacket"/> packet containing the data</param>
-        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
         /// <remarks>Raises the <see cref="ParcelMediaCommand"/> event</remarks>
-        protected void ParcelMediaCommandMessagePacketHandler(Packet packet, Simulator simulator)
+        protected void ParcelMediaCommandMessagePacketHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_ParcelMediaCommand != null)
             {
+                Packet packet = e.Packet;
+                Simulator simulator = e.Simulator;
+
                 ParcelMediaCommandMessagePacket pmc = (ParcelMediaCommandMessagePacket)packet;
                 ParcelMediaCommandMessagePacket.CommandBlockBlock block = pmc.CommandBlock;
 

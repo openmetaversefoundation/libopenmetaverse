@@ -17,7 +17,7 @@ namespace OpenMetaverse.TestClient
 			Description = "Follow another avatar. Usage: follow [FirstName LastName]/off.";
             Category = CommandCategory.Movement;
 
-            testClient.Network.RegisterCallback(PacketType.AlertMessage, new NetworkManager.PacketCallback(AlertMessageHandler));
+            testClient.Network.RegisterCallback(PacketType.AlertMessage, AlertMessageHandler);
 		}
 
         public override string Execute(string[] args, UUID fromAgentID)
@@ -126,8 +126,10 @@ namespace OpenMetaverse.TestClient
 			base.Think();
 		}
 
-        private void AlertMessageHandler(Packet packet, Simulator simulator)
+        private void AlertMessageHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
+            
             AlertMessagePacket alert = (AlertMessagePacket)packet;
             string message = Utils.BytesToString(alert.AlertData.Message);
 

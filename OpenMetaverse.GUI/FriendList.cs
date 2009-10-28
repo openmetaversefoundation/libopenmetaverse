@@ -93,7 +93,7 @@ namespace OpenMetaverse.GUI
             _Client.Friends.FriendNames += Friends_FriendNames;
             _Client.Friends.FriendOffline += Friends_FriendUpdate;
             _Client.Friends.FriendOnline += Friends_FriendUpdate;
-            _Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
+            _Client.Network.LoginProgress += Network_OnLogin;
         }
 
         void Friends_FriendNames(object sender, FriendNamesEventArgs e)
@@ -175,9 +175,12 @@ namespace OpenMetaverse.GUI
             }
         }
 
-        private void Network_OnLogin(LoginStatus login, string message)
+        private void Network_OnLogin(object sender, LoginProgressEventArgs e)
         {
-            if (login == LoginStatus.Success) RefreshFriends();
+            if (e.Status == LoginStatus.Success)
+            {
+                RefreshFriends();
+            }
         }
 
     }

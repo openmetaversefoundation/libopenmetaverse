@@ -105,7 +105,7 @@ namespace OpenMetaverse.GUI
         {
             _Client = client;
             _Client.Grid.CoarseLocationUpdate += Grid_CoarseLocationUpdate;
-            _Client.Network.OnCurrentSimChanged += new NetworkManager.CurrentSimChangedCallback(Network_OnCurrentSimChanged);
+            _Client.Network.SimChanged += Network_OnCurrentSimChanged;
         }
 
         void Grid_CoarseLocationUpdate(object sender, CoarseLocationUpdateEventArgs e)
@@ -199,9 +199,9 @@ namespace OpenMetaverse.GUI
             _ToolTip.Hide(this);
             //warning CS0414: The private field `OpenMetaverse.GUI.MiniMap._MousePosition' is assigned but its value is never used
             //_MousePosition = e.Location;
-        }        
+        }
 
-        void Network_OnCurrentSimChanged(Simulator PreviousSimulator)
+        void Network_OnCurrentSimChanged(object sender, SimChangedEventArgs e)
         {
             GridRegion region;
             if (Client.Grid.GetGridRegion(Client.Network.CurrentSim.Name, GridLayerType.Objects, out region))

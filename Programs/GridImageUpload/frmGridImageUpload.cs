@@ -36,8 +36,8 @@ namespace GridImageUpload
         private void InitClient()
         {
             Client = new GridClient();
-            Client.Network.OnEventQueueRunning += new NetworkManager.EventQueueRunningCallback(Network_OnEventQueueRunning);
-            Client.Network.OnLogin += new NetworkManager.LoginCallback(Network_OnLogin);
+            Client.Network.EventQueueRunning += Network_OnEventQueueRunning;
+            Client.Network.LoginProgress += Network_OnLogin;
 
             // Turn almost everything off since we are only interested in uploading textures
             Settings.LOG_LEVEL = Helpers.LogLevel.None;
@@ -230,27 +230,27 @@ namespace GridImageUpload
             }
         }
 
-        void Network_OnLogin(LoginStatus login, string message)
+        private void Network_OnLogin(object sender, LoginProgressEventArgs e)
         {
             if (InvokeRequired)
             {
                 BeginInvoke(new MethodInvoker(
                     delegate()
                     {
-                        Network_OnLogin(login, message);
+                        Network_OnLogin(sender, e);
                     }
                     ));
                 return;
             }
-            if (login == LoginStatus.Success)
+            if (e.Status == LoginStatus.Success)
             {
-                MessageBox.Show("Connected: " + message);
+                MessageBox.Show("Connected: " + e.Message);
                 cmdConnect.Enabled = true;
             }
-            else if (login == LoginStatus.Failed)
+            else if (e.Status == LoginStatus.Failed)
             {
                 MessageBox.Show(this, String.Format("Error logging in ({0}): {1}", Client.Network.LoginErrorKey,
-     Client.Network.LoginMessage));
+                    Client.Network.LoginMessage));
                 cmdConnect.Text = "Connect";
                 cmdConnect.Enabled = true;
                 txtFirstName.Enabled = txtLastName.Enabled = txtPassword.Enabled = true;
@@ -376,9 +376,9 @@ namespace GridImageUpload
             prgUpload.Value = Transferred;
         }
 
-        private void Network_OnEventQueueRunning(Simulator simulator)
+        private void Network_OnEventQueueRunning(object sender, EventQueueRunningEventArgs e)
         {
-            Logger.DebugLog("Event queue is running for " + simulator.ToString() + ", enabling uploads", Client);
+            Logger.DebugLog("Event queue is running for " + e.Simulator.ToString() + ", enabling uploads", Client);
             EnableUpload();
         }
 

@@ -1526,15 +1526,16 @@ namespace OpenMetaverse
 
         #region Packet Handlers
 
-        /// <summary>
-        /// Used for new prims, or significant changes to existing prims
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        protected void ObjectUpdateHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void ObjectUpdateHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
+            Simulator simulator = e.Simulator;
+
             ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
-            UpdateDilation(simulator, update.RegionData.TimeDilation);
+            UpdateDilation(e.Simulator, update.RegionData.TimeDilation);
             
             for (int b = 0; b < update.ObjectData.Length; b++)
             {
@@ -1956,10 +1957,13 @@ namespace OpenMetaverse
         /// velocity/acceleration for an object changes but nothing else
         /// (scale/position/rotation/acceleration/velocity)
         /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        protected void ImprovedTerseObjectUpdateHandler(Packet packet, Simulator simulator)
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void ImprovedTerseObjectUpdateHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
+            Simulator simulator = e.Simulator;
+
             ImprovedTerseObjectUpdatePacket terse = (ImprovedTerseObjectUpdatePacket)packet;
             UpdateDilation(simulator, terse.RegionData.TimeDilation);
 
@@ -2051,20 +2055,21 @@ namespace OpenMetaverse
                     }
                     #endregion Update Client.Self                   
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Logger.Log(e.Message, Helpers.LogLevel.Warning, Client, e);
+                    Logger.Log(ex.Message, Helpers.LogLevel.Warning, Client, ex);
                 }
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="packet"></param>
-        /// <param name="simulator"></param>
-        protected void ObjectUpdateCompressedHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void ObjectUpdateCompressedHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
+            Simulator simulator = e.Simulator;
+
             ObjectUpdateCompressedPacket update = (ObjectUpdateCompressedPacket)packet;
 
             for (int b = 0; b < update.ObjectData.Length; b++)
@@ -2310,23 +2315,24 @@ namespace OpenMetaverse
 
                     #endregion
                 }
-                catch (IndexOutOfRangeException e)
+                catch (IndexOutOfRangeException ex)
                 {
-                    Logger.Log("Error decoding an ObjectUpdateCompressed packet", Helpers.LogLevel.Warning, Client, e);
+                    Logger.Log("Error decoding an ObjectUpdateCompressed packet", Helpers.LogLevel.Warning, Client, ex);
                     Logger.Log(block, Helpers.LogLevel.Warning);
                 }
             }
         }
 
-        /// <summary>
-        /// Handles cached object update packets from the simulator
-        /// </summary>
-        /// <param name="packet">The packet containing the object data</param>
-        /// <param name="simulator">The simulator sending the data</param>
-        protected void ObjectUpdateCachedHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void ObjectUpdateCachedHandler(object sender, PacketReceivedEventArgs e)
         {
             if (Client.Settings.ALWAYS_REQUEST_OBJECTS)
             {
+                Packet packet = e.Packet;
+                Simulator simulator = e.Simulator;
+
                 ObjectUpdateCachedPacket update = (ObjectUpdateCachedPacket)packet;
                 List<uint> ids = new List<uint>(update.ObjectData.Length);
 
@@ -2340,13 +2346,14 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>
-        /// Handle KillObject packets from the simulator
-        /// </summary>
-        /// <param name="packet">The packet containing the object data</param>
-        /// <param name="simulator">The simulator sending the data</param>
-        protected void KillObjectHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void KillObjectHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
+            Simulator simulator = e.Simulator;
+
             KillObjectPacket kill = (KillObjectPacket)packet;
 
             // Notify first, so that handler has a chance to get a
@@ -2429,8 +2436,14 @@ namespace OpenMetaverse
             }
         }
 
-        protected void ObjectPropertiesHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void ObjectPropertiesHandler(object sender, PacketReceivedEventArgs e)
         {
+            Packet packet = e.Packet;
+            Simulator simulator = e.Simulator;
+
             ObjectPropertiesPacket op = (ObjectPropertiesPacket)packet;
             ObjectPropertiesPacket.ObjectDataBlock[] datablocks = op.ObjectData;
 
@@ -2489,10 +2502,15 @@ namespace OpenMetaverse
             }
         }
 
-
-        protected void ObjectPropertiesFamilyHandler(Packet p, Simulator sim)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void ObjectPropertiesFamilyHandler(object sender, PacketReceivedEventArgs e)
         {
-            ObjectPropertiesFamilyPacket op = (ObjectPropertiesFamilyPacket)p;
+            Packet packet = e.Packet;
+            Simulator simulator = e.Simulator;
+
+            ObjectPropertiesFamilyPacket op = (ObjectPropertiesFamilyPacket)packet;
             Primitive.ObjectProperties props = new Primitive.ObjectProperties();
 
             ReportType requestType = (ReportType)op.ObjectData.RequestFlags;
@@ -2515,30 +2533,36 @@ namespace OpenMetaverse
 
             if (Client.Settings.OBJECT_TRACKING)
             {
-                Primitive findPrim = sim.ObjectsPrimitives.Find(
+                Primitive findPrim = simulator.ObjectsPrimitives.Find(
                         delegate(Primitive prim) { return prim.ID == op.ObjectData.ObjectID; });
 
                 if (findPrim != null)
                 {
-                    lock (sim.ObjectsPrimitives.Dictionary)
+                    lock (simulator.ObjectsPrimitives.Dictionary)
                     {
-                        if (sim.ObjectsPrimitives.Dictionary.ContainsKey(findPrim.LocalID))
+                        if (simulator.ObjectsPrimitives.Dictionary.ContainsKey(findPrim.LocalID))
                         {
-                            if (sim.ObjectsPrimitives.Dictionary[findPrim.LocalID].Properties == null)
-                                sim.ObjectsPrimitives.Dictionary[findPrim.LocalID].Properties = new Primitive.ObjectProperties();
-                            sim.ObjectsPrimitives.Dictionary[findPrim.LocalID].Properties.SetFamilyProperties(props);
+                            if (simulator.ObjectsPrimitives.Dictionary[findPrim.LocalID].Properties == null)
+                                simulator.ObjectsPrimitives.Dictionary[findPrim.LocalID].Properties = new Primitive.ObjectProperties();
+                            simulator.ObjectsPrimitives.Dictionary[findPrim.LocalID].Properties.SetFamilyProperties(props);
                         }
                     }
                 }
             }
 
-            OnObjectPropertiesFamily(new ObjectPropertiesFamilyEventArgs(sim, props, requestType));
+            OnObjectPropertiesFamily(new ObjectPropertiesFamilyEventArgs(simulator, props, requestType));
         }
 
-        protected void PayPriceReplyHandler(Packet packet, Simulator simulator)
+        /// <summary>Process an incoming packet and raise the appropriate events</summary>
+        /// <param name="sender">The sender</param>
+        /// <param name="e">The EventArgs object containing the packet data</param>
+        protected void PayPriceReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             if (m_PayPriceReply != null)
             {
+                Packet packet = e.Packet;
+                Simulator simulator = e.Simulator;
+
                 PayPriceReplyPacket p = (PayPriceReplyPacket)packet;
                 UUID objectID = p.ObjectData.ObjectID;
                 int defaultPrice = p.ObjectData.DefaultPayPrice;

@@ -46,7 +46,7 @@ namespace OpenMetaverse
         private struct PacketCallbackWrapper
         {
             /// <summary>Callback to fire for this packet</summary>
-            public NetworkManager.PacketCallback Callback;
+            public EventHandler<PacketReceivedEventArgs> Callback;
             /// <summary>Reference to the simulator that this packet came from</summary>
             public Simulator Simulator;
             /// <summary>The packet that needs to be processed</summary>
@@ -56,8 +56,8 @@ namespace OpenMetaverse
         /// <summary>Reference to the GridClient object</summary>
         public GridClient Client;
 
-        private Dictionary<PacketType, NetworkManager.PacketCallback> _EventTable = 
-            new Dictionary<PacketType,NetworkManager.PacketCallback>();
+        private Dictionary<PacketType, EventHandler<PacketReceivedEventArgs>> _EventTable = 
+            new Dictionary<PacketType, EventHandler<PacketReceivedEventArgs>>();
         private WaitCallback _ThreadPoolCallback;
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace OpenMetaverse
         /// incoming packet</remarks>
         /// <param name="packetType">Packet type to register the handler for</param>
         /// <param name="eventHandler">Callback to be fired</param>
-        public void RegisterEvent(PacketType packetType, NetworkManager.PacketCallback eventHandler)
+        public void RegisterEvent(PacketType packetType, EventHandler<PacketReceivedEventArgs> eventHandler)
         {
             lock (_EventTable)
             {
@@ -93,7 +93,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="packetType">Packet type to unregister the handler for</param>
         /// <param name="eventHandler">Callback to be unregistered</param>
-        public void UnregisterEvent(PacketType packetType, NetworkManager.PacketCallback eventHandler)
+        public void UnregisterEvent(PacketType packetType, EventHandler<PacketReceivedEventArgs> eventHandler)
         {
             lock (_EventTable)
             {
@@ -110,12 +110,12 @@ namespace OpenMetaverse
         /// <param name="simulator">Simulator this packet was received from</param>
         internal void RaiseEvent(PacketType packetType, Packet packet, Simulator simulator)
         {
-            NetworkManager.PacketCallback callback;
-
+            EventHandler<PacketReceivedEventArgs> callback;            
+            
             // Default handler first, if one exists
             if (_EventTable.TryGetValue(PacketType.Default, out callback))
-            {
-                try { callback(packet, simulator); }
+            {                                
+                try { callback(this, new PacketReceivedEventArgs(packet, simulator)); }
                 catch (Exception ex)
                 {
                     Logger.Log("Default packet event handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
@@ -124,7 +124,7 @@ namespace OpenMetaverse
 
             if (_EventTable.TryGetValue(packetType, out callback))
             {
-                try { callback(packet, simulator); }
+                try { callback(this, new PacketReceivedEventArgs(packet, simulator)); }
                 catch (Exception ex)
                 {
                     Logger.Log("Packet event handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
@@ -147,7 +147,7 @@ namespace OpenMetaverse
         /// <param name="simulator">Simulator this packet was received from</param>
         internal void BeginRaiseEvent(PacketType packetType, Packet packet, Simulator simulator)
         {
-            NetworkManager.PacketCallback callback;
+            EventHandler<PacketReceivedEventArgs> callback;
             PacketCallbackWrapper wrapper;
 
             // Default handler first, if one exists
@@ -187,7 +187,7 @@ namespace OpenMetaverse
 
             try
             {
-                wrapper.Callback(wrapper.Packet, wrapper.Simulator);
+                wrapper.Callback(this, new PacketReceivedEventArgs(wrapper.Packet, wrapper.Simulator));
             }
             catch (Exception ex)
             {
