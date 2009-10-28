@@ -103,6 +103,12 @@ namespace OpenMetaverse
 
         #region Public Methods
 
+        public bool ApproxEquals(Quaternion quat, float tolerance)
+        {
+            Quaternion diff = this - quat;
+            return (diff.LengthSquared() <= tolerance * tolerance);
+        }
+
         public float Length()
         {
             return (float)Math.Sqrt(X * X + Y * Y + Z * Z + W * W);

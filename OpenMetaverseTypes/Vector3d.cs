@@ -116,7 +116,7 @@ namespace OpenMetaverse
         public bool ApproxEquals(Vector3d vec, double tolerance)
         {
             Vector3d diff = this - vec;
-            return (diff.Length() <= tolerance);
+            return (diff.LengthSquared() <= tolerance * tolerance);
         }
 
         /// <summary>
