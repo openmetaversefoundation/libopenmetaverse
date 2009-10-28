@@ -308,6 +308,29 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>
+        /// Ensures that values are in range 0-1
+        /// </summary>
+        public void ClampValues()
+        {
+            if (R < 0f)
+                R = 0f;
+            if (G < 0f)
+                G = 0f;
+            if (B < 0f)
+                B = 0f;
+            if (A < 0f)
+                A = 0f;
+            if (R > 1f)
+                R = 1f;
+            if (G > 1f)
+                G = 1f;
+            if (B > 1f)
+                B = 1f;
+            if (A > 1f)
+                A = 1f;
+        }
+
         #endregion Public Methods
 
         #region Static Methods
@@ -464,6 +487,7 @@ namespace OpenMetaverse
             lhs.G += rhs.G;
             lhs.B += rhs.B;
             lhs.A += rhs.A;
+            lhs.ClampValues();
 
             return lhs;
         }
@@ -474,6 +498,7 @@ namespace OpenMetaverse
             lhs.G -= rhs.G;
             lhs.B -= rhs.B;
             lhs.A -= rhs.A;
+            lhs.ClampValues();
 
             return lhs;
         }
@@ -484,6 +509,7 @@ namespace OpenMetaverse
             lhs.G *= rhs.G;
             lhs.B *= rhs.B;
             lhs.A *= rhs.A;
+            lhs.ClampValues();
 
             return lhs;
         }
