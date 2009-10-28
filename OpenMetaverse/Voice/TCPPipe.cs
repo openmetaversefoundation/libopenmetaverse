@@ -77,7 +77,7 @@ namespace OpenMetaverse.Voice
                     IPAddress[] ips = Dns.GetHostAddresses(address);
                     ip = ips[0];
                 }
-                _TCPSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                _TCPSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 IPEndPoint ipEndPoint = new IPEndPoint(ip, port);
                 _TCPSocket.Connect(ipEndPoint);
                 if (_TCPSocket.Connected)

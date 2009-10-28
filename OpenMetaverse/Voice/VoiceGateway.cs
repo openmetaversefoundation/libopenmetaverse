@@ -53,6 +53,7 @@ namespace OpenMetaverse.Voice
                 {
                     daemonProcess = new Process();
                     daemonProcess.StartInfo.FileName = path;
+                    daemonProcess.StartInfo.WorkingDirectory = Path.GetDirectoryName(path);
                     daemonProcess.StartInfo.Arguments = args;
                     daemonProcess.StartInfo.UseShellExecute = false;
 
@@ -147,7 +148,7 @@ namespace OpenMetaverse.Voice
                     }
                 };
             daemonPipe.OnReceiveLine += new TCPPipe.OnReceiveLineCallback(daemonPipe_OnReceiveLine);
-
+            
             SocketException se = daemonPipe.Connect(address, port);
             if (se == null)
             {
