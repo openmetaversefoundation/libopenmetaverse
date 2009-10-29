@@ -308,7 +308,10 @@ namespace OpenMetaverse
         /// <example>11f8aa9c-b071-4242-836b-13b7abe0d489</example>
         public override string ToString()
         {
-            return Guid.ToString();
+            if (Guid == Guid.Empty)
+                return ZeroString;
+            else
+                return Guid.ToString();
         }
 
         #endregion Overrides
@@ -372,5 +375,8 @@ namespace OpenMetaverse
 
         /// <summary>An UUID with a value of all zeroes</summary>
         public static readonly UUID Zero = new UUID();
+
+        /// <summary>A cache of UUID.Zero as a string to optimize a common path</summary>
+        private static readonly string ZeroString = UUID.Zero.ToString();
     }
 }
