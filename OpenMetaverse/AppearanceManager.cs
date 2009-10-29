@@ -247,10 +247,10 @@ namespace OpenMetaverse
         /// <summary>Thread sync lock object</summary>
         private readonly object m_AgentCachedBakesLock = new object();
 
-        /// <summary>Triggered when an AgentCachedTextureResponse packet is
+        /// <summary>Raised when an AgentCachedTextureResponse packet is
         /// received, giving a list of cached bakes that were found on the
-        /// server</summary>
-        /// <see cref="RequestCachedBakes"/> request.</summary>
+        /// simulator
+        /// <seealso cref="RequestCachedBakes"/> request.</summary>
         public event EventHandler<AgentCachedBakesReplyEventArgs> CachedBakesReply
         {
             add { lock (m_AgentCachedBakesLock) { m_AgentCachedBakesReply += value; } }
@@ -274,11 +274,10 @@ namespace OpenMetaverse
         private readonly object m_AppearanceSetLock = new object();
 
         /// <summary>
-        /// Triggered when appearance data is sent to the sim and
-        /// the main appearance thread is done.
+        /// Raosed when appearance data is sent to the simulator, also indicates
+        /// the main appearance thread is finished.
         /// </summary>
-        /// <param name="success">Indicates whether appearance setting was successful</param>
-        /// <see cref="RequestAgentSetAppearance"/> request.</summary>
+        /// <seealso cref="RequestAgentSetAppearance"/> request.
         public event EventHandler<AppearanceSetReplyEventArgs> AgentSetAppearanceReply
         {
             add { lock (m_AppearanceSetLock) { m_AppearanceSetReply += value; } }
@@ -305,7 +304,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Triggered when the simulator requests the agent rebake its appearance.
         /// </summary>
-        /// <see cref="RebakeAvatarRequest"/> request.</summary>
+        /// <seealso cref="RebakeAvatarRequest"/>
         public event EventHandler<RebakeAvatarTexturesEventArgs> RebakeAvatarRequested
         {
             add { lock (m_RebakeAvatarLock) { m_RebakeAvatarReply += value; } }

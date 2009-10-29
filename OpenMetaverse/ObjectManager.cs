@@ -411,12 +411,13 @@ namespace OpenMetaverse
         private Timer InterpolationTimer;
 
         /// <summary>
-        /// Instantiates a new ObjectManager class
+        /// Construct a new instance of the ObjectManager class
         /// </summary>
-        /// <param name="client">A reference to the client</param>
+        /// <param name="client">A reference to the <see cref="GridClient"/> instance</param>
         public ObjectManager(GridClient client)
         {
             Client = client;
+
             Client.Network.RegisterCallback(PacketType.ObjectUpdate, ObjectUpdateHandler);
             Client.Network.RegisterCallback(PacketType.ImprovedTerseObjectUpdate, ImprovedTerseObjectUpdateHandler);
             Client.Network.RegisterCallback(PacketType.ObjectUpdateCompressed, ObjectUpdateCompressedHandler);
@@ -426,7 +427,9 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.ObjectProperties, ObjectPropertiesHandler);
             Client.Network.RegisterCallback(PacketType.PayPriceReply, PayPriceReplyHandler);
         }
-        
+
+        #region Internal event handlers
+
         private void Network_OnDisconnected(NetworkManager.DisconnectType reason, string message)
         {
             if (InterpolationTimer != null)
@@ -444,15 +447,16 @@ namespace OpenMetaverse
             }
         }
 
-        #region Action Methods
+        #endregion Internal event handlers
+
+        #region Public Methods
 
         /// <summary>
-        /// Request object information from the sim, primarily used for stale 
-        /// or missing cache entries
+        /// Request information for a single object from a <see cref="Simulator"/> 
+        /// you are currently connected to
         /// </summary>
-        /// <param name="simulator">The simulator containing the object you're 
-        /// looking for</param>
-        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="simulator">The <see cref="Simulator"/> the object is located</param>
+        /// <param name="localID">The Local ID of the object</param>
         public void RequestObject(Simulator simulator, uint localID)
         {
             RequestMultipleObjectsPacket request = new RequestMultipleObjectsPacket();
@@ -467,27 +471,23 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Request object information for multiple objects all contained in
-        /// the same sim, primarily used for stale or missing cache entries
+        /// Request information for multiple objects contained in
+        /// the same simulator
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>
-        /// <param name="localIDs">An array which contains the IDs of the objects to request</param>
+        /// <param name="simulator">The <see cref="Simulator"/> the objects are located</param>
+        /// <param name="localIDs">An array containing the Local IDs of the objects</param>
         public void RequestObjects(Simulator simulator, List<uint> localIDs)
         {
-            int i = 0;
-
             RequestMultipleObjectsPacket request = new RequestMultipleObjectsPacket();
             request.AgentData.AgentID = Client.Self.AgentID;
             request.AgentData.SessionID = Client.Self.SessionID;
             request.ObjectData = new RequestMultipleObjectsPacket.ObjectDataBlock[localIDs.Count];
 
-            foreach (uint localID in localIDs)
+            for (int i = 0; i < localIDs.Count; i++)
             {
                 request.ObjectData[i] = new RequestMultipleObjectsPacket.ObjectDataBlock();
-                request.ObjectData[i].ID = localID;
+                request.ObjectData[i].ID = localIDs[i];
                 request.ObjectData[i].CacheMissType = 0;
-
-                i++;
             }
 
             Client.Network.SendPacket(request, simulator);
@@ -497,8 +497,8 @@ namespace OpenMetaverse
         /// Attempt to purchase an original object, a copy, or the contents of
         /// an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>        
-        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="simulator">The <see cref="Simulator"/> the object is located</param>        
+        /// <param name="localID">The Local ID of the object</param>
         /// <param name="saleType">Whether the original, a copy, or the object
         /// contents are on sale. This is used for verification, if the this
         /// sale type is not valid for the object the purchase will fail</param>
@@ -511,8 +511,8 @@ namespace OpenMetaverse
         /// purchased should be placed</param>
         /// <example>
         /// <code>
-        /// BuyObject(Client.Network.CurrentSim, 500, SaleType.Copy, 
-        /// 100, UUID.Zero, Client.Self.InventoryRootFolderUUID);
+        ///     BuyObject(Client.Network.CurrentSim, 500, SaleType.Copy, 
+        ///         100, UUID.Zero, Client.Self.InventoryRootFolderUUID);
         /// </code> 
         ///</example>
         public void BuyObject(Simulator simulator, uint localID, SaleType saleType, int price, UUID groupID,
@@ -538,27 +538,40 @@ namespace OpenMetaverse
         /// Request prices that should be displayed in pay dialog. This will triggger the simulator
         /// to send us back a PayPriceReply which can be handled by OnPayPriceReply event
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
-        /// <param name="objectID"><seealso cref="UUID"/> of the object we are requesting pay price</param>
+        /// <param name="simulator">The <see cref="Simulator"/> the object is located</param>
+        /// <param name="objectID">The ID of the object</param>
+        /// <remarks>The result is raised in the <see cref="PayPriceReply"/> event</remarks>
         public void RequestPayPrice(Simulator simulator, UUID objectID)
         {
             RequestPayPricePacket payPriceRequest = new RequestPayPricePacket();
-
+            
             payPriceRequest.ObjectData = new RequestPayPricePacket.ObjectDataBlock();
             payPriceRequest.ObjectData.ObjectID = objectID;
 
             Client.Network.SendPacket(payPriceRequest, simulator);
         }
 
+        /// <summary>
+        /// Select a single object. This will cause the <see cref="Simulator"/> to send us 
+        /// an <see cref="ObjectPropertiesPacket"/> which will raise the <see cref="ObjectProperties"/> event
+        /// </summary>
+        /// <param name="simulator">The <see cref="Simulator"/> the object is located</param>        
+        /// <param name="localID">The Local ID of the object</param>        
+        /// <seealso cref="ObjectPropertiesFamilyEventArgs"/>
+        public void SelectObject(Simulator simulator, uint localID)
+        {
+            SelectObject(simulator, localID, true);
+        }
 
         /// <summary>
-        /// Select a single object. This will trigger the simulator to send us back 
-        /// an ObjectProperties packet so we can get the full information for
-        /// this object
+        /// Select a single object. This will cause the <see cref="Simulator"/> to send us 
+        /// an <see cref="ObjectPropertiesPacket"/> which will raise the <see cref="ObjectProperties"/> event
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
-        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
-        /// <param name="automaticDeselect">Should objects be deselected immediately after selection</param>
+        /// <param name="simulator">The <see cref="Simulator"/> the object is located</param>
+        /// <param name="localID">The Local ID of the object</param>
+        /// <param name="automaticDeselect">if true, a call to <see cref="DeselectObject"/> is
+        /// made immediately following the request</param>
+        /// <seealso cref="ObjectPropertiesFamilyEventArgs"/>
         public void SelectObject(Simulator simulator, uint localID, bool automaticDeselect)
         {
             ObjectSelectPacket select = new ObjectSelectPacket();
@@ -571,6 +584,7 @@ namespace OpenMetaverse
             select.ObjectData[0].ObjectLocalID = localID;
 
             Client.Network.SendPacket(select, simulator);
+
             if (automaticDeselect)
             {
                 DeselectObject(simulator, localID);
@@ -578,24 +592,13 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Select a single object. This will trigger the simulator to send us back 
-        /// an ObjectProperties packet so we can get the full information for
-        /// this object
-        /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
-        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
-        public void SelectObject(Simulator simulator, uint localID)
-        {
-            SelectObject(simulator, localID, true);
-        }
-
-        /// <summary>
-        /// Select multiple objects. This will trigger the simulator to send us
-        /// back ObjectProperties for each object
-        /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>
-        /// <param name="localIDs">An array which contains the IDs of the objects to select</param>
+        /// Select multiple objects. This will cause the <see cref="Simulator"/> to send us 
+        /// an <see cref="ObjectPropertiesPacket"/> which will raise the <see cref="ObjectProperties"/> event
+        /// </summary>        
+        /// <param name="simulator">The <see cref="Simulator"/> the objects are located</param> 
+        /// <param name="localIDs">An array containing the Local IDs of the objects</param>
         /// <param name="automaticDeselect">Should objects be deselected immediately after selection</param>
+        /// <seealso cref="ObjectPropertiesFamilyEventArgs"/>
         public void SelectObjects(Simulator simulator, uint[] localIDs, bool automaticDeselect)
         {
             ObjectSelectPacket select = new ObjectSelectPacket();
@@ -612,6 +615,7 @@ namespace OpenMetaverse
             }
 
             Client.Network.SendPacket(select, simulator);
+
             if (automaticDeselect)
             {
                 DeselectObjects(simulator, localIDs);
@@ -619,26 +623,27 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Select multiple objects. This will trigger the simulator to send us
-        /// back ObjectProperties for each object
-        /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>
-        /// <param name="localIDs">An array which contains the IDs of the objects to select</param>
+        /// Select multiple objects. This will cause the <see cref="Simulator"/> to send us 
+        /// an <see cref="ObjectPropertiesPacket"/> which will raise the <see cref="ObjectProperties"/> event
+        /// </summary>        
+        /// <param name="simulator">The <see cref="Simulator"/> the objects are located</param> 
+        /// <param name="localIDs">An array containing the Local IDs of the objects</param>
+        /// <seealso cref="ObjectPropertiesFamilyEventArgs"/>
         public void SelectObjects(Simulator simulator, uint[] localIDs)
         {
             SelectObjects(simulator, localIDs, true);
         }
 
-
         /// <summary>
-        /// Sets and object's flags (physical, temporary, phantom, casts shadow)
+        /// Update the properties of an object
         /// </summary>
-        /// <param name="localID"></param>
-        /// <param name="physical"></param>
-        /// <param name="temporary"></param>
-        /// <param name="phantom"></param>
-        /// <param name="castsShadow"></param>
-        public void SetFlags(uint localID, bool physical, bool temporary, bool phantom, bool castsShadow)
+        /// <param name="simulator">The <see cref="Simulator"/> the object is located</param>        
+        /// <param name="localID">The Local ID of the object</param>        
+        /// <param name="physical">true to turn the objects physical property on</param>
+        /// <param name="temporary">true to turn the objects temporary property on</param>
+        /// <param name="phantom">true to turn the objects phantom property on</param>
+        /// <param name="castsShadow">true to turn the objects cast shadows property on</param>
+        public void SetFlags(Simulator simulator, uint localID, bool physical, bool temporary, bool phantom, bool castsShadow)
         {
             ObjectFlagUpdatePacket flags = new ObjectFlagUpdatePacket();
             flags.AgentData.AgentID = Client.Self.AgentID;
@@ -648,17 +653,18 @@ namespace OpenMetaverse
             flags.AgentData.IsTemporary = temporary;
             flags.AgentData.IsPhantom = phantom;
             flags.AgentData.CastsShadows = castsShadow;
-
-            Client.Network.SendPacket(flags);
+            
+            Client.Network.SendPacket(flags, simulator);
         }
 
         /// <summary>
-        /// Sets an object's sale information
+        /// Sets the sale properties of a single object
         /// </summary>
-        /// <param name="localID"></param>
-        /// <param name="saleType"></param>
-        /// <param name="price"></param>
-        public void SetSaleInfo(uint localID, SaleType saleType, int price)
+        /// <param name="simulator">The <see cref="Simulator"/> the object is located</param>        
+        /// <param name="localID">The Local ID of the object</param>        
+        /// <param name="saleType">One of the options from the <see cref="SaleType"/> enum</param>
+        /// <param name="price">The price of the object</param>
+        public void SetSaleInfo(Simulator simulator, uint localID, SaleType saleType, int price)
         {
             ObjectSaleInfoPacket sale = new ObjectSaleInfoPacket();
             sale.AgentData.AgentID = Client.Self.AgentID;
@@ -669,21 +675,23 @@ namespace OpenMetaverse
             sale.ObjectData[0].SalePrice = price;
             sale.ObjectData[0].SaleType = (byte)saleType;
 
-            Client.Network.SendPacket(sale);
+            Client.Network.SendPacket(sale, simulator);
         }
 
         /// <summary>
-        /// Sets sale info for multiple objects
-        /// </summary>
-        /// <param name="localIDs"></param>
-        /// <param name="saleType"></param>
-        /// <param name="price"></param>
-        public void SetSaleInfo(List<uint> localIDs, SaleType saleType, int price)
+        /// Sets the sale properties of multiple objects
+        /// </summary>        
+        /// <param name="simulator">The <see cref="Simulator"/> the objects are located</param> 
+        /// <param name="localIDs">An array containing the Local IDs of the objects</param>
+        /// <param name="saleType">One of the options from the <see cref="SaleType"/> enum</param>
+        /// <param name="price">The price of the object</param>
+        public void SetSaleInfo(Simulator simulator, List<uint> localIDs, SaleType saleType, int price)
         {
             ObjectSaleInfoPacket sale = new ObjectSaleInfoPacket();
             sale.AgentData.AgentID = Client.Self.AgentID;
             sale.AgentData.SessionID = Client.Self.SessionID;
             sale.ObjectData = new ObjectSaleInfoPacket.ObjectDataBlock[localIDs.Count];
+
             for (int i = 0; i < localIDs.Count; i++)
             {
                 sale.ObjectData[i] = new ObjectSaleInfoPacket.ObjectDataBlock();
@@ -692,14 +700,14 @@ namespace OpenMetaverse
                 sale.ObjectData[i].SaleType = (byte)saleType;
             }
 
-            Client.Network.SendPacket(sale);
+            Client.Network.SendPacket(sale, simulator);
         }
 
         /// <summary>
-        /// Deselect an object
+        /// Deselect a single object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
-        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="simulator">The <see cref="Simulator"/> the object is located</param>        
+        /// <param name="localID">The Local ID of the object</param>
         public void DeselectObject(Simulator simulator, uint localID)
         {
             ObjectDeselectPacket deselect = new ObjectDeselectPacket();
@@ -717,8 +725,8 @@ namespace OpenMetaverse
         /// <summary>
         /// Deselect multiple objects.
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="libsecondlife.Simulator"/> object where the objects reside</param>
-        /// <param name="localIDs">An array which contains the IDs of the objects to select</param>
+        /// <param name="simulator">The <see cref="Simulator"/> the objects are located</param> 
+        /// <param name="localIDs">An array containing the Local IDs of the objects</param>
         public void DeselectObjects(Simulator simulator, uint[] localIDs)
         {
             ObjectDeselectPacket deselect = new ObjectDeselectPacket();
@@ -740,18 +748,18 @@ namespace OpenMetaverse
         /// <summary>
         /// Perform a click action on an object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
-        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="simulator">The <see cref="Simulator"/> the object is located</param>        
+        /// <param name="localID">The Local ID of the object</param>
         public void ClickObject(Simulator simulator, uint localID)
         {
             ClickObject(simulator, localID, Vector3.Zero, Vector3.Zero, 0, Vector3.Zero, Vector3.Zero, Vector3.Zero);
         }
 
         /// <summary>
-        /// Perform a click action on an object
+        /// Perform a click action (Grab) on a single object
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
-        /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
+        /// <param name="simulator">The <see cref="Simulator"/> the object is located</param>        
+        /// <param name="localID">The Local ID of the object</param>
         /// <param name="uvCoord"></param>
         /// <param name="stCoord"></param>
         /// <param name="faceIndex"></param>
@@ -797,8 +805,8 @@ namespace OpenMetaverse
             Client.Network.SendPacket(degrab, simulator);
         }
 
-                /// <summary>
-        /// Create, or "rez" a new prim object in a simulator
+        /// <summary>
+        /// Create (rez) a new prim object in a simulator
         /// </summary>
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object to place the object in</param>
         /// <param name="prim">Data describing the prim object to rez</param>
@@ -820,7 +828,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Create, or "rez" a new prim object in a simulator
+        /// Create (rez) a new prim object in a simulator
         /// </summary>
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object to place the object in</param>
         /// <param name="prim">Data describing the prim object to rez</param>
@@ -1074,7 +1082,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Set additional primitive parameters on an object
+        /// Unset additional primitive parameters on an object
         /// </summary>
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the object resides</param>
         /// <param name="localID">The objects ID which is local to the simulator the object is in</param>
@@ -1111,14 +1119,11 @@ namespace OpenMetaverse
 
             packet.ObjectData = new ObjectLinkPacket.ObjectDataBlock[localIDs.Count];
 
-            int i = 0;
-            foreach (uint localID in localIDs)
+            for (int i = 0; i < localIDs.Count; i++)
             {
                 packet.ObjectData[i] = new ObjectLinkPacket.ObjectDataBlock();
-                packet.ObjectData[i].ObjectLocalID = localID;
-
-                i++;
-            }
+                packet.ObjectData[i].ObjectLocalID = localIDs[i];
+            }            
 
             Client.Network.SendPacket(packet, simulator);
         }
@@ -1270,13 +1275,11 @@ namespace OpenMetaverse
             detach.AgentData.SessionID = Client.Self.SessionID;
             detach.ObjectData = new ObjectDetachPacket.ObjectDataBlock[localIDs.Count];
 
-            int i = 0;
-            foreach (uint localid in localIDs)
+            for (int i = 0; i < localIDs.Count; i++)
             {
                 detach.ObjectData[i] = new ObjectDetachPacket.ObjectDataBlock();
-                detach.ObjectData[i].ObjectLocalID = localid;
-                i++;
-            }
+                detach.ObjectData[i].ObjectLocalID = localIDs[i];
+            }            
 
             Client.Network.SendPacket(detach, simulator);
         }
@@ -3256,10 +3259,9 @@ namespace OpenMetaverse
             this.m_NameValues = nameValues;
         }
     }
-    
-    /// <summary>
-    /// 
-    /// </summary>
+
+    /// <summary>Provides notification when an Avatar, Object or Attachment is DeRezzed or moves out of the avatars view for the 
+    /// <see cref="ObjectManager.KillObject"/> event</summary>
     public class KillObjectEventArgs : EventArgs
     {
         private readonly Simulator m_Simulator;
@@ -3267,7 +3269,7 @@ namespace OpenMetaverse
 
         /// <summary>Get the simulator the object is located</summary>
         public Simulator Simulator { get { return m_Simulator; } }
-        /// <summary></summary>
+        /// <summary>The LocalID of the object</summary>
         public uint ObjectLocalID { get { return m_ObjectLocalID; } } 
 
         public KillObjectEventArgs(Simulator simulator, uint objectID)
@@ -3278,7 +3280,7 @@ namespace OpenMetaverse
     }
     
     /// <summary>
-    /// 
+    /// Provides updates sit position data
     /// </summary>
     public class AvatarSitChangedEventArgs : EventArgs
     {
