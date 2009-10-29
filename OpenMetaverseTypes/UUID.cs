@@ -377,6 +377,6 @@ namespace OpenMetaverse
         public static readonly UUID Zero = new UUID();
 
         /// <summary>A cache of UUID.Zero as a string to optimize a common path</summary>
-        private static readonly string ZeroString = UUID.Zero.ToString();
+        private static readonly string ZeroString = Guid.Empty.ToString();
     }
 }
