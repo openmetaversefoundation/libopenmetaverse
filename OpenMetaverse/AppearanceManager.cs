@@ -202,47 +202,117 @@ namespace OpenMetaverse
 
         #endregion Structs / Classes
 
-        #region Delegates
+        #region Event delegates, Raise Events
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<AgentWearablesReplyEventArgs> m_AgentWearablesReply;
+
+        /// <summary>Raises the AgentWearablesReply event</summary>
+        /// <param name="e">An AgentWearablesReplyEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnAgentWearables(AgentWearablesReplyEventArgs e)
+        {
+            EventHandler<AgentWearablesReplyEventArgs> handler = m_AgentWearablesReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_AgentWearablesLock = new object();
 
         /// <summary>Triggered when an AgentWearablesUpdate packet is received,
-        /// telling us what our avatar is currently wearing</summary>
-        public delegate void AgentWearablesCallback();
+        /// telling us what our avatar is currently wearing
+        /// <see cref="RequestAgentWearables"/> request.</summary>
+        public event EventHandler<AgentWearablesReplyEventArgs> AgentWearablesReply
+        {
+            add { lock (m_AgentWearablesLock) { m_AgentWearablesReply += value; } }
+            remove { lock (m_AgentWearablesLock) { m_AgentWearablesReply -= value; } }
+        }
+
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<AgentCachedBakesReplyEventArgs> m_AgentCachedBakesReply;
+
+        /// <summary>Raises the CachedBakesReply event</summary>
+        /// <param name="e">An AgentCachedBakesReplyEventArgs object containing the
+        /// data returned from the data server AgentCachedTextureResponse</param>
+        protected virtual void OnAgentCachedBakes(AgentCachedBakesReplyEventArgs e)
+        {
+            EventHandler<AgentCachedBakesReplyEventArgs> handler = m_AgentCachedBakesReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_AgentCachedBakesLock = new object();
+
         /// <summary>Triggered when an AgentCachedTextureResponse packet is
         /// received, giving a list of cached bakes that were found on the
         /// server</summary>
-        public delegate void AgentCachedBakesCallback();
-        /// <summary>
-        /// Triggered when appearance data is sent to the sim and
-        /// the main appearance thread is done.</summary>
-        /// <param name="success">Indicates whether appearance setting was successful</param>
-        public delegate void AppearanceSetCallback(bool success);
-        /// <summary>
-        /// Triggered when the simulator sends a request for this agent to rebake
-        /// its appearance
-        /// </summary>
-        /// <param name="textureID">The ID of the Texture Layer to bake</param>
-        public delegate void RebakeAvatarCallback(UUID textureID);
-        
-        #endregion
+        /// <see cref="RequestCachedBakes"/> request.</summary>
+        public event EventHandler<AgentCachedBakesReplyEventArgs> CachedBakesReply
+        {
+            add { lock (m_AgentCachedBakesLock) { m_AgentCachedBakesReply += value; } }
+            remove { lock (m_AgentCachedBakesLock) { m_AgentCachedBakesReply -= value; } }
+        }
 
-        #region Events
-        /// <summary>Triggered when an AgentWearablesUpdate packet is received,
-        /// telling us what our avatar is currently wearing</summary>
-        public event AgentWearablesCallback OnAgentWearables;
-        /// <summary>Triggered when an AgentCachedTextureResponse packet is
-        /// received, giving a list of cached bakes that were found on the
-        /// server</summary>
-        public event AgentCachedBakesCallback OnAgentCachedBakes;
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<AppearanceSetReplyEventArgs> m_AppearanceSetReply;
+
+        /// <summary>Raises the AgentSetAppearanceReply event</summary>
+        /// <param name="e">An AppearanceSetReplyEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnAppearanceSet(AppearanceSetReplyEventArgs e)
+        {
+            EventHandler<AppearanceSetReplyEventArgs> handler = m_AppearanceSetReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_AppearanceSetLock = new object();
+
         /// <summary>
         /// Triggered when appearance data is sent to the sim and
         /// the main appearance thread is done.
         /// </summary>
-        public event AppearanceSetCallback OnAppearanceSet;
+        /// <param name="success">Indicates whether appearance setting was successful</param>
+        /// <see cref="RequestAgentSetAppearance"/> request.</summary>
+        public event EventHandler<AppearanceSetReplyEventArgs> AgentSetAppearanceReply
+        {
+            add { lock (m_AppearanceSetLock) { m_AppearanceSetReply += value; } }
+            remove { lock (m_AppearanceSetLock) { m_AppearanceSetReply -= value; } }
+        }
+
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<RebakeAvatarTexturesEventArgs> m_RebakeAvatarReply;
+
+        /// <summary>Raises the RebakeAvatarRequested event</summary>
+        /// <param name="e">An RebakeAvatarTexturesEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnRebakeAvatar(RebakeAvatarTexturesEventArgs e)
+        {
+            EventHandler<RebakeAvatarTexturesEventArgs> handler = m_RebakeAvatarReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_RebakeAvatarLock = new object();
+
         /// <summary>
         /// Triggered when the simulator requests the agent rebake its appearance.
         /// </summary>
-        public event RebakeAvatarCallback OnRebakeAvatar;
-        #endregion Events
+        /// <see cref="RebakeAvatarRequest"/> request.</summary>
+        public event EventHandler<RebakeAvatarTexturesEventArgs> RebakeAvatarRequested
+        {
+            add { lock (m_RebakeAvatarLock) { m_RebakeAvatarReply += value; } }
+            remove { lock (m_RebakeAvatarLock) { m_RebakeAvatarReply -= value; } }
+        }
+
+        #endregion
 
         #region Properties
 
@@ -403,7 +473,7 @@ namespace OpenMetaverse
                         }
 
                         // Send the appearance packet
-                        SendAgentSetAppearance();
+                        RequestAgentSetAppearance();
                     }
                     catch (Exception)
                     {
@@ -413,11 +483,7 @@ namespace OpenMetaverse
                     {
                         AppearanceThreadRunning = 0;
 
-                        if (OnAppearanceSet != null)
-                        {
-                            try { OnAppearanceSet(success); }
-                            catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
-                        }
+                        OnAppearanceSet(new AppearanceSetReplyEventArgs(success));
                     }
                 }
             );
@@ -1064,15 +1130,15 @@ namespace OpenMetaverse
         bool GetAgentWearables()
         {
             AutoResetEvent wearablesEvent = new AutoResetEvent(false);
-            AgentWearablesCallback wearablesCallback = delegate() { wearablesEvent.Set(); };
+            EventHandler<AgentWearablesReplyEventArgs> wearablesCallback = ((s,e) => wearablesEvent.Set());
 
-            OnAgentWearables += wearablesCallback;
+            AgentWearablesReply += wearablesCallback;
 
             RequestAgentWearables();
 
             bool success = wearablesEvent.WaitOne(WEARABLE_TIMEOUT, false);
 
-            OnAgentWearables -= wearablesCallback;
+            AgentWearablesReply -= wearablesCallback;
 
             return success;
         }
@@ -1084,15 +1150,15 @@ namespace OpenMetaverse
         bool GetCachedBakes()
         {
             AutoResetEvent cacheCheckEvent = new AutoResetEvent(false);
-            AgentCachedBakesCallback cacheCallback = delegate() { cacheCheckEvent.Set(); };
+            EventHandler<AgentCachedBakesReplyEventArgs> cacheCallback = (sender, e) => cacheCheckEvent.Set();
 
-            OnAgentCachedBakes += cacheCallback;
+            CachedBakesReply += cacheCallback;
 
             RequestCachedBakes();
 
             bool success = cacheCheckEvent.WaitOne(WEARABLE_TIMEOUT, false);
 
-            OnAgentCachedBakes -= cacheCallback;
+            CachedBakesReply -= cacheCallback;
 
             return success;
         }
@@ -1545,7 +1611,7 @@ namespace OpenMetaverse
         /// Create an AgentSetAppearance packet from Wearables data and the 
         /// Textures array and send it
         /// </summary>
-        private void SendAgentSetAppearance()
+        private void RequestAgentSetAppearance()
         {
             AgentSetAppearancePacket set = new AgentSetAppearancePacket();
             set.AgentData.AgentID = Client.Self.AgentID;
@@ -1852,12 +1918,7 @@ namespace OpenMetaverse
             if (changed)
             {
                 // Fire the callback
-                AgentWearablesCallback callback = OnAgentWearables;
-                if (callback != null)
-                {
-                    try { callback(); }
-                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
-                }
+                OnAgentWearables(new AgentWearablesReplyEventArgs());
             }
         }
 
@@ -1871,11 +1932,7 @@ namespace OpenMetaverse
                 RequestSetAppearance(true);
             }
 
-            if (OnRebakeAvatar != null)
-            {
-                try { OnRebakeAvatar(rebake.TextureData.TextureID); }
-                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
-            }
+            OnRebakeAvatar(new RebakeAvatarTexturesEventArgs(rebake.TextureData.TextureID));
         }
 
         protected void AgentCachedTextureResponseHandler(object sender, PacketReceivedEventArgs e)
@@ -1906,12 +1963,7 @@ namespace OpenMetaverse
                 }
             }
 
-            AgentCachedBakesCallback callback = OnAgentCachedBakes;
-            if (callback != null)
-            {
-                try { callback(); }
-                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
-            }
+            OnAgentCachedBakes(new AgentCachedBakesReplyEventArgs());
         }
 
         private void Network_OnEventQueueRunning(object sender, EventQueueRunningEventArgs e)
@@ -2077,5 +2129,63 @@ namespace OpenMetaverse
         }
 
         #endregion Static Helpers
+
+        #region AppearanceManager EventArgs Classes
+
+        /// <summary>Contains the Event data returned from the data server from an AgentWearablesRequest</summary>
+        public class AgentWearablesReplyEventArgs : EventArgs
+        {
+            /// <summary>Construct a new instance of the AgentWearablesReplyEventArgs class</summary>
+            public AgentWearablesReplyEventArgs()
+            {
+            }
+        }
+
+        /// <summary>Contains the Event data returned from the data server from an AgentCachedTextureResponse</summary>
+        public class AgentCachedBakesReplyEventArgs : EventArgs
+        {
+            /// <summary>Construct a new instance of the AgentCachedBakesReplyEventArgs class</summary>
+            public AgentCachedBakesReplyEventArgs()
+            {
+            }
+        }
+
+        /// <summary>Contains the Event data returned from the data server from an AppearanceSetRequest</summary>
+        public class AppearanceSetReplyEventArgs : EventArgs
+        {
+            private readonly bool m_success;
+
+            /// <summary>Indicates whether appearance setting was successful</summary>
+            public bool Success { get { return m_success; } }
+            /// <summary>
+            /// Triggered when appearance data is sent to the sim and
+            /// the main appearance thread is done.</summary>
+            /// <param name="success">Indicates whether appearance setting was successful</param>
+            public AppearanceSetReplyEventArgs(bool success)
+            {
+                this.m_success = success;
+            }
+        }
+
+        /// <summary>Contains the Event data returned from the data server from an RebakeAvatarTextures</summary>
+        public class RebakeAvatarTexturesEventArgs : EventArgs
+        {
+            private readonly UUID m_textureID;
+
+            /// <summary>The ID of the Texture Layer to bake</summary>
+            public UUID TextureID { get { return m_textureID; } }
+
+            /// <summary>
+            /// Triggered when the simulator sends a request for this agent to rebake
+            /// its appearance
+            /// </summary>
+            /// <param name="textureID">The ID of the Texture Layer to bake</param>
+            public RebakeAvatarTexturesEventArgs(UUID textureID)
+            {
+                this.m_textureID = textureID;
+            }
+            
+        }
+        #endregion
     }
 }
