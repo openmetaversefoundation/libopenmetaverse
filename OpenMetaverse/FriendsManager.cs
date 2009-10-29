@@ -453,7 +453,7 @@ namespace OpenMetaverse
         {
             Client = client;
 
-            Client.Network.LoggedIn += Network_OnConnect;            
+            Client.Network.LoginProgress += Network_OnConnect;            
             Client.Avatars.UUIDNameReply += new EventHandler<UUIDNameReplyEventArgs>(Avatars_OnAvatarNames);
             Client.Self.IM += Self_IM;
 
@@ -662,11 +662,13 @@ namespace OpenMetaverse
 
         #region Internal events
 
-        /// <summary>Process an incoming packet and raise the appropriate events</summary>
-        /// <param name="sender">The sender</param>
-        /// <param name="e">The EventArgs object containing the packet data</param>
-        private void Network_OnConnect(object sender, LoggedInEventArgs e)
+        private void Network_OnConnect(object sender, LoginProgressEventArgs e)
         {
+            if (e.Status != LoginStatus.Success)
+            {
+                return;
+            }
+
             List<UUID> names = new List<UUID>();
 
             if (FriendList.Count > 0)

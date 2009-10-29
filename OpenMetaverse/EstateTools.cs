@@ -53,71 +53,6 @@ namespace OpenMetaverse
         /// <summary>Upper/lower texture boundaries for each corner of the sim</summary>
         public GroundTextureHeightSettings GroundTextureLimits;
 
-        #region Delegates
-
-        /// <summary>
-        /// Triggered on LandStatReply when the report type is for "top colliders"
-        /// </summary>
-        /// <param name="objectCount"></param>
-        /// <param name="Tasks"></param>
-        public delegate void TopCollidersReplyCallback(int objectCount, Dictionary<UUID, EstateTask> Tasks);
-
-        /// <summary>
-        /// Triggered on LandStatReply when the report type is for "top scripts"
-        /// </summary>
-        /// <param name="objectCount"></param>
-        /// <param name="Tasks"></param>
-        public delegate void TopScriptsReplyCallback(int objectCount, Dictionary<UUID, EstateTask> Tasks);
-
-        /// <summary>
-        /// Triggered when the list of estate managers is received for the current estate
-        /// </summary>
-        /// <param name="managers"></param>
-        /// <param name="count"></param>
-        /// <param name="estateID"></param>
-        public delegate void EstateManagersReply(uint estateID, int count, List<UUID> managers);
-
-        /// <summary>
-        /// FIXME - Enumerate all params from EstateOwnerMessage packet
-        /// </summary>
-        /// <param name="denyNoPaymentInfo"></param>
-        /// <param name="estateID"></param>
-        /// <param name="estateName"></param>
-        /// <param name="estateOwner"></param>
-        public delegate void EstateUpdateInfoReply(string estateName, UUID estateOwner, uint estateID, bool denyNoPaymentInfo);
-
-        public delegate void EstateManagersListReply(uint estateID, List<UUID> managers);
-
-        public delegate void EstateBansReply(uint estateID, int count, List<UUID> banned);
-
-        public delegate void EstateUsersReply(uint estateID, int count, List<UUID> allowedUsers);
-
-        public delegate void EstateGroupsReply(uint estateID, int count, List<UUID> allowedGroups);
-
-        public delegate void EstateCovenantReply(UUID covenantID, long timestamp, string estateName, UUID estateOwnerID);
-        #endregion
-
-        #region Events
-        // <summary>Callback for LandStatReply packets</summary>
-        //public event LandStatReply OnLandStatReply;
-        /// <summary>Triggered upon a successful .GetTopColliders()</summary>
-        public event TopCollidersReplyCallback OnGetTopColliders;
-        /// <summary>Triggered upon a successful .GetTopScripts()</summary>
-        public event TopScriptsReplyCallback OnGetTopScripts;
-        /// <summary>Returned, along with other info, upon a successful .GetInfo()</summary>
-        public event EstateUpdateInfoReply OnGetEstateUpdateInfo;
-        /// <summary>Returned, along with other info, upon a successful .GetInfo()</summary>
-        public event EstateManagersReply OnGetEstateManagers;
-        /// <summary>Returned, along with other info, upon a successful .GetInfo()</summary>
-        public event EstateBansReply OnGetEstateBans;
-        /// <summary>Returned, along with other info, upon a successful .GetInfo()</summary>
-        public event EstateGroupsReply OnGetAllowedGroups;
-        /// <summary>Returned, along with other info, upon a successful .GetInfo()</summary>
-        public event EstateUsersReply OnGetAllowedUsers;
-        /// <summary>Triggered upon a successful .RequestCovenant()</summary>
-        public event EstateCovenantReply OnGetCovenant;
-        #endregion
-
         /// <summary>
         /// Constructor for EstateTools class
         /// </summary>
@@ -214,6 +149,197 @@ namespace OpenMetaverse
             public GroundTextureHeight NE;
         }
         #endregion
+
+        #region Event delegates, Raise Events
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<TopCollidersReplyEventArgs> m_TopCollidersReply;
+
+        /// <summary>Raises the TopCollidersReply event</summary>
+        /// <param name="e">A TopCollidersReplyEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnTopCollidersReply(TopCollidersReplyEventArgs e)
+        {
+            EventHandler<TopCollidersReplyEventArgs> handler = m_TopCollidersReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_TopCollidersReply_Lock = new object();
+
+        /// <summary>Raised when the data server responds to a <see cref="LandStatRequest"/> request.</summary>
+        public event EventHandler<TopCollidersReplyEventArgs> TopCollidersReply
+        {
+            add { lock (m_TopCollidersReply_Lock) { m_TopCollidersReply += value; } }
+            remove { lock (m_TopCollidersReply_Lock) { m_TopCollidersReply -= value; } }
+        }        
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<TopScriptsReplyEventArgs> m_TopScriptsReply;
+
+        /// <summary>Raises the TopScriptsReply event</summary>
+        /// <param name="e">A TopScriptsReplyEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnTopScriptsReply(TopScriptsReplyEventArgs e)
+        {
+            EventHandler<TopScriptsReplyEventArgs> handler = m_TopScriptsReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_TopScriptsReply_Lock = new object();
+
+        /// <summary>Raised when the data server responds to a <see cref="LandStatRequest"/> request.</summary>
+        public event EventHandler<TopScriptsReplyEventArgs> TopScriptsReply
+        {
+            add { lock (m_TopScriptsReply_Lock) { m_TopScriptsReply += value; } }
+            remove { lock (m_TopScriptsReply_Lock) { m_TopScriptsReply -= value; } }
+        }
+
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<EstateUsersReplyEventArgs> m_EstateUsersReply;
+
+        /// <summary>Raises the EstateUsersReply event</summary>
+        /// <param name="e">A EstateUsersReplyEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnEstateUsersReply(EstateUsersReplyEventArgs e)
+        {
+            EventHandler<EstateUsersReplyEventArgs> handler = m_EstateUsersReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_EstateUsersReply_Lock = new object();
+
+        /// <summary>Raised when the data server responds to a <see cref="LandStatRequest"/> request.</summary>
+        public event EventHandler<EstateUsersReplyEventArgs> EstateUsersReply
+        {
+            add { lock (m_EstateUsersReply_Lock) { m_EstateUsersReply += value; } }
+            remove { lock (m_EstateUsersReply_Lock) { m_EstateUsersReply -= value; } }
+        }
+
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<EstateGroupsReplyEventArgs> m_EstateGroupsReply;
+
+        /// <summary>Raises the EstateGroupsReply event</summary>
+        /// <param name="e">A EstateGroupsReplyEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnEstateGroupsReply(EstateGroupsReplyEventArgs e)
+        {
+            EventHandler<EstateGroupsReplyEventArgs> handler = m_EstateGroupsReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_EstateGroupsReply_Lock = new object();
+
+        /// <summary>Raised when the data server responds to a <see cref="LandStatRequest"/> request.</summary>
+        public event EventHandler<EstateGroupsReplyEventArgs> EstateGroupsReply
+        {
+            add { lock (m_EstateGroupsReply_Lock) { m_EstateGroupsReply += value; } }
+            remove { lock (m_EstateGroupsReply_Lock) { m_EstateGroupsReply -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<EstateManagersReplyEventArgs> m_EstateManagersReply;
+
+        /// <summary>Raises the EstateManagersReply event</summary>
+        /// <param name="e">A EstateManagersReplyEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnEstateManagersReply(EstateManagersReplyEventArgs e)
+        {
+            EventHandler<EstateManagersReplyEventArgs> handler = m_EstateManagersReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_EstateManagersReply_Lock = new object();
+
+        /// <summary>Raised when the data server responds to a <see cref="LandStatRequest"/> request.</summary>
+        public event EventHandler<EstateManagersReplyEventArgs> EstateManagersReply
+        {
+            add { lock (m_EstateManagersReply_Lock) { m_EstateManagersReply += value; } }
+            remove { lock (m_EstateManagersReply_Lock) { m_EstateManagersReply -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<EstateBansReplyEventArgs> m_EstateBansReply;
+
+        /// <summary>Raises the EstateBansReply event</summary>
+        /// <param name="e">A EstateBansReplyEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnEstateBansReply(EstateBansReplyEventArgs e)
+        {
+            EventHandler<EstateBansReplyEventArgs> handler = m_EstateBansReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_EstateBansReply_Lock = new object();
+
+        /// <summary>Raised when the data server responds to a <see cref="LandStatRequest"/> request.</summary>
+        public event EventHandler<EstateBansReplyEventArgs> EstateBansReply
+        {
+            add { lock (m_EstateBansReply_Lock) { m_EstateBansReply += value; } }
+            remove { lock (m_EstateBansReply_Lock) { m_EstateBansReply -= value; } }
+        }
+                
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<EstateCovenantReplyEventArgs> m_EstateCovenantReply;
+
+        /// <summary>Raises the EstateCovenantReply event</summary>
+        /// <param name="e">A EstateCovenantReplyEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnEstateCovenantReply(EstateCovenantReplyEventArgs e)
+        {
+            EventHandler<EstateCovenantReplyEventArgs> handler = m_EstateCovenantReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_EstateCovenantReply_Lock = new object();
+
+        /// <summary>Raised when the data server responds to a <see cref="LandStatRequest"/> request.</summary>
+        public event EventHandler<EstateCovenantReplyEventArgs> EstateCovenantReply
+        {
+            add { lock (m_EstateCovenantReply_Lock) { m_EstateCovenantReply += value; } }
+            remove { lock (m_EstateCovenantReply_Lock) { m_EstateCovenantReply -= value; } }
+        }
+
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<EstateUpdateInfoReplyEventArgs> m_EstateUpdateInfoReply;
+
+        /// <summary>Raises the EstateUpdateInfoReply event</summary>
+        /// <param name="e">A EstateUpdateInfoReplyEventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnEstateUpdateInfoReply(EstateUpdateInfoReplyEventArgs e)
+        {
+            EventHandler<EstateUpdateInfoReplyEventArgs> handler = m_EstateUpdateInfoReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_EstateUpdateInfoReply_Lock = new object();
+
+        /// <summary>Raised when the data server responds to a <see cref="LandStatRequest"/> request.</summary>
+        public event EventHandler<EstateUpdateInfoReplyEventArgs> EstateUpdateInfoReply
+        {
+            add { lock (m_EstateUpdateInfoReply_Lock) { m_EstateUpdateInfoReply += value; } }
+            remove { lock (m_EstateUpdateInfoReply_Lock) { m_EstateUpdateInfoReply -= value; } }
+        }
+        #endregion
+
         #region Public Methods
         /// <summary>
         /// Requests estate information such as top scripts and colliders
@@ -624,18 +750,11 @@ namespace OpenMetaverse
         protected void EstateCovenantReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             EstateCovenantReplyPacket reply = (EstateCovenantReplyPacket)e.Packet;
-            if (OnGetCovenant != null)
-            {
-                try
-                {
-                    OnGetCovenant(
-                       reply.Data.CovenantID,
-                       reply.Data.CovenantTimestamp,
-                       Utils.BytesToString(reply.Data.EstateName),
-                       reply.Data.EstateOwnerID);
-                }
-                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
-            }
+            OnEstateCovenantReply(new EstateCovenantReplyEventArgs(
+               reply.Data.CovenantID,
+               reply.Data.CovenantTimestamp,
+               Utils.BytesToString(reply.Data.EstateName),
+               reply.Data.EstateOwnerID));
         }
 
         /// <summary>Process an incoming packet and raise the appropriate events</summary>
@@ -663,14 +782,7 @@ namespace OpenMetaverse
                 if (Utils.BytesToUInt(message.ParamList[8].Parameter) == 0) denyNoPaymentInfo = true;
                 else denyNoPaymentInfo = false;
 
-                if (OnGetEstateUpdateInfo != null)
-                {
-                    try
-                    {
-                        OnGetEstateUpdateInfo(estateName, estateOwner, estateID, denyNoPaymentInfo);
-                    }
-                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
-                }
+                OnEstateUpdateInfoReply(new EstateUpdateInfoReplyEventArgs(estateName, estateOwner, estateID, denyNoPaymentInfo));
             }
 
             else if (method == "setaccess")
@@ -688,7 +800,7 @@ namespace OpenMetaverse
                     switch (accessType)
                     {
                         case EstateAccessReplyDelta.EstateManagers:
-                            if (OnGetEstateManagers != null)
+                            //if (OnGetEstateManagers != null)
                             {
                                 if (message.ParamList.Length > 5)
                                 {
@@ -703,14 +815,13 @@ namespace OpenMetaverse
                                         }
                                         catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                                     }
-                                    try { OnGetEstateManagers(estateID, count, managers); }
-                                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
+                                    OnEstateManagersReply(new EstateManagersReplyEventArgs(estateID, count, managers));
                                 }
                             }
                             break;
 
                         case EstateAccessReplyDelta.EstateBans:
-                            if (OnGetEstateBans != null)
+                            //if (OnGetEstateBans != null)
                             {
                                 if (message.ParamList.Length > 6)
                                 {
@@ -725,14 +836,13 @@ namespace OpenMetaverse
                                         }
                                         catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                                     }
-                                    try { OnGetEstateBans(estateID, count, bannedUsers); }
-                                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
+                                    OnEstateBansReply(new EstateBansReplyEventArgs(estateID, count, bannedUsers));
                                 }
                             }
                             break;
 
                         case EstateAccessReplyDelta.AllowedUsers:
-                            if (OnGetAllowedUsers != null)
+                            //if (OnGetAllowedUsers != null)
                             {
                                 if (message.ParamList.Length > 5)
                                 {
@@ -747,14 +857,13 @@ namespace OpenMetaverse
                                         }
                                         catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                                     }
-                                    try { OnGetAllowedUsers(estateID, count, allowedUsers); }
-                                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
+                                    OnEstateUsersReply(new EstateUsersReplyEventArgs(estateID, count, allowedUsers));
                                 }
                             }
                             break;
 
                         case EstateAccessReplyDelta.AllowedGroups:
-                            if (OnGetAllowedGroups != null)
+                            //if (OnGetAllowedGroups != null)
                             {
                                 if (message.ParamList.Length > 5)
                                 {
@@ -769,8 +878,7 @@ namespace OpenMetaverse
                                         }
                                         catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
                                     }
-                                    try { OnGetAllowedGroups(estateID, count, allowedGroups); }
-                                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
+                                    OnEstateGroupsReply(new EstateGroupsReplyEventArgs(estateID, count, allowedGroups));
                                 }
                             }
                             break;
@@ -785,7 +893,7 @@ namespace OpenMetaverse
         protected void LandStatReplyHandler(object sender, PacketReceivedEventArgs e)
         {
             //if (OnLandStatReply != null || OnGetTopScripts != null || OnGetTopColliders != null)
-            if (OnGetTopScripts != null || OnGetTopColliders != null)
+            //if (OnGetTopScripts != null || OnGetTopColliders != null)
             {
                 LandStatReplyPacket p = (LandStatReplyPacket)e.Packet;
                 Dictionary<UUID, EstateTask> Tasks = new Dictionary<UUID, EstateTask>();
@@ -804,15 +912,13 @@ namespace OpenMetaverse
 
                 LandStatReportType type = (LandStatReportType)p.RequestData.ReportType;
 
-                if (OnGetTopScripts != null && type == LandStatReportType.TopScripts)
+                if (type == LandStatReportType.TopScripts)
                 {
-                    try { OnGetTopScripts((int)p.RequestData.TotalObjectCount, Tasks); }
-                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
+                    OnTopScriptsReply(new TopScriptsReplyEventArgs((int)p.RequestData.TotalObjectCount, Tasks)); 
                 }
-                else if (OnGetTopColliders != null && type == LandStatReportType.TopColliders)
+                else if (type == LandStatReportType.TopColliders)
                 {
-                    try { OnGetTopColliders((int)p.RequestData.TotalObjectCount, Tasks); }
-                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client, ex); }
+                    OnTopCollidersReply(new TopCollidersReplyEventArgs((int) p.RequestData.TotalObjectCount, Tasks)); 
                 }
 
                 /*
@@ -832,4 +938,263 @@ namespace OpenMetaverse
         }
         #endregion
     }
+    #region EstateTools EventArgs Classes
+
+    /// <summary>Raised on LandStatReply when the report type is for "top colliders"</summary>
+    public class TopCollidersReplyEventArgs : EventArgs
+    {
+        private readonly int m_objectCount;
+        private readonly Dictionary<UUID, EstateTask> m_Tasks;
+
+        /// <summary>
+        /// The number of returned items in LandStatReply
+        /// </summary>
+        public int ObjectCount { get { return m_objectCount; } }
+        /// <summary>
+        /// A Dictionary of Object UUIDs to tasks returned in LandStatReply
+        /// </summary>
+        public Dictionary<UUID, EstateTask> Tasks { get { return m_Tasks; } }
+
+        /// <summary>Construct a new instance of the TopCollidersReplyEventArgs class</summary>
+        /// <param name="objectCount">The number of returned items in LandStatReply</param>
+        /// <param name="tasks">Dictionary of Object UUIDs to tasks returned in LandStatReply</param>
+        public TopCollidersReplyEventArgs(int objectCount, Dictionary<UUID, EstateTask> tasks)
+        {
+            this.m_objectCount = objectCount;
+            this.m_Tasks = tasks;
+        }
+    }
+
+    /// <summary>Raised on LandStatReply when the report type is for "top Scripts"</summary>
+    public class TopScriptsReplyEventArgs : EventArgs
+    {
+        private readonly int m_objectCount;
+        private readonly Dictionary<UUID, EstateTask> m_Tasks;
+
+        /// <summary>
+        /// The number of scripts returned in LandStatReply
+        /// </summary>
+        public int ObjectCount { get { return m_objectCount; } }
+        /// <summary>
+        /// A Dictionary of Object UUIDs to tasks returned in LandStatReply
+        /// </summary>
+        public Dictionary<UUID, EstateTask> Tasks { get { return m_Tasks; } }
+
+        /// <summary>Construct a new instance of the TopScriptsReplyEventArgs class</summary>
+        /// <param name="objectCount">The number of returned items in LandStatReply</param>
+        /// <param name="tasks">Dictionary of Object UUIDs to tasks returned in LandStatReply</param>
+        public TopScriptsReplyEventArgs(int objectCount, Dictionary<UUID, EstateTask> tasks)
+        {
+            this.m_objectCount = objectCount;
+            this.m_Tasks = tasks;
+        }
+    }
+
+    /// <summary>Returned, along with other info, upon a successful .RequestInfo()</summary>
+    public class EstateBansReplyEventArgs : EventArgs
+    {
+        private readonly uint m_estateID;
+        private readonly int m_count;
+        private readonly List<UUID> m_banned;
+
+        /// <summary>
+        /// The identifier of the estate
+        /// </summary>
+        public uint EstateID { get { return m_estateID; } }
+        /// <summary>
+        /// The number of returned itmes
+        /// </summary>
+        public int Count { get { return m_count; } }
+        /// <summary>
+        /// List of UUIDs of Banned Users
+        /// </summary>
+        public List<UUID> Banned { get { return m_banned; } }
+
+        /// <summary>Construct a new instance of the EstateBansReplyEventArgs class</summary>
+        /// <param name="estateID">The estate's identifier on the grid</param>
+        /// <param name="count">The number of returned items in LandStatReply</param>
+        /// <param name="banned">User UUIDs banned</param>
+        public EstateBansReplyEventArgs(uint estateID, int count, List<UUID> banned)
+        {
+            this.m_estateID = estateID;
+            this.m_count = count;
+            this.m_banned = banned;
+        }
+    }
+
+    /// <summary>Returned, along with other info, upon a successful .RequestInfo()</summary>
+    public class EstateUsersReplyEventArgs : EventArgs
+    {
+        private readonly uint m_estateID;
+        private readonly int m_count;
+        private readonly List<UUID> m_allowedUsers;
+
+        /// <summary>
+        /// The identifier of the estate
+        /// </summary>
+        public uint EstateID { get { return m_estateID; } }
+        /// <summary>
+        /// The number of returned items
+        /// </summary>
+        public int Count { get { return m_count; } }
+        /// <summary>
+        /// List of UUIDs of Allowed Users
+        /// </summary>
+        public List<UUID> AllowedUsers { get { return m_allowedUsers; } }
+
+        /// <summary>Construct a new instance of the EstateUsersReplyEventArgs class</summary>
+        /// <param name="estateID">The estate's identifier on the grid</param>
+        /// <param name="count">The number of users</param>
+        /// <param name="allowedUsers">Allowed users UUIDs</param>
+        public EstateUsersReplyEventArgs(uint estateID, int count, List<UUID> allowedUsers)
+        {
+            this.m_estateID = estateID;
+            this.m_count = count;
+            this.m_allowedUsers = allowedUsers;
+        }
+    }
+
+    /// <summary>Returned, along with other info, upon a successful .RequestInfo()</summary>
+    public class EstateGroupsReplyEventArgs : EventArgs
+    {
+        private readonly uint m_estateID;
+        private readonly int m_count;
+        private readonly List<UUID> m_allowedGroups;
+
+        /// <summary>
+        /// The identifier of the estate
+        /// </summary>
+        public uint EstateID { get { return m_estateID; } }
+        /// <summary>
+        /// The number of returned items
+        /// </summary>
+        public int Count { get { return m_count; } }
+        /// <summary>
+        /// List of UUIDs of Allowed Groups
+        /// </summary>
+        public List<UUID> AllowedGroups { get { return m_allowedGroups; } }
+
+        /// <summary>Construct a new instance of the EstateGroupsReplyEventArgs class</summary>
+        /// <param name="estateID">The estate's identifier on the grid</param>
+        /// <param name="count">The number of Groups</param>
+        /// <param name="allowedGroups">Allowed Groups UUIDs</param>
+        public EstateGroupsReplyEventArgs(uint estateID, int count, List<UUID> allowedGroups)
+        {
+            this.m_estateID = estateID;
+            this.m_count = count;
+            this.m_allowedGroups = allowedGroups;
+        }
+    }
+
+    /// <summary>Returned, along with other info, upon a successful .RequestInfo()</summary>
+    public class EstateManagersReplyEventArgs : EventArgs
+    {
+        private readonly uint m_estateID;
+        private readonly int m_count;
+        private readonly List<UUID> m_Managers;
+
+        /// <summary>
+        /// The identifier of the estate
+        /// </summary>
+        public uint EstateID { get { return m_estateID; } }
+        /// <summary>
+        /// The number of returned items
+        /// </summary>
+        public int Count { get { return m_count; } }
+        /// <summary>
+        /// List of UUIDs of the Estate's Managers
+        /// </summary>
+        public List<UUID> Managers { get { return m_Managers; } }
+
+        /// <summary>Construct a new instance of the EstateManagersReplyEventArgs class</summary>
+        /// <param name="estateID">The estate's identifier on the grid</param>
+        /// <param name="count">The number of Managers</param>
+        /// <param name="managers"> Managers UUIDs</param>
+        public EstateManagersReplyEventArgs(uint estateID, int count, List<UUID> managers)
+        {
+            this.m_estateID = estateID;
+            this.m_count = count;
+            this.m_Managers = managers;
+        }
+    }
+
+    /// <summary>Returned, along with other info, upon a successful .RequestInfo()</summary>
+    public class EstateCovenantReplyEventArgs : EventArgs
+    {
+        private readonly UUID m_covenantID;
+        private readonly long m_timestamp;
+        private readonly string m_estateName;
+        private readonly UUID m_estateOwnerID;
+
+        /// <summary>
+        /// The Covenant
+        /// </summary>
+        public UUID CovenantID { get { return m_covenantID; } }
+        /// <summary>
+        /// The timestamp
+        /// </summary>
+        public long Timestamp { get { return m_timestamp; } }
+        /// <summary>
+        /// The Estate name
+        /// </summary>
+        public String EstateName { get { return m_estateName; } }
+        /// <summary>
+        /// The Estate Owner's ID (can be a GroupID)
+        /// </summary>
+        public UUID EstateOwnerID { get { return m_estateOwnerID; } }
+
+        /// <summary>Construct a new instance of the EstateCovenantReplyEventArgs class</summary>
+        /// <param name="covenantID">The Covenant ID</param>
+        /// <param name="timestamp">The timestamp</param>
+        /// <param name="estateName">The estate's name</param>
+        /// <param name="estateOwnerID">The Estate Owner's ID (can be a GroupID)</param>
+        public EstateCovenantReplyEventArgs(UUID covenantID, long timestamp, string estateName, UUID estateOwnerID)
+        {
+            this.m_covenantID = covenantID;
+            this.m_timestamp = timestamp;
+            this.m_estateName = estateName;
+            this.m_estateOwnerID = estateOwnerID;
+
+        }
+    }
+
+
+    /// <summary>Returned, along with other info, upon a successful .RequestInfo()</summary>
+    public class EstateUpdateInfoReplyEventArgs : EventArgs
+    {
+        private readonly uint m_estateID;
+        private readonly bool m_denyNoPaymentInfo;
+        private readonly string m_estateName;
+        private readonly UUID m_estateOwner;
+
+        /// <summary>
+        /// The estate's name
+        /// </summary>
+        public String EstateName { get { return m_estateName; } }
+        /// <summary>
+        /// The Estate Owner's ID (can be a GroupID)
+        /// </summary>
+        public UUID EstateOwner { get { return m_estateOwner; } }
+        /// <summary>
+        /// The identifier of the estate on the grid
+        /// </summary>
+        public uint EstateID { get { return m_estateID; } }
+        /// <summary></summary>
+        public bool DenyNoPaymentInfo { get { return m_denyNoPaymentInfo; } }
+
+        /// <summary>Construct a new instance of the EstateUpdateInfoReplyEventArgs class</summary>
+        /// <param name="estateName">The estate's name</param>
+        /// <param name="estateOwner">The Estate Owners ID (can be a GroupID)</param>
+        /// <param name="estateID">The estate's identifier on the grid</param>
+        /// <param name="denyNoPaymentInfo"></param>
+        public EstateUpdateInfoReplyEventArgs(string estateName, UUID estateOwner, uint estateID, bool denyNoPaymentInfo)
+        {
+            this.m_estateName = estateName;
+            this.m_estateOwner = estateOwner;
+            this.m_estateID = estateID;
+            this.m_denyNoPaymentInfo = denyNoPaymentInfo;
+
+        }
+    }
+    #endregion
 }

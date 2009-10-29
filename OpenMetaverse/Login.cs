@@ -877,7 +877,7 @@ namespace OpenMetaverse
         {
             // FIXME: Now that we're using CAPS we could cancel the current login and start a new one
             if (CurrentContext != null)
-                throw new Exception("Login already in progress");
+                throw new Exception("Login already in progress");            
 
             LoginEvent.Reset();
             CurrentContext = loginParams;
@@ -1253,13 +1253,8 @@ namespace OpenMetaverse
                     SendPacket(new EconomyDataRequestPacket());
 
                     // Update the login message with the MOTD returned from the server
-                    UpdateLoginStatus(LoginStatus.Success, message);
-
-                    // Fire an event for connecting to the grid
-                    if (m_LoggedIn != null)
-                    {
-                        OnLoggedIn(new LoggedInEventArgs());
-                    }
+                    UpdateLoginStatus(LoginStatus.ConnectingToSim, "Authentication Successful");
+                    
                 }
                 else
                 {
@@ -1353,13 +1348,7 @@ namespace OpenMetaverse
                                     SendPacket(new EconomyDataRequestPacket());
 
                                     // Update the login message with the MOTD returned from the server
-                                    UpdateLoginStatus(LoginStatus.Success, data.Message);
-
-                                    // Fire an event for connecting to the grid
-                                    if (m_LoggedIn != null)
-                                    {
-                                        OnLoggedIn(new LoggedInEventArgs());
-                                    }
+                                    UpdateLoginStatus(LoginStatus.ConnectingToSim, "Authentication Successful");                                    
                                 }
                                 else
                                 {

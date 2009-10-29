@@ -139,33 +139,33 @@ namespace OpenMetaverse.TestClient
                 return "Notecard creation failed: " + message;
         }
 
-        InventoryItem FetchItem(UUID itemID)
+        private InventoryItem FetchItem(UUID itemID)
         {
             InventoryItem fetchItem = null;
             AutoResetEvent fetchItemEvent = new AutoResetEvent(false);
 
-            InventoryManager.ItemReceivedCallback itemReceivedCallback =
-                delegate(InventoryItem item)
+            EventHandler<ItemReceivedEventArgs> itemReceivedCallback =
+                delegate(object sender, ItemReceivedEventArgs e)
                 {
-                    if (item.UUID == itemID)
+                    if (e.Item.UUID == itemID)
                     {
-                        fetchItem = item;
+                        fetchItem = e.Item;
                         fetchItemEvent.Set();
                     }
                 };
 
-            Client.Inventory.OnItemReceived += itemReceivedCallback;
+            Client.Inventory.ItemReceived += itemReceivedCallback;
 
             Client.Inventory.RequestFetchInventory(itemID, Client.Self.AgentID);
 
             fetchItemEvent.WaitOne(INVENTORY_FETCH_TIMEOUT, false);
 
-            Client.Inventory.OnItemReceived -= itemReceivedCallback;
+            Client.Inventory.ItemReceived -= itemReceivedCallback;
 
             return fetchItem;
         }
 
-        string DownloadNotecard(UUID itemID, UUID assetID)
+        private string DownloadNotecard(UUID itemID, UUID assetID)
         {
             AutoResetEvent assetDownloadEvent = new AutoResetEvent(false);
             byte[] notecardData = null;

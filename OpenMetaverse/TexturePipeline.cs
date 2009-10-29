@@ -164,7 +164,13 @@ namespace OpenMetaverse
             }
 
             // Handle client connected and disconnected events
-            client.Network.LoggedIn += delegate { Startup(); };
+            client.Network.LoginProgress += delegate(object sender, LoginProgressEventArgs e) {
+                if (e.Status == LoginStatus.Success)
+                {
+                    Startup();
+                }
+            };
+
             client.Network.Disconnected += delegate { Shutdown(); };
         }
 

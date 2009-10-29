@@ -473,7 +473,7 @@ namespace OpenMetaverse
             {
                 Client = client;
                 Camera = new AgentCamera();
-                Client.Network.LoggedIn += Network_OnConnected;                
+                Client.Network.LoginProgress += Network_OnConnected;                
                 Client.Network.Disconnected += Network_OnDisconnected;
                 updateInterval = Settings.DEFAULT_AGENT_UPDATE_INTERVAL;
             }
@@ -492,10 +492,13 @@ namespace OpenMetaverse
                 CleanupTimer();
             }
 
-            private void Network_OnConnected(object sender, LoggedInEventArgs e)
+            private void Network_OnConnected(object sender, LoginProgressEventArgs e)
             {
-                CleanupTimer();
-                updateTimer = new Timer(new TimerCallback(UpdateTimer_Elapsed), null, updateInterval, updateInterval);
+                if (e.Status == LoginStatus.Success)
+                {
+                    CleanupTimer();
+                    updateTimer = new Timer(new TimerCallback(UpdateTimer_Elapsed), null, updateInterval, updateInterval);
+                }
             }
 
             /// <summary>

@@ -54,7 +54,7 @@ namespace OpenMetaverse.TestClient
             Network.LoginProgress += LoginHandler;
             Self.IM += Self_IM;
             Groups.GroupMembersReply += GroupMembersHandler;
-            Inventory.OnObjectOffered += new InventoryManager.ObjectOfferedCallback(Inventory_OnInventoryObjectReceived);
+            Inventory.InventoryObjectOffered += Inventory_OnInventoryObjectReceived;            
 
             Network.RegisterCallback(PacketType.AvatarAppearance, AvatarAppearanceHandler);
             Network.RegisterCallback(PacketType.AlertMessage, AlertMessageHandler);
@@ -189,7 +189,7 @@ namespace OpenMetaverse.TestClient
             if (p.AgentData.AgentID == e.Simulator.Client.Self.AgentID)
             {
                 GroupID = p.AgentData.ActiveGroupID;
-
+                
                 GroupMembersRequestID = e.Simulator.Client.Groups.RequestGroupMembers(GroupID);
             }
         }
@@ -219,20 +219,20 @@ namespace OpenMetaverse.TestClient
             Logger.Log("[AlertMessage] " + Utils.BytesToString(message.AlertData.Message), Helpers.LogLevel.Info, this);
         }
        
-        private bool Inventory_OnInventoryObjectReceived(InstantMessage offer, AssetType type,
-            UUID objectID, bool fromTask)
+        private void Inventory_OnInventoryObjectReceived(object sender, InventoryObjectOfferedEventArgs e)
         {
             if (MasterKey != UUID.Zero)
             {
-                if (offer.FromAgentID != MasterKey)
-                    return false;
+                if (e.Offer.FromAgentID != MasterKey)
+                    return;
             }
-            else if (GroupMembers != null && !GroupMembers.ContainsKey(offer.FromAgentID))
+            else if (GroupMembers != null && !GroupMembers.ContainsKey(e.Offer.FromAgentID))
             {
-                return false;
+                return;
             }
 
-            return true;
+            e.Accept = true;
+            return;
         }
     }
 }

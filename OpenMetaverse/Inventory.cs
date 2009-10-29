@@ -51,40 +51,79 @@ namespace OpenMetaverse
     /// </summary>
     public class Inventory
     {
-        /// <summary>
-        /// Delegate to use for the OnInventoryObjectUpdated event.
-        /// </summary>
-        /// <param name="oldObject">The state of the InventoryObject before the update occured.</param>
-        /// <param name="newObject">The state of the InventoryObject after the update occured.</param>
-        public delegate void InventoryObjectUpdated(InventoryBase oldObject, InventoryBase newObject);
-        /// <summary>
-        /// Delegate to use for the OnInventoryObjectRemoved event.
-        /// </summary>
-        /// <param name="obj">The InventoryObject that was removed.</param>
-        public delegate void InventoryObjectRemoved(InventoryBase obj);
-        /// <summary>
-        /// Delegate to use for the OnInventoryObjectUpdated event.
-        /// </summary>
-        /// <param name="obj">The InventoryObject that has been stored.</param>
-        public delegate void InventoryObjectAdded(InventoryBase obj);
+      
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<InventoryObjectUpdatedEventArgs> m_InventoryObjectUpdated;
 
-        /// <summary>
-        /// Called when an InventoryObject's state is changed.
-        /// </summary>
-        public event InventoryObjectUpdated OnInventoryObjectUpdated;
-        /// <summary>
-        /// Called when an item or folder is removed from inventory.
-        /// </summary>
-        public event InventoryObjectRemoved OnInventoryObjectRemoved;
-        /// <summary>
-        /// Called when an item is first added to the local inventory store.
-        /// This will occur most frequently when we're initially downloading
-        /// the inventory from the server.
-        /// 
-        /// This will also fire when another avatar or object offers us inventory
-        /// </summary>
-        public event InventoryObjectAdded OnInventoryObjectAdded;
+        ///<summary>Raises the InventoryObjectUpdated Event</summary>
+        /// <param name="e">A InventoryObjectUpdatedEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnInventoryObjectUpdated(InventoryObjectUpdatedEventArgs e)
+        {
+            EventHandler<InventoryObjectUpdatedEventArgs> handler = m_InventoryObjectUpdated;
+            if (handler != null)
+                handler(this, e);
+        }
 
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_InventoryObjectUpdatedLock = new object();
+
+        /// <summary>Raised when the simulator sends us data containing
+        /// ...</summary>
+        public event EventHandler<InventoryObjectUpdatedEventArgs> InventoryObjectUpdated
+        {
+            add { lock (m_InventoryObjectUpdatedLock) { m_InventoryObjectUpdated += value; } }
+            remove { lock (m_InventoryObjectUpdatedLock) { m_InventoryObjectUpdated -= value; } }
+        }
+       
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<InventoryObjectRemovedEventArgs> m_InventoryObjectRemoved;
+
+        ///<summary>Raises the InventoryObjectRemoved Event</summary>
+        /// <param name="e">A InventoryObjectRemovedEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnInventoryObjectRemoved(InventoryObjectRemovedEventArgs e)
+        {
+            EventHandler<InventoryObjectRemovedEventArgs> handler = m_InventoryObjectRemoved;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_InventoryObjectRemovedLock = new object();
+
+        /// <summary>Raised when the simulator sends us data containing
+        /// ...</summary>
+        public event EventHandler<InventoryObjectRemovedEventArgs> InventoryObjectRemoved
+        {
+            add { lock (m_InventoryObjectRemovedLock) { m_InventoryObjectRemoved += value; } }
+            remove { lock (m_InventoryObjectRemovedLock) { m_InventoryObjectRemoved -= value; } }
+        }
+        
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<InventoryObjectAddedEventArgs> m_InventoryObjectAdded;
+
+        ///<summary>Raises the InventoryObjectAdded Event</summary>
+        /// <param name="e">A InventoryObjectAddedEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnInventoryObjectAdded(InventoryObjectAddedEventArgs e)
+        {
+            EventHandler<InventoryObjectAddedEventArgs> handler = m_InventoryObjectAdded;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_InventoryObjectAddedLock = new object();
+
+        /// <summary>Raised when the simulator sends us data containing
+        /// ...</summary>
+        public event EventHandler<InventoryObjectAddedEventArgs> InventoryObjectAdded
+        {
+            add { lock (m_InventoryObjectAddedLock) { m_InventoryObjectAdded += value; } }
+            remove { lock (m_InventoryObjectAddedLock) { m_InventoryObjectAdded -= value; } }
+        }
+       
         /// <summary>
         /// The root folder of this avatars inventory
         /// </summary>
@@ -212,8 +251,7 @@ namespace OpenMetaverse
                     {
                         // Fetch the parent
                         List<UUID> fetchreq = new List<UUID>(1);
-                        fetchreq.Add(item.ParentUUID);
-                        //Manager.FetchInventory(fetchreq); // we cant fetch folder data! :-O
+                        fetchreq.Add(item.ParentUUID);                        
                     }
                 }
 
@@ -238,7 +276,10 @@ namespace OpenMetaverse
 
                     itemNode.Parent = itemParent;
 
-                    FireOnInventoryObjectUpdated(itemNode.Data, item);
+                    if (m_InventoryObjectUpdated != null)
+                    {
+                        OnInventoryObjectUpdated(new InventoryObjectUpdatedEventArgs(itemNode.Data, item));
+                    }
 
                     itemNode.Data = item;
                 }
@@ -246,7 +287,10 @@ namespace OpenMetaverse
                 {
                     itemNode = new InventoryNode(item, itemParent);
                     Items.Add(item.UUID, itemNode);
-                    FireOnInventoryObjectAdded(item);
+                    if (m_InventoryObjectAdded != null)
+                    {
+                        OnInventoryObjectAdded(new InventoryObjectAddedEventArgs(item));
+                    }
                 }
             }
         }
@@ -271,7 +315,10 @@ namespace OpenMetaverse
                         lock (node.Parent.Nodes.SyncRoot)
                             node.Parent.Nodes.Remove(item.UUID);
                     Items.Remove(item.UUID);
-                    FireOnInventoryObjectRemoved(item);
+                    if (m_InventoryObjectRemoved != null)
+                    {
+                        OnInventoryObjectRemoved(new InventoryObjectRemovedEventArgs(item));
+                    }                    
                 }
 
                 // In case there's a new parent:
@@ -474,36 +521,46 @@ namespace OpenMetaverse
         }
 
         #endregion Operators
-
-        #region Event Firing
-
-        protected void FireOnInventoryObjectUpdated(InventoryBase oldObject, InventoryBase newObject)
-        {
-            if (OnInventoryObjectUpdated != null)
-            {
-                try { OnInventoryObjectUpdated(oldObject, newObject); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-            }
-        }
-
-        protected void FireOnInventoryObjectRemoved(InventoryBase obj)
-        {
-            if (OnInventoryObjectRemoved != null)
-            {
-                try { OnInventoryObjectRemoved(obj); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-            }
-        }
-
-        protected void FireOnInventoryObjectAdded(InventoryBase obj)
-        {
-            if (OnInventoryObjectAdded != null)
-            {
-                try { OnInventoryObjectAdded(obj); }
-                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-            }
-        }
-
-        #endregion
+        
     }
+    #region EventArgs classes
+    
+    public class InventoryObjectUpdatedEventArgs : EventArgs
+    {
+        private readonly InventoryBase m_OldObject;
+        private readonly InventoryBase m_NewObject;
+
+        public InventoryBase OldObject { get { return m_OldObject; } }        
+        public InventoryBase NewObject { get { return m_NewObject; } } 
+
+        public InventoryObjectUpdatedEventArgs(InventoryBase oldObject, InventoryBase newObject)
+        {
+            this.m_OldObject = oldObject;
+            this.m_NewObject = newObject;
+        }
+    }
+
+    public class InventoryObjectRemovedEventArgs : EventArgs
+    {
+        private readonly InventoryBase m_Obj;
+
+        public InventoryBase Obj { get { return m_Obj; } }
+        public InventoryObjectRemovedEventArgs(InventoryBase obj)
+        {
+            this.m_Obj = obj;
+        }
+    }
+
+    public class InventoryObjectAddedEventArgs : EventArgs
+    {
+        private readonly InventoryBase m_Obj;
+
+        public InventoryBase Obj { get { return m_Obj; } }
+
+        public InventoryObjectAddedEventArgs(InventoryBase obj)
+        {
+            this.m_Obj = obj;
+        }
+    }
+    #endregion EventArgs
 }
