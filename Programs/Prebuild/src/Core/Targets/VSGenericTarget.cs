@@ -642,7 +642,7 @@ namespace Prebuild.Core.Targets
                             ss.WriteLine("# Visual Studio 2008");
                             break;
                         case VSVersion.VS10:
-                            ss.WriteLine("# Visual Studio 10");
+                            ss.WriteLine("# Visual Studio 2010");
                             break;
                     }
 
