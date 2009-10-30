@@ -278,6 +278,7 @@ namespace Prebuild.Core.Targets
 					ps.WriteLine("    <WarningLevel>{0}</WarningLevel>", conf.Options["WarningLevel"]);
 					ps.WriteLine("    <NoStdLib>{0}</NoStdLib>", conf.Options["NoStdLib"]);
 					ps.WriteLine("    <NoWarn>{0}</NoWarn>", conf.Options["SuppressWarnings"]);
+                    ps.WriteLine("    <PlatformTarget>{0}</PlatformTarget>", conf.Options.PlatformTarget);
 					ps.WriteLine("  </PropertyGroup>");
 				}
 

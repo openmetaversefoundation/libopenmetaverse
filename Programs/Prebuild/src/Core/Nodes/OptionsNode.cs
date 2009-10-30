@@ -506,6 +506,24 @@ namespace Prebuild.Core.Nodes
 			}
 		}
 
+        [OptionNode("PlatformTarget")]
+        private string m_PlatformTarget = "Any CPU";
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string PlatformTarget
+        {
+            get
+            {
+                return m_PlatformTarget;
+            }
+            set
+            {
+                m_PlatformTarget = value;
+            }
+        }
+
 		private StringCollection m_FieldsDefined;
 
 		#endregion

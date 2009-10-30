@@ -220,6 +220,7 @@
         <xs:element name="FileAlignment" type="xs:integer" minOccurs="0" />
         <xs:element name="NoStdLib" type="xs:boolean" minOccurs="0" />
         <xs:element name="KeyFile" type="xs:string" minOccurs="0" />
+        <xs:element name="PlatformTarget" type="xs:string" minOccurs="0" />
       </xs:all>
     </xs:complexType>
   </xs:element>
