@@ -815,24 +815,7 @@ namespace mapgenerator
                     }
                 }
 
-                bool first = true;
-                writer.WriteLine("            while (");
-                foreach (MapBlock block in packet.Blocks)
-                {
-                    string sanitizedName;
-                    if (block.Name == "Header") { sanitizedName = "_" + block.Name; }
-                    else { sanitizedName = block.Name; }
-
-                    if (block.Count == -1)
-                    {
-                        if (first) first = false;
-                        else writer.WriteLine(" ||");
-
-                        // Variable count block
-                        writer.Write("                " + sanitizedName + "Start < " + sanitizedName + ".Length");
-                    }
-                }
-                writer.WriteLine(")");
+                writer.WriteLine("            do");
                 writer.WriteLine("            {");
 
                 // Count how many variable blocks can go in this packet
@@ -907,7 +890,25 @@ namespace mapgenerator
                 writer.WriteLine();
 
                 writer.WriteLine("                packets.Add(packet);");
-                writer.WriteLine("            }");
+                
+                writer.WriteLine("            } while (");
+                bool first = true;
+                foreach (MapBlock block in packet.Blocks)
+                {
+                    string sanitizedName;
+                    if (block.Name == "Header") { sanitizedName = "_" + block.Name; }
+                    else { sanitizedName = block.Name; }
+
+                    if (block.Count == -1)
+                    {
+                        if (first) first = false;
+                        else writer.WriteLine(" ||");
+
+                        // Variable count block
+                        writer.Write("                " + sanitizedName + "Start < " + sanitizedName + ".Length");
+                    }
+                }
+                writer.WriteLine(");");
                 writer.WriteLine();
                 writer.WriteLine("            return packets.ToArray();");
                 writer.WriteLine("        }");

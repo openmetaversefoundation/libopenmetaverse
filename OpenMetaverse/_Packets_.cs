@@ -2370,8 +2370,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int SpawnPointBlockStart = 0;
-            while (
-                SpawnPointBlockStart < SpawnPointBlock.Length)
+            do
             {
                 int variableLength = 0;
                 int SpawnPointBlockCount = 0;
@@ -2402,7 +2401,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                SpawnPointBlockStart < SpawnPointBlock.Length);
 
             return packets.ToArray();
         }
@@ -3009,8 +3009,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int DataStart = 0;
-            while (
-                DataStart < Data.Length)
+            do
             {
                 int variableLength = 0;
                 int DataCount = 0;
@@ -3041,7 +3040,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                DataStart < Data.Length);
 
             return packets.ToArray();
         }
@@ -3563,8 +3563,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int QueryDataStart = 0;
-            while (
-                QueryDataStart < QueryData.Length)
+            do
             {
                 int variableLength = 0;
                 int QueryDataCount = 0;
@@ -3595,7 +3594,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                QueryDataStart < QueryData.Length);
 
             return packets.ToArray();
         }
@@ -4294,10 +4294,7 @@ namespace OpenMetaverse.Packets
             int QueryDataStart = 0;
             int QueryRepliesStart = 0;
             int StatusDataStart = 0;
-            while (
-                QueryDataStart < QueryData.Length ||
-                QueryRepliesStart < QueryReplies.Length ||
-                StatusDataStart < StatusData.Length)
+            do
             {
                 int variableLength = 0;
                 int QueryDataCount = 0;
@@ -4360,7 +4357,10 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                QueryDataStart < QueryData.Length ||
+                QueryRepliesStart < QueryReplies.Length ||
+                StatusDataStart < StatusData.Length);
 
             return packets.ToArray();
         }
@@ -4631,8 +4631,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int QueryRepliesStart = 0;
-            while (
-                QueryRepliesStart < QueryReplies.Length)
+            do
             {
                 int variableLength = 0;
                 int QueryRepliesCount = 0;
@@ -4663,7 +4662,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                QueryRepliesStart < QueryReplies.Length);
 
             return packets.ToArray();
         }
@@ -4993,9 +4993,7 @@ namespace OpenMetaverse.Packets
 
             int QueryRepliesStart = 0;
             int StatusDataStart = 0;
-            while (
-                QueryRepliesStart < QueryReplies.Length ||
-                StatusDataStart < StatusData.Length)
+            do
             {
                 int variableLength = 0;
                 int QueryRepliesCount = 0;
@@ -5042,7 +5040,9 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                QueryRepliesStart < QueryReplies.Length ||
+                StatusDataStart < StatusData.Length);
 
             return packets.ToArray();
         }
@@ -5299,8 +5299,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int QueryRepliesStart = 0;
-            while (
-                QueryRepliesStart < QueryReplies.Length)
+            do
             {
                 int variableLength = 0;
                 int QueryRepliesCount = 0;
@@ -5331,7 +5330,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                QueryRepliesStart < QueryReplies.Length);
 
             return packets.ToArray();
         }
@@ -5835,9 +5835,7 @@ namespace OpenMetaverse.Packets
 
             int QueryRepliesStart = 0;
             int StatusDataStart = 0;
-            while (
-                QueryRepliesStart < QueryReplies.Length ||
-                StatusDataStart < StatusData.Length)
+            do
             {
                 int variableLength = 0;
                 int QueryRepliesCount = 0;
@@ -5884,7 +5882,9 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                QueryRepliesStart < QueryReplies.Length ||
+                StatusDataStart < StatusData.Length);
 
             return packets.ToArray();
         }
@@ -6090,8 +6090,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int DataStart = 0;
-            while (
-                DataStart < Data.Length)
+            do
             {
                 int variableLength = 0;
                 int DataCount = 0;
@@ -6122,7 +6121,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                DataStart < Data.Length);
 
             return packets.ToArray();
         }
@@ -7455,8 +7455,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int QueryRepliesStart = 0;
-            while (
-                QueryRepliesStart < QueryReplies.Length)
+            do
             {
                 int variableLength = 0;
                 int QueryRepliesCount = 0;
@@ -7487,7 +7486,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                QueryRepliesStart < QueryReplies.Length);
 
             return packets.ToArray();
         }
@@ -7904,8 +7904,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int QueryRepliesStart = 0;
-            while (
-                QueryRepliesStart < QueryReplies.Length)
+            do
             {
                 int variableLength = 0;
                 int QueryRepliesCount = 0;
@@ -7936,7 +7935,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                QueryRepliesStart < QueryReplies.Length);
 
             return packets.ToArray();
         }
@@ -8624,8 +8624,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int DataStart = 0;
-            while (
-                DataStart < Data.Length)
+            do
             {
                 int variableLength = 0;
                 int DataCount = 0;
@@ -8656,7 +8655,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                DataStart < Data.Length);
 
             return packets.ToArray();
         }
@@ -9039,8 +9039,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int DataStart = 0;
-            while (
-                DataStart < Data.Length)
+            do
             {
                 int variableLength = 0;
                 int DataCount = 0;
@@ -9071,7 +9070,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                DataStart < Data.Length);
 
             return packets.ToArray();
         }
@@ -10359,8 +10359,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int TargetDataStart = 0;
-            while (
-                TargetDataStart < TargetData.Length)
+            do
             {
                 int variableLength = 0;
                 int TargetDataCount = 0;
@@ -10391,7 +10390,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                TargetDataStart < TargetData.Length);
 
             return packets.ToArray();
         }
@@ -10952,8 +10952,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int AlertInfoStart = 0;
-            while (
-                AlertInfoStart < AlertInfo.Length)
+            do
             {
                 int variableLength = 0;
                 int AlertInfoCount = 0;
@@ -10984,7 +10983,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                AlertInfoStart < AlertInfo.Length);
 
             return packets.ToArray();
         }
@@ -11184,8 +11184,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -11216,7 +11215,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -11416,8 +11416,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -11448,7 +11447,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -13475,8 +13475,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -13507,7 +13506,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -13758,8 +13758,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -13790,7 +13789,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -14015,8 +14015,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -14047,7 +14046,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -14248,8 +14248,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -14280,7 +14279,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -14481,8 +14481,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -14513,7 +14512,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -14844,8 +14844,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -14876,7 +14875,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -15091,8 +15091,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -15123,7 +15122,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -15324,8 +15324,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -15356,7 +15355,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -15613,8 +15613,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -15645,7 +15644,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -15862,8 +15862,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -15894,7 +15893,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -16145,8 +16145,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -16177,7 +16176,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -16378,8 +16378,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -16410,7 +16409,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -16620,8 +16620,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -16652,7 +16651,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -17187,8 +17187,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -17219,7 +17218,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -17423,8 +17423,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -17455,7 +17454,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -17662,8 +17662,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -17694,7 +17693,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -17901,8 +17901,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -17933,7 +17932,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -18134,8 +18134,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -18166,7 +18165,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -18364,8 +18364,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -18396,7 +18395,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -18594,8 +18594,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -18626,7 +18625,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -18830,8 +18830,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -18862,7 +18861,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -19059,8 +19059,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -19091,7 +19090,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -19288,8 +19288,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -19320,7 +19319,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -19517,8 +19517,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -19549,7 +19548,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -19746,8 +19746,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -19778,7 +19777,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -20041,8 +20041,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int SurfaceInfoStart = 0;
-            while (
-                SurfaceInfoStart < SurfaceInfo.Length)
+            do
             {
                 int variableLength = 0;
                 int SurfaceInfoCount = 0;
@@ -20073,7 +20072,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                SurfaceInfoStart < SurfaceInfo.Length);
 
             return packets.ToArray();
         }
@@ -20342,8 +20342,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int SurfaceInfoStart = 0;
-            while (
-                SurfaceInfoStart < SurfaceInfo.Length)
+            do
             {
                 int variableLength = 0;
                 int SurfaceInfoCount = 0;
@@ -20374,7 +20373,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                SurfaceInfoStart < SurfaceInfo.Length);
 
             return packets.ToArray();
         }
@@ -20633,8 +20633,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int SurfaceInfoStart = 0;
-            while (
-                SurfaceInfoStart < SurfaceInfo.Length)
+            do
             {
                 int variableLength = 0;
                 int SurfaceInfoCount = 0;
@@ -20665,7 +20664,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                SurfaceInfoStart < SurfaceInfo.Length);
 
             return packets.ToArray();
         }
@@ -21350,8 +21350,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -21382,7 +21381,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -21711,9 +21711,7 @@ namespace OpenMetaverse.Packets
 
             int ParcelDataStart = 0;
             int ModifyBlockExtendedStart = 0;
-            while (
-                ParcelDataStart < ParcelData.Length ||
-                ModifyBlockExtendedStart < ModifyBlockExtended.Length)
+            do
             {
                 int variableLength = 0;
                 int ParcelDataCount = 0;
@@ -21760,7 +21758,9 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ParcelDataStart < ParcelData.Length ||
+                ModifyBlockExtendedStart < ModifyBlockExtended.Length);
 
             return packets.ToArray();
         }
@@ -23026,8 +23026,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int MiscStatsStart = 0;
-            while (
-                MiscStatsStart < MiscStats.Length)
+            do
             {
                 int variableLength = 0;
                 int MiscStatsCount = 0;
@@ -23058,7 +23057,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                MiscStatsStart < MiscStats.Length);
 
             return packets.ToArray();
         }
@@ -23648,8 +23648,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int AlertInfoStart = 0;
-            while (
-                AlertInfoStart < AlertInfo.Length)
+            do
             {
                 int variableLength = 0;
                 int AlertInfoCount = 0;
@@ -23680,7 +23679,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                AlertInfoStart < AlertInfo.Length);
 
             return packets.ToArray();
         }
@@ -24005,8 +24005,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int MeanCollisionStart = 0;
-            while (
-                MeanCollisionStart < MeanCollision.Length)
+            do
             {
                 int variableLength = 0;
                 int MeanCollisionCount = 0;
@@ -24037,7 +24036,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                MeanCollisionStart < MeanCollision.Length);
 
             return packets.ToArray();
         }
@@ -26868,8 +26868,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int VisualParamStart = 0;
-            while (
-                VisualParamStart < VisualParam.Length)
+            do
             {
                 int variableLength = 0;
                 int VisualParamCount = 0;
@@ -26900,7 +26899,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                VisualParamStart < VisualParam.Length);
 
             return packets.ToArray();
         }
@@ -27097,8 +27097,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int CameraPropertyStart = 0;
-            while (
-                CameraPropertyStart < CameraProperty.Length)
+            do
             {
                 int variableLength = 0;
                 int CameraPropertyCount = 0;
@@ -27129,7 +27128,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                CameraPropertyStart < CameraProperty.Length);
 
             return packets.ToArray();
         }
@@ -27548,8 +27548,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ButtonDataStart = 0;
-            while (
-                ButtonDataStart < ButtonData.Length)
+            do
             {
                 int variableLength = 0;
                 int ButtonDataCount = 0;
@@ -27580,7 +27579,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ButtonDataStart < ButtonData.Length);
 
             return packets.ToArray();
         }
@@ -29884,8 +29884,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int DataStart = 0;
-            while (
-                DataStart < Data.Length)
+            do
             {
                 int variableLength = 0;
                 int DataCount = 0;
@@ -29916,7 +29915,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                DataStart < Data.Length);
 
             return packets.ToArray();
         }
@@ -31850,8 +31850,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int DataStart = 0;
-            while (
-                DataStart < Data.Length)
+            do
             {
                 int variableLength = 0;
                 int DataCount = 0;
@@ -31882,7 +31881,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                DataStart < Data.Length);
 
             return packets.ToArray();
         }
@@ -32120,8 +32120,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ButtonsStart = 0;
-            while (
-                ButtonsStart < Buttons.Length)
+            do
             {
                 int variableLength = 0;
                 int ButtonsCount = 0;
@@ -32152,7 +32151,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ButtonsStart < Buttons.Length);
 
             return packets.ToArray();
         }
@@ -33701,9 +33701,7 @@ namespace OpenMetaverse.Packets
 
             int TaskIDsStart = 0;
             int OwnerIDsStart = 0;
-            while (
-                TaskIDsStart < TaskIDs.Length ||
-                OwnerIDsStart < OwnerIDs.Length)
+            do
             {
                 int variableLength = 0;
                 int TaskIDsCount = 0;
@@ -33750,7 +33748,9 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                TaskIDsStart < TaskIDs.Length ||
+                OwnerIDsStart < OwnerIDs.Length);
 
             return packets.ToArray();
         }
@@ -34224,9 +34224,7 @@ namespace OpenMetaverse.Packets
 
             int TaskIDsStart = 0;
             int OwnerIDsStart = 0;
-            while (
-                TaskIDsStart < TaskIDs.Length ||
-                OwnerIDsStart < OwnerIDs.Length)
+            do
             {
                 int variableLength = 0;
                 int TaskIDsCount = 0;
@@ -34273,7 +34271,9 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                TaskIDsStart < TaskIDs.Length ||
+                OwnerIDsStart < OwnerIDs.Length);
 
             return packets.ToArray();
         }
@@ -34521,8 +34521,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ReturnIDsStart = 0;
-            while (
-                ReturnIDsStart < ReturnIDs.Length)
+            do
             {
                 int variableLength = 0;
                 int ReturnIDsCount = 0;
@@ -34553,7 +34552,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ReturnIDsStart < ReturnIDs.Length);
 
             return packets.ToArray();
         }
@@ -34987,8 +34987,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int DataStart = 0;
-            while (
-                DataStart < Data.Length)
+            do
             {
                 int variableLength = 0;
                 int DataCount = 0;
@@ -35019,7 +35018,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                DataStart < Data.Length);
 
             return packets.ToArray();
         }
@@ -35759,8 +35759,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ParcelDataStart = 0;
-            while (
-                ParcelDataStart < ParcelData.Length)
+            do
             {
                 int variableLength = 0;
                 int ParcelDataCount = 0;
@@ -35791,7 +35790,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ParcelDataStart < ParcelData.Length);
 
             return packets.ToArray();
         }
@@ -37045,8 +37045,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ListStart = 0;
-            while (
-                ListStart < List.Length)
+            do
             {
                 int variableLength = 0;
                 int ListCount = 0;
@@ -37077,7 +37076,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ListStart < List.Length);
 
             return packets.ToArray();
         }
@@ -37340,8 +37340,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ListStart = 0;
-            while (
-                ListStart < List.Length)
+            do
             {
                 int variableLength = 0;
                 int ListCount = 0;
@@ -37372,7 +37371,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ListStart < List.Length);
 
             return packets.ToArray();
         }
@@ -38164,8 +38164,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int UUIDNameBlockStart = 0;
-            while (
-                UUIDNameBlockStart < UUIDNameBlock.Length)
+            do
             {
                 int variableLength = 0;
                 int UUIDNameBlockCount = 0;
@@ -38196,7 +38195,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                UUIDNameBlockStart < UUIDNameBlock.Length);
 
             return packets.ToArray();
         }
@@ -38359,8 +38359,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int UUIDNameBlockStart = 0;
-            while (
-                UUIDNameBlockStart < UUIDNameBlock.Length)
+            do
             {
                 int variableLength = 0;
                 int UUIDNameBlockCount = 0;
@@ -38391,7 +38390,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                UUIDNameBlockStart < UUIDNameBlock.Length);
 
             return packets.ToArray();
         }
@@ -38538,8 +38538,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int UUIDNameBlockStart = 0;
-            while (
-                UUIDNameBlockStart < UUIDNameBlock.Length)
+            do
             {
                 int variableLength = 0;
                 int UUIDNameBlockCount = 0;
@@ -38570,7 +38569,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                UUIDNameBlockStart < UUIDNameBlock.Length);
 
             return packets.ToArray();
         }
@@ -38726,8 +38726,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int UUIDNameBlockStart = 0;
-            while (
-                UUIDNameBlockStart < UUIDNameBlock.Length)
+            do
             {
                 int variableLength = 0;
                 int UUIDNameBlockCount = 0;
@@ -38758,7 +38757,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                UUIDNameBlockStart < UUIDNameBlock.Length);
 
             return packets.ToArray();
         }
@@ -39918,8 +39918,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int SensedDataStart = 0;
-            while (
-                SensedDataStart < SensedData.Length)
+            do
             {
                 int variableLength = 0;
                 int SensedDataCount = 0;
@@ -39950,7 +39949,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                SensedDataStart < SensedData.Length);
 
             return packets.ToArray();
         }
@@ -40599,8 +40599,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int InventoryDataStart = 0;
-            while (
-                InventoryDataStart < InventoryData.Length)
+            do
             {
                 int variableLength = 0;
                 int InventoryDataCount = 0;
@@ -40631,7 +40630,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                InventoryDataStart < InventoryData.Length);
 
             return packets.ToArray();
         }
@@ -41157,8 +41157,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int LocationBlockStart = 0;
-            while (
-                LocationBlockStart < LocationBlock.Length)
+            do
             {
                 int variableLength = 0;
                 int LocationBlockCount = 0;
@@ -41189,7 +41188,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                LocationBlockStart < LocationBlock.Length);
 
             return packets.ToArray();
         }
@@ -41776,8 +41776,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ParamListStart = 0;
-            while (
-                ParamListStart < ParamList.Length)
+            do
             {
                 int variableLength = 0;
                 int ParamListCount = 0;
@@ -41808,7 +41807,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ParamListStart < ParamList.Length);
 
             return packets.ToArray();
         }
@@ -42071,8 +42071,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ParamListStart = 0;
-            while (
-                ParamListStart < ParamList.Length)
+            do
             {
                 int variableLength = 0;
                 int ParamListCount = 0;
@@ -42103,7 +42102,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ParamListStart < ParamList.Length);
 
             return packets.ToArray();
         }
@@ -42366,8 +42366,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ParamListStart = 0;
-            while (
-                ParamListStart < ParamList.Length)
+            do
             {
                 int variableLength = 0;
                 int ParamListCount = 0;
@@ -42398,7 +42397,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ParamListStart < ParamList.Length);
 
             return packets.ToArray();
         }
@@ -43150,8 +43150,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int InventoryDataStart = 0;
-            while (
-                InventoryDataStart < InventoryData.Length)
+            do
             {
                 int variableLength = 0;
                 int InventoryDataCount = 0;
@@ -43182,7 +43181,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                InventoryDataStart < InventoryData.Length);
 
             return packets.ToArray();
         }
@@ -43456,8 +43456,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int InventoryDataStart = 0;
-            while (
-                InventoryDataStart < InventoryData.Length)
+            do
             {
                 int variableLength = 0;
                 int InventoryDataCount = 0;
@@ -43488,7 +43487,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                InventoryDataStart < InventoryData.Length);
 
             return packets.ToArray();
         }
@@ -43762,8 +43762,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int InventoryDataStart = 0;
-            while (
-                InventoryDataStart < InventoryData.Length)
+            do
             {
                 int variableLength = 0;
                 int InventoryDataCount = 0;
@@ -43794,7 +43793,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                InventoryDataStart < InventoryData.Length);
 
             return packets.ToArray();
         }
@@ -44007,8 +44007,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int InventoryDataStart = 0;
-            while (
-                InventoryDataStart < InventoryData.Length)
+            do
             {
                 int variableLength = 0;
                 int InventoryDataCount = 0;
@@ -44039,7 +44038,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                InventoryDataStart < InventoryData.Length);
 
             return packets.ToArray();
         }
@@ -44255,8 +44255,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int InventoryDataStart = 0;
-            while (
-                InventoryDataStart < InventoryData.Length)
+            do
             {
                 int variableLength = 0;
                 int InventoryDataCount = 0;
@@ -44287,7 +44286,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                InventoryDataStart < InventoryData.Length);
 
             return packets.ToArray();
         }
@@ -44484,8 +44484,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int InventoryDataStart = 0;
-            while (
-                InventoryDataStart < InventoryData.Length)
+            do
             {
                 int variableLength = 0;
                 int InventoryDataCount = 0;
@@ -44516,7 +44515,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                InventoryDataStart < InventoryData.Length);
 
             return packets.ToArray();
         }
@@ -44716,8 +44716,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int InventoryDataStart = 0;
-            while (
-                InventoryDataStart < InventoryData.Length)
+            do
             {
                 int variableLength = 0;
                 int InventoryDataCount = 0;
@@ -44748,7 +44747,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                InventoryDataStart < InventoryData.Length);
 
             return packets.ToArray();
         }
@@ -45293,8 +45293,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int FolderDataStart = 0;
-            while (
-                FolderDataStart < FolderData.Length)
+            do
             {
                 int variableLength = 0;
                 int FolderDataCount = 0;
@@ -45325,7 +45324,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                FolderDataStart < FolderData.Length);
 
             return packets.ToArray();
         }
@@ -45529,8 +45529,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int InventoryDataStart = 0;
-            while (
-                InventoryDataStart < InventoryData.Length)
+            do
             {
                 int variableLength = 0;
                 int InventoryDataCount = 0;
@@ -45561,7 +45560,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                InventoryDataStart < InventoryData.Length);
 
             return packets.ToArray();
         }
@@ -45758,8 +45758,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int FolderDataStart = 0;
-            while (
-                FolderDataStart < FolderData.Length)
+            do
             {
                 int variableLength = 0;
                 int FolderDataCount = 0;
@@ -45790,7 +45789,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                FolderDataStart < FolderData.Length);
 
             return packets.ToArray();
         }
@@ -46317,9 +46317,7 @@ namespace OpenMetaverse.Packets
 
             int FolderDataStart = 0;
             int ItemDataStart = 0;
-            while (
-                FolderDataStart < FolderData.Length ||
-                ItemDataStart < ItemData.Length)
+            do
             {
                 int variableLength = 0;
                 int FolderDataCount = 0;
@@ -46366,7 +46364,9 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                FolderDataStart < FolderData.Length ||
+                ItemDataStart < ItemData.Length);
 
             return packets.ToArray();
         }
@@ -46567,8 +46567,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int InventoryDataStart = 0;
-            while (
-                InventoryDataStart < InventoryData.Length)
+            do
             {
                 int variableLength = 0;
                 int InventoryDataCount = 0;
@@ -46599,7 +46598,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                InventoryDataStart < InventoryData.Length);
 
             return packets.ToArray();
         }
@@ -46864,8 +46864,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int InventoryDataStart = 0;
-            while (
-                InventoryDataStart < InventoryData.Length)
+            do
             {
                 int variableLength = 0;
                 int InventoryDataCount = 0;
@@ -46896,7 +46895,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                InventoryDataStart < InventoryData.Length);
 
             return packets.ToArray();
         }
@@ -47245,9 +47245,7 @@ namespace OpenMetaverse.Packets
 
             int FolderDataStart = 0;
             int ItemDataStart = 0;
-            while (
-                FolderDataStart < FolderData.Length ||
-                ItemDataStart < ItemData.Length)
+            do
             {
                 int variableLength = 0;
                 int FolderDataCount = 0;
@@ -47294,7 +47292,9 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                FolderDataStart < FolderData.Length ||
+                ItemDataStart < ItemData.Length);
 
             return packets.ToArray();
         }
@@ -47554,9 +47554,7 @@ namespace OpenMetaverse.Packets
 
             int FolderDataStart = 0;
             int ItemDataStart = 0;
-            while (
-                FolderDataStart < FolderData.Length ||
-                ItemDataStart < ItemData.Length)
+            do
             {
                 int variableLength = 0;
                 int FolderDataCount = 0;
@@ -47603,7 +47601,9 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                FolderDataStart < FolderData.Length ||
+                ItemDataStart < ItemData.Length);
 
             return packets.ToArray();
         }
@@ -48913,8 +48913,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -48945,7 +48944,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -49701,8 +49701,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int InventoryDataStart = 0;
-            while (
-                InventoryDataStart < InventoryData.Length)
+            do
             {
                 int variableLength = 0;
                 int InventoryDataCount = 0;
@@ -49733,7 +49732,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                InventoryDataStart < InventoryData.Length);
 
             return packets.ToArray();
         }
@@ -49977,8 +49977,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int FolderDataStart = 0;
-            while (
-                FolderDataStart < FolderData.Length)
+            do
             {
                 int variableLength = 0;
                 int FolderDataCount = 0;
@@ -50009,7 +50008,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                FolderDataStart < FolderData.Length);
 
             return packets.ToArray();
         }
@@ -50733,8 +50733,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int FolderDataStart = 0;
-            while (
-                FolderDataStart < FolderData.Length)
+            do
             {
                 int variableLength = 0;
                 int FolderDataCount = 0;
@@ -50765,7 +50764,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                FolderDataStart < FolderData.Length);
 
             return packets.ToArray();
         }
@@ -52712,8 +52712,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int DataStart = 0;
-            while (
-                DataStart < Data.Length)
+            do
             {
                 int variableLength = 0;
                 int DataCount = 0;
@@ -52744,7 +52743,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                DataStart < Data.Length);
 
             return packets.ToArray();
         }
@@ -52947,8 +52947,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int DataStart = 0;
-            while (
-                DataStart < Data.Length)
+            do
             {
                 int variableLength = 0;
                 int DataCount = 0;
@@ -52979,7 +52978,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                DataStart < Data.Length);
 
             return packets.ToArray();
         }
@@ -53410,8 +53410,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int RightsStart = 0;
-            while (
-                RightsStart < Rights.Length)
+            do
             {
                 int variableLength = 0;
                 int RightsCount = 0;
@@ -53442,7 +53441,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                RightsStart < Rights.Length);
 
             return packets.ToArray();
         }
@@ -53639,8 +53639,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int RightsStart = 0;
-            while (
-                RightsStart < Rights.Length)
+            do
             {
                 int variableLength = 0;
                 int RightsCount = 0;
@@ -53671,7 +53670,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                RightsStart < Rights.Length);
 
             return packets.ToArray();
         }
@@ -53818,8 +53818,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int AgentBlockStart = 0;
-            while (
-                AgentBlockStart < AgentBlock.Length)
+            do
             {
                 int variableLength = 0;
                 int AgentBlockCount = 0;
@@ -53850,7 +53849,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                AgentBlockStart < AgentBlock.Length);
 
             return packets.ToArray();
         }
@@ -53997,8 +53997,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int AgentBlockStart = 0;
-            while (
-                AgentBlockStart < AgentBlock.Length)
+            do
             {
                 int variableLength = 0;
                 int AgentBlockCount = 0;
@@ -54029,7 +54028,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                AgentBlockStart < AgentBlock.Length);
 
             return packets.ToArray();
         }
@@ -55205,8 +55205,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int RoleChangeStart = 0;
-            while (
-                RoleChangeStart < RoleChange.Length)
+            do
             {
                 int variableLength = 0;
                 int RoleChangeCount = 0;
@@ -55237,7 +55236,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                RoleChangeStart < RoleChange.Length);
 
             return packets.ToArray();
         }
@@ -55800,8 +55800,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int EjectDataStart = 0;
-            while (
-                EjectDataStart < EjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int EjectDataCount = 0;
@@ -55832,7 +55831,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                EjectDataStart < EjectData.Length);
 
             return packets.ToArray();
         }
@@ -56598,8 +56598,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int InviteDataStart = 0;
-            while (
-                InviteDataStart < InviteData.Length)
+            do
             {
                 int variableLength = 0;
                 int InviteDataCount = 0;
@@ -56630,7 +56629,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                InviteDataStart < InviteData.Length);
 
             return packets.ToArray();
         }
@@ -57844,8 +57844,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int HistoryDataStart = 0;
-            while (
-                HistoryDataStart < HistoryData.Length)
+            do
             {
                 int variableLength = 0;
                 int HistoryDataCount = 0;
@@ -57876,7 +57875,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                HistoryDataStart < HistoryData.Length);
 
             return packets.ToArray();
         }
@@ -58331,8 +58331,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int HistoryDataStart = 0;
-            while (
-                HistoryDataStart < HistoryData.Length)
+            do
             {
                 int variableLength = 0;
                 int HistoryDataCount = 0;
@@ -58363,7 +58362,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                HistoryDataStart < HistoryData.Length);
 
             return packets.ToArray();
         }
@@ -58864,8 +58864,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ProposalDataStart = 0;
-            while (
-                ProposalDataStart < ProposalData.Length)
+            do
             {
                 int variableLength = 0;
                 int ProposalDataCount = 0;
@@ -58896,7 +58895,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ProposalDataStart < ProposalData.Length);
 
             return packets.ToArray();
         }
@@ -59461,8 +59461,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int VoteItemStart = 0;
-            while (
-                VoteItemStart < VoteItem.Length)
+            do
             {
                 int variableLength = 0;
                 int VoteItemCount = 0;
@@ -59493,7 +59492,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                VoteItemStart < VoteItem.Length);
 
             return packets.ToArray();
         }
@@ -60277,8 +60277,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int MemberDataStart = 0;
-            while (
-                MemberDataStart < MemberData.Length)
+            do
             {
                 int variableLength = 0;
                 int MemberDataCount = 0;
@@ -60309,7 +60308,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                MemberDataStart < MemberData.Length);
 
             return packets.ToArray();
         }
@@ -61234,8 +61234,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int RoleDataStart = 0;
-            while (
-                RoleDataStart < RoleData.Length)
+            do
             {
                 int variableLength = 0;
                 int RoleDataCount = 0;
@@ -61266,7 +61265,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                RoleDataStart < RoleData.Length);
 
             return packets.ToArray();
         }
@@ -61634,8 +61634,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int MemberDataStart = 0;
-            while (
-                MemberDataStart < MemberData.Length)
+            do
             {
                 int variableLength = 0;
                 int MemberDataCount = 0;
@@ -61666,7 +61665,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                MemberDataStart < MemberData.Length);
 
             return packets.ToArray();
         }
@@ -61999,8 +61999,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int GroupDataStart = 0;
-            while (
-                GroupDataStart < GroupData.Length)
+            do
             {
                 int variableLength = 0;
                 int GroupDataCount = 0;
@@ -62031,7 +62030,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                GroupDataStart < GroupData.Length);
 
             return packets.ToArray();
         }
@@ -62380,8 +62380,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int RoleDataStart = 0;
-            while (
-                RoleDataStart < RoleData.Length)
+            do
             {
                 int variableLength = 0;
                 int RoleDataCount = 0;
@@ -62412,7 +62411,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                RoleDataStart < RoleData.Length);
 
             return packets.ToArray();
         }
@@ -62970,8 +62970,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int WearableDataStart = 0;
-            while (
-                WearableDataStart < WearableData.Length)
+            do
             {
                 int variableLength = 0;
                 int WearableDataCount = 0;
@@ -63002,7 +63001,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                WearableDataStart < WearableData.Length);
 
             return packets.ToArray();
         }
@@ -63203,8 +63203,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int WearableDataStart = 0;
-            while (
-                WearableDataStart < WearableData.Length)
+            do
             {
                 int variableLength = 0;
                 int WearableDataCount = 0;
@@ -63235,7 +63234,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                WearableDataStart < WearableData.Length);
 
             return packets.ToArray();
         }
@@ -63438,8 +63438,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int WearableDataStart = 0;
-            while (
-                WearableDataStart < WearableData.Length)
+            do
             {
                 int variableLength = 0;
                 int WearableDataCount = 0;
@@ -63470,7 +63469,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                WearableDataStart < WearableData.Length);
 
             return packets.ToArray();
         }
@@ -63682,8 +63682,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int WearableDataStart = 0;
-            while (
-                WearableDataStart < WearableData.Length)
+            do
             {
                 int variableLength = 0;
                 int WearableDataCount = 0;
@@ -63714,7 +63713,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                WearableDataStart < WearableData.Length);
 
             return packets.ToArray();
         }
@@ -64139,8 +64139,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int AgentGroupDataStart = 0;
-            while (
-                AgentGroupDataStart < AgentGroupData.Length)
+            do
             {
                 int variableLength = 0;
                 int AgentGroupDataCount = 0;
@@ -64171,7 +64170,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                AgentGroupDataStart < AgentGroupData.Length);
 
             return packets.ToArray();
         }
@@ -64387,8 +64387,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int GroupDataStart = 0;
-            while (
-                GroupDataStart < GroupData.Length)
+            do
             {
                 int variableLength = 0;
                 int GroupDataCount = 0;
@@ -64419,7 +64418,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                GroupDataStart < GroupData.Length);
 
             return packets.ToArray();
         }
@@ -65013,8 +65013,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -65045,7 +65044,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -65406,8 +65406,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -65438,7 +65437,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -66394,8 +66394,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int LayerDataStart = 0;
-            while (
-                LayerDataStart < LayerData.Length)
+            do
             {
                 int variableLength = 0;
                 int LayerDataCount = 0;
@@ -66426,7 +66425,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                LayerDataStart < LayerData.Length);
 
             return packets.ToArray();
         }
@@ -67007,8 +67007,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int DataStart = 0;
-            while (
-                DataStart < Data.Length)
+            do
             {
                 int variableLength = 0;
                 int DataCount = 0;
@@ -67039,7 +67038,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                DataStart < Data.Length);
 
             return packets.ToArray();
         }
@@ -67475,8 +67475,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int DataStart = 0;
-            while (
-                DataStart < Data.Length)
+            do
             {
                 int variableLength = 0;
                 int DataCount = 0;
@@ -67507,7 +67506,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                DataStart < Data.Length);
 
             return packets.ToArray();
         }
@@ -68383,8 +68383,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ReportDataStart = 0;
-            while (
-                ReportDataStart < ReportData.Length)
+            do
             {
                 int variableLength = 0;
                 int ReportDataCount = 0;
@@ -68415,7 +68414,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ReportDataStart < ReportData.Length);
 
             return packets.ToArray();
         }
@@ -68807,8 +68807,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -68839,7 +68838,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -69215,8 +69215,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int PacketsStart = 0;
-            while (
-                PacketsStart < Packets.Length)
+            do
             {
                 int variableLength = 0;
                 int PacketsCount = 0;
@@ -69247,7 +69246,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                PacketsStart < Packets.Length);
 
             return packets.ToArray();
         }
@@ -69890,8 +69890,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -69922,7 +69921,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -70123,8 +70123,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -70155,7 +70154,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -70356,8 +70356,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -70388,7 +70387,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -71384,8 +71384,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -71416,7 +71415,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -72148,8 +72148,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int DataBlockStart = 0;
-            while (
-                DataBlockStart < DataBlock.Length)
+            do
             {
                 int variableLength = 0;
                 int DataBlockCount = 0;
@@ -72180,7 +72179,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                DataBlockStart < DataBlock.Length);
 
             return packets.ToArray();
         }
@@ -72400,8 +72400,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int EffectStart = 0;
-            while (
-                EffectStart < Effect.Length)
+            do
             {
                 int variableLength = 0;
                 int EffectCount = 0;
@@ -72432,7 +72431,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                EffectStart < Effect.Length);
 
             return packets.ToArray();
         }
@@ -73071,9 +73071,7 @@ namespace OpenMetaverse.Packets
 
             int AnimationListStart = 0;
             int PhysicalAvatarEventListStart = 0;
-            while (
-                AnimationListStart < AnimationList.Length ||
-                PhysicalAvatarEventListStart < PhysicalAvatarEventList.Length)
+            do
             {
                 int variableLength = 0;
                 int AnimationListCount = 0;
@@ -73120,7 +73118,9 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                AnimationListStart < AnimationList.Length ||
+                PhysicalAvatarEventListStart < PhysicalAvatarEventList.Length);
 
             return packets.ToArray();
         }
@@ -73606,8 +73606,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int RequestImageStart = 0;
-            while (
-                RequestImageStart < RequestImage.Length)
+            do
             {
                 int variableLength = 0;
                 int RequestImageCount = 0;
@@ -73638,7 +73637,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                RequestImageStart < RequestImage.Length);
 
             return packets.ToArray();
         }
@@ -74522,8 +74522,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -74554,7 +74553,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -74762,8 +74762,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -74794,7 +74793,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -74998,8 +74998,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -75030,7 +75029,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -75242,8 +75242,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -75274,7 +75273,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -75421,8 +75421,7 @@ namespace OpenMetaverse.Packets
             fixedLength += 1;
 
             int ObjectDataStart = 0;
-            while (
-                ObjectDataStart < ObjectData.Length)
+            do
             {
                 int variableLength = 0;
                 int ObjectDataCount = 0;
@@ -75453,7 +75452,8 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                ObjectDataStart < ObjectData.Length);
 
             return packets.ToArray();
         }
@@ -76192,10 +76192,7 @@ namespace OpenMetaverse.Packets
             int AnimationListStart = 0;
             int AnimationSourceListStart = 0;
             int PhysicalAvatarEventListStart = 0;
-            while (
-                AnimationListStart < AnimationList.Length ||
-                AnimationSourceListStart < AnimationSourceList.Length ||
-                PhysicalAvatarEventListStart < PhysicalAvatarEventList.Length)
+            do
             {
                 int variableLength = 0;
                 int AnimationListCount = 0;
@@ -76258,7 +76255,10 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                AnimationListStart < AnimationList.Length ||
+                AnimationSourceListStart < AnimationSourceList.Length ||
+                PhysicalAvatarEventListStart < PhysicalAvatarEventList.Length);
 
             return packets.ToArray();
         }
@@ -77415,12 +77415,7 @@ namespace OpenMetaverse.Packets
             int GranterBlockStart = 0;
             int NVPairDataStart = 0;
             int VisualParamStart = 0;
-            while (
-                GroupDataStart < GroupData.Length ||
-                AnimationDataStart < AnimationData.Length ||
-                GranterBlockStart < GranterBlock.Length ||
-                NVPairDataStart < NVPairData.Length ||
-                VisualParamStart < VisualParam.Length)
+            do
             {
                 int variableLength = 0;
                 int GroupDataCount = 0;
@@ -77515,7 +77510,12 @@ namespace OpenMetaverse.Packets
                 }
 
                 packets.Add(packet);
-            }
+            } while (
+                GroupDataStart < GroupData.Length ||
+                AnimationDataStart < AnimationData.Length ||
+                GranterBlockStart < GranterBlock.Length ||
+                NVPairDataStart < NVPairData.Length ||
+                VisualParamStart < VisualParam.Length);
 
             return packets.ToArray();
         }
