@@ -154,6 +154,36 @@ namespace OpenMetaverse.Tests
             Assert.IsTrue(queryDataCount == bigPacket.QueryData.Length);
             Assert.IsTrue(queryRepliesCount == bigPacket.QueryData.Length);
             Assert.IsTrue(statusDataCount == bigPacket.StatusData.Length);
+
+            ScriptDialogPacket scriptDialogPacket = new ScriptDialogPacket();
+            scriptDialogPacket.Data.ChatChannel = 0;
+            scriptDialogPacket.Data.FirstName = Utils.EmptyBytes;
+            scriptDialogPacket.Data.ImageID = UUID.Zero;
+            scriptDialogPacket.Data.LastName = Utils.EmptyBytes;
+            scriptDialogPacket.Data.Message = Utils.EmptyBytes;
+            scriptDialogPacket.Data.ObjectID = UUID.Zero;
+            scriptDialogPacket.Data.ObjectName = Utils.EmptyBytes;
+            scriptDialogPacket.Buttons = new ScriptDialogPacket.ButtonsBlock[0];
+
+            byte[][] splitPacket = scriptDialogPacket.ToBytesMultiple();
+
+            Assert.IsNotNull(splitPacket);
+            Assert.IsTrue(splitPacket.Length == 1, "Expected ScriptDialog packet to split into 1 packet but got " + splitPacket.Length);
+
+            ParcelReturnObjectsPacket proPacket = new ParcelReturnObjectsPacket();
+            proPacket.AgentData.AgentID = UUID.Zero;
+            proPacket.AgentData.SessionID = UUID.Zero;
+            proPacket.ParcelData.LocalID = 0;
+            proPacket.ParcelData.ReturnType = 0;
+            proPacket.TaskIDs = new ParcelReturnObjectsPacket.TaskIDsBlock[0];
+            proPacket.OwnerIDs = new ParcelReturnObjectsPacket.OwnerIDsBlock[1];
+            proPacket.OwnerIDs[0] = new ParcelReturnObjectsPacket.OwnerIDsBlock();
+            proPacket.OwnerIDs[0].OwnerID = UUID.Zero;
+
+            splitPacket = proPacket.ToBytesMultiple();
+
+            Assert.IsNotNull(splitPacket);
+            Assert.IsTrue(splitPacket.Length == 1, "Expected ParcelReturnObjectsPacket packet to split into 1 packet but got " + splitPacket.Length);
         }
 
         [Test]
