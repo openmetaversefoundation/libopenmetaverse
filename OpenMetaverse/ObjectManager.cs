@@ -179,7 +179,9 @@ namespace OpenMetaverse
         private readonly object m_ObjectUpdateLock = new object();
 
         /// <summary>Raised when the simulator sends us data containing
-        /// A Primitive, Foliage or Attachment</summary>
+        /// A <see cref="Primitive"/>, Foliage or Attachment</summary>
+        /// <seealso cref="RequestObject"/>
+        /// <seealso cref="RequestObjects"/>
         public event EventHandler<PrimEventArgs> ObjectUpdate
         {
             add { lock (m_ObjectUpdateLock) { m_ObjectUpdate += value; } }
@@ -203,7 +205,9 @@ namespace OpenMetaverse
         private readonly object m_ObjectPropertiesLock = new object();
 
         /// <summary>Raised when the simulator sends us data containing
-        /// ...</summary>
+        /// additional <seea cref="Primitive"/> information</summary>
+        /// <seealso cref="SelectObject"/>
+        /// <seealso cref="SelectObjects"/>
         public event EventHandler<ObjectPropertiesEventArgs> ObjectProperties
         {
             add { lock (m_ObjectPropertiesLock) { m_ObjectProperties += value; } }
@@ -251,7 +255,8 @@ namespace OpenMetaverse
         private readonly object m_ObjectPropertiesFamilyLock = new object();
 
         /// <summary>Raised when the simulator sends us data containing
-        /// ...</summary>
+        /// additional <seea cref="Primitive"/> and <see cref="Avatar"/> details</summary>
+        /// <seealso cref="RequestObjectPropertiesFamily"/>
         public event EventHandler<ObjectPropertiesFamilyEventArgs> ObjectPropertiesFamily
         {
             add { lock (m_ObjectPropertiesFamilyLock) { m_ObjectPropertiesFamily += value; } }
@@ -275,7 +280,7 @@ namespace OpenMetaverse
         private readonly object m_AvatarUpdateLock = new object();
 
         /// <summary>Raised when the simulator sends us data containing
-        /// ...</summary>
+        /// updated information for an <see cref="Avatar"/></summary>
         public event EventHandler<AvatarUpdateEventArgs> AvatarUpdate
         {
             add { lock (m_AvatarUpdateLock) { m_AvatarUpdate += value; } }
@@ -299,7 +304,7 @@ namespace OpenMetaverse
         private readonly object m_TerseObjectUpdateLock = new object();
 
         /// <summary>Raised when the simulator sends us data containing
-        /// ...</summary>
+        /// <see cref="Primitive"/> and <see cref="Avatar"/> movement changes</summary>
         public event EventHandler<TerseObjectUpdateEventArgs> TerseObjectUpdate
         {
             add { lock (m_TerseObjectUpdateLock) { m_TerseObjectUpdate += value; } }
@@ -323,7 +328,7 @@ namespace OpenMetaverse
         private readonly object m_ObjectDataBlockUpdateLock = new object();
 
         /// <summary>Raised when the simulator sends us data containing
-        /// ...</summary>
+        /// updates to an Objects DataBlock</summary>
         public event EventHandler<ObjectDataBlockUpdateEventArgs> ObjectDataBlockUpdate
         {
             add { lock (m_ObjectDataBlockUpdateLock) { m_ObjectDataBlockUpdate += value; } }
@@ -346,8 +351,8 @@ namespace OpenMetaverse
         /// <summary>Thread sync lock object</summary>
         private readonly object m_KillObjectLock = new object();
 
-        /// <summary>Raised when the simulator sends us data containing
-        /// ...</summary>
+        /// <summary>Raised when the simulator informs us an <see cref="Primitive"/>
+        /// or <see cref="Avatar"/> is no longer within view</summary>
         public event EventHandler<KillObjectEventArgs> KillObject
         {
             add { lock (m_KillObjectLock) { m_KillObject += value; } }
@@ -371,7 +376,7 @@ namespace OpenMetaverse
         private readonly object m_AvatarSitChangedLock = new object();
 
         /// <summary>Raised when the simulator sends us data containing
-        /// ...</summary>
+        /// updated sit information for our <see cref="Avatar"/></summary>
         public event EventHandler<AvatarSitChangedEventArgs> AvatarSitChanged
         {
             add { lock (m_AvatarSitChangedLock) { m_AvatarSitChanged += value; } }
@@ -395,7 +400,7 @@ namespace OpenMetaverse
         private readonly object m_PayPriceReplyLock = new object();
 
         /// <summary>Raised when the simulator sends us data containing
-        /// ...</summary>
+        /// purchase price information for a <see cref="Primitive"/></summary>
         public event EventHandler<PayPriceReplyEventArgs> PayPriceReply
         {
             add { lock (m_PayPriceReplyLock) { m_PayPriceReply += value; } }
