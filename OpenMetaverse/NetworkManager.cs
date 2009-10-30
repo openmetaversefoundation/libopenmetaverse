@@ -890,18 +890,10 @@ namespace OpenMetaverse
         {
             if (simulator != CurrentSim)
             {
-                bool firstSim = CurrentSim == null;
-
                 Simulator oldSim = CurrentSim;
                 lock (Simulators) CurrentSim = simulator; // CurrentSim is synchronized against Simulators
 
                 simulator.SetSeedCaps(seedcaps);
-
-                if (firstSim && m_LoginProgress != null)
-                {
-                    // until this point being authenticated does absolutely no good
-                    OnLoginProgress(new LoginProgressEventArgs(LoginStatus.Success, LoginMessage));
-                }
 
                 // If the current simulator changed fire the callback
                 if (m_SimChanged != null && simulator != oldSim)

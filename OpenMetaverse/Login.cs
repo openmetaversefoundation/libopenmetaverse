@@ -1253,8 +1253,7 @@ namespace OpenMetaverse
                     SendPacket(new EconomyDataRequestPacket());
 
                     // Update the login message with the MOTD returned from the server
-                    UpdateLoginStatus(LoginStatus.ConnectingToSim, "Authentication Successful");
-                    
+                    UpdateLoginStatus(LoginStatus.Success, message);
                 }
                 else
                 {
