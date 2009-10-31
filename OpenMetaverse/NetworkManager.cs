@@ -722,12 +722,26 @@ namespace OpenMetaverse
             }
         }
 
+
         /// <summary>
         /// Shutdown will disconnect all the sims except for the current sim
         /// first, and then kill the connection to CurrentSim. This should only
         /// be called if the logout process times out on <code>RequestLogout</code>
         /// </summary>
+        /// <param name="type">Type of shutdown</param>
         public void Shutdown(DisconnectType type)
+        {
+            Shutdown(type, type.ToString());
+        }
+
+        /// <summary>
+        /// Shutdown will disconnect all the sims except for the current sim
+        /// first, and then kill the connection to CurrentSim. This should only
+        /// be called if the logout process times out on <code>RequestLogout</code>
+        /// </summary>
+        /// <param name="type">Type of shutdown</param>
+        /// <param name="message">Shutdown message</param>
+        public void Shutdown(DisconnectType type, string message)
         {
             Logger.Log("NetworkManager shutdown initiated", Helpers.LogLevel.Info, Client);
 
@@ -775,7 +789,7 @@ namespace OpenMetaverse
             // Fire the disconnected callback
             if (m_Disconnected != null)
             {
-                OnDisconnected(new DisconnectedEventArgs(type, type.ToString()));
+                OnDisconnected(new DisconnectedEventArgs(type, message));
             }
         }
 
@@ -1195,14 +1209,8 @@ namespace OpenMetaverse
         {
             string message = Utils.BytesToString(((KickUserPacket)e.Packet).UserInfo.Reason);
 
-            // Fire the callback to let client apps know we are shutting down
-            if (m_Disconnected != null)
-            {
-                OnDisconnected(new DisconnectedEventArgs(DisconnectType.ServerInitiated, message));
-            }
-
             // Shutdown the network layer
-            Shutdown(DisconnectType.ServerInitiated);
+            Shutdown(DisconnectType.ServerInitiated, message);
         }
 
         #endregion Packet Callbacks
