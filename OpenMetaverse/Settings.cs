@@ -285,6 +285,9 @@ namespace OpenMetaverse
         /// <summary>Throttle outgoing packet rate</summary>
         public bool THROTTLE_OUTGOING_PACKETS = true;
 
+        /// <summary>UUID of a texture used by some viewers to indentify type of client used</summary>
+        public UUID CLIENT_IDENTIFICATION_TAG = UUID.Zero;
+
         #endregion
         #region Texture Pipeline
 
