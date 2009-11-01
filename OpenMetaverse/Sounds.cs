@@ -48,9 +48,6 @@ namespace OpenMetaverse
         /// <summary></summary>
         public readonly static UUID HEALTH_REDUCTION_MALE = new UUID("e057c244-5768-1056-c37e-1537454eeb62");
 
-        /// <summary>2 bells</summary>
-        public readonly static UUID IM_SESSION_NEW_INCOMING_2_BELLS = new UUID("67cc2844-00f3-2b3c-b991-6418d01e1bb7");
-
         /// <summary></summary>
         public readonly static UUID IM_START = new UUID("c825dfbc-9827-7e02-6507-3713d18916c1");
 
