@@ -716,7 +716,10 @@ namespace OpenMetaverse
                     Animation animation = new Animation();
                     animation.AnimationID = data.AnimationList[i].AnimID;
                     animation.AnimationSequence = data.AnimationList[i].AnimSequenceID;
-                    animation.AnimationSourceObjectID = data.AnimationSourceList[i].ObjectID;
+                    if (i < data.AnimationSourceList.Length)
+                    {
+                        animation.AnimationSourceObjectID = data.AnimationSourceList[i].ObjectID;
+                    }
 
                     signaledAnimations.Add(animation);
                 }
