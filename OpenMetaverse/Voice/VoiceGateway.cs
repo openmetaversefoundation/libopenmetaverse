@@ -279,7 +279,7 @@ namespace OpenMetaverse.Voice
                         }
                         break;
                     case "Aux.GetCaptureDevices.1":
-                        if (OnAuxGetCaptureDevicesResponse != null)
+                        if (OnAuxGetCaptureDevicesResponse != null && rsp.Results.CaptureDevices.Count > 0)
                         {
                             List<string> CaptureDevices = new List<string>();
                             foreach (CaptureDevice device in rsp.Results.CaptureDevices)
