@@ -3167,7 +3167,7 @@ namespace OpenMetaverse
                 
                 ChatFromSimulatorPacket chat = (ChatFromSimulatorPacket)packet;
 
-                OnChat(new ChatEventArgs(Utils.BytesToString(chat.ChatData.Message),
+                OnChat(new ChatEventArgs(simulator, Utils.BytesToString(chat.ChatData.Message),
                     (ChatAudibleLevel)chat.ChatData.Audible,
                     (ChatType)chat.ChatData.ChatType,
                     (ChatSourceType)chat.ChatData.SourceType,
@@ -3979,6 +3979,7 @@ namespace OpenMetaverse
     /// </summary>
     public class ChatEventArgs : EventArgs
     {
+        private readonly Simulator m_Simulator;
         private readonly string m_Message;
         private readonly ChatAudibleLevel m_AudibleLevel;
         private readonly ChatType m_Type;
@@ -3988,6 +3989,8 @@ namespace OpenMetaverse
         private readonly UUID m_OwnerID;
         private readonly Vector3 m_Position;
 
+        /// <summary>Get the simulator sending the message</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
         /// <summary>Get the message sent</summary>
         public string Message { get { return m_Message; } }
         /// <summary>Get the audible level of the message</summary>
@@ -4016,9 +4019,10 @@ namespace OpenMetaverse
         /// <param name="sourceId">The ID of the agent or object sending the message</param>
         /// <param name="ownerid">The ID of the object owner, or the agent ID sending the message</param>
         /// <param name="position">The position of the agent or object sending the message</param>
-        public ChatEventArgs(string message, ChatAudibleLevel audible, ChatType type,
+        public ChatEventArgs(Simulator simulator, string message, ChatAudibleLevel audible, ChatType type,
         ChatSourceType sourceType, string fromName, UUID sourceId, UUID ownerid, Vector3 position)
         {
+            this.m_Simulator = simulator;
             this.m_Message = message;
             this.m_AudibleLevel = audible;
             this.m_Type = type;

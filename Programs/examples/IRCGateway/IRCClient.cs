@@ -138,7 +138,7 @@ public class IRCClient
                     if (OnMessage != null)
                     {
                         int nameIndex = words[0].IndexOf('!');
-                        string name = words[0].Substring(1, nameIndex - 1);
+                        string name = nameIndex > 0 ? words[0].Substring(1, nameIndex - 1) : words[0];
                         string address = words[0].Substring(nameIndex + 1);
                         OnMessage(words[2], name, address, lines[i].Substring(lines[i].IndexOf(":", 1) + 1));
                     }
