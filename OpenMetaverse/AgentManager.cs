@@ -3167,7 +3167,7 @@ namespace OpenMetaverse
                 
                 ChatFromSimulatorPacket chat = (ChatFromSimulatorPacket)packet;
 
-                OnChat(new ChatEventArgs(simulator, Utils.BytesToString(chat.ChatData.Message),
+                OnChat(new ChatEventArgs(e.Simulator, Utils.BytesToString(chat.ChatData.Message),
                     (ChatAudibleLevel)chat.ChatData.Audible,
                     (ChatType)chat.ChatData.ChatType,
                     (ChatSourceType)chat.ChatData.SourceType,
