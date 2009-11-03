@@ -90,8 +90,6 @@ namespace WinGridProxy
 
             Logger.Log("WinGridProxy ready", Helpers.LogLevel.Info);
 
-            PacketDecoder.InitializeDecoder();
-
             if (FireEventAppender.Instance != null)
             {
                 FireEventAppender.Instance.MessageLoggedEvent += new MessageLoggedEventHandler(Instance_MessageLoggedEvent);

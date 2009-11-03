@@ -56,8 +56,7 @@ public class Analyst : ProxyPlugin
     //private PacketDecoder DecodePacket = new PacketDecoder();
     
     public Analyst(ProxyFrame frame)
-    {
-        PacketDecoder.InitializeDecoder();
+    {        
         this.frame = frame;
         this.proxy = frame.proxy;
     }

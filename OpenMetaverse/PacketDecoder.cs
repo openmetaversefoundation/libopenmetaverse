@@ -19,7 +19,7 @@ namespace OpenMetaverse.Packets
         private static Dictionary<string, List<CustomPacketDecoder>> Callbacks = new Dictionary<string, List<CustomPacketDecoder>>();
         
         
-        public static void InitializeDecoder()
+        static PacketDecoder()
         {
             AddCallback("Color", DecodeColorField);
             AddCallback("TextColor", DecodeColorField);
