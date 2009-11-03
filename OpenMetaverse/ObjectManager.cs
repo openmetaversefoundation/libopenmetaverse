@@ -2045,7 +2045,7 @@ namespace OpenMetaverse
 
                     #endregion Decode update data
 
-                    Primitive obj = (update.Avatar) ?
+                    Primitive obj = !Client.Settings.OBJECT_TRACKING ? null : (update.Avatar) ?
                         (Primitive)GetAvatar(simulator, update.LocalID, UUID.Zero) :
                         (Primitive)GetPrimitive(simulator, update.LocalID, UUID.Zero);
 
@@ -2063,6 +2063,18 @@ namespace OpenMetaverse
                         Client.Self.angularVelocity = update.AngularVelocity;
                     }
                     #endregion Update Client.Self                   
+                     if (Client.Settings.OBJECT_TRACKING && obj != null)
+                     {
+                         obj.Position = update.Position;
+                         obj.Rotation = update.Rotation;
+                         obj.Velocity = update.Velocity;
+                         obj.CollisionPlane = update.CollisionPlane;
+                         obj.Acceleration = update.Acceleration;
+                         obj.AngularVelocity = update.AngularVelocity;
+                         obj.PrimData.State = update.State;
+                         obj.Textures = update.Textures;
+                     }
+
                 }
                 catch (Exception ex)
                 {
