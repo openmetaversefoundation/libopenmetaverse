@@ -1435,10 +1435,6 @@ namespace OpenMetaverse
             int i = pos;
             int totalLength = 1;
 
-            Flexible = null;
-            Light = null;
-            Sculpt = null;
-
             if (data.Length == 0 || pos >= data.Length)
                 return 0;
 
