@@ -504,14 +504,16 @@ namespace WinGridProxy
         }
         public override string ToXml(Direction direction)
         {
-            if (direction == this.Direction)
-            {
-                return this.Data.ToString();
-            }
-            else
-            {
-                return base.ToXml(direction);
-            }
+            return base.ToXml(direction);
+
+            //if (direction == this.Direction)
+            //{
+            //    return this.Data.ToString();
+            //}
+            //else
+            //{
+            //    return base.ToXml(direction);
+            //}
         }
 
         public override byte[] ToBytes(Direction direction)
