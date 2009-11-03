@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008, openmetaverse.org
+ * Copyright (c) 2007-2009, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -62,11 +62,11 @@ namespace OpenMetaverse
         BlockLandResell = 1 << 7,
         /// <summary>All content is wiped nightly</summary>
         Sandbox = 1 << 8,
-        /// <summary></summary>
+        /// <summary>Unknown: Related to the availability of an overview world map tile.(Think mainland images when zoomed out.)</summary>
         NullLayer = 1 << 9,
-        /// <summary></summary>
+        /// <summary>Unknown: Related to region debug flags. Possibly to skip processing of agent interaction with world. </summary>
         SkipAgentAction = 1 << 10,
-        /// <summary></summary>
+        /// <summary>Region does not update agent prim interest lists. Internal debugging option.</summary>
         SkipUpdateInterestList = 1 << 11,
         /// <summary>No collision detection for non-agent objects</summary>
         SkipCollisions = 1 << 12,
@@ -74,13 +74,13 @@ namespace OpenMetaverse
         SkipScripts = 1 << 13,
         /// <summary>All physics processing is turned off</summary>
         SkipPhysics = 1 << 14,
-        /// <summary></summary>
+        /// <summary>Region can be seen from other regions on world map. (Legacy world map option?) </summary>
         ExternallyVisible = 1 << 15,
-        /// <summary></summary>
+        /// <summary>Region can be seen from mainland on world map. (Legacy world map option?) </summary>
         MainlandVisible = 1 << 16,
-        /// <summary></summary>
+        /// <summary>Agents not explicitly on the access list can visit the region. </summary>
         PublicAllowed = 1 << 17,
-        /// <summary></summary>
+        /// <summary>Traffic calculations are not run across entire region, overrides parcel settings. </summary>
         BlockDwell = 1 << 18,
         /// <summary>Flight is disabled (not currently enforced by the sim)</summary>
         NoFly = 1 << 19,
@@ -88,7 +88,7 @@ namespace OpenMetaverse
         AllowDirectTeleport = 1 << 20,
         /// <summary>Estate owner has temporarily disabled scripting</summary>
         EstateSkipScripts = 1 << 21,
-        /// <summary></summary>
+        /// <summary>Restricts the usage of the LSL llPushObject function, applies to whole region.</summary>
         RestrictPushObject = 1 << 22,
         /// <summary>Deny agents with no payment info on file</summary>
         DenyAnonymous = 1 << 23,
@@ -96,12 +96,17 @@ namespace OpenMetaverse
         DenyIdentified = 1 << 24,
         /// <summary>Deny agents who have made a monetary transaction</summary>
         DenyTransacted = 1 << 25,
-        /// <summary></summary>
+        /// <summary>Parcels within the region may be joined or divided by anyone, not just estate owners/managers. </summary>
         AllowParcelChanges = 1 << 26,
-        /// <summary></summary>
+        /// <summary>Abuse reports sent from within this region are sent to the estate owner defined email. </summary>
         AbuseEmailToEstateOwner = 1 << 27,
         /// <summary>Region is Voice Enabled</summary>
-        AllowVoice = 1 << 28
+        AllowVoice = 1 << 28,
+        /// <summary>Removes the ability from parcel owners to set their parcels to show in search.</summary>
+        BlockParcelSearch = 1 << 29,
+        /// <summary>Deny agents who have not been age verified from entering the region.</summary>
+        DenyAgeUnverified = 1 << 30
+
     }
 
     /// <summary>

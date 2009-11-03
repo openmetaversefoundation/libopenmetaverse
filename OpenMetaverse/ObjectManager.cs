@@ -765,12 +765,13 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">The <see cref="Simulator"/> the object is located</param>        
         /// <param name="localID">The Local ID of the object</param>
-        /// <param name="uvCoord"></param>
-        /// <param name="stCoord"></param>
-        /// <param name="faceIndex"></param>
-        /// <param name="position"></param>
-        /// <param name="normal"></param>
-        /// <param name="binormal"></param>
+        /// <param name="uvCoord">The texture coordinates to touch</param>
+        /// <param name="stCoord">The surface coordinates to touch</param>
+        /// <param name="faceIndex">The face of the position to touch</param>
+        /// <param name="position">The region coordinates of the position to touch</param>
+        /// <param name="normal">The surface normal of the position to touch (A normal is a vector perpindicular to the surface)</param>
+        /// <param name="binormal">The surface binormal of the position to touch (A binormal is a vector tangen to the surface
+        /// pointing along the U direction of the tangent space</param>
         public void ClickObject(Simulator simulator, uint localID, Vector3 uvCoord, Vector3 stCoord, int faceIndex, Vector3 position,
             Vector3 normal, Vector3 binormal)
         {
@@ -835,7 +836,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Create (rez) a new prim object in a simulator
         /// </summary>
-        /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object to place the object in</param>
+        /// <param name="simulator">A reference to the <seealso cref="Simulator"/> object to place the object in</param>
         /// <param name="prim">Data describing the prim object to rez</param>
         /// <param name="groupID">Group ID that this prim will be set to, or UUID.Zero if you
         /// do not want the object to be associated with a specific group</param>
@@ -2314,10 +2315,12 @@ namespace OpenMetaverse
 
                     if ((flags & CompressedFlags.HasNameValues) != 0 && prim.ParentID != 0)
                     {
+                        // This is an attachment
                         OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, true));
                     }
                     else
                     {
+                        // This is a primitive
                         OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, false));
                     }
 
@@ -2959,7 +2962,7 @@ namespace OpenMetaverse
     /// <remarks><para>The <see cref="ObjectManager.ObjectUpdate"/> event occurs when the simulator sends
     /// an <see cref="ObjectUpdatePacket"/> containing a Primitive, Foliage or Attachment data</para>
     /// <para>Note 1: The <see cref="ObjectManager.ObjectUpdate"/> event will not be raised when the object is an Avatar</para>
-    /// <para>Note 2: It is possible for the <see cref="ObjectManager.ObjectUpdate"/> or <see cref="ObjectManager.AttachmentUpdate"/> to be 
+    /// <para>Note 2: It is possible for the <see cref="ObjectManager.ObjectUpdate"/> to be 
     /// raised twice for the same object if for example the primitive moved to a new simulator, then returned to the current simulator or
     /// if an Avatar crosses the border into a new simulator and returns to the current simulator</para>
     /// </remarks>
@@ -2967,7 +2970,7 @@ namespace OpenMetaverse
     /// The following code example uses the <see cref="PrimEventArgs.Prim"/>, <see cref="PrimEventArgs.Simulator"/>, and <see cref="PrimEventArgs.IsAttachment"/>
     /// properties to display new Primitives and Attachments on the <see cref="Console"/> window.
     /// <code>
-    ///     // Subscribe to the event that gives us new prims and foliage
+    ///     // Subscribe to the event that gives us prim and foliage information
     ///     Client.Objects.ObjectUpdate += Objects_ObjectUpdate;
     ///     
     ///
@@ -2977,6 +2980,7 @@ namespace OpenMetaverse
     ///     }
     /// </code>
     /// </example>
+    /// <seealso cref="ObjectManager.ObjectUpdate"/>
     /// <seealso cref="ObjectManager.AvatarUpdate"/>
     /// <seealso cref="AvatarUpdateEventArgs"/>
     public class PrimEventArgs : EventArgs
@@ -2986,10 +2990,11 @@ namespace OpenMetaverse
         private readonly Primitive m_Prim;
         private readonly ushort m_TimeDilation;
 
-        /// <summary>Get the simulator the object originated from</summary>
+        /// <summary>Get the simulator the <see cref="Primitive"/> originated from</summary>
         public Simulator Simulator { get { return m_Simulator; } }
-        /// <summary>Get the primitive details</summary>
+        /// <summary>Get the <see cref="Primitive"/> details</summary>
         public Primitive Prim { get { return m_Prim; } }
+        /// <summary>true if the <see cref="Primitive"/> is attached to an <see cref="Avatar"/></summary>
         public bool IsAttachment { get { return m_IsAttachment; } }
         /// <summary>Get the simulator Time Dilation</summary>
         public ushort TimeDilation { get { return m_TimeDilation; } } 
@@ -2999,7 +3004,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">The simulator the object originated from</param>
         /// <param name="prim">The Primitive</param>
-        /// <param name="isAttachment">true of the primitive represents an attachment to an agent</param>
+        /// <param name="isAttachment">true if the primitive represents an attachment to an agent</param>
         /// <param name="timeDilation">The simulator time dilation</param>
         public PrimEventArgs(Simulator simulator, Primitive prim, ushort timeDilation, bool isAttachment)
         {
@@ -3052,7 +3057,6 @@ namespace OpenMetaverse
     ///     }
     /// </code>
     /// </example>
-    /// <seealso cref="ObjectManager.AttachmentUpdate"/>
     /// <seealso cref="ObjectManager.ObjectUpdate"/>
     /// <seealso cref="PrimEventArgs"/>
     public class AvatarUpdateEventArgs : EventArgs
@@ -3093,21 +3097,10 @@ namespace OpenMetaverse
     /// <see cref="ObjectPropertiesEventArgs.Properties"/>
     /// properties to display new attachments and send a request for additional properties containing the name of the
     /// attachment then display it on the <see cref="Console"/> window.
-    /// <code>
-    ///     // Subscribe to the event that gives us new Attachments worn
-    ///     // by yours or another agent
-    ///     Client.Objects.AttachmentUpdate += Objects_AttachmentUpdate;
+    /// <code>    
     ///     // Subscribe to the event that provides additional primitive details
     ///     Client.Objects.ObjectProperties += Objects_ObjectProperties;
     ///      
-    ///     private void Objects_AttachmentUpdate(object sender, PrimEventArgs e)
-    ///     {
-    ///         Console.WriteLine("New Attachment {0} {1} in {2}", e.Prim.ID, e.Prim.LocalID, e.Simulator.Name);
-    ///         // send a request that causes the simulator to send us back the ObjectProperties
-    ///         Client.Objects.SelectObject(e.Simulator, e.Prim.LocalID);
-    ///         
-    ///     }
-    ///     
     ///     // handle the properties data that arrives
     ///     private void Objects_ObjectProperties(object sender, ObjectPropertiesEventArgs e)
     ///     {

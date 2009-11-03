@@ -53,10 +53,11 @@ public class Analyst : ProxyPlugin
     private Assembly openmvAssembly;
     private StreamWriter output;
     
-    private PacketDecoder DecodePacket = new PacketDecoder();
-
+    //private PacketDecoder DecodePacket = new PacketDecoder();
+    
     public Analyst(ProxyFrame frame)
     {
+        PacketDecoder.InitializeDecoder();
         this.frame = frame;
         this.proxy = frame.proxy;
     }
@@ -829,8 +830,9 @@ public class Analyst : ProxyPlugin
     // LogPacket: dump a packet to the console
     private void LogPacket(Packet packet, IPEndPoint endPoint, Direction direction)
     {
-        string packetText = DecodePacket.PacketToString(packet);
-
+        
+        //string packetText = DecodePacket.PacketToString(packet);
+        string packetText = PacketDecoder.PacketToString(packet);
         if (logGrep == null || (logGrep != null && Regex.IsMatch(packetText, logGrep)))
         {
             string line = String.Format("{0}\n{1} {2,21} {3,5} {4}{5}{6}"

@@ -48,6 +48,7 @@ namespace OpenMetaverse.Messages
             switch (eventName)
             {
                 case "AgentGroupDataUpdate": message = new AgentGroupDataUpdateMessage(); break;
+                case "AvatarGroupsReply": message = new AgentGroupDataUpdateMessage(); break; // OpenSim sends the above with the wrong? key
                 case "ParcelProperties": message = new ParcelPropertiesMessage(); break;
                 case "ParcelObjectOwnersReply": message = new ParcelObjectOwnersReplyMessage(); break;
                 case "TeleportFinish": message = new TeleportFinishMessage(); break;

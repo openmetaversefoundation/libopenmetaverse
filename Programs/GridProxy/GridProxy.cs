@@ -611,8 +611,7 @@ namespace GridProxy
 
             CapsRequest capReq = null; bool shortCircuit = false; bool requestFailed = false;
             if (cap != null)
-            {
-                
+            {                
                 capReq = new CapsRequest(cap);
 
                 if (cap.ReqFmt == CapsDataFormat.OSD)
@@ -669,7 +668,12 @@ namespace GridProxy
                         req.Headers[header] = headers[header];
                     }
                 }
-
+                if (capReq == null)
+                {
+                    // this probably occured when we shut down the proxy and restarted it and are receiving
+                    // data from a dead connection
+                    return;
+                }
                 capReq.RequestHeaders = req.Headers;
 
                 req.Method = meth;
@@ -1018,6 +1022,10 @@ namespace GridProxy
         {
             lock (this)
             {
+                // incase some silly person tries to access with their web browser
+                if (content.Length <= 0)
+                    return;
+
                 // convert the body into an XML-RPC request
                 XmlRpcRequest request = (XmlRpcRequest)(new XmlRpcRequestDeserializer()).Deserialize(Encoding.UTF8.GetString(content));
 

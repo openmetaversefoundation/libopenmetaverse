@@ -32,25 +32,27 @@ using System.IO;
 
 namespace WinGridProxy
 {
-    public class FilterEntry
+    internal class FilterEntryOptions
     {
-        public bool Checked;
-        public string pType;
+        public string Type { get; set; }
+        public bool Checked { get; set; }
+        public string Group { get; set; }
     }
 
-    class SettingsStore
+    internal class SettingsStore
     {
-        public Dictionary<string, FilterEntry> MessageSessions;
-        public Dictionary<string, FilterEntry> PacketSessions;
-        public bool AutoScrollEnabled;
+        private const int FileVersion = 1;
+
+        public Dictionary<string, FilterEntryOptions> MessageSessions;
+        public Dictionary<string, FilterEntryOptions> PacketSessions;
         public bool StatisticsEnabled;
         public bool SaveSessionOnExit;
         public bool AutoCheckNewCaps;
 
         public SettingsStore()
         {
-            MessageSessions = new Dictionary<string, FilterEntry>();
-            PacketSessions = new Dictionary<string, FilterEntry>();
+            MessageSessions = new Dictionary<string, FilterEntryOptions>();
+            PacketSessions = new Dictionary<string, FilterEntryOptions>();
         }
 
         public OSDMap Serialize()
@@ -59,12 +61,13 @@ namespace WinGridProxy
             if (MessageSessions.Count > 0)
             {
                 OSDArray messageArray = new OSDArray(MessageSessions.Count);
-                foreach (KeyValuePair<string, FilterEntry> kvp in MessageSessions)
+                foreach (KeyValuePair<string, FilterEntryOptions> kvp in MessageSessions)
                 {
-                    OSDMap sessionMap = new OSDMap(3);
-                    sessionMap["Capability"] = OSD.FromString(kvp.Key);
+                    OSDMap sessionMap = new OSDMap(4);
+                    sessionMap["Name"] = OSD.FromString(kvp.Key);
+                    sessionMap["Type"] = OSD.FromString(kvp.Value.Type);
                     sessionMap["Capture"] = OSD.FromBoolean(kvp.Value.Checked);
-                    sessionMap["Type"] = OSD.FromString(kvp.Value.pType);
+                    sessionMap["Group"] = OSD.FromString(kvp.Value.Group);
                     messageArray.Add(sessionMap);
                 }
                 map.Add("message_sessions", messageArray);
@@ -73,76 +76,78 @@ namespace WinGridProxy
             if (PacketSessions.Count > 0)
             {
                 OSDArray packetArray = new OSDArray(PacketSessions.Count);
-                foreach (KeyValuePair<string, FilterEntry> kvp in PacketSessions)
+                foreach (KeyValuePair<string, FilterEntryOptions> kvp in PacketSessions)
                 {
-                    OSDMap sessionMap = new OSDMap(3);
-                    sessionMap["PacketName"] = OSD.FromString(kvp.Key);
+                    OSDMap sessionMap = new OSDMap(4);
+                    sessionMap["Name"] = OSD.FromString(kvp.Key);
+                    sessionMap["Type"] = OSD.FromString(kvp.Value.Type);
                     sessionMap["Capture"] = OSD.FromBoolean(kvp.Value.Checked);
-                    sessionMap["Type"] = OSD.FromString(kvp.Value.pType);
+                    sessionMap["Group"] = OSD.FromString(kvp.Value.Group);
                     packetArray.Add(sessionMap);
                 }
                 map.Add("packet_sessions", packetArray);
             }
 
-            map.Add("AutoScrollSessions", OSD.FromBoolean(AutoScrollEnabled));
             map.Add("CaptureStatistics", OSD.FromBoolean(StatisticsEnabled));
             map.Add("SaveProfileOnExit", OSD.FromBoolean(SaveSessionOnExit));
             map.Add("AutoCheckNewCaps", OSD.FromBoolean(AutoCheckNewCaps));
-
+            map.Add("FileVersion", OSD.FromInteger(FileVersion));
             return map;
         }
 
         public void Deserialize(OSDMap map)
         {
+            MessageSessions.Clear();
+            PacketSessions.Clear();
 
-            if (map.ContainsKey("message_sessions"))
+            if (map.ContainsKey("FileVersion") && map["FileVersion"].AsInteger() == FileVersion)
             {
-
-                AutoScrollEnabled = map["AutoScrollSessions"].AsBoolean();
                 StatisticsEnabled = map["CaptureStatistics"].AsBoolean();
                 SaveSessionOnExit = map["SaveProfileOnExit"].AsBoolean();
                 AutoCheckNewCaps = map["AutoCheckNewCaps"].AsBoolean();
-
-                OSDArray messageArray = (OSDArray)map["message_sessions"];
-
-                MessageSessions = new Dictionary<string, FilterEntry>(messageArray.Count);
-
-                for (int i = 0; i < messageArray.Count; i++)
-                {
-                    OSDMap m = (OSDMap)messageArray[i];
-                    FilterEntry entry = new FilterEntry();
-                    entry.Checked = m["Capture"].AsBoolean();
-                    entry.pType = m["Type"].AsString();
-                    MessageSessions.Add(m["Capability"].AsString(), entry);
-                    
-                }
             }
             else
             {
-                //MessageSessions = new Dictionary<string, bool>();
+                Console.WriteLine("Error loading saved settings, FileVersion is null or out of date.");
+                StatisticsEnabled = true;
+                AutoCheckNewCaps = true;
+                SaveSessionOnExit = true;
+                return;
             }
 
+            if (map.ContainsKey("message_sessions"))
+            {                             
+                OSDArray messageArray = (OSDArray)map["message_sessions"];
+
+                //MessageSessions = new Dictionary<string, FilterEntryOptions>(messageArray.Count);
+
+                for (int i = 0; i < messageArray.Count; i++)
+                {
+                    OSDMap sessionsMap = (OSDMap)messageArray[i];
+                    FilterEntryOptions entry = new FilterEntryOptions();
+                    entry.Checked = sessionsMap["Capture"].AsBoolean();
+                    entry.Group = sessionsMap["Group"].AsString();
+                    entry.Type = sessionsMap["Type"].AsString();
+                    MessageSessions.Add(sessionsMap["Name"].AsString(), entry);                    
+                }
+            }
 
             if (map.ContainsKey("packet_sessions"))
             {
                 OSDArray packetArray = (OSDArray)map["packet_sessions"];
 
-                PacketSessions = new Dictionary<string, FilterEntry>(packetArray.Count);
+                //PacketSessions = new Dictionary<string, FilterEntryOptions>(packetArray.Count);
 
                 for (int i = 0; i < packetArray.Count; i++)
                 {
                     OSDMap packetMap = (OSDMap)packetArray[i];
-                    FilterEntry entry = new FilterEntry();
+                    FilterEntryOptions entry = new FilterEntryOptions();
                     entry.Checked = packetMap["Capture"].AsBoolean();
-                    entry.pType = packetMap["Type"].AsString();
-                    PacketSessions.Add(packetMap["PacketName"].AsString(), entry);
+                    entry.Group = packetMap["Group"].AsString();
+                    entry.Type = packetMap["Type"].AsString();
+                    PacketSessions.Add(packetMap["Name"].AsString(), entry);
                 }
             }
-            else
-            {
-                //PacketSessions = new Dictionary<string, bool>();
-            }
-
         }
 
         public bool DeserializeFromFile(string fileName)
@@ -167,6 +172,5 @@ namespace WinGridProxy
         {
             File.WriteAllText(fileName, this.Serialize().ToString());
         }
-
     }
 }

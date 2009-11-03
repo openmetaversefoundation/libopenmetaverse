@@ -2107,7 +2107,7 @@ namespace OpenMetaverse
         /// Grabs an object
         /// </summary>
         /// <param name="objectLocalID">an unsigned integer of the objects ID within the simulator</param>
-        /// <seealso cref="T:OpenMetaverse.NetworkManager.CurrentSim.ObjectsPrimitives"/>
+        /// <seealso cref="Simulator.ObjectsPrimitives"/>
         public void Grab(uint objectLocalID)
         {
             Grab(objectLocalID, Vector3.Zero, Vector3.Zero, Vector3.Zero, 0, Vector3.Zero, Vector3.Zero, Vector3.Zero);
@@ -2118,12 +2118,13 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="objectLocalID">an unsigned integer of the objects ID within the simulator</param>
         /// <param name="grabOffset"></param>
-        /// <param name="uvCoord"></param>
-        /// <param name="stCoord"></param>
-        /// <param name="faceIndex"></param>
-        /// <param name="position"></param>
-        /// <param name="normal"></param>
-        /// <param name="binormal"></param>
+        /// <param name="uvCoord">The texture coordinates to grab</param>
+        /// <param name="stCoord">The surface coordinates to grab</param>
+        /// <param name="faceIndex">The face of the position to grab</param>
+        /// <param name="position">The region coordinates of the position to grab</param>
+        /// <param name="normal">The surface normal of the position to grab (A normal is a vector perpindicular to the surface)</param>
+        /// <param name="binormal">The surface binormal of the position to grab (A binormal is a vector tangen to the surface
+        /// pointing along the U direction of the tangent space</param>
         public void Grab(uint objectLocalID, Vector3 grabOffset, Vector3 uvCoord, Vector3 stCoord, int faceIndex, Vector3 position,
             Vector3 normal, Vector3 binormal)
         {
@@ -2163,12 +2164,13 @@ namespace OpenMetaverse
         /// <param name="objectID"><seealso cref="UUID"/> of the object to drag</param>
         /// <param name="grabPosition">Drag target in region coordinates</param>
         /// <param name="grabOffset"></param>
-        /// <param name="uvCoord"></param>
-        /// <param name="stCoord"></param>
-        /// <param name="faceIndex"></param>
-        /// <param name="position"></param>
-        /// <param name="normal"></param>
-        /// <param name="binormal"></param>
+        /// <param name="uvCoord">The texture coordinates to grab</param>
+        /// <param name="stCoord">The surface coordinates to grab</param>
+        /// <param name="faceIndex">The face of the position to grab</param>
+        /// <param name="position">The region coordinates of the position to grab</param>
+        /// <param name="normal">The surface normal of the position to grab (A normal is a vector perpindicular to the surface)</param>
+        /// <param name="binormal">The surface binormal of the position to grab (A binormal is a vector tangen to the surface
+        /// pointing along the U direction of the tangent space</param>
         public void GrabUpdate(UUID objectID, Vector3 grabPosition, Vector3 grabOffset, Vector3 uvCoord, Vector3 stCoord, int faceIndex, Vector3 position,
             Vector3 normal, Vector3 binormal)
         {
@@ -2197,7 +2199,7 @@ namespace OpenMetaverse
         /// Release a grabbed object
         /// </summary>
         /// <param name="objectLocalID">The Objects Simulator Local ID</param>
-        /// <seealso cref="T:OpenMetaverse.NetworkManager.CurrentSim.ObjectsPrimitives"/>
+        /// <seealso cref="Simulator.ObjectsPrimitives"/>
         /// <seealso cref="Grab"/>
         /// <seealso cref="GrabUpdate"/>
         public void DeGrab(uint objectLocalID)
@@ -2209,12 +2211,13 @@ namespace OpenMetaverse
         /// Release a grabbed object
         /// </summary>
         /// <param name="objectLocalID">The Objects Simulator Local ID</param>
-        /// <param name="uvCoord"></param>
-        /// <param name="stCoord"></param>
-        /// <param name="faceIndex"></param>
-        /// <param name="position"></param>
-        /// <param name="normal"></param>
-        /// <param name="binormal"></param>
+        /// <param name="uvCoord">The texture coordinates to grab</param>
+        /// <param name="stCoord">The surface coordinates to grab</param>
+        /// <param name="faceIndex">The face of the position to grab</param>
+        /// <param name="position">The region coordinates of the position to grab</param>
+        /// <param name="normal">The surface normal of the position to grab (A normal is a vector perpindicular to the surface)</param>
+        /// <param name="binormal">The surface binormal of the position to grab (A binormal is a vector tangen to the surface
+        /// pointing along the U direction of the tangent space</param>
         public void DeGrab(uint objectLocalID, Vector3 uvCoord, Vector3 stCoord, int faceIndex, Vector3 position,
             Vector3 normal, Vector3 binormal)
         {
@@ -2240,7 +2243,7 @@ namespace OpenMetaverse
         /// Touches an object
         /// </summary>
         /// <param name="objectLocalID">an unsigned integer of the objects ID within the simulator</param>
-        /// <seealso cref="T:OpenMetaverse.NetworkManager.CurrentSim.ObjectsPrimitives"/>
+        /// <seealso cref="Simulator.ObjectsPrimitives"/>
         public void Touch(uint objectLocalID)
         {
             Client.Self.Grab(objectLocalID);
