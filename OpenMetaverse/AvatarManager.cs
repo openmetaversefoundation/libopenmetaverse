@@ -29,6 +29,8 @@ using System.Text;
 using System.Collections.Generic;
 using System.Threading;
 using OpenMetaverse.Packets;
+using OpenMetaverse.Interfaces;
+using OpenMetaverse.Messages.Linden;
 
 namespace OpenMetaverse
 {
@@ -468,6 +470,8 @@ namespace OpenMetaverse
 
             // Avatar group callback
             Client.Network.RegisterCallback(PacketType.AvatarGroupsReply, AvatarGroupsReplyHandler);
+            Client.Network.RegisterEventCallback("AgentGroupDataUpdate", AvatarGroupsReplyMessageHandler);
+            Client.Network.RegisterEventCallback("AvatarGroupsReply", AvatarGroupsReplyMessageHandler);
 
             // Viewer effect callback
             Client.Network.RegisterCallback(PacketType.ViewerEffect, ViewerEffectHandler);
@@ -829,6 +833,34 @@ namespace OpenMetaverse
 
                 OnAvatarInterestsReply(new AvatarInterestsReplyEventArgs(airp.AgentData.AvatarID, interests));
             }
+        }
+
+        /// <summary>
+        /// Crossed region handler for message that comes across the EventQueue. Sent to an agent
+        /// when the agent crosses a sim border into a new region.
+        /// </summary>
+        /// <param name="capsKey">The message key</param>
+        /// <param name="message">the IMessage object containing the deserialized data sent from the simulator</param>
+        /// <param name="simulator">The <see cref="Simulator"/> which originated the packet</param>
+        protected void AvatarGroupsReplyMessageHandler(string capsKey, IMessage message, Simulator simulator)
+        {
+            AgentGroupDataUpdateMessage msg = (AgentGroupDataUpdateMessage)message;
+            List<AvatarGroup> avatarGroups = new List<AvatarGroup>(msg.GroupDataBlock.Length);
+            for (int i = 0; i < msg.GroupDataBlock.Length; i++)
+            {
+                AvatarGroup avatarGroup = new AvatarGroup();
+                avatarGroup.AcceptNotices = msg.GroupDataBlock[i].AcceptNotices;
+                avatarGroup.GroupID = msg.GroupDataBlock[i].GroupID;
+                avatarGroup.GroupInsigniaID = msg.GroupDataBlock[i].GroupInsigniaID;
+                avatarGroup.GroupName = msg.GroupDataBlock[i].GroupName;
+                avatarGroup.GroupTitle = msg.GroupDataBlock[i].GroupTitle;
+                avatarGroup.GroupPowers = msg.GroupDataBlock[i].GroupPowers;
+                avatarGroup.ListInProfile = msg.NewGroupDataBlock[i].ListInProfile;
+
+                avatarGroups.Add(avatarGroup);
+            }
+
+            OnAvatarGroupsReply(new AvatarGroupsReplyEventArgs(msg.AgentID, avatarGroups));
         }
 
         /// <summary>Process an incoming packet and raise the appropriate events</summary>

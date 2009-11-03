@@ -1182,6 +1182,8 @@ namespace OpenMetaverse.Messages.Linden
             public UUID GroupInsigniaID;
             /// <summary>The name of the group</summary>
             public string GroupName;
+            /// <summary>The Active Title</summary>
+            public string GroupTitle; 
             /// <summary>The aggregate permissions the agent has in the group for all roles the agent
             /// is assigned</summary>
             public GroupPowers GroupPowers;
@@ -1222,12 +1224,13 @@ namespace OpenMetaverse.Messages.Linden
 
             for (int i = 0; i < GroupDataBlock.Length; i++)
             {
-                OSDMap group = new OSDMap(6);
+                OSDMap group = new OSDMap(7);
                 group["AcceptNotices"] = OSD.FromBoolean(GroupDataBlock[i].AcceptNotices);
                 group["Contribution"] = OSD.FromInteger(GroupDataBlock[i].Contribution);
                 group["GroupID"] = OSD.FromUUID(GroupDataBlock[i].GroupID);
                 group["GroupInsigniaID"] = OSD.FromUUID(GroupDataBlock[i].GroupInsigniaID);
                 group["GroupName"] = OSD.FromString(GroupDataBlock[i].GroupName);
+                group["GroupTitle"] = OSD.FromString(GroupDataBlock[i].GroupTitle);
                 group["GroupPowers"] = OSD.FromLong((long)GroupDataBlock[i].GroupPowers);
                 groupDataArray.Add(group);
             }
@@ -1274,6 +1277,7 @@ namespace OpenMetaverse.Messages.Linden
                 groupData.GroupName = groupMap["GroupName"].AsString();
                 groupData.GroupPowers = (GroupPowers)groupMap["GroupPowers"].AsLong();
                 groupData.AcceptNotices = groupMap["AcceptNotices"].AsBoolean();
+                groupData.GroupTitle = groupMap["GroupTitle"].AsString();
                 GroupDataBlock[i] = groupData;
             }
 
