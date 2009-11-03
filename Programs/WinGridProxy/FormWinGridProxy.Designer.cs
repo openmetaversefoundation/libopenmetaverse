@@ -30,10 +30,10 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormWinGridProxy));
-            System.Windows.Forms.ListViewGroup listViewGroup1 = new System.Windows.Forms.ListViewGroup("Login", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup2 = new System.Windows.Forms.ListViewGroup("Packets", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup3 = new System.Windows.Forms.ListViewGroup("Capabilities", System.Windows.Forms.HorizontalAlignment.Left);
-            System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("EventQueue Messages", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup9 = new System.Windows.Forms.ListViewGroup("Login", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup10 = new System.Windows.Forms.ListViewGroup("Packets", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup11 = new System.Windows.Forms.ListViewGroup("Capabilities", System.Windows.Forms.HorizontalAlignment.Left);
+            System.Windows.Forms.ListViewGroup listViewGroup12 = new System.Windows.Forms.ListViewGroup("EventQueue Messages", System.Windows.Forms.HorizontalAlignment.Left);
             this.panelMainWindow = new System.Windows.Forms.Panel();
             this.splitContainerSessionsTabs = new System.Windows.Forms.SplitContainer();
             this.contextMenuStripSessions = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -357,7 +357,7 @@
             // 
             this.removeToolStripMenuItem2.DropDown = this.contextMenuStripRemove;
             this.removeToolStripMenuItem2.Name = "removeToolStripMenuItem2";
-            this.removeToolStripMenuItem2.Size = new System.Drawing.Size(137, 22);
+            this.removeToolStripMenuItem2.Size = new System.Drawing.Size(152, 22);
             this.removeToolStripMenuItem2.Text = "Remove";
             // 
             // selectToolStripMenuItem2
@@ -505,7 +505,7 @@
             // 
             this.markToolStripMenuItem1.DropDown = this.contextMenuStripMark;
             this.markToolStripMenuItem1.Name = "markToolStripMenuItem1";
-            this.markToolStripMenuItem1.Size = new System.Drawing.Size(137, 22);
+            this.markToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
             this.markToolStripMenuItem1.Text = "Mark";
             // 
             // toolStripSeparator16
@@ -1056,7 +1056,7 @@
             this.labelHexRequestStatus.AutoSize = true;
             this.labelHexRequestStatus.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.labelHexRequestStatus.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelHexRequestStatus.Location = new System.Drawing.Point(0, 186);
+            this.labelHexRequestStatus.Location = new System.Drawing.Point(0, 185);
             this.labelHexRequestStatus.Name = "labelHexRequestStatus";
             this.labelHexRequestStatus.Size = new System.Drawing.Size(66, 13);
             this.labelHexRequestStatus.TabIndex = 3;
@@ -1226,7 +1226,7 @@
             this.labelHexBoxResponseStatus.AutoSize = true;
             this.labelHexBoxResponseStatus.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.labelHexBoxResponseStatus.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelHexBoxResponseStatus.Location = new System.Drawing.Point(0, 188);
+            this.labelHexBoxResponseStatus.Location = new System.Drawing.Point(0, 187);
             this.labelHexBoxResponseStatus.Name = "labelHexBoxResponseStatus";
             this.labelHexBoxResponseStatus.Size = new System.Drawing.Size(66, 13);
             this.labelHexBoxResponseStatus.TabIndex = 2;
@@ -1291,7 +1291,7 @@
             // 
             this.selectToolStripMenuItem1.DropDown = this.contextMenuStripSelect;
             this.selectToolStripMenuItem1.Name = "selectToolStripMenuItem1";
-            this.selectToolStripMenuItem1.Size = new System.Drawing.Size(137, 22);
+            this.selectToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
             this.selectToolStripMenuItem1.Text = "Select";
             // 
             // toolStripLabelHexEditorRequest
@@ -1313,7 +1313,7 @@
             this.toolStripDropDownButton4});
             this.toolStripMenu.Location = new System.Drawing.Point(3, 0);
             this.toolStripMenu.Name = "toolStripMenu";
-            this.toolStripMenu.Size = new System.Drawing.Size(108, 25);
+            this.toolStripMenu.Size = new System.Drawing.Size(139, 25);
             this.toolStripMenu.TabIndex = 2;
             this.toolStripMenu.Text = "toolStrip1";
             // 
@@ -1478,7 +1478,7 @@
             // 
             this.copyToolStripMenuItem1.DropDown = this.contextMenuStripCopy;
             this.copyToolStripMenuItem1.Name = "copyToolStripMenuItem1";
-            this.copyToolStripMenuItem1.Size = new System.Drawing.Size(137, 22);
+            this.copyToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
             this.copyToolStripMenuItem1.Text = "Copy";
             this.copyToolStripMenuItem1.Visible = false;
             // 
@@ -1906,7 +1906,7 @@
             this.comboBoxLoginURL,
             this.buttonStartProxy});
             this.toolStripLogin.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
-            this.toolStripLogin.Location = new System.Drawing.Point(111, 0);
+            this.toolStripLogin.Location = new System.Drawing.Point(142, 0);
             this.toolStripLogin.Name = "toolStripLogin";
             this.toolStripLogin.Size = new System.Drawing.Size(751, 25);
             this.toolStripLogin.TabIndex = 3;
@@ -1956,7 +1956,6 @@
             // 
             this.buttonStartProxy.BackColor = System.Drawing.Color.LightGreen;
             this.buttonStartProxy.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.buttonStartProxy.Image = global::WinGridProxy.Properties.Resources.accept;
             this.buttonStartProxy.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.buttonStartProxy.Name = "buttonStartProxy";
             this.buttonStartProxy.Size = new System.Drawing.Size(67, 22);
@@ -2037,13 +2036,13 @@
             this.listViewPacketFilters.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listViewPacketFilters.FullRowSelect = true;
             this.listViewPacketFilters.GridLines = true;
-            listViewGroup1.Header = "Login";
-            listViewGroup1.Name = "Login";
-            listViewGroup2.Header = "Packets";
-            listViewGroup2.Name = "Packets";
+            listViewGroup9.Header = "Login";
+            listViewGroup9.Name = "Login";
+            listViewGroup10.Header = "Packets";
+            listViewGroup10.Name = "Packets";
             this.listViewPacketFilters.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup1,
-            listViewGroup2});
+            listViewGroup9,
+            listViewGroup10});
             this.listViewPacketFilters.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.listViewPacketFilters.Location = new System.Drawing.Point(3, 17);
             this.listViewPacketFilters.MultiSelect = false;
@@ -2070,13 +2069,13 @@
             this.listViewMessageFilters.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listViewMessageFilters.FullRowSelect = true;
             this.listViewMessageFilters.GridLines = true;
-            listViewGroup3.Header = "Capabilities";
-            listViewGroup3.Name = "Capabilities";
-            listViewGroup4.Header = "EventQueue Messages";
-            listViewGroup4.Name = "EventQueueMessages";
+            listViewGroup11.Header = "Capabilities";
+            listViewGroup11.Name = "Capabilities";
+            listViewGroup12.Header = "EventQueue Messages";
+            listViewGroup12.Name = "EventQueueMessages";
             this.listViewMessageFilters.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup3,
-            listViewGroup4});
+            listViewGroup11,
+            listViewGroup12});
             this.listViewMessageFilters.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.listViewMessageFilters.Location = new System.Drawing.Point(3, 17);
             this.listViewMessageFilters.MultiSelect = false;
