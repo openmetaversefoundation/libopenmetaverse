@@ -3021,7 +3021,7 @@ namespace OpenMetaverse
         public PrimEventArgs(Simulator simulator, Primitive prim, ushort timeDilation, bool isAttachment)
         {
             this.m_Simulator = simulator;
-            this.m_IsAttachment = IsAttachment;
+            this.m_IsAttachment = isAttachment;
             this.m_Prim = prim;
             this.m_TimeDilation = timeDilation;
         }
