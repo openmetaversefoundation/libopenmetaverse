@@ -1013,7 +1013,7 @@ namespace OpenMetaverse
                                 Vector3d targetPos = new Vector3d(block.TypeData, 32);
                                 PointAtType pointAt = (PointAtType)block.TypeData[56];
 
-                                OnViewerEffectPointAt(new ViewerEffectPointAtEventArgs(sourceAvatar, targetObject, targetPos,
+                                OnViewerEffectPointAt(new ViewerEffectPointAtEventArgs(e.Simulator, sourceAvatar, targetObject, targetPos,
                                     pointAt, block.Duration, block.ID));
                             }
                             else
@@ -1417,6 +1417,7 @@ namespace OpenMetaverse
 
     public class ViewerEffectPointAtEventArgs : EventArgs
     {
+        private readonly Simulator m_Simulator;
         private readonly UUID m_SourceID;
         private readonly UUID m_TargetID;
         private readonly Vector3d m_TargetPosition;
@@ -1424,7 +1425,7 @@ namespace OpenMetaverse
         private readonly float m_Duration;
         private readonly UUID m_EffectID;
 
-
+        public Simulator Simulator { get { return m_Simulator; } }
         public UUID SourceID { get { return m_SourceID; } }
         public UUID TargetID { get { return m_TargetID; } }
         public Vector3d TargetPosition { get { return m_TargetPosition; } }
@@ -1432,8 +1433,9 @@ namespace OpenMetaverse
         public float Duration { get { return m_Duration; } }
         public UUID EffectID { get { return m_EffectID; } }
 
-        public ViewerEffectPointAtEventArgs(UUID sourceID, UUID targetID, Vector3d targetPos, PointAtType pointType, float duration, UUID id)
+        public ViewerEffectPointAtEventArgs(Simulator simulator, UUID sourceID, UUID targetID, Vector3d targetPos, PointAtType pointType, float duration, UUID id)
         {
+            this.m_Simulator = simulator;
             this.m_SourceID = sourceID;
             this.m_TargetID = targetID;
             this.m_TargetPosition = targetPos;
