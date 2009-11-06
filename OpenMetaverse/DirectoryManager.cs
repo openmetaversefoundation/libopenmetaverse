@@ -159,11 +159,11 @@ namespace OpenMetaverse
             FilterMature = 1 << 22,
             /// <summary></summary>
             PGOnly = 1 << 23,
-            /// <summary>Include PG land in results. This flag is used when searching both the Events and Land sales databases</summary>
+            /// <summary>Include PG land in results. This flag is used when searching both the Groups, Events and Land sales databases</summary>
             IncludePG = 1 << 24,
-            /// <summary>Include Mature land in results. This flag is used when searching both the Events and Land sales databases</summary>
+            /// <summary>Include Mature land in results. This flag is used when searching both the Groups, Events and Land sales databases</summary>
             IncludeMature = 1 << 25,
-            /// <summary>Include Adult land in results. This flag is used when searching both the Events and Land sales databases</summary>
+            /// <summary>Include Adult land in results. This flag is used when searching both the Groups, Events and Land sales databases</summary>
             IncludeAdult = 1 << 26,
             /// <summary></summary>
             AdultOnly = 1 << 27
@@ -949,14 +949,27 @@ namespace OpenMetaverse
         /// Search for Groups
         /// </summary>
         /// <param name="searchText">The name or portion of the name of the group you wish to search for</param>
-        /// <param name="queryStart"></param>
+        /// <param name="queryStart">Start from the match number</param>
         /// <returns></returns>
         public UUID StartGroupSearch(string searchText, int queryStart)
+        {
+            return StartGroupSearch(searchText, queryStart, DirFindFlags.Groups | DirFindFlags.IncludePG 
+                | DirFindFlags.IncludeMature | DirFindFlags.IncludeAdult);
+        }
+
+        /// <summary>
+        /// Search for Groups
+        /// </summary>
+        /// <param name="searchText">The name or portion of the name of the group you wish to search for</param>
+        /// <param name="queryStart">Start from the match number</param>
+        /// <param name="flags">Search flags</param>
+        /// <returns></returns>
+        public UUID StartGroupSearch(string searchText, int queryStart, DirFindFlags flags)
         {
             DirFindQueryPacket find = new DirFindQueryPacket();
             find.AgentData.AgentID = Client.Self.AgentID;
             find.AgentData.SessionID = Client.Self.SessionID;
-            find.QueryData.QueryFlags = (uint)DirFindFlags.Groups;
+            find.QueryData.QueryFlags = (uint)flags;
             find.QueryData.QueryText = Utils.StringToBytes(searchText);
             find.QueryData.QueryID = UUID.Random();
             find.QueryData.QueryStart = queryStart;
