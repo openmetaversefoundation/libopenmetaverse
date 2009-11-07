@@ -852,8 +852,7 @@ namespace OpenMetaverse
                 avatarGroup.AcceptNotices = msg.GroupDataBlock[i].AcceptNotices;
                 avatarGroup.GroupID = msg.GroupDataBlock[i].GroupID;
                 avatarGroup.GroupInsigniaID = msg.GroupDataBlock[i].GroupInsigniaID;
-                avatarGroup.GroupName = msg.GroupDataBlock[i].GroupName;
-                avatarGroup.GroupTitle = msg.GroupDataBlock[i].GroupTitle;
+                avatarGroup.GroupName = msg.GroupDataBlock[i].GroupName;                
                 avatarGroup.GroupPowers = msg.GroupDataBlock[i].GroupPowers;
                 avatarGroup.ListInProfile = msg.NewGroupDataBlock[i].ListInProfile;
 

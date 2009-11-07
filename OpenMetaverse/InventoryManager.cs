@@ -2375,7 +2375,7 @@ namespace OpenMetaverse
         /// <param name="groupOwner">UUID of group to own the object</param>        
         /// <param name="queryID">User defined queryID to correlate replies</param>
         /// <param name="rezSelected">If set to true, the CreateSelected flag
-        /// will be set on the rezzed object</param>
+        /// will be set on the rezzed object</param>        
         public UUID RequestRezFromInventory(Simulator simulator, Quaternion rotation, Vector3 position,
             InventoryItem item, UUID groupOwner, UUID queryID, bool rezSelected)
         {
@@ -2428,6 +2428,7 @@ namespace OpenMetaverse
         /// DeRez an object from the simulator to the agents Objects folder in the agents Inventory
         /// </summary>
         /// <param name="objectLocalID">The simulator Local ID of the object</param>
+        /// <remarks>If objectLocalID is a child primitive in a linkset, the entire linkset will be derezzed</remarks>
         public void RequestDeRezToInventory(uint objectLocalID)
         {
             RequestDeRezToInventory(objectLocalID, DeRezDestination.AgentInventoryTake,
@@ -2443,6 +2444,7 @@ namespace OpenMetaverse
         /// if DeRezzing object to a tasks Inventory, the Tasks <seealso cref="UUID"/></param>
         /// <param name="transactionID">The transaction ID for this request which
         /// can be used to correlate this request with other packets</param>
+        /// <remarks>If objectLocalID is a child primitive in a linkset, the entire linkset will be derezzed</remarks>
         public void RequestDeRezToInventory(uint objectLocalID, DeRezDestination destType, UUID destFolder, UUID transactionID)
         {
             DeRezObjectPacket take = new DeRezObjectPacket();
@@ -3444,10 +3446,17 @@ namespace OpenMetaverse
                                 break;
                             case InstantMessageDialog.GroupNotice:
                                 imp.MessageBlock.Dialog = (byte)InstantMessageDialog.GroupNoticeInventoryAccepted;
-                                break;
+                                break;                         
                         }
 
-                        imp.MessageBlock.BinaryBucket = destinationFolderID.GetBytes();
+                        if (args.FolderID != UUID.Zero)
+                        {
+                            imp.MessageBlock.BinaryBucket = args.FolderID.GetBytes();
+                        }
+                        else
+                        {
+                            imp.MessageBlock.BinaryBucket = destinationFolderID.GetBytes();
+                        }                        
                     }
                     else
                     {
@@ -4163,10 +4172,14 @@ namespace OpenMetaverse
 
         /// <summary>Set to true to accept offer, false to decline it</summary>
         public bool Accept { get; set; }
+        /// <summary>The folder to accept the inventory into, if null default folder for <see cref="AssetType"/> will be used</summary>
+        public UUID FolderID { get; set; }
+
         public InstantMessage Offer { get { return m_Offer; } }
         public AssetType AssetType { get { return m_AssetType; } }
         public UUID ObjectID { get { return m_ObjectID; } }
         public bool FromTask { get { return m_FromTask; } }
+        
 
         public InventoryObjectOfferedEventArgs(InstantMessage offerDetails, AssetType type, UUID objectID, bool fromTask)
         {

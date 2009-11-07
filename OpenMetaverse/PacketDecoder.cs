@@ -1,4 +1,30 @@
-﻿using System;
+﻿/*
+ * Copyright (c) 2009, openmetaverse.org
+ * All rights reserved.
+ *
+ * - Redistribution and use in source and binary forms, with or without
+ *   modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * - Neither the name of the openmetaverse.org nor the names
+ *   of its contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -60,6 +86,10 @@ namespace OpenMetaverse.Packets
             AddCallback("RegionFlags", DecodeRegionFlags);
             AddCallback("SimAccess", DecodeSimAccess);
             AddCallback("ControlFlags", DecodeControlFlags);
+
+            // AgentUpdate
+            AddCallback("AgentData.State", DecodeAgentState);
+            AddCallback("AgentData.Flags", DecodeAgentFlags);
 
             // ViewerEffect TypeData
             AddCallback("ViewerEffect.Effect.TypeData", DecodeViewerEffectTypeData);
@@ -658,7 +688,6 @@ namespace OpenMetaverse.Packets
             result.AppendFormat("{0,30}", "</TextureAnimation>");
 
             return result.ToString();
-
         }
        
         private static string DecodeEstateParameter(string fieldName, object fieldData)
@@ -973,16 +1002,21 @@ namespace OpenMetaverse.Packets
             }
             else if (bytes.Length == 17)
             {
-                bucket = String.Format("{0} {1,-40} ({2}) [Byte[]]",
+                bucket = String.Format("{0,-36} {1} ({2})",
                     new UUID(bytes, 1),
                     bytes[0],
-                    (AssetType)bytes[0]);
+                    (AssetType)(sbyte)bytes[0]);
+            }
+            else if (bytes.Length == 16) // the folder ID for the asset to be stored into if we accept an inventory offer
+            {
+                bucket = new UUID(bytes, 0).ToString();
             }
             else
             {
-                bucket = Utils.BytesToString(bytes);
+                bucket = Utils.BytesToString(bytes); // we'll try a string lastly
             }
-            return String.Format("{0,30}: {1,-40} [Byte[]]", fieldName, bucket);
+
+            return String.Format("{0,30}: {1,-40} [Byte[{2}]]", fieldName, bucket, bytes.Length);
         }
 
         private static string DecodeBinaryToHexString(string fieldName, object fieldData)
@@ -1393,6 +1427,23 @@ namespace OpenMetaverse.Packets
                 return String.Format("{0,30}: (No Decoder) Length={1}" + Environment.NewLine, fieldName, data.Length) + Utils.BytesToHexString(data, String.Format("{0,30}", ""));
             }
         }
+        
+        private static string DecodeAgentState(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-2} {2,-37} [AgentState]",
+                                 fieldName,
+                                 fieldData,
+                                 "(" + (AgentState)(byte)fieldData + ")");
+        }
+        
+        private static string DecodeAgentFlags(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-2} {2,-37} [AgentFlags]",
+                                 fieldName,
+                                 fieldData,
+                                 "(" + (AgentFlags)(byte)fieldData + ")");
+        }
+        
 
         private static string DecodeViewerEffectType(string fieldName, object fieldData)
         {
