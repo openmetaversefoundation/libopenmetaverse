@@ -3429,7 +3429,7 @@ namespace OpenMetaverse
                     imp.MessageBlock.RegionID = UUID.Zero;
                     imp.MessageBlock.Position = Client.Self.SimPosition;
 
-                    InventoryObjectOfferedEventArgs args = new InventoryObjectOfferedEventArgs(e.IM, type, objectID, fromTask);
+                    InventoryObjectOfferedEventArgs args = new InventoryObjectOfferedEventArgs(e.IM, type, objectID, fromTask, destinationFolderID);
 
                     OnInventoryObjectOffered(args);
 
@@ -3448,15 +3448,7 @@ namespace OpenMetaverse
                                 imp.MessageBlock.Dialog = (byte)InstantMessageDialog.GroupNoticeInventoryAccepted;
                                 break;                         
                         }
-
-                        if (args.FolderID != UUID.Zero)
-                        {
-                            imp.MessageBlock.BinaryBucket = args.FolderID.GetBytes();
-                        }
-                        else
-                        {
-                            imp.MessageBlock.BinaryBucket = destinationFolderID.GetBytes();
-                        }                        
+                        imp.MessageBlock.BinaryBucket = args.FolderID.GetBytes();                        
                     }
                     else
                     {
@@ -4180,10 +4172,10 @@ namespace OpenMetaverse
         public UUID ObjectID { get { return m_ObjectID; } }
         public bool FromTask { get { return m_FromTask; } }
         
-
-        public InventoryObjectOfferedEventArgs(InstantMessage offerDetails, AssetType type, UUID objectID, bool fromTask)
+        public InventoryObjectOfferedEventArgs(InstantMessage offerDetails, AssetType type, UUID objectID, bool fromTask, UUID folderID)
         {
             this.Accept = false;
+            this.FolderID = folderID;
             this.m_Offer = offerDetails;
             this.m_AssetType = type;
             this.m_ObjectID = objectID;
