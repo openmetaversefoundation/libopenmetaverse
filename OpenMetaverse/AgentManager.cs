@@ -1800,7 +1800,7 @@ namespace OpenMetaverse
             switch (type)
             {
                 case LookAtType.Clear:
-                    duration = 0.0f;
+                    duration = 2.0f;
                     break;
                 case LookAtType.Hover:
                     duration = 1.0f;
@@ -1835,10 +1835,9 @@ namespace OpenMetaverse
             effect.Effect[0].Type = (byte)EffectType.LookAt;
 
             byte[] typeData = new byte[57];
-            if (sourceAvatar != UUID.Zero)
-                Buffer.BlockCopy(sourceAvatar.GetBytes(), 0, typeData, 0, 16);
-            if (targetObject != UUID.Zero)
-                Buffer.BlockCopy(targetObject.GetBytes(), 0, typeData, 16, 16);
+            Buffer.BlockCopy(sourceAvatar.GetBytes(), 0, typeData, 0, 16);
+            Buffer.BlockCopy(targetObject.GetBytes(), 0, typeData, 16, 16);
+            Buffer.BlockCopy(globalOffset.GetBytes(), 0, typeData, 32, 24);
             typeData[56] = (byte)type;
 
             effect.Effect[0].TypeData = typeData;
