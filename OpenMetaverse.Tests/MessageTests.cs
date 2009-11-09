@@ -463,12 +463,12 @@ namespace OpenMetaverse.Tests
         public void MapLayerMessage()
         {
 
-            MapLayerMessage s = new MapLayerMessage();
+            MapLayerReplyVariant s = new MapLayerReplyVariant();
             s.Flags = 1;
 
-            MapLayerMessage.LayerData[] blocks = new MapLayerMessage.LayerData[2];
+            MapLayerReplyVariant.LayerData[] blocks = new MapLayerReplyVariant.LayerData[2];
 
-            MapLayerMessage.LayerData block = new MapLayerMessage.LayerData();
+            MapLayerReplyVariant.LayerData block = new MapLayerReplyVariant.LayerData();
             block.ImageID = UUID.Random();
             block.Bottom = 1;
             block.Top = 2;
@@ -491,7 +491,7 @@ namespace OpenMetaverse.Tests
 
             OSDMap map = s.Serialize();
 
-            MapLayerMessage t = new MapLayerMessage();
+            MapLayerReplyVariant t = new MapLayerReplyVariant();
 
             t.Deserialize(map);
 
