@@ -247,8 +247,8 @@ namespace OpenMetaverse.GUI
         {
             MessageBarButton button = (MessageBarButton)e.ClickedItem;
 
-            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { button.Window.Show(); button.Window.Activate(); });
-            else { button.Window.Show(); button.Window.Activate(); }
+            if (this.InvokeRequired) this.BeginInvoke((MethodInvoker)delegate { button.Window.Show(); button.Window.Activate(); button.Window.WindowState = FormWindowState.Normal; });
+            else { button.Window.Show(); button.Window.Activate(); button.Window.WindowState = FormWindowState.Normal; }
         }
      
         void button_Disposed(object sender, EventArgs e)
