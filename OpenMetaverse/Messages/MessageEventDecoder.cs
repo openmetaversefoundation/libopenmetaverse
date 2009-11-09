@@ -119,7 +119,7 @@ namespace OpenMetaverse.Messages
                 }
                 catch (Exception e)
                 {
-                    Logger.Log("Exception while tring to Deserialize " + eventName + ":" + e.Message + ": " + e.StackTrace, Helpers.LogLevel.Error);
+                    Logger.Log("Exception while tring to Deserialize " + eventName + ":" + e.Message + ": " + e.StackTrace, Helpers.LogLevel.Error);                    
                 }
 
                 return null;
