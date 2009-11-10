@@ -88,8 +88,8 @@ namespace OpenMetaverse.Packets
             AddCallback("ControlFlags", DecodeControlFlags);
 
             // AgentUpdate
-            AddCallback("AgentData.State", DecodeAgentState);
-            AddCallback("AgentData.Flags", DecodeAgentFlags);
+            AddCallback("AgentUpdate.AgentData.State", DecodeAgentState);
+            AddCallback("AgentUpdate.AgentData.Flags", DecodeAgentFlags);
 
             // ViewerEffect TypeData
             AddCallback("ViewerEffect.Effect.TypeData", DecodeViewerEffectTypeData);
@@ -114,6 +114,12 @@ namespace OpenMetaverse.Packets
             AddCallback("ImprovedTerseObjectUpdate.ObjectData.TextureEntry", DecodeTerseTextureEntry);
 
             AddCallback("ObjectUpdateCompressed.ObjectData.Data", DecodeObjectCompressedData);
+
+            // ImprovedTerseObjectUpdate & ObjectUpdate AttachmentPoint & ObjectUpdateCompressed
+            AddCallback("ObjectData.State", DecodeObjectState);
+            //AddCallback("ObjectUpdateCompressed.ObjectData.State", DecodeObjectState);
+            //AddCallback("ImprovedTerseObjectUpdate.ObjectData.State", DecodeObjectState);
+            
 
             // ChatFromSimulator 
             AddCallback("ChatData.SourceType", DecodeChatSourceType);
@@ -216,10 +222,12 @@ namespace OpenMetaverse.Packets
             
             
             // State
-            result.AppendFormat("{0,30}: {1,-40} [{2}]" + Environment.NewLine,
+            byte point = block[i++];
+            result.AppendFormat("{0,30}: {1,-3} {2,-36} [{3}]" + Environment.NewLine,
                                         "State",
-                                        block[i++],
-                                        "Byte");
+                                        point,
+                                        "(" + (AttachmentPoint)point + ")",
+                                        "AttachmentPoint");
 
             // Avatar boolean
             bool isAvatar = (block[i++] != 0);
@@ -313,30 +321,32 @@ namespace OpenMetaverse.Packets
             // PCode
             PCode pcode = (PCode)block[i++];
 
-            result.AppendFormat("{0,30}: {1,-2} {2,-37} [{3}]" + Environment.NewLine,
+            result.AppendFormat("{0,30}: {1,-3} {2,-36} [{3}]" + Environment.NewLine,
                 "PCode",
                 (int)pcode,
                 "(" + pcode + ")",
                 "PCode");
 
             // State
-            result.AppendFormat("{0,30}: {1,-40} [{2}]" + Environment.NewLine,
+            AttachmentPoint point = (AttachmentPoint)block[i++];
+            result.AppendFormat("{0,30}: {1,-3} {2,-36} [{3}]" + Environment.NewLine,
                                         "State",
-                                        block[i++],
-                                        "Byte");
+                                        (byte)point,
+                                        "(" + point + ")",
+                                        "AttachmentPoint");
 
             // TODO: CRC
 
             i += 4;
             // Material
-            result.AppendFormat("{0,30}: {1,-2} {2,-37} [{3}]" + Environment.NewLine,
+            result.AppendFormat("{0,30}: {1,-3} {2,-36} [{3}]" + Environment.NewLine,
                 "Material",
                 block[i],
                 "(" + (Material)block[i++] + ")",
                 "Material");
 
             // Click action
-            result.AppendFormat("{0,30}: {1,-2} {2,-37} [{3}]" + Environment.NewLine,
+            result.AppendFormat("{0,30}: {1,-3} {2,-36} [{3}]" + Environment.NewLine,
                 "ClickAction",
                 block[i],
                 "(" + (ClickAction)block[i++] + ")",
@@ -838,7 +848,7 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeObjectPCode(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-37} [PCode]",
+            return String.Format("{0,30}: {1,-3} {2,-36} [PCode]",
                 fieldName,
                 fieldData,
                 "(" + (PCode)(byte)fieldData + ")");
@@ -846,7 +856,7 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeImageType(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-37} [ImageType]",
+            return String.Format("{0,30}: {1,-3} {2,-36} [ImageType]",
                 fieldName,
                 fieldData,
                 "(" + (ImageType)(byte)fieldData + ")");
@@ -854,7 +864,7 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeImageCodec(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-37} [ImageCodec]",
+            return String.Format("{0,30}: {1,-3} {2,-36} [ImageCodec]",
                 fieldName,
                 fieldData,
                 "(" + (ImageCodec)(byte)fieldData + ")");
@@ -862,7 +872,7 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeObjectMaterial(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-37} [Material]",
+            return String.Format("{0,30}: {1,-3} {2,-36} [Material]",
                 fieldName,
                 fieldData,
                 "(" + (Material)(byte)fieldData + ")");
@@ -870,7 +880,7 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeObjectClickAction(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-37} [ClickAction]",
+            return String.Format("{0,30}: {1,-3} {2,-36} [ClickAction]",
                 fieldName,
                 fieldData,
                 "(" + (ClickAction)(byte)fieldData + ")");
@@ -878,7 +888,7 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeEventFlags(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-37} [EventFlags]",
+            return String.Format("{0,30}: {1,-3} {2,-36} [EventFlags]",
                 fieldName,
                 fieldData,
                 "(" + (DirectoryManager.EventFlags)(uint)fieldData + ")");
@@ -934,7 +944,7 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeCategory(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-37} [ParcelCategory]",
+            return String.Format("{0,30}: {1,-3} {2,-36} [ParcelCategory]",
                 fieldName,
                 fieldData,
                 "(" + fieldData + ")");
@@ -1443,7 +1453,14 @@ namespace OpenMetaverse.Packets
                                  fieldData,
                                  "(" + (AgentFlags)(byte)fieldData + ")");
         }
-        
+
+        private static string DecodeObjectState(string fieldName, object fieldData)
+        {
+            return String.Format("{0,30}: {1,-2} {2,-37} [AttachmentPoint]",
+                                 fieldName,
+                                 fieldData,
+                                 "(" + (AttachmentPoint)(byte)fieldData + ")");
+        }
 
         private static string DecodeViewerEffectType(string fieldName, object fieldData)
         {
