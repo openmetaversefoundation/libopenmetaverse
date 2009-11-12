@@ -155,13 +155,14 @@
             // richTextBox1
             // 
             this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.richTextBox1.Enabled = false;
             this.richTextBox1.Location = new System.Drawing.Point(140, 153);
             this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.ReadOnly = true;
             this.richTextBox1.Size = new System.Drawing.Size(274, 79);
             this.richTextBox1.TabIndex = 25;
             this.richTextBox1.Text = "Written by Jim Radford <jradford@npl.com>\n\nIcons Courtesy of http://www.famfamfam" +
                 ".com/lab/icons/silk/\n\nHexbox Control \nhttp://sourceforge.net/projects/hexbox/";
+            this.richTextBox1.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBoxDecodedRequest_LinkClicked);
             // 
             // AboutBox1
             // 

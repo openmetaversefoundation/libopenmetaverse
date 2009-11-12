@@ -99,5 +99,10 @@ namespace WinGridProxy
             }
         }
         #endregion
+
+        private void richTextBoxDecodedRequest_LinkClicked(object sender, LinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(e.LinkText);
+        }
     }
 }

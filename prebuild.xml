@@ -499,6 +499,35 @@
       </Files>
     </Project>
 
+    <!-- // Sorry for the cruft, this is an in progress plugin for WGP that
+    	 // will show a simulators objects in a tree view - Coming soon!
+    <Project name="ObjectTreeBrowser" path="Programs/examples/ObjectTreeBrowser" type="WinExe" frameworkVersion="v3_5">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../../bin/</OutputPath>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Drawing"/>
+      <Reference name="System.Windows.Forms"/>
+      <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
+
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+        <Match pattern="*.resx" recurse="true"/>
+        <Match pattern="*.settings" recurse="true"/>
+        <Match pattern="*.ico" recurse="true"/>
+      </Files>
+    </Project>
+    -->
     <Project name="PrimWorkshop" path="Programs/PrimWorkshop" type="WinExe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
@@ -600,6 +629,7 @@
 
       <ReferencePath>../../bin/</ReferencePath>
       <Reference name="System"/>
+      <Reference name="System.Core"/>
       <Reference name="System.Xml"/>
       <Reference name="System.Data"/>
       <Reference name="System.Drawing"/>

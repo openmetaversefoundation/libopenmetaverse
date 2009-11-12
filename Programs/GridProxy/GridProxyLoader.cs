@@ -152,12 +152,12 @@ namespace GridProxy
         }
 
         // LoginRequest: dump a login request to the console
-        private void LoginRequest(XmlRpcRequest request)
+        private void LoginRequest(object sender, XmlRpcRequestEventArgs e)
         {
             if (logLogin)
             {
                 Console.WriteLine("==> Login Request");
-                Console.WriteLine(request);
+                Console.WriteLine(e.m_Request);
             }
         }
 

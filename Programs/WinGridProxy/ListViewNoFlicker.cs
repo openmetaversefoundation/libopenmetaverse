@@ -27,32 +27,75 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.ComponentModel;
 using System.Windows.Forms;
 
 namespace WinGridProxy
 {
-    class ListViewNoFlicker : ListView
+    internal class ListViewNoFlicker : ListView
     {
         public ListViewNoFlicker()
-        {
-
-            //Activate double buffering
-            this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
+        {                     
+            this.SetStyle(ControlStyles.OptimizedDoubleBuffer, true);            
+            this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);
 
             //Enable the OnNotifyMessage event so we get a chance to filter out 
             // Windows messages before they get to the form's WndProc
-            this.SetStyle(ControlStyles.EnableNotifyMessage, true);
+            this.SetStyle(ControlStyles.EnableNotifyMessage, true);            
         }
-
+        
         protected override void OnNotifyMessage(Message m)
-        {
+        {           
+            //private const UInt32 WM_VSCROLL        = 0x0115;
+            if (m.Msg == 0x0115)
+            {                
+                if (m.WParam.ToInt32().Equals(8))
+                {
+                    // Scrollbar scrolling stopped
+                    OnScrolling(new ScrollingEventArgs(false));                    
+                }
+                else
+                {
+                    // Scroll starting
+                    OnScrolling(new ScrollingEventArgs(true));                    
+                }
+            }
+
+            
             //Filter out the WM_ERASEBKGND message
             if (m.Msg != 0x14)
             {
                 base.OnNotifyMessage(m);
-            }
+            }        
+        }
+                
+        private EventHandler<ScrollingEventArgs> m_Scrolling;
+        private void OnScrolling(ScrollingEventArgs e)
+        {
+            EventHandler<ScrollingEventArgs> handler = m_Scrolling;
+            if (handler != null)
+                handler(this, e);
         }
 
+        private readonly object m_ScrollingLock = new object();
+        
+        [Description("Occurs, when the listview scrolling starts and stops")]
+        public event EventHandler<ScrollingEventArgs> Scrolling
+        {
+            add { lock (m_ScrollingLock) { m_Scrolling += value; } }
+            remove { lock (m_ScrollingLock) { m_Scrolling -= value; } }
+        }         
+    }
+
+    public class ScrollingEventArgs : EventArgs
+    {
+        private bool m_Scrolling;
+        public bool Scrolling { get { return m_Scrolling; } set { this.m_Scrolling = value; } }
+
+        public ScrollingEventArgs(bool scrolling)
+        {
+            this.m_Scrolling = scrolling;
+        }
     }
 
     public class ListViewItemComparer : IComparer<object>

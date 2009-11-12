@@ -128,10 +128,10 @@ namespace WinGridProxy
                 OnCapabilityAdded((CapInfo)de.Value);
         }
         
-        private void LoginRequest(XmlRpcRequest request)
+        private void LoginRequest(object sender, XmlRpcRequestEventArgs e)
         {
             if (OnLoginResponse != null)
-                OnLoginResponse(request, Direction.Outgoing);
+                OnLoginResponse(e.m_Request, Direction.Outgoing);
         }
 
         private void LoginResponse(XmlRpcResponse response)

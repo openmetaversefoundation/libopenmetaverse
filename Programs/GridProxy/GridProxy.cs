@@ -198,7 +198,7 @@ namespace GridProxy
             InitializeCaps();
         }
 
-        object keepAliveLock = new Object();
+        object keepAliveLock = new object();
 
         // Start: begin accepting clients
         public void Start()
@@ -209,9 +209,10 @@ namespace GridProxy
                 (new Thread(new ThreadStart(KeepAlive))).Start();
 
                 RunSimProxy();
+
                 Thread runLoginProxy = new Thread(new ThreadStart(RunLoginProxy));
                 runLoginProxy.IsBackground = true;
-                runLoginProxy.Name = "LoginProxy";
+                runLoginProxy.Name = "Login Proxy";
                 runLoginProxy.Start();
 
                 IPEndPoint endPoint = (IPEndPoint)loginServer.LocalEndPoint;
@@ -778,7 +779,7 @@ namespace GridProxy
                 }
             }
 
-            if (cap != null && !requestFailed)
+            if (cap != null && !requestFailed && !capReq.Response.ToString().Equals("undef"))
             {
                 foreach (CapsDelegate d in cap.GetDelegates())
                 {
@@ -786,9 +787,14 @@ namespace GridProxy
                     {
                         if (d(capReq, CapsStage.Response)) { break; }
                     }
-                    catch (Exception e)
+                    catch (InvalidCastException ex)
                     {
-                        OpenMetaverse.Logger.Log("Error firing delegate", Helpers.LogLevel.Error, e);
+                        OpenMetaverse.Logger.Log("Invalid Cast thrown trying to cast OSD to OSDMap: \n'" + capReq.Response.AsString() + "' Length="+capReq.RawResponse.Length.ToString() + "\n",
+                            Helpers.LogLevel.Error, ex);
+                    }
+                    catch (Exception ex)
+                    {
+                        OpenMetaverse.Logger.Log("Error firing delegate", Helpers.LogLevel.Error, ex);
                     }
                 }
 
@@ -1034,7 +1040,8 @@ namespace GridProxy
                 {
                     foreach (XmlRpcRequestDelegate d in loginRequestDelegates)
                     {
-                        try { d(request); }
+                        try { d(this, new XmlRpcRequestEventArgs(request)); }
+                        //try { d(request); }
                         catch (Exception e) { OpenMetaverse.Logger.Log("Exception in login request delegate" + e, Helpers.LogLevel.Error, e); }
                     }
                 }
@@ -1212,6 +1219,7 @@ namespace GridProxy
         {
             foreach (SimProxy simProxy in simProxies.Values)
                 simProxy.Reset();
+
             KnownCaps.Clear();
         }
 
@@ -2111,7 +2119,7 @@ namespace GridProxy
     }
 
     // XmlRpcRequestDelegate: specifies a delegate to be called for XML-RPC requests
-    public delegate void XmlRpcRequestDelegate(XmlRpcRequest request);
+    public delegate void XmlRpcRequestDelegate(object sender, XmlRpcRequestEventArgs e);
 
     // XmlRpcResponseDelegate: specifies a delegate to be called for XML-RPC responses
     public delegate void XmlRpcResponseDelegate(XmlRpcResponse response);
@@ -2137,6 +2145,16 @@ namespace GridProxy
     {
         Request,
         Response
+    }
+
+    public class XmlRpcRequestEventArgs : EventArgs
+    {
+        public XmlRpcRequest m_Request;
+
+        public XmlRpcRequestEventArgs(XmlRpcRequest request)
+        {
+            this.m_Request = request;
+        }
     }
 }
 

@@ -40,20 +40,25 @@ namespace WinGridProxy
     #region Base Class
     internal abstract class Session
     {
-        private const string EmptyXml = "<?xml version=\"1.0\"?><Empty>XML representation of this item is not available.</Empty>";
-        private const string EmptyString = "String representation of this item is not available.";
-        private const string EmptyNotation = "Notation representation of this item is not available.";
+        internal const string EmptyXml = "<?xml version=\"1.0\"?><Empty>XML representation of this item is not available.</Empty>";
+        internal const string EmptyString = "String representation of this item is not available.";
+        internal const string EmptyNotation = "Notation representation of this item is not available.";
 
         public Direction Direction { get; set; }
         public String Host { get; set; }
         public String Protocol { get; set; }
         public String Name { get; set; }
         public String ContentType { get; set; }
-
         public int Length { get; set; }
+        public DateTime TimeStamp { get; set; }
+
+        // listview specific stuff, not serialized or deserialized
+        public bool Selected { get; set; }        
+        public System.Drawing.Color BackColor { get; set; }
 
         public Session()
         {
+            this.TimeStamp = DateTime.UtcNow;
             this.Host = this.Protocol = this.Name = String.Empty;
             this.Length = 0;
             this.ContentType = String.Empty;
@@ -167,8 +172,42 @@ namespace WinGridProxy
             this.Length = packetData.Length;
 
             int packetEnd = packetData.Length - 1;
-            this.Packet = Packet.BuildPacket(packetData, ref packetEnd, null);
-            this.Name = this.Packet.Type.ToString();
+
+            try
+            {
+                bool msg_zer = ((packetData[0] & Helpers.MSG_ZEROCODED) != 0);
+                bool msg_res = ((packetData[0] & Helpers.MSG_RESENT) != 0);
+                bool msg_rel = ((packetData[0] & Helpers.MSG_RELIABLE) != 0);
+                bool msg_ack = ((packetData[0] & Helpers.MSG_APPENDED_ACKS) != 0);
+
+                if ((packetData[0] & Helpers.MSG_ZEROCODED) != 0)
+                {
+                    packetData[0] = 0x00;
+                }
+
+                this.Packet = Packet.BuildPacket(packetData, ref packetEnd, null);
+
+                this.Packet.Header.Resent = msg_res;
+                this.Packet.Header.Reliable = msg_rel;
+                this.Packet.Header.Zerocoded = msg_zer;
+                this.Packet.Header.AppendedAcks = msg_ack;
+
+                this.Name = this.Packet.Type.ToString();
+            }
+            catch (IndexOutOfRangeException ex)
+            {
+                this.Name = ex.Message;
+            }
+            catch (MalformedDataException ex)
+            {
+                this.Name = ex.Message;
+                //throw;
+            }
+            catch (NullReferenceException ex)
+            {                
+                this.Name = ex.Message;
+            }            
+            
             return this;
         }
     }
@@ -188,8 +227,15 @@ namespace WinGridProxy
             Direction direction, string uri, string capsKey, String proto)
             : base()
         {
-            this.RequestBytes = requestBytes;
-            this.ResponseBytes = responseBytes;
+            if (requestBytes != null)
+                this.RequestBytes = requestBytes;
+            else
+                this.RequestBytes = OpenMetaverse.Utils.EmptyBytes;
+
+            if (responseBytes != null)
+                this.ResponseBytes = responseBytes;
+            else
+                this.ResponseBytes = OpenMetaverse.Utils.EmptyBytes;
             this.RequestHeaders = requestHeaders;
             this.ResponseHeaders = responseHeaders;
             this.Protocol = proto;
@@ -392,10 +438,10 @@ namespace WinGridProxy
 
         public override byte[] Serialize()
         {
-            OSDMap map = new OSDMap(9);
+            OSDMap map = new OSDMap(5);
             map["Name"] = OSD.FromString(this.Name);
             map["Host"] = OSD.FromString(this.Host);
-            map["RequestBytes"] = OSD.FromBinary(this.RequestBytes);
+            map["RequestBytes"] = OSD.FromBinary(this.RequestBytes);            
             map["ResponseBytes"] = OSD.FromBinary(this.ResponseBytes);
             map["Direction"] = OSD.FromInteger((int)this.Direction);
             map["ContentType"] = OSD.FromString(this.ContentType);
@@ -408,7 +454,8 @@ namespace WinGridProxy
                 rMap[key] = OSD.FromString(this.RequestHeaders[key]);
                 requestHeadersArray.Add(rMap);
             }
-            map["RequestHeaders"] = requestHeadersArray;
+            if(requestHeadersArray.Count > 0)
+                map["RequestHeaders"] = requestHeadersArray;
 
             OSDArray responseHeadersArray = new OSDArray();
             foreach (String key in this.ResponseHeaders.Keys)
@@ -417,15 +464,18 @@ namespace WinGridProxy
                 rMap[key] = OSD.FromString(this.ResponseHeaders[key]);
                 responseHeadersArray.Add(rMap);
             }
-            map["ResponseHeaders"] = responseHeadersArray;
+            if(responseHeadersArray.Count > 0)
+                map["ResponseHeaders"] = responseHeadersArray;
 
             return OpenMetaverse.Utils.StringToBytes(map.ToString());
         }
 
         public override Session Deserialize(byte[] bytes)
         {
+            var s = OpenMetaverse.Utils.BytesToString(bytes);
+            
+            //OSDMap map = (OSDMap)OSDParser.Deserialize(bytes);
             OSDMap map = (OSDMap)OSDParser.DeserializeLLSDNotation(OpenMetaverse.Utils.BytesToString(bytes));
-
             this.Name = map["Name"].AsString();
             this.Host = map["Host"].AsString();
             this.RequestBytes = map["RequestBytes"].AsBinary();
@@ -436,23 +486,30 @@ namespace WinGridProxy
             this.Protocol = map["Protocol"].AsString();
 
             this.RequestHeaders = new WebHeaderCollection();
-            OSDArray requestHeadersArray = (OSDArray)map["RequestHeaders"];
-            for (int i = 0; i < requestHeadersArray.Count; i++)
+            if (map.ContainsKey("RequestHeaders"))
             {
-                OSDMap rMap = (OSDMap)requestHeadersArray[i];
-                foreach (string key in rMap.Keys)
+                OSDArray requestHeadersArray = (OSDArray)map["RequestHeaders"];
+                for (int i = 0; i < requestHeadersArray.Count; i++)
                 {
-                    this.RequestHeaders.Add(key, rMap[key].AsString());
+                    OSDMap rMap = (OSDMap)requestHeadersArray[i];
+                    foreach (string key in rMap.Keys)
+                    {
+                        this.RequestHeaders.Add(key, rMap[key].AsString());
+                    }
                 }
             }
+
             this.ResponseHeaders = new WebHeaderCollection();
-            OSDArray responseHeadersArray = (OSDArray)map["ResponseHeaders"];
-            for (int i = 0; i < responseHeadersArray.Count; i++)
+            if (map.ContainsKey("ResponseHeaders"))
             {
-                OSDMap rMap = (OSDMap)responseHeadersArray[i];
-                foreach (string key in rMap.Keys)
+                OSDArray responseHeadersArray = (OSDArray)map["ResponseHeaders"];
+                for (int i = 0; i < responseHeadersArray.Count; i++)
                 {
-                    this.ResponseHeaders.Add(key, rMap[key].AsString());
+                    OSDMap rMap = (OSDMap)responseHeadersArray[i];
+                    foreach (string key in rMap.Keys)
+                    {
+                        this.ResponseHeaders.Add(key, rMap[key].AsString());
+                    }
                 }
             }
 
@@ -502,18 +559,17 @@ namespace WinGridProxy
                 return String.Empty;
             }
         }
+
         public override string ToXml(Direction direction)
         {
-            return base.ToXml(direction);
-
-            //if (direction == this.Direction)
-            //{
-            //    return this.Data.ToString();
-            //}
-            //else
-            //{
-            //    return base.ToXml(direction);
-            //}
+            if (direction == this.Direction)
+            {
+                return this.Data.ToString();
+            }
+            else
+            {
+                return base.ToXml(direction);
+            }
         }
 
         public override byte[] ToBytes(Direction direction)
@@ -691,8 +747,8 @@ namespace WinGridProxy
             this.Direction = (Direction)map["Direction"].AsInteger();
             this.ContentType = map["ContentType"].AsString();
             this.Protocol = map["Protocol"].AsString();
-
             this.Length = ResponseBytes.Length;
+
             if (map.ContainsKey("ResponseHeaders"))
             {
                 this.ResponseHeaders = new WebHeaderCollection();
