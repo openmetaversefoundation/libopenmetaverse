@@ -106,7 +106,7 @@ namespace WinGridProxy
         private Session m_CurrentSession;
 
         public FormWinGridProxy()
-        {
+        {            
             InitializeComponent();
 
             m_SessionViewItems = new List<Session>();
@@ -202,7 +202,7 @@ namespace WinGridProxy
                                     string exe = me.GetValue("Exe").ToString(); // the executable name
                                     string ver = me.GetValue("Version").ToString(); // the viewer version
 
-                                    if (File.Exists(Path.Combine(dir, exe)))
+                                    if (!String.IsNullOrEmpty(dir) && !String.IsNullOrEmpty(exe) && !String.IsNullOrEmpty(ver) && File.Exists(Path.Combine(dir, exe)))
                                     {
                                         toolStripComboBox1.Items.Add(viewer + " " + ver);
                                         m_InstalledViewers.Add(viewer + " " + ver, Path.Combine(dir, exe));
@@ -1008,7 +1008,6 @@ namespace WinGridProxy
 
                         // turn the map into a list
                         OSDMapToSessions(map);
-
                         SetProgressVisible(false);
                     }
                 }));
@@ -1020,11 +1019,10 @@ namespace WinGridProxy
             if (!map.ContainsKey("sessions"))
                 return;
 
-            if (this.InvokeRequired)
-                this.Invoke(new MethodInvoker(delegate() { OSDMapToSessions(map); }));
+            if (listViewSessions.InvokeRequired)
+                listViewSessions.BeginInvoke((MethodInvoker)(() => OSDMapToSessions(map)));
             else
             {
-
                 OSDArray sessionsArray = (OSDArray)map["sessions"];
 
                 progressBar1.Maximum = sessionsArray.Count;
@@ -1041,11 +1039,17 @@ namespace WinGridProxy
                 for (int i = 0; i < sessionsArray.Count; i++)
                 {
                     OSDMap session = (OSDMap)sessionsArray[i];
+                    
+                        Session importedSession = (Session)m_CurrentAssembly.CreateInstance("WinGridProxy." + session["type"].AsString());
+                        if (importedSession == null)
+                        {
 
-                    Session importedSession = (Session)m_CurrentAssembly.CreateInstance("WinGridProxy." + session["type"].AsString());
-                    importedSession.Deserialize(session["tag"].AsBinary());
-                    m_SessionViewItems.Add(importedSession);
-                    progressBar1.PerformStep();
+                          //  System.Diagnostics.Debug.Assert(importedSession != null, session["type"].AsString() + );
+                        }                        
+                        
+                        importedSession.Deserialize(session["tag"].AsBinary());
+                        m_SessionViewItems.Add(importedSession);
+                        progressBar1.PerformStep();                    
                 }
 
                 listViewSessions.VirtualListSize = m_SessionViewItems.Count;
