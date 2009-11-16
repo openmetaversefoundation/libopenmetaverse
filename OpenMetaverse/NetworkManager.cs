@@ -38,27 +38,7 @@ using OpenMetaverse.Interfaces;
 using OpenMetaverse.Messages.Linden;
 
 namespace OpenMetaverse
-{
-    /// <summary>
-    /// This exception is thrown whenever an attempt to send a packet to a simulator where the 
-    /// simulator packet processing is not yet enabled occurs
-    /// </summary>
-    public class NotConnectedException : ApplicationException
-    {
-        private String m_Message;
-        public override string Message
-        {
-            get
-            {
-                return base.Message + " " + m_Message;
-            }
-        }
-        public NotConnectedException(String message)
-        {
-            m_Message = message;
-        }
-    }
-    
+{        
     /// <summary>
     /// NetworkManager is responsible for managing the network layer of 
     /// OpenMetaverse. It tracks all the server connections, serializes 
@@ -472,7 +452,8 @@ namespace OpenMetaverse
             }
             else
             {
-                throw new NotConnectedException("Packet received before simulator packet processing threads running, make certain you are completely logged in");
+                //throw new NotConnectedException("Packet received before simulator packet processing threads running, make certain you are completely logged in");
+                Logger.Log("Packet received before simulator packet processing threads running, make certain you are completely logged in.", Helpers.LogLevel.Error);
             }
         }
 
@@ -489,7 +470,7 @@ namespace OpenMetaverse
             }
             else
             {
-                throw new NotConnectedException("Packet received before simulator packet processing threads running, make certain you are completely logged in");
+                Logger.Log("Packet received before simulator packet processing threads running, make certain you are completely logged in", Helpers.LogLevel.Error);
             }
         }
 
