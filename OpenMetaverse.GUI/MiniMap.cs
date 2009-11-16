@@ -203,6 +203,8 @@ namespace OpenMetaverse.GUI
 
         void Network_OnCurrentSimChanged(object sender, SimChangedEventArgs e)
         {
+            if (_Client.Network.Connected) return;
+
             GridRegion region;
             if (Client.Grid.GetGridRegion(Client.Network.CurrentSim.Name, GridLayerType.Objects, out region))
             {

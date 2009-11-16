@@ -182,8 +182,35 @@ namespace OpenMetaverse.GUI
         /// </summary>
         public void Login()
         {
+            if (_Client == null) return;
+
+            if (_LoginParams.MethodName == null)
+                _LoginParams = Client.Network.DefaultLoginParams("", "", "", "", "");
+
+            SetText(btnLogin, "Logout");
+            SetText(listNames, _LoginParams.FirstName + " " + _LoginParams.LastName);
+            SetText(txtPass, _LoginParams.Password);
+
+            if (LoginThread != null)
+            {
+                LoginThread.Abort();
+                LoginThread = null;
+            }
             LoginThread = new Thread(new ThreadStart(delegate() { _Client.Network.Login(_LoginParams); }));
             LoginThread.Start();
+        }
+
+
+        private void SetText(object control, string text)
+        {
+            if (this.InvokeRequired)
+                this.BeginInvoke(new MethodInvoker(delegate() { SetText(control, text); }));
+            else
+            {
+                if (control is Button) ((Button)control).Text = text;
+                else if (control is ComboBox) ((ComboBox)control).Text = text;
+                else if (control is TextBox) ((TextBox)control).Text = text;
+            }
         }
 
         private void InitializeClient(GridClient client)
@@ -204,15 +231,12 @@ namespace OpenMetaverse.GUI
                     return;
                 }
 
-                btnLogin.Text = "Logout";
-
                 _LoginParams.FirstName = FirstName;
                 _LoginParams.LastName = LastName;
                 _LoginParams.Password = Password;
                 _LoginParams.Start = StartURI;
 
-                LoginThread = new Thread(new ThreadStart(delegate() { _Client.Network.Login(_LoginParams); }));
-                LoginThread.Start();
+                Login();
             }
             else if (btnLogin.Text == "Logout")
             {
@@ -225,10 +249,7 @@ namespace OpenMetaverse.GUI
                 }
 
                 if (_Client != null)
-                {
-                    if (_Client.Network.Connected)
-                        _Client.Network.Logout();
-                }
+                    _Client.Network.Logout();
 
                 btnLogin.Text = "Login";
             }
@@ -251,21 +272,15 @@ namespace OpenMetaverse.GUI
         private void Network_OnDisconnected(object sender, DisconnectedEventArgs e)
         {
             if (!this.IsHandleCreated) return;
-
-            this.BeginInvoke((MethodInvoker)delegate
-            {
-                btnLogin.Text = "Login";
-            });
+                
+            SetText(btnLogin, "Login");
         }
 
         private void Network_OnLogin(object sender, LoginProgressEventArgs e)
         {
-            if (!this.IsHandleCreated) return;
+            if (!this.IsHandleCreated) return; 
 
-            this.BeginInvoke((MethodInvoker)delegate
-            {
-                btnLogin.Text = "Logout";
-            });
+            SetText(btnLogin, "Logout");
 
             if (e.Status == LoginStatus.Success)
             {
@@ -285,18 +300,12 @@ namespace OpenMetaverse.GUI
             }
             else if (e.Status == LoginStatus.Failed)
             {
-                this.BeginInvoke((MethodInvoker)delegate
-                {
-                    btnLogin.Text = "Login";
-                });
+                SetText(btnLogin, "Login");
             }
             else
             {
-                this.BeginInvoke((MethodInvoker)delegate
-                {
-                    listNames.Text = _LoginParams.FirstName + " " + _LoginParams.LastName;
-                    txtPass.Text = _LoginParams.Password;
-                });
+                SetText(listNames, _LoginParams.FirstName + " " + _LoginParams.LastName);
+                SetText(txtPass, _LoginParams.Password);
             }
         }
 
