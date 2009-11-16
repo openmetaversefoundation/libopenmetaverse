@@ -1757,6 +1757,11 @@ namespace OpenMetaverse
                     case PCode.Tree:
                     case PCode.NewTree:
                     case PCode.Prim:
+
+                        bool isNew;
+                        lock (simulator.ObjectsPrimitives.Dictionary)
+                            isNew = simulator.ObjectsPrimitives.ContainsKey(block.ID);
+
                         Primitive prim = GetPrimitive(simulator, block.ID, block.FullID);
 
                         // Textures
@@ -1842,7 +1847,7 @@ namespace OpenMetaverse
                         prim.AngularVelocity = objectupdate.AngularVelocity;
                         #endregion
 
-                        OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, attachment));                        
+                        OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, isNew, attachment));                        
 
                         break;
                     #endregion Prim and Foliage
@@ -2126,6 +2131,10 @@ namespace OpenMetaverse
 
                     #endregion Relevance check
 
+                    bool isNew;
+                    lock (simulator.ObjectsPrimitives.Dictionary)
+                        isNew = simulator.ObjectsPrimitives.ContainsKey(LocalID);
+
                     Primitive prim = GetPrimitive(simulator, LocalID, FullID);
 
                     prim.LocalID = LocalID;
@@ -2325,16 +2334,9 @@ namespace OpenMetaverse
 
                     #region Raise Events
 
-                    if ((flags & CompressedFlags.HasNameValues) != 0 && prim.ParentID != 0)
-                    {
-                        // This is an attachment
-                        OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, true));
-                    }
-                    else
-                    {
-                        // This is a primitive
-                        OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, false));
-                    }
+                    bool isAttachment = (flags & CompressedFlags.HasNameValues) != 0 && prim.ParentID != 0;
+
+                    OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, isNew, isAttachment));
 
                     #endregion
                 }
@@ -2998,6 +3000,7 @@ namespace OpenMetaverse
     public class PrimEventArgs : EventArgs
     {
         private readonly Simulator m_Simulator;
+        private readonly bool m_IsNew;
         private readonly bool m_IsAttachment;
         private readonly Primitive m_Prim;
         private readonly ushort m_TimeDilation;
@@ -3006,6 +3009,8 @@ namespace OpenMetaverse
         public Simulator Simulator { get { return m_Simulator; } }
         /// <summary>Get the <see cref="Primitive"/> details</summary>
         public Primitive Prim { get { return m_Prim; } }
+        /// <summary>true if the <see cref="Primitive"/> did not exist in the dictionary before this update</summary>
+        public bool IsNew { get { return m_IsNew; } }
         /// <summary>true if the <see cref="Primitive"/> is attached to an <see cref="Avatar"/></summary>
         public bool IsAttachment { get { return m_IsAttachment; } }
         /// <summary>Get the simulator Time Dilation</summary>
@@ -3018,9 +3023,10 @@ namespace OpenMetaverse
         /// <param name="prim">The Primitive</param>
         /// <param name="isAttachment">true if the primitive represents an attachment to an agent</param>
         /// <param name="timeDilation">The simulator time dilation</param>
-        public PrimEventArgs(Simulator simulator, Primitive prim, ushort timeDilation, bool isAttachment)
+        public PrimEventArgs(Simulator simulator, Primitive prim, ushort timeDilation, bool isNew, bool isAttachment)
         {
             this.m_Simulator = simulator;
+            this.m_IsNew = isNew;
             this.m_IsAttachment = isAttachment;
             this.m_Prim = prim;
             this.m_TimeDilation = timeDilation;
