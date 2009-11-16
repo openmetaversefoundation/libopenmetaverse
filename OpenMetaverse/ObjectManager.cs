@@ -3009,7 +3009,7 @@ namespace OpenMetaverse
         public Simulator Simulator { get { return m_Simulator; } }
         /// <summary>Get the <see cref="Primitive"/> details</summary>
         public Primitive Prim { get { return m_Prim; } }
-        /// <summary>true if the <see cref="Primitive"/> did not exist in the dictionary before this update</summary>
+        /// <summary>true if the <see cref="Primitive"/> did not exist in the dictionary before this update (always true if object tracking has been disabled)</summary>
         public bool IsNew { get { return m_IsNew; } }
         /// <summary>true if the <see cref="Primitive"/> is attached to an <see cref="Avatar"/></summary>
         public bool IsAttachment { get { return m_IsAttachment; } }
