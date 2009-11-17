@@ -776,14 +776,39 @@ namespace OpenMetaverse
             if (handler != null)
                 handler(this, e);
         }
+
         /// <summary>Thread sync lock object</summary>
         private readonly object m_GroupNoticesListReplyLock = new object();
 
-        /// <summary>Raised when ...</summary>
+        /// <summary>Raised when the simulator sends us group notices</summary>
+        /// <seealso cref="RequestGroupNoticesList"/>
         public event EventHandler<GroupNoticesListReplyEventArgs> GroupNoticesListReply
         {
             add { lock (m_GroupNoticesListReplyLock) { m_GroupNoticesListReply += value; } }
             remove { lock (m_GroupNoticesListReplyLock) { m_GroupNoticesListReply -= value; } }
+        }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<GroupInvitationEventArgs> m_GroupInvitation;
+
+        /// <summary>Raises the GroupInvitation event</summary>
+        /// <param name="e">An GroupInvitationEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnGroupInvitation(GroupInvitationEventArgs e)
+        {
+            EventHandler<GroupInvitationEventArgs> handler = m_GroupInvitation;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_GroupInvitationLock = new object();
+
+        /// <summary>Raised when another agent invites our avatar to join a group</summary>
+        public event EventHandler<GroupInvitationEventArgs> GroupInvitation
+        {
+            add { lock (m_GroupInvitationLock) { m_GroupInvitation += value; } }
+            remove { lock (m_GroupInvitationLock) { m_GroupInvitation -= value; } }
         }
         #endregion Delegates
 
@@ -824,6 +849,8 @@ namespace OpenMetaverse
             GroupRolesMembersRequests = new List<UUID>();
             GroupName2KeyCache = new InternalDictionary<UUID, string>();
 
+            Client.Self.IM += Self_IM;
+
             Client.Network.RegisterEventCallback("AgentGroupDataUpdate", new Caps.EventQueueCallback(AgentGroupDataUpdateMessageHandler));            
             // deprecated in simulator v1.27
             Client.Network.RegisterCallback(PacketType.AgentDropGroup, AgentDropGroupHandler);
@@ -840,9 +867,29 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.LeaveGroupReply, LeaveGroupReplyHandler);
             Client.Network.RegisterCallback(PacketType.UUIDGroupNameReply, UUIDGroupNameReplyHandler);
             Client.Network.RegisterCallback(PacketType.EjectGroupMemberReply, EjectGroupMemberReplyHandler);
-            Client.Network.RegisterCallback(PacketType.GroupNoticesListReply, GroupNoticesListReplyHandler);
+            Client.Network.RegisterCallback(PacketType.GroupNoticesListReply, GroupNoticesListReplyHandler);            
 
             Client.Network.RegisterEventCallback("AgentDropGroup", new Caps.EventQueueCallback(AgentDropGroupMessageHandler));
+        }
+
+        void Self_IM(object sender, InstantMessageEventArgs e)
+        {
+            if(m_GroupInvitation != null && e.IM.Dialog == InstantMessageDialog.GroupInvitation)
+            {
+                GroupInvitationEventArgs args = new GroupInvitationEventArgs(e.Simulator, e.IM.FromAgentID, e.IM.FromAgentName, e.IM.Message);
+                OnGroupInvitation(args);
+
+                if (args.Accept)
+                {
+                    Client.Self.InstantMessage("name", e.IM.FromAgentID, "message", e.IM.IMSessionID, InstantMessageDialog.GroupInvitationAccept,
+                         InstantMessageOnline.Online, Client.Self.SimPosition, UUID.Zero, Utils.EmptyBytes);
+                }
+                else
+                {
+                    Client.Self.InstantMessage("name", e.IM.FromAgentID, "message", e.IM.IMSessionID, InstantMessageDialog.GroupInvitationDecline,
+                         InstantMessageOnline.Online, Client.Self.SimPosition, UUID.Zero, new byte[1] { 0 });
+                }            
+            }
         }
 
 
@@ -1783,7 +1830,7 @@ namespace OpenMetaverse
             {
                 OnGroupMemberEjected(new GroupOperationEventArgs(reply.GroupData.GroupID, reply.EjectData.Success));
             }
-        }
+        }        
 
         #endregion Packet Handlers
     }
@@ -2052,6 +2099,40 @@ namespace OpenMetaverse
         public GroupProfileEventArgs(Group group)
         {
             this.m_Group = group;
+        }
+    }
+
+    /// <summary>
+    /// Provides notification of a group invitation request sent by another Avatar
+    /// </summary>
+    /// <remarks>The <see cref="GroupInvitation"/> invitation is raised when another avatar makes an offer for our avatar
+    /// to join a group.</remarks>
+    public class GroupInvitationEventArgs : EventArgs
+    {
+        private readonly UUID m_FromAgentID;
+        private readonly string m_FromAgentName;
+        private readonly string m_Message;
+        private readonly Simulator m_Simulator;
+     
+        /// <summary>The ID of the Avatar sending the group invitation</summary>
+        public UUID AgentID { get { return m_FromAgentID; } }
+        /// <summary>The name of the Avatar sending the group invitation</summary>
+        public string FromName { get { return m_FromAgentName; } }
+        /// <summary>A message containing the request information which includes
+        /// the name of the group, the groups charter and the fee to join details</summary>
+        public string Message { get { return m_Message; } }
+        /// <summary>The Simulator</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
+
+        /// <summary>Set to true to accept invitation, false to decline</summary>
+        public bool Accept { get; set; }
+
+        public GroupInvitationEventArgs(Simulator simulator, UUID agentID, string agentName, string message)
+        {
+            this.m_Simulator = simulator;
+            this.m_FromAgentID = agentID;
+            this.m_FromAgentName = agentName;
+            this.m_Message = message;
         }
     }
 
