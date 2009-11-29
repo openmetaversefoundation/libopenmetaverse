@@ -1691,6 +1691,7 @@ namespace OpenMetaverse.Packets
         /// Decode an IMessage object into a beautifully formatted string
         /// </summary>
         /// <param name="message">The IMessage object</param>
+        /// <param name="recurseLevel">Recursion level (used for indenting)</param>
         /// <returns>A formatted string containing the names and values of the source object</returns>
         public static string MessageToString(object message, int recurseLevel)
         {

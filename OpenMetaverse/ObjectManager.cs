@@ -3021,6 +3021,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="simulator">The simulator the object originated from</param>
         /// <param name="prim">The Primitive</param>
+        /// <param name="isNew">true if this is the first tie we see the prim</param>
         /// <param name="isAttachment">true if the primitive represents an attachment to an agent</param>
         /// <param name="timeDilation">The simulator time dilation</param>
         public PrimEventArgs(Simulator simulator, Primitive prim, ushort timeDilation, bool isNew, bool isAttachment)

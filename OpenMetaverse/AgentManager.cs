@@ -4013,6 +4013,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Construct a new instance of the ChatEventArgs object
         /// </summary>
+        /// <param name="simulator">Sim from which the message originates</param>
         /// <param name="message">The message sent</param>
         /// <param name="audible">The audible level of the message</param>
         /// <param name="type">The type of message sent: whisper, shout, etc</param>
