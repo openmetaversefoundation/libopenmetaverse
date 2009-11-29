@@ -1,9 +1,159 @@
+/*
+ * Copyright (c) 2007-2009, openmetaverse.org
+ * All rights reserved.
+ *
+ * - Redistribution and use in source and binary forms, with or without
+ *   modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * - Neither the name of the openmetaverse.org nor the names
+ *   of its contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
+using OpenMetaverse;
 
 namespace OpenMetaverse.Voice
 {
+    /// <summary>
+    /// Represents a single Voice Session to the Vivox service.
+    /// </summary>
+    public class VoiceSession
+    {
+        private string m_Handle;
+        private static Dictionary<string, VoiceParticipant> knownParticipants;
+        public string RegionName;
+        private bool m_spatial;
+        public bool IsSpatial { get { return m_spatial; } }
+        private VoiceGateway connector;
+
+        public VoiceGateway Connector { get { return connector; } }
+        public string Handle { get { return m_Handle; } }
+
+        public event System.EventHandler OnParticipantAdded;
+        public event System.EventHandler OnParticipantUpdate;
+        public event System.EventHandler OnParticipantRemoved;
+
+        public VoiceSession(VoiceGateway conn, string handle)
+        {
+            m_Handle = handle;
+            connector = conn;
+
+            m_spatial = true;
+            knownParticipants = new Dictionary<string, VoiceParticipant>();
+        }
+
+        /// <summary>
+        /// Close this session.
+        /// </summary>
+        internal void Close()
+        {
+
+            knownParticipants.Clear();
+        }
+
+        internal void ParticipantUpdate(string URI,
+            bool isMuted,
+            bool isSpeaking,
+            int volume,
+            float energy)
+        {
+            lock (knownParticipants)
+            {
+                // Locate in this session
+                VoiceParticipant p = FindParticipant(URI);
+                if (p == null) return;
+
+                // Set properties
+                p.SetProperties(isSpeaking, isMuted, energy);
+
+                // Inform interested parties.
+                if (OnParticipantUpdate != null)
+                    OnParticipantUpdate(p, null);
+            }
+        }
+
+        internal void AddParticipant(string URI)
+        {
+            lock (knownParticipants)
+            {
+                VoiceParticipant p = FindParticipant(URI);
+
+                // We expect that to come back null.  If it is not
+                // null, this is a duplicate
+                if (p != null)
+                {
+                    return;
+                }
+
+                // It was not found, so add it.
+                p = new VoiceParticipant(URI, this);
+                knownParticipants.Add(URI, p);
+
+                /* TODO
+                           // Fill in the name.
+                           if (p.Name == null || p.Name.StartsWith("Loading..."))
+                                   p.Name = control.instance.getAvatarName(p.ID);
+                               return p;
+               */
+
+                // Inform interested parties.
+                if (OnParticipantAdded != null)
+                    OnParticipantAdded(p, null);
+            }
+        }
+
+        internal void RemoveParticipant(string URI)
+        {
+            lock (knownParticipants)
+            {
+                VoiceParticipant p = FindParticipant(URI);
+                if (p == null) return;
+
+                // Remove from list for this session.
+                knownParticipants.Remove(URI);
+
+                // Inform interested parties.
+                if (OnParticipantRemoved != null)
+                    OnParticipantRemoved(p, null);
+            }
+        }
+
+        /// <summary>
+        /// Look up an existing Participants in this session
+        /// </summary>
+        /// <param name="puri"></param>
+        /// <returns></returns>
+        private VoiceParticipant FindParticipant(string puri)
+        {
+            if (knownParticipants.ContainsKey(puri))
+                return knownParticipants[puri];
+
+            return null;
+        }
+
+        public void Set3DPosition(VoicePosition SpeakerPosition, VoicePosition ListenerPosition)
+        {
+            connector.SessionSet3DPosition(m_Handle, SpeakerPosition, ListenerPosition);
+        }
+    }
+
     public partial class VoiceGateway
     {
         /// <summary>
@@ -27,7 +177,7 @@ namespace OpenMetaverse.Voice
         /// <param name="JoinAudio"></param>
         /// <param name="JoinText"></param>
         /// <returns></returns>
-        public int SessionCreate(string AccountHandle, string URI, string Name, string Password, 
+        public int SessionCreate(string AccountHandle, string URI, string Name, string Password,
             bool JoinAudio, bool JoinText, string PasswordHashAlgorithm)
         {
             StringBuilder sb = new StringBuilder();
@@ -102,7 +252,6 @@ namespace OpenMetaverse.Voice
 
         /// <summary>
         /// Set the combined speaking and listening position in 3D space.
-        /// There appears to be no response to this request.
         /// </summary>
         /// <param name="SessionHandle">Handle returned from successful Session ‘create’ request or a SessionNewEvent</param>
         /// <param name="SpeakerPosition">Speaking position</param>

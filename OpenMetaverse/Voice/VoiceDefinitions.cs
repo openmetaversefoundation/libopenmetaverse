@@ -1,3 +1,29 @@
+/*
+ * Copyright (c) 2007-2009, openmetaverse.org
+ * All rights reserved.
+ *
+ * - Redistribution and use in source and binary forms, with or without
+ *   modification, are permitted provided that the following conditions are met:
+ *
+ * - Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ * - Neither the name of the openmetaverse.org nor the names
+ *   of its contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Xml;
@@ -48,6 +74,34 @@ namespace OpenMetaverse.Voice
             Focus = 2
         }
 
+        public enum ResponseType
+        {
+            None = 0,
+            ConnectorCreate,
+            ConnectorInitiateShutdown,
+            MuteLocalMic,
+            MuteLocalSpeaker,
+            SetLocalMicVolume,
+            SetLocalSpeakerVolume,
+            GetCaptureDevices,
+            GetRenderDevices,
+            SetRenderDevice,
+            SetCaptureDevice,
+            CaptureAudioStart,
+            CaptureAudioStop,
+            SetMicLevel,
+            SetSpeakerLevel,
+            AccountLogin,
+            AccountLogout,
+            RenderAudioStart,
+            RenderAudioStop,
+            SessionCreate,
+            SessionConnect,
+            SessionTerminate,
+            SetParticipantVolumeForMe,
+            SetParticipantMuteForMe,
+            Set3DPosition
+        }
         #endregion Enums
 
         #region Logging
@@ -86,186 +140,420 @@ namespace OpenMetaverse.Voice
 
         #endregion Logging
 
-        #region Session Delegates
+        public class VoiceResponseEventArgs : EventArgs
+        {
+            public readonly ResponseType Type;
+            public readonly int ReturnCode;
+            public readonly int StatusCode;
+            public readonly string Message;
 
-        /// <summary>Response to Session.Create request</summary>
-        public delegate void SessionCreateResponseCallback(int ReturnCode, int StatusCode, string StatusString, string SessionHandle, VoiceRequest Request);
-        /// <summary>Response to Session.Connect request</summary>
-        public delegate void SessionConnectResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        /// <summary>Response to Session.RenderAudioStart request</summary>
-        public delegate void SessionRenderAudioStartResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        /// <summary>Response to Session.RenderAudioStop request</summary>
-        public delegate void SessionRenderAudioStopResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        /// <summary>Response to Session.Terminate request</summary>
-        public delegate void SessionTerminateResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        /// <summary>Response to Session.SetParticipantVolumeForMe request</summary>
-        public delegate void SessionNewEventCallback(string AccountHandle, string SessionHandle, string URI, bool IsChannel, string Name, string AudioMedia);
-        public delegate void SessionMediaEventCallback(string SessionHandle, bool HasText, bool HasAudio, bool HasVideo, bool Terminated);
-        public delegate void SessionStateChangeEventCallback(string SessionHandle, int StatusCode, string StatusString, SessionState State, string URI, bool IsChannel, string ChannelName);
+            // All Voice Response events carry these properties.
+            public VoiceResponseEventArgs(ResponseType type, int rcode, int scode, string text)
+            {
+                this.Type = type;
+                this.ReturnCode = rcode;
+                this.StatusCode = scode;
+                this.Message = text;
+            }
+        }
+
+        #region Session Event Args
+        public class VoiceSessionEventArgs : VoiceResponseEventArgs
+        {
+            public readonly string SessionHandle;
+
+            public VoiceSessionEventArgs(int rcode, int scode, string text, string shandle) :
+                base(ResponseType.SessionCreate, rcode, scode, text)
+            {
+                this.SessionHandle = shandle;
+            }
+        }
+
+        public class NewSessionEventArgs : EventArgs
+        {
+            public readonly string AccountHandle;
+            public readonly string SessionHandle;
+            public readonly string URI;
+            public readonly string Name;
+            public readonly string AudioMedia;
+
+            public NewSessionEventArgs(string AccountHandle, string SessionHandle, string URI, bool IsChannel, string Name, string AudioMedia)
+            {
+                this.AccountHandle = AccountHandle;
+                this.SessionHandle = SessionHandle;
+                this.URI = URI;
+                this.Name = Name;
+                this.AudioMedia = AudioMedia;
+            }
+        }
+
+        public class SessionMediaEventArgs : EventArgs
+        {
+            public readonly string SessionHandle;
+            public readonly bool HasText;
+            public readonly bool HasAudio;
+            public readonly bool HasVideo;
+            public readonly bool Terminated;
+
+            public SessionMediaEventArgs(string SessionHandle, bool HasText, bool HasAudio, bool HasVideo, bool Terminated)
+            {
+                this.SessionHandle = SessionHandle;
+                this.HasText = HasText;
+                this.HasAudio = HasAudio;
+                this.HasVideo = HasVideo;
+                this.Terminated = Terminated;
+            }
+        }
+
+        public class SessionStateChangeEventArgs : EventArgs
+        {
+            public readonly string SessionHandle;
+            public readonly int StatusCode;
+            public readonly string StatusString;
+            public readonly SessionState State;
+            public readonly string URI;
+            public readonly bool IsChannel;
+            public readonly string ChannelName;
+            public SessionStateChangeEventArgs(string SessionHandle, int StatusCode, string StatusString, SessionState State, string URI, bool IsChannel, string ChannelName)
+            {
+                this.SessionHandle = SessionHandle;
+                this.StatusCode = StatusCode;
+                this.StatusString = StatusString;
+                this.State = State;
+                this.URI = URI;
+                this.IsChannel = IsChannel;
+                this.ChannelName = ChannelName;
+            }
+        }
+
         // Participants
-        public delegate void SessionParticipantAddedEventCallback(
-                string SessionGroupHandle,
-                string SessionHandle,
-                string ParticipantUri,
-                string AccountName,
-                string DisplayName,
-                ParticipantType type,
-                string Application );
-        public delegate void SessionParticipantRemovedEventCallback(
-                string SessionGroupHandle,
-                string SessionHandle,
-                string ParticipantUri,
-                string AccountName,
-                string Reason );
-        public delegate void SessionParticipantStateChangeEventCallback(string SessionHandle, int StatusCode, string StatusString, ParticipantState State, string ParticipantURI, string AccountName, string DisplayName, ParticipantType ParticipantType);
-        public delegate void SessionParticipantPropertiesEventCallback(string SessionHandle, string ParticipantURI, bool IsLocallyMuted, bool IsModeratorMuted, bool IsSpeaking, int Volume, float Energy);
-        public delegate void SessionParticipantUpdatedEventCallback(string sessionHandle, string URI, bool isMuted, bool isSpeaking, int volume, float energy);
-        public delegate void SessionSetParticipantVolumeForMeResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        public delegate void SessionSetPositionResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
+        public class ParticipantAddedEventArgs : EventArgs
+        {
+            public readonly string SessionHandle;
+            public readonly string SessionGroupHandle;
+            public readonly string URI;
+            public readonly string AccountName;
+            public readonly string DisplayName;
+            public readonly ParticipantType Type;
+            public readonly string Appllication;
+            public ParticipantAddedEventArgs(
+                    string SessionGroupHandle,
+                    string SessionHandle,
+                    string ParticipantUri,
+                    string AccountName,
+                    string DisplayName,
+                    ParticipantType type,
+                    string Application)
+            {
+                this.SessionGroupHandle = SessionGroupHandle;
+                this.SessionHandle = SessionHandle;
+                this.URI = ParticipantUri;
+                this.AccountName = AccountName;
+                this.DisplayName = DisplayName;
+                this.Type = type;
+                this.Appllication = Application;
+            }
+        }
 
-        public delegate void SessionAddedEventCallback(string sessionGroupHandle, string sessionHandle, string URI, bool isChannel, bool isIncoming);
-        public delegate void SessionRemovedEventCallback(
-            string SessionGroupHandle,
-            string SessionHandle,
-            string Uri);
-        public delegate void SessionUpdatedEventCallback(
-            string SessionGroupHandle,
-            string SessionHandle,
-            string Uri,
-            bool isMuted,
-            int Volume,
-            bool TransmitEnabled,
-            bool IsFocused );
- 
-        public delegate void SessionGroupAddedEventCallback( string acctHandle, string sessionGroupHandle, string type );
-        #endregion Session Delegates
+        public class ParticipantRemovedEventArgs : EventArgs
+        {
+            public readonly string SessionGroupHandle;
+            public readonly string SessionHandle;
+            public readonly string URI;
+            public readonly string AccountName;
+            public readonly string Reason;
+
+            public ParticipantRemovedEventArgs(
+                string SessionGroupHandle,
+                string SessionHandle,
+                string ParticipantUri,
+                string AccountName,
+                string Reason)
+            {
+                this.SessionGroupHandle = SessionGroupHandle;
+                this.SessionHandle = SessionHandle;
+                this.URI = ParticipantUri;
+                this.AccountName = AccountName;
+                this.Reason = Reason;
+            }
+        }
+
+        public class ParticipantStateChangeEventArgs : EventArgs
+        {
+            public readonly string SessionHandle;
+            public readonly int StatusCode;
+            public readonly string StatusString;
+            public readonly ParticipantState State;
+            public readonly string URI;
+            public readonly string AccountName;
+            public readonly string DisplayName;
+            public readonly ParticipantType Type;
+
+            public ParticipantStateChangeEventArgs(string SessionHandle, int StatusCode, string StatusString,
+                ParticipantState State, string ParticipantURI, string AccountName,
+                string DisplayName, ParticipantType ParticipantType)
+            {
+                this.SessionHandle = SessionHandle;
+                this.StatusCode = StatusCode;
+                this.StatusString = StatusString;
+                this.State = State;
+                this.URI = ParticipantURI;
+                this.AccountName = AccountName;
+                this.DisplayName = DisplayName;
+                this.Type = ParticipantType;
+            }
+        }
+
+        public class ParticipantPropertiesEventArgs : EventArgs
+        {
+            public readonly string SessionHandle;
+            public readonly string URI;
+            public readonly bool IsLocallyMuted;
+            public readonly bool IsModeratorMuted;
+            public readonly bool IsSpeaking;
+            public readonly int Volume;
+            public readonly float Energy;
+
+            public ParticipantPropertiesEventArgs(string SessionHandle, string ParticipantURI,
+                bool IsLocallyMuted, bool IsModeratorMuted, bool IsSpeaking, int Volume, float Energy)
+            {
+                this.SessionHandle = SessionHandle;
+                this.URI = ParticipantURI;
+                this.IsLocallyMuted = IsLocallyMuted;
+                this.IsModeratorMuted = IsModeratorMuted;
+                this.IsSpeaking = IsSpeaking;
+                this.Volume = Volume;
+                this.Energy = Energy;
+            }
+
+        }
+
+        public class ParticipantUpdatedEventArgs : EventArgs
+        {
+            public readonly string SessionHandle;
+            public readonly string URI;
+            public readonly bool IsMuted;
+            public readonly bool IsSpeaking;
+            public readonly int Volume;
+            public readonly float Energy;
+
+            public ParticipantUpdatedEventArgs(string sessionHandle, string URI, bool isMuted, bool isSpeaking, int volume, float energy)
+            {
+                this.SessionHandle = sessionHandle;
+                this.URI = URI;
+                this.IsMuted = isMuted;
+                this.IsSpeaking = isSpeaking;
+                this.Volume = volume;
+                this.Energy = energy;
+            }
+        }
+
+        public class SessionAddedEventArgs : EventArgs
+        {
+            public readonly string SessionGroupHandle;
+            public readonly string SessionHandle;
+            public readonly string URI;
+            public readonly bool IsChannel;
+            public readonly bool IsIncoming;
+
+            public SessionAddedEventArgs(string sessionGroupHandle, string sessionHandle,
+                string URI, bool isChannel, bool isIncoming)
+            {
+                this.SessionGroupHandle = sessionGroupHandle;
+                this.SessionHandle = sessionHandle;
+                this.URI = URI;
+                this.IsChannel = isChannel;
+                this.IsIncoming = isIncoming;
+            }
+        }
+
+        public class SessionRemovedEventArgs : EventArgs
+        {
+            public readonly string SessionGroupHandle;
+            public readonly string SessionHandle;
+            public readonly string URI;
+            public SessionRemovedEventArgs(
+                string SessionGroupHandle,
+                string SessionHandle,
+                string Uri)
+            {
+                this.SessionGroupHandle = SessionGroupHandle;
+                this.SessionHandle = SessionHandle;
+                this.URI = Uri;
+            }
+        }
+
+        public class SessionUpdatedEventArgs : EventArgs
+        {
+            public readonly string SessionGroupHandle;
+            public readonly string SessionHandle;
+            public readonly string URI;
+            public readonly bool IsMuted;
+            public readonly int Volume;
+            public readonly bool TransmitEnabled;
+            public readonly bool IsFocused;
+            public SessionUpdatedEventArgs(string SessionGroupHandle,
+                string SessionHandle, string URI, bool IsMuted, int Volume,
+                bool TransmitEnabled, bool IsFocused)
+            {
+                this.SessionGroupHandle = SessionGroupHandle;
+                this.SessionHandle = SessionHandle;
+                this.URI = URI;
+                this.IsMuted = IsMuted;
+                this.Volume = Volume;
+                this.TransmitEnabled = TransmitEnabled;
+                this.IsFocused = IsFocused;
+            }
+
+        }
+
+        public class SessionGroupAddedEventArgs : EventArgs
+        {
+            public readonly string AccountHandle;
+            public readonly string SessionGroupHandle;
+            public readonly string Type;
+            public SessionGroupAddedEventArgs(string acctHandle, string sessionGroupHandle, string type)
+            {
+                this.AccountHandle = acctHandle;
+                this.SessionGroupHandle = sessionGroupHandle;
+                this.Type = type;
+            }
+        }
+        #endregion Session Event Args
 
         #region Connector Delegates
+        public class VoiceConnectorEventArgs : VoiceResponseEventArgs
+        {
+            private readonly string m_Version;
+            private readonly string m_ConnectorHandle;
+            public string Version { get { return m_Version; } }
+            public string Handle { get { return m_ConnectorHandle; } }
 
-        public delegate void ConnectorCreateResponseCallback(int ReturnCode, string VersionID, int StatusCode, string StatusString, string ConnectorHandle, VoiceRequest Request);
-        public delegate void ConnectorInitiateShutdownResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        public delegate void ConnectorMuteLocalMicResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        public delegate void ConnectorMuteLocalSpeakerResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        public delegate void ConnectorSetLocalMicVolumeResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        public delegate void ConnectorSetLocalSpeakerVolumeResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
+            public VoiceConnectorEventArgs(int rcode, int scode, string text, string version, string handle) :
+                base(ResponseType.ConnectorCreate, rcode, scode, text)
+            {
+                m_Version = version;
+                m_ConnectorHandle = handle;
+            }
+        }
 
         #endregion Connector Delegates
 
-        #region Aux Delegates
 
-        public delegate void AuxGetCaptureDevicesResponseCallback(int ReturnCode, int StatusCode, string StatusString, List<string> CaptureDevices, string CurrentCaptureDevice, VoiceRequest Request);
-        public delegate void AuxGetRenderDevicesResponseCallback(int ReturnCode, int StatusCode, string StatusString, List<string> RenderDevices, string CurrentRenderDevice, VoiceRequest Request);
-        public delegate void AuxSetRenderDeviceResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        public delegate void AuxSetCaptureDeviceResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        public delegate void AuxCaptureAudioStartResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        public delegate void AuxCaptureAudioStopResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        public delegate void AuxSetMicLevelResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        public delegate void AuxSetSpeakerLevelResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        /// <summary>
+        #region Aux Event Args
+        public class VoiceDevicesEventArgs : VoiceResponseEventArgs
+        {
+            private readonly string m_CurrentDevice;
+            private readonly List<string> m_Available;
+            public string CurrentDevice { get { return m_CurrentDevice; } }
+            public List<string> Devices { get { return m_Available; } }
+
+            public VoiceDevicesEventArgs(ResponseType type, int rcode, int scode, string text, string current, List<string> avail) :
+                base(type, rcode, scode, text)
+            {
+                m_CurrentDevice = current;
+                m_Available = avail;
+            }
+        }
+
+
         /// Audio Properties Events are sent after audio capture is started. These events are used to display a microphone VU meter
+        public class AudioPropertiesEventArgs : EventArgs
+        {
+            public readonly bool IsMicActive;
+            public readonly float MicEnergy;
+            public readonly int MicVolume;
+            public readonly int SpeakerVolume;
+            public AudioPropertiesEventArgs(bool MicIsActive, float MicEnergy, int MicVolume, int SpeakerVolume)
+            {
+                this.IsMicActive = MicIsActive;
+                this.MicEnergy = MicEnergy;
+                this.MicVolume = MicVolume;
+                this.SpeakerVolume = SpeakerVolume;
+            }
+        }
+
+        #endregion Aux Event Args
+
+        #region Account Event Args
+        public class VoiceAccountEventArgs : VoiceResponseEventArgs
+        {
+            private readonly string m_AccountHandle;
+            public string AccountHandle { get { return m_AccountHandle; } }
+
+            public VoiceAccountEventArgs(int rcode, int scode, string text, string ahandle) :
+                base(ResponseType.AccountLogin, rcode, scode, text)
+            {
+                this.m_AccountHandle = ahandle;
+            }
+        }
+
+        public class AccountLoginStateChangeEventArgs : EventArgs
+        {
+            public readonly string AccountHandle;
+            public readonly int StatusCode;
+            public readonly string StatusString;
+            public readonly LoginState State;
+            public AccountLoginStateChangeEventArgs(string AccountHandle, int StatusCode, string StatusString, LoginState State)
+            {
+                this.AccountHandle = AccountHandle;
+                this.StatusCode = StatusCode;
+                this.StatusString = StatusString;
+                this.State = State;
+            }
+        }
+
+        #endregion Account Event Args
+
+        /// <summary>
+        /// Event for most mundane request reposnses.
         /// </summary>
-        /// <param name="MicIsActive">True if voice is detected on the microphone</param>
-        /// <param name="MicEnergy">audio energy, from 0 to 1</param>
-        /// <param name="MicVolume">current mic volume</param>
-        /// <param name="SpeakerVolume">currently unimplemented, and always 0</param>
-        public delegate void AuxAudioPropertiesEventCallback(bool MicIsActive, float MicEnergy, float MicVolume, float SpeakerVolume);
-        // FIXME: Should MicVolume and SpeakerVolume be ints?
-
-        #endregion Aux Delegates
-
-        #region Account Delegates
-
-        public delegate void AccountLoginResponseCallback(int ReturnCode, int StatusCode, string StatusString, string AccountHandle, VoiceRequest Request);
-        public delegate void AccountLogoutResponseCallback(int ReturnCode, int StatusCode, string StatusString, VoiceRequest Request);
-        public delegate void AccountLoginStateChangeEventCallback(string AccountHandle, int StatusCode, string StatusString, LoginState State);
-
-        #endregion Account Delegates
+        public event EventHandler<VoiceResponseEventArgs> OnVoiceResponse;
 
         #region Session Events
-
-        /// <summary>Response to Session.Create request</summary>
-        public event SessionCreateResponseCallback OnSessionCreateResponse;
-        /// <summary>Response to Session.Connect request</summary>
-        public event SessionConnectResponseCallback OnSessionConnectResponse;
-        /// <summary>Response to Session.RenderAudioStart request</summary>
-        public event SessionRenderAudioStartResponseCallback OnSessionRenderAudioStartResponse;
-        /// <summary>Response to Session.RenderAudioStop request</summary>
-        public event SessionRenderAudioStopResponseCallback OnSessionRenderAudioStopResponse;
-        /// <summary>Response to Session.Terminate request</summary>
-        public event SessionTerminateResponseCallback OnSessionTerminateResponse;
-        /// <summary>Response to Session.SetParticipantVolumeForMe request</summary>
-        public event SessionSetParticipantVolumeForMeResponseCallback OnSessionSetParticipantVolumeForMeResponse;
-        public event SessionSetPositionResponseCallback OnSessionSetPositionResponse;
-        /// <summary>Sent when an incoming session occurs</summary>
-        public event SessionNewEventCallback OnSessionNewEvent;
-        /// <summary>Sent for specific Session state changes (connected, disconnected)</summary>
-        public event SessionStateChangeEventCallback OnSessionStateChangeEvent;
-        /// <summary>Sent for specific Participant state changes (new participants, dropped participants)</summary>
-        public event SessionParticipantStateChangeEventCallback OnSessionParticipantStateChangeEvent;
-        /// <summary>Sent for specific Participant Property changes (IsSpeaking, Volume, Energy, etc.)</summary>
-        public event SessionParticipantPropertiesEventCallback OnSessionParticipantPropertiesEvent;
-        public event SessionParticipantUpdatedEventCallback OnSessionParticipantUpdatedEvent;
-        public event SessionParticipantAddedEventCallback OnSessionParticipantAddedEvent;
-        public event SessionParticipantRemovedEventCallback OnSessionParticipantRemovedEvent;
-        public event SessionGroupAddedEventCallback OnSessionGroupAddedEvent;
-        public event SessionAddedEventCallback OnSessionAddedEvent;
-        public event SessionRemovedEventCallback OnSessionRemovedEvent;
-        public event SessionUpdatedEventCallback OnSessionUpdatedEvent;
-        /// <summary></summary>
-        public event SessionMediaEventCallback OnSessionMediaEvent;
-
+        public event EventHandler<VoiceSessionEventArgs> OnSessionCreateResponse;
+        public event EventHandler<NewSessionEventArgs> OnSessionNewEvent;
+        public event EventHandler<SessionStateChangeEventArgs> OnSessionStateChangeEvent;
+        public event EventHandler<ParticipantStateChangeEventArgs> OnSessionParticipantStateChangeEvent;
+        public event EventHandler<ParticipantPropertiesEventArgs> OnSessionParticipantPropertiesEvent;
+        public event EventHandler<ParticipantUpdatedEventArgs> OnSessionParticipantUpdatedEvent;
+        public event EventHandler<ParticipantAddedEventArgs> OnSessionParticipantAddedEvent;
+        public event EventHandler<ParticipantRemovedEventArgs> OnSessionParticipantRemovedEvent;
+        public event EventHandler<SessionGroupAddedEventArgs> OnSessionGroupAddedEvent;
+        public event EventHandler<SessionAddedEventArgs> OnSessionAddedEvent;
+        public event EventHandler<SessionRemovedEventArgs> OnSessionRemovedEvent;
+        public event EventHandler<SessionUpdatedEventArgs> OnSessionUpdatedEvent;
+        public event EventHandler<SessionMediaEventArgs> OnSessionMediaEvent;
         #endregion Session Events
 
         #region Connector Events
 
         /// <summary>Response to Connector.Create request</summary>
-        public event ConnectorCreateResponseCallback OnConnectorCreateResponse;
-        /// <summary>Response to Connector.InitiateShutdown request</summary>
-        public event ConnectorInitiateShutdownResponseCallback OnConnectorInitiateShutdownResponse;
-        /// <summary>Response to Connector.MuteLocalMic request</summary>
-        public event ConnectorMuteLocalMicResponseCallback OnConnectorMuteLocalMicResponse;
-        /// <summary>Response to Connector.MuteLocalSpeaker request</summary>
-        public event ConnectorMuteLocalSpeakerResponseCallback OnConnectorMuteLocalSpeakerResponse;
-        /// <summary>Response to Connector.SetLocalMicVolume request</summary>
-        public event ConnectorSetLocalMicVolumeResponseCallback OnConnectorSetLocalMicVolumeResponse;
-        /// <summary>Response to Connector.SetLocalSpeakerVolume request</summary>
-        public event ConnectorSetLocalSpeakerVolumeResponseCallback OnConnectorSetLocalSpeakerVolumeResponse;
+        public event EventHandler<VoiceConnectorEventArgs> OnConnectorCreateResponse;
 
         #endregion Connector Events
 
         #region Aux Events
 
         /// <summary>Response to Aux.GetCaptureDevices request</summary>
-        public event AuxGetCaptureDevicesResponseCallback OnAuxGetCaptureDevicesResponse;
+        public event EventHandler<VoiceDevicesEventArgs> OnAuxGetCaptureDevicesResponse;
         /// <summary>Response to Aux.GetRenderDevices request</summary>
-        public event AuxGetRenderDevicesResponseCallback OnAuxGetRenderDevicesResponse;
-        /// <summary>Response to Aux.SetRenderDevice request</summary>
-        public event AuxSetRenderDeviceResponseCallback OnAuxSetRenderDeviceResponse;
-        /// <summary>Response to Aux.SetCaptureDevice request</summary>
-        public event AuxSetCaptureDeviceResponseCallback OnAuxSetCaptureDeviceResponse;
-        /// <summary>Response to Aux.CaptureAudioStart request</summary>
-        public event AuxCaptureAudioStartResponseCallback OnAuxCaptureAudioStartResponse;
-        /// <summary>Response to Aux.CaptureAudioStop request</summary>
-        public event AuxCaptureAudioStopResponseCallback OnAuxCaptureAudioStopResponse;
-        /// <summary>Response to Aux.SetMicLevel request</summary>
-        public event AuxSetMicLevelResponseCallback OnAuxSetMicLevelResponse;
-        /// <summary>Response to Aux.SetSpeakerLevel request</summary>
-        public event AuxSetSpeakerLevelResponseCallback OnAuxSetSpeakerLevelResponse;
+        public event EventHandler<VoiceDevicesEventArgs> OnAuxGetRenderDevicesResponse;
+
         /// <summary>Audio Properties Events are sent after audio capture is started.
         /// These events are used to display a microphone VU meter</summary>
-        public event AuxAudioPropertiesEventCallback OnAuxAudioPropertiesEvent;
+        public event EventHandler<AudioPropertiesEventArgs> OnAuxAudioPropertiesEvent;
 
         #endregion Aux Events
 
         #region Account Events
 
         /// <summary>Response to Account.Login request</summary>
-        public event AccountLoginResponseCallback OnAccountLoginResponse;
-        /// <summary>Response to Account.Logout request</summary>
-        public event AccountLogoutResponseCallback OnAccountLogoutResponse;
+        public event EventHandler<VoiceAccountEventArgs> OnAccountLoginResponse;
+
         /// <summary>This event message is sent whenever the login state of the
         /// particular Account has transitioned from one value to another</summary>
-        public event AccountLoginStateChangeEventCallback OnAccountLoginStateChangeEvent;
+        public event EventHandler<AccountLoginStateChangeEventArgs> OnAccountLoginStateChangeEvent;
 
         #endregion Account Events
 
@@ -277,7 +565,8 @@ namespace OpenMetaverse.Voice
         [XmlRoot("Event")]
         public class VoiceEvent
         {
-            [XmlAttribute("type")] public string Type;
+            [XmlAttribute("type")]
+            public string Type;
             public string AccountHandle;
             public string Application;
             public string StatusCode;
@@ -319,8 +608,10 @@ namespace OpenMetaverse.Voice
         [XmlRoot("Response")]
         public class VoiceResponse
         {
-            [XmlAttribute("requestId")] public string RequestId;
-            [XmlAttribute("action")] public string Action;
+            [XmlAttribute("requestId")]
+            public string RequestId;
+            [XmlAttribute("action")]
+            public string Action;
             public string ReturnCode;
             public VoiceResponseResults Results;
             public VoiceInputXml InputXml;
@@ -358,8 +649,10 @@ namespace OpenMetaverse.Voice
         [XmlRoot("Request")]
         public class VoiceRequest
         {
-            [XmlAttribute("requestId")] public string RequestId;
-            [XmlAttribute("action")] public string Action;
+            [XmlAttribute("requestId")]
+            public string RequestId;
+            [XmlAttribute("action")]
+            public string Action;
             public string RenderDeviceSpecifier;
             public string CaptureDeviceSpecifier;
             public string Duration;
@@ -393,20 +686,21 @@ namespace OpenMetaverse.Voice
             public string Volume;
         }
 
-        public class VoicePosition
-        {
-            /// <summary>Positional vector of the users position</summary>
-            public Vector3d Position;
-            /// <summary>Velocity vector of the position</summary>
-            public Vector3d Velocity;
-            /// <summary>At Orientation (X axis) of the position</summary>
-            public Vector3d AtOrientation;
-            /// <summary>Up Orientation (Y axis) of the position</summary>
-            public Vector3d UpOrientation;
-            /// <summary>Left Orientation (Z axis) of the position</summary>
-            public Vector3d LeftOrientation;
-        }
-
         #endregion XML Serialization Classes
     }
+
+    public class VoicePosition
+    {
+        /// <summary>Positional vector of the users position</summary>
+        public Vector3d Position;
+        /// <summary>Velocity vector of the position</summary>
+        public Vector3d Velocity;
+        /// <summary>At Orientation (X axis) of the position</summary>
+        public Vector3d AtOrientation;
+        /// <summary>Up Orientation (Y axis) of the position</summary>
+        public Vector3d UpOrientation;
+        /// <summary>Left Orientation (Z axis) of the position</summary>
+        public Vector3d LeftOrientation;
+    }
+
 }
