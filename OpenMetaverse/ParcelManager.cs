@@ -461,7 +461,7 @@ namespace OpenMetaverse
     {
         /// <summary>The total number of contiguous 4x4 meter blocks your agent owns within this parcel</summary>        
         public int SelfCount;
-        /// <summary>The total number of contiguous 4x4 meter blocks contained in this parcel</summary>
+        /// <summary>The total number of contiguous 4x4 meter blocks contained in this parcel owned by a group or agent other than your own</summary>
         public int OtherCount;
         /// <summary>Deprecated, Value appears to always be 0</summary>
         public int PublicCount;
@@ -501,8 +501,8 @@ namespace OpenMetaverse
         public int MaxPrims;
         /// <summary>Total number of primitives on this parcel</summary>
         public int TotalPrims;
-        /// <summary>Total number of primitives owned by the parcel owner on 
-        /// this parcel, for parcels owned by an individual this value will be 0</summary>
+        /// <summary>For group-owned parcels this indicates the total number of prims deeded to the group,
+        /// for parcels owned by an individual this inicates the number of prims owned by the individual</summary>
         public int OwnerPrims;
         /// <summary>Total number of primitives owned by the parcel group on 
         /// this parcel, or for parcels owned by an individual with a group set the
