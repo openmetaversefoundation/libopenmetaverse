@@ -459,11 +459,11 @@ namespace OpenMetaverse
     /// </summary>
     public struct Parcel
     {
-        /// <summary></summary>
+        /// <summary>The total number of contiguous 4x4 meter blocks your agent owns within this parcel</summary>        
         public int SelfCount;
-        /// <summary></summary>
+        /// <summary>The total number of contiguous 4x4 meter blocks contained in this parcel</summary>
         public int OtherCount;
-        /// <summary></summary>
+        /// <summary>Deprecated, Value appears to always be 0</summary>
         public int PublicCount;
         /// <summary>Simulator-local ID of this parcel</summary>
         public int LocalID;
@@ -492,23 +492,26 @@ namespace OpenMetaverse
         public int Area;
         /// <summary></summary>
         public ParcelStatus Status;
-        /// <summary>Maximum primitives across the entire simulator</summary>
+        /// <summary>Maximum primitives across the entire simulator owned by the same agent or group that owns this parcel that can be used</summary>
         public int SimWideMaxPrims;
-        /// <summary>Total primitives across the entire simulator</summary>
+        /// <summary>Total primitives across the entire simulator calculated by combining the allowed prim counts for each parcel
+        /// owned by the agent or group that owns this parcel</summary>
         public int SimWideTotalPrims;
         /// <summary>Maximum number of primitives this parcel supports</summary>
         public int MaxPrims;
         /// <summary>Total number of primitives on this parcel</summary>
         public int TotalPrims;
         /// <summary>Total number of primitives owned by the parcel owner on 
-        /// this parcel</summary>
+        /// this parcel, for parcels owned by an individual this value will be 0</summary>
         public int OwnerPrims;
         /// <summary>Total number of primitives owned by the parcel group on 
-        /// this parcel</summary>
+        /// this parcel, or for parcels owned by an individual with a group set the
+        /// total number of prims set to that group.</summary>
         public int GroupPrims;
-        /// <summary>Total number of other primitives on this parcel</summary>
+        /// <summary>Total number of prims owned by other avatars that are not set to group, or not the parcel owner</summary>
         public int OtherPrims;
-        /// <summary></summary>
+        /// <summary>A bonus multiplier which allows parcel prim counts to go over times this amount, this does not affect
+        /// the max prims per simulator. e.g: 117 prim parcel limit x 1.5 bonus = 175 allowed</summary>
         public float ParcelPrimBonus;
         /// <summary>Autoreturn value in minutes for others' objects</summary>
         public int OtherCleanTime;
@@ -537,11 +540,11 @@ namespace OpenMetaverse
         public UUID AuthBuyerID;
         /// <summary>Key of parcel snapshot</summary>
         public UUID SnapshotID;
-        /// <summary></summary>
+        /// <summary>The landing point location</summary>
         public Vector3 UserLocation;
-        /// <summary></summary>
+        /// <summary>The landing point LookAt</summary>
         public Vector3 UserLookAt;
-        /// <summary></summary>
+        /// <summary>The type of landing enforced from the <see cref="LandingType"/> enum</summary>
         public LandingType Landing;
         /// <summary></summary>
         public float Dwell;
