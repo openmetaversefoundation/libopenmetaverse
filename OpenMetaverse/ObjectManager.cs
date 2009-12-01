@@ -1758,9 +1758,9 @@ namespace OpenMetaverse
                     case PCode.NewTree:
                     case PCode.Prim:
 
-                        bool isNew;
+                        bool isNewObject;
                         lock (simulator.ObjectsPrimitives.Dictionary)
-                            isNew = simulator.ObjectsPrimitives.ContainsKey(block.ID);
+                            isNewObject = !simulator.ObjectsPrimitives.ContainsKey(block.ID);
 
                         Primitive prim = GetPrimitive(simulator, block.ID, block.FullID);
 
@@ -1847,12 +1847,17 @@ namespace OpenMetaverse
                         prim.AngularVelocity = objectupdate.AngularVelocity;
                         #endregion
 
-                        OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, isNew, attachment));                        
+                        OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, isNewObject, attachment));                        
 
                         break;
                     #endregion Prim and Foliage
                     #region Avatar
                     case PCode.Avatar:
+
+                        bool isNewAvatar;
+                        lock (simulator.ObjectsAvatars.Dictionary)
+                            isNewAvatar = !simulator.ObjectsAvatars.ContainsKey(block.ID);
+
                         // Update some internals if this is our avatar
                         if (block.FullID == Client.Self.AgentID && simulator == Client.Network.CurrentSim)
                         {
@@ -1909,7 +1914,7 @@ namespace OpenMetaverse
 
                         #endregion Create an Avatar from the decoded data
 
-                        OnAvatarUpdate(new AvatarUpdateEventArgs(simulator, avatar, update.RegionData.TimeDilation));
+                        OnAvatarUpdate(new AvatarUpdateEventArgs(simulator, avatar, update.RegionData.TimeDilation, isNewAvatar));
 
                         break;
                     #endregion Avatar
@@ -3024,6 +3029,7 @@ namespace OpenMetaverse
         /// <param name="isNew">true if this is the first tie we see the prim</param>
         /// <param name="isAttachment">true if the primitive represents an attachment to an agent</param>
         /// <param name="timeDilation">The simulator time dilation</param>
+        /// <param name="isNew">The prim was not in the dictionary before this update</param>
         public PrimEventArgs(Simulator simulator, Primitive prim, ushort timeDilation, bool isNew, bool isAttachment)
         {
             this.m_Simulator = simulator;
@@ -3083,6 +3089,7 @@ namespace OpenMetaverse
         private readonly Simulator m_Simulator;
         private readonly Avatar m_Avatar;
         private readonly ushort m_TimeDilation;
+        private readonly bool m_IsNew;
 
         /// <summary>Get the simulator the object originated from</summary>
         public Simulator Simulator { get { return m_Simulator; } }
@@ -3090,6 +3097,8 @@ namespace OpenMetaverse
         public Avatar Avatar { get { return m_Avatar; } }
         /// <summary>Get the simulator time dilation</summary>
         public ushort TimeDilation { get { return m_TimeDilation; } }
+        /// <summary>true if the <see cref="Avatar"/> did not exist in the dictionary before this update (always true if avatar tracking has been disabled)</summary>
+        public bool IsNew { get { return m_IsNew; } }
 
         /// <summary>
         /// Construct a new instance of the AvatarUpdateEventArgs class
@@ -3097,11 +3106,13 @@ namespace OpenMetaverse
         /// <param name="simulator">The simulator the packet originated from</param>
         /// <param name="avatar">The <see cref="Avatar"/> data</param>
         /// <param name="timeDilation">The simulator time dilation</param>
-        public AvatarUpdateEventArgs(Simulator simulator, Avatar avatar, ushort timeDilation)
+        /// <param name="isNew">The avatar was not in the dictionary before this update</param>
+        public AvatarUpdateEventArgs(Simulator simulator, Avatar avatar, ushort timeDilation, bool isNew)
         {
             this.m_Simulator = simulator;
             this.m_Avatar = avatar;
             this.m_TimeDilation = timeDilation;
+            this.m_IsNew = isNew;
         }
     }
 
