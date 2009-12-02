@@ -159,7 +159,6 @@ namespace OpenMetaverse.Assets
 
                 if (asset != null)
                 {
-                    asset.Decode();
                     assetCallback(asset);
                     return true;
                 }

@@ -184,6 +184,30 @@ namespace OpenMetaverse.Tests
 
             Assert.IsNotNull(splitPacket);
             Assert.IsTrue(splitPacket.Length == 1, "Expected ParcelReturnObjectsPacket packet to split into 1 packet but got " + splitPacket.Length);
+
+            InventoryDescendentsPacket invPacket = new InventoryDescendentsPacket();
+            invPacket.FolderData = new InventoryDescendentsPacket.FolderDataBlock[1];
+            invPacket.FolderData[0] = new InventoryDescendentsPacket.FolderDataBlock();
+            invPacket.FolderData[0].Name = Utils.EmptyBytes;
+            invPacket.ItemData = new InventoryDescendentsPacket.ItemDataBlock[5];
+            for (int i = 0; i < 5; i++)
+            {
+                invPacket.ItemData[i] = new InventoryDescendentsPacket.ItemDataBlock();
+                invPacket.ItemData[i].Description = Utils.StringToBytes("Unit Test Item Description");
+                invPacket.ItemData[i].Name = Utils.StringToBytes("Unit Test Item Name");
+            }
+
+            splitPacket = invPacket.ToBytesMultiple();
+
+            Assert.IsNotNull(splitPacket);
+            Assert.IsTrue(splitPacket.Length == 1, "Split InventoryDescendents packet into " + splitPacket.Length + " instead of 1 packet");
+
+            int x = 0;
+            int y = splitPacket[0].Length - 1;
+            invPacket.FromBytes(splitPacket[0], ref x, ref y, null);
+
+            Assert.IsTrue(invPacket.FolderData.Length == 1, "InventoryDescendents packet came back with " + invPacket.FolderData.Length + " FolderData blocks");
+            Assert.IsTrue(invPacket.ItemData.Length == 5, "InventoryDescendents packet came back with " + invPacket.ItemData.Length + " ItemData blocks");
         }
 
         [Test]
