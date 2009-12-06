@@ -242,7 +242,8 @@ namespace OpenMetaverse.GUI
                             trackedAvatar.ListViewItem.Text = _Client.Self.Name;
                         }
 
-                        else Client.Avatars.RequestAvatarName(avatarID);
+                        else if (_Client.Network.Connected)
+                            Client.Avatars.RequestAvatarName(avatarID);
                     }
                 }
 
@@ -292,35 +293,36 @@ namespace OpenMetaverse.GUI
             else
             {
                 TrackedAvatar trackedAvatar;
+                bool found;
+
+                lock (_UntrackedAvatars)
+                    found = _UntrackedAvatars.TryGetValue(avatar.ID, out trackedAvatar);
+
+                if (found)
+                {
+                    trackedAvatar.Name = avatar.Name;
+                    trackedAvatar.ListViewItem.Text = avatar.Name;
+                    trackedAvatar.ListViewItem.ForeColor = Color.FromKnownColor(KnownColor.ControlText);
+
+                    lock (_TrackedAvatars) _TrackedAvatars.Add(avatar.LocalID, avatar.ID, trackedAvatar);
+                    _UntrackedAvatars.Remove(avatar.ID);
+                }                
 
                 lock (_TrackedAvatars)
+                    found = _TrackedAvatars.TryGetValue(avatar.ID, out trackedAvatar);
+
+                if (found)
                 {
-                    lock (_UntrackedAvatars)
-                    {
-                        if (_UntrackedAvatars.TryGetValue(avatar.ID, out trackedAvatar))
-                        {
-                            trackedAvatar.Name = avatar.Name;
-                            trackedAvatar.ListViewItem.Text = avatar.Name;
-                            trackedAvatar.ListViewItem.ForeColor = Color.FromKnownColor(KnownColor.ControlText);
+                    trackedAvatar.Avatar = avatar;
+                    trackedAvatar.Name = avatar.Name;
+                    trackedAvatar.ID = avatar.ID;
 
-                            _TrackedAvatars.Add(avatar.LocalID, avatar.ID, trackedAvatar);
-                            _UntrackedAvatars.Remove(avatar.ID);
-                        }
-                    }
-                    
-                    if (_TrackedAvatars.TryGetValue(avatar.ID, out trackedAvatar))
-                    {
-                        trackedAvatar.Avatar = avatar;
-                        trackedAvatar.Name = avatar.Name;
-                        trackedAvatar.ID = avatar.ID;
-
-                        string strDist = avatar.ID == _Client.Self.AgentID ? "--" : (int)Vector3.Distance(_Client.Self.SimPosition, avatar.Position) + "m";
-                        trackedAvatar.ListViewItem.SubItems[1].Text = strDist;
-                    }
-                    else
-                    {
-                        AddAvatar(avatar.ID, avatar, Vector3.Zero);
-                    }               
+                    string strDist = avatar.ID == _Client.Self.AgentID ? "--" : (int)Vector3.Distance(_Client.Self.SimPosition, avatar.Position) + "m";
+                    trackedAvatar.ListViewItem.SubItems[1].Text = strDist;
+                }
+                else
+                {
+                    AddAvatar(avatar.ID, avatar, Vector3.Zero);
                 }
 
                 this.Sort();
@@ -418,23 +420,27 @@ namespace OpenMetaverse.GUI
         {
             if (e.VisualParams.Count > 31)
             {
+                TrackedAvatar trackedAvatar;
+                bool foundAvatar;
+
                 lock (_TrackedAvatars)
+                    foundAvatar = _TrackedAvatars.TryGetValue(e.AvatarID, out trackedAvatar);
+
+                if (foundAvatar)
                 {
-                    TrackedAvatar trackedAvatar;
-                    if (_TrackedAvatars.TryGetValue(e.AvatarID, out trackedAvatar))
-                    {                        
-                        this.BeginInvoke((MethodInvoker)delegate
-                        {
-                            byte param = e.VisualParams[31];
-                            if (param > 0)
-                                trackedAvatar.ListViewItem.ForeColor = Color.Blue;
-                            else
-                                trackedAvatar.ListViewItem.ForeColor = Color.Magenta;
-                        });                        
-                    }
+                    this.BeginInvoke((MethodInvoker)delegate
+                    {
+                        byte param = e.VisualParams[31];
+                        if (param > 0)
+                            trackedAvatar.ListViewItem.ForeColor = Color.Blue;
+                        else
+                            trackedAvatar.ListViewItem.ForeColor = Color.Magenta;
+                    });
                 }
             }
         }
+            
+    
 
         void Network_OnCurrentSimChanged(object sender, SimChangedEventArgs e)
         {
@@ -454,14 +460,15 @@ namespace OpenMetaverse.GUI
 
         void Objects_OnObjectUpdated(object sender, TerseObjectUpdateEventArgs e)
         {
+            bool found;
             lock (_TrackedAvatars)
+                found = _TrackedAvatars.ContainsKey(e.Update.LocalID);
+
+            if (found)
             {
-                if (_TrackedAvatars.ContainsKey(e.Update.LocalID))
-                {
-                    Avatar av;
-                    if (e.Simulator.ObjectsAvatars.TryGetValue(e.Update.LocalID, out av))
-                        UpdateAvatar(av);
-                }
+                Avatar av;
+                if (e.Simulator.ObjectsAvatars.TryGetValue(e.Update.LocalID, out av))
+                    UpdateAvatar(av);
             }
         }
 
