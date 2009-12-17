@@ -1423,7 +1423,7 @@ namespace OpenMetaverse
                 mac = nics[0].GetPhysicalAddress().ToString().ToUpper();
 
             if (mac.Length < 12)
-                mac = mac.PadRight(12, '0');
+                mac = "000000000000";
 
             return String.Format("{0}:{1}:{2}:{3}:{4}:{5}",
                 mac.Substring(0, 2),
