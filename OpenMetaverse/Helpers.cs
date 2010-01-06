@@ -399,7 +399,7 @@ namespace OpenMetaverse
         /// <param name="flags">Flags</param>
         /// <param name="nextOwnerMask">Next owner mask (permissions)</param>
         /// <param name="groupMask">Group mask (permissions)</param>
-        /// <param name="ownerMask">Owner mask (permisions)</param>
+        /// <param name="ownerMask">Owner mask (permissions)</param>
         /// <returns>The calculated CRC</returns>
         public static uint InventoryCRC(int creationDate, byte saleType, sbyte invType, sbyte type,
             UUID assetID, UUID groupID, int salePrice, UUID ownerID, UUID creatorID,

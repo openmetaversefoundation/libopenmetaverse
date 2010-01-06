@@ -27,6 +27,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse
 {
@@ -278,6 +279,58 @@ namespace OpenMetaverse
                 pack.PackFixed(PartEndScaleY, false, 3, 5);
 
                 return bytes;
+            }
+
+            public OSD GetOSD()
+            {
+                OSDMap map = new OSDMap();
+
+                map["crc"] = OSD.FromInteger(CRC);
+                map["part_flags"] = OSD.FromInteger(PartFlags);
+                map["pattern"] = OSD.FromInteger((int)Pattern);
+                map["max_age"] = OSD.FromReal(MaxAge);
+                map["start_age"] = OSD.FromReal(StartAge);
+                map["inner_angle"] = OSD.FromReal(InnerAngle);
+                map["outer_angle"] = OSD.FromReal(OuterAngle);
+                map["burst_rate"] = OSD.FromReal(BurstRate);
+                map["burst_radius"] = OSD.FromReal(BurstRadius);
+                map["burst_speed_min"] = OSD.FromReal(BurstSpeedMin);
+                map["burst_speed_max"] = OSD.FromReal(BurstSpeedMax);
+                map["burst_part_count"] = OSD.FromInteger(BurstPartCount);
+                map["ang_velocity"] = OSD.FromVector3(AngularVelocity);
+                map["part_acceleration"] = OSD.FromVector3(PartAcceleration);
+                map["texture"] = OSD.FromUUID(Texture);
+                map["target"] = OSD.FromUUID(Target);
+
+                return map;
+            }
+
+            public static ParticleSystem FromOSD(OSD osd)
+            {
+                ParticleSystem partSys = new ParticleSystem();
+                OSDMap map = osd as OSDMap;
+
+                if (map != null)
+                {
+                    partSys.CRC = map["crc"].AsUInteger();
+                    partSys.PartFlags = map["part_flags"].AsUInteger();
+                    partSys.Pattern = (SourcePattern)map["pattern"].AsInteger();
+                    partSys.MaxAge = (float)map["max_age"].AsReal();
+                    partSys.StartAge = (float)map["start_age"].AsReal();
+                    partSys.InnerAngle = (float)map["inner_angle"].AsReal();
+                    partSys.OuterAngle = (float)map["outer_angle"].AsReal();
+                    partSys.BurstRate = (float)map["burst_rate"].AsReal();
+                    partSys.BurstRadius = (float)map["burst_radius"].AsReal();
+                    partSys.BurstSpeedMin = (float)map["burst_speed_min"].AsReal();
+                    partSys.BurstSpeedMax = (float)map["burst_speed_max"].AsReal();
+                    partSys.BurstPartCount = (byte)map["burst_part_count"].AsInteger();
+                    partSys.AngularVelocity = map["ang_velocity"].AsVector3();
+                    partSys.PartAcceleration = map["part_acceleration"].AsVector3();
+                    partSys.Texture = map["texture"].AsUUID();
+                    partSys.Target = map["target"].AsUUID();
+                }
+
+                return partSys;
             }
         }
 

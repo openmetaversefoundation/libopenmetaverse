@@ -1281,6 +1281,40 @@ namespace OpenMetaverse
 
                 return data;
             }
+
+            public OSD GetOSD()
+            {
+                OSDMap map = new OSDMap();
+
+                map["face"] = OSD.FromInteger(Face);
+                map["flags"] = OSD.FromInteger((uint)Flags);
+                map["length"] = OSD.FromReal(Length);
+                map["rate"] = OSD.FromReal(Rate);
+                map["size_x"] = OSD.FromInteger(SizeX);
+                map["size_y"] = OSD.FromInteger(SizeY);
+                map["start"] = OSD.FromReal(Start);
+
+                return map;
+            }
+
+            public static TextureAnimation FromOSD(OSD osd)
+            {
+                TextureAnimation anim = new TextureAnimation();
+                OSDMap map = osd as OSDMap;
+
+                if (map != null)
+                {
+                    anim.Face = map["face"].AsUInteger();
+                    anim.Flags = (TextureAnimMode)map["flags"].AsUInteger();
+                    anim.Length = (float)map["length"].AsReal();
+                    anim.Rate = (float)map["rate"].AsReal();
+                    anim.SizeX = map["size_x"].AsUInteger();
+                    anim.SizeY = map["size_y"].AsUInteger();
+                    anim.Start = (float)map["start"].AsReal();
+                }
+
+                return anim;
+            }
         }
 
         #endregion Subclasses

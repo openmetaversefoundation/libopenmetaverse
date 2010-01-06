@@ -107,29 +107,27 @@ namespace OpenMetaverse
         public OSD GetOSD()
         {
             OSDMap permissions = new OSDMap(5);
-            permissions["BaseMask"] = OSD.FromUInteger((uint)BaseMask);
-            permissions["EveryoneMask"] = OSD.FromUInteger((uint)EveryoneMask);
-            permissions["GroupMask"] = OSD.FromUInteger((uint)GroupMask);
-            permissions["NextOwnerMask"] = OSD.FromUInteger((uint)NextOwnerMask);
-            permissions["OwnerMask"] = OSD.FromUInteger((uint)OwnerMask);
+            permissions["base_mask"] = OSD.FromInteger((uint)BaseMask);
+            permissions["everyone_mask"] = OSD.FromInteger((uint)EveryoneMask);
+            permissions["group_mask"] = OSD.FromInteger((uint)GroupMask);
+            permissions["next_owner_mask"] = OSD.FromInteger((uint)NextOwnerMask);
+            permissions["owner_mask"] = OSD.FromInteger((uint)OwnerMask);
             return permissions;
         }
 
         public static Permissions FromOSD(OSD llsd)
         {
             Permissions permissions = new Permissions();
-            OSDMap map = (OSDMap)llsd;
+            OSDMap map = llsd as OSDMap;
 
-            byte[] bytes = map["BaseMask"].AsBinary();
-            permissions.BaseMask = (PermissionMask)Utils.BytesToUInt(bytes);
-            bytes = map["EveryoneMask"].AsBinary();
-            permissions.EveryoneMask = (PermissionMask)Utils.BytesToUInt(bytes);
-            bytes = map["GroupMask"].AsBinary();
-            permissions.GroupMask = (PermissionMask)Utils.BytesToUInt(bytes);
-            bytes = map["NextOwnerMask"].AsBinary();
-            permissions.NextOwnerMask = (PermissionMask)Utils.BytesToUInt(bytes);
-            bytes = map["OwnerMask"].AsBinary();
-            permissions.OwnerMask = (PermissionMask)Utils.BytesToUInt(bytes);
+            if (map != null)
+            {
+                permissions.BaseMask = (PermissionMask)map["base_mask"].AsUInteger();
+                permissions.EveryoneMask = (PermissionMask)map["everyone_mask"].AsUInteger();
+                permissions.GroupMask = (PermissionMask)map["group_mask"].AsUInteger();
+                permissions.NextOwnerMask = (PermissionMask)map["next_owner_mask"].AsUInteger();
+                permissions.OwnerMask = (PermissionMask)map["owner_mask"].AsUInteger();
+            }
 
             return permissions;
         }
