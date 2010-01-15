@@ -118,6 +118,8 @@ namespace WinGridProxy
                 FireEventAppender.Instance.MessageLoggedEvent += new MessageLoggedEventHandler(Instance_MessageLoggedEvent);
             }
 
+
+
             // Attempt to work around some mono inefficiencies
             monoRuntime = Type.GetType("Mono.Runtime") != null; // Officially supported way of detecting mono
             if (monoRuntime)
