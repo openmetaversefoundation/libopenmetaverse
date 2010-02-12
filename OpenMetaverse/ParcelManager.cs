@@ -258,7 +258,8 @@ namespace OpenMetaverse
         DenyAnonymous = 1 << 22,
         // <summary>Ban all identified avatars [OBSOLETE]</summary>
         //[Obsolete]
-        //DenyIdentified = 1 << 23,
+        // This was obsoleted in 1.19.0 but appears to be recycled and is used on linden homes parcels
+        LindenHome = 1 << 23,
         // <summary>Ban all transacted avatars [OBSOLETE]</summary>
         //[Obsolete]
         //DenyTransacted = 1 << 24,

@@ -326,6 +326,7 @@ namespace OpenMetaverse
         /// <item>Estate / Openspace (Sku: 027)</item>
         /// <item>Estate / Homestead (Sku: 029)</item>
         /// <item>Mainland / Homestead (Sku: 129) (Linden Owned)</item>
+        /// <item>Mainland / Linden Homes (Sku: 131)</item>
         /// </list>
         /// </remarks>
         public string ProductName;
@@ -337,16 +338,19 @@ namespace OpenMetaverse
         /// <item>027 Estate / Openspace</item>
         /// <item>029 Estate / Homestead</item>
         /// <item>129 Mainland / Homestead (Linden Owned)</item>
+        /// <item>131 Linden Homes / Full Region</item>
         /// </list>
         /// </remarks>
         public string ProductSku;
             
-        /// <summary>Provides access to two thread-safe dictionaries containing
-        /// avatars and primitives found in this simulator</summary>
-        //public ObjectTracker Objects = new ObjectTracker();
-
+        /// <summary>
+        /// A thread-safe dictionary containing avatars in a simulator        
+        /// </summary>
         public InternalDictionary<uint, Avatar> ObjectsAvatars = new InternalDictionary<uint, Avatar>();
 
+        /// <summary>
+        /// A thread-safe dictionary containing primitives in a simulator
+        /// </summary>
         public InternalDictionary<uint, Primitive> ObjectsPrimitives = new InternalDictionary<uint, Primitive>();
 
         /// <summary>The current sequence number for packets sent to this
