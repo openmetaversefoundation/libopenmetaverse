@@ -599,10 +599,10 @@ namespace OpenMetaverse.Voice
                                     evt.SessionGroupHandle,
                                     evt.SessionHandle,
                                     evt.Uri,
-                                    bool.Parse(evt.IsMuted),
+                                    int.Parse(evt.IsMuted) != 0,
                                     int.Parse(evt.Volume),
-                                    bool.Parse(evt.TransmitEnabled),
-                                    bool.Parse(evt.IsFocused)));
+                                    int.Parse(evt.TransmitEnabled) != 0,
++                                   int.Parse(evt.IsFocused) != 0));
                         }
                         break;
 

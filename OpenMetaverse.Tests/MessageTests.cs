@@ -204,7 +204,7 @@ namespace OpenMetaverse.Tests
         [Test]
         public void ChatterBoxInvitationMessage()
         {
-            ChatterBoxInvitationMessage s = new ChatterBoxInvitationMessage();
+            ChatterBoxInvitationMessageIM s = new ChatterBoxInvitationMessageIM();
             s.BinaryBucket = Utils.EmptyBytes;
             s.Dialog = InstantMessageDialog.InventoryOffered;
             s.FromAgentID = UUID.Random();
@@ -221,7 +221,7 @@ namespace OpenMetaverse.Tests
 
             OSDMap map = s.Serialize();
 
-            ChatterBoxInvitationMessage t = new ChatterBoxInvitationMessage();
+            ChatterBoxInvitationMessageIM t = new ChatterBoxInvitationMessageIM();
             t.Deserialize(map);
 
             Assert.AreEqual(s.BinaryBucket, t.BinaryBucket);
