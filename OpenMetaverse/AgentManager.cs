@@ -3847,7 +3847,7 @@ namespace OpenMetaverse
         {
             if (m_InstantMessage != null)
             {
-                ChatterBoxInvitationMessage msg = (ChatterBoxInvitationMessage)message;
+                ChatterBoxInvitationMessageIM msg = (ChatterBoxInvitationMessageIM)message;
 
                 InstantMessage im = new InstantMessage();
 
