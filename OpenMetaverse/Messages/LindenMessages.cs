@@ -2940,6 +2940,36 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    public class RegionInfoMessage : IMessage
+    {
+        public int ParcelLocalID;
+        public string RegionName;
+        public string ChannelUri;
+
+        #region IMessage Members
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(3);
+            map["parcel_local_id"] = OSD.FromInteger(ParcelLocalID);
+            map["region_name"] = OSD.FromString(RegionName);
+            OSDMap voiceMap = new OSDMap(1);
+            voiceMap["channel_uri"] = OSD.FromString(ChannelUri);
+            map["voice_credentials"] = voiceMap;
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            this.ParcelLocalID = map["parcel_local_id"].AsInteger();
+            this.RegionName = map["region_name"].AsString();
+            OSDMap voiceMap = (OSDMap)map["voice_credentials"];
+            this.ChannelUri = voiceMap["channel_uri"].AsString();            
+        }
+
+        #endregion
+    }
+
     /// <summary>
     /// Sent from the simulator to the viewer.
     /// 

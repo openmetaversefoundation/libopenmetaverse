@@ -87,6 +87,7 @@ namespace OpenMetaverse.Messages
                 case "ForceCloseChatterBoxSession": message = new ForceCloseChatterBoxSessionMessage(); break;
                 case "UploadBakedTexture": message = new UploadBakedTextureMessage(); break;
                 case "WebFetchInventoryDescendents": message = new WebFetchInventoryDescendentsMessage(); break;
+                case "RegionInfo": message = new RegionInfoMessage(); break;
                 //case "ProductInfoRequest": message = new ProductInfoRequestMessage(); break;
 
                 // Capabilities TODO:
