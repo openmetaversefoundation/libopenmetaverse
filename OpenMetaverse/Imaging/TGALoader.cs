@@ -455,18 +455,11 @@ namespace OpenMetaverse.Imaging
                     throw new ArgumentException("Image too large.");
 
                 System.Drawing.Bitmap b = new System.Drawing.Bitmap(
-                    header.ImageSpec.Width, 
-					header.ImageSpec.Height, 
-					header.ImageSpec.AlphaBits > 0 
-						? System.Drawing.Imaging.PixelFormat.Format32bppArgb
-						: System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+                    header.ImageSpec.Width, header.ImageSpec.Height);
 
-				System.Drawing.Imaging.BitmapData bd = b.LockBits(new System.Drawing.Rectangle(0, 0, b.Width, b.Height),
+                System.Drawing.Imaging.BitmapData bd = b.LockBits(new System.Drawing.Rectangle(0, 0, b.Width, b.Height),
                     System.Drawing.Imaging.ImageLockMode.WriteOnly,
-                    header.ImageSpec.AlphaBits > 0 
-						? System.Drawing.Imaging.PixelFormat.Format32bppPArgb
-						: System.Drawing.Imaging.PixelFormat.Format32bppRgb);
-
+                    System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
                 switch (header.ImageSpec.PixelDepth)
                 {
                     case 8:
