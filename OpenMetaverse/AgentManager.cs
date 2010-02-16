@@ -3847,7 +3847,11 @@ namespace OpenMetaverse
         {
             if (m_InstantMessage != null)
             {
-                ChatterBoxInvitationMessageIM msg = (ChatterBoxInvitationMessageIM)message;
+                ChatterBoxInvitationMessage msg = (ChatterBoxInvitationMessage)message;
+
+                //TODO: do something about invitations to voice group chat/friends conference
+                //Skip for now
+                if (msg.Voice) return;
 
                 InstantMessage im = new InstantMessage();
 

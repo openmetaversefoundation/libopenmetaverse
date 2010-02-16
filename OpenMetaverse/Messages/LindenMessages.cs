@@ -2771,88 +2771,6 @@ namespace OpenMetaverse.Messages.Linden
 
     public class ChatterBoxInvitationMessage : IMessage
     {
-        public ChatterBoxInvitationBlock Request;
-
-        /// <summary>
-        /// Serialize the object
-        /// </summary>
-        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        public OSDMap Serialize()
-        {
-            return Request.Serialize();
-        }
-
-        /// <summary>
-        /// Deserialize the message
-        /// </summary>
-        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        public void Deserialize(OSDMap map)
-        {
-            if (map.ContainsKey("binary_bucket"))
-                Request = new ChatterBoxInvitationMessageIM();
-            else if (map.ContainsKey("voice"))
-                Request = new ChatterBoxInvitationVoice();            
-            else
-                Logger.Log("Unable to deserialize ChatterBoxInvitation: No message handler exists for method ", Helpers.LogLevel.Warning);
-
-            Request.Deserialize(map);
-        }
-    }
-
-    public abstract class ChatterBoxInvitationBlock
-    {
-        /// <summary>A string containing the method used</summary>
-        public string Method;
-
-        public abstract OSDMap Serialize();
-        public abstract void Deserialize(OSDMap map);
-    }
-
-    /// <summary>
-    /// Unknown - its possible this is sent when another agent tries to start a voice chat session
-    /// </summary>
-    public class ChatterBoxInvitationVoice : ChatterBoxInvitationBlock
-    {
-        /// <summary>Key of sender</summary>
-        public UUID FromAgentID;
-        /// <summary>Name of sender</summary>
-        public string FromAgentName;
-        /// <summary>Key of IM session, for Group Messages, the groups UUID</summary>
-        public UUID SessionID;
-        public string SessionName;
-        public String[] Voice;
-
-        public override OSDMap Serialize()
-        {
-            OSDMap map = new OSDMap(5);
-            map["from_id"] = OSD.FromUUID(this.FromAgentID);
-            map["from_name"] = OSD.FromString(this.FromAgentName);
-            map["session_id"] = OSD.FromUUID(this.SessionID);
-            map["session_name"] = OSD.FromString(this.SessionName);
-            // TODO: provided message had an empty array, need to know what the contents
-            // of the array are to enable this functionality
-            OSDArray voiceArray = new OSDArray();
-            map["voice"] = voiceArray;
-            return map;            
-        }
-
-        public override void Deserialize(OSDMap map)
-        {
-            this.FromAgentID = map["from_id"].AsUUID();
-            this.FromAgentName = map["from_name"].AsString();
-            this.SessionID = map["session_id"].AsUUID();
-            this.SessionName = map["session_name"].AsString();
-            // TODO: provided message had an empty array, need to know what the contents
-            // of the array are to enable this functionality
-            this.Voice = null;
-        }
-    }
-
-    /// <summary>
-    /// A message sent via a group chat or convference
-    /// </summary>
-    public class ChatterBoxInvitationMessageIM : ChatterBoxInvitationBlock
-    {
         /// <summary>Key of sender</summary>
         public UUID FromAgentID;
         /// <summary>Name of sender</summary>
@@ -2879,12 +2797,14 @@ namespace OpenMetaverse.Messages.Linden
         public InstantMessageOnline Offline;
         /// <summary>Context specific packed data</summary>
         public byte[] BinaryBucket;
+        /// <summary>Is this invitation for voice group/conference chat</summary>
+        public bool Voice;
 
         /// <summary>
         /// Serialize the object
         /// </summary>
         /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
-        public override OSDMap Serialize()
+        public OSDMap Serialize()
         {
             OSDMap dataMap = new OSDMap(3);
             dataMap["timestamp"] = OSD.FromDate(Timestamp);
@@ -2918,25 +2838,37 @@ namespace OpenMetaverse.Messages.Linden
         /// Deserialize the message
         /// </summary>
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
-        public override void Deserialize(OSDMap map)
+        public void Deserialize(OSDMap map)
         {
-            OSDMap im = (OSDMap)map["instantmessage"];
-            OSDMap msg = (OSDMap)im["message_params"];
-            OSDMap msgdata = (OSDMap)msg["data"];
+            if (map.ContainsKey("voice"))
+            {
+                FromAgentID = map["from_id"].AsUUID();
+                FromAgentName = map["from_name"].AsString();
+                IMSessionID = map["session_id"].AsUUID();
+                BinaryBucket = Utils.StringToBytes(map["session_name"].AsString());
+                Voice = true;
+            }
+            else
+            {
+                OSDMap im = (OSDMap)map["instantmessage"];
+                OSDMap msg = (OSDMap)im["message_params"];
+                OSDMap msgdata = (OSDMap)msg["data"];
 
-            FromAgentID = msg["from_id"].AsUUID();
-            FromAgentName = msg["from_name"].AsString();
-            ToAgentID = msg["to_id"].AsUUID();
-            ParentEstateID = (uint)msg["parent_estate_id"].AsInteger();
-            RegionID = msg["region_id"].AsUUID();
-            Position = msg["position"].AsVector3();
-            GroupIM = msg["from_group"].AsBoolean();
-            IMSessionID = msg["id"].AsUUID();
-            Message = msg["message"].AsString();
-            Offline = (InstantMessageOnline)msg["offline"].AsInteger();
-            Dialog = (InstantMessageDialog)msgdata["type"].AsInteger();
-            BinaryBucket = msgdata["binary_bucket"].AsBinary();
-            Timestamp = msgdata["timestamp"].AsDate();
+                FromAgentID = msg["from_id"].AsUUID();
+                FromAgentName = msg["from_name"].AsString();
+                ToAgentID = msg["to_id"].AsUUID();
+                ParentEstateID = (uint)msg["parent_estate_id"].AsInteger();
+                RegionID = msg["region_id"].AsUUID();
+                Position = msg["position"].AsVector3();
+                GroupIM = msg["from_group"].AsBoolean();
+                IMSessionID = msg["id"].AsUUID();
+                Message = msg["message"].AsString();
+                Offline = (InstantMessageOnline)msg["offline"].AsInteger();
+                Dialog = (InstantMessageDialog)msgdata["type"].AsInteger();
+                BinaryBucket = msgdata["binary_bucket"].AsBinary();
+                Timestamp = msgdata["timestamp"].AsDate();
+                Voice = false;
+            }
         }
     }
 
