@@ -62,7 +62,7 @@ namespace OpenMetaverse.Voice
         private string slvoicePath = "";
         private string slvoiceArgs = "-ll -1";
         private string daemonNode = "127.0.0.1";
-        private int daemonPort = 44124;
+        private int daemonPort = 37331;
 
         private string voiceUser;
         private string voicePassword;
