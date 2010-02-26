@@ -2074,6 +2074,77 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>
+        /// Creates inventory link to another inventory item or folder
+        /// </summary>
+        /// <param name="folderID">Put newly created link in folder with this UUID</param>
+        /// <param name="item">Original inventory item or folder</param>
+        /// <param name="callback">Method to call upon creation of the link</param>
+        public void CreateLink(UUID folderID, InventoryBase bse, ItemCreatedCallback callback)
+        {
+            if (bse is InventoryFolder)
+            {
+                InventoryFolder folder = (InventoryFolder)bse;
+                CreateLink(folderID, folder, callback);
+            }
+            else if (bse is InventoryItem)  
+            {
+                InventoryItem item = (InventoryItem)bse;
+                CreateLink(folderID, item.UUID, item.Name, item.Description, AssetType.Link, item.InventoryType, UUID.Random(), callback);
+            }
+        }
+
+        /// <summary>
+        /// Creates inventory link to another inventory item
+        /// </summary>
+        /// <param name="folderID">Put newly created link in folder with this UUID</param>
+        /// <param name="item">Original inventory item</param>
+        /// <param name="callback">Method to call upon creation of the link</param>
+        public void CreateLink(UUID folderID, InventoryItem item, ItemCreatedCallback callback)
+        {
+            CreateLink(folderID, item.UUID, item.Name, item.Description, AssetType.Link, item.InventoryType, UUID.Random(), callback);
+        }
+
+        /// <summary>
+        /// Creates inventory link to another inventory folder
+        /// </summary>
+        /// <param name="folderID">Put newly created link in folder with this UUID</param>
+        /// <param name="item">Original inventory folder</param>
+        /// <param name="callback">Method to call upon creation of the link</param>
+        public void CreateLink(UUID folderID, InventoryFolder folder, ItemCreatedCallback callback)
+        {
+            CreateLink(folderID, folder.UUID, folder.Name, "", AssetType.LinkFolder, InventoryType.Folder, UUID.Random(), callback);
+        }
+
+        /// <summary>
+        /// Creates inventory link to another inventory item or folder
+        /// </summary>
+        /// <param name="folderID">Put newly created link in folder with this UUID</param>
+        /// <param name="itemID">Original item's UUID</param>
+        /// <param name="name">Name</param>
+        /// <param name="description">Description</param>
+        /// <param name="assetType">Asset Type</param>
+        /// <param name="invType">Inventory Type</param>
+        /// <param name="transactionID">Transaction UUID</param>
+        /// <param name="callback">Method to call upon creation of the link</param>
+        public void CreateLink(UUID folderID, UUID itemID, string name, string description, AssetType assetType, InventoryType invType, UUID transactionID, ItemCreatedCallback callback)
+        {
+            LinkInventoryItemPacket create = new LinkInventoryItemPacket();
+            create.AgentData.AgentID = Client.Self.AgentID;
+            create.AgentData.SessionID = Client.Self.SessionID;
+
+            create.InventoryBlock.CallbackID = RegisterItemCreatedCallback(callback);
+            create.InventoryBlock.FolderID = folderID;
+            create.InventoryBlock.TransactionID = transactionID;
+            create.InventoryBlock.OldItemID = itemID;
+            create.InventoryBlock.Type = (sbyte)assetType;
+            create.InventoryBlock.InvType = (sbyte)invType;
+            create.InventoryBlock.Name = Utils.StringToBytes(name);
+            create.InventoryBlock.Description = Utils.StringToBytes(description);
+            
+            Client.Network.SendPacket(create);
+        }
+
         #endregion Create
 
         #region Copy
