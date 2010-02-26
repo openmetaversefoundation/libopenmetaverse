@@ -89,6 +89,10 @@ namespace OpenMetaverse
         Simstate = 22,
         /// <summary>Contains landmarks for favorites</summary>
         FavoriteFolder = 23,
+        /// <summary>Asset is a link to another inventory item</summary>
+        Link = 24,
+        /// <summary>Asset is a link to another inventory folder</summary>
+        LinkFolder = 25,
         /// <summary>Beginning of the range reserved for ensembles</summary>
         EnsembleStart = 26,
         /// <summary>End of the range reserved for ensembles</summary>
