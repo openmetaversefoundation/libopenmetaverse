@@ -595,6 +595,7 @@ namespace OpenMetaverse.Packets
         Error = 65959,
         ObjectIncludeInSearch = 65960,
         RezRestoreToWorld = 65961,
+        LinkInventoryItem = 65962,
         PacketAck = 131067,
         OpenCircuit = 131068,
         CloseCircuit = 131069,
@@ -1000,6 +1001,7 @@ namespace OpenMetaverse.Packets
                         case 423: return PacketType.Error;
                         case 424: return PacketType.ObjectIncludeInSearch;
                         case 425: return PacketType.RezRestoreToWorld;
+                        case 426: return PacketType.LinkInventoryItem;
                         case 65531: return PacketType.PacketAck;
                         case 65532: return PacketType.OpenCircuit;
                         case 65533: return PacketType.CloseCircuit;
@@ -1443,6 +1445,7 @@ namespace OpenMetaverse.Packets
             if(type == PacketType.Error) return new ErrorPacket();
             if(type == PacketType.ObjectIncludeInSearch) return new ObjectIncludeInSearchPacket();
             if(type == PacketType.RezRestoreToWorld) return new RezRestoreToWorldPacket();
+            if(type == PacketType.LinkInventoryItem) return new LinkInventoryItemPacket();
             if(type == PacketType.PacketAck) return new PacketAckPacket();
             if(type == PacketType.OpenCircuit) return new OpenCircuitPacket();
             if(type == PacketType.CloseCircuit) return new CloseCircuitPacket();
@@ -1810,6 +1813,7 @@ namespace OpenMetaverse.Packets
                         case 423: return new ErrorPacket(header, bytes, ref i);
                         case 424: return new ObjectIncludeInSearchPacket(header, bytes, ref i);
                         case 425: return new RezRestoreToWorldPacket(header, bytes, ref i);
+                        case 426: return new LinkInventoryItemPacket(header, bytes, ref i);
                         case 65531: return new PacketAckPacket(header, bytes, ref i);
                         case 65532: return new OpenCircuitPacket(header, bytes, ref i);
                         case 65533: return new CloseCircuitPacket(header, bytes, ref i);
@@ -69075,6 +69079,197 @@ namespace OpenMetaverse.Packets
     }
 
     /// <exclude/>
+    public sealed class LinkInventoryItemPacket : Packet
+    {
+        /// <exclude/>
+        public sealed class AgentDataBlock : PacketBlock
+        {
+            public UUID AgentID;
+            public UUID SessionID;
+
+            public override int Length
+            {
+                get
+                {
+                    return 32;
+                }
+            }
+
+            public AgentDataBlock() { }
+            public AgentDataBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public override void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    AgentID.FromBytes(bytes, i); i += 16;
+                    SessionID.FromBytes(bytes, i); i += 16;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public override void ToBytes(byte[] bytes, ref int i)
+            {
+                AgentID.ToBytes(bytes, i); i += 16;
+                SessionID.ToBytes(bytes, i); i += 16;
+            }
+
+        }
+
+        /// <exclude/>
+        public sealed class InventoryBlockBlock : PacketBlock
+        {
+            public uint CallbackID;
+            public UUID FolderID;
+            public UUID TransactionID;
+            public UUID OldItemID;
+            public sbyte Type;
+            public sbyte InvType;
+            public byte[] Name;
+            public byte[] Description;
+
+            public override int Length
+            {
+                get
+                {
+                    int length = 56;
+                    if (Name != null) { length += Name.Length; }
+                    if (Description != null) { length += Description.Length; }
+                    return length;
+                }
+            }
+
+            public InventoryBlockBlock() { }
+            public InventoryBlockBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public override void FromBytes(byte[] bytes, ref int i)
+            {
+                int length;
+                try
+                {
+                    CallbackID = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                    FolderID.FromBytes(bytes, i); i += 16;
+                    TransactionID.FromBytes(bytes, i); i += 16;
+                    OldItemID.FromBytes(bytes, i); i += 16;
+                    Type = (sbyte)bytes[i++];
+                    InvType = (sbyte)bytes[i++];
+                    length = bytes[i++];
+                    Name = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Name, 0, length); i += length;
+                    length = bytes[i++];
+                    Description = new byte[length];
+                    Buffer.BlockCopy(bytes, i, Description, 0, length); i += length;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public override void ToBytes(byte[] bytes, ref int i)
+            {
+                Utils.UIntToBytes(CallbackID, bytes, i); i += 4;
+                FolderID.ToBytes(bytes, i); i += 16;
+                TransactionID.ToBytes(bytes, i); i += 16;
+                OldItemID.ToBytes(bytes, i); i += 16;
+                bytes[i++] = (byte)Type;
+                bytes[i++] = (byte)InvType;
+                bytes[i++] = (byte)Name.Length;
+                Buffer.BlockCopy(Name, 0, bytes, i, Name.Length); i += Name.Length;
+                bytes[i++] = (byte)Description.Length;
+                Buffer.BlockCopy(Description, 0, bytes, i, Description.Length); i += Description.Length;
+            }
+
+        }
+
+        public override int Length
+        {
+            get
+            {
+                int length = 10;
+                length += AgentData.Length;
+                length += InventoryBlock.Length;
+                return length;
+            }
+        }
+        public AgentDataBlock AgentData;
+        public InventoryBlockBlock InventoryBlock;
+
+        public LinkInventoryItemPacket()
+        {
+            HasVariableBlocks = false;
+            Type = PacketType.LinkInventoryItem;
+            Header = new Header();
+            Header.Frequency = PacketFrequency.Low;
+            Header.ID = 426;
+            Header.Reliable = true;
+            Header.Zerocoded = true;
+            AgentData = new AgentDataBlock();
+            InventoryBlock = new InventoryBlockBlock();
+        }
+
+        public LinkInventoryItemPacket(byte[] bytes, ref int i) : this()
+        {
+            int packetEnd = bytes.Length - 1;
+            FromBytes(bytes, ref i, ref packetEnd, null);
+        }
+
+        override public void FromBytes(byte[] bytes, ref int i, ref int packetEnd, byte[] zeroBuffer)
+        {
+            Header.FromBytes(bytes, ref i, ref packetEnd);
+            if (Header.Zerocoded && zeroBuffer != null)
+            {
+                packetEnd = Helpers.ZeroDecode(bytes, packetEnd + 1, zeroBuffer) - 1;
+                bytes = zeroBuffer;
+            }
+            AgentData.FromBytes(bytes, ref i);
+            InventoryBlock.FromBytes(bytes, ref i);
+        }
+
+        public LinkInventoryItemPacket(Header head, byte[] bytes, ref int i): this()
+        {
+            int packetEnd = bytes.Length - 1;
+            FromBytes(head, bytes, ref i, ref packetEnd);
+        }
+
+        override public void FromBytes(Header header, byte[] bytes, ref int i, ref int packetEnd)
+        {
+            Header = header;
+            AgentData.FromBytes(bytes, ref i);
+            InventoryBlock.FromBytes(bytes, ref i);
+        }
+
+        public override byte[] ToBytes()
+        {
+            int length = 10;
+            length += AgentData.Length;
+            length += InventoryBlock.Length;
+            if (Header.AckList != null && Header.AckList.Length > 0) { length += Header.AckList.Length * 4 + 1; }
+            byte[] bytes = new byte[length];
+            int i = 0;
+            Header.ToBytes(bytes, ref i);
+            AgentData.ToBytes(bytes, ref i);
+            InventoryBlock.ToBytes(bytes, ref i);
+            if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
+            return bytes;
+        }
+
+        public override byte[][] ToBytesMultiple()
+        {
+            return new byte[][] { ToBytes() };
+        }
+    }
+
+    /// <exclude/>
     public sealed class PacketAckPacket : Packet
     {
         /// <exclude/>
@@ -77205,11 +77400,90 @@ namespace OpenMetaverse.Packets
 
         }
 
+        /// <exclude/>
+        public sealed class AgentAccessBlock : PacketBlock
+        {
+            public byte AgentLegacyAccess;
+            public byte AgentMaxAccess;
+
+            public override int Length
+            {
+                get
+                {
+                    return 2;
+                }
+            }
+
+            public AgentAccessBlock() { }
+            public AgentAccessBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public override void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    AgentLegacyAccess = (byte)bytes[i++];
+                    AgentMaxAccess = (byte)bytes[i++];
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public override void ToBytes(byte[] bytes, ref int i)
+            {
+                bytes[i++] = AgentLegacyAccess;
+                bytes[i++] = AgentMaxAccess;
+            }
+
+        }
+
+        /// <exclude/>
+        public sealed class AgentInfoBlock : PacketBlock
+        {
+            public uint Flags;
+
+            public override int Length
+            {
+                get
+                {
+                    return 4;
+                }
+            }
+
+            public AgentInfoBlock() { }
+            public AgentInfoBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public override void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    Flags = (uint)(bytes[i++] + (bytes[i++] << 8) + (bytes[i++] << 16) + (bytes[i++] << 24));
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public override void ToBytes(byte[] bytes, ref int i)
+            {
+                Utils.UIntToBytes(Flags, bytes, i); i += 4;
+            }
+
+        }
+
         public override int Length
         {
             get
             {
-                int length = 12;
+                int length = 14;
                 length += AgentData.Length;
                 for (int j = 0; j < GroupData.Length; j++)
                     length += GroupData[j].Length;
@@ -77221,6 +77495,10 @@ namespace OpenMetaverse.Packets
                     length += NVPairData[j].Length;
                 for (int j = 0; j < VisualParam.Length; j++)
                     length += VisualParam[j].Length;
+                for (int j = 0; j < AgentAccess.Length; j++)
+                    length += AgentAccess[j].Length;
+                for (int j = 0; j < AgentInfo.Length; j++)
+                    length += AgentInfo[j].Length;
                 return length;
             }
         }
@@ -77230,6 +77508,8 @@ namespace OpenMetaverse.Packets
         public GranterBlockBlock[] GranterBlock;
         public NVPairDataBlock[] NVPairData;
         public VisualParamBlock[] VisualParam;
+        public AgentAccessBlock[] AgentAccess;
+        public AgentInfoBlock[] AgentInfo;
 
         public ChildAgentUpdatePacket()
         {
@@ -77246,6 +77526,8 @@ namespace OpenMetaverse.Packets
             GranterBlock = null;
             NVPairData = null;
             VisualParam = null;
+            AgentAccess = null;
+            AgentInfo = null;
         }
 
         public ChildAgentUpdatePacket(byte[] bytes, ref int i) : this()
@@ -77303,6 +77585,22 @@ namespace OpenMetaverse.Packets
             }
             for (int j = 0; j < count; j++)
             { VisualParam[j].FromBytes(bytes, ref i); }
+            count = (int)bytes[i++];
+            if(AgentAccess == null || AgentAccess.Length != -1) {
+                AgentAccess = new AgentAccessBlock[count];
+                for(int j = 0; j < count; j++)
+                { AgentAccess[j] = new AgentAccessBlock(); }
+            }
+            for (int j = 0; j < count; j++)
+            { AgentAccess[j].FromBytes(bytes, ref i); }
+            count = (int)bytes[i++];
+            if(AgentInfo == null || AgentInfo.Length != -1) {
+                AgentInfo = new AgentInfoBlock[count];
+                for(int j = 0; j < count; j++)
+                { AgentInfo[j] = new AgentInfoBlock(); }
+            }
+            for (int j = 0; j < count; j++)
+            { AgentInfo[j].FromBytes(bytes, ref i); }
         }
 
         public ChildAgentUpdatePacket(Header head, byte[] bytes, ref int i): this()
@@ -77355,6 +77653,22 @@ namespace OpenMetaverse.Packets
             }
             for (int j = 0; j < count; j++)
             { VisualParam[j].FromBytes(bytes, ref i); }
+            count = (int)bytes[i++];
+            if(AgentAccess == null || AgentAccess.Length != count) {
+                AgentAccess = new AgentAccessBlock[count];
+                for(int j = 0; j < count; j++)
+                { AgentAccess[j] = new AgentAccessBlock(); }
+            }
+            for (int j = 0; j < count; j++)
+            { AgentAccess[j].FromBytes(bytes, ref i); }
+            count = (int)bytes[i++];
+            if(AgentInfo == null || AgentInfo.Length != count) {
+                AgentInfo = new AgentInfoBlock[count];
+                for(int j = 0; j < count; j++)
+                { AgentInfo[j] = new AgentInfoBlock(); }
+            }
+            for (int j = 0; j < count; j++)
+            { AgentInfo[j].FromBytes(bytes, ref i); }
         }
 
         public override byte[] ToBytes()
@@ -77371,6 +77685,10 @@ namespace OpenMetaverse.Packets
             for (int j = 0; j < NVPairData.Length; j++) { length += NVPairData[j].Length; }
             length++;
             for (int j = 0; j < VisualParam.Length; j++) { length += VisualParam[j].Length; }
+            length++;
+            for (int j = 0; j < AgentAccess.Length; j++) { length += AgentAccess[j].Length; }
+            length++;
+            for (int j = 0; j < AgentInfo.Length; j++) { length += AgentInfo[j].Length; }
             if (Header.AckList != null && Header.AckList.Length > 0) { length += Header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
@@ -77386,6 +77704,10 @@ namespace OpenMetaverse.Packets
             for (int j = 0; j < NVPairData.Length; j++) { NVPairData[j].ToBytes(bytes, ref i); }
             bytes[i++] = (byte)VisualParam.Length;
             for (int j = 0; j < VisualParam.Length; j++) { VisualParam[j].ToBytes(bytes, ref i); }
+            bytes[i++] = (byte)AgentAccess.Length;
+            for (int j = 0; j < AgentAccess.Length; j++) { AgentAccess[j].ToBytes(bytes, ref i); }
+            bytes[i++] = (byte)AgentInfo.Length;
+            for (int j = 0; j < AgentInfo.Length; j++) { AgentInfo[j].ToBytes(bytes, ref i); }
             if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -77408,13 +77730,15 @@ namespace OpenMetaverse.Packets
             byte[] fixedBytes = new byte[fixedLength];
             Header.ToBytes(fixedBytes, ref i);
             AgentData.ToBytes(fixedBytes, ref i);
-            fixedLength += 5;
+            fixedLength += 7;
 
             int GroupDataStart = 0;
             int AnimationDataStart = 0;
             int GranterBlockStart = 0;
             int NVPairDataStart = 0;
             int VisualParamStart = 0;
+            int AgentAccessStart = 0;
+            int AgentInfoStart = 0;
             do
             {
                 int variableLength = 0;
@@ -77423,6 +77747,8 @@ namespace OpenMetaverse.Packets
                 int GranterBlockCount = 0;
                 int NVPairDataCount = 0;
                 int VisualParamCount = 0;
+                int AgentAccessCount = 0;
+                int AgentInfoCount = 0;
 
                 i = GroupDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < GroupData.Length) {
@@ -77479,6 +77805,28 @@ namespace OpenMetaverse.Packets
                     ++i;
                 }
 
+                i = AgentAccessStart;
+                while (fixedLength + variableLength + acksLength < Packet.MTU && i < AgentAccess.Length) {
+                    int blockLength = AgentAccess[i].Length;
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                        variableLength += blockLength;
+                        ++AgentAccessCount;
+                    }
+                    else { break; }
+                    ++i;
+                }
+
+                i = AgentInfoStart;
+                while (fixedLength + variableLength + acksLength < Packet.MTU && i < AgentInfo.Length) {
+                    int blockLength = AgentInfo[i].Length;
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                        variableLength += blockLength;
+                        ++AgentInfoCount;
+                    }
+                    else { break; }
+                    ++i;
+                }
+
                 byte[] packet = new byte[fixedLength + variableLength + acksLength];
                 int length = fixedBytes.Length;
                 Buffer.BlockCopy(fixedBytes, 0, packet, 0, length);
@@ -77504,6 +77852,14 @@ namespace OpenMetaverse.Packets
                 for (i = VisualParamStart; i < VisualParamStart + VisualParamCount; i++) { VisualParam[i].ToBytes(packet, ref length); }
                 VisualParamStart += VisualParamCount;
 
+                packet[length++] = (byte)AgentAccessCount;
+                for (i = AgentAccessStart; i < AgentAccessStart + AgentAccessCount; i++) { AgentAccess[i].ToBytes(packet, ref length); }
+                AgentAccessStart += AgentAccessCount;
+
+                packet[length++] = (byte)AgentInfoCount;
+                for (i = AgentInfoStart; i < AgentInfoStart + AgentInfoCount; i++) { AgentInfo[i].ToBytes(packet, ref length); }
+                AgentInfoStart += AgentInfoCount;
+
                 if (acksLength > 0) {
                     Buffer.BlockCopy(ackBytes, 0, packet, length, acksLength);
                     acksLength = 0;
@@ -77515,7 +77871,9 @@ namespace OpenMetaverse.Packets
                 AnimationDataStart < AnimationData.Length ||
                 GranterBlockStart < GranterBlock.Length ||
                 NVPairDataStart < NVPairData.Length ||
-                VisualParamStart < VisualParam.Length);
+                VisualParamStart < VisualParam.Length ||
+                AgentAccessStart < AgentAccess.Length ||
+                AgentInfoStart < AgentInfo.Length);
 
             return packets.ToArray();
         }

@@ -53,7 +53,7 @@ version 2.0
 
 // OpenCircuit - Tells the recipient's messaging system to open the descibed circuit
 {
-	OpenCircuit Fixed 0xFFFFFFFC NotTrusted Unencoded
+	OpenCircuit Fixed 0xFFFFFFFC NotTrusted Unencoded UDPBlackListed
 	{
 		CircuitInfo		Single
 		{	IP			IPADDR	}
@@ -1070,11 +1070,11 @@ version 2.0
 	}
 }
 
-// DirPopularQuery viewer->sim
+// DEPRECATED: DirPopularQuery viewer->sim
 // Special query for the land for sale/auction panel.
 // reliable
 {
-	DirPopularQuery Low 51 NotTrusted Zerocoded
+	DirPopularQuery Low 51 NotTrusted Zerocoded Deprecated
 	{
 		AgentData			Single
 		{	AgentID			LLUUID	}
@@ -1087,11 +1087,11 @@ version 2.0
 	}
 }
 
-// DirPopularQueryBackend sim->dataserver
+// DEPRECATED: DirPopularQueryBackend sim->dataserver
 // Special query for the land for sale/auction panel.
 // reliable
 {
-	DirPopularQueryBackend Low 52 Trusted Zerocoded
+	DirPopularQueryBackend Low 52 Trusted Zerocoded Deprecated
 	{
 		AgentData			Single
 		{	AgentID			LLUUID	}
@@ -1105,11 +1105,11 @@ version 2.0
 	}
 }
 
-// DirPopularReply
+// DEPRECATED: DirPopularReply
 // dataserver -> simulator -> viewer
 // reliable
 {
-	DirPopularReply Low 53 Trusted Zerocoded
+	DirPopularReply Low 53 Trusted Zerocoded Deprecated
 	{
 		AgentData			Single
 		{	AgentID			LLUUID	}
@@ -1382,6 +1382,10 @@ version 2.0
 		Info		Single
 		{	AgentID			LLUUID	}
 		{	KickedFromEstateID	U32	}
+	}
+	{
+		AgentInfo	Single
+		{   AgentEffectiveMaturity U32  }
 	}
 }
 
@@ -2720,7 +2724,7 @@ version 2.0
 // end viewer to simulator section
 
 {
-       ViewerStats Low 131 NotTrusted Zerocoded
+       ViewerStats Low 131 NotTrusted Zerocoded UDPDeprecated
        {
                AgentData                       Single
                {       AgentID                 LLUUID      }
@@ -4911,6 +4915,12 @@ version 2.0
 		{	ActualArea		S32		}
 		{	Final			BOOL	}  // true if buyer should be in tier
 	}
+    {
+       RegionData Single  // included so region name shows up in transaction logs
+       {   RegionID   LLUUID }
+       {   GridX      U32    }
+       {   GridY      U32    }
+    }
 }
 
 // sim ->dataserver
@@ -5276,6 +5286,15 @@ version 2.0
 	{
 		VisualParam				Variable
 		{	ParamValue			U8	}
+	}
+	{
+		AgentAccess				Variable
+		{	AgentLegacyAccess		U8	}
+		{	AgentMaxAccess			U8	}
+	}
+	{
+		AgentInfo				Variable
+		{	Flags					U32	}
 	}
 }
 
@@ -8932,5 +8951,26 @@ version 2.0
 		{	Description			Variable	1	}
 		{	CreationDate		S32	}
 		{	CRC				U32	}
+	}
+}
+
+// Link inventory
+{
+	LinkInventoryItem	Low	426 NotTrusted	Zerocoded
+	{
+		AgentData		Single
+		{	AgentID		LLUUID	}
+		{	SessionID	LLUUID	}
+	}
+	{
+		InventoryBlock		Single
+		{	CallbackID	U32			} // Async Response
+		{	FolderID		LLUUID	}
+		{	TransactionID			LLUUID	} // Going to become TransactionID
+		{	OldItemID		LLUUID	}
+		{	Type			S8	}
+		{	InvType			S8	}
+		{	Name			Variable	1	}
+		{	Description		Variable	1	}
 	}
 }
