@@ -104,8 +104,6 @@ namespace OpenMetaverse
         MyOutfitsFolder = 48,
         /// <summary></summary>
         InboxFolder = 49,
-        /// <summary></summary>
-        CountFolder = 50,
     }
 
     /// <summary>
@@ -213,6 +211,10 @@ namespace OpenMetaverse
         Underpants,
         /// <summary>Skirt</summary>
         Skirt,
+        /// <summary>Alpha mask to hide parts of the avatar</summary>
+        Alpha,
+        /// <summary>Tattoo</summary>
+        Tattoo,
         /// <summary>Invalid wearable asset</summary>
         Invalid = 255
     };
