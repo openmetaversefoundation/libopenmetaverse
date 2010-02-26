@@ -1512,28 +1512,41 @@ namespace OpenMetaverse
         /// <param name="newName">The name to change the folder to</param>
         public void MoveFolder(UUID folderID, UUID newparentID, string newName)
         {
+            UpdateFolderProperties(folderID, newparentID, newName, AssetType.Unknown);
+        }
+
+        /// <summary>
+        /// Update folder properties
+        /// </summary>
+        /// <param name="folderID"><seealso cref="UUID"/> of the folder to update</param>
+        /// <param name="parentID">Sets folder's parent to <seealso cref="UUID"/></param>
+        /// <param name="name">Folder name</param>
+        /// <param name="type">Folder type</param>
+        public void UpdateFolderProperties(UUID folderID, UUID parentID, string name, AssetType type)
+        {
             lock (Store)
             {
                 if (_Store.Contains(folderID))
                 {
-                    InventoryBase inv = Store[folderID];
-                    inv.Name = newName;
-                    inv.ParentUUID = newparentID;
+                    InventoryFolder inv = (InventoryFolder)Store[folderID];
+                    inv.Name = name;
+                    inv.ParentUUID = parentID;
+                    inv.PreferredType = type;
                     _Store.UpdateNodeFor(inv);
                 }
             }
 
-            UpdateInventoryFolderPacket move = new UpdateInventoryFolderPacket();
-            move.AgentData.AgentID = Client.Self.AgentID;
-            move.AgentData.SessionID = Client.Self.SessionID;
-            move.FolderData = new UpdateInventoryFolderPacket.FolderDataBlock[1];
-            move.FolderData[0] = new UpdateInventoryFolderPacket.FolderDataBlock();
-            move.FolderData[0].FolderID = folderID;
-            move.FolderData[0].ParentID = newparentID;
-            move.FolderData[0].Name = Utils.StringToBytes(newName);
-            move.FolderData[0].Type = -1;
+            UpdateInventoryFolderPacket invFolder = new UpdateInventoryFolderPacket();
+            invFolder.AgentData.AgentID = Client.Self.AgentID;
+            invFolder.AgentData.SessionID = Client.Self.SessionID;
+            invFolder.FolderData = new UpdateInventoryFolderPacket.FolderDataBlock[1];
+            invFolder.FolderData[0] = new UpdateInventoryFolderPacket.FolderDataBlock();
+            invFolder.FolderData[0].FolderID = folderID;
+            invFolder.FolderData[0].ParentID = parentID;
+            invFolder.FolderData[0].Name = Utils.StringToBytes(name);
+            invFolder.FolderData[0].Type = (sbyte)type;
 
-            Client.Network.SendPacket(move);
+            Client.Network.SendPacket(invFolder);
         }
 
         /// <summary>
