@@ -254,6 +254,14 @@ namespace OpenMetaverse
         /// <param name="itemID"><seealso cref="OpenMetaverse.UUID"/> of the item</param>
         public InventoryItem(InventoryType type, UUID itemID) : base(itemID) { InventoryType = type; }
 
+        /// <summary>
+        /// Indicates inventory item is a link
+        /// </summary>
+        /// <returns>True if inventory item is a link to another inventory item</returns>
+        public bool IsLink()
+        {
+            return AssetType == AssetType.Link || AssetType == AssetType.LinkFolder;
+        }
 
         /// <summary>
         /// 
