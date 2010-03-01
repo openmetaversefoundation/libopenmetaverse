@@ -1081,13 +1081,15 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// 
+        /// Delegate that is invoked when script upload is completed
         /// </summary>
-        /// <param name="success"></param>
-        /// <param name="status"></param>
-        /// <param name="itemID"></param>
-        /// <param name="assetID"></param>
-        public delegate void ScriptUpdatedCallback(bool success, string status, UUID itemID, UUID assetID);
+        /// <param name="uploadSuccess">Has upload succeded (note, there still might be compile errors)</param>
+        /// <param name="uploadStatus">Upload status message</param>
+        /// <param name="compileStatus">Is compilation successful</param>
+        /// <param name="compileMessages">If compilation failed, list of error messages, null on compilation success</param>
+        /// <param name="itemID">Script inventory UUID</param>
+        /// <param name="assetID">Script's new asset UUID</param>
+        public delegate void ScriptUpdatedCallback(bool uploadSuccess, string uploadStatus, bool compileStatus, List<string>compileMessages, UUID itemID, UUID assetID);
         
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<ScriptRunningReplyEventArgs> m_ScriptRunningReply;
@@ -2368,6 +2370,38 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Save changes to notecard embedded in object contents
+        /// </summary>
+        /// <param name="data">Encoded notecard asset data</param>
+        /// <param name="notecardID">Notecard UUID</param>
+        /// <param name="taskID">Object's UUID</param>
+        /// <param name="callback">Called upon finish of the upload with status information</param>
+        public void RequestUpdateNotecardTask(byte[] data, UUID notecardID, UUID taskID, InventoryUploadedAssetCallback callback)
+        {
+            if (Client.Network.CurrentSim == null || Client.Network.CurrentSim.Caps == null)
+                throw new Exception("UpdateNotecardTaskInventory capability is not currently available");
+
+            Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("UpdateNotecardTaskInventory");
+
+            if (url != null)
+            {
+                OSDMap query = new OSDMap();
+                query.Add("item_id", OSD.FromUUID(notecardID));
+                query.Add("task_id", OSD.FromUUID(taskID));
+
+                // Make the request
+                CapsClient request = new CapsClient(url);
+                request.OnComplete += UploadInventoryAssetResponse;
+                request.UserData = new object[] { new KeyValuePair<InventoryUploadedAssetCallback, byte[]>(callback, data), notecardID };
+                request.BeginGetResponse(query, OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+            }
+            else
+            {
+                throw new Exception("UpdateNotecardTaskInventory capability is not currently available");
+            }
+        }
+
+        /// <summary>
         /// Upload new gesture asset for an inventory gesture item
         /// </summary>
         /// <param name="data">Encoded gesture asset</param>
@@ -2425,6 +2459,37 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>
+        /// Update an existing script in an task Inventory
+        /// </summary>
+        /// <param name="data">A byte[] array containing the encoded scripts contents</param>
+        /// <param name="itemID">the itemID of the script</param>
+        /// <param name="taskID">UUID of the prim containting the script</param>
+        /// <param name="mono">if true, sets the script content to run on the mono interpreter</param>
+        /// <param name="running">if true, sets the script to running</param>
+        /// <param name="callback"></param>
+        public void RequestUpdateScriptTask(byte[] data, UUID itemID, UUID taskID, bool mono, bool running, ScriptUpdatedCallback callback)
+        {
+            Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("UpdateScriptTask");
+
+            if (url != null)
+            {
+                UpdateScriptTaskUpdateMessage msg = new UpdateScriptTaskUpdateMessage();
+                msg.ItemID = itemID;
+                msg.TaskID = taskID;
+                msg.ScriptRunning = running;
+                msg.Target = mono ? "mono" : "lsl2";
+
+                CapsClient request = new CapsClient(url);
+                request.OnComplete += new CapsClient.CompleteCallback(UpdateScriptAgentInventoryResponse);
+                request.UserData = new object[2] { new KeyValuePair<ScriptUpdatedCallback, byte[]>(callback, data), itemID };
+                request.BeginGetResponse(msg.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+            }
+            else
+            {
+                throw new Exception("UpdateScriptTask capability is not currently available");
+            }
+        }
         #endregion Update
 
         #region Rez/Give
@@ -3732,7 +3797,7 @@ namespace OpenMetaverse
 
             if (result == null)
             {
-                try { callback(false, error.Message, UUID.Zero, UUID.Zero); }
+                try { callback(false, error.Message, false, null, UUID.Zero, UUID.Zero); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 return;
             }
@@ -3755,19 +3820,41 @@ namespace OpenMetaverse
                 {
                     // Request full item update so we keep store in sync
                     RequestFetchInventory((UUID)(((object[])client.UserData)[1]), contents["new_asset"].AsUUID());
+                    
 
-                    try { callback(true, status, (UUID)(((object[])client.UserData)[1]), contents["new_asset"].AsUUID()); }
+                    try
+                    {
+                        List<string> compileErrors = null;
+                        
+                        if (contents.ContainsKey("errors"))
+                        {
+                            OSDArray errors = (OSDArray)contents["errors"];
+                            compileErrors = new List<string>(errors.Count);
+
+                            for (int i = 0; i < errors.Count; i++)
+                            {
+                                compileErrors.Add(errors[i].AsString());
+                            }
+                        }
+
+                        callback(true,
+                            status,
+                            contents["compiled"].AsBoolean(),
+                            compileErrors,
+                            (UUID)(((object[])client.UserData)[1]),
+                            contents["new_asset"].AsUUID());
+                    }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
                 else
                 {
-                    try { callback(false, "Failed to parse asset UUID", UUID.Zero, UUID.Zero); }
+                    try { callback(false, "Failed to parse asset UUID", false, null, UUID.Zero, UUID.Zero); }
                     catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 }
             }
             else if (callback != null)
             {
-                try { callback(false, status, UUID.Zero, UUID.Zero); }
+                try { callback(false, status, false, null, UUID.Zero, UUID.Zero); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
             }
         }
