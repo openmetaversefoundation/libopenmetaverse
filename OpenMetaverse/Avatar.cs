@@ -208,6 +208,11 @@ namespace OpenMetaverse
         /// clients. To move your avatar, use Client.Self.Movement instead</summary>
         public AgentManager.ControlFlags ControlFlags;
 
+        /// <summary>
+        /// Contains the visual parameters describing the deformation of the avatar
+        /// </summary>
+        public byte[] VisualParameters = null;
+
         #endregion Public Members
 
         protected string name;

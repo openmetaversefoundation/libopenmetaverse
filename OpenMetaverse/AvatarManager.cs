@@ -760,6 +760,7 @@ namespace OpenMetaverse
                         Primitive.TextureEntryFace[] faceTextures = textureEntry.FaceTextures;
 
                         av.Textures = textureEntry;
+                        av.VisualParameters = visualParams.ToArray();
 
                         if (m_AvatarAppearance != null)
                         {
