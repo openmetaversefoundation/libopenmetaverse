@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace OpenMetaverse.TestClient
 {
@@ -52,10 +53,13 @@ namespace OpenMetaverse.TestClient
                     {
                         if (success)
                             // upload the asset
-                            Client.Inventory.RequestUpdateScriptAgentInventory(EncodeScript(body), item.UUID, true, new InventoryManager.ScriptUpdatedCallback(delegate(bool success1, string status, UUID itemid, UUID assetid)
+                            Client.Inventory.RequestUpdateScriptAgentInventory(EncodeScript(body), item.UUID, true, new InventoryManager.ScriptUpdatedCallback(delegate(bool uploadSuccess, string uploadStatus, bool compileSuccess, List<string> compileMessages, UUID itemid, UUID assetid)
                             {
-                                if (success1)
+                                if (uploadSuccess)
                                     ret += String.Format(" Script successfully uploaded, ItemID {0} AssetID {1}", itemid, assetid);
+                                if (compileSuccess)
+                                    ret += " compilation successful";
+
                             }));
                     });
                 }
