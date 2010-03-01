@@ -1085,11 +1085,11 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="uploadSuccess">Has upload succeded (note, there still might be compile errors)</param>
         /// <param name="uploadStatus">Upload status message</param>
-        /// <param name="compileStatus">Is compilation successful</param>
+        /// <param name="compileSuccess">Is compilation successful</param>
         /// <param name="compileMessages">If compilation failed, list of error messages, null on compilation success</param>
         /// <param name="itemID">Script inventory UUID</param>
         /// <param name="assetID">Script's new asset UUID</param>
-        public delegate void ScriptUpdatedCallback(bool uploadSuccess, string uploadStatus, bool compileStatus, List<string>compileMessages, UUID itemID, UUID assetID);
+        public delegate void ScriptUpdatedCallback(bool uploadSuccess, string uploadStatus, bool compileSuccess, List<string> compileMessages, UUID itemID, UUID assetID);
         
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<ScriptRunningReplyEventArgs> m_ScriptRunningReply;
@@ -2080,7 +2080,7 @@ namespace OpenMetaverse
         /// Creates inventory link to another inventory item or folder
         /// </summary>
         /// <param name="folderID">Put newly created link in folder with this UUID</param>
-        /// <param name="item">Original inventory item or folder</param>
+        /// <param name="bse">Inventory item or folder</param>
         /// <param name="callback">Method to call upon creation of the link</param>
         public void CreateLink(UUID folderID, InventoryBase bse, ItemCreatedCallback callback)
         {
@@ -2111,7 +2111,7 @@ namespace OpenMetaverse
         /// Creates inventory link to another inventory folder
         /// </summary>
         /// <param name="folderID">Put newly created link in folder with this UUID</param>
-        /// <param name="item">Original inventory folder</param>
+        /// <param name="folder">Original inventory folder</param>
         /// <param name="callback">Method to call upon creation of the link</param>
         public void CreateLink(UUID folderID, InventoryFolder folder, ItemCreatedCallback callback)
         {
