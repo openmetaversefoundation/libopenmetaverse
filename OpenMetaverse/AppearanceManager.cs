@@ -1174,6 +1174,8 @@ namespace OpenMetaverse
             // also add color tinting information
             foreach (KeyValuePair<int, float> kvp in wearable.Asset.Params)
             {
+                if (!VisualParams.Params.ContainsKey(kvp.Key)) continue;
+
                 VisualParam p = VisualParams.Params[kvp.Key];
 
                 ColorParamInfo colorInfo = new ColorParamInfo();
@@ -1206,7 +1208,7 @@ namespace OpenMetaverse
                 }
 
                 // Add alpha mask
-                if (p.AlphaParams.HasValue && p.AlphaParams.Value.TGAFile != string.Empty && !p.IsBumpAttribute)
+                if (p.AlphaParams.HasValue && p.AlphaParams.Value.TGAFile != string.Empty && !p.IsBumpAttribute && !alphaMasks.ContainsKey(p.AlphaParams.Value))
                 {
                     alphaMasks.Add(p.AlphaParams.Value, kvp.Value);
                 }
@@ -1219,7 +1221,7 @@ namespace OpenMetaverse
                         if (VisualParams.Params.ContainsKey(p.Drivers[i]))
                         {
                             VisualParam driver = VisualParams.Params[p.Drivers[i]];
-                            if (driver.AlphaParams.HasValue && driver.AlphaParams.Value.TGAFile != string.Empty && !driver.IsBumpAttribute)
+                            if (driver.AlphaParams.HasValue && driver.AlphaParams.Value.TGAFile != string.Empty && !driver.IsBumpAttribute && !alphaMasks.ContainsKey(driver.AlphaParams.Value))
                             {
                                 alphaMasks.Add(driver.AlphaParams.Value, kvp.Value);
                             }
