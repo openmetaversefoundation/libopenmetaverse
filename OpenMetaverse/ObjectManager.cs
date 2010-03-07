@@ -28,6 +28,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using OpenMetaverse.Packets;
+using OpenMetaverse.Http;
+using OpenMetaverse.StructuredData;
+using OpenMetaverse.Messages.Linden;
 
 namespace OpenMetaverse
 {
@@ -406,6 +409,14 @@ namespace OpenMetaverse
             add { lock (m_PayPriceReplyLock) { m_PayPriceReply += value; } }
             remove { lock (m_PayPriceReplyLock) { m_PayPriceReply -= value; } }
         }
+
+        /// <summary>
+        /// Callback for getting object media data via CAP
+        /// </summary>
+        /// <param name="success">Indicates if the operation was succesfull</param>
+        /// <param name="version">Object media version string</param>
+        /// <param name="faceMedia">Array indexed on prim face of media entry data</param>
+        public delegate void ObjectMediaCallback(bool success, string version, MediaEntry[] faceMedia);
 
         #endregion Delegates
 
@@ -1531,6 +1542,51 @@ namespace OpenMetaverse
 
             Client.Network.SendPacket(packet, simulator);
         }
+
+        public void RequestObjectMedia(UUID primID, Simulator sim, ObjectMediaCallback callback)
+        {
+            Uri url;
+            if (sim.Caps != null && null != (url = sim.Caps.CapabilityURI("ObjectMedia")))
+            {
+                ObjectMediaRequest req = new ObjectMediaRequest();
+                req.PrimID = primID;
+                req.Verb = "GET";
+
+                CapsClient request = new CapsClient(url);
+                request.OnComplete += (CapsClient client, OSD result, Exception error) =>
+                    {
+                        if (result == null)
+                        {
+                            try { callback(false, string.Empty, null); }
+                            catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client); }
+                            return;
+                        }
+
+                        ObjectMediaMessage msg = new ObjectMediaMessage();
+                        msg.Deserialize((OSDMap)result);
+
+                        if (msg.Request is ObjectMediaResponse)
+                        {
+                            ObjectMediaResponse response = (ObjectMediaResponse)msg.Request;
+                            try { callback(true, response.Version, response.FaceMedia); }
+                            catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client); }
+                        }
+                        else
+                        {
+                            try { callback(false, string.Empty, null); }
+                            catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client); }
+                        }
+                    };
+
+                request.BeginGetResponse(req.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+            }
+            else
+            {
+                try { callback(false, string.Empty, null); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client); }
+            }
+        }
+
         #endregion
 
         #region Packet Handlers
@@ -3361,5 +3417,31 @@ namespace OpenMetaverse
             this.m_ButtonPrices = buttonPrices;
         }
     }
+
+    public class ObjectMediaEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Indicates if the operation was successful
+        /// </summary>
+        public bool Success { get; set; }
+
+        /// <summary>
+        /// Media version string
+        /// </summary>
+        public string Version { get; set; }
+
+        /// <summary>
+        /// Array of media entries indexed by face number
+        /// </summary>
+        public MediaEntry[] FaceMedia { get; set; }
+
+        public ObjectMediaEventArgs(bool success, string version, MediaEntry[] faceMedia)
+        {
+            this.Success = success;
+            this.Version = version;
+            this.FaceMedia = faceMedia;
+        }
+    }
+
     #endregion
 }

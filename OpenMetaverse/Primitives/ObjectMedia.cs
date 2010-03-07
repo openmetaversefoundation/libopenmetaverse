@@ -53,6 +53,9 @@ namespace OpenMetaverse
     }
     #endregion enums
 
+    /// <summary>
+    /// Class representing media data for a single face
+    /// </summary>
     public class MediaEntry
     {
         /// <summary>Is display of the alternative image enabled</summary>
@@ -102,6 +105,10 @@ namespace OpenMetaverse
         /// <summary>Array of URLs that are whitelisted</summary>
         public string[] WhiteList;
 
+        /// <summary>
+        /// Serialize to OSD
+        /// </summary>
+        /// <returns>OSDMap with the serialized data</returns>
         public OSDMap GetOSD()
         {
             OSDMap map = new OSDMap();
@@ -133,6 +140,11 @@ namespace OpenMetaverse
             return map;
         }
 
+        /// <summary>
+        /// Deserialize from OSD data
+        /// </summary>
+        /// <param name="osd">Serialized OSD data</param>
+        /// <returns>Deserialized object</returns>
         public static MediaEntry FromOSD(OSD osd)
         {
             MediaEntry m = new MediaEntry();
@@ -167,8 +179,20 @@ namespace OpenMetaverse
             m.EnableWhiteList = map["whitelist_enable"].AsBoolean();
             m.Width = map["width_pixels"].AsInteger();
 
-
             return m;
         }
+    }
+
+    public partial class Primitive
+    {
+        /// <summary>
+        /// Current version of the media data for the prim
+        /// </summary>
+        public string MediaVersion = string.Empty;
+
+        /// <summary>
+        /// Array of media entries indexed by face number
+        /// </summary>
+        public MediaEntry[] FaceMedia;
     }
 }
