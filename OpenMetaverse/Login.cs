@@ -795,7 +795,7 @@ namespace OpenMetaverse
             loginParams.LastName = lastName;
             loginParams.Password = password;
             loginParams.Start = "last";
-            loginParams.Channel = userAgent + " (OpenMetaverse)";
+            loginParams.Channel = userAgent;
             loginParams.Version = userVersion;
             loginParams.Platform = GetPlatform();
             loginParams.MAC = GetMAC();
