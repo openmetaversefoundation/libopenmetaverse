@@ -1181,7 +1181,7 @@ namespace OpenMetaverse.Messages.Linden
             /// <summary>The <seealso cref="UUID"/> of the groups insignia</summary>
             public UUID GroupInsigniaID;
             /// <summary>The name of the group</summary>
-            public string GroupName;        
+            public string GroupName;
             /// <summary>The aggregate permissions the agent has in the group for all roles the agent
             /// is assigned</summary>
             public GroupPowers GroupPowers;
@@ -2205,7 +2205,7 @@ namespace OpenMetaverse.Messages.Linden
 
     #region Grid/Maps
 
-     /// <summary>Base class for Map Layers via Capabilities</summary>
+    /// <summary>Base class for Map Layers via Capabilities</summary>
     public abstract class MapLayerMessageBase
     {
         /// <summary></summary>
@@ -2246,7 +2246,7 @@ namespace OpenMetaverse.Messages.Linden
     /// A message sent from the simulator to the viewer which contains an array of map images and their grid coordinates
     /// </summary>
     public class MapLayerReplyVariant : MapLayerMessageBase
-    {        
+    {
         /// <summary>
         /// An object containing map location details
         /// </summary>
@@ -2896,7 +2896,7 @@ namespace OpenMetaverse.Messages.Linden
             this.ParcelLocalID = map["parcel_local_id"].AsInteger();
             this.RegionName = map["region_name"].AsString();
             OSDMap voiceMap = (OSDMap)map["voice_credentials"];
-            this.ChannelUri = voiceMap["channel_uri"].AsString();            
+            this.ChannelUri = voiceMap["channel_uri"].AsString();
         }
 
         #endregion
@@ -3675,4 +3675,296 @@ namespace OpenMetaverse.Messages.Linden
     }
 
     #endregion
+
+    #region Object Media Messages
+    /// <summary>
+    /// A message sent from the viewer to the simulator which 
+    /// specifies that the user has changed current URL
+    /// of the specific media on a prim face
+    /// </summary>
+    public class ObjectMediaNavigateMessage : IMessage
+    {
+        /// <summary>
+        /// New URL
+        /// </summary>
+        public string URL;
+
+        /// <summary>
+        /// Prim UUID where navigation occured
+        /// </summary>
+        public UUID PrimID;
+
+        /// <summary>
+        /// Face index
+        /// </summary>
+        public int Face;
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(3);
+
+            map["current_url"] = OSD.FromString(URL);
+            map["object_id"] = OSD.FromUUID(PrimID);
+            map["texture_index"] = OSD.FromInteger(Face);
+
+            return map;
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            URL = map["current_url"].AsString();
+            PrimID = map["object_id"].AsUUID();
+            Face = map["texture_index"].AsInteger();
+        }
+    }
+
+
+    /// <summary>Base class used for the ObjectMedia message</summary>
+    [Serializable]
+    public abstract class ObjectMediaBlock
+    {
+        public abstract OSDMap Serialize();
+        public abstract void Deserialize(OSDMap map);
+    }
+
+    /// <summary>
+    /// Message used to retrive prim media data
+    /// </summary>
+    public class ObjectMediaRequest : ObjectMediaBlock
+    {
+        /// <summary>
+        /// Prim UUID
+        /// </summary>
+        public UUID PrimID;
+
+        /// <summary>
+        /// Requested operation, either GET or UPDATE
+        /// </summary>
+        public string Verb = "GET"; // "GET" or "UPDATE"
+
+        /// <summary>
+        /// Serialize object
+        /// </summary>
+        /// <returns>Serialized object as OSDMap</returns>
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(2);
+            map["object_id"] = OSD.FromUUID(PrimID);
+            map["verb"] = OSD.FromString(Verb);
+            return map;
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public override void Deserialize(OSDMap map)
+        {
+            PrimID = map["object_id"].AsUUID();
+            Verb = map["verb"].AsString();
+        }
+    }
+
+
+    /// <summary>
+    /// Message used to update prim media data
+    /// </summary>
+    public class ObjectMediaResponse : ObjectMediaBlock
+    {
+        /// <summary>
+        /// Prim UUID
+        /// </summary>
+        public UUID PrimID;
+
+        /// <summary>
+        /// Array of media entries indexed by face number
+        /// </summary>
+        public MediaEntry[] FaceMedia;
+
+        /// <summary>
+        /// Media version string
+        /// </summary>
+        public string Version; // String in this format: x-mv:0000000016/00000000-0000-0000-0000-000000000000
+
+        /// <summary>
+        /// Serialize object
+        /// </summary>
+        /// <returns>Serialized object as OSDMap</returns>
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(2);
+            map["object_id"] = OSD.FromUUID(PrimID);
+
+            if (FaceMedia == null)
+            {
+                map["object_media_data"] = new OSDArray();
+            }
+            else
+            {
+                OSDArray mediaData = new OSDArray(FaceMedia.Length);
+
+                for (int i = 0; i < FaceMedia.Length; i++)
+                {
+                    mediaData[i] = FaceMedia[i].GetOSD();
+                }
+
+                map["object_media_data"] = mediaData;
+            }
+
+            map["object_media_version"] = OSD.FromString(Version);
+            return map;
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public override void Deserialize(OSDMap map)
+        {
+            PrimID = map["object_id"].AsUUID();
+
+            if (map["object_media_data"].Type == OSDType.Array)
+            {
+                OSDArray mediaData = (OSDArray)map["object_media_data"];
+                if (mediaData.Count > 0)
+                {
+                    FaceMedia = new MediaEntry[mediaData.Count];
+                    for (int i = 0; i < mediaData.Count; i++)
+                    {
+                        if (mediaData[i].Type == OSDType.Map)
+                        {
+                            FaceMedia[i] = MediaEntry.FromOSD(mediaData[i]);
+                        }
+                    }
+                }
+            }
+            Version = map["object_media_version"].AsString();
+        }
+    }
+
+
+    /// <summary>
+    /// Message used to update prim media data
+    /// </summary>
+    public class ObjectMediaUpdate : ObjectMediaBlock
+    {
+        /// <summary>
+        /// Prim UUID
+        /// </summary>
+        public UUID PrimID;
+
+        /// <summary>
+        /// Array of media entries indexed by face number
+        /// </summary>
+        public MediaEntry[] FaceMedia;
+
+        /// <summary>
+        /// Requested operation, either GET or UPDATE
+        /// </summary>
+        public string Verb = "UPDATE"; // "GET" or "UPDATE"
+
+        /// <summary>
+        /// Serialize object
+        /// </summary>
+        /// <returns>Serialized object as OSDMap</returns>
+        public override OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(2);
+            map["object_id"] = OSD.FromUUID(PrimID);
+
+            if (FaceMedia == null)
+            {
+                map["object_media_data"] = new OSDArray();
+            }
+            else
+            {
+                OSDArray mediaData = new OSDArray(FaceMedia.Length);
+
+                for (int i = 0; i < FaceMedia.Length; i++)
+                {
+                    mediaData[i] = FaceMedia[i].GetOSD();
+                }
+
+                map["object_media_data"] = mediaData;
+            }
+
+            map["verb"] = OSD.FromString(Verb);
+            return map;
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public override void Deserialize(OSDMap map)
+        {
+            PrimID = map["object_id"].AsUUID();
+
+            if (map["object_media_data"].Type == OSDType.Array)
+            {
+                OSDArray mediaData = (OSDArray)map["object_media_data"];
+                if (mediaData.Count > 0)
+                {
+                    FaceMedia = new MediaEntry[mediaData.Count];
+                    for (int i = 0; i < mediaData.Count; i++)
+                    {
+                        if (mediaData[i].Type == OSDType.Map)
+                        {
+                            FaceMedia[i] = MediaEntry.FromOSD(mediaData[i]);
+                        }
+                    }
+                }
+            }
+            Verb = map["verb"].AsString();
+        }
+    }
+
+    /// <summary>
+    /// Message for setting or getting per face MediaEntry
+    /// </summary>
+    [Serializable]
+    public class ObjectMediaMessage : IMessage
+    {
+        /// <summary>The request or response details block</summary>
+        public ObjectMediaBlock Request;
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            return Request.Serialize();
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("verb"))
+            {
+                if (map["verb"].AsString() == "GET")
+                    Request = new ObjectMediaRequest();
+                else if (map["verb"].AsString() == "UPDATE")
+                    Request = new ObjectMediaUpdate();
+            }
+            else if (map.ContainsKey("object_media_version"))
+                Request = new ObjectMediaResponse();
+            else
+                Logger.Log("Unable to deserialize ObjectMedia: No message handler exists for method: " + map.AsString(), Helpers.LogLevel.Warning);
+
+            if (Request != null)
+                Request.Deserialize(map);
+        }
+    }
+    #endregion Object Media Messages
 }

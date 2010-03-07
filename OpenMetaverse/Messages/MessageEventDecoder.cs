@@ -88,6 +88,8 @@ namespace OpenMetaverse.Messages
                 case "UploadBakedTexture": message = new UploadBakedTextureMessage(); break;
                 case "WebFetchInventoryDescendents": message = new WebFetchInventoryDescendentsMessage(); break;
                 case "RegionInfo": message = new RegionInfoMessage(); break;
+                case "ObjectMediaNavigate": message = new ObjectMediaNavigateMessage(); break;
+                case "ObjectMedia": message = new ObjectMediaMessage(); break;
                 //case "ProductInfoRequest": message = new ProductInfoRequestMessage(); break;
 
                 // Capabilities TODO:
