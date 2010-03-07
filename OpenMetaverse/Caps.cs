@@ -143,6 +143,8 @@ namespace OpenMetaverse
             req.Add("MapLayer");
             req.Add("MapLayerGod");
             req.Add("NewFileAgentInventory");
+            req.Add("ObjectMedia");
+            req.Add("ObjectMediaNavigate");
             req.Add("ParcelPropertiesUpdate");
             req.Add("ParcelVoiceInfoRequest");
             req.Add("ProductInfoRequest");
