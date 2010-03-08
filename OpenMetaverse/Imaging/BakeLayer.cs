@@ -264,15 +264,29 @@ namespace OpenMetaverse.Imaging
             //File.WriteAllBytes(bakeType + ".tga", bakedTexture.Image.ExportTGA());
         }
 
+        private static object ResourceSync = new object();
+
         public static ManagedImage LoadResourceLayer(string fileName)
         {
             try
             {
-                Stream stream = Helpers.GetResourceStream(fileName, Settings.RESOURCE_DIR);
-                Bitmap bitmap = LoadTGAClass.LoadTGA(stream);
-                stream.Close();
-                stream.Dispose();
-                return new ManagedImage(bitmap);
+                Bitmap bitmap = null;
+                lock (ResourceSync)
+                {
+                    using (Stream stream = Helpers.GetResourceStream(fileName, Settings.RESOURCE_DIR))
+                    {
+                        bitmap = LoadTGAClass.LoadTGA(stream);
+                    }
+                }
+                if (bitmap == null)
+                {
+                    Logger.Log(String.Format("Failed loading resource file: {0}", fileName), Helpers.LogLevel.Error);
+                    return null;
+                }
+                else
+                {
+                    return new ManagedImage(bitmap);
+                }
             }
             catch (Exception e)
             {
