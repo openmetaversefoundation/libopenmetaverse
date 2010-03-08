@@ -3812,7 +3812,10 @@ namespace OpenMetaverse.Messages.Linden
 
                 for (int i = 0; i < FaceMedia.Length; i++)
                 {
-                    mediaData[i] = FaceMedia[i].GetOSD();
+                    if (FaceMedia[i] == null)
+                        mediaData.Add(new OSD());
+                    else
+                        mediaData.Add(FaceMedia[i].GetOSD());
                 }
 
                 map["object_media_data"] = mediaData;
@@ -3889,7 +3892,10 @@ namespace OpenMetaverse.Messages.Linden
 
                 for (int i = 0; i < FaceMedia.Length; i++)
                 {
-                    mediaData[i] = FaceMedia[i].GetOSD();
+                    if (FaceMedia[i] == null)
+                        mediaData.Add(new OSD());
+                    else
+                        mediaData.Add(FaceMedia[i].GetOSD());
                 }
 
                 map["object_media_data"] = mediaData;

@@ -114,7 +114,7 @@ namespace OpenMetaverse
         /// Indicates that this pay option should be hidden
         /// </summary>
         Hide = -1,
-        
+
         /// <summary>
         /// Indicates that this pay option should have the default value
         /// </summary>
@@ -164,7 +164,7 @@ namespace OpenMetaverse
         public const float HAVOK_TIMESTEP = 1.0f / 45.0f;
 
         #region Delegates
-       
+
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<PrimEventArgs> m_ObjectUpdate;
 
@@ -190,7 +190,7 @@ namespace OpenMetaverse
             add { lock (m_ObjectUpdateLock) { m_ObjectUpdate += value; } }
             remove { lock (m_ObjectUpdateLock) { m_ObjectUpdate -= value; } }
         }
-                     
+
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<ObjectPropertiesEventArgs> m_ObjectProperties;
 
@@ -216,7 +216,7 @@ namespace OpenMetaverse
             add { lock (m_ObjectPropertiesLock) { m_ObjectProperties += value; } }
             remove { lock (m_ObjectPropertiesLock) { m_ObjectProperties -= value; } }
         }
-       
+
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<ObjectPropertiesUpdatedEventArgs> m_ObjectPropertiesUpdated;
 
@@ -240,7 +240,7 @@ namespace OpenMetaverse
             add { lock (m_ObjectPropertiesUpdatedLock) { m_ObjectPropertiesUpdated += value; } }
             remove { lock (m_ObjectPropertiesUpdatedLock) { m_ObjectPropertiesUpdated -= value; } }
         }
-        
+
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<ObjectPropertiesFamilyEventArgs> m_ObjectPropertiesFamily;
 
@@ -265,7 +265,7 @@ namespace OpenMetaverse
             add { lock (m_ObjectPropertiesFamilyLock) { m_ObjectPropertiesFamily += value; } }
             remove { lock (m_ObjectPropertiesFamilyLock) { m_ObjectPropertiesFamily -= value; } }
         }
-        
+
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<AvatarUpdateEventArgs> m_AvatarUpdate;
 
@@ -289,7 +289,7 @@ namespace OpenMetaverse
             add { lock (m_AvatarUpdateLock) { m_AvatarUpdate += value; } }
             remove { lock (m_AvatarUpdateLock) { m_AvatarUpdate -= value; } }
         }
-                     
+
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<TerseObjectUpdateEventArgs> m_TerseObjectUpdate;
 
@@ -337,7 +337,7 @@ namespace OpenMetaverse
             add { lock (m_ObjectDataBlockUpdateLock) { m_ObjectDataBlockUpdate += value; } }
             remove { lock (m_ObjectDataBlockUpdateLock) { m_ObjectDataBlockUpdate -= value; } }
         }
-       
+
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<KillObjectEventArgs> m_KillObject;
 
@@ -385,7 +385,7 @@ namespace OpenMetaverse
             add { lock (m_AvatarSitChangedLock) { m_AvatarSitChanged += value; } }
             remove { lock (m_AvatarSitChangedLock) { m_AvatarSitChanged -= value; } }
         }
-        
+
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<PayPriceReplyEventArgs> m_PayPriceReply;
 
@@ -560,7 +560,7 @@ namespace OpenMetaverse
         public void RequestPayPrice(Simulator simulator, UUID objectID)
         {
             RequestPayPricePacket payPriceRequest = new RequestPayPricePacket();
-            
+
             payPriceRequest.ObjectData = new RequestPayPricePacket.ObjectDataBlock();
             payPriceRequest.ObjectData.ObjectID = objectID;
 
@@ -669,7 +669,7 @@ namespace OpenMetaverse
             flags.AgentData.IsTemporary = temporary;
             flags.AgentData.IsPhantom = phantom;
             flags.AgentData.CastsShadows = castsShadow;
-            
+
             Client.Network.SendPacket(flags, simulator);
         }
 
@@ -1140,7 +1140,7 @@ namespace OpenMetaverse
             {
                 packet.ObjectData[i] = new ObjectLinkPacket.ObjectDataBlock();
                 packet.ObjectData[i].ObjectLocalID = localIDs[i];
-            }            
+            }
 
             Client.Network.SendPacket(packet, simulator);
         }
@@ -1296,7 +1296,7 @@ namespace OpenMetaverse
             {
                 detach.ObjectData[i] = new ObjectDetachPacket.ObjectDataBlock();
                 detach.ObjectData[i].ObjectLocalID = localIDs[i];
-            }            
+            }
 
             Client.Network.SendPacket(detach, simulator);
         }
@@ -1488,7 +1488,7 @@ namespace OpenMetaverse
 
             Client.Network.SendPacket(packet, simulator);
         }
-        
+
         /// <summary>
         /// Request additional properties for an object
         /// </summary>
@@ -1543,6 +1543,79 @@ namespace OpenMetaverse
             Client.Network.SendPacket(packet, simulator);
         }
 
+        /// <summary>
+        /// Update current URL of the previously set prim media
+        /// </summary>
+        /// <param name="primID">UUID of the prim</param>
+        /// <param name="newURL">Set current URL to this</param>
+        /// <param name="face">Prim face number</param>
+        /// <param name="sim">Simulator in which prim is located</param>
+        public void NavigateObjectMedia(UUID primID, int face, string newURL, Simulator sim)
+        {
+            Uri url;
+            if (sim.Caps != null && null != (url = sim.Caps.CapabilityURI("ObjectMediaNavigate")))
+            {
+                ObjectMediaNavigateMessage req = new ObjectMediaNavigateMessage();
+                req.PrimID = primID;
+                req.URL = newURL;
+                req.Face = face;
+
+                CapsClient request = new CapsClient(url);
+                request.OnComplete += (CapsClient client, OSD result, Exception error) =>
+                    {
+                        if (error != null)
+                        {
+                            Logger.Log("ObjectMediaNavigate: " + error.Message, Helpers.LogLevel.Error, Client);
+                        }
+                    };
+
+                request.BeginGetResponse(req.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+            }
+            else
+            {
+                Logger.Log("ObjectMediaNavigate capability not available", Helpers.LogLevel.Error, Client);
+            }
+        }
+
+        /// <summary>
+        /// Set object media
+        /// </summary>
+        /// <param name="primID">UUID of the prim</param>
+        /// <param name="faceMedia">Array the length of prims number of faces. Null on face indexes where there is
+        /// no media, <seealso cref="MediaEntry"/> on faces which contain the media</param>
+        /// <param name="sim">Simulatior in which prim is located</param>
+        public void UpdateObjectMedia(UUID primID, MediaEntry[] faceMedia, Simulator sim)
+        {
+            Uri url;
+            if (sim.Caps != null && null != (url = sim.Caps.CapabilityURI("ObjectMedia")))
+            {
+                ObjectMediaUpdate req = new ObjectMediaUpdate();
+                req.PrimID = primID;
+                req.FaceMedia = faceMedia;
+                req.Verb = "UPDATE";
+
+                CapsClient request = new CapsClient(url);
+                request.OnComplete += (CapsClient client, OSD result, Exception error) =>
+                    {
+                        if (error != null)
+                        {
+                            Logger.Log("ObjectMediaUpdate: " + error.Message, Helpers.LogLevel.Error, Client);
+                        }
+                    };
+                request.BeginGetResponse(req.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+            }
+            else
+            {
+                Logger.Log("ObjectMedia capability not available", Helpers.LogLevel.Error, Client);
+            }
+        }
+
+        /// <summary>
+        /// Retrieve information about object media
+        /// </summary>
+        /// <param name="primID">UUID of the primitive</param>
+        /// <param name="sim">Simulator where prim is located</param>
+        /// <param name="callback">Call this callback when done</param>
         public void RequestObjectMedia(UUID primID, Simulator sim, ObjectMediaCallback callback)
         {
             Uri url;
@@ -1557,6 +1630,7 @@ namespace OpenMetaverse
                     {
                         if (result == null)
                         {
+                            Logger.Log("Failed retrieving ObjectMedia data", Helpers.LogLevel.Error, Client);
                             try { callback(false, string.Empty, null); }
                             catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client); }
                             return;
@@ -1568,6 +1642,17 @@ namespace OpenMetaverse
                         if (msg.Request is ObjectMediaResponse)
                         {
                             ObjectMediaResponse response = (ObjectMediaResponse)msg.Request;
+
+                            if (Client.Settings.OBJECT_TRACKING)
+                            {
+                                Primitive prim = sim.ObjectsPrimitives.Find((Primitive p) => { return p.ID == primID; });
+                                if (prim != null)
+                                {
+                                    prim.MediaVersion = response.Version;
+                                    prim.FaceMedia = response.FaceMedia;
+                                }
+                            }
+
                             try { callback(true, response.Version, response.FaceMedia); }
                             catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client); }
                         }
@@ -1582,11 +1667,11 @@ namespace OpenMetaverse
             }
             else
             {
+                Logger.Log("ObjectMedia capability not available", Helpers.LogLevel.Error, Client);
                 try { callback(false, string.Empty, null); }
                 catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, Client); }
             }
         }
-
         #endregion
 
         #region Packet Handlers
@@ -1601,7 +1686,7 @@ namespace OpenMetaverse
 
             ObjectUpdatePacket update = (ObjectUpdatePacket)packet;
             UpdateDilation(e.Simulator, update.RegionData.TimeDilation);
-            
+
             for (int b = 0; b < update.ObjectData.Length; b++)
             {
                 ObjectUpdatePacket.ObjectDataBlock block = update.ObjectData[b];
@@ -1823,7 +1908,7 @@ namespace OpenMetaverse
                         // Textures
                         objectupdate.Textures = new Primitive.TextureEntry(block.TextureEntry, 0,
                             block.TextureEntry.Length);
-                                                
+
                         OnObjectDataBlockUpdate(new ObjectDataBlockUpdateEventArgs(simulator, prim, data, block, objectupdate, nameValues));
 
                         #region Update Prim Info with decoded data
@@ -1903,7 +1988,7 @@ namespace OpenMetaverse
                         prim.AngularVelocity = objectupdate.AngularVelocity;
                         #endregion
 
-                        OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, isNewObject, attachment));                        
+                        OnObjectUpdate(new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, isNewObject, attachment));
 
                         break;
                     #endregion Prim and Foliage
@@ -1939,7 +2024,7 @@ namespace OpenMetaverse
 
                         objectupdate.Avatar = true;
                         // Textures
-                        objectupdate.Textures = new Primitive.TextureEntry(block.TextureEntry, 0,                 
+                        objectupdate.Textures = new Primitive.TextureEntry(block.TextureEntry, 0,
                             block.TextureEntry.Length);
 
                         OnObjectDataBlockUpdate(new ObjectDataBlockUpdateEventArgs(simulator, avatar, data, block, objectupdate, nameValues));
@@ -2116,7 +2201,7 @@ namespace OpenMetaverse
                         (Primitive)GetPrimitive(simulator, update.LocalID, UUID.Zero);
 
                     // Fire the pre-emptive notice (before we stomp the object)
-                    OnTerseObjectUpdate(new TerseObjectUpdateEventArgs(simulator, obj, update, terse.RegionData.TimeDilation));                    
+                    OnTerseObjectUpdate(new TerseObjectUpdateEventArgs(simulator, obj, update, terse.RegionData.TimeDilation));
 
                     #region Update Client.Self
                     if (update.LocalID == Client.Self.localID)
@@ -2128,18 +2213,18 @@ namespace OpenMetaverse
                         Client.Self.relativeRotation = update.Rotation;
                         Client.Self.angularVelocity = update.AngularVelocity;
                     }
-                    #endregion Update Client.Self                   
-                     if (Client.Settings.OBJECT_TRACKING && obj != null)
-                     {
-                         obj.Position = update.Position;
-                         obj.Rotation = update.Rotation;
-                         obj.Velocity = update.Velocity;
-                         obj.CollisionPlane = update.CollisionPlane;
-                         obj.Acceleration = update.Acceleration;
-                         obj.AngularVelocity = update.AngularVelocity;
-                         obj.PrimData.State = update.State;
-                         obj.Textures = update.Textures;
-                     }
+                    #endregion Update Client.Self
+                    if (Client.Settings.OBJECT_TRACKING && obj != null)
+                    {
+                        obj.Position = update.Position;
+                        obj.Rotation = update.Rotation;
+                        obj.Velocity = update.Velocity;
+                        obj.CollisionPlane = update.CollisionPlane;
+                        obj.Acceleration = update.Acceleration;
+                        obj.AngularVelocity = update.AngularVelocity;
+                        obj.PrimData.State = update.State;
+                        obj.Textures = update.Textures;
+                    }
 
                 }
                 catch (Exception ex)
@@ -2448,7 +2533,7 @@ namespace OpenMetaverse
             {
                 OnKillObject(new KillObjectEventArgs(simulator, kill.ObjectData[i].ID));
             }
-                
+
 
             lock (simulator.ObjectsPrimitives.Dictionary)
             {
@@ -2469,7 +2554,7 @@ namespace OpenMetaverse
                         {
                             if (prim.Value.ParentID == localID)
                             {
-                                OnKillObject(new KillObjectEventArgs(simulator, prim.Key));                                
+                                OnKillObject(new KillObjectEventArgs(simulator, prim.Key));
                                 removePrims.Add(prim.Key);
                             }
                         }
@@ -2494,7 +2579,7 @@ namespace OpenMetaverse
                             {
                                 if (prim.Value.ParentID == localID)
                                 {
-                                    OnKillObject(new KillObjectEventArgs(simulator, prim.Key));                                    
+                                    OnKillObject(new KillObjectEventArgs(simulator, prim.Key));
                                     removePrims.Add(prim.Key);
                                     rootPrims.Add(prim.Key);
                                 }
@@ -2504,7 +2589,7 @@ namespace OpenMetaverse
                             {
                                 if (rootPrims.Contains(prim.Value.ParentID))
                                 {
-                                    OnKillObject(new KillObjectEventArgs(simulator, prim.Key));                                    
+                                    OnKillObject(new KillObjectEventArgs(simulator, prim.Key));
                                     removePrims.Add(prim.Key);
                                 }
                             }
@@ -2544,7 +2629,7 @@ namespace OpenMetaverse
                 props.AggregatePermTexturesOwner = objectData.AggregatePermTexturesOwner;
                 props.Permissions = new Permissions(objectData.BaseMask, objectData.EveryoneMask, objectData.GroupMask,
                     objectData.NextOwnerMask, objectData.OwnerMask);
-                props.Category = (ObjectCategory)objectData.Category;                                    
+                props.Category = (ObjectCategory)objectData.Category;
                 props.CreationDate = Utils.UnixTimeToDateTime((uint)objectData.CreationDate);
                 props.CreatorID = objectData.CreatorID;
                 props.Description = Utils.BytesToString(objectData.Description);
@@ -2763,9 +2848,9 @@ namespace OpenMetaverse
             {
                 Client.Self.sittingOn = localid;
             }
-            
+
             av.ParentID = localid;
-            
+
 
             if (m_AvatarSitChanged != null && oldSeatID != localid)
             {
@@ -2849,7 +2934,7 @@ namespace OpenMetaverse
 
 
         #endregion Utility Functions
-        
+
         #region Object Tracking Link
 
         /// <summary>
@@ -3028,11 +3113,11 @@ namespace OpenMetaverse
             {
                 InterpolationTimer.Change(delay, Timeout.Infinite);
             }
-            
-        }                        
+
+        }
     }
     #region EventArgs classes
-    
+
     /// <summary>Provides data for the <see cref="ObjectManager.ObjectUpdate"/> event</summary>
     /// <remarks><para>The <see cref="ObjectManager.ObjectUpdate"/> event occurs when the simulator sends
     /// an <see cref="ObjectUpdatePacket"/> containing a Primitive, Foliage or Attachment data</para>
@@ -3075,7 +3160,7 @@ namespace OpenMetaverse
         /// <summary>true if the <see cref="Primitive"/> is attached to an <see cref="Avatar"/></summary>
         public bool IsAttachment { get { return m_IsAttachment; } }
         /// <summary>Get the simulator Time Dilation</summary>
-        public ushort TimeDilation { get { return m_TimeDilation; } } 
+        public ushort TimeDilation { get { return m_TimeDilation; } }
 
         /// <summary>
         /// Construct a new instance of the PrimEventArgs class
@@ -3228,7 +3313,7 @@ namespace OpenMetaverse
         private readonly Simulator m_Simulator;
         private readonly Primitive m_Prim;
         private readonly Primitive.ObjectProperties m_Properties;
-                
+
         /// <summary>Get the simulator the object is located</summary>
         public Simulator Simulator { get { return m_Simulator; } }
         /// <summary>Get the primitive details</summary>
@@ -3302,10 +3387,10 @@ namespace OpenMetaverse
             this.m_Simulator = simulator;
             this.m_Prim = prim;
             this.m_Update = update;
-            this.m_TimeDilation = timeDilation;                
+            this.m_TimeDilation = timeDilation;
         }
     }
-   
+
     /// <summary>
     /// 
     /// </summary>
@@ -3329,9 +3414,9 @@ namespace OpenMetaverse
         /// <summary></summary>
         public ObjectMovementUpdate Update { get { return m_Update; } }
         /// <summary></summary>
-        public NameValue[] NameValues { get { return m_NameValues; } } 
+        public NameValue[] NameValues { get { return m_NameValues; } }
 
-        public ObjectDataBlockUpdateEventArgs(Simulator simulator, Primitive prim, Primitive.ConstructionData constructionData, 
+        public ObjectDataBlockUpdateEventArgs(Simulator simulator, Primitive prim, Primitive.ConstructionData constructionData,
             ObjectUpdatePacket.ObjectDataBlock block, ObjectMovementUpdate objectupdate, NameValue[] nameValues)
         {
             this.m_Simulator = simulator;
@@ -3353,7 +3438,7 @@ namespace OpenMetaverse
         /// <summary>Get the simulator the object is located</summary>
         public Simulator Simulator { get { return m_Simulator; } }
         /// <summary>The LocalID of the object</summary>
-        public uint ObjectLocalID { get { return m_ObjectLocalID; } } 
+        public uint ObjectLocalID { get { return m_ObjectLocalID; } }
 
         public KillObjectEventArgs(Simulator simulator, uint objectID)
         {
@@ -3361,7 +3446,7 @@ namespace OpenMetaverse
             this.m_ObjectLocalID = objectID;
         }
     }
-    
+
     /// <summary>
     /// Provides updates sit position data
     /// </summary>
@@ -3379,7 +3464,7 @@ namespace OpenMetaverse
         /// <summary></summary>
         public uint SittingOn { get { return m_SittingOn; } }
         /// <summary></summary>
-        public uint OldSeat { get { return m_OldSeat; } } 
+        public uint OldSeat { get { return m_OldSeat; } }
 
         public AvatarSitChangedEventArgs(Simulator simulator, Avatar avatar, uint sittingOn, uint oldSeat)
         {
@@ -3389,7 +3474,7 @@ namespace OpenMetaverse
             this.m_OldSeat = oldSeat;
         }
     }
-    
+
     /// <summary>
     /// 
     /// </summary>
@@ -3407,7 +3492,7 @@ namespace OpenMetaverse
         /// <summary></summary>
         public int DefaultPrice { get { return m_DefaultPrice; } }
         /// <summary></summary>
-        public int[] ButtonPrices { get { return m_ButtonPrices; } } 
+        public int[] ButtonPrices { get { return m_ButtonPrices; } }
 
         public PayPriceReplyEventArgs(Simulator simulator, UUID objectID, int defaultPrice, int[] buttonPrices)
         {
