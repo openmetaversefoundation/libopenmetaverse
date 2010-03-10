@@ -229,8 +229,15 @@ namespace OpenMetaverse.Voice
                 }
                 sb.Append("\n\n\n");
 
-                //               Logger.Log(sb, Helpers.LogLevel.Info);
-                daemonPipe.SendData(Encoding.ASCII.GetBytes(sb.ToString()));
+                try
+                {
+                    daemonPipe.SendData(Encoding.ASCII.GetBytes(sb.ToString()));
+                }
+                catch
+                {
+                    returnId = -1;
+                }
+
                 return returnId;
             }
             else

@@ -23,6 +23,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+//#define DEBUG_VOICE
 
 using System;
 using System.Collections.Generic;
@@ -111,7 +112,7 @@ namespace OpenMetaverse.Voice
             Client = c;
 
             sessions = new Dictionary<string, VoiceSession>();
-            position = new OpenMetaverse.Voice.VoicePosition();
+            position = new VoicePosition();
             position.UpOrientation = new Vector3d(0.0, 1.0, 0.0);
             position.Velocity = new Vector3d(0.0, 0.0, 0.0);
             oldPosition = new Vector3d(0, 0, 0);
@@ -141,11 +142,11 @@ namespace OpenMetaverse.Voice
 
             // Connection events
             OnDaemonRunning +=
-                 new OpenMetaverse.Voice.VoiceGateway.DaemonRunningCallback(connector_OnDaemonRunning);
+                 new VoiceGateway.DaemonRunningCallback(connector_OnDaemonRunning);
             OnDaemonCouldntRun +=
-                new OpenMetaverse.Voice.VoiceGateway.DaemonCouldntRunCallback(connector_OnDaemonCouldntRun);
+                new VoiceGateway.DaemonCouldntRunCallback(connector_OnDaemonCouldntRun);
             OnConnectorCreateResponse +=
-                new EventHandler<OpenMetaverse.Voice.VoiceGateway.VoiceConnectorEventArgs>(connector_OnConnectorCreateResponse);
+                new EventHandler<VoiceGateway.VoiceConnectorEventArgs>(connector_OnConnectorCreateResponse);
             OnDaemonConnected +=
                 new DaemonConnectedCallback(connector_OnDaemonConnected);
             OnDaemonCouldntConnect +=
@@ -196,7 +197,7 @@ namespace OpenMetaverse.Voice
         /// <param name="sender"></param>
         /// <param name="e"></param>
         /// ///<remarks>If something goes wrong, we log it.</remarks>
-        void connector_OnVoiceResponse(object sender, OpenMetaverse.Voice.VoiceGateway.VoiceResponseEventArgs e)
+        void connector_OnVoiceResponse(object sender, VoiceGateway.VoiceResponseEventArgs e)
         {
             if (e.StatusCode == 0)
                 return;
@@ -210,15 +211,15 @@ namespace OpenMetaverse.Voice
 
             // Connection events
             OnDaemonRunning -=
-                     new OpenMetaverse.Voice.VoiceGateway.DaemonRunningCallback(connector_OnDaemonRunning);
+                     new VoiceGateway.DaemonRunningCallback(connector_OnDaemonRunning);
             OnDaemonCouldntRun -=
-                    new OpenMetaverse.Voice.VoiceGateway.DaemonCouldntRunCallback(connector_OnDaemonCouldntRun);
+                    new VoiceGateway.DaemonCouldntRunCallback(connector_OnDaemonCouldntRun);
             OnConnectorCreateResponse -=
-                new EventHandler<OpenMetaverse.Voice.VoiceGateway.VoiceConnectorEventArgs>(connector_OnConnectorCreateResponse);
+                new EventHandler<VoiceGateway.VoiceConnectorEventArgs>(connector_OnConnectorCreateResponse);
             OnDaemonConnected -=
-                    new OpenMetaverse.Voice.VoiceGateway.DaemonConnectedCallback(connector_OnDaemonConnected);
+                    new VoiceGateway.DaemonConnectedCallback(connector_OnDaemonConnected);
             OnDaemonCouldntConnect -=
-                    new OpenMetaverse.Voice.VoiceGateway.DaemonCouldntConnectCallback(connector_OnDaemonCouldntConnect);
+                    new VoiceGateway.DaemonCouldntConnectCallback(connector_OnDaemonCouldntConnect);
             OnAuxAudioPropertiesEvent -=
                     new EventHandler<AudioPropertiesEventArgs>(connector_OnAuxAudioPropertiesEvent);
 
@@ -238,13 +239,13 @@ namespace OpenMetaverse.Voice
 
             // Tuning events
             OnAuxGetCaptureDevicesResponse -=
-                    new EventHandler<OpenMetaverse.Voice.VoiceGateway.VoiceDevicesEventArgs>(connector_OnAuxGetCaptureDevicesResponse);
+                    new EventHandler<VoiceGateway.VoiceDevicesEventArgs>(connector_OnAuxGetCaptureDevicesResponse);
             OnAuxGetRenderDevicesResponse -=
-                    new EventHandler<OpenMetaverse.Voice.VoiceGateway.VoiceDevicesEventArgs>(connector_OnAuxGetRenderDevicesResponse);
+                    new EventHandler<VoiceGateway.VoiceDevicesEventArgs>(connector_OnAuxGetRenderDevicesResponse);
 
             // Account events
             OnAccountLoginResponse -=
-                    new EventHandler<OpenMetaverse.Voice.VoiceGateway.VoiceAccountEventArgs>(connector_OnAccountLoginResponse);
+                    new EventHandler<VoiceGateway.VoiceAccountEventArgs>(connector_OnAccountLoginResponse);
 
             // Stop the background thread
             if (posThread != null)
@@ -452,7 +453,7 @@ namespace OpenMetaverse.Voice
 
             switch (e.State)
             {
-                case OpenMetaverse.Voice.VoiceGateway.SessionState.Connected:
+                case VoiceGateway.SessionState.Connected:
                     s = FindSession(e.SessionHandle, true);
                     sessionHandle = e.SessionHandle;
                     s.RegionName = regionName;
@@ -464,7 +465,7 @@ namespace OpenMetaverse.Voice
                         OnSessionCreate(s, null);
                     break;
 
-                case OpenMetaverse.Voice.VoiceGateway.SessionState.Disconnected:
+                case VoiceGateway.SessionState.Disconnected:
                     s = FindSession(sessionHandle, false);
                     sessions.Remove(sessionHandle);
 
@@ -632,7 +633,7 @@ namespace OpenMetaverse.Voice
         void connector_OnDaemonRunning()
         {
             OnDaemonRunning -=
-                new OpenMetaverse.Voice.VoiceGateway.DaemonRunningCallback(connector_OnDaemonRunning);
+                new VoiceGateway.DaemonRunningCallback(connector_OnDaemonRunning);
 
             Logger.Log("Daemon started", Helpers.LogLevel.Info);
             ReportConnectionState(ConnectionState.DaemonStarted);
@@ -651,14 +652,15 @@ namespace OpenMetaverse.Voice
             ReportConnectionState(ConnectionState.DaemonConnected);
 
             // The connector is what does the logging.
-            OpenMetaverse.Voice.VoiceGateway.VoiceLoggingSettings vLog =
-                new OpenMetaverse.Voice.VoiceGateway.VoiceLoggingSettings();
-            //TODO            vLog.Folder = control.instance.ClientDir;
+            VoiceGateway.VoiceLoggingSettings vLog =
+                new VoiceGateway.VoiceLoggingSettings();
+            
+#if DEBUG_VOICE
             vLog.Enabled = true;
-            vLog.FileNamePrefix = "RadegastVoice";
+            vLog.FileNamePrefix = "OpenmetaverseVoice";
             vLog.FileNameSuffix = ".log";
-            vLog.LogLevel = 5;
-
+            vLog.LogLevel = 4;
+#endif
             // STEP 3
             int reqId = ConnectorCreate(
                 "V2 SDK",       // Magic value keeps SLVoice happy
@@ -676,7 +678,7 @@ namespace OpenMetaverse.Voice
         /// </summary>
         void connector_OnConnectorCreateResponse(
             object sender,
-            OpenMetaverse.Voice.VoiceGateway.VoiceConnectorEventArgs e)
+            VoiceGateway.VoiceConnectorEventArgs e)
         {
             Logger.Log("Voice daemon protocol started " + e.Message, Helpers.LogLevel.Info);
 
@@ -703,7 +705,7 @@ namespace OpenMetaverse.Voice
 
         void connector_OnAccountLoginResponse(
             object sender,
-            OpenMetaverse.Voice.VoiceGateway.VoiceAccountEventArgs e)
+            VoiceGateway.VoiceAccountEventArgs e)
         {
             Logger.Log("Account Login " + e.Message, Helpers.LogLevel.Info);
             accountHandle = e.AccountHandle;
@@ -717,7 +719,7 @@ namespace OpenMetaverse.Voice
         /// </summary>
         void connector_OnAuxGetRenderDevicesResponse(
             object sender,
-            OpenMetaverse.Voice.VoiceGateway.VoiceDevicesEventArgs e)
+            VoiceGateway.VoiceDevicesEventArgs e)
         {
             outputDevices = e.Devices;
             currentPlaybackDevice = e.CurrentDevice;
@@ -728,7 +730,7 @@ namespace OpenMetaverse.Voice
         /// </summary>
         void connector_OnAuxGetCaptureDevicesResponse(
             object sender,
-            OpenMetaverse.Voice.VoiceGateway.VoiceDevicesEventArgs e)
+            VoiceGateway.VoiceDevicesEventArgs e)
         {
             inputDevices = e.Devices;
             currentCaptureDevice = e.CurrentDevice;
