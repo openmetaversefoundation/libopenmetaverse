@@ -29,6 +29,7 @@ using System.Net;
 using System.Collections.Generic;
 using System.Threading;
 using OpenMetaverse.Packets;
+using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse
 {
@@ -77,6 +78,39 @@ namespace OpenMetaverse
             public int GivenPositive;
             /// <summary>Negative ratings given by this avatar</summary>
             public int GivenNegative;
+
+            public OSD GetOSD()
+            {
+                OSDMap tex = new OSDMap(8);
+                tex["behavior_positive"] = OSD.FromInteger(BehaviorPositive);
+                tex["behavior_negative"] = OSD.FromInteger(BehaviorNegative);
+                tex["appearance_positive"] = OSD.FromInteger(AppearancePositive);
+                tex["appearance_negative"] = OSD.FromInteger(AppearanceNegative);
+                tex["buildings_positive"] = OSD.FromInteger(BuildingPositive);
+                tex["buildings_negative"] = OSD.FromInteger(BuildingNegative);
+                tex["given_positive"] = OSD.FromInteger(GivenPositive);
+                tex["given_negative"] = OSD.FromInteger(GivenNegative);
+                return tex;
+            }
+
+            public static Statistics FromOSD(OSD O)
+            {
+                Statistics S = new Statistics();
+                OSDMap tex = (OSDMap)O;
+
+                S.BehaviorPositive = tex["behavior_positive"].AsInteger();
+                S.BuildingNegative = tex["behavior_negative"].AsInteger();
+                S.AppearancePositive = tex["appearance_positive"].AsInteger();
+                S.AppearanceNegative = tex["appearance_negative"].AsInteger();
+                S.BuildingPositive = tex["buildings_positive"].AsInteger();
+                S.BuildingNegative = tex["buildings_negative"].AsInteger();
+                S.GivenPositive = tex["given_positive"].AsInteger();
+                S.GivenNegative = tex["given_negative"].AsInteger();
+
+
+                return S;
+
+            }
         }
 
         /// <summary>
@@ -167,6 +201,40 @@ namespace OpenMetaverse
                 }
             }
 
+            public OSD GetOSD()
+            {
+                OSDMap tex = new OSDMap(9);
+                tex["first_life_text"] = OSD.FromString(FirstLifeText);
+                tex["first_life_image"] = OSD.FromUUID(FirstLifeImage);
+                tex["partner"] = OSD.FromUUID(Partner);
+                tex["about_text"] = OSD.FromString(AboutText);
+                tex["born_on"] = OSD.FromString(BornOn);
+                tex["charter_member"] = OSD.FromString(CharterMember);
+                tex["profile_image"] = OSD.FromUUID(ProfileImage);
+                tex["flags"] = OSD.FromInteger((byte)Flags);
+                tex["profile_url"] = OSD.FromString(ProfileURL);
+                return tex;
+            }
+
+            public static AvatarProperties FromOSD(OSD O)
+            {
+                AvatarProperties A = new AvatarProperties();
+                OSDMap tex = (OSDMap)O;
+
+                A.FirstLifeText = tex["first_life_text"].AsString();
+                A.FirstLifeImage = tex["first_life_image"].AsUUID();
+                A.Partner = tex["partner"].AsUUID();
+                A.AboutText = tex["about_text"].AsString();
+                A.BornOn = tex["born_on"].AsString();
+                A.CharterMember = tex["chart_member"].AsString();
+                A.ProfileImage = tex["profile_image"].AsUUID();
+                A.Flags = (ProfileFlags)tex["flags"].AsInteger();
+                A.ProfileURL = tex["profile_url"].AsString();
+
+                return A;
+
+            }
+
             #endregion Properties
         }
 
@@ -188,6 +256,32 @@ namespace OpenMetaverse
             public uint WantToMask;
             /// <summary></summary>
             public string WantToText;
+
+            public OSD GetOSD()
+            {
+                OSDMap InterestsOSD = new OSDMap(5);
+                InterestsOSD["languages_text"] = OSD.FromString(LanguagesText);
+                InterestsOSD["skills_mask"] = OSD.FromUInteger(SkillsMask);
+                InterestsOSD["skills_text"] = OSD.FromString(SkillsText);
+                InterestsOSD["want_to_mask"] = OSD.FromUInteger(WantToMask);
+                InterestsOSD["want_to_text"] = OSD.FromString(WantToText);
+                return InterestsOSD;
+            }
+
+            public static Interests FromOSD(OSD O)
+            {
+                Interests I = new Interests();
+                OSDMap tex = (OSDMap)O;
+
+                I.LanguagesText = tex["languages_text"].AsString();
+                I.SkillsMask = tex["skills_mask"].AsUInteger();
+                I.SkillsText = tex["skills_text"].AsString();
+                I.WantToMask = tex["want_to_mask"].AsUInteger();
+                I.WantToText = tex["want_to_text"].AsString();
+
+                return I;
+
+            }
         }
 
         #endregion Subclasses
@@ -324,6 +418,99 @@ namespace OpenMetaverse
                     }
                 }
             }
+        }
+
+        public override OSD GetOSD()
+        {
+            OSDMap Avi = (OSDMap)base.GetOSD();
+
+            OSDArray grp = new OSDArray();
+            Groups.ForEach(delegate(UUID u) { grp.Add(OSD.FromUUID(u)); });
+
+            OSDArray vp = new OSDArray();
+
+            for (int i = 0; i < VisualParameters.Length; i++)
+            {
+                vp.Add(OSD.FromInteger(VisualParameters[i]));
+            }
+
+            Avi["groups"] = grp;
+            Avi["profile_statistics"] = ProfileStatistics.GetOSD();
+            Avi["profile_properties"] = ProfileProperties.GetOSD();
+            Avi["profile_interest"] = ProfileInterests.GetOSD();
+            Avi["control_flags"] = OSD.FromInteger((byte)ControlFlags);
+            Avi["visual_parameters"] = vp;
+            Avi["first_name"] = OSD.FromString(FirstName);
+            Avi["last_name"] = OSD.FromString(LastName);
+            Avi["group_name"] = OSD.FromString(GroupName);
+
+            return Avi;
+
+        }
+
+        public static new Avatar FromOSD(OSD O)
+        {
+
+            OSDMap tex = (OSDMap)O;
+            Avatar A = (Avatar)Primitive.FromOSD(tex);
+
+            A.Groups = new List<UUID>();
+
+            foreach (OSD U in (OSDArray)tex["groups"])
+            {
+                A.Groups.Add(U.AsUUID());
+            }
+
+            A.ProfileStatistics = Statistics.FromOSD(tex["profile_statistics"]);
+            A.ProfileProperties = AvatarProperties.FromOSD(tex["profile_properties"]);
+            A.ProfileInterests = Interests.FromOSD(tex["profile_interest"]);
+            A.ControlFlags = (AgentManager.ControlFlags)tex["control_flags"].AsInteger();
+
+            OSDArray vp = (OSDArray)tex["visual_parameters"];
+            A.VisualParameters = new byte[vp.Count];
+
+            for (int i = 0; i < vp.Count; i++)
+            {
+                A.VisualParameters[i] = (byte)vp[i].AsInteger();
+            }
+
+            // *********************From Code Above *******************************
+            /*if (NameValues[i].Name == "FirstName" && NameValues[i].Type == NameValue.ValueType.String)
+                              firstName = (string)NameValues[i].Value;
+                          else if (NameValues[i].Name == "LastName" && NameValues[i].Type == NameValue.ValueType.String)
+                              lastName = (string)NameValues[i].Value;*/
+            // ********************************************************************
+
+            A.NameValues = new NameValue[3];
+
+            NameValue First = new NameValue();
+            First.Name = "FirstName";
+            First.Type = NameValue.ValueType.String;
+            First.Value = tex["first_name"].AsString();
+
+            NameValue Last = new NameValue();
+            Last.Name = "LastName";
+            Last.Type = NameValue.ValueType.String;
+            Last.Value = tex["last_name"].AsString();
+
+            // ***************From Code Above***************
+            // if (NameValues[i].Name == "Title" && NameValues[i].Type == NameValue.ValueType.String)
+            // *********************************************
+
+            NameValue Group = new NameValue();
+            Group.Name = "Title";
+            Group.Type = NameValue.ValueType.String;
+            Group.Value = tex["group_name"].AsString();
+
+
+
+            A.NameValues[0] = First;
+            A.NameValues[1] = Last;
+            A.NameValues[2] = Group;
+
+            return A;
+
+
         }
 
         #endregion Properties

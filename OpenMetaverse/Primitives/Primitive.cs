@@ -1289,7 +1289,7 @@ namespace OpenMetaverse
 
         #region Public Methods
 
-        public OSD GetOSD()
+        public virtual OSD GetOSD()
         {
             OSDMap path = new OSDMap(14);
             path["begin"] = OSD.FromReal(PrimData.PathBegin);
