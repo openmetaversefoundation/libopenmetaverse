@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Threading;
 using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
+using System.Reflection;
 
 namespace OpenMetaverse
 {
@@ -452,7 +453,20 @@ namespace OpenMetaverse
         {
 
             OSDMap tex = (OSDMap)O;
-            Avatar A = (Avatar)Primitive.FromOSD(tex);
+
+            Avatar A = new Avatar();
+            
+            Primitive P = Primitive.FromOSD(O);
+
+            Type Prim = typeof(Primitive);
+
+            FieldInfo[] Fields = Prim.GetFields();
+
+            for (int x = 0; x < Fields.Length; x++)
+            {
+                Logger.Log("Field Matched in FromOSD: "+Fields[x].Name, Helpers.LogLevel.Debug);
+                Fields[x].SetValue(A, Fields[x].GetValue(P));
+            }            
 
             A.Groups = new List<UUID>();
 
