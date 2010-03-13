@@ -215,7 +215,7 @@ namespace OpenMetaverse
             Logger.Log(String.Format("Combined Execution Time: {0}, Network Execution Time {1}, Network {2}K/sec, Image Size {3}",
                         TotalTime, NetworkTime, Math.Round(TotalBytes / NetworkTime.TotalSeconds / 60, 2), TotalBytes), Helpers.LogLevel.Debug);
 #endif
-            RefreshDownloadsTimer.Dispose();
+            if(null != RefreshDownloadsTimer) RefreshDownloadsTimer.Dispose();
             RefreshDownloadsTimer = null;
             
             if (downloadMaster != null && downloadMaster.IsAlive)

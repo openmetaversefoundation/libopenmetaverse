@@ -244,6 +244,7 @@ namespace OpenMetaverse
             try
             {
                 UDPPacketBuffer buf = (UDPPacketBuffer)result.AsyncState;
+                if (!udpSocket.Connected) return;
                 int bytesSent = udpSocket.EndSendTo(result);
 
                 PacketSent(buf, bytesSent);

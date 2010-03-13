@@ -1113,6 +1113,7 @@ namespace OpenMetaverse
             ResendUnacked();
 
             // Start the ACK handling functions again after NETWORK_TICK_INTERVAL milliseconds
+            if (null == AckTimer) return;
             try { AckTimer.Change(Settings.NETWORK_TICK_INTERVAL, Timeout.Infinite); }
             catch (Exception) { }
         }

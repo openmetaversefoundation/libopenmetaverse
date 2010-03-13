@@ -302,7 +302,13 @@ namespace OpenMetaverse.Voice
                     progFiles = Environment.GetEnvironmentVariable("ProgramFiles");
                 }
 
-                return Path.Combine(progFiles, @"SecondLife\SLVoice.exe");
+                if (System.IO.File.Exists(Path.Combine(progFiles, @"SecondLife" + Path.DirectorySeparatorChar + @"SLVoice.exe")))
+                {
+                    return Path.Combine(progFiles, @"SecondLife" + Path.DirectorySeparatorChar + @"SLVoice.exe");
+                }
+
+                return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), @"SLVoice.exe");
+
             }
             else
             {
