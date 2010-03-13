@@ -25,6 +25,8 @@ namespace OpenMetaverse.StructuredData
 
         public static OSD DeserializeJson(JsonData json)
         {
+            if (json == null) return new OSD();
+
             switch (json.GetJsonType())
             {
                 case JsonType.Boolean:
