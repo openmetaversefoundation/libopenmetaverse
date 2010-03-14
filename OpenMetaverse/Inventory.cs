@@ -411,6 +411,7 @@ namespace OpenMetaverse
 
             item_count = 0;
             List<InventoryNode> del_nodes = new List<InventoryNode>(); //nodes that we have processed and will delete
+            List<UUID> dirty_folders = new List<UUID>(); // Tainted folders that we will not restore items into
 
             // Because we could get child nodes before parents we must itterate around and only add nodes who have
             // a parent already in the list because we must update both child and parent to link together
@@ -441,6 +442,7 @@ namespace OpenMetaverse
                             {
                                 Logger.DebugLog("Inventory Cache/Server version mismatch on "+node.Data.Name+" "+cache_folder.Version.ToString()+" vs "+server_folder.Version.ToString());
                                 pnode.NeedsUpdate = true;
+                                dirty_folders.Add(node.Data.UUID);
                             }
                             del_nodes.Add(node);
                         }
@@ -449,9 +451,16 @@ namespace OpenMetaverse
                     {
                         if (node.Data != null)
                         {
+                            // If node is folder, and it does not exist in skeleton, mark it as 
+                            // dirty and don't process nodes that belong to it
+                            if (node.Data is InventoryFolder && !(Items.ContainsKey(node.Data.UUID)))
+                            {
+                                dirty_folders.Add(node.Data.UUID);
+                            }
+
                             //Only add new items, this is most likely to be run at login time before any inventory
-                            //nodes other than the root are populated.
-                            if (!Items.ContainsKey(node.Data.UUID))
+                            //nodes other than the root are populated. Don't add non existing folders.
+                            if (!Items.ContainsKey(node.Data.UUID) && !dirty_folders.Contains(pnode.Data.UUID) && !(node.Data is InventoryFolder))
                             {
                                 Items.Add(node.Data.UUID, node);
                                 node.Parent = pnode; //Update this node with its parent
