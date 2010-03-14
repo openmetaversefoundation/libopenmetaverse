@@ -1283,11 +1283,33 @@ namespace OpenMetaverse
             gru.AgentData.SessionID = Client.Self.SessionID;
             gru.AgentData.GroupID = group;
             gru.RoleData = new GroupRoleUpdatePacket.RoleDataBlock[1];
+            gru.RoleData[0] = new GroupRoleUpdatePacket.RoleDataBlock();
+            gru.RoleData[0].RoleID = UUID.Random();
             gru.RoleData[0].Name = Utils.StringToBytes(role.Name);
             gru.RoleData[0].Description = Utils.StringToBytes(role.Description);
             gru.RoleData[0].Powers = (ulong)role.Powers;
             gru.RoleData[0].Title = Utils.StringToBytes(role.Title);
             gru.RoleData[0].UpdateType = (byte)GroupRoleUpdate.Create;
+            Client.Network.SendPacket(gru);
+        }
+
+        /// <summary>Delete a group role</summary>
+        /// <param name="group">Group ID to update</param>
+        /// <param name="roleID">Role to delete</param>
+        public void DeleteRole(UUID group, UUID roleID)
+        {
+            OpenMetaverse.Packets.GroupRoleUpdatePacket gru = new GroupRoleUpdatePacket();
+            gru.AgentData.AgentID = Client.Self.AgentID;
+            gru.AgentData.SessionID = Client.Self.SessionID;
+            gru.AgentData.GroupID = group;
+            gru.RoleData = new GroupRoleUpdatePacket.RoleDataBlock[1];
+            gru.RoleData[0] = new GroupRoleUpdatePacket.RoleDataBlock();
+            gru.RoleData[0].RoleID = roleID;
+            gru.RoleData[0].Name = Utils.StringToBytes(string.Empty);
+            gru.RoleData[0].Description = Utils.StringToBytes(string.Empty);
+            gru.RoleData[0].Powers = 0u;
+            gru.RoleData[0].Title = Utils.StringToBytes(string.Empty);
+            gru.RoleData[0].UpdateType = (byte)GroupRoleUpdate.Delete;
             Client.Network.SendPacket(gru);
         }
 
