@@ -112,9 +112,9 @@ namespace OpenMetaverse
         /// is used by the library to generate the Version information</summary>
         public string Author;
         /// <summary>If true, this agent agrees to the Terms of Service of the grid its connecting to</summary>
-        public string AgreeToTos;
+        public bool AgreeToTos;
         /// <summary>Unknown</summary>
-        public string ReadCritical;
+        public bool ReadCritical;
         /// <summary>An array of string sent to the login server to enable various options</summary>
         public string[] Options;
 
@@ -165,7 +165,7 @@ namespace OpenMetaverse
         public string UDPBlacklist;
 
         #region Inventory
-        
+
         public UUID InventoryRoot;
         public UUID LibraryRoot;
         public InventoryFolder[] InventorySkeleton;
@@ -279,10 +279,10 @@ namespace OpenMetaverse
             }
 
             SecondsSinceEpoch = (int)ParseUInt("seconds_since_epoch", reply);
-            
+
             InventoryRoot = ParseMappedUUID("inventory-root", "folder_id", reply);
             InventorySkeleton = ParseInventorySkeleton("inventory-skeleton", reply);
-            
+
             LibraryOwner = ParseMappedUUID("inventory-lib-owner", "agent_id", reply);
             LibraryRoot = ParseMappedUUID("inventory-lib-root", "folder_id", reply);
             LibrarySkeleton = ParseInventorySkeleton("inventory-skel-lib", reply);
@@ -334,15 +334,15 @@ namespace OpenMetaverse
 
                 if (osdHome.Type == OSDType.Map)
                 {
-                    home = (OSDMap) osdHome;
+                    home = (OSDMap)osdHome;
 
                     OSD homeRegion;
                     if (home.TryGetValue("region_handle", out homeRegion) && homeRegion.Type == OSDType.Array)
                     {
-                        OSDArray homeArray = (OSDArray) homeRegion;
+                        OSDArray homeArray = (OSDArray)homeRegion;
                         if (homeArray.Count == 2)
-                            HomeRegion = Utils.UIntsToLong((uint) homeArray[0].AsInteger(),
-                                                           (uint) homeArray[1].AsInteger());
+                            HomeRegion = Utils.UIntsToLong((uint)homeArray[0].AsInteger(),
+                                                           (uint)homeArray[1].AsInteger());
                         else
                             HomeRegion = 0;
                     }
@@ -462,7 +462,7 @@ namespace OpenMetaverse
         public static string ParseString(string key, Hashtable reply)
         {
             if (reply.ContainsKey(key))
-                    return String.Format("{0}", reply[key]);
+                return String.Format("{0}", reply[key]);
 
             return String.Empty;
         }
@@ -605,7 +605,7 @@ namespace OpenMetaverse
         public InventoryFolder[] ParseInventorySkeleton(string key, Hashtable reply)
         {
             UUID ownerID;
-            if(key.Equals("inventory-skel-lib"))
+            if (key.Equals("inventory-skel-lib"))
                 ownerID = LibraryOwner;
             else
                 ownerID = AgentID;
@@ -646,7 +646,7 @@ namespace OpenMetaverse
     public partial class NetworkManager
     {
         #region Delegates
-        
+
 
         //////LoginProgress
         //// LoginProgress
@@ -711,7 +711,7 @@ namespace OpenMetaverse
         #endregion Delegates
 
         #region Events
-        
+
         /// <summary>Called when a reply is received from the login server, the
         /// login sequence will block until this event returns</summary>
         private event LoginResponseCallback OnLoginResponse;
@@ -802,7 +802,8 @@ namespace OpenMetaverse
             loginParams.ViewerDigest = String.Empty;
             loginParams.Options = options.ToArray();
             loginParams.ID0 = GetMAC();
-
+            loginParams.AgreeToTos = true;
+            loginParams.ReadCritical = true;
             return loginParams;
         }
 
@@ -877,7 +878,7 @@ namespace OpenMetaverse
         {
             // FIXME: Now that we're using CAPS we could cancel the current login and start a new one
             if (CurrentContext != null)
-                throw new Exception("Login already in progress");            
+                throw new Exception("Login already in progress");
 
             LoginEvent.Reset();
             CurrentContext = loginParams;
@@ -937,7 +938,7 @@ namespace OpenMetaverse
             if (loginParams.Password.Length != 35 && !loginParams.Password.StartsWith("$1$"))
                 loginParams.Password = Utils.MD5(loginParams.Password);
 
-            if (loginParams.ViewerDigest== null)
+            if (loginParams.ViewerDigest == null)
                 loginParams.ViewerDigest = String.Empty;
 
             if (loginParams.Version == null)
@@ -955,12 +956,6 @@ namespace OpenMetaverse
             if (loginParams.Channel == null)
                 loginParams.Channel = String.Empty;
 
-            if (loginParams.AgreeToTos == null)
-                loginParams.AgreeToTos = "true";
-
-            if (loginParams.ReadCritical == null)
-                loginParams.ReadCritical = "true";
-
             if (loginParams.Author == null)
                 loginParams.Author = String.Empty;
 
@@ -974,7 +969,7 @@ namespace OpenMetaverse
             if (Client.Settings.USE_LLSD_LOGIN)
             {
                 #region LLSD Based Login
-                
+
                 // Create the CAPS login structure
                 OSDMap loginLLSD = new OSDMap();
                 loginLLSD["first"] = OSD.FromString(loginParams.FirstName);
@@ -985,11 +980,11 @@ namespace OpenMetaverse
                 loginLLSD["version"] = OSD.FromString(loginParams.Version);
                 loginLLSD["platform"] = OSD.FromString(loginParams.Platform);
                 loginLLSD["mac"] = OSD.FromString(loginParams.MAC);
-                loginLLSD["agree_to_tos"] = OSD.FromBoolean(true);
-                loginLLSD["read_critical"] = OSD.FromBoolean(true);
+                loginLLSD["agree_to_tos"] = OSD.FromBoolean(loginParams.AgreeToTos);
+                loginLLSD["read_critical"] = OSD.FromBoolean(loginParams.ReadCritical);
                 loginLLSD["viewer_digest"] = OSD.FromString(loginParams.ViewerDigest);
                 loginLLSD["id0"] = OSD.FromString(loginParams.ID0);
-                
+
                 // Create the options LLSD array
                 OSDArray optionsOSD = new OSDArray();
                 for (int i = 0; i < loginParams.Options.Length; i++)
@@ -1032,7 +1027,7 @@ namespace OpenMetaverse
             else
             {
                 #region XML-RPC Based Login Code
-                
+
                 // Create the Hashtable for XmlRpcCs
                 Hashtable loginXmlRpc = new Hashtable();
                 loginXmlRpc["first"] = loginParams.FirstName;
@@ -1043,9 +1038,10 @@ namespace OpenMetaverse
                 loginXmlRpc["version"] = loginParams.Version;
                 loginXmlRpc["platform"] = loginParams.Platform;
                 loginXmlRpc["mac"] = loginParams.MAC;
-                loginXmlRpc["agree_to_tos"] = true;
-                loginXmlRpc["read_critical"] = true;
-                loginXmlRpc["viewer_digest"] = loginParams.ViewerDigest;
+                if (loginParams.AgreeToTos)
+                    loginXmlRpc["agree_to_tos"] = "true";
+                if (loginParams.ReadCritical)
+                    loginXmlRpc["read_critical"] = "true";
                 loginXmlRpc["id0"] = loginParams.ID0;
                 loginXmlRpc["last_exec_event"] = 0;
 
@@ -1117,7 +1113,7 @@ namespace OpenMetaverse
             // Fire the login status callback
             if (m_LoginProgress != null)
             {
-                OnLoginProgress(new LoginProgressEventArgs(status, message));
+                OnLoginProgress(new LoginProgressEventArgs(status, message, InternalErrorKey));
             }
         }
 
@@ -1158,7 +1154,7 @@ namespace OpenMetaverse
 
             string reason = reply.Reason;
             string message = reply.Message;
-            
+
             if (reply.Login == "true")
             {
                 // Remove the quotes around our first name.
@@ -1185,12 +1181,12 @@ namespace OpenMetaverse
                 }
 
                 #endregion Critical Information
-                
+
                 /* Add any blacklisted UDP packets to the blacklist
                  * for exclusion from packet processing */
-                if(reply.UDPBlacklist != null)
+                if (reply.UDPBlacklist != null)
                     UDPBlacklist.AddRange(reply.UDPBlacklist.Split(','));
-                
+
                 // Misc:
                 //uint timestamp = (uint)reply.seconds_since_epoch;
                 //DateTime time = Helpers.UnixTimeToDateTime(timestamp); // TODO: Do something with this?
@@ -1209,9 +1205,9 @@ namespace OpenMetaverse
                 // reply.inventory_skel_lib
                 // reply.initial_outfit
             }
-            
+
             bool redirect = (reply.Login == "indeterminate");
-            
+
             try
             {
                 if (OnLoginResponse != null)
@@ -1347,7 +1343,7 @@ namespace OpenMetaverse
                                     SendPacket(new EconomyDataRequestPacket());
 
                                     // Update the login message with the MOTD returned from the server
-                                    UpdateLoginStatus(LoginStatus.Success, data.Message);                                    
+                                    UpdateLoginStatus(LoginStatus.Success, data.Message);
                                 }
                                 else
                                 {
@@ -1394,7 +1390,7 @@ namespace OpenMetaverse
                 UpdateLoginStatus(LoginStatus.Failed, error.Message);
             }
         }
-        
+
         /// <summary>
         /// Get current OS
         /// </summary>
@@ -1437,22 +1433,24 @@ namespace OpenMetaverse
         #endregion
     }
     #region EventArgs
-    
+
     public class LoginProgressEventArgs : EventArgs
     {
         private readonly LoginStatus m_Status;
         private readonly String m_Message;
+        private readonly String m_FailReason;
 
-        public LoginStatus Status { get { return m_Status; } }        
-        public String Message { get { return m_Message; } } 
+        public LoginStatus Status { get { return m_Status; } }
+        public String Message { get { return m_Message; } }
+        public string FailReason { get { return m_FailReason; } }
 
-
-        public LoginProgressEventArgs(LoginStatus login, String message)
+        public LoginProgressEventArgs(LoginStatus login, String message, String failReason)
         {
             this.m_Status = login;
             this.m_Message = message;
+            this.m_FailReason = failReason;
         }
     }
-    
+
     #endregion EventArgs
 }
