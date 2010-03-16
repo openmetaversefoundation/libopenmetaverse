@@ -33,27 +33,6 @@
     </Configuration>
 
     <!-- External Libraries -->
-
-    <Project name="HttpServer" path="HttpServer" type="Library" guid="455E7D70-1C85-4D7F-9F01-DC801B8B8C34" frameworkVersion="v3_5">
-      <Configuration name="Debug">
-        <Options>
-          <OutputPath>../bin/</OutputPath>
-        </Options>
-      </Configuration>
-      <Configuration name="Release">
-        <Options>
-          <OutputPath>../bin/</OutputPath>
-        </Options>
-      </Configuration>
-
-      <ReferencePath>../bin/</ReferencePath>
-      <Reference name="System"/>
-      <Reference name="System.Core"/>
-      <Reference name="System.Web"/>
-      <Files>
-        <Match pattern="*.cs" recurse="true"/>
-      </Files>
-    </Project>
     
     <Project name="CSJ2K" path="CSJ2K" type="Library" frameworkVersion="v3_5">
       <Configuration name="Debug">
@@ -138,7 +117,6 @@
       <Reference name="System.Xml"/>
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
-      <Reference name="HttpServer"/>
       <Reference name="log4net"/>
       <Reference name="Mono.Security"/>
       <Files>
