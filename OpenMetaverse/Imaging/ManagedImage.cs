@@ -187,7 +187,33 @@ namespace OpenMetaverse.Imaging
 
                 bitmap.UnlockBits(bd);
             }
-            else
+			else if (bitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format32bppRgb)
+			{
+				Channels = ImageChannels.Color;
+				Red = new byte[pixelCount];
+				Green = new byte[pixelCount];
+				Blue = new byte[pixelCount];
+
+				System.Drawing.Imaging.BitmapData bd = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, Width, Height),
+						System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+
+				unsafe
+				{
+					byte* pixel = (byte*)bd.Scan0;
+
+					for (int i = 0; i < pixelCount; i++)
+					{
+						// GDI+ gives us BGR and we need to turn that in to RGB
+						Blue[i] = *(pixel++);
+						Green[i] = *(pixel++);
+						Red[i] = *(pixel++);
+						pixel++;	// Skip over the empty byte where the Alpha info would normally be
+					}
+				}
+
+				bitmap.UnlockBits(bd);
+			}
+			else
             {
                 throw new NotSupportedException("Unrecognized pixel format: " + bitmap.PixelFormat.ToString());
             }

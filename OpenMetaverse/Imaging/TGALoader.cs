@@ -454,12 +454,36 @@ namespace OpenMetaverse.Imaging
                     header.ImageSpec.Height > 4096)
                     throw new ArgumentException("Image too large.");
 
-                System.Drawing.Bitmap b = new System.Drawing.Bitmap(
-                    header.ImageSpec.Width, header.ImageSpec.Height);
+				System.Drawing.Bitmap b;
+				System.Drawing.Imaging.BitmapData bd;
 
-                System.Drawing.Imaging.BitmapData bd = b.LockBits(new System.Drawing.Rectangle(0, 0, b.Width, b.Height),
-                    System.Drawing.Imaging.ImageLockMode.WriteOnly,
-                    System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+				// Create a bitmap for the image.
+				// Only include an alpha layer when the image requires one.
+				if (header.ImageSpec.AlphaBits > 0 ||
+					header.ImageSpec.PixelDepth == 8 ||	// Assume  8 bit images are alpha only
+					header.ImageSpec.PixelDepth == 32)	// Assume 32 bit images are ARGB
+				{	// Image needs an alpha layer
+					b = new System.Drawing.Bitmap(
+						header.ImageSpec.Width,
+						header.ImageSpec.Height,
+						System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+					bd = b.LockBits(new System.Drawing.Rectangle(0, 0, b.Width, b.Height),
+						System.Drawing.Imaging.ImageLockMode.WriteOnly,
+						System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+				}
+				else
+				{	// Image does not need an alpha layer, so do not include one.
+					b = new System.Drawing.Bitmap(
+						header.ImageSpec.Width,
+						header.ImageSpec.Height,
+						System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+
+					bd = b.LockBits(new System.Drawing.Rectangle(0, 0, b.Width, b.Height),
+						System.Drawing.Imaging.ImageLockMode.WriteOnly,
+						System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+				}
+
                 switch (header.ImageSpec.PixelDepth)
                 {
                     case 8:
