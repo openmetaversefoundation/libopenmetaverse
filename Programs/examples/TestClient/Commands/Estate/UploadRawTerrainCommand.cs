@@ -33,8 +33,7 @@ namespace OpenMetaverse.TestClient
 
             // Setup callbacks for upload request reply and progress indicator 
             // so we can detect when the upload is complete
-            Client.Assets.OnUploadProgress += new AssetManager.UploadProgressCallback(Assets_OnUploadProgress);
-
+            Client.Assets.UploadProgress += new EventHandler<AssetUploadEventArgs>(Assets_UploadProgress);
             byte[] fileData = File.ReadAllBytes(fileName);
 
             Client.Estate.UploadTerrain(fileData, fileName);
@@ -57,17 +56,13 @@ namespace OpenMetaverse.TestClient
         /// </summary>
         private void Cleanup()
         {
-            Client.Assets.OnUploadProgress -= new AssetManager.UploadProgressCallback(Assets_OnUploadProgress);
+            Client.Assets.UploadProgress -= new EventHandler<AssetUploadEventArgs>(Assets_UploadProgress);
         }
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="upload"></param>
-        void Assets_OnUploadProgress(AssetUpload upload)
+        void Assets_UploadProgress(object sender, AssetUploadEventArgs e)
         {
-            if (upload.Transferred == upload.Size)
+            if (e.Upload.Transferred == e.Upload.Size)
             {
                 WaitForUploadComplete.Set();
             }

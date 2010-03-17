@@ -160,12 +160,11 @@ namespace PrimWorkshop
             Client.Network.LoginProgress += Network_OnLogin;
             Client.Network.Disconnected += Network_OnDisconnected;
             Client.Network.SimChanged += Network_OnCurrentSimChanged;
-            Client.Network.EventQueueRunning += Network_OnEventQueueRunning;            
+            Client.Network.EventQueueRunning += Network_OnEventQueueRunning;
             Client.Objects.ObjectUpdate += Objects_OnNewPrim;
             Client.Terrain.LandPatchReceived += new EventHandler<LandPatchReceivedEventArgs>(Terrain_LandPatchReceived);
             Client.Parcels.SimParcelsDownloaded += new EventHandler<SimParcelsDownloadedEventArgs>(Parcels_SimParcelsDownloaded);
-
-            Client.Assets.OnImageRecieveProgress += new AssetManager.ImageReceiveProgressCallback(Assets_OnImageRecieveProgress);
+            Client.Assets.ImageReceiveProgress += new EventHandler<ImageReceiveProgressEventArgs>(Assets_ImageReceiveProgress);
             // Initialize the camera object
             InitCamera();
 
@@ -317,7 +316,7 @@ namespace PrimWorkshop
             // Build a list of primitives (parent+children) to export
             List<Primitive> primList = new List<Primitive>();
             primList.Add(parent.Prim);
-            
+
             lock (RenderPrimList)
             {
                 foreach (RenderablePrim render in RenderPrimList.Values)
@@ -351,7 +350,7 @@ namespace PrimWorkshop
             List<UUID> textureList = new List<UUID>();
             prims = 0;
             textures = 0;
-            
+
             // Write the LLSD to the hard drive in XML format
             string output = OSDParser.SerializeLLSDXmlString(Helpers.PrimListToOSD(primList));
             try
@@ -992,7 +991,7 @@ namespace PrimWorkshop
                 // Texture for this face
                 if (teFace.TextureID != UUID.Zero &&
                     teFace.TextureID != Primitive.TextureEntry.WHITE_TEXTURE)
-                { 
+                {
                     lock (Textures)
                     {
                         if (!Textures.ContainsKey(teFace.TextureID))
@@ -1058,7 +1057,7 @@ namespace PrimWorkshop
         private void Network_OnCurrentSimChanged(object sender, SimChangedEventArgs e)
         {
             Console.WriteLine("CurrentSim set to " + Client.Network.CurrentSim + ", downloading parcel information");
-            
+
             BeginInvoke((MethodInvoker)delegate() { txtSim.Text = Client.Network.CurrentSim.Name; });
 
             //InitHeightmap();
@@ -1261,7 +1260,7 @@ namespace PrimWorkshop
                     Gl.glDisable(Gl.GL_BLEND);
                     Gl.glEnable(Gl.GL_DEPTH_TEST);
 
-StartRender:
+                StartRender:
 
                     foreach (RenderablePrim render in RenderPrimList.Values)
                     {
@@ -1398,7 +1397,7 @@ StartRender:
                         Gl.glPopMatrix();
                     }
                 );
-                
+
                 Gl.glColor3f(1f, 1f, 1f);
             }
         }
@@ -1410,7 +1409,7 @@ StartRender:
             bool alpha = false;
             ManagedImage imgData = null;
             byte[] raw = null;
-            
+
             bool success = (state == TextureRequestState.Finished);
 
             UUID id = asset.AssetID;
@@ -1497,21 +1496,21 @@ StartRender:
                 Console.WriteLine(ex);
             }
         }
-        
-        private void Assets_OnImageRecieveProgress(UUID imageID, int recieved, int total)
+
+        private void Assets_ImageReceiveProgress(object sender, ImageReceiveProgressEventArgs e)
         {
             lock (DownloadList)
             {
                 GlacialComponents.Controls.GLItem item;
-                if (DownloadList.TryGetValue(imageID, out item))
+                if (DownloadList.TryGetValue(e.ImageID, out item))
                 {
                     // Update an existing item
                     BeginInvoke(
                         (MethodInvoker)delegate()
                         {
                             ProgressBar prog = (ProgressBar)item.SubItems[1].Control;
-                            if (total >= recieved)
-                                prog.Value = (int)Math.Round((((double)recieved / (double)total) * 100.0d));
+                            if (e.Total >= e.Received)
+                                prog.Value = (int)Math.Round((((double)e.Received / (double)e.Total) * 100.0d));
                         });
                 }
                 else
@@ -1520,17 +1519,17 @@ StartRender:
                     ProgressBar prog = new ProgressBar();
                     prog.Minimum = 0;
                     prog.Maximum = 100;
-                    if (total >= recieved)
-                        prog.Value = (int)Math.Round((((double)recieved / (double)total) * 100.0d));
+                    if (e.Total >= e.Received)
+                        prog.Value = (int)Math.Round((((double)e.Received / (double)e.Total) * 100.0d));
                     else
                         prog.Value = 0;
 
                     // List item
                     item = new GlacialComponents.Controls.GLItem();
-                    item.SubItems[0].Text = imageID.ToString();
+                    item.SubItems[0].Text = e.ImageID.ToString();
                     item.SubItems[1].Control = prog;
 
-                    DownloadList[imageID] = item;
+                    DownloadList[e.ImageID] = item;
 
                     BeginInvoke(
                         (MethodInvoker)delegate()
@@ -1673,7 +1672,7 @@ StartRender:
         {
             if (Pivoting)
             {
-                float a,x,y,z;
+                float a, x, y, z;
 
                 Control control = (Control)sender;
                 Point mouse = control.PointToScreen(new Point(e.X, e.Y));

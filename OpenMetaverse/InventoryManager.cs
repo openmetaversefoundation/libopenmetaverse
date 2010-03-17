@@ -2839,24 +2839,24 @@ namespace OpenMetaverse
                     ulong xferID = 0;
                     AutoResetEvent taskDownloadEvent = new AutoResetEvent(false);
 
-                    AssetManager.XferReceivedCallback xferCallback =
-                        delegate(XferDownload xfer)
+                    EventHandler<XferReceivedEventArgs> xferCallback =
+                        delegate(object sender, XferReceivedEventArgs e)
                         {
-                            if (xfer.XferID == xferID)
+                            if (e.Xfer.XferID == xferID)
                             {
-                                assetData = xfer.AssetData;
+                                assetData = e.Xfer.AssetData;
                                 taskDownloadEvent.Set();
                             }
                         };
 
-                    Client.Assets.OnXferReceived += xferCallback;
+                    Client.Assets.XferReceived += xferCallback;
 
                     // Start the actual asset xfer
                     xferID = Client.Assets.RequestAssetXfer(filename, true, false, UUID.Zero, AssetType.Unknown, true);
 
                     if (taskDownloadEvent.WaitOne(timeoutMS, false))
                     {
-                        Client.Assets.OnXferReceived -= xferCallback;
+                        Client.Assets.XferReceived -= xferCallback;
 
                         String taskList = Utils.BytesToString(assetData);
                         return ParseTaskInventory(taskList);
@@ -2864,7 +2864,7 @@ namespace OpenMetaverse
                     else
                     {
                         Logger.Log("Timed out waiting for task inventory download for " + filename, Helpers.LogLevel.Warning, Client);
-                        Client.Assets.OnXferReceived -= xferCallback;
+                        Client.Assets.XferReceived -= xferCallback;
                         return null;
                     }
                 }

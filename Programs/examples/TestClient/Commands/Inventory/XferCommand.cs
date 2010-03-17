@@ -52,25 +52,25 @@ namespace OpenMetaverse.TestClient
             ulong xferID = 0;
             byte[] data = null;
 
-            AssetManager.XferReceivedCallback xferCallback =
-                delegate(XferDownload xfer)
+            EventHandler<XferReceivedEventArgs> xferCallback =
+                delegate(object sender, XferReceivedEventArgs e)
                 {
-                    if (xfer.XferID == xferID)
+                    if (e.Xfer.XferID == xferID)
                     {
-                        if (xfer.Success)
-                            data = xfer.AssetData;
+                        if (e.Xfer.Success)
+                            data = e.Xfer.AssetData;
                         xferEvent.Set();
                     }
                 };
 
-            Client.Assets.OnXferReceived += xferCallback;
+            Client.Assets.XferReceived += xferCallback;
 
             filename = assetID + ".asset";
             xferID = Client.Assets.RequestAssetXfer(filename, false, true, assetID, type, false);
 
             xferEvent.WaitOne(FETCH_ASSET_TIMEOUT, false);
 
-            Client.Assets.OnXferReceived -= xferCallback;
+            Client.Assets.XferReceived -= xferCallback;
 
             return data;
         }
