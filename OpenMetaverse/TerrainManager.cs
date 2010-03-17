@@ -32,21 +32,33 @@ namespace OpenMetaverse
 {
     public class TerrainManager
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="simulator"></param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="width"></param>
-        /// <param name="data"></param>
-        public delegate void LandPatchCallback(Simulator simulator, int x, int y, int width, float[] data);
-        
-        /// <summary></summary>
-        public event LandPatchCallback OnLandPatch;
+        #region EventHandling
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<LandPatchReceivedEventArgs> m_LandPatchReceivedEvent;
+
+        /// <summary>Raises the LandPatchReceived event</summary>
+        /// <param name="e">A LandPatchReceivedEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnLandPatchReceived(LandPatchReceivedEventArgs e)
+        {
+            EventHandler<LandPatchReceivedEventArgs> handler = m_LandPatchReceivedEvent;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_LandPatchReceivedLock = new object();
+
+        /// <summary>Raised when the simulator responds sends </summary>
+        public event EventHandler<LandPatchReceivedEventArgs> LandPatchReceived
+        {
+            add { lock (m_LandPatchReceivedLock) { m_LandPatchReceivedEvent += value; } }
+            remove { lock (m_LandPatchReceivedLock) { m_LandPatchReceivedEvent -= value; } }
+        }
+        #endregion
 
         public InternalDictionary<ulong, TerrainPatch[]> SimPatches = new InternalDictionary<ulong, TerrainPatch[]>();
-        public InternalDictionary<ulong,Vector2[]> WindSpeeds = new InternalDictionary<ulong,Vector2[]>();
+        public InternalDictionary<ulong, Vector2[]> WindSpeeds = new InternalDictionary<ulong, Vector2[]>();
 
         private GridClient Client;
 
@@ -132,11 +144,8 @@ namespace OpenMetaverse
 
                 count++;
 
-                if (OnLandPatch != null)
-                {
-                    try { OnLandPatch(simulator, x, y, group.PatchSize, heightmap); }
-                    catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
-                }
+                try { OnLandPatchReceived(new LandPatchReceivedEventArgs(simulator, x, y, group.PatchSize, heightmap)); }
+                catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
 
                 if (Client.Settings.STORE_LAND_PATCHES)
                 {
@@ -183,9 +192,9 @@ namespace OpenMetaverse
             Vector2[] windSpeeds;
             lock (WindSpeeds.Dictionary)
             {
-                if (!WindSpeeds.TryGetValue(handle,out windSpeeds))
+                if (!WindSpeeds.TryGetValue(handle, out windSpeeds))
                 {
-                    windSpeeds = WindSpeeds[handle] = new Vector2[256]; 
+                    windSpeeds = WindSpeeds[handle] = new Vector2[256];
                 }
             }
             for (int i = 0; i < 256; i++)
@@ -214,7 +223,7 @@ namespace OpenMetaverse
             switch (type)
             {
                 case TerrainPatch.LayerType.Land:
-                    if (OnLandPatch != null || Client.Settings.STORE_LAND_PATCHES)
+                    if (m_LandPatchReceivedEvent != null || Client.Settings.STORE_LAND_PATCHES)
                         DecompressLand(e.Simulator, bitpack, header);
                     break;
                 case TerrainPatch.LayerType.Water:
@@ -232,4 +241,36 @@ namespace OpenMetaverse
             }
         }
     }
+
+    #region EventArgs classes
+    // <summary>Provides data for LandPatchReceived</summary>
+    public class LandPatchReceivedEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+        private readonly int m_X;
+        private readonly int m_Y;
+        private readonly int m_PatchSize;
+        private readonly float[] m_HeightMap;
+
+        /// <summary>Simulator from that sent tha data</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
+        /// <summary>Sim coordinate of the patch</summary>
+        public int X { get { return m_X; } }
+        /// <summary>Sim coordinate of the patch</summary>
+        public int Y { get { return m_Y; } }
+        /// <summary>Size of tha patch</summary>
+        public int PatchSize { get { return m_PatchSize; } }
+        /// <summary>Heightmap for the patch</summary>
+        public float[] HeightMap { get { return m_HeightMap; } }
+
+        public LandPatchReceivedEventArgs(Simulator simulator, int x, int y, int patchSize, float[] heightMap)
+        {
+            this.m_Simulator = simulator;
+            this.m_X = x;
+            this.m_Y = y;
+            this.m_PatchSize = patchSize;
+            this.m_HeightMap = heightMap;
+        }
+    }
+    #endregion
 }

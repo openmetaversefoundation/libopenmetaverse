@@ -162,7 +162,7 @@ namespace PrimWorkshop
             Client.Network.SimChanged += Network_OnCurrentSimChanged;
             Client.Network.EventQueueRunning += Network_OnEventQueueRunning;            
             Client.Objects.ObjectUpdate += Objects_OnNewPrim;
-            Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
+            Client.Terrain.LandPatchReceived += new EventHandler<LandPatchReceivedEventArgs>(Terrain_LandPatchReceived);
             Client.Parcels.SimParcelsDownloaded += new EventHandler<SimParcelsDownloadedEventArgs>(Parcels_SimParcelsDownloaded);
 
             Client.Assets.OnImageRecieveProgress += new AssetManager.ImageReceiveProgressCallback(Assets_OnImageRecieveProgress);
@@ -1010,19 +1010,19 @@ namespace PrimWorkshop
 
             lock (RenderPrimList) RenderPrimList[prim.LocalID] = render;
         }
-             
-        private void Terrain_OnLandPatch(Simulator simulator, int x, int y, int width, float[] data)
+
+        private void Terrain_LandPatchReceived(object sender, LandPatchReceivedEventArgs e)
         {
-            if (Client != null && Client.Network.CurrentSim == simulator)
+            if (Client != null && Client.Network.CurrentSim == e.Simulator)
             {
-                Heightmap[y, x].Data = data;
+                Heightmap[e.Y, e.X].Data = e.HeightMap;
             }
 
             // Find the new max height
-            for (int i = 0; i < data.Length; i++)
+            for (int i = 0; i < e.HeightMap.Length; i++)
             {
-                if (data[i] > MaxHeight)
-                    MaxHeight = data[i];
+                if (e.HeightMap[i] > MaxHeight)
+                    MaxHeight = e.HeightMap[i];
             }
         }
 

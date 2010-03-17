@@ -78,7 +78,7 @@ namespace Heightmap
 
         private void frmHeightmap_Load(object sender, EventArgs e)
         {
-            Client.Terrain.OnLandPatch += new TerrainManager.LandPatchCallback(Terrain_OnLandPatch);
+            Client.Terrain.LandPatchReceived += new EventHandler<LandPatchReceivedEventArgs>(Terrain_LandPatchReceived);
             // Only needed so we can do lookups with TerrainHeightAtPoint
             Client.Settings.STORE_LAND_PATCHES = true;
 
@@ -125,17 +125,17 @@ namespace Heightmap
             Client.Self.Movement.UpdateFromHeading(heading, false);
         }
 
-        void Terrain_OnLandPatch(Simulator simulator, int x, int y, int width, float[] data)
+        void Terrain_LandPatchReceived(object sender, LandPatchReceivedEventArgs e)
         {
-            if (x >= 16 || y >= 16)
+            if (e.X >= 16 || e.Y >= 16)
             {
-                Console.WriteLine("Bad patch coordinates, x = " + x + ", y = " + y);
+                Console.WriteLine("Bad patch coordinates, x = " + e.X + ", y = " + e.Y);
                 return;
             }
 
-            if (width != 16)
+            if (e.PatchSize != 16)
             {
-                Console.WriteLine("Unhandled patch size " + width + "x" + width);
+                Console.WriteLine("Unhandled patch size " + e.PatchSize + "x" + e.PatchSize);
                 return;
             }
 
@@ -145,20 +145,20 @@ namespace Heightmap
             {
                 for (int xp = 0; xp < 16; xp++)
                 {
-                    float height = data[(15-yp) * 16 + xp]; // data[0] is south west
+                    float height = e.HeightMap[(15-yp) * 16 + xp]; // data[0] is south west
                     Color color;
-                    if (height >= simulator.WaterHeight)
+                    if (height >= e.Simulator.WaterHeight)
                     {
-                        float maxVal = (float)Math.Log(Math.Abs(512+1-simulator.WaterHeight),2);
-                        float lgHeight = (float)Math.Log(Math.Abs(height + 1 - simulator.WaterHeight), 2);
-                        int colorVal1 = Utils.FloatToByte(lgHeight, simulator.WaterHeight, maxVal);
-                        int colorVal2 = Utils.FloatToByte(height, simulator.WaterHeight, 25.0f);
+                        float maxVal = (float)Math.Log(Math.Abs(512+1-e.Simulator.WaterHeight),2);
+                        float lgHeight = (float)Math.Log(Math.Abs(height + 1 - e.Simulator.WaterHeight), 2);
+                        int colorVal1 = Utils.FloatToByte(lgHeight, e.Simulator.WaterHeight, maxVal);
+                        int colorVal2 = Utils.FloatToByte(height, e.Simulator.WaterHeight, 25.0f);
                         color = Color.FromArgb(255, colorVal2, colorVal1);
                     }
                     else
                     {
                         const float minVal = -5.0f;
-                        float maxVal = simulator.WaterHeight;
+                        float maxVal = e.Simulator.WaterHeight;
                         int colorVal1 = Utils.FloatToByte(height, -5.0f, minVal + (maxVal - minVal) * 1.5f);
                         int colorVal2 = Utils.FloatToByte(height, -5.0f, maxVal);
                         color = Color.FromArgb(colorVal1, colorVal2, 255);
@@ -167,7 +167,7 @@ namespace Heightmap
                 }
             }
 
-            Boxes[x, 15-y].Image = (System.Drawing.Image)patch;
+            Boxes[e.X, 15-e.Y].Image = (System.Drawing.Image)patch;
         }
 
         private void frmHeightmap_FormClosing(object sender, FormClosingEventArgs e)
