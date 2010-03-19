@@ -118,7 +118,6 @@
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="log4net"/>
-      <Reference name="Mono.Security"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
