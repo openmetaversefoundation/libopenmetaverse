@@ -319,14 +319,20 @@ namespace OpenMetaverse.Assets
 
         static void CollectTextures(PrimObject prim, Dictionary<UUID, UUID> textureList)
         {
-            if (prim.Faces != null)
+            if (prim.Textures != null)
             {
                 // Add all of the textures on this prim to the save list
-                for (int i = 0; i < prim.Faces.Length; i++)
+                if (prim.Textures.DefaultTexture != null)
+                    textureList[prim.Textures.DefaultTexture.TextureID] = prim.Textures.DefaultTexture.TextureID;
+
+                if (prim.Textures.FaceTextures != null)
                 {
-                    PrimObject.FaceBlock face = prim.Faces[i];
-                    if (!textureList.ContainsKey(face.ImageID))
-                        textureList.Add(face.ImageID, face.ImageID);
+                    for (int i = 0; i < prim.Textures.FaceTextures.Length; i++)
+                    {
+                        Primitive.TextureEntryFace face = prim.Textures.FaceTextures[i];
+                        if (face != null)
+                            textureList[face.TextureID] = textureList[face.TextureID];
+                    }
                 }
             }
         }
@@ -420,13 +426,7 @@ namespace OpenMetaverse.Assets
             writer.WriteAttributeString("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
             writer.WriteAttributeString("xmlns:xsd", "http://www.w3.org/2001/XMLSchema");
 
-            UUID creatorID, groupID, ownerID, lastOwnerID;
-            UUID.TryParse(prim.CreatorIdentity, out creatorID);
-            UUID.TryParse(prim.GroupIdentity, out groupID);
-            UUID.TryParse(prim.OwnerIdentity, out ownerID);
-            UUID.TryParse(prim.LastOwnerIdentity, out lastOwnerID);
-
-            WriteUUID(writer, "CreatorID", creatorID);
+            WriteUUID(writer, "CreatorID", prim.CreatorID);
             WriteUUID(writer, "FolderID", prim.FolderID);
             writer.WriteElementString("InventorySerial", (prim.Inventory != null) ? prim.Inventory.Serial.ToString() : "0");
             
@@ -510,8 +510,8 @@ namespace OpenMetaverse.Assets
             writer.WriteStartElement("TextureEntry");
 
             byte[] te;
-            if (prim.Faces != null)
-                te = AssetPrim.ToTextureEntry(prim.Faces).GetBytes();
+            if (prim.Textures != null)
+                te = prim.Textures.GetBytes();
             else
                 te = Utils.EmptyBytes;
 
@@ -535,9 +535,9 @@ namespace OpenMetaverse.Assets
             writer.WriteElementString("SalePrice", prim.SalePrice.ToString());
             writer.WriteElementString("ObjectSaleType", ((int)prim.SaleType).ToString());
             writer.WriteElementString("OwnershipCost", "0");
-            WriteUUID(writer, "GroupID", groupID);
-            WriteUUID(writer, "OwnerID", ownerID);
-            WriteUUID(writer, "LastOwnerID", lastOwnerID);
+            WriteUUID(writer, "GroupID", prim.GroupID);
+            WriteUUID(writer, "OwnerID", prim.OwnerID);
+            WriteUUID(writer, "LastOwnerID", prim.LastOwnerID);
             writer.WriteElementString("BaseMask", ((uint)PermissionMask.All).ToString());
             writer.WriteElementString("OwnerMask", ((uint)PermissionMask.All).ToString());
             writer.WriteElementString("GroupMask", ((uint)PermissionMask.All).ToString());

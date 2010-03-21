@@ -729,7 +729,7 @@ namespace OpenMetaverse
 
             private void FromBytes(byte[] data, int pos, int length)
             {
-                if (length <= 0)
+                if (length < 16)
                 {
                     // No TextureEntry to process
                     DefaultTexture = null;
