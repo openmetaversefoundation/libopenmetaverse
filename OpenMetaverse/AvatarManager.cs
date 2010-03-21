@@ -764,7 +764,7 @@ namespace OpenMetaverse
 
                         if (m_AvatarAppearance != null)
                         {
-                            OnAvatarAppearance(new AvatarAppearanceEventArgs(appearance.Sender.ID, appearance.Sender.IsTrial,
+                            OnAvatarAppearance(new AvatarAppearanceEventArgs(simulator, appearance.Sender.ID, appearance.Sender.IsTrial,
                                 defaultTexture, faceTextures, visualParams));
                         }
                     }
@@ -1210,12 +1210,15 @@ namespace OpenMetaverse
     public class AvatarAppearanceEventArgs : EventArgs
     {
 
+        private readonly Simulator m_Simulator;
         private readonly UUID m_AvatarID;
         private readonly bool m_IsTrial;
         private readonly Primitive.TextureEntryFace m_DefaultTexture;
         private readonly Primitive.TextureEntryFace[] m_FaceTextures;
         private readonly List<byte> m_VisualParams;
 
+        /// <summary>Get the Simulator this request is from of the agent</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
         /// <summary>Get the ID of the agent</summary>
         public UUID AvatarID { get { return m_AvatarID; } }
         /// <summary>true if the agent is a trial account</summary>
@@ -1230,14 +1233,16 @@ namespace OpenMetaverse
         /// <summary>
         /// Construct a new instance of the AvatarAppearanceEventArgs class
         /// </summary>
+        /// <param name="sim">The simulator request was from</param>
         /// <param name="avatarID">The ID of the agent</param>
         /// <param name="isTrial">true of the agent is a trial account</param>
         /// <param name="defaultTexture">The default agent texture</param>
         /// <param name="faceTextures">The agents appearance layer textures</param>
         /// <param name="visualParams">The <see cref="VisualParams"/> for the agent</param>
-        public AvatarAppearanceEventArgs(UUID avatarID, bool isTrial, Primitive.TextureEntryFace defaultTexture,
+        public AvatarAppearanceEventArgs(Simulator sim, UUID avatarID, bool isTrial, Primitive.TextureEntryFace defaultTexture,
             Primitive.TextureEntryFace[] faceTextures, List<byte> visualParams)
         {
+            this.m_Simulator = sim;
             this.m_AvatarID = avatarID;
             this.m_IsTrial = isTrial;
             this.m_DefaultTexture = defaultTexture;
