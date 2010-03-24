@@ -1047,7 +1047,10 @@ namespace OpenMetaverse.Messages.Linden
         /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
         public override void Deserialize(OSDMap map)
         {
-            ParcelID = map["parcel_id"].AsUUID();
+            if (map == null || !map.ContainsKey("parcel_id"))
+                ParcelID =  UUID.Zero;
+            else
+                ParcelID = map["parcel_id"].AsUUID();
         }
     }
 
