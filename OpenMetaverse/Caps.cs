@@ -128,24 +128,28 @@ namespace OpenMetaverse
             // Create a request list
             OSDArray req = new OSDArray();
             // This list can be updated by using the following command to obtain a current list of capabilities the official linden viewer supports:
-            // wget -q -O - http://svn.secondlife.com/svn/linden/trunk/indra/newview/llviewerregion.cpp | grep 'capabilityNames.append'  | sed 's/^[ \t]*//;s/capabilityNames.append("/req.Add("/'
+            // wget -q -O - http://svn.secondlife.com/svn/linden/branches/2010/viewer-external/indra/newview/llviewerregion.cpp | grep 'capabilityNames.append'  | sed 's/^[ \t]*//;s/capabilityNames.append("/req.Add("/'
+            req.Add("AttachmentResources");
             req.Add("ChatSessionRequest");
             req.Add("CopyInventoryFromNotecard");
             req.Add("DispatchRegionInfo");
             req.Add("EstateChangeInfo");
             req.Add("EventQueueGet");
             req.Add("FetchInventory");
-            req.Add("WebFetchInventoryDescendents");
+            req.Add("ObjectMedia");
+            req.Add("ObjectMediaNavigate");
             req.Add("FetchLib");
             req.Add("FetchLibDescendents");
+            req.Add("GetTexture");
             req.Add("GroupProposalBallot");
             req.Add("HomeLocation");
+            req.Add("LandResources");
             req.Add("MapLayer");
             req.Add("MapLayerGod");
             req.Add("NewFileAgentInventory");
-            req.Add("ObjectMedia");
-            req.Add("ObjectMediaNavigate");
             req.Add("ParcelPropertiesUpdate");
+            req.Add("ParcelMediaURLFilterList");
+            req.Add("ParcelNavigateMedia");
             req.Add("ParcelVoiceInfoRequest");
             req.Add("ProductInfoRequest");
             req.Add("ProvisionVoiceAccountRequest");
@@ -158,6 +162,7 @@ namespace OpenMetaverse
             req.Add("SendUserReportWithScreenshot");
             req.Add("ServerReleaseNotes");
             req.Add("StartGroupProposal");
+            req.Add("TextureStats");
             req.Add("UntrustedSimulatorMessage");
             req.Add("UpdateAgentInformation");
             req.Add("UpdateAgentLanguage");
@@ -170,6 +175,7 @@ namespace OpenMetaverse
             req.Add("UploadBakedTexture");
             req.Add("ViewerStartAuction");
             req.Add("ViewerStats");
+            req.Add("WebFetchInventoryDescendents");
 
             _SeedRequest = new CapsClient(new Uri(_SeedCapsURI));
             _SeedRequest.OnComplete += new CapsClient.CompleteCallback(SeedRequestCompleteHandler);
