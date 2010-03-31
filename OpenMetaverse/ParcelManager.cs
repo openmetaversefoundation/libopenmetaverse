@@ -775,6 +775,12 @@ namespace OpenMetaverse
         #endregion Structs
 
         #region Delegates
+        /// <summary>
+        /// Called once parcel resource usage information has been collected
+        /// </summary>
+        /// <param name="success">Indicates if operation was successfull</param>
+        /// <param name="info">Parcel resource usage information</param>
+        public delegate void LandResourcesCallback(bool success, LandResourcesInfo info);
 
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<ParcelDwellReplyEventArgs> m_DwellReply;
@@ -1599,6 +1605,64 @@ namespace OpenMetaverse
             return UUID.Zero;
 
         }
+
+        /// <summary>
+        /// Retrieves information on resources used by the parcel
+        /// </summary>
+        /// <param name="parcelID">UUID of the parcel</param>
+        /// <param name="getDetails">Should per object resource usage be requested</param>
+        /// <param name="callback">Callback invoked when the request is complete</param>
+        public void GetParcelResouces(UUID parcelID, bool getDetails, LandResourcesCallback callback)
+        {
+            try
+            {
+                Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("LandResources");
+                CapsClient request = new CapsClient(url);
+
+                request.OnComplete += delegate(CapsClient client, OSD result, Exception error)
+                {
+                    try
+                    {
+                        if (result == null || error != null)
+                        {
+                            callback(false, null);
+                        }
+                        LandResourcesMessage response = new LandResourcesMessage();
+                        response.Deserialize((OSDMap)result);
+
+                        CapsClient summaryRequest = new CapsClient(response.ScriptResourceSummary);
+                        OSD summaryResponse = summaryRequest.GetResponse(Client.Settings.CAPS_TIMEOUT);
+
+                        LandResourcesInfo res = new LandResourcesInfo();
+                        res.Deserialize((OSDMap)summaryResponse);
+
+                        if (response.ScriptResourceDetails != null && getDetails)
+                        {
+                            CapsClient detailRequest = new CapsClient(response.ScriptResourceDetails);
+                            OSD detailResponse = detailRequest.GetResponse(Client.Settings.CAPS_TIMEOUT);
+                            res.Deserialize((OSDMap)detailResponse);
+                        }
+                        callback(true, res);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log("Failed fetching land resources", Helpers.LogLevel.Error, Client, ex);
+                        callback(false, null);
+                    }
+                };
+
+                LandResourcesRequest param = new LandResourcesRequest();
+                param.ParcelID = parcelID;
+                request.BeginGetResponse(param.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Failed fetching land resources:", Helpers.LogLevel.Error, Client, ex);
+                callback(false, null);
+            }
+        }
+
         #endregion Public Methods
 
         #region Packet Handlers

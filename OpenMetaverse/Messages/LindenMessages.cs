@@ -3976,4 +3976,333 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
     #endregion Object Media Messages
+
+    #region Resource usage
+    /// <summary>Details about object resource usage</summary>
+    public class ObjectResourcesDetail
+    {
+        /// <summary>Object UUID</summary>
+        public UUID ID;
+        /// <summary>Object name</summary>
+        public string Name;
+        /// <summary>Indicates if object is group owned</summary>
+        public bool GroupOwned;
+        /// <summary>Locatio of the object</summary>
+        public Vector3d Location;
+        /// <summary>Object owner</summary>
+        public UUID OwnerID;
+        /// <summary>Resource usage, keys are resource names, values are resource usage for that specific resource</summary>
+        public Dictionary<string, int> Resources;
+
+        /// <summary>
+        /// Deserializes object from OSD
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public virtual void Deserialize(OSDMap obj)
+        {
+            ID = obj["id"].AsUUID();
+            Name = obj["name"].AsString();
+            Location = obj["location"].AsVector3d();
+            GroupOwned = obj["is_group_owned"].AsBoolean();
+            OwnerID = obj["owner_id"].AsUUID();
+            OSDMap resources = (OSDMap)obj["resources"];
+            Resources = new Dictionary<string, int>(resources.Keys.Count);
+            foreach (KeyValuePair<string, OSD> kvp in resources)
+            {
+                Resources.Add(kvp.Key, kvp.Value.AsInteger());
+            }
+        }
+
+        /// <summary>
+        /// Makes an instance based on deserialized data
+        /// </summary>
+        /// <param name="osd"><see cref="OSD"/> serialized data</param>
+        /// <returns>Instance containg deserialized data</returns>
+        public static ObjectResourcesDetail FromOSD(OSD osd)
+        {
+            ObjectResourcesDetail res = new ObjectResourcesDetail();
+            res.Deserialize((OSDMap)osd);
+            return res;
+        }
+    }
+
+    /// <summary>Details about parcel resource usage</summary>
+    public class ParcelResourcesDetail
+    {
+        /// <summary>Parcel UUID</summary>
+        public UUID ID;
+        /// <summary>Parcel local ID</summary>
+        public int LocalID;
+        /// <summary>Parcel name</summary>
+        public string Name;
+        /// <summary>Indicates if parcel is group owned</summary>
+        public bool GroupOwned;
+        /// <summary>Parcel owner</summary>
+        public UUID OwnerID;
+        /// <summary>Array of <see cref="ObjectResourcesDetail"/> containing per object resource usage</summary>
+        public ObjectResourcesDetail[] Objects;
+
+        /// <summary>
+        /// Deserializes object from OSD
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public virtual void Deserialize(OSDMap map)
+        {
+            ID = map["id"].AsUUID();
+            LocalID = map["local_id"].AsInteger();
+            Name = map["name"].AsString();
+            GroupOwned = map["is_group_owned"].AsBoolean();
+            OwnerID = map["owner_id"].AsUUID();
+
+            OSDArray objectsOSD = (OSDArray)map["objects"];
+            Objects = new ObjectResourcesDetail[objectsOSD.Count];
+
+            for (int i = 0; i < objectsOSD.Count; i++)
+            {
+                Objects[i] = ObjectResourcesDetail.FromOSD(objectsOSD[i]);
+            }
+        }
+
+        /// <summary>
+        /// Makes an instance based on deserialized data
+        /// </summary>
+        /// <param name="osd"><see cref="OSD"/> serialized data</param>
+        /// <returns>Instance containg deserialized data</returns>
+        public static ParcelResourcesDetail FromOSD(OSD osd)
+        {
+            ParcelResourcesDetail res = new ParcelResourcesDetail();
+            res.Deserialize((OSDMap)osd);
+            return res;
+        }
+    }
+
+    /// <summary>Resource usage base class, both agent and parcel resource
+    /// usage contains summary information</summary>
+    public abstract class BaseResourcesInfo : IMessage
+    {
+        /// <summary>Summary of available resources, keys are resource names,
+        /// values are resource usage for that specific resource</summary>
+        public Dictionary<string, int> SummaryAvailable;
+        /// <summary>Summary resource usage, keys are resource names,
+        /// values are resource usage for that specific resource</summary>
+        public Dictionary<string, int> SummaryUsed;
+
+        /// <summary>
+        /// Serializes object
+        /// </summary>
+        /// <returns><see cref="OSDMap"/> serialized data</returns>
+        public virtual OSDMap Serialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Deserializes object from OSD
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public virtual void Deserialize(OSDMap map)
+        {
+            SummaryAvailable = new Dictionary<string, int>();
+            SummaryUsed = new Dictionary<string, int>();
+
+            OSDMap summary = (OSDMap)map["summary"];
+            OSDArray available = (OSDArray)summary["available"];
+            OSDArray used = (OSDArray)summary["used"];
+
+            for (int i = 0; i < available.Count; i++)
+            {
+                OSDMap limit = (OSDMap)available[i];
+                SummaryAvailable.Add(limit["type"].AsString(), limit["amount"].AsInteger());
+            }
+
+            for (int i = 0; i < used.Count; i++)
+            {
+                OSDMap limit = (OSDMap)used[i];
+                SummaryUsed.Add(limit["type"].AsString(), limit["amount"].AsInteger());
+            }
+        }
+    }
+
+    /// <summary>Agent resource usage</summary>
+    public class AttachmentResourcesMessage : BaseResourcesInfo
+    {
+        /// <summary>Per attachment point object resource usage</summary>
+        public Dictionary<AttachmentPoint, ObjectResourcesDetail[]> Attachments;
+
+        /// <summary>
+        /// Deserializes object from OSD
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public override void Deserialize(OSDMap osd)
+        {
+            base.Deserialize(osd);
+            OSDArray attachments = (OSDArray)((OSDMap)osd)["attachments"];
+            Attachments = new Dictionary<AttachmentPoint, ObjectResourcesDetail[]>();
+
+            for (int i = 0; i < attachments.Count; i++)
+            {
+                OSDMap attachment = (OSDMap)attachments[i];
+                AttachmentPoint pt = Utils.StringToAttachmentPoint(attachment["location"].AsString());
+
+                OSDArray objectsOSD = (OSDArray)attachment["objects"];
+                ObjectResourcesDetail[] objects = new ObjectResourcesDetail[objectsOSD.Count];
+
+                for (int j = 0; j < objects.Length; j++)
+                {
+                    objects[j] = ObjectResourcesDetail.FromOSD(objectsOSD[j]);
+                }
+
+                Attachments.Add(pt, objects);
+            }
+        }
+
+        /// <summary>
+        /// Makes an instance based on deserialized data
+        /// </summary>
+        /// <param name="osd"><see cref="OSD"/> serialized data</param>
+        /// <returns>Instance containg deserialized data</returns>
+        public static AttachmentResourcesMessage FromOSD(OSD osd)
+        {
+            AttachmentResourcesMessage res = new AttachmentResourcesMessage();
+            res.Deserialize((OSDMap)osd);
+            return res;
+        }
+
+        /// <summary>
+        /// Detects which class handles deserialization of this message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        /// <returns>Object capable of decoding this message</returns>
+        public static IMessage GetMessageHandler(OSDMap map)
+        {
+            if (map == null)
+            {
+                return null;
+            }
+            else
+            {
+                return new AttachmentResourcesMessage();
+            }
+        }
+    }
+
+    /// <summary>Request message for parcel resource usage</summary>
+    public class LandResourcesRequest : IMessage
+    {
+        /// <summary>UUID of the parel to request resource usage info</summary>
+        public UUID ParcelID;
+
+        /// <summary>
+        /// Serializes object
+        /// </summary>
+        /// <returns><see cref="OSDMap"/> serialized data</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(1);
+            map["parcel_id"] = OSD.FromUUID(ParcelID);
+            return map;
+        }
+
+        /// <summary>
+        /// Deserializes object from OSD
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            ParcelID = map["parcel_id"].AsUUID();
+        }
+    }
+
+    /// <summary>Response message for parcel resource usage</summary>
+    public class LandResourcesMessage : IMessage
+    {
+        /// <summary>URL where parcel resource usage details can be retrieved</summary>
+        public Uri ScriptResourceDetails;
+        /// <summary>URL where parcel resource usage summary can be retrieved</summary>
+        public Uri ScriptResourceSummary;
+
+        /// <summary>
+        /// Serializes object
+        /// </summary>
+        /// <returns><see cref="OSDMap"/> serialized data</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap(1);
+            if (ScriptResourceSummary != null)
+            {
+                map["ScriptResourceSummary"] = OSD.FromString(ScriptResourceSummary.ToString());
+            }
+
+            if (ScriptResourceDetails != null)
+            {
+                map["ScriptResourceDetails"] = OSD.FromString(ScriptResourceDetails.ToString());
+            }
+            return map;
+        }
+
+        /// <summary>
+        /// Deserializes object from OSD
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("ScriptResourceSummary"))
+            {
+                ScriptResourceSummary = new Uri(map["ScriptResourceSummary"].AsString());
+            }
+            if (map.ContainsKey("ScriptResourceDetails"))
+            {
+                ScriptResourceDetails = new Uri(map["ScriptResourceDetails"].AsString());
+            }
+        }
+
+        /// <summary>
+        /// Detects which class handles deserialization of this message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        /// <returns>Object capable of decoding this message</returns>
+        public static IMessage GetMessageHandler(OSDMap map)
+        {
+            if (map.ContainsKey("parcel_id"))
+            {
+                return new LandResourcesRequest();
+            }
+            else if (map.ContainsKey("ScriptResourceSummary"))
+            {
+                return new LandResourcesMessage();
+            }
+            return null;
+        }
+    }
+
+    /// <summary>Parcel resource usage</summary>
+    public class LandResourcesInfo : BaseResourcesInfo
+    {
+        /// <summary>Array of <see cref="ParcelResourcesDetail"/> containing per percal resource usage</summary>
+        public ParcelResourcesDetail[] Parcels;
+
+        /// <summary>
+        /// Deserializes object from OSD
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public override void Deserialize(OSDMap map)
+        {
+            if (map.ContainsKey("summary"))
+            {
+                base.Deserialize(map);
+            }
+            else if (map.ContainsKey("parcels"))
+            {
+                OSDArray parcelsOSD = (OSDArray)map["parcels"];
+                Parcels = new ParcelResourcesDetail[parcelsOSD.Count];
+
+                for (int i = 0; i < parcelsOSD.Count; i++)
+                {
+                    Parcels[i] = ParcelResourcesDetail.FromOSD(parcelsOSD[i]);
+                }
+            }
+        }
+    }
+
+    #endregion Resource usage
 }

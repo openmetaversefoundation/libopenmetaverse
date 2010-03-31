@@ -90,6 +90,8 @@ namespace OpenMetaverse.Messages
                 case "RegionInfo": message = new RegionInfoMessage(); break;
                 case "ObjectMediaNavigate": message = new ObjectMediaNavigateMessage(); break;
                 case "ObjectMedia": message = new ObjectMediaMessage(); break;
+                case "AttachmentResources": message = AttachmentResourcesMessage.GetMessageHandler(map); break;
+                case "LandResources": message = LandResourcesMessage.GetMessageHandler(map); break;
                 //case "ProductInfoRequest": message = new ProductInfoRequestMessage(); break;
 
                 // Capabilities TODO:
