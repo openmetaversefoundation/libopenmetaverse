@@ -29,6 +29,24 @@ using System;
 namespace OpenMetaverse
 {
     /// <summary>
+    /// Attribute class that allows extra attributes to be attached to ENUMs
+    /// </summary>
+    public class EnumInfoAttribute : Attribute
+    {
+        /// <summary>Text used when presenting ENUM to user</summary>
+        public string Text = string.Empty;
+
+        /// <summary>Default initializer</summary>
+        public EnumInfoAttribute() { }
+
+        /// <summary>Text used when presenting ENUM to user</summary>
+        public EnumInfoAttribute(string text)
+        {
+            this.Text = text;
+        }
+    }
+
+    /// <summary>
     /// The different types of grid assets
     /// </summary>
     public enum AssetType : sbyte

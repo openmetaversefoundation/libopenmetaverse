@@ -27,6 +27,7 @@
 using System;
 using System.Net;
 using System.Text;
+using System.Reflection;
 
 namespace OpenMetaverse
 {
@@ -92,6 +93,49 @@ namespace OpenMetaverse
             "orig",
             "copy",
             "cntn"
+        };
+
+        private static readonly string[] _AttachmentPointNames = new string[]
+        {
+            string.Empty,
+            "ATTACH_CHEST",
+	        "ATTACH_HEAD",
+	        "ATTACH_LSHOULDER",
+	        "ATTACH_RSHOULDER",
+	        "ATTACH_LHAND",
+            "ATTACH_RHAND",
+	        "ATTACH_LFOOT",
+	        "ATTACH_RFOOT",
+	        "ATTACH_BACK",
+	        "ATTACH_PELVIS",
+	        "ATTACH_MOUTH",
+	        "ATTACH_CHIN",
+	        "ATTACH_LEAR",
+	        "ATTACH_REAR",
+	        "ATTACH_LEYE",
+	        "ATTACH_REYE",
+	        "ATTACH_NOSE",
+	        "ATTACH_RUARM",
+	        "ATTACH_RLARM",
+	        "ATTACH_LUARM",
+	        "ATTACH_LLARM",
+	        "ATTACH_RHIP",
+	        "ATTACH_RULEG",
+	        "ATTACH_RLLEG",
+	        "ATTACH_LHIP",
+	        "ATTACH_LULEG",
+	        "ATTACH_LLLEG",
+	        "ATTACH_BELLY",
+	        "ATTACH_RPEC",
+	        "ATTACH_LPEC",
+	        "ATTACH_HUD_CENTER_2",
+	        "ATTACH_HUD_TOP_RIGHT",
+	        "ATTACH_HUD_TOP_CENTER",
+	        "ATTACH_HUD_TOP_LEFT",
+	        "ATTACH_HUD_CENTER_1",
+	        "ATTACH_HUD_BOTTOM_LEFT",
+	        "ATTACH_HUD_BOTTOM",
+	        "ATTACH_HUD_BOTTOM_RIGHT"
         };
 
         #endregion String Arrays
@@ -806,6 +850,27 @@ namespace OpenMetaverse
         #region Enum String Conversion
 
         /// <summary>
+        /// Returns text specified in EnumInfo attribute of the enumerator
+        /// To add the text use [EnumInfo(Text = "Some nice text here")] before declaration
+        /// of enum values
+        /// </summary>
+        /// <param name="value">Enum value</param>
+        /// <returns>Text representation of the enum</returns>
+        public static string EnumToText(Enum value)
+        {
+            // Get the type
+            Type type = value.GetType();
+
+            // Get fieldinfo for this type
+            FieldInfo fieldInfo = type.GetField(value.ToString());
+
+            // Find extended attributes, if any
+            EnumInfoAttribute[] attribs = (EnumInfoAttribute[])fieldInfo.GetCustomAttributes(typeof(EnumInfoAttribute), false);
+
+            return attribs.Length > 0 ? attribs[0].Text : value.ToString();
+        }
+
+        /// <summary>
         /// Takes an AssetType and returns the string representation
         /// </summary>
         /// <param name="type">The source <seealso cref="AssetType"/></param>
@@ -881,6 +946,22 @@ namespace OpenMetaverse
             }
 
             return SaleType.Not;
+        }
+
+        /// <summary>
+        /// Converts a string used in LLSD to AttachmentPoint type
+        /// </summary>
+        /// <param name="value">String representation of AttachmentPoint to convert</param>
+        /// <returns>AttachmentPoint enum</returns>
+        public static AttachmentPoint StringToAttachmentPoint(string value)
+        {
+            for (int i = 0; i < _AttachmentPointNames.Length; i++)
+            {
+                if (value == _AttachmentPointNames[i])
+                    return (AttachmentPoint)i;
+            }
+
+            return AttachmentPoint.Default;
         }
 
         #endregion Enum String Conversion
