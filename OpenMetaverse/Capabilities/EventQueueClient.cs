@@ -89,13 +89,13 @@ namespace OpenMetaverse.Http
             _Running = true;
             _Request = request;
 
-            Logger.Log.Debug("Capabilities event queue connected");
+            Logger.DebugLog("Capabilities event queue connected");
 
             // The event queue is starting up for the first time
             if (OnConnected != null)
             {
                 try { OnConnected(); }
-                catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
             }
         }
 
@@ -120,8 +120,8 @@ namespace OpenMetaverse.Http
                 }
                 else
                 {
-                    Logger.Log.Warn("Got an unparseable response from the event queue: \"" +
-                        System.Text.Encoding.UTF8.GetString(responseData) + "\"");
+                    Logger.Log("Got an unparseable response from the event queue: \"" +
+                        System.Text.Encoding.UTF8.GetString(responseData) + "\"", Helpers.LogLevel.Warning);
                 }
             }
             else if (error != null)
@@ -145,7 +145,7 @@ namespace OpenMetaverse.Http
 
                 if (code == HttpStatusCode.NotFound || code == HttpStatusCode.Gone)
                 {
-                    Logger.Log.InfoFormat("Closing event queue at {0} due to missing caps URI", _Address);
+                    Logger.Log(String.Format("Closing event queue at {0} due to missing caps URI", _Address), Helpers.LogLevel.Info);
 
                     _Running = false;
                     _Dead = true;
@@ -165,18 +165,18 @@ namespace OpenMetaverse.Http
                     // Try to log a meaningful error message
                     if (code != HttpStatusCode.OK)
                     {
-                        Logger.Log.WarnFormat("Unrecognized caps connection problem from {0}: {1}",
-                            _Address, code);
+                        Logger.Log(String.Format("Unrecognized caps connection problem from {0}: {1}",
+                            _Address, code), Helpers.LogLevel.Warning);
                     }
                     else if (error.InnerException != null)
                     {
-                        Logger.Log.WarnFormat("Unrecognized internal caps exception from {0}: {1}",
-                            _Address, error.InnerException.Message);
+                        Logger.Log(String.Format("Unrecognized internal caps exception from {0}: {1}",
+                            _Address, error.InnerException.Message), Helpers.LogLevel.Warning);
                     }
                     else
                     {
-                        Logger.Log.WarnFormat("Unrecognized caps exception from {0}: {1}",
-                            _Address, error.Message);
+                        Logger.Log(String.Format("Unrecognized caps exception from {0}: {1}",
+                            _Address, error.Message), Helpers.LogLevel.Warning);
                     }
                 }
 
@@ -186,7 +186,7 @@ namespace OpenMetaverse.Http
             {
                 ++_errorCount;
 
-                Logger.Log.Warn("No response from the event queue but no reported error either");
+                Logger.Log("No response from the event queue but no reported error either", Helpers.LogLevel.Warning);
             }
 
         HandlingDone:
@@ -215,7 +215,7 @@ namespace OpenMetaverse.Http
                 if (_Dead)
                 {
                     _Running = false;
-                    Logger.Log.Debug("Sent event queue shutdown message");
+                    Logger.DebugLog("Sent event queue shutdown message");
                 }
             }
 
@@ -232,7 +232,7 @@ namespace OpenMetaverse.Http
                     OSDMap body = (OSDMap)evt["body"];
 
                     try { OnEvent(msg, body); }
-                    catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
+                    catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
                 }
             }
 

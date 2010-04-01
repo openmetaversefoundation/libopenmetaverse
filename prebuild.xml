@@ -99,30 +99,6 @@
       </Files>
     </Project>
 
-    <Project name="OpenMetaverse.Http" path="OpenMetaverse.Http" type="Library" rootNamespace="OpenMetaverse.Http" frameworkVersion="v3_5">
-      <Configuration name="Debug">
-        <Options>
-          <OutputPath>../bin/</OutputPath>
-        </Options>
-      </Configuration>
-      <Configuration name="Release">
-        <Options>
-          <OutputPath>../bin/</OutputPath>
-          <XmlDocFile>OpenMetaverse.Http.XML</XmlDocFile>
-        </Options>
-      </Configuration>
-
-      <ReferencePath>../bin/</ReferencePath>
-      <Reference name="System"/>
-      <Reference name="System.Xml"/>
-      <Reference name="OpenMetaverseTypes"/>
-      <Reference name="OpenMetaverse.StructuredData"/>
-      <Reference name="log4net"/>
-      <Files>
-        <Match pattern="*.cs" recurse="true"/>
-      </Files>
-    </Project>
-
     <Project name="OpenMetaverse" path="OpenMetaverse" type="Library" rootNamespace="OpenMetaverse" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
@@ -144,7 +120,6 @@
       <Reference name="System.Drawing"/>
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
-      <Reference name="OpenMetaverse.Http"/>
       <Reference name="log4net"/>            
       <Reference name="XMLRPC"/>
 
@@ -173,7 +148,6 @@
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
-      <Reference name="OpenMetaverse.Http"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
       </Files>
@@ -222,7 +196,6 @@
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
-      <Reference name="OpenMetaverse.Http"/>
       <Reference name="XMLRPC"/>
       <Reference name="log4net"/>
       
@@ -401,7 +374,6 @@
       <Reference name="System.Drawing"/>
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
-      <Reference name="OpenMetaverse.Http"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -560,7 +532,6 @@
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
-      <Reference name="OpenMetaverse.Http"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -615,7 +586,6 @@
       <Reference name="System.Windows.Forms"/>
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
-      <Reference name="OpenMetaverse.Http"/>
       <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="GridProxy"/>
       <Reference name="XMLRPC"/>
@@ -804,7 +774,6 @@
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.Utilities"/>
       <Reference name="OpenMetaverse.StructuredData"/>
-      <Reference name="OpenMetaverse.Http"/>
 
       <Files>
         <Match pattern="*.cs" recurse="true"/>

@@ -152,7 +152,7 @@ namespace OpenMetaverse.Http
             if (OnDownloadProgress != null)
             {
                 try { OnDownloadProgress(this, bytesReceived, totalBytesToReceive); }
-                catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
             }
         }
 
@@ -177,7 +177,7 @@ namespace OpenMetaverse.Http
             if (callback != null)
             {
                 try { callback(this, result, error); }
-                catch (Exception ex) { Logger.Log.Error(ex.Message, ex); }
+                catch (Exception ex) { Logger.Log(ex.Message, Helpers.LogLevel.Error, ex); }
             }
 
             _Response = result;
