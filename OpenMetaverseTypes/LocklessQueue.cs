@@ -29,95 +29,113 @@ using System.Threading;
 
 namespace OpenMetaverse
 {
+    /// <summary>
+    /// A thread-safe lockless queue that supports multiple readers and 
+    /// multiple writers
+    /// </summary>
     public sealed class LocklessQueue<T>
     {
+        /// <summary>
+        /// Provides a node container for data in a singly linked list
+        /// </summary>
         private sealed class SingleLinkNode
         {
+            /// <summary>Pointer to the next node in list</summary>
             public SingleLinkNode Next;
+            /// <summary>The data contained by the node</summary>
             public T Item;
+
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            public SingleLinkNode() { }
+
+            /// <summary>
+            /// Constructor
+            /// </summary>
+            public SingleLinkNode(T item)
+            {
+                this.Item = item;
+            }
         }
 
+        /// <summary>Queue head</summary>
         SingleLinkNode head;
+        /// <summary>Queue tail</summary>
         SingleLinkNode tail;
+        /// <summary>Queue item count</summary>
         int count;
 
+        /// <summary>Gets the current number of items in the queue. Since this
+        /// is a lockless collection this value should be treated as a close
+        /// estimate</summary>
         public int Count { get { return count; } }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public LocklessQueue()
         {
-            Init();
+            count = 0;
+            head = tail = new SingleLinkNode();
         }
 
+        /// <summary>
+        /// Enqueue an item
+        /// </summary>
+        /// <param name="item">Item to enqeue</param>
         public void Enqueue(T item)
         {
-            SingleLinkNode oldTail = null;
-            SingleLinkNode oldTailNext;
+            SingleLinkNode newNode = new SingleLinkNode { Item = item };
 
-            SingleLinkNode newNode = new SingleLinkNode();
-            newNode.Item = item;
-
-            bool newNodeWasAdded = false;
-
-            while (!newNodeWasAdded)
+            while (true)
             {
-                oldTail = tail;
-                oldTailNext = oldTail.Next;
+                SingleLinkNode oldTail = tail;
+                SingleLinkNode oldTailNext = oldTail.Next;
 
                 if (tail == oldTail)
                 {
-                    if (oldTailNext == null)
-                        newNodeWasAdded = CAS(ref tail.Next, null, newNode);
-                    else
+                    if (oldTailNext != null)
+                    {
                         CAS(ref tail, oldTail, oldTailNext);
+                    }
+                    else if (CAS(ref tail.Next, null, newNode))
+                    {
+                        CAS(ref tail, oldTail, newNode);
+                        Interlocked.Increment(ref count);
+                        return;
+                    }
                 }
             }
-
-            CAS(ref tail, oldTail, newNode);
-            Interlocked.Increment(ref count);
         }
 
-        public bool Dequeue(out T item)
+        /// <summary>
+        /// Try to dequeue an item
+        /// </summary>
+        /// <param name="item">Dequeued item if the dequeue was successful</param>
+        /// <returns>True if an item was successfully deqeued, otherwise false</returns>
+        public bool TryDequeue(out T item)
         {
-            item = default(T);
-            SingleLinkNode oldHead = null;
-            bool haveAdvancedHead = false;
-
-            while (!haveAdvancedHead)
+            while (true)
             {
-                oldHead = head;
-                SingleLinkNode oldTail = tail;
+                SingleLinkNode oldHead = head;
                 SingleLinkNode oldHeadNext = oldHead.Next;
 
                 if (oldHead == head)
                 {
-                    if (oldHead == oldTail)
+                    if (oldHeadNext == null)
                     {
-                        if (oldHeadNext == null)
-                            return false;
-
-                        CAS(ref tail, oldTail, oldHeadNext);
+                        item = default(T);
+                        return false;
                     }
-                    else
+                    if (CAS(ref head, oldHead, oldHeadNext))
                     {
                         item = oldHeadNext.Item;
-                        haveAdvancedHead = CAS(ref head, oldHead, oldHeadNext);
+                        Interlocked.Decrement(ref count);
+                        return true;
                     }
                 }
             }
-
-            Interlocked.Decrement(ref count);
-            return true;
-        }
-
-        public void Clear()
-        {
-            Init();
-        }
-
-        private void Init()
-        {
-            count = 0;
-            head = tail = new SingleLinkNode();
         }
 
         private static bool CAS(ref SingleLinkNode location, SingleLinkNode comparand, SingleLinkNode newValue)

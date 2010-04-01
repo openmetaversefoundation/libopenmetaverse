@@ -766,7 +766,7 @@ namespace OpenMetaverse
             // no more ACKs to append
             uint ackCount = 0;
             uint ack;
-            while (dataLength + 5 < Packet.MTU && PendingAcks.Dequeue(out ack))
+            while (dataLength + 5 < Packet.MTU && PendingAcks.TryDequeue(out ack))
             {
                 Utils.UIntToBytesBig(ack, buffer.Data, dataLength);
                 dataLength += 4;
@@ -1023,7 +1023,7 @@ namespace OpenMetaverse
         {
             uint ack;
 
-            if (PendingAcks.Dequeue(out ack))
+            if (PendingAcks.TryDequeue(out ack))
             {
                 Interlocked.Decrement(ref PendingAckCount);
 
@@ -1032,7 +1032,7 @@ namespace OpenMetaverse
                 block.ID = ack;
                 blocks.Add(block);
 
-                while (PendingAcks.Dequeue(out ack))
+                while (PendingAcks.TryDequeue(out ack))
                 {
                     Interlocked.Decrement(ref PendingAckCount);
 
