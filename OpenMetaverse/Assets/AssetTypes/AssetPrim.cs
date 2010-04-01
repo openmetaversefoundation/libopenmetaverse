@@ -159,6 +159,12 @@ namespace OpenMetaverse.Assets
             obj.Inventory = new PrimObject.InventoryBlock();
 
             reader.ReadStartElement("SceneObjectPart");
+
+            if (reader.Name == "AllowedDrop")
+                obj.AllowedDrop = reader.ReadElementContentAsBoolean("AllowedDrop", String.Empty);
+            else
+                obj.AllowedDrop = true;
+
             obj.CreatorID = ReadUUID(reader, "CreatorID");
             obj.FolderID = ReadUUID(reader, "FolderID");
             obj.Inventory.Serial = reader.ReadElementContentAsInt("InventorySerial", String.Empty);
@@ -707,6 +713,7 @@ namespace OpenMetaverse.Assets
         }
 
         public UUID ID;
+        public bool AllowedDrop;
         public Vector3 AttachmentPosition;
         public Quaternion AttachmentRotation;
         public Quaternion BeforeAttachmentRotation;
