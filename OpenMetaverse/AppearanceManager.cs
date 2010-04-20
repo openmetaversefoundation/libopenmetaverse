@@ -1465,7 +1465,7 @@ namespace OpenMetaverse
         private bool CreateBakes()
         {
             bool success = true;
-            List<BakeType> pendingBakes = new List<BakeType>(0);
+            List<BakeType> pendingBakes = new List<BakeType>();
 
             // Check each bake layer in the Textures array for missing bakes
             for (int bakedIndex = 0; bakedIndex < BAKED_TEXTURE_COUNT; bakedIndex++)
@@ -1494,6 +1494,17 @@ namespace OpenMetaverse
                     }
                 );
             }
+
+            // Free up all the textures we're holding on to
+            for (int i = 0; i < Textures.Length; i++)
+            {
+                Textures[i].Texture = null;
+                Textures[i].TextureID = UUID.Zero;
+            }
+
+            // We just allocated and freed a ridiculous amount of memory while 
+            // baking. Signal to the GC to clean up
+            GC.Collect();
 
             return success;
         }

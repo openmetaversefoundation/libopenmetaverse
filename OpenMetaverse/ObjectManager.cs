@@ -1970,14 +1970,15 @@ namespace OpenMetaverse
                                     prim.TreeSpecies = (Tree)block.Data[0];
                                 else
                                     Logger.Log("Got a foliage update with an invalid TreeSpecies field", Helpers.LogLevel.Warning);
-                                prim.ScratchPad = Utils.EmptyBytes;
-                                break;
-                            default:
-                                prim.ScratchPad = new byte[block.Data.Length];
-                                if (block.Data.Length > 0)
-                                    Buffer.BlockCopy(block.Data, 0, prim.ScratchPad, 0, prim.ScratchPad.Length);
+                            //    prim.ScratchPad = Utils.EmptyBytes;
+                            //    break;
+                            //default:
+                            //    prim.ScratchPad = new byte[block.Data.Length];
+                            //    if (block.Data.Length > 0)
+                            //        Buffer.BlockCopy(block.Data, 0, prim.ScratchPad, 0, prim.ScratchPad.Length);
                                 break;
                         }
+                        prim.ScratchPad = Utils.EmptyBytes;
 
                         // Packed parameters
                         prim.CollisionPlane = objectupdate.CollisionPlane;
@@ -2336,7 +2337,7 @@ namespace OpenMetaverse
                     if ((flags & CompressedFlags.Tree) != 0)
                     {
                         prim.TreeSpecies = (Tree)block.Data[i++];
-                        prim.ScratchPad = Utils.EmptyBytes;
+                        //prim.ScratchPad = Utils.EmptyBytes;
                     }
                     // Scratch pad
                     else if ((flags & CompressedFlags.ScratchPad) != 0)
@@ -2344,10 +2345,11 @@ namespace OpenMetaverse
                         prim.TreeSpecies = (Tree)0;
 
                         int size = block.Data[i++];
-                        prim.ScratchPad = new byte[size];
-                        Buffer.BlockCopy(block.Data, i, prim.ScratchPad, 0, size);
+                        //prim.ScratchPad = new byte[size];
+                        //Buffer.BlockCopy(block.Data, i, prim.ScratchPad, 0, size);
                         i += size;
                     }
+                    prim.ScratchPad = Utils.EmptyBytes;
 
                     // Floating text
                     if ((flags & CompressedFlags.HasText) != 0)

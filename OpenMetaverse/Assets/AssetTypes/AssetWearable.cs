@@ -86,129 +86,139 @@ namespace OpenMetaverse.Assets
         {
             int version = -1;
             Permissions = new Permissions();
-            string data = Utils.BytesToString(AssetData);
 
-            data = data.Replace("\r", String.Empty);
-            string[] lines = data.Split('\n');
-            for (int stri = 0; stri < lines.Length; stri++)
+            try
             {
-                if (stri == 0)
-                {
-                    string versionstring = lines[stri];
-                    version = Int32.Parse(versionstring.Split(' ')[2]);
-                    if (version != 22 && version != 18)
-                        return false;
-                }
-                else if (stri == 1)
-                {
-                    Name = lines[stri];
-                }
-                else if (stri == 2)
-                {
-                    Description = lines[stri];
-                }
-                else
-                {
-                    string line = lines[stri].Trim();
-                    string[] fields = line.Split('\t');
+                string data = Utils.BytesToString(AssetData);
 
-                    if (fields.Length == 1)
+                data = data.Replace("\r", String.Empty);
+                string[] lines = data.Split('\n');
+                for (int stri = 0; stri < lines.Length; stri++)
+                {
+                    if (stri == 0)
                     {
-                        fields = line.Split(' ');
-                        if (fields[0] == "parameters")
+                        string versionstring = lines[stri];
+                        version = Int32.Parse(versionstring.Split(' ')[2]);
+                        if (version != 22 && version != 18)
+                            return false;
+                    }
+                    else if (stri == 1)
+                    {
+                        Name = lines[stri];
+                    }
+                    else if (stri == 2)
+                    {
+                        Description = lines[stri];
+                    }
+                    else
+                    {
+                        string line = lines[stri].Trim();
+                        string[] fields = line.Split('\t');
+
+                        if (fields.Length == 1)
                         {
-                            int count = Int32.Parse(fields[1]) + stri;
-                            for (; stri < count; )
+                            fields = line.Split(' ');
+                            if (fields[0] == "parameters")
                             {
-                                stri++;
-                                line = lines[stri].Trim();
-                                fields = line.Split(' ');
+                                int count = Int32.Parse(fields[1]) + stri;
+                                for (; stri < count; )
+                                {
+                                    stri++;
+                                    line = lines[stri].Trim();
+                                    fields = line.Split(' ');
 
-                                int id = Int32.Parse(fields[0]);
-                                if (fields[1] == ",")
-                                    fields[1] = "0";
-                                else
-                                    fields[1] = fields[1].Replace(',', '.');
+                                    int id = Int32.Parse(fields[0]);
+                                    if (fields[1] == ",")
+                                        fields[1] = "0";
+                                    else
+                                        fields[1] = fields[1].Replace(',', '.');
 
-                                float weight = float.Parse(fields[1], System.Globalization.NumberStyles.Float,
-                                    Utils.EnUsCulture.NumberFormat);
+                                    float weight = float.Parse(fields[1], System.Globalization.NumberStyles.Float,
+                                        Utils.EnUsCulture.NumberFormat);
 
-                                Params[id] = weight;
+                                    Params[id] = weight;
+                                }
+                            }
+                            else if (fields[0] == "textures")
+                            {
+                                int count = Int32.Parse(fields[1]) + stri;
+                                for (; stri < count; )
+                                {
+                                    stri++;
+                                    line = lines[stri].Trim();
+                                    fields = line.Split(' ');
+
+                                    AvatarTextureIndex id = (AvatarTextureIndex)Int32.Parse(fields[0]);
+                                    UUID texture = new UUID(fields[1]);
+
+                                    Textures[id] = texture;
+                                }
+                            }
+                            else if (fields[0] == "type")
+                            {
+                                WearableType = (WearableType)Int32.Parse(fields[1]);
+                            }
+
+                        }
+                        else if (fields.Length == 2)
+                        {
+                            switch (fields[0])
+                            {
+                                case "creator_mask":
+                                    // Deprecated, apply this as the base mask
+                                    Permissions.BaseMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                                    break;
+                                case "base_mask":
+                                    Permissions.BaseMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                                    break;
+                                case "owner_mask":
+                                    Permissions.OwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                                    break;
+                                case "group_mask":
+                                    Permissions.GroupMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                                    break;
+                                case "everyone_mask":
+                                    Permissions.EveryoneMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                                    break;
+                                case "next_owner_mask":
+                                    Permissions.NextOwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
+                                    break;
+                                case "creator_id":
+                                    Creator = new UUID(fields[1]);
+                                    break;
+                                case "owner_id":
+                                    Owner = new UUID(fields[1]);
+                                    break;
+                                case "last_owner_id":
+                                    LastOwner = new UUID(fields[1]);
+                                    break;
+                                case "group_id":
+                                    Group = new UUID(fields[1]);
+                                    break;
+                                case "group_owned":
+                                    GroupOwned = (Int32.Parse(fields[1]) != 0);
+                                    break;
+                                case "sale_type":
+                                    ForSale = Utils.StringToSaleType(fields[1]);
+                                    break;
+                                case "sale_price":
+                                    SalePrice = Int32.Parse(fields[1]);
+                                    break;
+                                case "sale_info":
+                                    // Container for sale_type and sale_price, ignore
+                                    break;
+                                default:
+                                    return false;
                             }
                         }
-                        else if (fields[0] == "textures")
-                        {
-                            int count = Int32.Parse(fields[1]) + stri;
-                            for (; stri < count; )
-                            {
-                                stri++;
-                                line = lines[stri].Trim();
-                                fields = line.Split(' ');
-
-                                AvatarTextureIndex id = (AvatarTextureIndex)Int32.Parse(fields[0]);
-                                UUID texture = new UUID(fields[1]);
-
-                                Textures[id] = texture;
-                            }
-                        }
-                        else if (fields[0] == "type")
-                        {
-                            WearableType = (WearableType)Int32.Parse(fields[1]);
-                        }
-
-                    }
-                    else if (fields.Length == 2)
-                    {
-                        switch (fields[0])
-                        {
-                            case "creator_mask":
-                                // Deprecated, apply this as the base mask
-                                Permissions.BaseMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                                break;
-                            case "base_mask":
-                                Permissions.BaseMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                                break;
-                            case "owner_mask":
-                                Permissions.OwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                                break;
-                            case "group_mask":
-                                Permissions.GroupMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                                break;
-                            case "everyone_mask":
-                                Permissions.EveryoneMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                                break;
-                            case "next_owner_mask":
-                                Permissions.NextOwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
-                                break;
-                            case "creator_id":
-                                Creator = new UUID(fields[1]);
-                                break;
-                            case "owner_id":
-                                Owner = new UUID(fields[1]);
-                                break;
-                            case "last_owner_id":
-                                LastOwner = new UUID(fields[1]);
-                                break;
-                            case "group_id":
-                                Group = new UUID(fields[1]);
-                                break;
-                            case "group_owned":
-                                GroupOwned = (Int32.Parse(fields[1]) != 0);
-                                break;
-                            case "sale_type":
-                                ForSale = Utils.StringToSaleType(fields[1]);
-                                break;
-                            case "sale_price":
-                                SalePrice = Int32.Parse(fields[1]);
-                                break;
-                            case "sale_info":
-                                // Container for sale_type and sale_price, ignore
-                                break;
-                            default:
-                                return false;
-                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Failed decoding wearable asset " + this.AssetID + ": " + ex.Message,
+                    Helpers.LogLevel.Warning);
+                return false;
             }
 
             return true;

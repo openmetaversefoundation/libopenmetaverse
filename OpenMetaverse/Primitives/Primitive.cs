@@ -769,7 +769,7 @@ namespace OpenMetaverse
                 Buffer.BlockCopy(prim.ScratchPad, 0, ScratchPad, 0, ScratchPad.Length);
             }
             else
-                ScratchPad = null;
+                ScratchPad = Utils.EmptyBytes;
             Position = prim.Position;
             Scale = prim.Scale;
             Rotation = prim.Rotation;

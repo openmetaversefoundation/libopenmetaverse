@@ -234,7 +234,7 @@ namespace OpenMetaverse
         /// If true, utilization statistics will be tracked. There is a minor penalty
         /// in CPU time for enabling this option.
         /// </summary>
-        public bool TRACK_UTILIZATION = true;
+        public bool TRACK_UTILIZATION = false;
         #endregion
         #region Parcel Tracking
 
