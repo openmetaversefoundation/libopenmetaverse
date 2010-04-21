@@ -3997,7 +3997,7 @@ namespace OpenMetaverse.Messages.Linden
         /// <summary>
         /// Deserializes object from OSD
         /// </summary>
-        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        /// <param name="obj">An <see cref="OSDMap"/> containing the data</param>
         public virtual void Deserialize(OSDMap obj)
         {
             ID = obj["id"].AsUUID();
@@ -4132,7 +4132,7 @@ namespace OpenMetaverse.Messages.Linden
         /// <summary>
         /// Deserializes object from OSD
         /// </summary>
-        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        /// <param name="osd">An <see cref="OSDMap"/> containing the data</param>
         public override void Deserialize(OSDMap osd)
         {
             base.Deserialize(osd);
