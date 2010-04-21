@@ -127,7 +127,12 @@ namespace OpenMetaverse.Assets
                                     line = lines[stri].Trim();
                                     fields = line.Split(' ');
 
-                                    int id = Int32.Parse(fields[0]);
+                                    int id = 0;
+
+                                    // Special handling for -0 edge case
+                                    if (fields[0] != "-0")
+                                        id = Int32.Parse(fields[0]);
+
                                     if (fields[1] == ",")
                                         fields[1] = "0";
                                     else

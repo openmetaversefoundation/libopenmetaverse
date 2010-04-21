@@ -458,7 +458,7 @@ namespace OpenMetaverse
     /// <summary>
     /// Parcel of land, a portion of virtual real estate in a simulator
     /// </summary>
-    public struct Parcel
+    public class Parcel
     {
         /// <summary>The total number of contiguous 4x4 meter blocks your agent owns within this parcel</summary>        
         public int SelfCount;
@@ -590,52 +590,14 @@ namespace OpenMetaverse
         public Parcel(int localID)
         {
             LocalID = localID;
-            SelfCount = 0;
-            OtherCount = 0;
-            PublicCount = 0;
-            OwnerID = UUID.Zero;
-            IsGroupOwned = false;
-            AuctionID = 0;
             ClaimDate = Utils.Epoch;
-            ClaimPrice = 0;
-            RentPrice = 0;
-            AABBMin = Vector3.Zero;
-            AABBMax = Vector3.Zero;
             Bitmap = Utils.EmptyBytes;
-            Area = 0;
-            Status = ParcelStatus.None;
-            SimWideMaxPrims = 0;
-            SimWideTotalPrims = 0;
-            MaxPrims = 0;
-            TotalPrims = 0;
-            OwnerPrims = 0;
-            GroupPrims = 0;
-            OtherPrims = 0;
-            ParcelPrimBonus = 0;
-            OtherCleanTime = 0;
-            Flags = ParcelFlags.None;
-            SalePrice = 0;
             Name = String.Empty;
             Desc = String.Empty;
             MusicURL = String.Empty;
-            GroupID = UUID.Zero;
-            PassPrice = 0;
-            PassHours = 0;
-            Category = ParcelCategory.None;
-            AuthBuyerID = UUID.Zero;
-            SnapshotID = UUID.Zero;
-            UserLocation = Vector3.Zero;
-            UserLookAt = Vector3.Zero;
-            Landing = LandingType.None;
-            Dwell = 0;
-            RegionDenyAnonymous = false;
-            RegionPushOverride = false;
-            AccessWhiteList = new List<ParcelManager.ParcelAccessEntry>();
+            AccessWhiteList = new List<ParcelManager.ParcelAccessEntry>(0);
             AccessBlackList = new List<ParcelManager.ParcelAccessEntry>(0);
-            RegionDenyAgeUnverified = false;
             Media = new ParcelMedia();
-            ObscureMedia = false;
-            ObscureMusic = false;
         }
 
         /// <summary>
@@ -990,10 +952,9 @@ namespace OpenMetaverse
         }
         #endregion Delegates
 
-
         private GridClient Client;
-
         private AutoResetEvent WaitForSimParcel;
+
         #region Public Methods
 
         /// <summary>
@@ -1451,7 +1412,7 @@ namespace OpenMetaverse
                 y = (int)p.AABBMax.Y - (int)p.AABBMin.Y / 2;
             }
 
-            if (!Client.Terrain.TerrainHeightAtPoint(simulator.Handle, x, y, out height))
+            if (!simulator.TerrainHeightAtPoint(x, y, out height))
             {
                 Logger.Log("Land Patch not stored for location", Helpers.LogLevel.Warning, Client);
                 return false;

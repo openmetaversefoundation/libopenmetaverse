@@ -1413,13 +1413,15 @@ namespace OpenMetaverse
         private static string GetMAC()
         {
             string mac = String.Empty;
-            System.Net.NetworkInformation.NetworkInterface[] nics = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
 
+#if USE_NIC
+            System.Net.NetworkInformation.NetworkInterface[] nics = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
             if (nics.Length > 0)
                 mac = nics[0].GetPhysicalAddress().ToString().ToUpper();
+#endif
 
             if (mac.Length < 12)
-                mac = "000000000000";
+                mac = UUID.Random().ToString().Substring(24, 12);
 
             return String.Format("{0}:{1}:{2}:{3}:{4}:{5}",
                 mac.Substring(0, 2),

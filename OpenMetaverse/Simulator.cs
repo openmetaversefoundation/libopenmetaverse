@@ -353,6 +353,10 @@ namespace OpenMetaverse
         /// </summary>
         public InternalDictionary<uint, Primitive> ObjectsPrimitives = new InternalDictionary<uint, Primitive>();
 
+        public readonly TerrainPatch[] Terrain;
+
+        public readonly Vector2[] WindSpeeds;
+
         /// <summary>The current sequence number for packets sent to this
         /// simulator. Must be Interlocked before modifying. Only
         /// useful for applications manipulating sequence numbers</summary>
@@ -466,6 +470,12 @@ namespace OpenMetaverse
             PacketArchive = new IncomingPacketIDCollection(Settings.PACKET_ARCHIVE_SIZE);
             InBytes = new Queue<long>(Client.Settings.STATS_QUEUE_SIZE);
             OutBytes = new Queue<long>(Client.Settings.STATS_QUEUE_SIZE);
+
+            if (client.Settings.STORE_LAND_PATCHES)
+            {
+                Terrain = new TerrainPatch[16 * 16];
+                WindSpeeds = new Vector2[16 * 16];
+            }
         }
 
         /// <summary>
@@ -657,6 +667,35 @@ namespace OpenMetaverse
             resume.AgentData.SerialNum = (uint)Interlocked.Exchange(ref pauseSerial, pauseSerial + 1);
 
             Client.Network.SendPacket(resume, this);
+        }
+
+        /// <summary>
+        /// Retrieve the terrain height at a given coordinate
+        /// </summary>
+        /// <param name="x">Sim X coordinate, valid range is from 0 to 255</param>
+        /// <param name="y">Sim Y coordinate, valid range is from 0 to 255</param>
+        /// <param name="height">The terrain height at the given point if the
+        /// lookup was successful, otherwise 0.0f</param>
+        /// <returns>True if the lookup was successful, otherwise false</returns>
+        public bool TerrainHeightAtPoint(int x, int y, out float height)
+        {
+            if (Terrain != null && x >= 0 && x < 256 && y >= 0 && y < 256)
+            {
+                int patchX = x / 16;
+                int patchY = y / 16;
+                x = x % 16;
+                y = y % 16;
+
+                TerrainPatch patch = Terrain[patchY * 16 + patchX];
+                if (patch != null)
+                {
+                    height = patch.Data[y * 16 + x];
+                    return true;
+                }
+            }
+
+            height = 0.0f;
+            return false;
         }
 
         #region Packet Sending

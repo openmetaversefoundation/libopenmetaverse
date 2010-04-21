@@ -101,15 +101,10 @@ namespace Heightmap
                     if (Boxes[x, y] == sender)
                     {
                         float height;
-                        if (Client.Terrain.TerrainHeightAtPoint(Client.Network.CurrentSim.Handle,
-                            x * 16 + e.X, y * 16 + e.Y, out height))
-                        {
+                        if (Client.Network.CurrentSim.TerrainHeightAtPoint(x * 16 + e.X, y * 16 + e.Y, out height))
                             MessageBox.Show( string.Format("{0},{1}:{2}",x*16+e.X,255-(y*16+e.Y),height) );
-                        }
                         else
-                        {
                             MessageBox.Show("Unknown height");
-                        }
                         return;
                     }
                 }

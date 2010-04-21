@@ -57,9 +57,6 @@ namespace OpenMetaverse
         }
         #endregion
 
-        public InternalDictionary<ulong, TerrainPatch[]> SimPatches = new InternalDictionary<ulong, TerrainPatch[]>();
-        public InternalDictionary<ulong, Vector2[]> WindSpeeds = new InternalDictionary<ulong, Vector2[]>();
-
         private GridClient Client;
 
         /// <summary>
@@ -70,44 +67,6 @@ namespace OpenMetaverse
         {
             Client = client;
             Client.Network.RegisterCallback(PacketType.LayerData, LayerDataHandler);
-        }
-
-        /// <summary>
-        /// Retrieve the terrain height at a given coordinate
-        /// </summary>
-        /// <param name="regionHandle">The region that the point of interest is in</param>
-        /// <param name="x">Sim X coordinate, valid range is from 0 to 255</param>
-        /// <param name="y">Sim Y coordinate, valid range is from 0 to 255</param>
-        /// <param name="height">The terrain height at the given point if the
-        /// lookup was successful, otherwise 0.0f</param>
-        /// <returns>True if the lookup was successful, otherwise false</returns>
-        public bool TerrainHeightAtPoint(ulong regionHandle, int x, int y, out float height)
-        {
-            if (x >= 0 && x < 256 && y >= 0 && y < 256)
-            {
-                TerrainPatch[] found;
-                lock (SimPatches.Dictionary)
-                {
-                    if (!SimPatches.TryGetValue(regionHandle, out found))
-                    {
-                        height = 0.0f;
-                        return false;
-                    }
-                }
-                int patchX = x / 16;
-                int patchY = y / 16;
-                x = x % 16;
-                y = y % 16;
-                TerrainPatch patch = found[patchY * 16 + patchX];
-                if (patch != null)
-                {
-                    height = patch.Data[y * 16 + x];
-                    return true;
-                }
-            }
-
-            height = 0.0f;
-            return false;
         }
 
         private void DecompressLand(Simulator simulator, BitPack bitpack, TerrainPatch.GroupHeader group)
@@ -149,19 +108,11 @@ namespace OpenMetaverse
 
                 if (Client.Settings.STORE_LAND_PATCHES)
                 {
-                    TerrainPatch[] found;
-                    lock (SimPatches.Dictionary)
-                        if (!SimPatches.TryGetValue(simulator.Handle, out found))
-                        {
-                            found = new TerrainPatch[16 * 16];
-                            SimPatches.Add(simulator.Handle, found);
-                        }
                     TerrainPatch patch = new TerrainPatch();
                     patch.Data = heightmap;
                     patch.X = x;
                     patch.Y = y;
-                    found[y * 16 + x] = patch;
-
+                    simulator.Terrain[y * 16 + x] = patch;
                 }
             }
         }
@@ -188,17 +139,12 @@ namespace OpenMetaverse
             header = TerrainCompressor.DecodePatchHeader(bitpack);
             TerrainCompressor.DecodePatch(patches, bitpack, header, group.PatchSize);
             float[] yvalues = TerrainCompressor.DecompressPatch(patches, header, group);
-            ulong handle = simulator.Handle;
-            Vector2[] windSpeeds;
-            lock (WindSpeeds.Dictionary)
+
+            if (simulator.Client.Settings.STORE_LAND_PATCHES)
             {
-                if (!WindSpeeds.TryGetValue(handle, out windSpeeds))
-                {
-                    windSpeeds = WindSpeeds[handle] = new Vector2[256];
-                }
+                for (int i = 0; i < 256; i++)
+                    simulator.WindSpeeds[i] = new Vector2(xvalues[i], yvalues[i]);
             }
-            for (int i = 0; i < 256; i++)
-                windSpeeds[i] = new Vector2(xvalues[i], yvalues[i]);
         }
 
         private void DecompressCloud(Simulator simulator, BitPack bitpack, TerrainPatch.GroupHeader group)
