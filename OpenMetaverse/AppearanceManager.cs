@@ -1499,7 +1499,6 @@ namespace OpenMetaverse
             for (int i = 0; i < Textures.Length; i++)
             {
                 Textures[i].Texture = null;
-                Textures[i].TextureID = UUID.Zero;
             }
 
             // We just allocated and freed a ridiculous amount of memory while 
