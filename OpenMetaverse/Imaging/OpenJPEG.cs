@@ -336,15 +336,14 @@ namespace OpenMetaverse.Imaging
                         Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 3)), managedImage.Alpha, 0, n);
                         break;
 
-                    case 5: // RGBBA
+                    case 5: // RGBAB
                         managedImage = new ManagedImage(marshalled.width, marshalled.height,
                             ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha | ManagedImage.ImageChannels.Bump);
                         Marshal.Copy(marshalled.decoded, managedImage.Red, 0, n);
                         Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)n), managedImage.Green, 0, n);
                         Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 2)), managedImage.Blue, 0, n);
-                        // Bump comes before alpha in 5 channel encode
-                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 3)), managedImage.Bump, 0, n);
-                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 4)), managedImage.Alpha, 0, n);
+                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 3)), managedImage.Alpha, 0, n);
+                        Marshal.Copy((IntPtr)(marshalled.decoded.ToInt64() + (long)(n * 4)), managedImage.Bump, 0, n);
                         break;
 
                     default:
