@@ -3771,12 +3771,13 @@ namespace OpenMetaverse
         /// <param name="simulator"></param>
         protected void ChatterBoxSessionStartReplyEventHandler(string capsKey, IMessage message, Simulator simulator)
         {
-            if (m_GroupChatJoined != null)
-            {
-                ChatterBoxSessionStartReplyMessage msg = (ChatterBoxSessionStartReplyMessage)message;
+            ChatterBoxSessionStartReplyMessage msg = (ChatterBoxSessionStartReplyMessage)message;
 
-                OnGroupChatJoined(new GroupChatJoinedEventArgs(msg.SessionID, msg.SessionName, msg.TempSessionID, msg.Success));
-            }
+            lock (GroupChatSessions.Dictionary)
+                if (!GroupChatSessions.ContainsKey(msg.SessionID))
+                    GroupChatSessions.Add(msg.SessionID, new List<ChatSessionMember>());
+
+            OnGroupChatJoined(new GroupChatJoinedEventArgs(msg.SessionID, msg.SessionName, msg.TempSessionID, msg.Success));
         }
 
         /// <summary>
