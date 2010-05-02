@@ -4,9 +4,6 @@ Function .onInit
 SetOutPath $TEMP
   File /oname=spltmp.bmp "InstallSplash.bmp"
 
-; optional
- File /oname=spltmp.wav "libomv-chiptune-mono.wav"
-
   splash::show 2500 $TEMP\spltmp
 
   Pop $0 ; $0 has '1' if the user closed the splash screen early,
@@ -49,7 +46,7 @@ FunctionEnd
 !define PRODUCT_NAME "OpenMetaverse"
 !define PRODUCT_VERSION "$PRODUCT_MAJOR.$PRODUCT_MINOR.$PRODUCT_RELEASE (build $PRODUCT_BUILD)"
 !define PRODUCT_PUBLISHER "OpenMetaverse Ninjas"
-!define PRODUCT_WEB_SITE "http://www.libsecondlife.org/"
+!define PRODUCT_WEB_SITE "http://www.openmetaverse.org/"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\OpenMetaverse.dll"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
@@ -120,14 +117,18 @@ Section "!Base Libraries" SEC01
   File "..\bin\openjpeg-dotnet-x86_64.dll"
   File "..\bin\OpenMetaverse.dll"
   File "..\bin\OpenMetaverse.GUI.dll"
-  File "..\bin\OpenMetaverse.Http.dll"
   File "..\bin\OpenMetaverse.StructuredData.dll"
   File "..\bin\OpenMetaverse.Utilities.dll"
   File "..\bin\OpenMetaverseTypes.dll"
   File "..\bin\OpenMetaverse.dll.config"
+  File "..\bin\OpenMetaverse.Rendering.Simple.dll"
+  File "..\bin\OpenMetaverse.Rendering.Meshmerizer.dll"
   File "..\README.txt"
   File "..\License.txt"
   File "..\bin\XMLRPC.dll"
+  
+  SetOutPath "$INSTDIR\bin\openmetaverse_data"
+  File /r "..\bin\openmetaverse_data\*.*"
 SectionEnd
 
 Section "API Documentation" SEC02
@@ -205,6 +206,9 @@ Section Uninstall
 
   Delete "$INSTDIR\docs\*"
   RMDir "$INSTDIR\docs"
+
+  Delete "$INSTDIR\bin\openmetaverse_data\*"
+  RMDir "$INSTDIR\bin\openmetaverse_data"
 
   Delete "$INSTDIR\bin\*"
   RMDir "$INSTDIR\bin"
