@@ -437,9 +437,16 @@ namespace GridProxy
 
             private bool ReadMore()
             {
-                int n = netStream.Read(buf, bufFill, BUF_SIZE - bufFill);
-                bufFill += n;
-                return n > 0;
+                try
+                {
+                    int n = netStream.Read(buf, bufFill, BUF_SIZE - bufFill);
+                    bufFill += n;
+                    return n > 0;
+                }
+                catch
+                {
+                    return false;
+                }
             }
 
             public int Read(byte[] rbuf, int start, int len)
@@ -663,6 +670,25 @@ namespace GridProxy
                     else if (header == "content-type")
                     {
                         req.ContentType = headers["content-type"];
+                    }
+                    else if (header == "range")
+                    {
+                        string rangeHeader = headers[header];
+                        string[] parts = rangeHeader.Split('=');
+                        if (parts.Length == 2)
+                        {
+                            string[] range = parts[1].Split('-');
+                            if (range.Length == 2)
+                            {
+                                int from;
+                                int to;
+                                if (int.TryParse(range[0], out from)
+                                    && int.TryParse(range[1], out to))
+                                {
+                                    req.AddRange(parts[0], 0, 0);
+                                }
+                            }
+                        }
                     }
                     else
                     {
