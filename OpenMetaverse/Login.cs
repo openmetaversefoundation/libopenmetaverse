@@ -69,7 +69,7 @@ namespace OpenMetaverse
     /// <summary>
     /// Login Request Parameters
     /// </summary>
-    public struct LoginParams
+    public class LoginParams
     {
         /// <summary>The URL of the Login Server</summary>
         public string URI;
@@ -121,6 +121,77 @@ namespace OpenMetaverse
         /// <summary>A randomly generated ID to distinguish between login attempts. This value is only used
         /// internally in the library and is never sent over the wire</summary>
         internal UUID LoginID;
+
+        /// <summary>
+        /// Default constuctor, initializes sane default values
+        /// </summary>
+        public LoginParams()
+        {
+            List<string> options = new List<string>(16);
+            options.Add("inventory-root");
+            options.Add("inventory-skeleton");
+            options.Add("inventory-lib-root");
+            options.Add("inventory-lib-owner");
+            options.Add("inventory-skel-lib");
+            options.Add("initial-outfit");
+            options.Add("gestures");
+            options.Add("event_categories");
+            options.Add("event_notifications");
+            options.Add("classified_categories");
+            options.Add("buddy-list");
+            options.Add("ui-config");
+            options.Add("tutorial_settings");
+            options.Add("login-flags");
+            options.Add("global-textures");
+            options.Add("adult_compliant");
+
+            this.Options = options.ToArray();
+            this.MethodName = "login_to_simulator";
+            this.Start = "last";
+            this.Platform = NetworkManager.GetPlatform();
+            this.MAC = NetworkManager.GetMAC();
+            this.ViewerDigest = String.Empty;
+            this.ID0 = NetworkManager.GetMAC();
+            this.AgreeToTos = true;
+            this.ReadCritical = true;
+        }
+
+        /// <summary>
+        /// Instantiates new LoginParams object and fills in the values
+        /// </summary>
+        /// <param name="client">Instance of GridClient to read settings from</param>
+        /// <param name="firstName">Login first name</param>
+        /// <param name="lastName">Login last name</param>
+        /// <param name="password">Password</param>
+        /// <param name="channel">Login channnel (application name)</param>
+        /// <param name="version">Client version, should be application name + version number</param>
+        public LoginParams(GridClient client, string firstName, string lastName, string password, string channel, string version)
+            : this()
+        {
+            this.URI = client.Settings.LOGIN_SERVER;
+            this.Timeout = client.Settings.LOGIN_TIMEOUT;
+            this.FirstName = firstName;
+            this.LastName = lastName;
+            this.Password = password;
+            this.Channel = channel;
+            this.Version = version;
+        }
+
+        /// <summary>
+        /// Instantiates new LoginParams object and fills in the values
+        /// </summary>
+        /// <param name="client">Instance of GridClient to read settings from</param>
+        /// <param name="firstName">Login first name</param>
+        /// <param name="lastName">Login last name</param>
+        /// <param name="password">Password</param>
+        /// <param name="channel">Login channnel (application name)</param>
+        /// <param name="version">Client version, should be application name + version number</param>
+        /// <param name="loginURI">URI of the login server</param>
+        public LoginParams(GridClient client, string firstName, string lastName, string password, string channel, string version, string loginURI)
+            : this(client, firstName, lastName, password, channel, version)
+        {
+            this.URI = loginURI;
+        }
     }
 
     public struct BuddyListEntry
@@ -738,7 +809,7 @@ namespace OpenMetaverse
         #endregion
 
         #region Private Members
-        private LoginParams? CurrentContext = null;
+        private LoginParams CurrentContext = null;
         private AutoResetEvent LoginEvent = new AutoResetEvent(false);
         private LoginStatus InternalStatusCode = LoginStatus.None;
         private string InternalErrorKey = String.Empty;
@@ -766,45 +837,7 @@ namespace OpenMetaverse
         public LoginParams DefaultLoginParams(string firstName, string lastName, string password,
             string userAgent, string userVersion)
         {
-            List<string> options = new List<string>(16);
-            options.Add("inventory-root");
-            options.Add("inventory-skeleton");
-            options.Add("inventory-lib-root");
-            options.Add("inventory-lib-owner");
-            options.Add("inventory-skel-lib");
-            options.Add("initial-outfit");
-            options.Add("gestures");
-            options.Add("event_categories");
-            options.Add("event_notifications");
-            options.Add("classified_categories");
-            options.Add("buddy-list");
-            options.Add("ui-config");
-            options.Add("tutorial_settings");
-            options.Add("login-flags");
-            options.Add("global-textures");
-            options.Add("adult_compliant");
-
-            LoginParams loginParams = new LoginParams();
-            if (Client == null)
-                throw new NullReferenceException("GridClient must be instantiated before calling DefaultLoginParams()");
-
-            loginParams.URI = Client.Settings.LOGIN_SERVER;
-            loginParams.Timeout = Client.Settings.LOGIN_TIMEOUT;
-            loginParams.MethodName = "login_to_simulator";
-            loginParams.FirstName = firstName;
-            loginParams.LastName = lastName;
-            loginParams.Password = password;
-            loginParams.Start = "last";
-            loginParams.Channel = userAgent;
-            loginParams.Version = userVersion;
-            loginParams.Platform = GetPlatform();
-            loginParams.MAC = GetMAC();
-            loginParams.ViewerDigest = String.Empty;
-            loginParams.Options = options.ToArray();
-            loginParams.ID0 = GetMAC();
-            loginParams.AgreeToTos = true;
-            loginParams.ReadCritical = true;
-            return loginParams;
+            return new LoginParams(Client, firstName, lastName, password, userAgent, userVersion);
         }
 
         /// <summary>
@@ -924,7 +957,7 @@ namespace OpenMetaverse
 
         private void BeginLogin()
         {
-            LoginParams loginParams = CurrentContext.Value;
+            LoginParams loginParams = CurrentContext;
             // Generate a random ID to identify this login attempt
             loginParams.LoginID = UUID.Random();
             CurrentContext = loginParams;
@@ -1067,7 +1100,7 @@ namespace OpenMetaverse
                 {
                     ArrayList loginArray = new ArrayList(1);
                     loginArray.Add(loginXmlRpc);
-                    XmlRpcRequest request = new XmlRpcRequest(CurrentContext.Value.MethodName, loginArray);
+                    XmlRpcRequest request = new XmlRpcRequest(CurrentContext.MethodName, loginArray);
 
                     // Start the request
                     Thread requestThread = new Thread(
@@ -1076,7 +1109,7 @@ namespace OpenMetaverse
                             try
                             {
                                 LoginReplyXmlRpcHandler(
-                                    request.Send(CurrentContext.Value.URI, CurrentContext.Value.Timeout),
+                                    request.Send(CurrentContext.URI, CurrentContext.Timeout),
                                     loginParams);
                             }
                             catch (WebException e)
@@ -1138,7 +1171,7 @@ namespace OpenMetaverse
             try
             {
                 reply.Parse((Hashtable)response.Value);
-                if (context.LoginID != CurrentContext.Value.LoginID)
+                if (context.LoginID != CurrentContext.LoginID)
                 {
                     Logger.Log("Login response does not match login request. Only one login can be attempted at a time",
                         Helpers.LogLevel.Error);
@@ -1222,7 +1255,7 @@ namespace OpenMetaverse
             if (redirect)
             {
                 UpdateLoginStatus(LoginStatus.Redirecting, "Redirecting login...");
-                LoginParams loginParams = CurrentContext.Value;
+                LoginParams loginParams = CurrentContext;
                 loginParams.URI = reply.NextUrl;
                 loginParams.MethodName = reply.NextMethod;
                 loginParams.Options = reply.NextOptions;
@@ -1299,7 +1332,7 @@ namespace OpenMetaverse
                             // Make the next login URL jump
                             UpdateLoginStatus(LoginStatus.Redirecting, data.Message);
 
-                            LoginParams loginParams = CurrentContext.Value;
+                            LoginParams loginParams = CurrentContext;
                             loginParams.URI = LoginResponseData.ParseString("next_url", map);
                             //CurrentContext.Params.MethodName = LoginResponseData.ParseString("next_method", map);
 
@@ -1395,7 +1428,7 @@ namespace OpenMetaverse
         /// Get current OS
         /// </summary>
         /// <returns>Either "Win" or "Linux"</returns>
-        private static string GetPlatform()
+        public static string GetPlatform()
         {
             switch (Environment.OSVersion.Platform)
             {
@@ -1410,7 +1443,7 @@ namespace OpenMetaverse
         /// Get clients default Mac Address
         /// </summary>
         /// <returns>A string containing the first found Mac Address</returns>
-        private static string GetMAC()
+        public static string GetMAC()
         {
             string mac = String.Empty;
 
