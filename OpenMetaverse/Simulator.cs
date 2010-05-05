@@ -122,6 +122,8 @@ namespace OpenMetaverse
         PG = 13,
         /// <summary>Mature rating</summary>
         Mature = 21,
+        /// <summary>Adult rating</summary>
+        Adult = 42,
         /// <summary>Simulator is offline</summary>
         Down = 254,
         /// <summary>Simulator does not exist</summary>
