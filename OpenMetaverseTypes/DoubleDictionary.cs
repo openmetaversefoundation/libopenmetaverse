@@ -236,17 +236,16 @@ namespace OpenMetaverse
         public TValue FindValue(Predicate<TValue> predicate)
         {
             rwLock.EnterReadLock();
-
-            foreach (TValue value in Dictionary1.Values)
+            try
             {
-                if (predicate(value))
+                foreach (TValue value in Dictionary1.Values)
                 {
-                    rwLock.ExitReadLock();
-                    return value;
+                    if (predicate(value))
+                        return value;
                 }
             }
+            finally { rwLock.ExitReadLock(); }
 
-            rwLock.ExitReadLock();
             return default(TValue);
         }
 
