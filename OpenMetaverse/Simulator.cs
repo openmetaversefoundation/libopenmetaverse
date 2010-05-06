@@ -344,7 +344,12 @@ namespace OpenMetaverse
         /// </list>
         /// </remarks>
         public string ProductSku;
-            
+
+        /// <summary>The current sequence number for packets sent to this
+        /// simulator. Must be Interlocked before modifying. Only
+        /// useful for applications manipulating sequence numbers</summary>
+        public int Sequence;
+        
         /// <summary>
         /// A thread-safe dictionary containing avatars in a simulator        
         /// </summary>
@@ -358,11 +363,6 @@ namespace OpenMetaverse
         public readonly TerrainPatch[] Terrain;
 
         public readonly Vector2[] WindSpeeds;
-
-        /// <summary>The current sequence number for packets sent to this
-        /// simulator. Must be Interlocked before modifying. Only
-        /// useful for applications manipulating sequence numbers</summary>
-        public int Sequence;
 
         /// <summary>
         /// Provides access to an internal thread-safe dictionary containing parcel
