@@ -1689,6 +1689,10 @@ namespace OpenMetaverse
 
                 CapsClient request = new CapsClient(url);
                 request.BeginGetResponse(acceptInvite.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+
+                lock (GroupChatSessions.Dictionary)
+                    if (!GroupChatSessions.ContainsKey(session_id))
+                        GroupChatSessions.Add(session_id, new List<ChatSessionMember>());
             }
             else
             {
@@ -3773,9 +3777,12 @@ namespace OpenMetaverse
         {
             ChatterBoxSessionStartReplyMessage msg = (ChatterBoxSessionStartReplyMessage)message;
 
-            lock (GroupChatSessions.Dictionary)
-                if (!GroupChatSessions.ContainsKey(msg.SessionID))
-                    GroupChatSessions.Add(msg.SessionID, new List<ChatSessionMember>());
+            if (msg.Success)
+            {
+                lock (GroupChatSessions.Dictionary)
+                    if (!GroupChatSessions.ContainsKey(msg.SessionID))
+                        GroupChatSessions.Add(msg.SessionID, new List<ChatSessionMember>());
+            }
 
             OnGroupChatJoined(new GroupChatJoinedEventArgs(msg.SessionID, msg.SessionName, msg.TempSessionID, msg.Success));
         }
@@ -3894,7 +3901,14 @@ namespace OpenMetaverse
                 im.Message = msg.Message;
                 im.Offline = msg.Offline;
                 im.BinaryBucket = msg.BinaryBucket;
-
+                try
+                {
+                    ChatterBoxAcceptInvite(msg.IMSessionID);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log("Failed joining IM:", Helpers.LogLevel.Warning, Client, ex);
+                }
                 OnInstantMessage(new InstantMessageEventArgs(im, simulator));
             }
         }
