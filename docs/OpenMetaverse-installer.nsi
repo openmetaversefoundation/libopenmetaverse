@@ -134,7 +134,7 @@ SectionEnd
 Section "API Documentation" SEC02
   SetOutPath "$INSTDIR\docs"
 ;  CreateDirectory "$SMPROGRAMS\OpenMetaverse\libomv\docs"
-  File "trunk\OpenMetaverse.chm"
+  File "0.8\OpenMetaverse.chm"
   File "..\README.txt"
   CreateShortCut "$SMPROGRAMS\OpenMetaverse\libomv\README.lnk" "$INSTDIR\docs\README.txt"
   SetOutPath "$INSTDIR\bin"
