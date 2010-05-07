@@ -1,16 +1,16 @@
-OpenMetaverse Library Quick Start
+libOpenMetaverse Library Quick Start
 
 
 Finding Help
 ------------
 
 If you need any help we have a couple of resources, the primary one being 
-the #libomv IRC channel on EFNet. There is also the libsl-dev mailing list 
-at http://openmetaverse.org/cgi-bin/mailman/listinfo/libsl-dev and lastly 
-you can use the e-mail contact@openmv.org for any general inquiries 
-(although we prefer developer-related questions to go to IRC or the mailing 
-list). You can find us in-world via the open invitation libsecondlife group 
-or at our HQ and testing area in Hooper (SLURL: http://xrl.us/bi233).
+the #libomv IRC channel on EFNet. There is also the libomv-dev mailing list 
+at http://groups.google.com/group/libomv-dev and lastly you can use the e-mail 
+contact@openmv.org for any general inquiries (although we prefer 
+developer-related questions to go to IRC or the mailing list). You can find us 
+in-world via the open invitation libsecondlife group or at our HQ and testing 
+area in Hooper (SLURL: http://slurl.com/secondlife/Hooper/192/43/25/).
 
 Source Code:
    To checkout a copy of libopenmv trunk
