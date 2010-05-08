@@ -457,26 +457,32 @@ namespace OpenMetaverse
         /// was not successfully loaded</returns>
         public static System.IO.Stream GetResourceStream(string resourceName, string searchPath)
         {
-            try
+            if (searchPath != null)
             {
-                System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
-                System.IO.Stream s = a.GetManifestResourceStream("OpenMetaverse.Resources." + resourceName);
-                if (s != null) return s;
+                string filename = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), searchPath), resourceName);
+                try
+                {
+                    return new System.IO.FileStream(
+                        filename,
+                        System.IO.FileMode.Open);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(string.Format("Failed opening resource from file {0}: {1}", filename, ex.Message), LogLevel.Error);
+                }
             }
-            catch (Exception)
+            else
             {
-                // Failed to load the resource from the assembly itself
-            }
-
-            try
-            {
-                return new System.IO.FileStream(
-                    System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), searchPath), resourceName),
-                    System.IO.FileMode.Open);
-            }
-            catch (Exception)
-            {
-                // Failed to load the resource from the given path
+                try
+                {
+                    System.Reflection.Assembly a = System.Reflection.Assembly.GetExecutingAssembly();
+                    System.IO.Stream s = a.GetManifestResourceStream("OpenMetaverse.Resources." + resourceName);
+                    if (s != null) return s;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(string.Format("Failed opening resource stream: {0}", ex.Message), LogLevel.Error);
+                }
             }
 
             return null;
