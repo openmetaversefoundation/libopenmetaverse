@@ -464,7 +464,7 @@ namespace OpenMetaverse
                 {
                     return new System.IO.FileStream(
                         filename,
-                        System.IO.FileMode.Open);
+                        System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
                 }
                 catch (Exception ex)
                 {
