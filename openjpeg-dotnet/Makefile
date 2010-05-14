@@ -23,7 +23,7 @@ ifeq ($(OSNAME), Linux)
     ARCHSET=1
   endif
   ifeq ($(ARCH), s390x)
-    ARCH=-s390x 
+    ARCH=-s390x
     ARCHFLAGS=-m64
     ARCHSET=1
   endif
