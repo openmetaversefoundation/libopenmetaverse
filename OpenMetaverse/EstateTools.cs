@@ -25,6 +25,8 @@
  */
 using System;
 using OpenMetaverse.Packets;
+using OpenMetaverse.Interfaces;
+using OpenMetaverse.Messages.Linden;
 using System.Collections.Generic;
 
 namespace OpenMetaverse
@@ -34,6 +36,7 @@ namespace OpenMetaverse
     {
         public Vector3 Position;
         public float Score;
+        public float MonoScore;
         public UUID TaskID;
         public uint TaskLocalID;
         public string TaskName;
@@ -66,6 +69,8 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.LandStatReply, LandStatReplyHandler);
             Client.Network.RegisterCallback(PacketType.EstateOwnerMessage, EstateOwnerMessageHandler);
             Client.Network.RegisterCallback(PacketType.EstateCovenantReply, EstateCovenantReplyHandler);
+
+            Client.Network.RegisterEventCallback("LandStatReply", new Caps.EventQueueCallback(LandStatCapsReplyHandler));
         }
 
         #region Enums
@@ -934,6 +939,36 @@ namespace OpenMetaverse
                 }
                 */
 
+            }
+        }
+
+        private void LandStatCapsReplyHandler(string capsKey, IMessage message, Simulator simulator)
+        {
+            LandStatReplyMessage m = (LandStatReplyMessage)message;
+            Dictionary<UUID, EstateTask> Tasks = new Dictionary<UUID, EstateTask>();
+
+            foreach (LandStatReplyMessage.ReportDataBlock rep in m.ReportDataBlocks)
+            {
+                EstateTask task = new EstateTask();
+                task.Position = rep.Location;
+                task.Score = rep.Score;
+                task.MonoScore = rep.MonoScore;
+                task.TaskID = rep.TaskID;
+                task.TaskLocalID = rep.TaskLocalID;
+                task.TaskName = rep.TaskName;
+                task.OwnerName = rep.OwnerName;
+                Tasks.Add(task.TaskID, task);
+            }
+
+            LandStatReportType type = (LandStatReportType)m.ReportType;
+
+            if (type == LandStatReportType.TopScripts)
+            {
+                OnTopScriptsReply(new TopScriptsReplyEventArgs((int)m.TotalObjectCount, Tasks)); 
+            }
+            else if (type == LandStatReportType.TopColliders)
+            {
+                OnTopCollidersReply(new TopCollidersReplyEventArgs((int)m.TotalObjectCount, Tasks)); 
             }
         }
         #endregion

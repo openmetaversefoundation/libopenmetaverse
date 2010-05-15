@@ -333,9 +333,9 @@ namespace OpenMetaverse.Messages.Linden
 
     public class LandStatReplyMessage : IMessage
     {
-        public int ReporType;
-        public int RequestFlags;
-        public int TotalObjectCount;
+        public uint ReportType;
+        public uint RequestFlags;
+        public uint TotalObjectCount;
 
         public class ReportDataBlock
         {
@@ -360,7 +360,7 @@ namespace OpenMetaverse.Messages.Linden
             OSDMap map = new OSDMap(3);
 
             OSDMap requestDataMap = new OSDMap(3);
-            requestDataMap["ReportType"] = OSD.FromInteger(this.ReporType);
+            requestDataMap["ReportType"] = OSD.FromInteger(this.ReportType);
             requestDataMap["RequestFlags"] = OSD.FromInteger(this.RequestFlags);
             requestDataMap["TotalObjectCount"] = OSD.FromInteger(this.TotalObjectCount);
 
@@ -405,9 +405,9 @@ namespace OpenMetaverse.Messages.Linden
             OSDArray requestDataArray = (OSDArray)map["RequestData"];
             OSDMap requestMap = (OSDMap)requestDataArray[0];
 
-            this.ReporType = requestMap["ReportType"].AsInteger();
-            this.RequestFlags = requestMap["RequestFlags"].AsInteger();
-            this.TotalObjectCount = requestMap["TotalObjectCount"].AsInteger();
+            this.ReportType = requestMap["ReportType"].AsUInteger();
+            this.RequestFlags = requestMap["RequestFlags"].AsUInteger();
+            this.TotalObjectCount = requestMap["TotalObjectCount"].AsUInteger();
 
             OSDArray dataArray = (OSDArray)map["ReportData"];
             OSDArray dataExtendedArray = (OSDArray)map["DataExtended"];
