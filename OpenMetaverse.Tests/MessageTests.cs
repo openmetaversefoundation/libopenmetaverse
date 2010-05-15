@@ -944,7 +944,7 @@ namespace OpenMetaverse.Tests
         public void LandStatReplyMessage()
         {
             LandStatReplyMessage s = new LandStatReplyMessage();
-            s.ReporType = 22;
+            s.ReportType = 22;
             s.RequestFlags = 44;
             s.TotalObjectCount = 2;
             s.ReportDataBlocks = new LandStatReplyMessage.ReportDataBlock[2];
@@ -976,7 +976,7 @@ namespace OpenMetaverse.Tests
             LandStatReplyMessage t = new LandStatReplyMessage();
             t.Deserialize(map);
 
-            Assert.AreEqual(s.ReporType, t.ReporType);
+            Assert.AreEqual(s.ReportType, t.ReportType);
             Assert.AreEqual(s.RequestFlags, t.RequestFlags);
             Assert.AreEqual(s.TotalObjectCount, t.TotalObjectCount);
 
