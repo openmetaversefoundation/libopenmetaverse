@@ -360,9 +360,9 @@ namespace OpenMetaverse.Messages.Linden
             OSDMap map = new OSDMap(3);
 
             OSDMap requestDataMap = new OSDMap(3);
-            requestDataMap["ReportType"] = OSD.FromInteger(this.ReportType);
-            requestDataMap["RequestFlags"] = OSD.FromInteger(this.RequestFlags);
-            requestDataMap["TotalObjectCount"] = OSD.FromInteger(this.TotalObjectCount);
+            requestDataMap["ReportType"] = OSD.FromUInteger(this.ReportType);
+            requestDataMap["RequestFlags"] = OSD.FromUInteger(this.RequestFlags);
+            requestDataMap["TotalObjectCount"] = OSD.FromUInteger(this.TotalObjectCount);
 
             OSDArray requestDatArray = new OSDArray();
             requestDatArray.Add(requestDataMap);
@@ -408,6 +408,12 @@ namespace OpenMetaverse.Messages.Linden
             this.ReportType = requestMap["ReportType"].AsUInteger();
             this.RequestFlags = requestMap["RequestFlags"].AsUInteger();
             this.TotalObjectCount = requestMap["TotalObjectCount"].AsUInteger();
+            
+            if(TotalObjectCount < 1)
+            {
+                ReportDataBlocks = new ReportDataBlock[0];
+                return;
+            }
 
             OSDArray dataArray = (OSDArray)map["ReportData"];
             OSDArray dataExtendedArray = (OSDArray)map["DataExtended"];
