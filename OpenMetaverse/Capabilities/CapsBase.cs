@@ -106,7 +106,7 @@ namespace OpenMetaverse.Http
 
         public static HttpWebRequest DownloadStringAsync(Uri address, X509Certificate2 clientCert, int millisecondsTimeout,
             DownloadProgressEventHandler downloadProgressCallback, RequestCompletedEventHandler completedCallback)
-		{
+        {
             // Create the request
             HttpWebRequest request = SetupRequest(address, clientCert);
             request.Method = "GET";
@@ -121,7 +121,7 @@ namespace OpenMetaverse.Http
             ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, TimeoutCallback, state, millisecondsTimeout, true);
 
             return request;
-		}
+        }
 
         static HttpWebRequest SetupRequest(Uri address, X509Certificate2 clientCert)
         {
@@ -188,10 +188,10 @@ namespace OpenMetaverse.Http
 
             try
             {
-                using (response = (HttpWebResponse)state.Request.EndGetResponse(ar))
+                response = (HttpWebResponse)state.Request.EndGetResponse(ar);
+                // Get the stream for downloading the response
+                using (Stream responseStream = response.GetResponseStream())
                 {
-                    // Get the stream for downloading the response
-                    Stream responseStream = response.GetResponseStream();
 
                     #region Read the response
 
@@ -226,6 +226,7 @@ namespace OpenMetaverse.Http
                     {
                         responseData = ms.ToArray();
                         ms.Close();
+                        ms.Dispose();
                     }
                     else
                     {
@@ -239,7 +240,7 @@ namespace OpenMetaverse.Http
             }
             catch (Exception ex)
             {
-                //Logger.Log.Debug("CapsBase.GetResponse(): " + ex.Message);
+                // Logger.DebugLog("CapsBase.GetResponse(): " + ex.Message);
                 error = ex;
             }
 
