@@ -803,7 +803,7 @@ namespace OpenMetaverse.StructuredData
 
         public override string ToString()
         {
-            return OSDParser.SerializeLLSDNotationFormatted(this);
+            return OSDParser.SerializeJsonString(this);
         }
 
         #region IDictionary Implementation
@@ -1035,7 +1035,7 @@ namespace OpenMetaverse.StructuredData
 
         public override string ToString()
         {
-            return OSDParser.SerializeLLSDNotationFormatted(this);
+            return OSDParser.SerializeJsonString(this);
         }
 
         #region IList Implementation
