@@ -58,27 +58,23 @@ namespace OpenMetaverse.Tests
             byte[] sBinary = Encoding.ASCII.GetBytes(s);
             MemoryStream stream = new MemoryStream(sBinary);
 
-            byte[] sFirstFind = Encoding.ASCII.GetBytes("this");
             stream.Position = 0L;
-            bool result = OSDParser.FindByteArray(stream, sFirstFind);
+            bool result = OSDParser.FindString(stream, "this");
             Assert.AreEqual(true, result);
             Assert.AreEqual(4L, stream.Position);
 
             stream.Position = 10L;
-            byte[] sSecondFind = Encoding.ASCII.GetBytes("teststring");
-            result = OSDParser.FindByteArray(stream, sSecondFind);
+            result = OSDParser.FindString(stream, "teststring");
             Assert.AreEqual(true, result);
             Assert.AreEqual(20L, stream.Position);
 
             stream.Position = 25L;
-            byte[] sThirdNotFind = Encoding.ASCII.GetBytes("notfound");
-            result = OSDParser.FindByteArray(stream, sThirdNotFind);
+            result = OSDParser.FindString(stream, "notfound");
             Assert.AreEqual(false, result);
             Assert.AreEqual(25L, stream.Position);
 
             stream.Position = 60L;
-            byte[] sFourthNotFound = Encoding.ASCII.GetBytes("beginningAndMore");
-            result = OSDParser.FindByteArray(stream, sFourthNotFound);
+            result = OSDParser.FindString(stream, "beginningAndMore");
             Assert.AreEqual(false, result);
             Assert.AreEqual(60L, stream.Position);
 

@@ -62,15 +62,20 @@ namespace OpenMetaverse.StructuredData
 
         public static string SerializeJsonString(OSD osd)
         {
-            return SerializeJson(osd).ToJson();
+            return SerializeJson(osd, false).ToJson();
         }
 
-        public static void SerializeJsonString(OSD osd, ref JsonWriter writer)
+        public static string SerializeJsonString(OSD osd, bool preserveDefaults)
         {
-            SerializeJson(osd).ToJson(writer);
+            return SerializeJson(osd, preserveDefaults).ToJson();
         }
 
-        public static JsonData SerializeJson(OSD osd)
+        public static void SerializeJsonString(OSD osd, bool preserveDefaults, ref JsonWriter writer)
+        {
+            SerializeJson(osd, preserveDefaults).ToJson(writer);
+        }
+
+        public static JsonData SerializeJson(OSD osd, bool preserveDefaults)
         {
             switch (osd.Type)
             {
@@ -97,7 +102,7 @@ namespace OpenMetaverse.StructuredData
                     jsonarray.SetJsonType(JsonType.Array);
                     OSDArray array = (OSDArray)osd;
                     for (int i = 0; i < array.Count; i++)
-                        jsonarray.Add(SerializeJson(array[i]));
+                        jsonarray.Add(SerializeJson(array[i], preserveDefaults));
                     return jsonarray;
                 case OSDType.Map:
                     JsonData jsonmap = new JsonData();
@@ -105,8 +110,13 @@ namespace OpenMetaverse.StructuredData
                     OSDMap map = (OSDMap)osd;
                     foreach (KeyValuePair<string, OSD> kvp in map)
                     {
-                        // Default values will not be serialized to the jsonmap
-                        JsonData data = SerializeJsonNoDefaults(kvp.Value);
+                        JsonData data;
+
+                        if (preserveDefaults)
+                            data = SerializeJson(kvp.Value, preserveDefaults);
+                        else
+                            data = SerializeJsonNoDefaults(kvp.Value);
+
                         if (data != null)
                             jsonmap[kvp.Key] = data;
                     }
@@ -168,7 +178,7 @@ namespace OpenMetaverse.StructuredData
                     jsonarray.SetJsonType(JsonType.Array);
                     OSDArray array = (OSDArray)osd;
                     for (int i = 0; i < array.Count; i++)
-                        jsonarray.Add(SerializeJson(array[i]));
+                        jsonarray.Add(SerializeJson(array[i], false));
                     return jsonarray;
                 case OSDType.Map:
                     JsonData jsonmap = new JsonData();
