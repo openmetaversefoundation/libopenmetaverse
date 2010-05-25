@@ -659,13 +659,17 @@ namespace GridProxy
                
                 foreach (string header in headers.Keys)
                 {
-                    if (header == "accept" || header == "connection" ||
+                    if (header == "connection" ||
                        header == "content-length" || header == "date" || header == "expect" ||
                        header == "host" || header == "if-modified-since" || header == "referer" ||
                        header == "transfer-encoding" || header == "user-agent" ||
                        header == "proxy-connection")
                     {
                         // can't touch these!
+                    }
+                    else if (header == "accept")
+                    {
+                        req.Accept = headers["accept"];
                     }
                     else if (header == "content-type")
                     {
@@ -695,14 +699,11 @@ namespace GridProxy
                         req.Headers[header] = headers[header];
                     }
                 }
-                if (capReq == null)
+                if (capReq != null)
                 {
-                    // this probably occured when we shut down the proxy and restarted it and are receiving
-                    // data from a dead connection
-                    return;
+                    capReq.RequestHeaders = req.Headers;
                 }
-                capReq.RequestHeaders = req.Headers;
-
+                
                 req.Method = meth;
                
                 // can't do gets on requests with a content body
@@ -717,9 +718,16 @@ namespace GridProxy
                 HttpWebResponse resp;
                 try
                 {
-                    Stream reqStream = req.GetRequestStream();
-                    reqStream.Write(content, 0, content.Length);
-                    reqStream.Close();
+                    if (content.Length > 0)
+                    {
+                        Stream reqStream = req.GetRequestStream();
+                        reqStream.Write(content, 0, content.Length);
+                        reqStream.Close();
+                    }
+                    else
+                    {
+                        OpenMetaverse.Logger.Log(string.Format("{0} {1}", req.Method, req.Address.ToString()), Helpers.LogLevel.Info);
+                    }
                     resp = (HttpWebResponse)req.GetResponse();
                 }
                 
