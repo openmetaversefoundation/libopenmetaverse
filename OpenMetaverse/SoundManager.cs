@@ -231,7 +231,7 @@ namespace OpenMetaverse
             {
                 AttachedSoundPacket sound = (AttachedSoundPacket)e.Packet;
 
-                OnAttachedSound(new AttachedSoundEventArgs(sound.DataBlock.SoundID, sound.DataBlock.OwnerID, sound.DataBlock.ObjectID, 
+                OnAttachedSound(new AttachedSoundEventArgs(e.Simulator, sound.DataBlock.SoundID, sound.DataBlock.OwnerID, sound.DataBlock.ObjectID, 
                     sound.DataBlock.Gain, (SoundFlags)sound.DataBlock.Flags));                
             }
         }
@@ -244,7 +244,7 @@ namespace OpenMetaverse
             if (m_AttachedSoundGainChange != null)
             {
                 AttachedSoundGainChangePacket change = (AttachedSoundGainChangePacket)e.Packet;
-                OnAttachedSoundGainChange(new AttachedSoundGainChangeEventArgs(change.DataBlock.ObjectID, change.DataBlock.Gain));                
+                OnAttachedSoundGainChange(new AttachedSoundGainChangeEventArgs(e.Simulator, change.DataBlock.ObjectID, change.DataBlock.Gain));                
             }
         }
 
@@ -259,7 +259,7 @@ namespace OpenMetaverse
 
                 foreach (PreloadSoundPacket.DataBlockBlock data in preload.DataBlock)
                 {
-                    OnPreloadSound(new PreloadSoundEventArgs(data.SoundID, data.OwnerID, data.ObjectID));                    
+                    OnPreloadSound(new PreloadSoundEventArgs(e.Simulator, data.SoundID, data.OwnerID, data.ObjectID));                    
                 }
             }
         }
@@ -272,7 +272,8 @@ namespace OpenMetaverse
             if (m_SoundTrigger != null)
             {
                 SoundTriggerPacket trigger = (SoundTriggerPacket)e.Packet;
-                OnSoundTrigger(new SoundTriggerEventArgs(trigger.SoundData.SoundID,
+                OnSoundTrigger(new SoundTriggerEventArgs(e.Simulator,
+                        trigger.SoundData.SoundID,
                         trigger.SoundData.OwnerID,
                         trigger.SoundData.ObjectID,
                         trigger.SoundData.ParentID,
@@ -305,12 +306,15 @@ namespace OpenMetaverse
     /// </example>
     public class AttachedSoundEventArgs : EventArgs
     {
+        private readonly Simulator m_Simulator;
         private readonly UUID m_SoundID;
         private readonly UUID m_OwnerID;
         private readonly UUID m_ObjectID;
         private readonly float m_Gain;
         private readonly SoundFlags m_Flags;
 
+        /// <summary>Simulator where the event originated</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
         /// <summary>Get the sound asset id</summary>
         public UUID SoundID { get { return m_SoundID; } }
         /// <summary>Get the ID of the owner</summary>
@@ -325,13 +329,15 @@ namespace OpenMetaverse
         /// <summary>
         /// Construct a new instance of the SoundTriggerEventArgs class
         /// </summary>
+        /// <param name="sim">Simulator where the event originated</param>
         /// <param name="soundID">The sound asset id</param>
         /// <param name="ownerID">The ID of the owner</param>
         /// <param name="objectID">The ID of the object</param>
         /// <param name="gain">The volume level</param>
         /// <param name="flags">The <see cref="SoundFlags"/></param>
-        public AttachedSoundEventArgs(UUID soundID, UUID ownerID, UUID objectID, float gain, SoundFlags flags)
+        public AttachedSoundEventArgs(Simulator sim, UUID soundID, UUID ownerID, UUID objectID, float gain, SoundFlags flags)
         {
+            this.m_Simulator = sim;
             this.m_SoundID = soundID;
             this.m_OwnerID = ownerID;
             this.m_ObjectID = objectID;
@@ -345,9 +351,12 @@ namespace OpenMetaverse
     /// changes its volume level</remarks>
     public class AttachedSoundGainChangeEventArgs : EventArgs
     {
+        private readonly Simulator m_Simulator;
         private readonly UUID m_ObjectID;
         private readonly float m_Gain;
 
+        /// <summary>Simulator where the event originated</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
         /// <summary>Get the ID of the Object</summary>
         public UUID ObjectID { get { return m_ObjectID; } }
         /// <summary>Get the volume level</summary>
@@ -356,10 +365,12 @@ namespace OpenMetaverse
         /// <summary>
         /// Construct a new instance of the AttachedSoundGainChangedEventArgs class
         /// </summary>
+        /// <param name="sim">Simulator where the event originated</param>
         /// <param name="objectID">The ID of the Object</param>
         /// <param name="gain">The new volume level</param>
-        public AttachedSoundGainChangeEventArgs(UUID objectID, float gain)
+        public AttachedSoundGainChangeEventArgs(Simulator sim, UUID objectID, float gain)
         {
+            this.m_Simulator = sim;
             this.m_ObjectID = objectID;
             this.m_Gain = gain;
         }
@@ -393,6 +404,7 @@ namespace OpenMetaverse
     /// </example>
     public class SoundTriggerEventArgs : EventArgs
     {
+        private readonly Simulator m_Simulator;
         private readonly UUID m_SoundID;
         private readonly UUID m_OwnerID;
         private readonly UUID m_ObjectID;
@@ -401,6 +413,8 @@ namespace OpenMetaverse
         private readonly ulong m_RegionHandle;
         private readonly Vector3 m_Position;
 
+        /// <summary>Simulator where the event originated</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
         /// <summary>Get the sound asset id</summary>
         public UUID SoundID { get { return m_SoundID; } }
         /// <summary>Get the ID of the owner</summary>
@@ -419,6 +433,7 @@ namespace OpenMetaverse
         /// <summary>
         /// Construct a new instance of the SoundTriggerEventArgs class
         /// </summary>
+        /// <param name="sim">Simulator where the event originated</param>
         /// <param name="soundID">The sound asset id</param>
         /// <param name="ownerID">The ID of the owner</param>
         /// <param name="objectID">The ID of the object</param>
@@ -426,8 +441,9 @@ namespace OpenMetaverse
         /// <param name="gain">The volume level</param>
         /// <param name="regionHandle">The regionhandle</param>
         /// <param name="position">The source position</param>
-        public SoundTriggerEventArgs(UUID soundID, UUID ownerID, UUID objectID, UUID parentID, float gain, ulong regionHandle, Vector3 position)
+        public SoundTriggerEventArgs(Simulator sim, UUID soundID, UUID ownerID, UUID objectID, UUID parentID, float gain, ulong regionHandle, Vector3 position)
         {
+            this.m_Simulator = sim;
             this.m_SoundID = soundID;
             this.m_OwnerID = ownerID;
             this.m_ObjectID = objectID;
@@ -457,10 +473,13 @@ namespace OpenMetaverse
     /// </example>
     public class PreloadSoundEventArgs : EventArgs
     {
+        private readonly Simulator m_Simulator;
         private readonly UUID m_SoundID;
         private readonly UUID m_OwnerID;
         private readonly UUID m_ObjectID;
 
+        /// <summary>Simulator where the event originated</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
         /// <summary>Get the sound asset id</summary>
         public UUID SoundID { get { return m_SoundID; } }
         /// <summary>Get the ID of the owner</summary>
@@ -471,11 +490,13 @@ namespace OpenMetaverse
         /// <summary>
         /// Construct a new instance of the PreloadSoundEventArgs class
         /// </summary>
+        /// <param name="sim">Simulator where the event originated</param>
         /// <param name="soundID">The sound asset id</param>
         /// <param name="ownerID">The ID of the owner</param>
         /// <param name="objectID">The ID of the object</param>
-        public PreloadSoundEventArgs(UUID soundID, UUID ownerID, UUID objectID)
+        public PreloadSoundEventArgs(Simulator sim, UUID soundID, UUID ownerID, UUID objectID)
         {
+            this.m_Simulator = sim;
             this.m_SoundID = soundID;
             this.m_OwnerID = ownerID;
             this.m_ObjectID = objectID;
