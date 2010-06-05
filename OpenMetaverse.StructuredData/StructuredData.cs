@@ -664,7 +664,7 @@ namespace OpenMetaverse.StructuredData
             this.value = value;
         }
 
-        public override string AsString() { return value != null ? value.ToString() : String.Empty; }
+        public override string AsString() { return value != null ? value.AbsoluteUri : String.Empty; }
         public override Uri AsUri() { return value; }
         public override byte[] AsBinary() { return Encoding.UTF8.GetBytes(AsString()); }
         public override string ToString() { return AsString(); }
