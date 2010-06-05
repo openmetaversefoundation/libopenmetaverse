@@ -99,7 +99,11 @@ namespace OpenMetaverse
         /// <summary></summary>
         Default = 0,
         /// <summary></summary>
-        Planar = 2
+        Planar = 2,
+        /// <summary></summary>
+        Spherical = 4,
+        /// <summary></summary>
+        Cylindrical = 6
     }
 
     /// <summary>

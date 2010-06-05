@@ -123,7 +123,7 @@ namespace OpenMetaverse.StructuredData
                     return jsonmap;
                 case OSDType.Unknown:
                 default:
-                    return new JsonData();
+                    return new JsonData(null);
             }
         }
 
