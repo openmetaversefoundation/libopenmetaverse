@@ -61,7 +61,7 @@ namespace OpenMetaverse.Voice
 
         // Parameters to Vivox daemon
         private string slvoicePath = "";
-        private string slvoiceArgs = "-ll -1";
+        private string slvoiceArgs = "-ll 5";
         private string daemonNode = "127.0.0.1";
         private int daemonPort = 37331;
 
@@ -118,9 +118,8 @@ namespace OpenMetaverse.Voice
             oldPosition = new Vector3d(0, 0, 0);
             oldAt = new Vector3d(1, 0, 0);
 
-            slvoiceArgs = "-c";         // Cleanup old instances
-            slvoiceArgs += " -ll -1";    // Min logging
-            slvoiceArgs += " -i 0.0.0.0:" + daemonPort.ToString();
+            slvoiceArgs = " -ll -1";    // Min logging
+            slvoiceArgs += " -i 127.0.0.1:" + daemonPort.ToString();
             //            slvoiceArgs += " -lf " + control.instance.ClientDir;
         }
 
@@ -289,9 +288,16 @@ namespace OpenMetaverse.Voice
 
         internal string GetVoiceDaemonPath()
         {
+            string myDir = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+
             if (Environment.OSVersion.Platform != PlatformID.MacOSX &&
                 Environment.OSVersion.Platform != PlatformID.Unix)
             {
+                string localDaemon = Path.Combine(myDir, Path.Combine("voice", "SLVoice.exe"));
+                
+                if (File.Exists(localDaemon))
+                    return localDaemon;
+
                 string progFiles;
                 if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ProgramFiles(x86)")))
                 {
@@ -307,15 +313,18 @@ namespace OpenMetaverse.Voice
                     return Path.Combine(progFiles, @"SecondLife" + Path.DirectorySeparatorChar + @"SLVoice.exe");
                 }
 
-                return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), @"SLVoice.exe");
+                return Path.Combine(myDir, @"SLVoice.exe");
 
             }
             else
             {
-                //TODO return Path.Combine(progFiles, @"SecondLife\SLVoice");
-            }
+                string localDaemon = Path.Combine(myDir, Path.Combine("voice", "SLVoice"));
 
-            return string.Empty;
+                if (File.Exists(localDaemon))
+                    return localDaemon;
+
+                return Path.Combine(myDir,"SLVoice");
+            }
         }
 
         void RequestVoiceProvision(System.Uri cap)
@@ -692,10 +701,6 @@ namespace OpenMetaverse.Voice
 
             if (e.StatusCode != 0)
                 return;
-
-            // Request the available devices, to populate the GUI for choosing.
-            AuxGetCaptureDevices();
-            AuxGetRenderDevices();
 
             // STEP 4
             AccountLogin(
