@@ -82,7 +82,23 @@ namespace OpenMetaverse.Voice
                     daemonProcess.StartInfo.WorkingDirectory = Path.GetDirectoryName(path);
                     daemonProcess.StartInfo.Arguments = args;
                     daemonProcess.StartInfo.UseShellExecute = false;
+                    
+                    if (Environment.OSVersion.Platform == PlatformID.Unix)
+                    {
+                        string ldPath = string.Empty;
+                        try
+                        {
+                            ldPath = Environment.GetEnvironmentVariable("LD_LIBRARY_PATH");
+                        }
+                        catch { }
+                        string newLdPath = daemonProcess.StartInfo.WorkingDirectory;
+                        if (!string.IsNullOrEmpty(ldPath))
+                            newLdPath += ":" + ldPath;
+                        daemonProcess.StartInfo.EnvironmentVariables.Add("LD_LIBRARY_PATH", newLdPath);
+                    }
 
+                    Logger.DebugLog("Voice folder: " + daemonProcess.StartInfo.WorkingDirectory);
+                    Logger.DebugLog(path + " " + args);
                     bool ok = true;
 
                     if (!File.Exists(path))
@@ -110,6 +126,7 @@ namespace OpenMetaverse.Voice
                     }
                     else
                     {
+                        Thread.Sleep(2000);
                         daemonIsRunning = true;
                         if (OnDaemonRunning != null)
                         {
@@ -229,6 +246,9 @@ namespace OpenMetaverse.Voice
                 }
                 sb.Append("\n\n\n");
 
+#if DEBUG
+                Logger.Log("Request: " + sb.ToString(), Helpers.LogLevel.Debug);
+#endif
                 try
                 {
                     daemonPipe.SendData(Encoding.ASCII.GetBytes(sb.ToString()));
@@ -293,13 +313,13 @@ namespace OpenMetaverse.Voice
                         }
                         break;
                     case "Aux.GetCaptureDevices.1":
+                        inputDevices = new List<string>();
+                        foreach (CaptureDevice device in rsp.Results.CaptureDevices)
+                            inputDevices.Add(device.Device);
+                        currentCaptureDevice = rsp.Results.CurrentCaptureDevice.Device;
+ 
                         if (OnAuxGetCaptureDevicesResponse != null && rsp.Results.CaptureDevices.Count > 0)
                         {
-                            // Create a list of just the device names
-                            List<string> CaptureDevices = new List<string>();
-                            foreach (CaptureDevice device in rsp.Results.CaptureDevices)
-                                CaptureDevices.Add(device.Device);
-
                             OnAuxGetCaptureDevicesResponse(
                                 rsp.InputXml.Request,
                                 new VoiceDevicesEventArgs(
@@ -308,16 +328,17 @@ namespace OpenMetaverse.Voice
                                     int.Parse(rsp.Results.StatusCode),
                                     rsp.Results.StatusString,
                                     rsp.Results.CurrentCaptureDevice.Device,
-                                    CaptureDevices));
+                                    inputDevices));
                         }
                         break;
                     case "Aux.GetRenderDevices.1":
+                        outputDevices = new List<string>();
+                        foreach (RenderDevice device in rsp.Results.RenderDevices)
+                            outputDevices.Add(device.Device);
+                        currentPlaybackDevice = rsp.Results.CurrentRenderDevice.Device;
+
                         if (OnAuxGetRenderDevicesResponse != null)
                         {
-                            List<string> RenderDevices = new List<string>();
-                            foreach (RenderDevice device in rsp.Results.RenderDevices)
-                                RenderDevices.Add(device.Device);
-
                             OnAuxGetRenderDevicesResponse(
                                 rsp.InputXml.Request,
                                 new VoiceDevicesEventArgs(
@@ -326,7 +347,7 @@ namespace OpenMetaverse.Voice
                                     int.Parse(rsp.Results.StatusCode),
                                     rsp.Results.StatusString,
                                     rsp.Results.CurrentRenderDevice.Device,
-                                    RenderDevices));
+                                    outputDevices));
                         }
                         break;
 
