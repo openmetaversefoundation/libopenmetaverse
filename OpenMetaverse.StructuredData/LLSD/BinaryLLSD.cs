@@ -53,7 +53,8 @@ namespace OpenMetaverse.StructuredData
         private const int int32Length = 4;
         private const int doubleLength = 8;
 
-        private const string llsdBinaryHead = "<? llsd/binary ?>\n";
+        private const string llsdBinaryHead = "<? llsd/binary ?>";
+        private const string llsdBinaryHead2 = "<?llsd/binary?>";
         private const byte undefBinaryValue = (byte)'!';
         private const byte trueBinaryValue = (byte)'1';
         private const byte falseBinaryValue = (byte)'0';
@@ -98,9 +99,10 @@ namespace OpenMetaverse.StructuredData
 
             SkipWhiteSpace(stream);
 
-            bool result = FindString(stream, llsdBinaryHead);
-            if (!result)
+            if (!FindString(stream, llsdBinaryHead) && !FindString(stream, llsdBinaryHead2))
                 throw new OSDException("Failed to decode binary LLSD");
+
+            SkipWhiteSpace(stream);
 
             return ParseLLSDBinaryElement(stream);
         }

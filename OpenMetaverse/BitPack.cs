@@ -55,6 +55,8 @@ namespace OpenMetaverse
 
 
         private const int MAX_BITS = 8;
+        private static readonly byte[] ON = new byte[] { 1 };
+        private static readonly byte[] OFF = new byte[] { 0 };
 
         private int bytePos;
         private int bitPos;
@@ -106,6 +108,18 @@ namespace OpenMetaverse
             byte[] input = BitConverter.GetBytes(data);
             if (weAreBigEndian) Array.Reverse(input);
             PackBitArray(input, totalCount);
+        }
+
+        /// <summary>
+        /// Pack a single bit in to the data
+        /// </summary>
+        /// <param name="bit">Bit to pack</param>
+        public void PackBit(bool bit)
+        {
+            if (bit)
+                PackBitArray(ON, 1);
+            else
+                PackBitArray(OFF, 1);
         }
 
         /// <summary>
@@ -327,8 +341,12 @@ namespace OpenMetaverse
 
                 while (count > 0)
                 {
+                    byte curBit = (byte)(0x80 >> bitPos);
+
                     if ((data[curBytePos] & (0x01 << (count - 1))) != 0)
-                        Data[bytePos] |= (byte)(0x80 >> bitPos);
+                        Data[bytePos] |= curBit;
+                    else
+                        Data[bytePos] &= (byte)~curBit;
 
                     --count;
                     ++bitPos;

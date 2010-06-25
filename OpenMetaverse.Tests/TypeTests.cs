@@ -194,6 +194,22 @@ namespace OpenMetaverse.Tests
 
             b = bitpacker.UnpackBits(16);
             Assert.IsTrue(b == 1000, "Unpacked " + b + " instead of 1000");
+
+            packedBytes = new byte[1];
+            bitpacker = new BitPack(packedBytes, 0);
+            bitpacker.PackBit(true);
+
+            bitpacker = new BitPack(packedBytes, 0);
+            b = bitpacker.UnpackBits(1);
+            Assert.IsTrue(b == 1, "Unpacked " + b + " instead of 1");
+
+            packedBytes = new byte[1] { Byte.MaxValue };
+            bitpacker = new BitPack(packedBytes, 0);
+            bitpacker.PackBit(false);
+
+            bitpacker = new BitPack(packedBytes, 0);
+            b = bitpacker.UnpackBits(1);
+            Assert.IsTrue(b == 0, "Unpacked " + b + " instead of 0");
         }
 
         [Test]

@@ -49,7 +49,7 @@ namespace OpenMetaverse.Tests
     [TestFixture()]
     public class BinarySDTests
     {
-        private static byte[] binaryHead = { 0x3c, 0x3f, 0x6c, 0x6c, 0x73, 0x64, 0x2f, 0x62, 0x69, 0x6e, 0x61, 0x72, 0x79, 0x3f, 0x3e, 0xa };
+        private static readonly byte[] binaryHead = Encoding.ASCII.GetBytes("<? llsd/binary ?>");
 
         [Test()]
         public void HelperFunctions()
