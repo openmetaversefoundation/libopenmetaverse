@@ -396,7 +396,7 @@ namespace OpenMetaverse.Tests
             string sUriOne = "l\"http://test.com/test test>\\\"/&yes\"";
             OSD llsdOne = OSDParser.DeserializeLLSDNotation(sUriOne);
             Assert.AreEqual(OSDType.URI, llsdOne.Type);
-            Assert.AreEqual("http://test.com/test test>\"/&yes", llsdOne.AsString());
+            Assert.AreEqual("http://test.com/test%20test%3E%22/&yes", llsdOne.AsString());
 
             string sUriTwo = "l\"test/test/test?test=1&toast=2\"";
             OSD llsdTwo = OSDParser.DeserializeLLSDNotation(sUriTwo);
