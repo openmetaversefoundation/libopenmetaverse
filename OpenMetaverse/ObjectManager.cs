@@ -2060,6 +2060,7 @@ namespace OpenMetaverse
 
                         avatar.ID = block.FullID;
                         avatar.LocalID = block.ID;
+                        avatar.Scale = block.Scale;
                         avatar.CollisionPlane = objectupdate.CollisionPlane;
                         avatar.Position = objectupdate.Position;
                         avatar.Velocity = objectupdate.Velocity;
