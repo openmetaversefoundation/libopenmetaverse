@@ -3038,9 +3038,9 @@ namespace OpenMetaverse.Messages.Linden
 
                     block.Transition = infoMap["transition"].AsString();
 
-                    if (infoMap.ContainsKey("mutes"))
+                    if (agentPermsMap.ContainsKey("mutes"))
                     {
-                        OSDMap mutesMap = (OSDMap)infoMap["mutes"];
+                        OSDMap mutesMap = (OSDMap)agentPermsMap["mutes"];
                         block.MuteText = mutesMap["text"].AsBoolean();
                         block.MuteVoice = mutesMap["voice"].AsBoolean();
                     }
