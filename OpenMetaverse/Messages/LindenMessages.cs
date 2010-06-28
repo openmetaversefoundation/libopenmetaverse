@@ -2965,11 +2965,11 @@ namespace OpenMetaverse.Messages.Linden
                 OSDMap infoMap = new OSDMap(4);
                 infoMap["can_voice_chat"] = OSD.FromBoolean((bool)Updates[i].CanVoiceChat);
                 infoMap["is_moderator"] = OSD.FromBoolean((bool)Updates[i].IsModerator);
+                infoMap["mutes"] = mutesMap;
 
                 OSDMap imap = new OSDMap(1);
                 imap["info"] = infoMap;
                 imap["transition"] = OSD.FromString(Updates[i].Transition);
-                imap.Add("mutes", mutesMap);
 
                 agent_updatesMap.Add(Updates[i].AgentID.ToString(), imap);
             }
