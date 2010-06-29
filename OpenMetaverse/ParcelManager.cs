@@ -1455,6 +1455,10 @@ namespace OpenMetaverse
             land.ParcelData[0].East = east;
             land.ParcelData[0].North = north;
 
+            land.ModifyBlockExtended = new ModifyLandPacket.ModifyBlockExtendedBlock[1];
+            land.ModifyBlockExtended[0] = new ModifyLandPacket.ModifyBlockExtendedBlock();
+            land.ModifyBlockExtended[0].BrushSize = (float)brushSize;
+
             Client.Network.SendPacket(land, simulator);
         }
 
