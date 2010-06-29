@@ -250,7 +250,7 @@ namespace OpenMetaverse
 
                         // Find the first missing packet in the download
                         ushort packet = 0;
-                        if (download.PacketsSeen != null && download.PacketsSeen.Count > 0)
+                        lock (download) if (download.PacketsSeen != null && download.PacketsSeen.Count > 0)
                             packet = GetFirstMissingPacket(download.PacketsSeen);
 
                         if (download.TimeSinceLastPacket > 5000)
@@ -543,7 +543,7 @@ namespace OpenMetaverse
 #endif
             // Find the first missing packet in the download
             ushort packet = 0;
-            if (task.Transfer.PacketsSeen != null && task.Transfer.PacketsSeen.Count > 0)
+            lock (task.Transfer) if (task.Transfer.PacketsSeen != null && task.Transfer.PacketsSeen.Count > 0)
                 packet = GetFirstMissingPacket(task.Transfer.PacketsSeen);
 
             // Request the texture
@@ -675,7 +675,7 @@ namespace OpenMetaverse
 
                 // The header is downloaded, we can insert this data in to the proper position
                 // Only insert if we haven't seen this packet before
-                lock (task.Transfer.PacketsSeen)
+                lock (task.Transfer)
                 {
                     if (!task.Transfer.PacketsSeen.ContainsKey(image.ImageID.Packet))
                     {
@@ -747,7 +747,7 @@ namespace OpenMetaverse
                 // reset the timeout interval since we got data
                 task.Transfer.TimeSinceLastPacket = 0;
 
-                if (task.Transfer.Size == 0)
+                lock (task.Transfer) if (task.Transfer.Size == 0)
                 {
                     task.Transfer.Codec = (ImageCodec)data.ImageID.Codec;
                     task.Transfer.PacketCount = data.ImageID.Packets;
