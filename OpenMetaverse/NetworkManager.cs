@@ -600,11 +600,13 @@ namespace OpenMetaverse
             }
             else if (setDefault)
             {
+                // Move in to this simulator
+                simulator.handshakeComplete = false;
+                simulator.UseCircuitCode();
+                Client.Self.CompleteAgentMovement(simulator);
+
                 // We're already connected to this server, but need to set it to the default
                 SetCurrentSim(simulator, seedcaps);
-
-                // Move in to this simulator
-                Client.Self.CompleteAgentMovement(simulator);
 
                 // Send an initial AgentUpdate to complete our movement in to the sim
                 if (Client.Settings.SEND_AGENT_UPDATES)
@@ -1148,6 +1150,7 @@ namespace OpenMetaverse
 
             // We're officially connected to this sim
             simulator.connected = true;
+            simulator.handshakeComplete = true;
             simulator.ConnectedEvent.Set();
         }
 
