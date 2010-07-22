@@ -34,6 +34,7 @@ namespace OpenMetaverse
     /// <summary>
     /// Permissions for control of object media
     /// </summary>
+    [Flags]
     public enum MediaPermission : byte
     {
         None = 0,
