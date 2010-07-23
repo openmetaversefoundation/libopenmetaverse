@@ -585,6 +585,11 @@ namespace OpenMetaverse
             /// <param name="simulator">Simulator to send the update to</param>
             public void SendUpdate(bool reliable, Simulator simulator)
             {
+                // Since version 1.40.4 of the Linden simulator, sending this update
+                // causes corruption of the agent position in the simulator
+                if (!simulator.HandshakeComplete)
+                    return;
+
                 Vector3 origin = Camera.Position;
                 Vector3 xAxis = Camera.LeftAxis;
                 Vector3 yAxis = Camera.AtAxis;
@@ -665,6 +670,11 @@ namespace OpenMetaverse
                 Vector3 leftAxis, Vector3 upAxis, Quaternion bodyRotation, Quaternion headRotation, float farClip,
                 AgentFlags flags, AgentState state, bool reliable)
             {
+                // Since version 1.40.4 of the Linden simulator, sending this update
+                // causes corruption of the agent position in the simulator
+                if (!Client.Network.CurrentSim.HandshakeComplete)
+                    return;
+
                 AgentUpdatePacket update = new AgentUpdatePacket();
 
                 update.AgentData.AgentID = Client.Self.AgentID;

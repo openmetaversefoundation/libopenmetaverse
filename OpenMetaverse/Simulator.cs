@@ -404,6 +404,8 @@ namespace OpenMetaverse
         public InternalDictionary<UUID, Vector3> AvatarPositions { get { return avatarPositions; } }
         /// <summary>AvatarPositions key representing TrackAgent target</summary>
         public UUID PreyID { get { return preyID; } }
+        /// <summary>Indicates if UDP connection to the sim is fully established</summary>
+        public bool HandshakeComplete { get { return handshakeComplete; } }
 
         #endregion Properties
 
@@ -427,6 +429,8 @@ namespace OpenMetaverse
         internal SortedDictionary<uint, NetworkManager.OutgoingPacket> NeedAck = new SortedDictionary<uint, NetworkManager.OutgoingPacket>();
         /// <summary>Sequence number for pause/resume</summary>
         internal int pauseSerial;
+        /// <summary>Indicates if UDP connection to the sim is fully established</summary>
+        internal bool handshakeComplete;
 
         private NetworkManager Network;
         private Queue<long> InBytes, OutBytes;
@@ -480,9 +484,12 @@ namespace OpenMetaverse
         /// unknown, false if there was a failure</returns>
         public bool Connect(bool moveToSim)
         {
+            handshakeComplete = false;
+
             if (connected)
             {
-                Client.Self.CompleteAgentMovement(this);
+                UseCircuitCode();
+                if (moveToSim) Client.Self.CompleteAgentMovement(this);
                 return true;
             }
 
@@ -512,28 +519,25 @@ namespace OpenMetaverse
                 // Mark ourselves as connected before firing everything else up
                 connected = true;
 
-                // Send the UseCircuitCode packet to initiate the connection
-                UseCircuitCodePacket use = new UseCircuitCodePacket();
-                use.CircuitCode.Code = Network.CircuitCode;
-                use.CircuitCode.ID = Client.Self.AgentID;
-                use.CircuitCode.SessionID = Client.Self.SessionID;
-
-                // Send the initial packet out
-                SendPacket(use);
+                // Initiate connection
+                UseCircuitCode();
 
                 Stats.ConnectTime = Environment.TickCount;
 
                 // Move our agent in to the sim to complete the connection
                 if (moveToSim) Client.Self.CompleteAgentMovement(this);
 
-                if (Client.Settings.SEND_AGENT_UPDATES)
-                    Client.Self.Movement.SendUpdate(true, this);
-
                 if (!ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false))
                 {
                     Logger.Log("Giving up on waiting for RegionHandshake for " + this.ToString(),
                         Helpers.LogLevel.Warning, Client);
                 }
+
+                if (Client.Settings.SEND_AGENT_THROTTLE)
+                    Client.Throttle.Set(this);
+
+                if (Client.Settings.SEND_AGENT_UPDATES)
+                    Client.Self.Movement.SendUpdate(true, this);
 
                 return true;
             }
@@ -543,6 +547,21 @@ namespace OpenMetaverse
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Initiates connection to the simulator
+        /// </summary>
+        public void UseCircuitCode()
+        {
+            // Send the UseCircuitCode packet to initiate the connection
+            UseCircuitCodePacket use = new UseCircuitCodePacket();
+            use.CircuitCode.Code = Network.CircuitCode;
+            use.CircuitCode.ID = Client.Self.AgentID;
+            use.CircuitCode.SessionID = Client.Self.SessionID;
+
+            // Send the initial packet out
+            SendPacket(use);
         }
 
         public void SetSeedCaps(string seedcaps)
