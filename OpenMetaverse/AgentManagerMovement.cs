@@ -587,7 +587,7 @@ namespace OpenMetaverse
             {
                 // Since version 1.40.4 of the Linden simulator, sending this update
                 // causes corruption of the agent position in the simulator
-                if (!simulator.HandshakeComplete)
+                if (simulator != null && (!simulator.HandshakeComplete))
                     return;
 
                 Vector3 origin = Camera.Position;
@@ -672,7 +672,7 @@ namespace OpenMetaverse
             {
                 // Since version 1.40.4 of the Linden simulator, sending this update
                 // causes corruption of the agent position in the simulator
-                if (!Client.Network.CurrentSim.HandshakeComplete)
+                if (Client.Network.CurrentSim != null && (!Client.Network.CurrentSim.HandshakeComplete))
                     return;
 
                 AgentUpdatePacket update = new AgentUpdatePacket();
