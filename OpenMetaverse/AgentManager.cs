@@ -1248,7 +1248,11 @@ namespace OpenMetaverse
                 // a bit more complicatated, agent sitting on a prim
                 Primitive p = null;
                 Vector3 fullPosition = relativePosition;
-                Client.Network.CurrentSim.ObjectsPrimitives.TryGetValue(sittingOn, out p);
+
+                if (Client.Network.CurrentSim.ObjectsPrimitives.TryGetValue(sittingOn, out p))
+                {
+                    fullPosition += p.Position;
+                }
 
                 // go up the hiearchy trying to find the root prim
                 while (p != null && p.ParentID != 0)
