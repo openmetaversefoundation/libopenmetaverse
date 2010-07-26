@@ -265,6 +265,8 @@ namespace OpenMetaverse
         /// <summary></summary>
         Cylinder = 4,
         /// <summary></summary>
+        Mesh = 5,
+        /// <summary></summary>
         Invert = 64,
         /// <summary></summary>
         Mirror = 128

@@ -1100,13 +1100,16 @@ namespace OpenMetaverse.Messages.Linden
 
     #region Inventory Messages
 
-    public class NewFileAgentInventoryMessage
+    public class NewFileAgentInventoryMessage : IMessage
     {
         public UUID FolderID;
         public AssetType AssetType;
         public InventoryType InventoryType;
         public string Name;
         public string Description;
+        public PermissionMask EveryoneMask;
+        public PermissionMask GroupMask;
+        public PermissionMask NextOwnerMask;
 
         /// <summary>
         /// Serialize the object
@@ -1120,6 +1123,9 @@ namespace OpenMetaverse.Messages.Linden
             map["inventory_type"] = OSD.FromString(Utils.InventoryTypeToString(InventoryType));
             map["name"] = OSD.FromString(Name);
             map["description"] = OSD.FromString(Description);
+            map["everyone_mask"] = OSD.FromInteger((int)EveryoneMask);
+            map["group_mask"] = OSD.FromInteger((int)GroupMask);
+            map["next_owner_mask"] = OSD.FromInteger((int)NextOwnerMask);
 
             return map;
         }
@@ -1135,9 +1141,158 @@ namespace OpenMetaverse.Messages.Linden
             InventoryType = Utils.StringToInventoryType(map["inventory_type"].AsString());
             Name = map["name"].AsString();
             Description = map["description"].AsString();
+            EveryoneMask = (PermissionMask)map["everyone_mask"].AsInteger();
+            GroupMask = (PermissionMask)map["group_mask"].AsInteger();
+            NextOwnerMask = (PermissionMask)map["next_owner_mask"].AsInteger();
         }
     }
 
+    public class NewFileAgentInventoryReplyMessage : IMessage
+    {
+        public string State;
+        public Uri Uploader;
+
+        public NewFileAgentInventoryReplyMessage()
+        {
+            State = "upload";
+        }
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["state"] = OSD.FromString(State);
+            map["uploader"] = OSD.FromUri(Uploader);
+
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            State = map["state"].AsString();
+            Uploader = map["uploader"].AsUri();
+        }
+    }
+
+    public class NewFileAgentInventoryVariablePriceMessage : IMessage
+    {
+        public UUID FolderID;
+        public AssetType AssetType;
+        public InventoryType InventoryType;
+        public string Name;
+        public string Description;
+        public PermissionMask EveryoneMask;
+        public PermissionMask GroupMask;
+        public PermissionMask NextOwnerMask;
+        // TODO: asset_resources?
+
+        /// <summary>
+        /// Serialize the object
+        /// </summary>
+        /// <returns>An <see cref="OSDMap"/> containing the objects data</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["folder_id"] = OSD.FromUUID(FolderID);
+            map["asset_type"] = OSD.FromString(Utils.AssetTypeToString(AssetType));
+            map["inventory_type"] = OSD.FromString(Utils.InventoryTypeToString(InventoryType));
+            map["name"] = OSD.FromString(Name);
+            map["description"] = OSD.FromString(Description);
+            map["everyone_mask"] = OSD.FromInteger((int)EveryoneMask);
+            map["group_mask"] = OSD.FromInteger((int)GroupMask);
+            map["next_owner_mask"] = OSD.FromInteger((int)NextOwnerMask);
+
+            return map;
+        }
+
+        /// <summary>
+        /// Deserialize the message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        public void Deserialize(OSDMap map)
+        {
+            FolderID = map["folder_id"].AsUUID();
+            AssetType = Utils.StringToAssetType(map["asset_type"].AsString());
+            InventoryType = Utils.StringToInventoryType(map["inventory_type"].AsString());
+            Name = map["name"].AsString();
+            Description = map["description"].AsString();
+            EveryoneMask = (PermissionMask)map["everyone_mask"].AsInteger();
+            GroupMask = (PermissionMask)map["group_mask"].AsInteger();
+            NextOwnerMask = (PermissionMask)map["next_owner_mask"].AsInteger();
+        }
+    }
+
+    public class NewFileAgentInventoryVariablePriceReplyMessage : IMessage
+    {
+        public int ResourceCost;
+        public string State;
+        public int UploadPrice;
+        public Uri Rsvp;
+
+        public NewFileAgentInventoryVariablePriceReplyMessage()
+        {
+            State = "confirm_upload";
+        }
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["resource_cost"] = OSD.FromInteger(ResourceCost);
+            map["state"] = OSD.FromString(State);
+            map["upload_price"] = OSD.FromInteger(UploadPrice);
+            map["rsvp"] = OSD.FromUri(Rsvp);
+
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            ResourceCost = map["resource_cost"].AsInteger();
+            State = map["state"].AsString();
+            UploadPrice = map["upload_price"].AsInteger();
+            Rsvp = map["rsvp"].AsUri();
+        }
+    }
+
+    public class NewFileAgentInventoryUploadReplyMessage : IMessage
+    {
+        public UUID NewInventoryItem;
+        public UUID NewAsset;
+        public string State;
+        public PermissionMask NewBaseMask;
+        public PermissionMask NewEveryoneMask;
+        public PermissionMask NewOwnerMask;
+        public PermissionMask NewNextOwnerMask;
+
+        public NewFileAgentInventoryUploadReplyMessage()
+        {
+            State = "complete";
+        }
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            map["new_inventory_item"] = OSD.FromUUID(NewInventoryItem);
+            map["new_asset"] = OSD.FromUUID(NewAsset);
+            map["state"] = OSD.FromString(State);
+            map["new_base_mask"] = OSD.FromInteger((int)NewBaseMask);
+            map["new_everyone_mask"] = OSD.FromInteger((int)NewEveryoneMask);
+            map["new_owner_mask"] = OSD.FromInteger((int)NewOwnerMask);
+            map["new_next_owner_mask"] = OSD.FromInteger((int)NewNextOwnerMask);
+
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            NewInventoryItem = map["new_inventory_item"].AsUUID();
+            NewAsset = map["new_asset"].AsUUID();
+            State = map["state"].AsString();
+            NewBaseMask = (PermissionMask)map["new_base_mask"].AsInteger();
+            NewEveryoneMask = (PermissionMask)map["new_everyone_mask"].AsInteger();
+            NewOwnerMask = (PermissionMask)map["new_owner_mask"].AsInteger();
+            NewNextOwnerMask = (PermissionMask)map["new_next_owner_mask"].AsInteger();
+        }
+    }
 
     public class WebFetchInventoryDescendentsMessage : IMessage
     {
@@ -1165,6 +1320,7 @@ namespace OpenMetaverse.Messages.Linden
 
         #endregion
     }
+
     #endregion
 
     #region Agent Messages
@@ -3684,6 +3840,298 @@ namespace OpenMetaverse.Messages.Linden
     }
 
     #endregion
+
+    #region Object Messages
+
+    public class UploadObjectAssetMessage : IMessage
+    {
+        public class Object
+        {
+            public class Face
+            {
+                public Bumpiness Bump;
+                public Color4 Color;
+                public bool Fullbright;
+                public float Glow;
+                public UUID ImageID;
+                public float ImageRot;
+                public int MediaFlags;
+                public float OffsetS;
+                public float OffsetT;
+                public float ScaleS;
+                public float ScaleT;
+
+                public OSDMap Serialize()
+                {
+                    OSDMap map = new OSDMap();
+                    map["bump"] = OSD.FromInteger((int)Bump);
+                    map["colors"] = OSD.FromColor4(Color);
+                    map["fullbright"] = OSD.FromBoolean(Fullbright);
+                    map["glow"] = OSD.FromReal(Glow);
+                    map["imageid"] = OSD.FromUUID(ImageID);
+                    map["imagerot"] = OSD.FromReal(ImageRot);
+                    map["media_flags"] = OSD.FromInteger(MediaFlags);
+                    map["offsets"] = OSD.FromReal(OffsetS);
+                    map["offsett"] = OSD.FromReal(OffsetT);
+                    map["scales"] = OSD.FromReal(ScaleS);
+                    map["scalet"] = OSD.FromReal(ScaleT);
+
+                    return map;
+                }
+
+                public void Deserialize(OSDMap map)
+                {
+                    Bump = (Bumpiness)map["bump"].AsInteger();
+                    Color = map["colors"].AsColor4();
+                    Fullbright = map["fullbright"].AsBoolean();
+                    Glow = (float)map["glow"].AsReal();
+                    ImageID = map["imageid"].AsUUID();
+                    ImageRot = (float)map["imagerot"].AsReal();
+                    MediaFlags = map["media_flags"].AsInteger();
+                    OffsetS = (float)map["offsets"].AsReal();
+                    OffsetT = (float)map["offsett"].AsReal();
+                    ScaleS = (float)map["scales"].AsReal();
+                    ScaleT = (float)map["scalet"].AsReal();
+                }
+            }
+
+            public class ExtraParam
+            {
+                public ExtraParamType Type;
+                public byte[] ExtraParamData;
+
+                public OSDMap Serialize()
+                {
+                    OSDMap map = new OSDMap();
+                    map["extra_parameter"] = OSD.FromInteger((int)Type);
+                    map["param_data"] = OSD.FromBinary(ExtraParamData);
+
+                    return map;
+                }
+
+                public void Deserialize(OSDMap map)
+                {
+                    Type = (ExtraParamType)map["extra_parameter"].AsInteger();
+                    ExtraParamData = map["param_data"].AsBinary();
+                }
+            }
+            
+            public Face[] Faces;
+            public ExtraParam[] ExtraParams;
+            public UUID GroupID;
+            public Material Material;
+            public string Name;
+            public Vector3 Position;
+            public Quaternion Rotation;
+            public Vector3 Scale;
+            public float PathBegin;
+            public int PathCurve;
+            public float PathEnd;
+            public float RadiusOffset;
+            public float Revolutions;
+            public float ScaleX;
+            public float ScaleY;
+            public float ShearX;
+            public float ShearY;
+            public float Skew;
+            public float TaperX;
+            public float TaperY;
+            public float Twist;
+            public float TwistBegin;
+            public float ProfileBegin;
+            public int ProfileCurve;
+            public float ProfileEnd;
+            public float ProfileHollow;
+            public UUID SculptID;
+            public SculptType SculptType;
+
+            public OSDMap Serialize()
+            {
+                OSDMap map = new OSDMap();
+
+                map["group-id"] = OSD.FromUUID(GroupID);
+                map["material"] = OSD.FromInteger((int)Material);
+                map["name"] = OSD.FromString(Name);
+                map["pos"] = OSD.FromVector3(Position);
+                map["rotation"] = OSD.FromQuaternion(Rotation);
+                map["scale"] = OSD.FromVector3(Scale);
+                
+                // Extra params
+                OSDArray extraParams = new OSDArray();
+                if (ExtraParams != null)
+                {
+                    for (int i = 0; i < ExtraParams.Length; i++)
+                        extraParams.Add(ExtraParams[i].Serialize());
+                }
+                map["extra_parameters"] = extraParams;
+
+                // Faces
+                OSDArray faces = new OSDArray();
+                if (Faces != null)
+                {
+                    for (int i = 0; i < Faces.Length; i++)
+                        faces.Add(Faces[i].Serialize());
+                }
+                map["facelist"] = faces;
+
+                // Shape
+                OSDMap shape = new OSDMap();
+                OSDMap path = new OSDMap();
+                path["begin"] = OSD.FromReal(PathBegin);
+                path["curve"] = OSD.FromInteger(PathCurve);
+                path["end"] = OSD.FromReal(PathEnd);
+                path["radius_offset"] = OSD.FromReal(RadiusOffset);
+                path["revolutions"] = OSD.FromReal(Revolutions);
+                path["scale_x"] = OSD.FromReal(ScaleX);
+                path["scale_y"] = OSD.FromReal(ScaleY);
+                path["shear_x"] = OSD.FromReal(ShearX);
+                path["shear_y"] = OSD.FromReal(ShearY);
+                path["skew"] = OSD.FromReal(Skew);
+                path["taper_x"] = OSD.FromReal(TaperX);
+                path["taper_y"] = OSD.FromReal(TaperY);
+                path["twist"] = OSD.FromReal(Twist);
+                path["twist_begin"] = OSD.FromReal(TwistBegin);
+                shape["path"] = path;
+                OSDMap profile = new OSDMap();
+                profile["begin"] = OSD.FromReal(ProfileBegin);
+                profile["curve"] = OSD.FromInteger(ProfileCurve);
+                profile["end"] = OSD.FromReal(ProfileEnd);
+                profile["hollow"] = OSD.FromReal(ProfileHollow);
+                shape["profile"] = profile;
+                OSDMap sculpt = new OSDMap();
+                sculpt["id"] = OSD.FromUUID(SculptID);
+                sculpt["type"] = OSD.FromInteger((int)SculptType);
+                shape["sculpt"] = sculpt;
+                map["shape"] = shape;
+
+                return map;
+            }
+
+            public void Deserialize(OSDMap map)
+            {
+                GroupID = map["group-id"].AsUUID();
+                Material = (Material)map["material"].AsInteger();
+                Name = map["name"].AsString();
+                Position = map["pos"].AsVector3();
+                Rotation = map["rotation"].AsQuaternion();
+                Scale = map["scale"].AsVector3();
+
+                // Extra params
+                OSDArray extraParams = map["extra_parameters"] as OSDArray;
+                if (extraParams != null)
+                {
+                    ExtraParams = new ExtraParam[extraParams.Count];
+                    for (int i = 0; i < extraParams.Count; i++)
+                    {
+                        ExtraParam extraParam = new ExtraParam();
+                        extraParam.Deserialize(extraParams[i] as OSDMap);
+                        ExtraParams[i] = extraParam;
+                    }
+                }
+                else
+                {
+                    ExtraParams = new ExtraParam[0];
+                }
+
+                // Faces
+                OSDArray faces = map["facelist"] as OSDArray;
+                if (faces != null)
+                {
+                    Faces = new Face[faces.Count];
+                    for (int i = 0; i < faces.Count; i++)
+                    {
+                        Face face = new Face();
+                        face.Deserialize(faces[i] as OSDMap);
+                        Faces[i] = face;
+                    }
+                }
+                else
+                {
+                    Faces = new Face[0];
+                }
+
+                // Shape
+                OSDMap shape = map["shape"] as OSDMap;
+                OSDMap path = shape["path"] as OSDMap;
+                PathBegin = (float)path["begin"].AsReal();
+                PathCurve = path["curve"].AsInteger();
+                PathEnd = (float)path["end"].AsReal();
+                RadiusOffset = (float)path["radius_offset"].AsReal();
+                Revolutions = (float)path["revolutions"].AsReal();
+                ScaleX = (float)path["scale_x"].AsReal();
+                ScaleY = (float)path["scale_y"].AsReal();
+                ShearX = (float)path["shear_x"].AsReal();
+                ShearY = (float)path["shear_y"].AsReal();
+                Skew = (float)path["skew"].AsReal();
+                TaperX = (float)path["taper_x"].AsReal();
+                TaperY = (float)path["taper_y"].AsReal();
+                Twist = (float)path["twist"].AsReal();
+                TwistBegin = (float)path["twist_begin"].AsReal();
+
+                OSDMap profile = shape["profile"] as OSDMap;
+                ProfileBegin = (float)profile["begin"].AsReal();
+                ProfileCurve = profile["curve"].AsInteger();
+                ProfileEnd = (float)profile["end"].AsReal();
+                ProfileHollow = (float)profile["hollow"].AsReal();
+
+                OSDMap sculpt = shape["sculpt"] as OSDMap;
+                if (sculpt != null)
+                {
+                    SculptID = sculpt["id"].AsUUID();
+                    SculptType = (SculptType)sculpt["type"].AsInteger();
+                }
+                else
+                {
+                    SculptID = UUID.Zero;
+                    SculptType = 0;
+                }
+            }
+        }
+
+        public Object[] Objects;
+
+        public OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+            OSDArray array = new OSDArray();
+
+            if (Objects != null)
+            {
+                for (int i = 0; i < Objects.Length; i++)
+                    array.Add(Objects[i].Serialize());
+            }
+
+            map["objects"] = array;
+            return map;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDArray array = map["objects"] as OSDArray;
+
+            if (array != null)
+            {
+                Objects = new Object[array.Count];
+
+                for (int i = 0; i < array.Count; i++)
+                {
+                    Object obj = new Object();
+                    OSDMap objMap = array[i] as OSDMap;
+
+                    if (objMap != null)
+                        obj.Deserialize(objMap);
+
+                    Objects[i] = obj;
+                }
+            }
+            else
+            {
+                Objects = new Object[0];
+            }
+        }
+    }
+
+    #endregion Object Messages
 
     #region Object Media Messages
     /// <summary>

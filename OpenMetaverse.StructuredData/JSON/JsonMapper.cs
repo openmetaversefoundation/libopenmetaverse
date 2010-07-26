@@ -474,57 +474,47 @@ namespace LitJson
 
             IJsonWrapper instance = factory ();
 
-            if (reader.Token == JsonToken.String) {
-                instance.SetString ((string) reader.Value);
-                return instance;
-            }
+            switch (reader.Token)
+            {
+                case JsonToken.String:
+                    instance.SetString ((string) reader.Value);
+                    break;
+                case JsonToken.Double:
+                    instance.SetDouble ((double) reader.Value);
+                    break;
+                case JsonToken.Int:
+                    instance.SetInt ((int) reader.Value);
+                    break;
+                case JsonToken.Long:
+                    instance.SetLong ((long) reader.Value);
+                    break;
+                case JsonToken.Boolean:
+                    instance.SetBoolean ((bool) reader.Value);
+                    break;
+                case JsonToken.ArrayStart:
+                    instance.SetJsonType (JsonType.Array);
 
-            if (reader.Token == JsonToken.Double) {
-                instance.SetDouble ((double) reader.Value);
-                return instance;
-            }
+                    while (true) {
+                        IJsonWrapper item = ReadValue (factory, reader);
+                        if (reader.Token == JsonToken.ArrayEnd)
+                            break;
 
-            if (reader.Token == JsonToken.Int) {
-                instance.SetInt ((int) reader.Value);
-                return instance;
-            }
+                        ((IList) instance).Add (item);
+                    }
+                    break;
+                case JsonToken.ObjectStart:
+                    instance.SetJsonType (JsonType.Object);
 
-            if (reader.Token == JsonToken.Long) {
-                instance.SetLong ((long) reader.Value);
-                return instance;
-            }
+                    while (true) {
+                        reader.Read ();
+                        if (reader.Token == JsonToken.ObjectEnd)
+                            break;
 
-            if (reader.Token == JsonToken.Boolean) {
-                instance.SetBoolean ((bool) reader.Value);
-                return instance;
-            }
-
-            if (reader.Token == JsonToken.ArrayStart) {
-                instance.SetJsonType (JsonType.Array);
-
-                while (true) {
-                    IJsonWrapper item = ReadValue (factory, reader);
-                    if (reader.Token == JsonToken.ArrayEnd)
-                        break;
-
-                    ((IList) instance).Add (item);
-                }
-            }
-            else if (reader.Token == JsonToken.ObjectStart) {
-                instance.SetJsonType (JsonType.Object);
-
-                while (true) {
-                    reader.Read ();
-
-                    if (reader.Token == JsonToken.ObjectEnd)
-                        break;
-
-                    string property = (string) reader.Value;
-
-                    ((IDictionary) instance)[property] = ReadValue (
-                        factory, reader);
-                }
-
+                        string property = (string) reader.Value;
+                        ((IDictionary) instance)[property] = ReadValue (
+                            factory, reader);
+                    }
+                    break;
             }
 
             return instance;

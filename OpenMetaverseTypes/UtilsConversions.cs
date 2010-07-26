@@ -37,54 +37,83 @@ namespace OpenMetaverse
 
         private static readonly string[] _AssetTypeNames = new string[]
         {
-            "texture",
-	        "sound",
-	        "callcard",
-	        "landmark",
-	        "script",
-	        "clothing",
-	        "object",
-	        "notecard",
-	        "category",
-	        "root",
-	        "lsltext",
-	        "lslbyte",
-	        "txtr_tga",
-	        "bodypart",
-	        "trash",
-	        "snapshot",
-	        "lstndfnd",
-	        "snd_wav",
-	        "img_tga",
-	        "jpeg",
-	        "animatn",
-	        "gesture",
-	        "simstate"
+            "texture",    //  0
+	        "sound",      //  1
+	        "callcard",   //  2
+	        "landmark",   //  3
+	        "script",     //  4
+	        "clothing",   //  5
+	        "object",     //  6
+	        "notecard",   //  7
+	        "category",   //  8
+	        "root",       //  9
+	        "lsltext",    // 10
+	        "lslbyte",    // 11
+	        "txtr_tga",   // 12
+	        "bodypart",   // 13
+	        "trash",      // 14
+	        "snapshot",   // 15
+	        "lstndfnd",   // 16
+	        "snd_wav",    // 17
+	        "img_tga",    // 18
+	        "jpeg",       // 19
+	        "animatn",    // 20
+	        "gesture",    // 21
+	        "simstate",   // 22
+            "favorite",   // 23
+            "link",       // 24
+            "linkfolder", // 25
+            String.Empty, // 26
+            String.Empty, // 27
+            String.Empty, // 28
+            String.Empty, // 29
+            String.Empty, // 30
+            String.Empty, // 31
+            String.Empty, // 32
+            String.Empty, // 33
+            String.Empty, // 34
+            String.Empty, // 35
+            String.Empty, // 36
+            String.Empty, // 37
+            String.Empty, // 38
+            String.Empty, // 39
+            String.Empty, // 40
+            String.Empty, // 41
+            String.Empty, // 42
+            String.Empty, // 43
+            String.Empty, // 44
+            String.Empty, // 45
+            "curoutfit",  // 46
+            "outfit",     // 47
+            "myoutfits",  // 48
+            "mesh",       // 49
         };
 
         private static readonly string[] _InventoryTypeNames = new string[]
         {
-            "texture",
-	        "sound",
-	        "callcard",
-	        "landmark",
-	        String.Empty,
-	        String.Empty,
-	        "object",
-	        "notecard",
-	        "category",
-	        "root",
-	        "script",
-	        String.Empty,
-	        String.Empty,
-	        String.Empty,
-	        String.Empty,
-	        "snapshot",
-	        String.Empty,
-	        "attach",
-	        "wearable",
-	        "animation",
-	        "gesture",
+            "texture",    //  0
+	        "sound",      //  1
+	        "callcard",   //  2
+	        "landmark",   //  3
+	        String.Empty, //  4
+	        String.Empty, //  5
+	        "object",     //  6
+	        "notecard",   //  7
+	        "category",   //  8
+	        "root",       //  9
+	        "script",     // 10
+	        String.Empty, // 11
+	        String.Empty, // 12
+	        String.Empty, // 13
+	        String.Empty, // 14
+	        "snapshot",   // 15
+	        String.Empty, // 16
+	        "attach",     // 17
+	        "wearable",   // 18
+	        "animation",  // 19
+	        "gesture",    // 20
+            String.Empty, // 21
+            "mesh"        // 22
         };
 
         private static readonly string[] _SaleTypeNames = new string[]

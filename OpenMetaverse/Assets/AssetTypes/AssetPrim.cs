@@ -60,6 +60,13 @@ namespace OpenMetaverse.Assets
         /// <summary>Initializes a new instance of an AssetPrim object</summary>
         public AssetPrim() { }
 
+        /// <summary>
+        /// Initializes a new instance of an AssetPrim object
+        /// </summary>
+        /// <param name="assetID">A unique <see cref="UUID"/> specific to this asset</param>
+        /// <param name="assetData">A byte array containing the raw asset data</param>
+        public AssetPrim(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
+
         public AssetPrim(string xmlData)
         {
             DecodeXml(xmlData);
@@ -79,7 +86,7 @@ namespace OpenMetaverse.Assets
         /// </summary>
         public override void Encode()
         {
-            // FIXME:
+            AssetData = System.Text.Encoding.UTF8.GetBytes(EncodeXml());
         }
 
         /// <summary>
@@ -88,7 +95,17 @@ namespace OpenMetaverse.Assets
         /// <returns></returns>
         public override bool Decode()
         {
-            // FIXME:
+            if (AssetData != null && AssetData.Length > 0)
+            {
+                try
+                {
+                    string xmlData = System.Text.Encoding.UTF8.GetString(AssetData);
+                    DecodeXml(xmlData);
+                    return true;
+                }
+                catch { }
+            }
+
             return false;
         }
 
@@ -168,10 +185,49 @@ namespace OpenMetaverse.Assets
             obj.CreatorID = ReadUUID(reader, "CreatorID");
             obj.FolderID = ReadUUID(reader, "FolderID");
             obj.Inventory.Serial = reader.ReadElementContentAsInt("InventorySerial", String.Empty);
-            
-            // FIXME: Parse TaskInventory
-            obj.Inventory.Items = new PrimObject.InventoryBlock.ItemBlock[0];
-            reader.ReadInnerXml();
+
+            #region Task Inventory
+
+            List<PrimObject.InventoryBlock.ItemBlock> invItems = new List<PrimObject.InventoryBlock.ItemBlock>();
+
+            reader.ReadStartElement("TaskInventory", String.Empty);
+            while (reader.Name == "TaskInventoryItem")
+            {
+                PrimObject.InventoryBlock.ItemBlock item = new PrimObject.InventoryBlock.ItemBlock();
+                reader.ReadStartElement("TaskInventoryItem", String.Empty);
+
+                item.AssetID = ReadUUID(reader, "AssetID");
+                item.PermsBase = (uint)reader.ReadElementContentAsInt("BasePermissions", String.Empty);
+                item.CreationDate = Utils.UnixTimeToDateTime((uint)reader.ReadElementContentAsInt("CreationDate", String.Empty));
+                item.CreatorID = ReadUUID(reader, "CreatorID");
+                item.Description = reader.ReadElementContentAsString("Description", String.Empty);
+                item.PermsEveryone = (uint)reader.ReadElementContentAsInt("EveryonePermissions", String.Empty);
+                item.Flags = reader.ReadElementContentAsInt("Flags", String.Empty);
+                item.GroupID = ReadUUID(reader, "GroupID");
+                item.PermsGroup = (uint)reader.ReadElementContentAsInt("GroupPermissions", String.Empty);
+                item.InvType = (InventoryType)reader.ReadElementContentAsInt("InvType", String.Empty);
+                item.ID = ReadUUID(reader, "ItemID");
+                UUID oldItemID = ReadUUID(reader, "OldItemID"); // TODO: Is this useful?
+                item.LastOwnerID = ReadUUID(reader, "LastOwnerID");
+                item.Name = reader.ReadElementContentAsString("Name", String.Empty);
+                item.PermsNextOwner = (uint)reader.ReadElementContentAsInt("NextPermissions", String.Empty);
+                item.OwnerID = ReadUUID(reader, "OwnerID");
+                item.PermsOwner = (uint)reader.ReadElementContentAsInt("CurrentPermissions", String.Empty);
+                UUID parentID = ReadUUID(reader, "ParentID");
+                UUID parentPartID = ReadUUID(reader, "ParentPartID");
+                item.PermsGranterID = ReadUUID(reader, "PermsGranter");
+                item.PermsBase = (uint)reader.ReadElementContentAsInt("PermsMask", String.Empty);
+                item.Type = (AssetType)reader.ReadElementContentAsInt("Type", String.Empty);
+
+                reader.ReadEndElement();
+                invItems.Add(item);
+            }
+            if (reader.NodeType == XmlNodeType.EndElement)
+                reader.ReadEndElement();
+
+            obj.Inventory.Items = invItems.ToArray();
+
+            #endregion Task Inventory
 
             PrimFlags flags = (PrimFlags)reader.ReadElementContentAsInt("ObjectFlags", String.Empty);
             obj.UsePhysics = (flags & PrimFlags.Physics) != 0;
@@ -185,16 +241,20 @@ namespace OpenMetaverse.Assets
             obj.LocalID = (uint)reader.ReadElementContentAsLong("LocalId", String.Empty);
             obj.Name = reader.ReadElementString("Name");
             obj.Material = reader.ReadElementContentAsInt("Material", String.Empty);
-            
-            reader.ReadInnerXml(); // RegionHandle
 
+            if (reader.Name == "PassTouches")
+                obj.PassTouches = reader.ReadElementContentAsBoolean("PassTouches", String.Empty);
+            else
+                obj.PassTouches = false;
+
+            obj.RegionHandle = (ulong)reader.ReadElementContentAsLong("RegionHandle", String.Empty);
             obj.RemoteScriptAccessPIN = reader.ReadElementContentAsInt("ScriptAccessPin", String.Empty);
-
             Vector3 groupPosition = ReadVector(reader, "GroupPosition");
             Vector3 offsetPosition = ReadVector(reader, "OffsetPosition");
             obj.Rotation = ReadQuaternion(reader, "RotationOffset");
             obj.Velocity = ReadVector(reader, "Velocity");
-            Vector3 rotationalVelocity = ReadVector(reader, "RotationalVelocity");
+            if (reader.Name == "RotationalVelocity")
+                ReadVector(reader, "RotationalVelocity");
             obj.AngularVelocity = ReadVector(reader, "AngularVelocity");
             obj.Acceleration = ReadVector(reader, "Acceleration");
             obj.Description = reader.ReadElementString("Description");
@@ -609,19 +669,20 @@ namespace OpenMetaverse.Assets
             {
                 public UUID ID;
                 public string Name;
-                public string OwnerIdentity;
-                public string CreatorIdentity;
-                public string GroupIdentity;
+                public UUID OwnerID;
+                public UUID CreatorID;
+                public UUID GroupID;
+                public UUID LastOwnerID;
+                public UUID PermsGranterID;
                 public UUID AssetID;
-                public string ContentType;
+                public AssetType Type;
+                public InventoryType InvType;
                 public string Description;
                 public uint PermsBase;
                 public uint PermsOwner;
                 public uint PermsGroup;
                 public uint PermsEveryone;
                 public uint PermsNextOwner;
-                public int SalePrice;
-                public int SaleType;
                 public int Flags;
                 public DateTime CreationDate;
 
@@ -630,19 +691,20 @@ namespace OpenMetaverse.Assets
                     OSDMap map = new OSDMap();
                     map["id"] = OSD.FromUUID(ID);
                     map["name"] = OSD.FromString(Name);
-                    map["owner_identity"] = OSD.FromString(OwnerIdentity);
-                    map["creator_identity"] = OSD.FromString(CreatorIdentity);
-                    map["group_identity"] = OSD.FromString(GroupIdentity);
+                    map["owner_id"] = OSD.FromUUID(OwnerID);
+                    map["creator_id"] = OSD.FromUUID(CreatorID);
+                    map["group_id"] = OSD.FromUUID(GroupID);
+                    map["last_owner_id"] = OSD.FromUUID(LastOwnerID);
+                    map["perms_granter_id"] = OSD.FromUUID(PermsGranterID);
                     map["asset_id"] = OSD.FromUUID(AssetID);
-                    map["content_type"] = OSD.FromString(ContentType);
+                    map["asset_type"] = OSD.FromInteger((int)Type);
+                    map["inv_type"] = OSD.FromInteger((int)InvType);
                     map["description"] = OSD.FromString(Description);
                     map["perms_base"] = OSD.FromInteger(PermsBase);
                     map["perms_owner"] = OSD.FromInteger(PermsOwner);
                     map["perms_group"] = OSD.FromInteger(PermsGroup);
                     map["perms_everyone"] = OSD.FromInteger(PermsEveryone);
                     map["perms_next_owner"] = OSD.FromInteger(PermsNextOwner);
-                    map["sale_price"] = OSD.FromInteger(SalePrice);
-                    map["sale_type"] = OSD.FromInteger(SaleType);
                     map["flags"] = OSD.FromInteger(Flags);
                     map["creation_date"] = OSD.FromDate(CreationDate);
                     return map;
@@ -652,19 +714,20 @@ namespace OpenMetaverse.Assets
                 {
                     ID = map["id"].AsUUID();
                     Name = map["name"].AsString();
-                    OwnerIdentity = map["owner_identity"].AsString();
-                    CreatorIdentity = map["creator_identity"].AsString();
-                    GroupIdentity = map["group_identity"].AsString();
+                    OwnerID = map["owner_id"].AsUUID();
+                    CreatorID = map["creator_id"].AsUUID();
+                    GroupID = map["group_id"].AsUUID();
+                    LastOwnerID = map["last_owner_id"].AsUUID();
+                    PermsGranterID = map["perms_granter_id"].AsUUID();
                     AssetID = map["asset_id"].AsUUID();
-                    ContentType = map["content_type"].AsString();
+                    Type = (AssetType)map["asset_type"].AsInteger();
+                    InvType = (InventoryType)map["inv_type"].AsInteger();
                     Description = map["description"].AsString();
                     PermsBase = (uint)map["perms_base"].AsInteger();
                     PermsOwner = (uint)map["perms_owner"].AsInteger();
                     PermsGroup = (uint)map["perms_group"].AsInteger();
                     PermsEveryone = (uint)map["perms_everyone"].AsInteger();
                     PermsNextOwner = (uint)map["perms_next_owner"].AsInteger();
-                    SalePrice = map["sale_price"].AsInteger();
-                    SaleType = map["sale_type"].AsInteger();
                     Flags = map["flags"].AsInteger();
                     CreationDate = map["creation_date"].AsDate();
                 }
@@ -748,6 +811,7 @@ namespace OpenMetaverse.Assets
         public int State;
         public int PCode;
         public int Material;
+        public bool PassTouches;
         public UUID SoundID;
         public float SoundGain;
         public float SoundRadius;
@@ -819,6 +883,7 @@ namespace OpenMetaverse.Assets
             map["state"] = OSD.FromInteger(State);
             map["prim_code"] = OSD.FromInteger(PCode);
             map["material"] = OSD.FromInteger(Material);
+            map["pass_touches"] = OSD.FromBoolean(PassTouches);
             map["sound_id"] = OSD.FromUUID(SoundID);
             map["sound_gain"] = OSD.FromReal(SoundGain);
             map["sound_radius"] = OSD.FromReal(SoundRadius);
@@ -897,6 +962,7 @@ namespace OpenMetaverse.Assets
             State = map["state"].AsInteger();
             PCode = map["prim_code"].AsInteger();
             Material = map["material"].AsInteger();
+            PassTouches = map["pass_touches"].AsBoolean();
             SoundID = map["sound_id"].AsUUID();
             SoundGain = (float)map["sound_gain"].AsReal();
             SoundRadius = (float)map["sound_radius"].AsReal();

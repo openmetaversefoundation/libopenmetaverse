@@ -124,8 +124,8 @@ namespace OpenMetaverse
         OutfitFolder = 47,
         /// <summary>Root folder for the folders of type OutfitFolder</summary>
         MyOutfitsFolder = 48,
-        /// <summary></summary>
-        InboxFolder = 49,
+        /// <summary>Linden mesh format</summary>
+        Mesh = 49,
     }
 
     /// <summary>
@@ -184,7 +184,10 @@ namespace OpenMetaverse
         /// <summary></summary>
         Animation = 19,
         /// <summary></summary>
-        Gesture = 20
+        Gesture = 20,
+
+        /// <summary></summary>
+        Mesh = 22,
     }
 
     /// <summary>
