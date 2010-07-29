@@ -249,6 +249,12 @@ namespace OpenMetaverse.Assets
 
             obj.RegionHandle = (ulong)reader.ReadElementContentAsLong("RegionHandle", String.Empty);
             obj.RemoteScriptAccessPIN = reader.ReadElementContentAsInt("ScriptAccessPin", String.Empty);
+            
+            if (reader.Name == "PlaySoundSlavePrims")
+                reader.ReadInnerXml();
+            if (reader.Name == "LoopSoundSlavePrims")
+                reader.ReadInnerXml();
+
             Vector3 groupPosition = ReadVector(reader, "GroupPosition");
             Vector3 offsetPosition = ReadVector(reader, "OffsetPosition");
             obj.Rotation = ReadQuaternion(reader, "RotationOffset");
