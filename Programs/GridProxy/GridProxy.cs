@@ -45,7 +45,7 @@ using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
 using log4net;
 using Nwc.XmlRpc;
-using Logger=Nwc.XmlRpc.Logger;
+using Logger = Nwc.XmlRpc.Logger;
 
 namespace GridProxy
 {
@@ -78,7 +78,7 @@ namespace GridProxy
         /// The URI of the login server
         /// </summary>
         public Uri remoteLoginUri = new Uri("https://login.agni.lindenlab.com/cgi-bin/login.cgi");
-        
+
         /// <summary>
         /// construct a default proxy configuration with the specified userAgent and author
         /// </summary>
@@ -170,7 +170,7 @@ namespace GridProxy
         private void ParseRemoteLoginUri(string value)
         {
             remoteLoginUri = new Uri(value);
-        }   
+        }
     }
 
     // Proxy: OpenMetaverse proxy server
@@ -251,8 +251,8 @@ namespace GridProxy
             }
 
             loginServer.Close();
-            
-		    OpenMetaverse.Logger.Log("<T< KeepAlive", Helpers.LogLevel.Debug);
+
+            OpenMetaverse.Logger.Log("<T< KeepAlive", Helpers.LogLevel.Debug);
         }
 
         // AddDelegate: add callback packetDelegate for packets of type packetName going direction
@@ -487,7 +487,7 @@ namespace GridProxy
             }
 
             byte[] byteLine = reader.ReadLine();
-            if(byteLine==null)
+            if (byteLine == null)
             {
                 //This dirty hack is part of the LIBOMV-457 workaround
                 //The connecting libomv client being proxied can manage to trigger a null from the ReadLine()
@@ -516,7 +516,7 @@ namespace GridProxy
             uri = match.Groups[2].Captures[0].ToString();
 
             OpenMetaverse.Logger.Log(String.Format("[{0}] {1}:{2}", reqNo, meth, uri), Helpers.LogLevel.Debug);
-            
+
             // read HTTP header
             do
             {
@@ -550,7 +550,8 @@ namespace GridProxy
                 contentLength = Convert.ToInt32(headers["content-length"]);
             }
 
-            if (headers.ContainsKey("content-type")) {
+            if (headers.ContainsKey("content-type"))
+            {
                 contentType = headers["content-type"];
             }
 
@@ -558,14 +559,17 @@ namespace GridProxy
             byte[] content = new byte[contentLength];
             reader.Read(content, 0, contentLength);
 
-            if (contentLength < 8192) 
+            if (contentLength < 8192)
                 OpenMetaverse.Logger.Log(String.Format("[{0}] request length={1}:\n{2}", reqNo, contentLength, Utils.BytesToString(content)), Helpers.LogLevel.Debug);
 
             if (uri == "/")
             {
-                if (contentType == "application/xml+llsd" || contentType == "application/xml") {
+                if (contentType == "application/xml+llsd" || contentType == "application/xml")
+                {
                     ProxyLoginSD(netStream, content);
-                } else {
+                }
+                else
+                {
                     ProxyLogin(netStream, content);
                 }
             }
@@ -577,7 +581,7 @@ namespace GridProxy
             {
                 //This is a libomv client and the proxy CAPS URI has been munged by the C# URI class
                 //Part of the LIBOMV-457 work around, TODO make this much nicer.
-                uri=uri.Replace(":/","://");
+                uri = uri.Replace(":/", "://");
                 ProxyCaps(netStream, meth, uri.Substring(1), headers, content, reqNo);
             }
             else
@@ -594,11 +598,11 @@ namespace GridProxy
 
         }
 
-        public ObservableDictionary<string, CapInfo> KnownCaps = new ObservableDictionary<string,CapInfo>();
+        public ObservableDictionary<string, CapInfo> KnownCaps = new ObservableDictionary<string, CapInfo>();
         //private Dictionary<string, bool> SubHack = new Dictionary<string, bool>();
 
         private void ProxyCaps(NetworkStream netStream, string meth, string uri, Dictionary<string, string> headers, byte[] content, int reqNo)
-        {           
+        {
             Match match = new Regex(@"^(https?)://([^:/]+)(:\d+)?(/.*)$").Match(uri);
             if (!match.Success)
             {
@@ -619,7 +623,7 @@ namespace GridProxy
 
             CapsRequest capReq = null; bool shortCircuit = false; bool requestFailed = false;
             if (cap != null)
-            {                
+            {
                 capReq = new CapsRequest(cap);
 
                 if (cap.ReqFmt == CapsDataFormat.OSD)
@@ -656,7 +660,7 @@ namespace GridProxy
             {
                 HttpWebRequest req = (HttpWebRequest)HttpWebRequest.Create(uri);
                 req.KeepAlive = false;
-               
+
                 foreach (string header in headers.Keys)
                 {
                     if (header == "connection" ||
@@ -679,18 +683,24 @@ namespace GridProxy
                     {
                         string rangeHeader = headers[header];
                         string[] parts = rangeHeader.Split('=');
+
                         if (parts.Length == 2)
                         {
                             string[] range = parts[1].Split('-');
+                            int from;
+                            int to;
+
                             if (range.Length == 2)
                             {
-                                int from;
-                                int to;
                                 if (int.TryParse(range[0], out from)
                                     && int.TryParse(range[1], out to))
                                 {
-                                    req.AddRange(parts[0], 0, 0);
+                                    req.AddRange(parts[0], from, to);
                                 }
+                            }
+                            else if (range.Length == 1 && int.TryParse(range[0], out to))
+                            {
+                                req.AddRange(parts[0], to);
                             }
                         }
                     }
@@ -703,14 +713,14 @@ namespace GridProxy
                 {
                     capReq.RequestHeaders = req.Headers;
                 }
-                
+
                 req.Method = meth;
-               
+
                 // can't do gets on requests with a content body
                 // without throwing a protocol exception. So force it to post 
                 // incase our parser stupidly set it to GET due to the viewer 
                 // doing something stupid like sending an empty request
-                if(content.Length > 0)
+                if (content.Length > 0)
                     req.Method = "POST";
 
                 req.ContentLength = content.Length;
@@ -730,7 +740,7 @@ namespace GridProxy
                     }
                     resp = (HttpWebResponse)req.GetResponse();
                 }
-                
+
                 catch (WebException e)
                 {
                     if (e.Status == WebExceptionStatus.Timeout || e.Status == WebExceptionStatus.SendFailure)
@@ -793,7 +803,9 @@ namespace GridProxy
                         netStream.Write(wr, 0, wr.Length);
                     }
 
-                    capReq.ResponseHeaders = resp.Headers;
+                    if (capReq != null)
+                        capReq.ResponseHeaders = resp.Headers;
+
                     for (int i = 0; i < resp.Headers.Count; i++)
                     {
                         string key = resp.Headers.Keys[i];
@@ -807,9 +819,10 @@ namespace GridProxy
                         }
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     // TODO: Should we handle this somehow?
+                    OpenMetaverse.Logger.DebugLog("Failed writing output: " + ex.Message);
                 }
             }
 
@@ -823,7 +836,7 @@ namespace GridProxy
                     }
                     catch (InvalidCastException ex)
                     {
-                        OpenMetaverse.Logger.Log("Invalid Cast thrown trying to cast OSD to OSDMap: \n'" + capReq.Response.AsString() + "' Length="+capReq.RawResponse.Length.ToString() + "\n",
+                        OpenMetaverse.Logger.Log("Invalid Cast thrown trying to cast OSD to OSDMap: \n'" + capReq.Response.AsString() + "' Length=" + capReq.RawResponse.Length.ToString() + "\n",
                             Helpers.LogLevel.Error, ex);
                     }
                     catch (Exception ex)
@@ -854,8 +867,8 @@ namespace GridProxy
 
                 netStream.Write(respBuf, 0, respBuf.Length);
             }
-            catch (SocketException) {}
-            catch (IOException) {}
+            catch (SocketException) { }
+            catch (IOException) { }
             catch (Exception e)
             {
                 OpenMetaverse.Logger.Log("Exception: Error writing to stream " + e, Helpers.LogLevel.Error, e);
@@ -873,7 +886,7 @@ namespace GridProxy
             if (capReq.Response.Type == OSDType.Map)
             {
                 OSDMap m = (OSDMap)capReq.Response;
-                
+
                 foreach (string key in m.Keys)
                 {
                     string val = m[key].AsString();
@@ -1143,21 +1156,24 @@ namespace GridProxy
                         catch (Exception e) { OpenMetaverse.Logger.Log("Exception in login response delegate" + e, Helpers.LogLevel.Error, e); }
                     }
                 }
-               
+
             }
         }
 
         private void ProxyLoginSD(NetworkStream netStream, byte[] content)
         {
-            lock (this) {
+            lock (this)
+            {
                 AutoResetEvent remoteComplete = new AutoResetEvent(false);
                 CapsClient loginRequest = new CapsClient(proxyConfig.remoteLoginUri);
                 OSD response = null;
                 loginRequest.OnComplete += new CapsClient.CompleteCallback(
                     delegate(CapsClient client, OSD result, Exception error)
                     {
-                        if (error == null) {
-                            if (result != null && result.Type == OSDType.Map) {
+                        if (error == null)
+                        {
+                            if (result != null && result.Type == OSDType.Map)
+                            {
                                 response = result;
                             }
                         }
@@ -1167,7 +1183,8 @@ namespace GridProxy
                 loginRequest.BeginGetResponse(content, "application/llsd+xml", 1000 * 100);
                 remoteComplete.WaitOne(1000 * 100, false);
 
-                if (response == null) {
+                if (response == null)
+                {
                     byte[] wr = Encoding.ASCII.GetBytes("HTTP/1.0 500 Internal Server Error\r\nContent-Length: 0\r\n\r\n");
                     netStream.Write(wr, 0, wr.Length);
                     return;
@@ -1184,7 +1201,8 @@ namespace GridProxy
                 map.TryGetValue("seed_capability", out llsd);
                 if (llsd != null) seed_capability = llsd.AsString();
 
-                if (sim_port == null || sim_ip == null || seed_capability == null) {
+                if (sim_port == null || sim_ip == null || seed_capability == null)
+                {
                     if (map != null)
                     {
                         OpenMetaverse.Logger.Log("Connection to server failed, returned LLSD error follows:\n" + map.ToString(), Helpers.LogLevel.Error);
@@ -1229,7 +1247,7 @@ namespace GridProxy
         private Dictionary<EndPoint, SimProxy> proxyHandlers = new Dictionary<EndPoint, SimProxy>();
         //private XmlRpcRequestDelegate loginRequestDelegate = null;
         //private XmlRpcResponseDelegate loginResponseDelegate = null;
-        
+
         public List<XmlRpcRequestDelegate> loginRequestDelegates = new List<XmlRpcRequestDelegate>();
         public List<XmlRpcResponseDelegate> loginResponseDelegates = new List<XmlRpcResponseDelegate>();
 
@@ -1270,7 +1288,7 @@ namespace GridProxy
         // ReceiveFromSim: packet received from a remote sim
         private void ReceiveFromSim(IAsyncResult ar)
         {
-            lock (this) 
+            lock (this)
                 try
                 {
                     //if (!simFacingSocket.Connected) return;
@@ -1396,7 +1414,7 @@ namespace GridProxy
         // SendPacket: send a packet to a sim from our fake client endpoint
         public void SendPacket(Packet packet, IPEndPoint endPoint, bool skipZero)
         {
-           
+
             byte[] buffer = packet.ToBytes();
             if (skipZero || !packet.Header.Zerocoded)
                 simFacingSocket.SendTo(buffer, buffer.Length, SocketFlags.None, endPoint);
@@ -1404,7 +1422,7 @@ namespace GridProxy
             {
                 int zeroLength = Helpers.ZeroEncode(buffer, buffer.Length, zeroBuffer);
                 simFacingSocket.SendTo(zeroBuffer, zeroLength, SocketFlags.None, endPoint);
-            } 
+            }
         }
 
         // SpoofAck: create an ACK for the given packet
@@ -1494,7 +1512,7 @@ namespace GridProxy
             private Dictionary<uint, Packet> outgoingAcks;
             private List<uint> incomingSeenAcks;
             private List<uint> outgoingSeenAcks;
-            
+
             // SimProxy: construct a proxy for a single simulator
             public SimProxy(ProxyConfig proxyConfig, IPEndPoint simEndPoint, Proxy proxy)
             {
@@ -1628,7 +1646,7 @@ namespace GridProxy
                             int end = length - 1;
                             Packet packet = OpenMetaverse.Packets.Packet.BuildPacket(receiveBuffer, ref end, zeroBuffer);
 
-				            //OpenMetaverse.Logger.Log("-> " + packet.Type + " #" + packet.Header.Sequence, Helpers.LogLevel.Debug);
+                            //OpenMetaverse.Logger.Log("-> " + packet.Type + " #" + packet.Header.Sequence, Helpers.LogLevel.Debug);
 
                             // check for ACKs we're waiting for
                             packet = CheckAcks(packet, Direction.Outgoing, ref length, ref needsCopy);
@@ -1661,9 +1679,9 @@ namespace GridProxy
                             {
                                 if (packet.Header.AckList != null && needsCopy)
                                 {
-                                        uint[] newAcks = new uint[packet.Header.AckList.Length];
-                                        Array.Copy(packet.Header.AckList, 0, newAcks, 0, newAcks.Length);
-                                        packet.Header.AckList = newAcks; // FIXME
+                                    uint[] newAcks = new uint[packet.Header.AckList.Length];
+                                    Array.Copy(packet.Header.AckList, 0, newAcks, 0, newAcks.Length);
+                                    packet.Header.AckList = newAcks; // FIXME
                                 }
 
                                 try
@@ -1913,7 +1931,7 @@ namespace GridProxy
                         pb.ID = ackID;
 
                     }
-                    
+
                     switch (packet.Header.Frequency)
                     {
                         case PacketFrequency.High: length = 7; break;
@@ -2030,15 +2048,15 @@ namespace GridProxy
         // LogOutgoingMysteryPacket: log an outgoing packet we're watching for development purposes
         private Packet LogOutgoingMysteryPacket(Packet packet)
         {
-            return LogPacket (packet , "outgoing mystery");
+            return LogPacket(packet, "outgoing mystery");
         }
 
         public void AddLoginRequestDelegate(XmlRpcRequestDelegate xmlRpcRequestDelegate)
         {
-            lock(loginRequestDelegates)
-                if(!loginRequestDelegates.Contains(xmlRpcRequestDelegate))
+            lock (loginRequestDelegates)
+                if (!loginRequestDelegates.Contains(xmlRpcRequestDelegate))
                     loginRequestDelegates.Add(xmlRpcRequestDelegate);
-            
+
         }
 
         public void AddLoginResponseDelegate(XmlRpcResponseDelegate xmlRpcResponseDelegate)
@@ -2149,7 +2167,7 @@ namespace GridProxy
 
         public WebHeaderCollection RequestHeaders = new WebHeaderCollection();
         public WebHeaderCollection ResponseHeaders = new WebHeaderCollection();
-        
+
     }
 
     // XmlRpcRequestDelegate: specifies a delegate to be called for XML-RPC requests
