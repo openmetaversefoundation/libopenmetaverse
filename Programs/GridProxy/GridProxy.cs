@@ -856,9 +856,19 @@ namespace GridProxy
             }
 
 
-            consoleMsg += "\n" + Encoding.UTF8.GetString(respBuf) + "\n--------";
+            string respString;
+            if (cap == null)
+            {
+                respString = "<data>";
+            }
+            else
+            {
+                respString = Encoding.UTF8.GetString(respBuf);
+            }
+
+            consoleMsg += "\n" + respString + "\n--------";
             OpenMetaverse.Logger.Log(consoleMsg, Helpers.LogLevel.Debug);
-            OpenMetaverse.Logger.Log("[" + reqNo + "] Fixed-up response:\n" + Encoding.UTF8.GetString(respBuf) + "\n--------", Helpers.LogLevel.Debug);
+            OpenMetaverse.Logger.Log("[" + reqNo + "] Fixed-up response:\n" + respString + "\n--------", Helpers.LogLevel.Debug);
 
             try
             {
