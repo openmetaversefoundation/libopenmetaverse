@@ -876,7 +876,7 @@ namespace CSJ2K.j2k.codestream.reader
 				default:
 					// --- Unknown or unsupported markers ---
 					// (skip them and see if we can get way with it)
-					FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.WARNING, "COM marker registered as 0x" + System.Convert.ToString(ms.rcom, 16) + " unknown, ignoring (this might crash the " + "decoder or decode a quality degraded or even " + "useless image)");
+                    FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.WARNING, "COM marker registered as " + ms.rcom + " unknown, ignoring (this might crash the " + "decoder or decode a quality degraded or even " + "useless image)");
 					System.IO.BinaryReader temp_BinaryReader;
 					System.Int64 temp_Int64;
 					temp_BinaryReader = ehs;
