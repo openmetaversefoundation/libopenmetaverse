@@ -599,7 +599,7 @@ namespace CSJ2K.j2k.codestream.reader
 				try
 				{
                     short eocCheck = 0;
-                    if (in_Renamed.Pos + 2 < in_Renamed.length())
+                    if (in_Renamed.Pos + sizeof(short) <= in_Renamed.length())
                         eocCheck = in_Renamed.readShort();
 
 					if (!rateReached && !isPsotEqualsZero && eocCheck != CSJ2K.j2k.codestream.Markers.EOC)
