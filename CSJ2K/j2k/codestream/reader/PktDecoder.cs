@@ -1433,7 +1433,13 @@ namespace CSJ2K.j2k.codestream.reader
 							ccb.ntp[l] = 0;
 							ccb.pktIdx[l] = - 1;
 						}
-						throw new System.IO.EndOfStreamException();
+
+                        // JH: If we try and seek past the end of the stream just stop the decoding
+                        curOff = ehs.length() - 1;
+                        ehs.seek(curOff);
+                        stopRead = true;
+                        return true;
+						//throw new System.IO.EndOfStreamException();
 					}
 					
 					// If truncation mode

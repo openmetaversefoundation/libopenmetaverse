@@ -598,7 +598,11 @@ namespace CSJ2K.j2k.codestream.reader
 			{
 				try
 				{
-					if (!rateReached && !isPsotEqualsZero && in_Renamed.readShort() != CSJ2K.j2k.codestream.Markers.EOC)
+                    short eocCheck = 0;
+                    if (in_Renamed.Pos + 2 < in_Renamed.length())
+                        eocCheck = in_Renamed.readShort();
+
+					if (!rateReached && !isPsotEqualsZero && eocCheck != CSJ2K.j2k.codestream.Markers.EOC)
 					{
 						FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.WARNING, "EOC marker not found. " + "Codestream is corrupted.");
 					}
