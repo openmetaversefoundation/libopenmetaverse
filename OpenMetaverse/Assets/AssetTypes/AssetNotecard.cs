@@ -41,10 +41,10 @@ namespace OpenMetaverse.Assets
         public override AssetType AssetType { get { return AssetType.Notecard; } }
 
         /// <summary>A text string containing main text of the notecard</summary>
-        public string BodyText = null;
+        public string BodyText;
 
         /// <summary>List of <see cref="OpenMetaverse.InventoryItem"/>s embedded on the notecard</summary>
-        public List<InventoryItem> EmbeddedItems = null;
+        public List<InventoryItem> EmbeddedItems;
 
         /// <summary>Construct an Asset of type Notecard</summary>
         public AssetNotecard() { }
@@ -57,17 +57,6 @@ namespace OpenMetaverse.Assets
         public AssetNotecard(UUID assetID, byte[] assetData)
             : base(assetID, assetData)
         {
-            Decode();
-        }
-
-        /// <summary>
-        /// Construct an Asset object of type Notecard
-        /// </summary>
-        /// <param name="text">A text string containing the main body text of the notecard</param>
-        public AssetNotecard(string text)
-        {
-            BodyText = text;
-            Encode();
         }
 
         /// <summary>

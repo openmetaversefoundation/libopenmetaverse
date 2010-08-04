@@ -53,19 +53,6 @@ namespace OpenMetaverse.Assets
         public AssetLandmark(UUID assetID, byte[] assetData)
             : base(assetID, assetData)
         {
-            Decode();
-        }
-
-        /// <summary>
-        /// Constuct an asset of type Landmark
-        /// </summary>
-        /// <param name="regionID">UUID of the target region</param>
-        /// <param name="pos">Local position of landmark</param>
-        public AssetLandmark(UUID regionID, Vector3 pos)
-        {
-            RegionID = regionID;
-            Position = pos;
-            Encode();
         }
 
         /// <summary>

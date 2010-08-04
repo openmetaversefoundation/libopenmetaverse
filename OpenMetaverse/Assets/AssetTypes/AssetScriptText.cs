@@ -51,15 +51,6 @@ namespace OpenMetaverse.Assets
         public AssetScriptText(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
 
         /// <summary>
-        /// Initializes a new AssetScriptText object with parameters
-        /// </summary>
-        /// <param name="source">A string containing the scripts contents</param>
-        public AssetScriptText(string source)
-        {
-            Source = source;
-        }
-
-        /// <summary>
         /// Encode a string containing the scripts contents into byte encoded AssetData
         /// </summary>
         public override void Encode()

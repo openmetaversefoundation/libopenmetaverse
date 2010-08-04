@@ -45,9 +45,5 @@ namespace OpenMetaverse.Assets
         /// <param name="assetID">A unique <see cref="UUID"/> specific to this asset</param>
         /// <param name="assetData">A byte array containing the raw asset data</param>
         public AssetClothing(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
-
-        /// <summary>Initializes a new instance of an AssetScriptBinary object with parameters</summary>
-        /// <param name="source">A string containing the Clothings data</param>
-        public AssetClothing(string source) : base(source) { }
     }
 }

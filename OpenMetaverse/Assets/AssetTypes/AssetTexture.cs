@@ -91,25 +91,26 @@ namespace OpenMetaverse.Assets
         /// <returns>True if the decoding was successful, otherwise false</returns>
         public override bool Decode()
         {
-            Components = 0;
-
-            if (OpenJPEG.DecodeToImage(AssetData, out Image))
+            if (AssetData != null && AssetData.Length > 0)
             {
-                if ((Image.Channels & ManagedImage.ImageChannels.Color) != 0)
-                    Components += 3;
-                if ((Image.Channels & ManagedImage.ImageChannels.Gray) != 0)
-                    ++Components;
-                if ((Image.Channels & ManagedImage.ImageChannels.Bump) != 0)
-                    ++Components;
-                if ((Image.Channels & ManagedImage.ImageChannels.Alpha) != 0)
-                    ++Components;
+                this.Components = 0;
 
-                return true;
+                if (OpenJPEG.DecodeToImage(AssetData, out Image))
+                {
+                    if ((Image.Channels & ManagedImage.ImageChannels.Color) != 0)
+                        Components += 3;
+                    if ((Image.Channels & ManagedImage.ImageChannels.Gray) != 0)
+                        ++Components;
+                    if ((Image.Channels & ManagedImage.ImageChannels.Bump) != 0)
+                        ++Components;
+                    if ((Image.Channels & ManagedImage.ImageChannels.Alpha) != 0)
+                        ++Components;
+
+                    return true;
+                }
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         /// <summary>

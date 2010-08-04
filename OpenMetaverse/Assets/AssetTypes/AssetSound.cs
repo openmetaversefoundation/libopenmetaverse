@@ -46,7 +46,6 @@ namespace OpenMetaverse.Assets
         public AssetSound(UUID assetID, byte[] assetData)
             : base(assetID, assetData)
         {
-            AssetData = assetData;
         }
 
         /// <summary>

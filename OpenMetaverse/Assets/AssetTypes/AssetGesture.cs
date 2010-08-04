@@ -271,7 +271,6 @@ namespace OpenMetaverse.Assets
         public AssetGesture(UUID assetID, byte[] assetData)
             : base(assetID, assetData)
         {
-            Decode();
         }
 
         /// <summary>

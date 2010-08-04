@@ -47,7 +47,6 @@ namespace OpenMetaverse.Assets
         public AssetScriptBinary(UUID assetID, byte[] assetData)
             : base(assetID, assetData)
         {
-            AssetData = assetData;
         }
 
         /// <summary>

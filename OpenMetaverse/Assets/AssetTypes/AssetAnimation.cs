@@ -48,7 +48,6 @@ namespace OpenMetaverse.Assets
         public AssetAnimation(UUID assetID, byte[] assetData)
             : base(assetID, assetData)
         {
-            AssetData = assetData;
         }
 
         public override void Encode() { }

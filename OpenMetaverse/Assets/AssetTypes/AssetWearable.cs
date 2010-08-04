@@ -71,19 +71,15 @@ namespace OpenMetaverse.Assets
         /// <param name="assetData">A byte array containing the raw asset data</param>
         public AssetWearable(UUID assetID, byte[] assetData) : base(assetID, assetData) { }
 
-        /// <summary>Initializes a new instance of an AssetWearable object with parameters</summary>
-        /// <param name="source">A string containing the asset parameters</param>
-        public AssetWearable(string source)
-        {
-            AssetData = Utils.StringToBytes(source);
-        }
-
         /// <summary>
         /// Decode an assets byte encoded data to a string
         /// </summary>
         /// <returns>true if the asset data was decoded successfully</returns>
         public override bool Decode()
         {
+            if (AssetData == null || AssetData.Length == 0)
+                return false;
+
             int version = -1;
             Permissions = new Permissions();
 
