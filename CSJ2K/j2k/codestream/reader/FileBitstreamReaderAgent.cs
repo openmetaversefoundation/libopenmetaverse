@@ -243,7 +243,6 @@ namespace CSJ2K.j2k.codestream.reader
 			this.pl = pl;
 			this.printInfo = cdstrInfo;
 			this.hi = hi;
-			System.String strInfo = "Codestream elements information in bytes " + "(offset, total length, header length):\n\n";
 			
 			// Check whether quit conditiosn used
 			usePOCQuit = pl.getBooleanParameter("poc_quit");
@@ -371,8 +370,6 @@ namespace CSJ2K.j2k.codestream.reader
 				anbytes = 0;
 			}
 			
-			strInfo += ("Main header length    : " + cdstreamStart + ", " + mainHeadLen + ", " + mainHeadLen + "\n");
-			
 			// If cannot even read the first tile-part
 			if (anbytes > tnbytes)
 			{
@@ -438,8 +435,6 @@ namespace CSJ2K.j2k.codestream.reader
 					firstPackOff[t][tp] = pos;
 					tilePartHeadLen[t][tp] = (pos - tilePartStart);
 					
-					strInfo += ("Tile-part " + tp + " of tile " + t + " : " + tilePartStart + ", " + tilePartLen[t][tp] + ", " + tilePartHeadLen[t][tp] + "\n");
-					
 					// Update length counters
 					totTileLen[t] += tilePartLen[t][tp];
 					totTileHeadLen[t] += tilePartHeadLen[t][tp];
@@ -501,7 +496,6 @@ namespace CSJ2K.j2k.codestream.reader
 			{
 				if (printInfo)
 				{
-					FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 				}
 				FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.WARNING, "Codestream truncated in tile " + t);
 				
@@ -589,7 +583,6 @@ namespace CSJ2K.j2k.codestream.reader
 			
 			if (printInfo)
 			{
-				FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 			}
 			
 			// Check presence of EOC marker is decoding rate not reached or if
@@ -934,7 +927,6 @@ namespace CSJ2K.j2k.codestream.reader
 			int numLayers = ((System.Int32) decSpec.nls.getTileDef(t));
 			int nPrec = 1;
 			int hlen, plen;
-			System.String strInfo = "Tile " + TileIdx + " (tile-part:" + curTilePart + "): offset, length, header length\n"; ;
 			bool pph = false;
 			if (((System.Boolean) decSpec.pphs.getTileDef(t)))
 			{
@@ -993,7 +985,6 @@ namespace CSJ2K.j2k.codestream.reader
 							{
 								if (printInfo)
 								{
-									FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 								}
 								return true;
 							}
@@ -1007,7 +998,6 @@ namespace CSJ2K.j2k.codestream.reader
 							{
 								if (printInfo)
 								{
-									FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 								}
 								return true;
 							}
@@ -1019,13 +1009,11 @@ namespace CSJ2K.j2k.codestream.reader
 							// Reads packet's body
 							status = pktDec.readPktBody(l, r, c, p, cbI[c][r], nBytes);
 							plen = in_Renamed.Pos - start;
-							strInfo += (" Pkt l=" + l + ",r=" + r + ",c=" + c + ",p=" + p + ": " + start + ", " + plen + ", " + hlen + "\n");
 							
 							if (status)
 							{
 								if (printInfo)
 								{
-									FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 								}
 								return true;
 							}
@@ -1036,7 +1024,6 @@ namespace CSJ2K.j2k.codestream.reader
 			
 			if (printInfo)
 			{
-				FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 			}
 			return false; // Decoding rate was not reached
 		}
@@ -1092,7 +1079,6 @@ namespace CSJ2K.j2k.codestream.reader
 				}
 			}
 			
-			System.String strInfo = "Tile " + TileIdx + " (tile-part:" + curTilePart + "): offset, length, header length\n"; ;
 			int numLayers = ((System.Int32) decSpec.nls.getTileDef(t));
 			bool pph = false;
 			if (((System.Boolean) decSpec.pphs.getTileDef(t)))
@@ -1153,7 +1139,6 @@ namespace CSJ2K.j2k.codestream.reader
 							{
 								if (printInfo)
 								{
-									FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 								}
 								return true;
 							}
@@ -1167,7 +1152,6 @@ namespace CSJ2K.j2k.codestream.reader
 							{
 								if (printInfo)
 								{
-									FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 								}
 								// Output rate of EOF reached
 								return true;
@@ -1180,13 +1164,11 @@ namespace CSJ2K.j2k.codestream.reader
 							// Reads packet's body
 							status = pktDec.readPktBody(l, r, c, p, cbI[c][r], nBytes);
 							plen = in_Renamed.Pos - start;
-							strInfo += (" Pkt l=" + l + ",r=" + r + ",c=" + c + ",p=" + p + ": " + start + ", " + plen + ", " + hlen + "\n");
 							
 							if (status)
 							{
 								if (printInfo)
 								{
-									FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 								}
 								// Output rate or EOF reached
 								return true;
@@ -1198,7 +1180,6 @@ namespace CSJ2K.j2k.codestream.reader
 			
 			if (printInfo)
 			{
-				FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 			}
 			return false; // Decoding rate was not reached
 		}
@@ -1328,7 +1309,6 @@ namespace CSJ2K.j2k.codestream.reader
 			bool status = false;
 			int lastByte = firstPackOff[t][curTilePart] + tilePartLen[t][curTilePart] - 1 - tilePartHeadLen[t][curTilePart];
 			int numLayers = ((System.Int32) decSpec.nls.getTileDef(t));
-			System.String strInfo = "Tile " + TileIdx + " (tile-part:" + curTilePart + "): offset, length, header length\n"; ;
 			bool pph = false;
 			if (((System.Boolean) decSpec.pphs.getTileDef(t)))
 			{
@@ -1395,7 +1375,6 @@ namespace CSJ2K.j2k.codestream.reader
 								{
 									if (printInfo)
 									{
-										FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 									}
 									return true;
 								}
@@ -1409,7 +1388,6 @@ namespace CSJ2K.j2k.codestream.reader
 								{
 									if (printInfo)
 									{
-										FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 									}
 									return true;
 								}
@@ -1421,13 +1399,11 @@ namespace CSJ2K.j2k.codestream.reader
 								// Reads packet's body
 								status = pktDec.readPktBody(l, r, c, nextPrec[c][r], cbI[c][r], nBytes);
 								plen = in_Renamed.Pos - start;
-								strInfo += (" Pkt l=" + l + ",r=" + r + ",c=" + c + ",p=" + nextPrec[c][r] + ": " + start + ", " + plen + ", " + hlen + "\n");
 								
 								if (status)
 								{
 									if (printInfo)
 									{
-										FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 									}
 									return true;
 								}
@@ -1456,7 +1432,6 @@ namespace CSJ2K.j2k.codestream.reader
 			
 			if (printInfo)
 			{
-				FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 			}
 			return false; // Decoding rate was not reached
 		}
@@ -1583,7 +1558,6 @@ namespace CSJ2K.j2k.codestream.reader
 			bool status = false;
 			int lastByte = firstPackOff[t][curTilePart] + tilePartLen[t][curTilePart] - 1 - tilePartHeadLen[t][curTilePart];
 			int numLayers = ((System.Int32) decSpec.nls.getTileDef(t));
-			System.String strInfo = "Tile " + TileIdx + " (tile-part:" + curTilePart + "): offset, length, header length\n"; ;
 			bool pph = false;
 			if (((System.Boolean) decSpec.pphs.getTileDef(t)))
 			{
@@ -1651,7 +1625,6 @@ namespace CSJ2K.j2k.codestream.reader
 								{
 									if (printInfo)
 									{
-										FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 									}
 									return true;
 								}
@@ -1665,7 +1638,6 @@ namespace CSJ2K.j2k.codestream.reader
 								{
 									if (printInfo)
 									{
-										FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 									}
 									return true;
 								}
@@ -1677,13 +1649,11 @@ namespace CSJ2K.j2k.codestream.reader
 								// Reads packet's body
 								status = pktDec.readPktBody(l, r, c, nextPrec[c][r], cbI[c][r], nBytes);
 								plen = in_Renamed.Pos - start;
-								strInfo += (" Pkt l=" + l + ",r=" + r + ",c=" + c + ",p=" + nextPrec[c][r] + ": " + start + ", " + plen + ", " + hlen + "\n");
 								
 								if (status)
 								{
 									if (printInfo)
 									{
-										FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 									}
 									return true;
 								}
@@ -1712,7 +1682,6 @@ namespace CSJ2K.j2k.codestream.reader
 			
 			if (printInfo)
 			{
-				FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 			}
 			return false; // Decoding rate was not reached
 		}
@@ -1839,7 +1808,6 @@ namespace CSJ2K.j2k.codestream.reader
 			bool status = false;
 			int lastByte = firstPackOff[t][curTilePart] + tilePartLen[t][curTilePart] - 1 - tilePartHeadLen[t][curTilePart];
 			int numLayers = ((System.Int32) decSpec.nls.getTileDef(t));
-			System.String strInfo = "Tile " + TileIdx + " (tile-part:" + curTilePart + "): offset, length, header length\n"; ;
 			bool pph = false;
 			if (((System.Boolean) decSpec.pphs.getTileDef(t)))
 			{
@@ -1909,7 +1877,6 @@ namespace CSJ2K.j2k.codestream.reader
 								{
 									if (printInfo)
 									{
-										FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 									}
 									return true;
 								}
@@ -1923,7 +1890,6 @@ namespace CSJ2K.j2k.codestream.reader
 								{
 									if (printInfo)
 									{
-										FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 									}
 									return true;
 								}
@@ -1935,13 +1901,11 @@ namespace CSJ2K.j2k.codestream.reader
 								// Reads packet's body
 								status = pktDec.readPktBody(l, r, c, nextPrec[c][r], cbI[c][r], nBytes);
 								plen = in_Renamed.Pos - start;
-								strInfo += (" Pkt l=" + l + ",r=" + r + ",c=" + c + ",p=" + nextPrec[c][r] + ": " + start + ", " + plen + ", " + hlen + "\n");
 								
 								if (status)
 								{
 									if (printInfo)
 									{
-										FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 									}
 									return true;
 								}
@@ -1970,7 +1934,6 @@ namespace CSJ2K.j2k.codestream.reader
 			
 			if (printInfo)
 			{
-				FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.INFO, strInfo);
 			}
 			return false; // Decoding rate was not reached
 		}
