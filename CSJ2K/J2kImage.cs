@@ -194,8 +194,7 @@ namespace CSJ2K
                 decodedImage = ictransf;
             }
             int numComps = decodedImage.NumComps;
-
-            int bytesPerPixel = (numComps == 4 ? 4 : 3);
+            int bytesPerPixel = numComps; // Assuming 8-bit components
 
             // **** Copy to Bitmap ****
             PixelFormat pixelFormat;
@@ -206,6 +205,7 @@ namespace CSJ2K
                 case 3:
                     pixelFormat = PixelFormat.Format24bppRgb; break;
                 case 4:
+                case 5:
                     pixelFormat = PixelFormat.Format32bppArgb; break;
                 default:
                     throw new ApplicationException("Unsupported PixelFormat.  " + numComps + " components.");
@@ -259,7 +259,8 @@ namespace CSJ2K
                         int[] k = new int[numComps];
                         for (int i = numComps - 1; i >= 0; i--) k[i] = db[i].offset + width - 1;
 
-                        byte[] rowvalues = new byte[width * bytesPerPixel];
+                        int outputBytesPerPixel = Math.Min(bytesPerPixel, 4);
+                        byte[] rowvalues = new byte[width * outputBytesPerPixel];
 
                         for (int i = width - 1; i >= 0; i--)
                         {
@@ -273,7 +274,7 @@ namespace CSJ2K
                                     tmp[j] = (int)Math.Round(((double)tmp[j] / Math.Pow(2D, (double)decodedImage.getNomRangeBits(j))) * 255D);
 
                             }
-                            int offset = i * bytesPerPixel;
+                            int offset = i * outputBytesPerPixel;
                             switch (numComps)
                             {
                                 case 1:
@@ -287,17 +288,18 @@ namespace CSJ2K
                                     rowvalues[offset + 2] = (byte)tmp[0];
                                     break;
                                 case 4:
-                                    rowvalues[offset + 0] = (byte)tmp[3];
-                                    rowvalues[offset + 1] = (byte)tmp[2];
-                                    rowvalues[offset + 2] = (byte)tmp[1];
-                                    rowvalues[offset + 3] = (byte)tmp[0];
+                                case 5:
+                                    rowvalues[offset + 0] = (byte)tmp[2];
+                                    rowvalues[offset + 1] = (byte)tmp[1];
+                                    rowvalues[offset + 2] = (byte)tmp[0];
+                                    rowvalues[offset + 3] = (byte)tmp[3];
                                     break;
                             }
                         }
 
                         BitmapData dstdata = dst.LockBits(
                             new System.Drawing.Rectangle(tOffx, tOffy + l, width, 1),
-                            ImageLockMode.ReadWrite, pixelFormat);
+                            ImageLockMode.WriteOnly, pixelFormat);
 
                         IntPtr ptr = dstdata.Scan0;
                         System.Runtime.InteropServices.Marshal.Copy(rowvalues, 0, ptr, rowvalues.Length);
