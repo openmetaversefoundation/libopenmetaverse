@@ -259,7 +259,7 @@ namespace CSJ2K
                         int[] k = new int[numComps];
                         for (int i = numComps - 1; i >= 0; i--) k[i] = db[i].offset + width - 1;
 
-                        int outputBytesPerPixel = Math.Min(bytesPerPixel, 4);
+                        int outputBytesPerPixel = Math.Max(3, Math.Min(4, bytesPerPixel));
                         byte[] rowvalues = new byte[width * outputBytesPerPixel];
 
                         for (int i = width - 1; i >= 0; i--)

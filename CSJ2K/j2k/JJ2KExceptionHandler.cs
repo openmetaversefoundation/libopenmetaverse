@@ -84,11 +84,11 @@ namespace CSJ2K.j2k
 			//e.fillInStackTrace();
 			SupportClass.WriteStackTrace(e, Console.Error);
 			// Print an explicative message
-			System.Console.Error.WriteLine("The Thread is being terminated bacause an " + "Exception (shown above)\n" + "has been thrown and no special action was " + "defined for this Thread.");
+			//System.Console.Error.WriteLine("The Thread is being terminated bacause an " + "Exception (shown above)\n" + "has been thrown and no special action was " + "defined for this Thread.");
 			// Stop the thread (do not use stop, since it's deprecated in
 			// Java 1.2)
 			//UPGRADE_NOTE: Exception 'java.lang.ThreadDeath' was converted to 'System.ApplicationException' which has different behavior. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1100'"
-			throw new System.ApplicationException();
+			throw new System.ApplicationException(e.Message, e);
 		}
 	}
 }

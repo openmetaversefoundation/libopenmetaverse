@@ -321,6 +321,11 @@ namespace CSJ2K.j2k.util
 				{
 					throw new System.IO.EndOfStreamException();
 				}
+
+                if (off < 0)
+                {
+                    throw new System.IO.EndOfStreamException("Cannot seek to a negative position");
+                }
 			}
 			pos = off;
 		}

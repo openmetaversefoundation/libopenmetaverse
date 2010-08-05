@@ -2366,7 +2366,7 @@ namespace CSJ2K.j2k.codestream.reader
 			catch (System.IO.IOException e)
 			{
 				SupportClass.WriteStackTrace(e, Console.Error);
-				throw new System.ApplicationException("IO Error when reading tile " + x + " x " + y);
+				throw new System.ApplicationException("IO Error when reading tile " + x + " x " + y + ": " + e.Message, e);
 			}
 		}
 		
