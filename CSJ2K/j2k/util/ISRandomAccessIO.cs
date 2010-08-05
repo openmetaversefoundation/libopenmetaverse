@@ -319,11 +319,13 @@ namespace CSJ2K.j2k.util
 				/* we know the length, check seek is within length */
 				if (off > len)
 				{
+                    FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.WARNING, "Attempted to seek past the end of the stream. Codestream is corrupted.");
 					throw new System.IO.EndOfStreamException();
 				}
 
                 if (off < 0)
                 {
+                    FacilityManager.getMsgLogger().printmsg(CSJ2K.j2k.util.MsgLogger_Fields.WARNING, "Attempted to seek to a negative position. Codestream is corrupted.");
                     throw new System.IO.EndOfStreamException("Cannot seek to a negative position");
                 }
 			}
