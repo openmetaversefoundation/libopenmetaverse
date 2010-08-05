@@ -217,7 +217,7 @@ namespace CSJ2K.j2k.util
 			{
 				throw new System.IO.IOException("Out of memory to cache input data");
 			}
-			Array.Copy(buf, 0, newbuf, 0, len);
+            Buffer.BlockCopy(buf, 0, newbuf, 0, len);
 			buf = newbuf;
 		}
 		
@@ -410,7 +410,7 @@ namespace CSJ2K.j2k.util
 			if (pos + n <= len)
 			{
 				// common, fast case
-				Array.Copy(buf, pos, b, off, n);
+                Buffer.BlockCopy(buf, pos, b, off, n);
 				pos += n;
 				return ;
 			}
@@ -423,7 +423,7 @@ namespace CSJ2K.j2k.util
 			{
 				throw new System.IO.EndOfStreamException();
 			}
-			Array.Copy(buf, pos, b, off, n);
+            Buffer.BlockCopy(buf, pos, b, off, n);
 			pos += n;
 		}
 		

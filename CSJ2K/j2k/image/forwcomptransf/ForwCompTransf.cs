@@ -246,14 +246,14 @@ namespace CSJ2K.j2k.image.forwcomptransf
 			switch (ttype)
 			{
 				
-				case NONE: 
-					Array.Copy(ntdepth, 0, tdepth, 0, ntdepth.Length);
+				case NONE:
+                    Buffer.BlockCopy(ntdepth, 0, tdepth, 0, ntdepth.Length);
 					break;
 				
 				case FORW_RCT: 
 					if (ntdepth.Length > 3)
 					{
-						Array.Copy(ntdepth, 3, tdepth, 3, ntdepth.Length - 3);
+                        Buffer.BlockCopy(ntdepth, 3, tdepth, 3, ntdepth.Length - 3);
 					}
 					// The formulas are:
 					// tdepth[0] = ceil(log2(2^(ntdepth[0])+2^ntdepth[1]+
@@ -271,7 +271,7 @@ namespace CSJ2K.j2k.image.forwcomptransf
 				case FORW_ICT: 
 					if (ntdepth.Length > 3)
 					{
-						Array.Copy(ntdepth, 3, tdepth, 3, ntdepth.Length - 3);
+                        Buffer.BlockCopy(ntdepth, 3, tdepth, 3, ntdepth.Length - 3);
 					}
 					// The MathUtil.log2(x) function calculates floor(log2(x)), so we
 					// use 'MathUtil.log2(2*x-1)+1', which calculates ceil(log2(x))

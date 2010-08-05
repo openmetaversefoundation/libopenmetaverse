@@ -515,8 +515,8 @@ namespace CSJ2K.j2k.codestream.writer
 			// Copy the arrays
 			for (k = treeV.Length - 1; k >= 0; k--)
 			{
-				Array.Copy(treeV[k], 0, treeVbak[k], 0, treeV[k].Length);
-				Array.Copy(treeS[k], 0, treeSbak[k], 0, treeS[k].Length);
+                Buffer.BlockCopy(treeV[k], 0, treeVbak[k], 0, treeV[k].Length);
+                Buffer.BlockCopy(treeS[k], 0, treeSbak[k], 0, treeS[k].Length);
 			}
 			
 			// Set saved state
@@ -544,8 +544,8 @@ namespace CSJ2K.j2k.codestream.writer
 			// Copy the arrays
 			for (k = lvls - 1; k >= 0; k--)
 			{
-				Array.Copy(treeVbak[k], 0, treeV[k], 0, treeV[k].Length);
-				Array.Copy(treeSbak[k], 0, treeS[k], 0, treeS[k].Length);
+                Buffer.BlockCopy(treeVbak[k], 0, treeV[k], 0, treeV[k].Length);
+                Buffer.BlockCopy(treeSbak[k], 0, treeS[k], 0, treeS[k].Length);
 			}
 		}
 		

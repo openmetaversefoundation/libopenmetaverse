@@ -236,8 +236,8 @@ namespace CSJ2K.j2k.entropy.encoder
 				// both arrays always have same size
 				optbrate = new float[optbrate.Length + SZ_INCR];
 				extralyrs = new int[extralyrs.Length + SZ_INCR];
-				Array.Copy(tbr, 0, optbrate, 0, nopt);
-				Array.Copy(tel, 0, extralyrs, 0, nopt);
+                Buffer.BlockCopy(tbr, 0, optbrate, 0, nopt);
+                Buffer.BlockCopy(tel, 0, extralyrs, 0, nopt);
 			}
 			// Add new optimization point
 			optbrate[nopt] = brate;

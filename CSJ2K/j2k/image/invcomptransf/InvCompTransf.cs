@@ -292,14 +292,14 @@ namespace CSJ2K.j2k.image.invcomptransf
 			switch (ttype)
 			{
 				
-				case NONE: 
-					Array.Copy(utdepth, 0, tdepth, 0, utdepth.Length);
+				case NONE:
+                    Buffer.BlockCopy(utdepth, 0, tdepth, 0, utdepth.Length);
 					break;
 				
 				case INV_RCT: 
 					if (utdepth.Length > 3)
 					{
-						Array.Copy(utdepth, 3, tdepth, 3, utdepth.Length - 3);
+                        Buffer.BlockCopy(utdepth, 3, tdepth, 3, utdepth.Length - 3);
 					}
 					// The formulas are:
 					// tdepth[0] = ceil(log2(2^(utdepth[0])+2^utdepth[1]+
@@ -317,7 +317,7 @@ namespace CSJ2K.j2k.image.invcomptransf
 				case INV_ICT: 
 					if (utdepth.Length > 3)
 					{
-						Array.Copy(utdepth, 3, tdepth, 3, utdepth.Length - 3);
+                        Buffer.BlockCopy(utdepth, 3, tdepth, 3, utdepth.Length - 3);
 					}
 					// The MathUtil.log2(x) function calculates floor(log2(x)), so we
 					// use 'MathUtil.log2(2*x-1)+1', which calculates ceil(log2(x))

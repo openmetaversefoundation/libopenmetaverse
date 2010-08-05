@@ -756,7 +756,7 @@ namespace CSJ2K.j2k.entropy.decoder
 		/// </param>
 		public void  resetCtxts()
 		{
-			Array.Copy(initStates, 0, I, 0, I.Length);
+            Buffer.BlockCopy(initStates, 0, I, 0, I.Length);
 			ArrayUtil.intArraySet(mPS, 0);
 		}
 		

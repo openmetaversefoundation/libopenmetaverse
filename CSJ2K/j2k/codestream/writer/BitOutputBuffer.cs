@@ -183,7 +183,7 @@ namespace CSJ2K.j2k.codestream.writer
 					// We are at end of 'buf' => extend it
 					byte[] oldbuf = buf;
 					buf = new byte[oldbuf.Length + SZ_INCR];
-					Array.Copy(oldbuf, 0, buf, 0, oldbuf.Length);
+                    System.Buffer.BlockCopy(oldbuf, 0, buf, 0, oldbuf.Length);
 				}
 			}
 		}
@@ -213,7 +213,7 @@ namespace CSJ2K.j2k.codestream.writer
 				// Not enough place, extend it
 				byte[] oldbuf = buf;
 				buf = new byte[oldbuf.Length + SZ_INCR];
-				Array.Copy(oldbuf, 0, buf, 0, oldbuf.Length);
+                System.Buffer.BlockCopy(oldbuf, 0, buf, 0, oldbuf.Length);
 				// SZ_INCR is always 6 or more, so it is enough to hold all the
 				// new bits plus the ones to come after
 			}
@@ -297,7 +297,7 @@ namespace CSJ2K.j2k.codestream.writer
 			{
 				data = new byte[(avbits == 8)?curbyte:curbyte + 1];
 			}
-			Array.Copy(buf, 0, data, 0, (avbits == 8)?curbyte:curbyte + 1);
+            System.Buffer.BlockCopy(buf, 0, data, 0, (avbits == 8) ? curbyte : curbyte + 1);
 			return data;
 		}
 		

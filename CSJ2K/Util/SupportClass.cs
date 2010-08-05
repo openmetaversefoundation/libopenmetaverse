@@ -581,7 +581,7 @@ internal class SupportClass
 			{
 				if (count < readLimit)
 					readLimit = count;
-				System.Array.Copy(this.buffer, this.position, array, index, readLimit);
+                Buffer.BlockCopy(this.buffer, this.position, array, index, readLimit);
 				count -= readLimit;
 				index += readLimit;
 				this.position += readLimit;
@@ -1510,7 +1510,7 @@ internal class SupportClass
 			{
 				if (count < readLimit)
 					readLimit = count;
-				System.Array.Copy(this.buffer, this.position, array, index, readLimit);
+                Buffer.BlockCopy(this.buffer, this.position, array, index, readLimit);
 				count -= readLimit;
 				index += readLimit;
 				this.position += readLimit;
