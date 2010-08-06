@@ -334,13 +334,13 @@ ploop: ;
 			if (termp != null)
 			{
 				isTermPass = new bool[n];
-                Buffer.BlockCopy(termp, 0, isTermPass, 0, n);
+				Array.Copy(termp, 0, isTermPass, 0, n);
 			}
 			else
 			{
 				isTermPass = null;
 			}
-            Buffer.BlockCopy(rates, 0, truncRates, 0, n);
+			Array.Copy(rates, 0, truncRates, 0, n);
 			for (k = first_pnt, p = - 1, i = 0; k < n; k++)
 			{
 				if (rates[k] > 0)

@@ -79,7 +79,11 @@ namespace CSJ2K.j2k.wavelet.synthesis
 	/// 
 	/// </seealso>
 	public class InvWTFull:InverseWT
-	{		
+	{
+		
+		/// <summary>Reference to the ProgressWatch instance if any </summary>
+		private ProgressWatch pw = null;
+		
 		/// <summary>The total number of code-blocks to decode </summary>
 		private int cblkToDecode = 0;
 		
@@ -124,6 +128,7 @@ namespace CSJ2K.j2k.wavelet.synthesis
 			int nc = src.NumComps;
 			reconstructedComps = new DataBlk[nc];
 			ndl = new int[nc];
+			pw = FacilityManager.ProgressWatch;
 		}
 		
 		/// <summary> Returns the reversibility of the current subband. It computes
@@ -293,10 +298,10 @@ namespace CSJ2K.j2k.wavelet.synthesis
 					}
 				//Reconstruct source image
 				waveletTreeReconstruction(reconstructedComps[c], src.getSynSubbandTree(tIdx, c), c);
-                //if (pw != null && c == src.NumComps - 1)
-                //{
-                //    pw.terminateProgressWatch();
-                //}
+				if (pw != null && c == src.NumComps - 1)
+				{
+					pw.terminateProgressWatch();
+				}
 			}
 			
 			if (blk.DataType != dtype)
@@ -555,12 +560,12 @@ namespace CSJ2K.j2k.wavelet.synthesis
 			if (!sb.isNode)
 			{
 				int i, m, n;
-                Array src_dataArray, dst_dataArray;
+				System.Object src_data, dst_data;
 				Coord ncblks;
-
+				
 				if (sb.w == 0 || sb.h == 0)
 				{
-					return; // If empty subband do nothing
+					return ; // If empty subband do nothing
 				}
 				
 				// Get all code-blocks in subband
@@ -572,27 +577,24 @@ namespace CSJ2K.j2k.wavelet.synthesis
 				{
 					subbData = new DataBlkFloat();
 				}
-
 				ncblks = sb.numCb;
-                dst_dataArray = (Array)img.Data;
-
+				dst_data = img.Data;
 				for (m = 0; m < ncblks.y; m++)
 				{
 					for (n = 0; n < ncblks.x; n++)
 					{
 						subbData = src.getInternCodeBlock(c, m, n, sb, subbData);
-                        src_dataArray = (Array)subbData.Data;
-
-                        //if (pw != null)
-                        //{
-                        //    nDecCblk++;
-                        //    pw.updateProgressWatch(nDecCblk, null);
-                        //}
+						src_data = subbData.Data;
+						if (pw != null)
+						{
+							nDecCblk++;
+							pw.updateProgressWatch(nDecCblk, null);
+						}
 						// Copy the data line by line
 						for (i = subbData.h - 1; i >= 0; i--)
 						{
                             // CONVERSION PROBLEM
-							Buffer.BlockCopy(src_dataArray, subbData.offset + i * subbData.scanw, dst_dataArray, (subbData.uly + i) * img.w + subbData.ulx, subbData.w);
+							Array.Copy((System.Array)src_data, subbData.offset + i * subbData.scanw, (System.Array)dst_data, (subbData.uly + i) * img.w + subbData.ulx, subbData.w);
 						}
 					}
 				}
@@ -699,10 +701,10 @@ namespace CSJ2K.j2k.wavelet.synthesis
 			} // Loop on components
 			nDecCblk = 0;
 			
-            //if (pw != null)
-            //{
-            //    pw.initProgressWatch(0, cblkToDecode, "Decoding tile " + tIdx + "...");
-            //}
+			if (pw != null)
+			{
+				pw.initProgressWatch(0, cblkToDecode, "Decoding tile " + tIdx + "...");
+			}
 		}
 		
 		/// <summary> Advances to the next tile, in standard scan-line order (by rows then

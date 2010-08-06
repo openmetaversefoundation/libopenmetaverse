@@ -217,7 +217,7 @@ namespace CSJ2K.j2k.util
 			{
 				throw new System.IO.IOException("Out of memory to cache input data");
 			}
-            Buffer.BlockCopy(buf, 0, newbuf, 0, len);
+			Array.Copy(buf, 0, newbuf, 0, len);
 			buf = newbuf;
 		}
 		
@@ -321,11 +321,6 @@ namespace CSJ2K.j2k.util
 				{
 					throw new System.IO.EndOfStreamException();
 				}
-
-                if (off < 0)
-                {
-                    throw new System.IO.EndOfStreamException("Cannot seek to a negative position");
-                }
 			}
 			pos = off;
 		}
@@ -415,7 +410,7 @@ namespace CSJ2K.j2k.util
 			if (pos + n <= len)
 			{
 				// common, fast case
-                Buffer.BlockCopy(buf, pos, b, off, n);
+				Array.Copy(buf, pos, b, off, n);
 				pos += n;
 				return ;
 			}
@@ -428,7 +423,7 @@ namespace CSJ2K.j2k.util
 			{
 				throw new System.IO.EndOfStreamException();
 			}
-            Buffer.BlockCopy(buf, pos, b, off, n);
+			Array.Copy(buf, pos, b, off, n);
 			pos += n;
 		}
 		

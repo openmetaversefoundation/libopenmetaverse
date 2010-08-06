@@ -743,30 +743,6 @@ namespace CSJ2K.j2k.entropy.encoder
 					Enclosing_Instance.completedComps[c].Add(this);
 				}
 			}
-			
-			/// <summary> Returns the wall time spent by this compressor for component 'c'
-			/// since the last call to this method (or the creation of this
-			/// compressor if not yet called). If DO_TIMING is false 0 is returned.
-			/// 
-			/// </summary>
-			/// <returns> The wall time in milliseconds spent by this compressor
-			/// since the last call to this method.
-			/// 
-			/// </returns>
-			//UPGRADE_NOTE: Synchronized keyword was removed from method 'getTiming'. Lock expression was added. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1027'"
-			internal virtual long getTiming(int c)
-			{
-#if DO_TIMING
-				lock (this)
-				{
-						long t = time[c];
-						time[c] = 0L;
-						return t;
-				}
-#else
-                return 0L;
-#endif
-			}
 		}
 		
 		/// <summary> Instantiates a new entropy coder engine, with the specified source of

@@ -113,7 +113,7 @@ namespace CSJ2K.j2k.entropy.encoder
 				// Resize buffer
 				byte[] tmpbuf = buf;
 				buf = new byte[buf.Length + BUF_INC];
-                Buffer.BlockCopy(tmpbuf, 0, buf, 0, count);
+				Array.Copy(tmpbuf, 0, buf, 0, count);
 			}
 			buf[count++] = (byte) b;
 		}
@@ -137,7 +137,7 @@ namespace CSJ2K.j2k.entropy.encoder
 		public virtual void  toByteArray(int off, int len, byte[] outbuf, int outoff)
 		{
 			// Copy the data
-            Buffer.BlockCopy(buf, off, outbuf, outoff, len);
+			Array.Copy(buf, off, outbuf, outoff, len);
 		}
 		
 		/// <summary> Returns the number of valid bytes in the output buffer (count class

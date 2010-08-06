@@ -196,7 +196,7 @@ namespace CSJ2K.j2k.entropy.decoder
 				if (count + len <= buf.Length)
 				{
 					// Enough place in 'buf'
-                    Buffer.BlockCopy(data, off, buf, count, len);
+					Array.Copy(data, off, buf, count, len);
 					count += len;
 				}
 				else
@@ -205,7 +205,7 @@ namespace CSJ2K.j2k.entropy.decoder
 					{
 						// Enough place in 'buf' if we move input data
 						// Move buffer
-                        Buffer.BlockCopy(buf, pos, buf, 0, count - pos);
+						Array.Copy(buf, pos, buf, 0, count - pos);
 					}
 					else
 					{
@@ -213,12 +213,12 @@ namespace CSJ2K.j2k.entropy.decoder
 						byte[] oldbuf = buf;
 						buf = new byte[count - pos + len];
 						// Copy buffer
-                        Buffer.BlockCopy(oldbuf, count, buf, 0, count - pos);
+						Array.Copy(oldbuf, count, buf, 0, count - pos);
 					}
 					count -= pos;
 					pos = 0;
 					// Copy new data
-                    Buffer.BlockCopy(data, off, buf, count, len);
+					Array.Copy(data, off, buf, count, len);
 					count += len;
 				}
 			}

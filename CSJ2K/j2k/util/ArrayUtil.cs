@@ -103,12 +103,12 @@ namespace CSJ2K.j2k.util
 				for (; i <= len2; i <<= 1)
 				{
 					// Copy values doubling size each time
-                    Buffer.BlockCopy(arr, 0, arr, i, i);
+					Array.Copy(arr, 0, arr, i, i);
 				}
 				if (i < len)
 				{
 					// Copy values to end
-					Buffer.BlockCopy(arr, 0, arr, i, len - i);
+					Array.Copy(arr, 0, arr, i, len - i);
 				}
 			}
 		}
@@ -155,12 +155,12 @@ namespace CSJ2K.j2k.util
 				for (; i <= len2; i <<= 1)
 				{
 					// Copy values doubling size each time
-					Buffer.BlockCopy(arr, 0, arr, i, i);
+					Array.Copy(arr, 0, arr, i, i);
 				}
 				if (i < len)
 				{
 					// Copy values to end
-                    Buffer.BlockCopy(arr, 0, arr, i, len - i);
+					Array.Copy(arr, 0, arr, i, len - i);
 				}
 			}
 		}

@@ -50,7 +50,7 @@ namespace CSJ2K.Icc.Tags
 			while (data[offset + size] != 0)
 				++size;
 			ascii = new byte[size];
-            Buffer.BlockCopy(data, offset, ascii, 0, size);
+			Array.Copy(data, offset, ascii, 0, size);
 		}
 		
 		/// <summary>Return the string rep of this tag. </summary>

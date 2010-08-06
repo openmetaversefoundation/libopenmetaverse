@@ -56,7 +56,7 @@ namespace CSJ2K.Icc.Tags
 			offset += ICCProfile.int_size;
 			
 			ascii = new byte[size - 1];
-            Buffer.BlockCopy(data, offset, ascii, 0, size - 1);
+			Array.Copy(data, offset, ascii, 0, size - 1);
 		}
 		
 		/// <summary>Return the string rep of this tag. </summary>

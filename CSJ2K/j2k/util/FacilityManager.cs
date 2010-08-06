@@ -68,7 +68,22 @@ namespace CSJ2K.j2k.util
 	/// 
 	/// </seealso>
 	public class FacilityManager
-	{		
+	{
+		/// <summary> Returns the ProgressWatch instance registered with the current
+		/// thread (the thread that calls this method). If the current
+		/// thread has no registered ProgressWatch, then the default one is used. 
+		/// 
+		/// </summary>
+		public static ProgressWatch ProgressWatch
+		{
+			get
+			{
+				ProgressWatch pw = (ProgressWatch) watchProgList[SupportClass.ThreadClass.Current()];
+				return (pw == null)?defWatchProg:pw;
+			}
+			
+		}
+		
 		/// <summary>The loggers associated to different threads </summary>
 		//UPGRADE_NOTE: Final was removed from the declaration of 'loggerList '. "ms-help://MS.VSCC.v80/dv_commoner/local/redirect.htm?index='!DefaultContextWindowIndex'&keyword='jlca1003'"
 		private static readonly System.Collections.Hashtable loggerList = System.Collections.Hashtable.Synchronized(new System.Collections.Hashtable());

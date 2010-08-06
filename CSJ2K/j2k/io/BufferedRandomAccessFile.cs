@@ -475,7 +475,7 @@ namespace CSJ2K.j2k.io
 					clen = maxByte - position;
 					if (clen > len)
 						clen = len;
-                    Buffer.BlockCopy(byteBuffer, position, b, off, clen);
+					Array.Copy(byteBuffer, position, b, off, clen);
 					position += clen;
 					off += clen;
 					len -= clen;

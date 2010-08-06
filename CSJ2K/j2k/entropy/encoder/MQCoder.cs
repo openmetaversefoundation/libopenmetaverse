@@ -1323,7 +1323,7 @@ namespace CSJ2K.j2k.entropy.encoder
 		/// </summary>
 		public void  resetCtxts()
 		{
-            Buffer.BlockCopy(initStates, 0, I, 0, I.Length);
+			Array.Copy(initStates, 0, I, 0, I.Length);
 			ArrayUtil.intArraySet(mPS, 0);
 		}
 		

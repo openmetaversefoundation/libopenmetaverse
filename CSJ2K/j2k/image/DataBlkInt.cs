@@ -189,7 +189,7 @@ namespace CSJ2K.j2k.image
 			this.scanw = this.w;
 			this.data_array = new int[this.w * this.h];
 			for (int i = 0; i < this.h; i++)
-                Buffer.BlockCopy(src.data_array, i * src.scanw, this.data_array, i * this.scanw, this.w);
+				Array.Copy(src.data_array, i * src.scanw, this.data_array, i * this.scanw, this.w);
 		}
 		
 		/// <summary> Returns a string of informations about the DataBlkInt.

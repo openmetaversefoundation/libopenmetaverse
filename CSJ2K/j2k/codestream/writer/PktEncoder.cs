@@ -1258,12 +1258,12 @@ namespace CSJ2K.j2k.codestream.writer
 							if (cur_prevtIdxs[b] < 0)
 							{
 								cblen = cur_cbs[b].truncRates[cur_cbs[b].truncIdxs[cur_tIndx[b]]];
-                                Buffer.BlockCopy(cur_cbs[b].data, 0, lbbuf, lblen, cblen);
+								Array.Copy(cur_cbs[b].data, 0, lbbuf, lblen, cblen);
 							}
 							else
 							{
 								cblen = cur_cbs[b].truncRates[cur_cbs[b].truncIdxs[cur_tIndx[b]]] - cur_cbs[b].truncRates[cur_cbs[b].truncIdxs[cur_prevtIdxs[b]]];
-                                Buffer.BlockCopy(cur_cbs[b].data, cur_cbs[b].truncRates[cur_cbs[b].truncIdxs[cur_prevtIdxs[b]]], lbbuf, lblen, cblen);
+								Array.Copy(cur_cbs[b].data, cur_cbs[b].truncRates[cur_cbs[b].truncIdxs[cur_prevtIdxs[b]]], lbbuf, lblen, cblen);
 							}
 							lblen += cblen;
 							
@@ -1368,9 +1368,9 @@ namespace CSJ2K.j2k.codestream.writer
 						for (int s = minsbi; s < maxsbi; s++)
 						{
 							// Save 'lblock'
-                            Buffer.BlockCopy(lblock_t_c[r][s], 0, bak_lblock_t_c[r][s], 0, lblock_t_c[r][s].Length);
+							Array.Copy(lblock_t_c[r][s], 0, bak_lblock_t_c[r][s], 0, lblock_t_c[r][s].Length);
 							// Save 'prevtIdxs'
-                            Buffer.BlockCopy(prevtIdxs_t_c_r[s], 0, bak_prevtIdxs_t_c_r[s], 0, prevtIdxs_t_c_r[s].Length);
+							Array.Copy(prevtIdxs_t_c_r[s], 0, bak_prevtIdxs_t_c_r[s], 0, prevtIdxs_t_c_r[s].Length);
 						} // End loop on subbands
 						
 						// Loop on precincts
@@ -1447,9 +1447,9 @@ namespace CSJ2K.j2k.codestream.writer
 						for (int s = minsbi; s < maxsbi; s++)
 						{
 							// Restore 'lblock'
-                            Buffer.BlockCopy(bak_lblock_t_c[r][s], 0, lblock_t_c[r][s], 0, lblock_t_c[r][s].Length);
+							Array.Copy(bak_lblock_t_c[r][s], 0, lblock_t_c[r][s], 0, lblock_t_c[r][s].Length);
 							// Restore 'prevtIdxs'
-                            Buffer.BlockCopy(bak_prevtIdxs_t_c_r[s], 0, prevtIdxs_t_c_r[s], 0, prevtIdxs_t_c_r[s].Length);
+							Array.Copy(bak_prevtIdxs_t_c_r[s], 0, prevtIdxs_t_c_r[s], 0, prevtIdxs_t_c_r[s].Length);
 						} // End loop on subbands
 						
 						// Loop on precincts
