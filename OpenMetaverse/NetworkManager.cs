@@ -368,12 +368,12 @@ namespace OpenMetaverse
 
             // Register the internal callbacks
             RegisterCallback(PacketType.RegionHandshake, RegionHandshakeHandler);
-            RegisterCallback(PacketType.StartPingCheck, StartPingCheckHandler);
+            RegisterCallback(PacketType.StartPingCheck, StartPingCheckHandler, false);
             RegisterCallback(PacketType.DisableSimulator, DisableSimulatorHandler);
             RegisterCallback(PacketType.KickUser, KickUserHandler);
             RegisterCallback(PacketType.LogoutReply, LogoutReplyHandler);
-            RegisterCallback(PacketType.CompletePingCheck, CompletePingCheckHandler);
-            RegisterCallback(PacketType.SimStats, SimStatsHandler);
+            RegisterCallback(PacketType.CompletePingCheck, CompletePingCheckHandler, false);
+            RegisterCallback(PacketType.SimStats, SimStatsHandler, false);
 
             // GLOBAL SETTING: Don't force Expect-100: Continue headers on HTTP POST calls
             ServicePointManager.Expect100Continue = false;
@@ -1011,9 +1011,9 @@ namespace OpenMetaverse
         protected void CompletePingCheckHandler(object sender, PacketReceivedEventArgs e)
         {
             CompletePingCheckPacket pong = (CompletePingCheckPacket)e.Packet;
-            String retval = "Pong2: " + (Environment.TickCount - e.Simulator.Stats.LastPingSent);
-            if ((pong.PingID.PingID - e.Simulator.Stats.LastPingID + 1) != 0)
-                retval += " (gap of " + (pong.PingID.PingID - e.Simulator.Stats.LastPingID + 1) + ")";
+            //String retval = "Pong2: " + (Environment.TickCount - e.Simulator.Stats.LastPingSent);
+            //if ((pong.PingID.PingID - e.Simulator.Stats.LastPingID + 1) != 0)
+            //    retval += " (gap of " + (pong.PingID.PingID - e.Simulator.Stats.LastPingID + 1) + ")";
 
             e.Simulator.Stats.LastLag = Environment.TickCount - e.Simulator.Stats.LastPingSent;
             e.Simulator.Stats.ReceivedPongs++;

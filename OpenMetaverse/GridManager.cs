@@ -414,7 +414,7 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.MapBlockReply, MapBlockReplyHandler);
             Client.Network.RegisterCallback(PacketType.MapItemReply, MapItemReplyHandler);
             Client.Network.RegisterCallback(PacketType.SimulatorViewerTimeMessage, SimulatorViewerTimeMessageHandler);
-            Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, CoarseLocationHandler);
+            Client.Network.RegisterCallback(PacketType.CoarseLocationUpdate, CoarseLocationHandler, false);
             Client.Network.RegisterCallback(PacketType.RegionIDAndHandleReply, RegionHandleReplyHandler);
 		}
 
@@ -832,7 +832,8 @@ namespace OpenMetaverse
 
             if (m_CoarseLocationUpdate != null)
             {
-                OnCoarseLocationUpdate(new CoarseLocationUpdateEventArgs(e.Simulator, newEntries, removedEntries));
+                ThreadPool.QueueUserWorkItem(delegate(object o)
+                { OnCoarseLocationUpdate(new CoarseLocationUpdateEventArgs(e.Simulator, newEntries, removedEntries)); });
             }
         }
 
