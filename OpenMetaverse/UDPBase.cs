@@ -225,32 +225,41 @@ namespace OpenMetaverse
             {
                 try
                 {
-                    udpSocket.BeginSendTo(
+                    // Profiling heavily loaded clients was showing better performance with 
+                    // synchronous UDP packet sending
+                    udpSocket.SendTo(
                         buf.Data,
                         0,
                         buf.DataLength,
                         SocketFlags.None,
-                        buf.RemoteEndPoint,
-                        AsyncEndSend,
-                        buf);
+                        buf.RemoteEndPoint);
+
+                    //udpSocket.BeginSendTo(
+                    //    buf.Data,
+                    //    0,
+                    //    buf.DataLength,
+                    //    SocketFlags.None,
+                    //    buf.RemoteEndPoint,
+                    //    AsyncEndSend,
+                    //    buf);
                 }
                 catch (SocketException) { }
                 catch (ObjectDisposedException) { }
             }
         }
 
-        void AsyncEndSend(IAsyncResult result)
-        {
-            try
-            {
-                UDPPacketBuffer buf = (UDPPacketBuffer)result.AsyncState;
-                if (!udpSocket.Connected) return;
-                int bytesSent = udpSocket.EndSendTo(result);
+        //void AsyncEndSend(IAsyncResult result)
+        //{
+        //    try
+        //    {
+        //        UDPPacketBuffer buf = (UDPPacketBuffer)result.AsyncState;
+        //        if (!udpSocket.Connected) return;
+        //        int bytesSent = udpSocket.EndSendTo(result);
 
-                PacketSent(buf, bytesSent);
-            }
-            catch (SocketException) { }
-            catch (ObjectDisposedException) { }
-        }
+        //        PacketSent(buf, bytesSent);
+        //    }
+        //    catch (SocketException) { }
+        //    catch (ObjectDisposedException) { }
+        //}
     }
 }

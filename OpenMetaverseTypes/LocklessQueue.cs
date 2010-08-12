@@ -126,6 +126,7 @@ namespace OpenMetaverse
                     if (oldHeadNext == null)
                     {
                         item = default(T);
+                        count = 0;
                         return false;
                     }
                     if (CAS(ref head, oldHead, oldHeadNext))

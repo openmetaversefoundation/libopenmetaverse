@@ -450,7 +450,6 @@ namespace OpenMetaverse
         private Queue<long> InBytes, OutBytes;
         // ACKs that are queued up to be sent to the simulator
         private LocklessQueue<uint> PendingAcks = new LocklessQueue<uint>();
-        private int PendingAckCount = 0;
         private Timer AckTimer;
         private Timer PingTimer;
         private Timer StatsTimer;
@@ -838,7 +837,7 @@ namespace OpenMetaverse
                 // Set the last byte of the packet equal to the number of appended ACKs
                 buffer.Data[dataLength++] = (byte)ackCount;
                 // Set the appended ACKs flag on this packet
-                buffer.Data[0] = (byte)(buffer.Data[0] | Helpers.MSG_APPENDED_ACKS);
+                buffer.Data[0] |= Helpers.MSG_APPENDED_ACKS;
             }
 
             buffer.DataLength = dataLength;
@@ -1022,30 +1021,32 @@ namespace OpenMetaverse
 
             #endregion ACK Receiving
 
-            #region ACK Sending
-
-            // Add this packet to the list of ACKs that need to be sent out
-            uint sequence = (uint)packet.Header.Sequence;
-            PendingAcks.Enqueue(sequence);
-            int pendingAckCount = Interlocked.Increment(ref PendingAckCount);
-
-            // Send out ACKs if we have a lot of them
-            if (pendingAckCount >= Client.Settings.MAX_PENDING_ACKS)
-                SendAcks();
-
-            #endregion ACK Sending
-
-            // Check the archive of received packet IDs to see whether we already received this packet
-            if (packet.Header.Reliable && !PacketArchive.TryEnqueue(packet.Header.Sequence))
+            if (packet.Header.Reliable)
             {
-                if (packet.Header.Resent)
-                    Logger.DebugLog("Received a resend of already processed packet #" + packet.Header.Sequence + ", type: " + packet.Type);
-                else
-                    Logger.Log("Received a duplicate (not marked as resend) of packet #" + packet.Header.Sequence + ", type: " + packet.Type,
-                        Helpers.LogLevel.Warning);
+                #region ACK Sending
 
-                // Avoid firing a callback twice for the same packet
-                return;
+                // Add this packet to the list of ACKs that need to be sent out
+                uint sequence = (uint)packet.Header.Sequence;
+                PendingAcks.Enqueue(sequence);
+
+                // Send out ACKs if we have a lot of them
+                if (PendingAcks.Count >= Client.Settings.MAX_PENDING_ACKS)
+                    SendAcks();
+
+                #endregion ACK Sending
+
+                // Check the archive of received packet IDs to see whether we already received this packet
+                if (!PacketArchive.TryEnqueue(packet.Header.Sequence))
+                {
+                    if (packet.Header.Resent)
+                        Logger.DebugLog("Received a resend of already processed packet #" + packet.Header.Sequence + ", type: " + packet.Type);
+                    else
+                        Logger.Log("Received a duplicate (not marked as resend) of packet #" + packet.Header.Sequence + ", type: " + packet.Type,
+                            Helpers.LogLevel.Warning);
+
+                    // Avoid firing a callback twice for the same packet
+                    return;
+                }
             }
 
             #region Inbox Insertion
@@ -1079,14 +1080,14 @@ namespace OpenMetaverse
         /// <summary>
         /// Sends out pending acknowledgements
         /// </summary>
-        private void SendAcks()
+        /// <returns>Number of ACKs sent</returns>
+        private int SendAcks()
         {
             uint ack;
+            int ackCount = 0;
 
             if (PendingAcks.TryDequeue(out ack))
             {
-                Interlocked.Decrement(ref PendingAckCount);
-
                 List<PacketAckPacket.PacketsBlock> blocks = new List<PacketAckPacket.PacketsBlock>();
                 PacketAckPacket.PacketsBlock block = new PacketAckPacket.PacketsBlock();
                 block.ID = ack;
@@ -1094,8 +1095,6 @@ namespace OpenMetaverse
 
                 while (PendingAcks.TryDequeue(out ack))
                 {
-                    Interlocked.Decrement(ref PendingAckCount);
-
                     block = new PacketAckPacket.PacketsBlock();
                     block.ID = ack;
                     blocks.Add(block);
@@ -1105,8 +1104,11 @@ namespace OpenMetaverse
                 packet.Header.Reliable = false;
                 packet.Packets = blocks.ToArray();
 
+                ackCount = blocks.Count;
                 SendPacket(packet);
             }
+
+            return ackCount;
         }
 
         /// <summary>
