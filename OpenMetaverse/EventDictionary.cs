@@ -39,6 +39,18 @@ namespace OpenMetaverse
     /// </summary>
     public class PacketEventDictionary
     {
+        private sealed class PacketCallback
+        {
+            public EventHandler<PacketReceivedEventArgs> Callback;
+            public bool IsAsync;
+
+            public PacketCallback(EventHandler<PacketReceivedEventArgs> callback, bool isAsync)
+            {
+                Callback = callback;
+                IsAsync = isAsync;
+            }
+        }
+
         /// <summary>
         /// Object that is passed to worker threads in the ThreadPool for
         /// firing packet callbacks
@@ -56,9 +68,7 @@ namespace OpenMetaverse
         /// <summary>Reference to the GridClient object</summary>
         public GridClient Client;
 
-        private Dictionary<PacketType, EventHandler<PacketReceivedEventArgs>> _EventTable = 
-            new Dictionary<PacketType, EventHandler<PacketReceivedEventArgs>>();
-        private WaitCallback _ThreadPoolCallback;
+        private Dictionary<PacketType, PacketCallback> _EventTable = new Dictionary<PacketType, PacketCallback>();
 
         /// <summary>
         /// Default constructor
@@ -67,7 +77,6 @@ namespace OpenMetaverse
         public PacketEventDictionary(GridClient client)
         {
             Client = client;
-            _ThreadPoolCallback = new WaitCallback(ThreadPoolDelegate);
         }
 
         /// <summary>
@@ -77,14 +86,23 @@ namespace OpenMetaverse
         /// incoming packet</remarks>
         /// <param name="packetType">Packet type to register the handler for</param>
         /// <param name="eventHandler">Callback to be fired</param>
-        public void RegisterEvent(PacketType packetType, EventHandler<PacketReceivedEventArgs> eventHandler)
+        /// <param name="isAsync">True if this callback should be ran 
+        /// asynchronously, false to run it synchronous</param>
+        public void RegisterEvent(PacketType packetType, EventHandler<PacketReceivedEventArgs> eventHandler, bool isAsync)
         {
             lock (_EventTable)
             {
-                if (_EventTable.ContainsKey(packetType))
-                    _EventTable[packetType] += eventHandler;
+                PacketCallback callback;
+                if (_EventTable.TryGetValue(packetType, out callback))
+                {
+                    callback.Callback += eventHandler;
+                    callback.IsAsync = callback.IsAsync || isAsync;
+                }
                 else
-                    _EventTable[packetType] = eventHandler;
+                {
+                    callback = new PacketCallback(eventHandler, isAsync);
+                    _EventTable[packetType] = callback;
+                }
             }
         }
 
@@ -97,84 +115,69 @@ namespace OpenMetaverse
         {
             lock (_EventTable)
             {
-                if (_EventTable.ContainsKey(packetType) && _EventTable[packetType] != null)
-                    _EventTable[packetType] -= eventHandler;
+                PacketCallback callback;
+                if (_EventTable.TryGetValue(packetType, out callback))
+                {
+                    callback.Callback -= eventHandler;
+                    if (callback.Callback.GetInvocationList().Length == 0)
+                        _EventTable.Remove(packetType);
+                }
             }
         }
 
         /// <summary>
-        /// Fire the events registered for this packet type synchronously
+        /// Fire the events registered for this packet type
         /// </summary>
         /// <param name="packetType">Incoming packet type</param>
         /// <param name="packet">Incoming packet</param>
         /// <param name="simulator">Simulator this packet was received from</param>
         internal void RaiseEvent(PacketType packetType, Packet packet, Simulator simulator)
         {
-            EventHandler<PacketReceivedEventArgs> callback;            
+            PacketCallback callback;
             
             // Default handler first, if one exists
-            if (_EventTable.TryGetValue(PacketType.Default, out callback))
-            {                                
-                try { callback(this, new PacketReceivedEventArgs(packet, simulator)); }
-                catch (Exception ex)
+            if (_EventTable.TryGetValue(PacketType.Default, out callback) && callback.Callback != null)
+            {
+                if (callback.IsAsync)
                 {
-                    Logger.Log("Default packet event handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
+                    PacketCallbackWrapper wrapper;
+                    wrapper.Callback = callback.Callback;
+                    wrapper.Packet = packet;
+                    wrapper.Simulator = simulator;
+                    ThreadPool.QueueUserWorkItem(ThreadPoolDelegate, wrapper);
+                }
+                else
+                {
+                    try { callback.Callback(this, new PacketReceivedEventArgs(packet, simulator)); }
+                    catch (Exception ex)
+                    {
+                        Logger.Log("Default packet event handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
+                    }
                 }
             }
 
-            if (_EventTable.TryGetValue(packetType, out callback))
+            if (_EventTable.TryGetValue(packetType, out callback) && callback.Callback != null)
             {
-                try { callback(this, new PacketReceivedEventArgs(packet, simulator)); }
-                catch (Exception ex)
+                if (callback.IsAsync)
                 {
-                    Logger.Log("Packet event handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
+                    PacketCallbackWrapper wrapper;
+                    wrapper.Callback = callback.Callback;
+                    wrapper.Packet = packet;
+                    wrapper.Simulator = simulator;
+                    ThreadPool.QueueUserWorkItem(ThreadPoolDelegate, wrapper);
+                }
+                else
+                {
+                    try { callback.Callback(this, new PacketReceivedEventArgs(packet, simulator)); }
+                    catch (Exception ex)
+                    {
+                        Logger.Log("Packet event handler: " + ex.ToString(), Helpers.LogLevel.Error, Client);
+                    }
                 }
 
                 return;
             }
             
-            if (packetType != PacketType.Default && packetType != PacketType.PacketAck)
-            {
-                Logger.DebugLog("No handler registered for packet event " + packetType, Client);
-            }
-        }
-
-        /// <summary>
-        /// Fire the events registered for this packet type asynchronously
-        /// </summary>
-        /// <param name="packetType">Incoming packet type</param>
-        /// <param name="packet">Incoming packet</param>
-        /// <param name="simulator">Simulator this packet was received from</param>
-        internal void BeginRaiseEvent(PacketType packetType, Packet packet, Simulator simulator)
-        {
-            EventHandler<PacketReceivedEventArgs> callback;
-            PacketCallbackWrapper wrapper;
-
-            // Default handler first, if one exists
-            if (_EventTable.TryGetValue(PacketType.Default, out callback))
-            {
-                if (callback != null)
-                {
-                    wrapper.Callback = callback;
-                    wrapper.Packet = packet;
-                    wrapper.Simulator = simulator;
-                    ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
-                }
-            }
-
-            if (_EventTable.TryGetValue(packetType, out callback))
-            {
-                if (callback != null)
-                {
-                    wrapper.Callback = callback;
-                    wrapper.Packet = packet;
-                    wrapper.Simulator = simulator;
-                    ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
-
-                    return;
-                }
-            }
-
             if (packetType != PacketType.Default && packetType != PacketType.PacketAck)
             {
                 Logger.DebugLog("No handler registered for packet event " + packetType, Client);
@@ -244,6 +247,7 @@ namespace OpenMetaverse
         /// <param name="eventHandler">Callback to fire</param>
         public void RegisterEvent(string capsEvent, Caps.EventQueueCallback eventHandler)
         {
+            // TODO: Should we add support for synchronous CAPS handlers?
             lock (_EventTable)
             {
                 if (_EventTable.ContainsKey(capsEvent))

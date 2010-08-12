@@ -234,10 +234,7 @@ namespace OpenMetaverse
             IMessage message = Messages.MessageUtils.DecodeEvent(eventName, body);
             if (message != null)
             {
-                if (Simulator.Client.Settings.SYNC_PACKETCALLBACKS)
-                    Simulator.Client.Network.CapsEvents.RaiseEvent(eventName, message, Simulator);
-                else
-                    Simulator.Client.Network.CapsEvents.BeginRaiseEvent(eventName, message, Simulator);
+                Simulator.Client.Network.CapsEvents.BeginRaiseEvent(eventName, message, Simulator);
 
                 #region Stats Tracking
                 if (Simulator.Client.Settings.TRACK_UTILIZATION)

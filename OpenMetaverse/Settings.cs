@@ -141,16 +141,6 @@ namespace OpenMetaverse
         #endregion
         #region Configuration options (mostly booleans)
 
-        /// <summary>Enable to process packets synchronously, where all of the
-        /// callbacks for each packet must return before the next packet is
-        /// processed</summary>
-        /// <remarks>This is an experimental feature and is not completely
-        /// reliable yet. Ideally it would reduce context switches and thread
-        /// overhead, but several calls currently block for a long time and
-        /// would need to be rewritten as asynchronous code before this is
-        /// feasible</remarks>
-        public bool SYNC_PACKETCALLBACKS = false;
-
         /// <summary>Enable/disable storing terrain heightmaps in the 
         /// TerrainManager</summary>
         public bool STORE_LAND_PATCHES = false;

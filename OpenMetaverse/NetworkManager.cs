@@ -389,7 +389,26 @@ namespace OpenMetaverse
         /// is received</param>
         public void RegisterCallback(PacketType type, EventHandler<PacketReceivedEventArgs> callback)
         {
-            PacketEvents.RegisterEvent(type, callback);
+            RegisterCallback(type, callback, true);
+        }
+
+        /// <summary>
+        /// Register an event handler for a packet. This is a low level event
+        /// interface and should only be used if you are doing something not
+        /// supported in the library
+        /// </summary>
+        /// <param name="type">Packet type to trigger events for</param>
+        /// <param name="callback">Callback to fire when a packet of this type
+        /// is received</param>
+        /// <param name="isAsync">True if the callback should be ran 
+        /// asynchronously. Only set this to false (synchronous for callbacks 
+        /// that will always complete quickly)</param>
+        /// <remarks>If any callback for a packet type is marked as 
+        /// asynchronous, all callbacks for that packet type will be fired
+        /// asynchronously</remarks>
+        public void RegisterCallback(PacketType type, EventHandler<PacketReceivedEventArgs> callback, bool isAsync)
+        {
+            PacketEvents.RegisterEvent(type, callback, isAsync);
         }
 
         /// <summary>
@@ -862,7 +881,7 @@ namespace OpenMetaverse
 
                     if (packet != null)
                     {
-                        // skip blacklisted packets
+                        // Skip blacklisted packets
                         if (UDPBlacklist.Contains(packet.Type.ToString()))
                         {
                             Logger.Log(String.Format("Discarding Blacklisted packet {0} from {1}",
@@ -870,14 +889,8 @@ namespace OpenMetaverse
                             return;
                         }
 
-                        #region Fire callbacks
-
-                        if (Client.Settings.SYNC_PACKETCALLBACKS)
-                            PacketEvents.RaiseEvent(packet.Type, packet, simulator);
-                        else
-                            PacketEvents.BeginRaiseEvent(packet.Type, packet, simulator);
-
-                        #endregion Fire callbacks
+                        // Fire the callback(s), if any
+                        PacketEvents.RaiseEvent(packet.Type, packet, simulator);
                     }
                 }
             }
