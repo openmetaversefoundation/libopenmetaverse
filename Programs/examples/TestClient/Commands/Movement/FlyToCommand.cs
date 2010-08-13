@@ -12,13 +12,13 @@ namespace OpenMetaverse.TestClient.Commands.Movement
         float diff, olddiff, saveolddiff;
         int startTime = 0;
         int duration = 10000;
+        bool running = false;
 
         public FlyToCommand(TestClient Client)
         {
             Name = "FlyTo";
             Description = "Fly the avatar toward the specified position for a maximum of seconds. Usage: FlyTo x y z [seconds]";
             Category = CommandCategory.Movement;
-            Client.Objects.TerseObjectUpdate += Objects_OnObjectUpdated;            
         }
 
         public override string Execute(string[] args, UUID fromAgentID)
@@ -32,6 +32,15 @@ namespace OpenMetaverse.TestClient.Commands.Movement
             {
                 return "Usage: FlyTo x y z [seconds]";
             }
+
+            if (running)
+                return "Already in progress, wait for the previous FlyTo to finish";
+
+            running = true;
+
+            // Subscribe to terse update events while this command is running
+            Client.Objects.TerseObjectUpdate += Objects_OnObjectUpdated;
+
             target0.X = target.X;
             target0.Y = target.Y;
 
@@ -130,12 +139,17 @@ namespace OpenMetaverse.TestClient.Commands.Movement
 
         private void EndFlyto()
         {
+            // Unsubscribe from terse update events
+            Client.Objects.TerseObjectUpdate -= Objects_OnObjectUpdated;
+
             startTime = 0;
             Client.Self.Movement.AtPos = false;
             Client.Self.Movement.AtNeg = false;
             Client.Self.Movement.UpPos = false;
             Client.Self.Movement.UpNeg = false;
             Client.Self.Movement.SendUpdate(false);
+
+            running = false;
         }
 
         [System.Diagnostics.Conditional("DEBUG")]
