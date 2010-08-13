@@ -509,9 +509,24 @@ namespace OpenMetaverse
             return bytes;
         }
 
+        public static byte[] UInt64ToBytesBig(ulong value)
+        {
+            byte[] bytes = BitConverter.GetBytes(value);
+            if (BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+
+            return bytes;
+        }
+
         public static void UInt64ToBytes(ulong value, byte[] dest, int pos)
         {
             byte[] bytes = UInt64ToBytes(value);
+            Buffer.BlockCopy(bytes, 0, dest, pos, 8);
+        }
+
+        public static void UInt64ToBytesBig(ulong value, byte[] dest, int pos)
+        {
+            byte[] bytes = UInt64ToBytesBig(value);
             Buffer.BlockCopy(bytes, 0, dest, pos, 8);
         }
 
