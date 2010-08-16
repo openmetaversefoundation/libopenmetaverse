@@ -280,12 +280,22 @@ namespace PrimWorkshop
 
                     for (int i = 0; i < primList.Count; i++)
                     {
-                        // TODO: Can't render sculpted prims without the textures
-                        if (primList[i].Sculpt.SculptTexture != UUID.Zero)
-                            continue;
-
                         Primitive prim = primList[i];
-                        FacetedMesh mesh = Render.Plugin.GenerateFacetedMesh(prim, DetailLevel.Highest);
+                        FacetedMesh mesh = null;
+
+                        if (prim.Sculpt.SculptTexture != UUID.Zero)
+                        {
+                            Image sculptTexture = null;
+                            if (LoadTexture(tempPath, prim.Sculpt.SculptTexture, ref sculptTexture))
+                                mesh = Render.Plugin.GenerateFacetedSculptMesh(prim, (Bitmap)sculptTexture, DetailLevel.Highest);
+                        }
+                        else
+                        {
+                            mesh = Render.Plugin.GenerateFacetedMesh(prim, DetailLevel.Highest);
+                        }
+
+                        if (mesh == null)
+                            continue;
 
                         // Create a FaceData struct for each face that stores the 3D data
                         // in a Tao.OpenGL friendly format

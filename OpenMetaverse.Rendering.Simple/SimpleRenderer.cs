@@ -47,6 +47,11 @@ namespace OpenMetaverse.Rendering
             return mesh;
         }
 
+        public SimpleMesh GenerateSimpleSculptMesh(Primitive prim, System.Drawing.Bitmap sculptTexture, DetailLevel lod)
+        {
+            return GenerateSimpleMesh(prim, lod);
+        }
+
         public FacetedMesh GenerateFacetedMesh(Primitive prim, DetailLevel lod)
         {
             Path path = GeneratePath();
@@ -59,6 +64,11 @@ namespace OpenMetaverse.Rendering
             mesh.Faces = GenerateFaces(prim.Textures);
 
             return mesh;
+        }
+
+        public FacetedMesh GenerateFacetedSculptMesh(Primitive prim, System.Drawing.Bitmap sculptTexture, DetailLevel lod)
+        {
+            return GenerateFacetedMesh(prim, lod);
         }
 
         public void TransformTexCoords(List<Vertex> vertices, Vector3 center, Primitive.TextureEntryFace teFace)
@@ -88,7 +98,6 @@ namespace OpenMetaverse.Rendering
             Vertex v = new Vertex();
 
             // FIXME: Implement these
-            v.Binormal = Vector3.Zero;
             v.Normal = Vector3.Zero;
             v.TexCoord = Vector2.Zero;
 

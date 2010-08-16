@@ -2849,6 +2849,15 @@ namespace OpenMetaverse
                     prim.PathScaleY = 0.25f;
                     prim.PathRevolutions = 1f;
                     break;
+                case PrimType.Sculpt:
+                    prim.ProfileCurve = ProfileCurve.Circle;
+                    prim.PathCurve = PathCurve.Circle;
+                    prim.ProfileEnd = 1f;
+                    prim.PathEnd = 1f;
+                    prim.PathScaleX = 1f;
+                    prim.PathScaleY = 0.5f;
+                    prim.PathRevolutions = 1f;
+                    break;
                 default:
                     throw new NotSupportedException("Unsupported shape: " + type.ToString());
             }

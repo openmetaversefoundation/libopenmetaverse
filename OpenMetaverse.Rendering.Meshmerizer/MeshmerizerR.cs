@@ -65,9 +65,39 @@ namespace OpenMetaverse.Rendering
         /// </summary>
         /// <param name="prim">Primitive to generate the mesh from</param>
         /// <param name="lod">Level of detail to generate the mesh at</param>
-        /// <returns>The generated mesh</returns>
+        /// <returns>The generated mesh or null on failure</returns>
         public OMVR.SimpleMesh GenerateSimpleMesh(OMV.Primitive prim, OMVR.DetailLevel lod)
         {
+            // FIXME: Implement this
+            return null;
+        }
+
+        /// <summary>
+        /// Generates a basic mesh structure from a sculpted primitive
+        /// </summary>
+        /// <param name="prim">Sculpted primitive to generate the mesh from</param>
+        /// <param name="sculptTexture">Sculpt texture</param>
+        /// <param name="lod">Level of detail to generate the mesh at</param>
+        /// <returns>The generated mesh or null on failure</returns>
+        public OMVR.SimpleMesh GenerateSimpleSculptMesh(OMV.Primitive prim, System.Drawing.Bitmap sculptTexture, OMVR.DetailLevel lod)
+        {
+            OMVR.FacetedMesh faceted = GenerateFacetedSculptMesh(prim, sculptTexture, lod);
+
+            if (faceted != null && faceted.Faces.Count == 1)
+            {
+                Face face = faceted.Faces[0];
+
+                SimpleMesh mesh = new SimpleMesh();
+                mesh.Indices = face.Indices;
+                mesh.Vertices = face.Vertices;
+                mesh.Path = faceted.Path;
+                mesh.Prim = prim;
+                mesh.Profile = faceted.Profile;
+                mesh.Vertices = face.Vertices;
+
+                return mesh;
+            }
+
             return null;
         }
 
@@ -306,12 +336,8 @@ namespace OpenMetaverse.Rendering
         /// Create a sculpty faceted mesh. The actual scuplt texture is fetched and passed to this
         /// routine since all the context for finding teh texture is elsewhere.
         /// </summary>
-        /// <param name="scupltTexture"></param>
-        /// <param name="prim"></param>
-        /// <param name="lod"></param>
-        /// <returns>the faceted mesh or null if can't do it</returns>
-        public OMVR.FacetedMesh GenerateSculptMesh(System.Drawing.Bitmap scupltTexture,
-                                        OMV.Primitive prim, OMVR.DetailLevel lod)
+        /// <returns>The faceted mesh or null if can't do it</returns>
+        public OMVR.FacetedMesh GenerateFacetedSculptMesh(OMV.Primitive prim, System.Drawing.Bitmap scupltTexture, OMVR.DetailLevel lod)
         {
             byte sculptType = (byte)prim.Sculpt.Type;
             bool mirror = ((sculptType & 128) != 0);

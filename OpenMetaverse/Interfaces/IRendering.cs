@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace OpenMetaverse.Rendering
 {
@@ -60,13 +61,33 @@ namespace OpenMetaverse.Rendering
         SimpleMesh GenerateSimpleMesh(Primitive prim, DetailLevel lod);
 
         /// <summary>
-        /// Generates a a series of faces, each face containing a mesh and
+        /// Generates a basic mesh structure from a sculpted primitive and
+        /// texture
+        /// </summary>
+        /// <param name="prim">Sculpted primitive to generate the mesh from</param>
+        /// <param name="sculptTexture">Sculpt texture</param>
+        /// <param name="lod">Level of detail to generate the mesh at</param>
+        /// <returns>The generated mesh</returns>
+        SimpleMesh GenerateSimpleSculptMesh(Primitive prim, Bitmap sculptTexture, DetailLevel lod);
+
+        /// <summary>
+        /// Generates a series of faces, each face containing a mesh and
         /// metadata
         /// </summary>
         /// <param name="prim">Primitive to generate the mesh from</param>
         /// <param name="lod">Level of detail to generate the mesh at</param>
         /// <returns>The generated mesh</returns>
         FacetedMesh GenerateFacetedMesh(Primitive prim, DetailLevel lod);
+
+        /// <summary>
+        /// Generates a series of faces for a sculpted prim, each face 
+        /// containing a mesh and metadata
+        /// </summary>
+        /// <param name="prim">Sculpted primitive to generate the mesh from</param>
+        /// <param name="sculptTexture">Sculpt texture</param>
+        /// <param name="lod">Level of detail to generate the mesh at</param>
+        /// <returns>The generated mesh</returns>
+        FacetedMesh GenerateFacetedSculptMesh(Primitive prim, Bitmap sculptTexture, DetailLevel lod);
 
         /// <summary>
         /// Apply texture coordinate modifications from a

@@ -28,6 +28,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 // The common elements shared between rendering plugins are defined here
 
@@ -76,16 +77,19 @@ namespace OpenMetaverse.Rendering
 
     #region Structs
 
+    [StructLayout(LayoutKind.Explicit)]
     public struct Vertex
     {
+        [FieldOffset(0)]
         public Vector3 Position;
+        [FieldOffset(12)]
         public Vector3 Normal;
-        public Vector3 Binormal;
+        [FieldOffset(24)]
         public Vector2 TexCoord;
 
         public override string ToString()
         {
-            return String.Format("P: {0} N: {1} B: {2} T: {3}", Position, Normal, Binormal, TexCoord);
+            return String.Format("P: {0} N: {1} T: {2}", Position, Normal, TexCoord);
         }
     }
 
@@ -253,7 +257,7 @@ namespace OpenMetaverse.Rendering
                             else
                             {
                                 Logger.Log("Rendering plugin does not support the [RendererName] attribute: " + f,
-                                        Helpers.LogLevel.Warning);
+                                    Helpers.LogLevel.Warning);
                             }
 
                             break;

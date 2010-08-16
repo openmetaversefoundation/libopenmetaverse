@@ -955,6 +955,8 @@ namespace PrimWorkshop
 
             RenderablePrim render = new RenderablePrim();
             render.Prim = prim;
+
+            // FIXME: Handle sculpted prims by calling Render.Plugin.GenerateFacetedSculptMesh() instead
             render.Mesh = Render.Plugin.GenerateFacetedMesh(prim, DetailLevel.High);
 
             // Create a FaceData struct for each face that stores the 3D data
