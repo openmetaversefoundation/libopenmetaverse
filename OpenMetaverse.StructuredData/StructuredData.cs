@@ -320,6 +320,25 @@ namespace OpenMetaverse.StructuredData
         public static implicit operator OSD(Quaternion value) { return OSD.FromQuaternion(value); }
         public static implicit operator OSD(Color4 value) { return OSD.FromColor4(value); }
 
+        public static implicit operator bool(OSD value) { return value.AsBoolean(); }
+        public static implicit operator int(OSD value) { return value.AsInteger(); }
+        public static implicit operator uint(OSD value) { return value.AsUInteger(); }
+        public static implicit operator long(OSD value) { return value.AsLong(); }
+        public static implicit operator ulong(OSD value) { return value.AsULong(); }
+        public static implicit operator double(OSD value) { return value.AsReal(); }
+        public static implicit operator float(OSD value) { return (float)value.AsReal(); }
+        public static implicit operator string(OSD value) { return value.AsString(); }
+        public static implicit operator UUID(OSD value) { return value.AsUUID(); }
+        public static implicit operator DateTime(OSD value) { return value.AsDate(); }
+        public static implicit operator Uri(OSD value) { return value.AsUri(); }
+        public static implicit operator byte[](OSD value) { return value.AsBinary(); }
+        public static implicit operator Vector2(OSD value) { return value.AsVector2(); }
+        public static implicit operator Vector3(OSD value) { return value.AsVector3(); }
+        public static implicit operator Vector3d(OSD value) { return value.AsVector3d(); }
+        public static implicit operator Vector4(OSD value) { return value.AsVector4(); }
+        public static implicit operator Quaternion(OSD value) { return value.AsQuaternion(); }
+        public static implicit operator Color4(OSD value) { return value.AsColor4(); }
+
         #endregion Implicit Conversions
 
         /// <summary>
@@ -1102,12 +1121,6 @@ namespace OpenMetaverse.StructuredData
         public void Add(OSD llsd)
         {
             value.Add(llsd);
-        }
-
-        public void Add(string str)
-        {
-            // This is so common that we throw a little helper in here
-            value.Add(OSD.FromString(str));
         }
 
         public void Clear()
