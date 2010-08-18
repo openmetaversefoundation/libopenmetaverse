@@ -399,7 +399,7 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class OSDBoolean : OSD
+    public sealed class OSDBoolean : OSD
     {
         private bool value;
 
@@ -425,7 +425,7 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class OSDInteger : OSD
+    public sealed class OSDInteger : OSD
     {
         private int value;
 
@@ -451,7 +451,7 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class OSDReal : OSD
+    public sealed class OSDReal : OSD
     {
         private double value;
 
@@ -518,7 +518,7 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class OSDString : OSD
+    public sealed class OSDString : OSD
     {
         private string value;
 
@@ -622,7 +622,7 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class OSDUUID : OSD
+    public sealed class OSDUUID : OSD
     {
         private UUID value;
 
@@ -643,7 +643,7 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class OSDDate : OSD
+    public sealed class OSDDate : OSD
     {
         private DateTime value;
 
@@ -697,7 +697,7 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class OSDUri : OSD
+    public sealed class OSDUri : OSD
     {
         private Uri value;
 
@@ -728,7 +728,7 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class OSDBinary : OSD
+    public sealed class OSDBinary : OSD
     {
         private byte[] value;
 
@@ -830,7 +830,7 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class OSDMap : OSD, IDictionary<string, OSD>
+    public sealed class OSDMap : OSD, IDictionary<string, OSD>
     {
         private Dictionary<string, OSD> value;
 
@@ -948,7 +948,7 @@ namespace OpenMetaverse.StructuredData
     /// <summary>
     /// 
     /// </summary>
-    public class OSDArray : OSD, IList<OSD>
+    public sealed class OSDArray : OSD, IList<OSD>
     {
         private List<OSD> value;
 
