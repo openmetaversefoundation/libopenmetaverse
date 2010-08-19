@@ -210,7 +210,7 @@ namespace PrimWorkshop
             Gl.glMatrixMode(Gl.GL_PROJECTION);
             Gl.glLoadIdentity();
 
-            Glu.gluPerspective(50.0d, 1.0d, 0.1d, 50d);
+            Glu.gluPerspective(50.0d, 1.0d, 0.1d, 256d);
 
             Gl.glMatrixMode(Gl.GL_MODELVIEW);
             Gl.glPopMatrix();
@@ -224,7 +224,7 @@ namespace PrimWorkshop
         {
             Prims = null;
             OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Filter = "Prim Package (*.zip)|*.zip|Sculpt Map (*.png)|*.png";
+            dialog.Filter = "Prim Package (*.zip)|*.zip|Sculpt Map (*.png)|*.png|OAR XML (*.xml)|*.xml";
 
             if (dialog.ShowDialog() == DialogResult.OK)
             {
@@ -232,11 +232,52 @@ namespace PrimWorkshop
                 {
                     LoadPrimPackage(dialog.FileName);
                 }
+                else if (dialog.FileName.ToLowerInvariant().EndsWith(".xml"))
+                {
+                    LoadXmlPrim(dialog.FileName);
+                }
                 else
                 {
                     LoadSculpt(dialog.FileName);
                 }
             }
+        }
+
+        private void LoadXmlPrim(string filename)
+        {
+            byte[] data = File.ReadAllBytes(filename);
+
+            OpenMetaverse.Assets.OarFile.LoadObjects(data, XmlObjectLoadedHandler, 0, data.Length);
+        }
+
+        private void XmlObjectLoadedHandler(OpenMetaverse.Assets.AssetPrim linkset, long bytesRead, long totalBytes)
+        {
+            Prims = new List<FacetedMesh>(linkset.Children.Count + 1);
+
+            Primitive parent = linkset.Parent.ToPrimitive();
+            {
+                FacetedMesh mesh = null;
+
+                if (parent.Sculpt == null || parent.Sculpt.SculptTexture == UUID.Zero)
+                    mesh = Render.Plugin.GenerateFacetedMesh(parent, DetailLevel.Highest);
+                if (mesh != null)
+                    LoadMesh(mesh, null);
+            }
+
+            for (int i = 0; i < linkset.Children.Count; i++)
+            {
+                Primitive child = linkset.Children[i].ToPrimitive();
+                FacetedMesh mesh = null;
+
+                if (parent.Sculpt == null || child.Sculpt.SculptTexture == UUID.Zero)
+                    mesh = Render.Plugin.GenerateFacetedMesh(child, DetailLevel.Highest);
+                if (mesh != null)
+                    LoadMesh(mesh, null);
+            }
+
+            PopulatePrimCombobox();
+
+            glControl.Invalidate();
         }
 
         private void LoadSculpt(string filename)
@@ -262,8 +303,7 @@ namespace PrimWorkshop
 
         private void LoadPrimPackage(string filename)
         {
-            string tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
-                    System.IO.Path.GetRandomFileName());
+            string tempPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), System.IO.Path.GetRandomFileName());
 
             try
             {

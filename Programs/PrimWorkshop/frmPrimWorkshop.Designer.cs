@@ -393,7 +393,7 @@ namespace PrimWorkshop
             this.scrollZoom.LargeChange = 1;
             this.scrollZoom.Location = new System.Drawing.Point(0, 60);
             this.scrollZoom.Maximum = 0;
-            this.scrollZoom.Minimum = -200;
+            this.scrollZoom.Minimum = -800;
             this.scrollZoom.Name = "scrollZoom";
             this.scrollZoom.Size = new System.Drawing.Size(442, 24);
             this.scrollZoom.TabIndex = 19;

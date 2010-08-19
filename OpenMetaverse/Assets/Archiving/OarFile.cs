@@ -230,7 +230,7 @@ namespace OpenMetaverse.Assets
             return loaded;
         }
 
-        private static void LoadObjects(byte[] objectData, SceneObjectLoadedCallback objectCallback, long bytesRead, long totalBytes)
+        public static void LoadObjects(byte[] objectData, SceneObjectLoadedCallback objectCallback, long bytesRead, long totalBytes)
         {
             XmlDocument doc = new XmlDocument();
 

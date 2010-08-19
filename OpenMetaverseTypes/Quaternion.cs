@@ -257,35 +257,65 @@ namespace OpenMetaverse
         /// <param name="yaw">Z euler angle</param>
         public void GetEulerAngles(out float roll, out float pitch, out float yaw)
         {
-            float sqx = X * X;
-            float sqy = Y * Y;
-            float sqz = Z * Z;
-            float sqw = W * W;
+            roll = 0f;
+            pitch = 0f;
+            yaw = 0f;
 
-            // Unit will be a correction factor if the quaternion is not normalized
-            float unit = sqx + sqy + sqz + sqw;
-            double test = X * Y + Z * W;
+            Quaternion t = new Quaternion(this.X * this.X, this.Y * this.Y, this.Z * this.Z, this.W * this.W);
 
-            if (test > 0.499f * unit)
+            float m = (t.X + t.Y + t.Z + t.W);
+            if (Math.Abs(m) < 0.001d) return;
+            float n = 2 * (this.Y * this.W + this.X * this.Z);
+            float p = m * m - n * n;
+
+            if (p > 0f)
             {
-                // Singularity at north pole
-                yaw = 2f * (float)Math.Atan2(X, W);
-                pitch = (float)Math.PI / 2f;
-                roll = 0f;
+                roll = (float)Math.Atan2(2.0f * (this.X * this.W - this.Y * this.Z), (-t.X - t.Y + t.Z + t.W));
+                pitch = (float)Math.Atan2(n, Math.Sqrt(p));
+                yaw = (float)Math.Atan2(2.0f * (this.Z * this.W - this.X * this.Y), t.X - t.Y - t.Z + t.W);
             }
-            else if (test < -0.499f * unit)
+            else if (n > 0f)
             {
-                // Singularity at south pole
-                yaw = -2f * (float)Math.Atan2(X, W);
-                pitch = -(float)Math.PI / 2f;
                 roll = 0f;
+                pitch = (float)(Math.PI / 2d);
+                yaw = (float)Math.Atan2((this.Z * this.W + this.X * this.Y), 0.5f - t.X - t.Y);
             }
             else
             {
-                yaw = (float)Math.Atan2(2f * Y * W - 2f * X * Z, sqx - sqy - sqz + sqw);
-                pitch = (float)Math.Asin(2f * test / unit);
-                roll = (float)Math.Atan2(2f * X * W - 2f * Y * Z, -sqx + sqy - sqz + sqw);
+                roll = 0f;
+                pitch = -(float)(Math.PI / 2d);
+                yaw = (float)Math.Atan2((this.Z * this.W + this.X * this.Y), 0.5f - t.X - t.Z);
             }
+
+            //float sqx = X * X;
+            //float sqy = Y * Y;
+            //float sqz = Z * Z;
+            //float sqw = W * W;
+
+            //// Unit will be a correction factor if the quaternion is not normalized
+            //float unit = sqx + sqy + sqz + sqw;
+            //double test = X * Y + Z * W;
+
+            //if (test > 0.499f * unit)
+            //{
+            //    // Singularity at north pole
+            //    yaw = 2f * (float)Math.Atan2(X, W);
+            //    pitch = (float)Math.PI / 2f;
+            //    roll = 0f;
+            //}
+            //else if (test < -0.499f * unit)
+            //{
+            //    // Singularity at south pole
+            //    yaw = -2f * (float)Math.Atan2(X, W);
+            //    pitch = -(float)Math.PI / 2f;
+            //    roll = 0f;
+            //}
+            //else
+            //{
+            //    yaw = (float)Math.Atan2(2f * Y * W - 2f * X * Z, sqx - sqy - sqz + sqw);
+            //    pitch = (float)Math.Asin(2f * test / unit);
+            //    roll = (float)Math.Atan2(2f * X * W - 2f * Y * Z, -sqx + sqy - sqz + sqw);
+            //}
         }
 
         /// <summary>
@@ -469,7 +499,7 @@ namespace OpenMetaverse
             float z = quaternion1.Z;
             float w = quaternion1.W;
 
-            float q2lensq = quaternion2.LengthSquared(); //num14
+            float q2lensq = quaternion2.LengthSquared();
             float ooq2lensq = 1f / q2lensq;
             float x2 = -quaternion2.X * ooq2lensq;
             float y2 = -quaternion2.Y * ooq2lensq;
@@ -569,13 +599,13 @@ namespace OpenMetaverse
             return quaternion1;
         }
 
-        public static Quaternion Multiply(Quaternion q1, Quaternion q2)
+        public static Quaternion Multiply(Quaternion a, Quaternion b)
         {
             return new Quaternion(
-                (q1.W * q2.X) + (q1.X * q2.W) + (q1.Y * q2.Z) - (q1.Z * q2.Y),
-                (q1.W * q2.Y) - (q1.X * q2.Z) + (q1.Y * q2.W) + (q1.Z * q2.X),
-                (q1.W * q2.Z) + (q1.X * q2.Y) - (q1.Y * q2.X) + (q1.Z * q2.W),
-                (q1.W * q2.W) - (q1.X * q2.X) - (q1.Y * q2.Y) - (q1.Z * q2.Z)
+                b.W * a.X + b.X * a.W + b.Y * a.Z - b.Z * a.Y,
+                b.W * a.Y + b.Y * a.W + b.Z * a.X - b.X * a.Z,
+                b.W * a.Z + b.Z * a.W + b.X * a.Y - b.Y * a.X,
+                b.W * a.W - b.X * a.X - b.Y * a.Y - b.Z * a.Z
             );
         }
 
@@ -703,10 +733,7 @@ namespace OpenMetaverse
 
         public static bool operator ==(Quaternion quaternion1, Quaternion quaternion2)
         {
-            return quaternion1.W == quaternion2.W
-                && quaternion1.X == quaternion2.X
-                && quaternion1.Y == quaternion2.Y
-                && quaternion1.Z == quaternion2.Z;
+            return quaternion1.Equals(quaternion2);
         }
 
         public static bool operator !=(Quaternion quaternion1, Quaternion quaternion2)
@@ -716,48 +743,27 @@ namespace OpenMetaverse
 
         public static Quaternion operator +(Quaternion quaternion1, Quaternion quaternion2)
         {
-            quaternion1.X += quaternion2.X;
-            quaternion1.Y += quaternion2.Y;
-            quaternion1.Z += quaternion2.Z;
-            quaternion1.W += quaternion2.W;
-            return quaternion1;
+            return Add(quaternion1, quaternion2);
         }
 
         public static Quaternion operator -(Quaternion quaternion)
         {
-            quaternion.X = -quaternion.X;
-            quaternion.Y = -quaternion.Y;
-            quaternion.Z = -quaternion.Z;
-            quaternion.W = -quaternion.W;
-            return quaternion;
+            return Negate(quaternion);
         }
 
         public static Quaternion operator -(Quaternion quaternion1, Quaternion quaternion2)
         {
-            quaternion1.X -= quaternion2.X;
-            quaternion1.Y -= quaternion2.Y;
-            quaternion1.Z -= quaternion2.Z;
-            quaternion1.W -= quaternion2.W;
-            return quaternion1;
+            return Subtract(quaternion1, quaternion2);
         }
 
-        public static Quaternion operator *(Quaternion q1, Quaternion q2)
+        public static Quaternion operator *(Quaternion a, Quaternion b)
         {
-            return new Quaternion(
-                (q1.W * q2.X) + (q1.X * q2.W) + (q1.Y * q2.Z) - (q1.Z * q2.Y),
-                (q1.W * q2.Y) - (q1.X * q2.Z) + (q1.Y * q2.W) + (q1.Z * q2.X),
-                (q1.W * q2.Z) + (q1.X * q2.Y) - (q1.Y * q2.X) + (q1.Z * q2.W),
-                (q1.W * q2.W) - (q1.X * q2.X) - (q1.Y * q2.Y) - (q1.Z * q2.Z)
-            );
+            return Multiply(a, b);
         }
 
         public static Quaternion operator *(Quaternion quaternion, float scaleFactor)
         {
-            quaternion.X *= scaleFactor;
-            quaternion.Y *= scaleFactor;
-            quaternion.Z *= scaleFactor;
-            quaternion.W *= scaleFactor;
-            return quaternion;
+            return Multiply(quaternion, scaleFactor);
         }
 
         public static Quaternion operator /(Quaternion quaternion1, Quaternion quaternion2)
