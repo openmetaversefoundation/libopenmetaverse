@@ -87,7 +87,7 @@ namespace OpenMetaverse.Tests
 
             a = new Quaternion(1, 0, 0, 0);
             b = new Quaternion(0, 1, 0, 0);
-            expected = new Quaternion(0, 0, 1, 0);
+            expected = new Quaternion(0, 0, -1, 0);
             result = a * b;
 
             Assert.IsTrue(result == expected, a.ToString() + " * " + b.ToString() + " produced " + result.ToString() +
@@ -95,7 +95,7 @@ namespace OpenMetaverse.Tests
 
             a = new Quaternion(0, 0, 1, 0);
             b = new Quaternion(0, 1, 0, 0);
-            expected = new Quaternion(-1, 0, 0, 0);
+            expected = new Quaternion(1, 0, 0, 0);
             result = a * b;
 
             Assert.IsTrue(result == expected, a.ToString() + " * " + b.ToString() + " produced " + result.ToString() +

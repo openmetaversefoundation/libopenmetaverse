@@ -209,31 +209,5 @@ namespace OpenMetaverse.Tests
             Assert.IsTrue(invPacket.FolderData.Length == 1, "InventoryDescendents packet came back with " + invPacket.FolderData.Length + " FolderData blocks");
             Assert.IsTrue(invPacket.ItemData.Length == 5, "InventoryDescendents packet came back with " + invPacket.ItemData.Length + " ItemData blocks");
         }
-
-        [Test]
-        public void TickCountResolution()
-        {
-            float minResolution = Single.MaxValue;
-            float maxResolution = Single.MinValue;
-
-            // Measure the resolution of Environment.TickCount
-            float tickCountResolution = 0f;
-            for (int i = 0; i < 10; i++)
-            {
-                int start = Environment.TickCount;
-                int now = start;
-                while (now == start)
-                    now = Environment.TickCount;
-
-                float resolution = (float)(now - start);
-                tickCountResolution += tickCountResolution * 0.1f;
-                minResolution = Math.Min(minResolution, resolution);
-                maxResolution = Math.Max(maxResolution, resolution);
-            }
-
-            Console.WriteLine("Average Environment.TickCount resolution: " + tickCountResolution + "ms");
-            Assert.Less(maxResolution - minResolution, 10f, "Environment.TickCount resolution fluctuated between " +
-                minResolution + "ms and " + maxResolution + "ms");
-        }
     }
 }
