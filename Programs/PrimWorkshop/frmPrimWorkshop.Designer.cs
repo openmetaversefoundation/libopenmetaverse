@@ -95,7 +95,7 @@ namespace PrimWorkshop
             this.toolStripMenuItem1,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // opToolStripMenuItem
@@ -104,39 +104,39 @@ namespace PrimWorkshop
             this.openPrimXMLToolStripMenuItem1,
             this.textureToolStripMenuItem});
             this.opToolStripMenuItem.Name = "opToolStripMenuItem";
-            this.opToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.opToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
             this.opToolStripMenuItem.Text = "Open";
             // 
             // openPrimXMLToolStripMenuItem1
             // 
             this.openPrimXMLToolStripMenuItem1.Name = "openPrimXMLToolStripMenuItem1";
-            this.openPrimXMLToolStripMenuItem1.Size = new System.Drawing.Size(127, 22);
-            this.openPrimXMLToolStripMenuItem1.Text = "Prim XML";
+            this.openPrimXMLToolStripMenuItem1.Size = new System.Drawing.Size(197, 22);
+            this.openPrimXMLToolStripMenuItem1.Text = "Prim XML / Sculpt Map";
             this.openPrimXMLToolStripMenuItem1.Click += new System.EventHandler(this.openPrimXMLToolStripMenuItem1_Click);
             // 
             // textureToolStripMenuItem
             // 
             this.textureToolStripMenuItem.Name = "textureToolStripMenuItem";
-            this.textureToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
+            this.textureToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
             this.textureToolStripMenuItem.Text = "Texture";
             this.textureToolStripMenuItem.Click += new System.EventHandler(this.textureToolStripMenuItem_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(151, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(150, 6);
             // 
             // savePrimXMLToolStripMenuItem
             // 
             this.savePrimXMLToolStripMenuItem.Name = "savePrimXMLToolStripMenuItem";
-            this.savePrimXMLToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.savePrimXMLToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
             this.savePrimXMLToolStripMenuItem.Text = "Save Prim XML";
             this.savePrimXMLToolStripMenuItem.Click += new System.EventHandler(this.savePrimXMLToolStripMenuItem_Click);
             // 
             // saveTextureToolStripMenuItem
             // 
             this.saveTextureToolStripMenuItem.Name = "saveTextureToolStripMenuItem";
-            this.saveTextureToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.saveTextureToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
             this.saveTextureToolStripMenuItem.Text = "Save Texture";
             this.saveTextureToolStripMenuItem.Click += new System.EventHandler(this.saveTextureToolStripMenuItem_Click);
             // 
@@ -145,13 +145,13 @@ namespace PrimWorkshop
             this.importToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.worldBrowserToolStripMenuItem});
             this.importToolStripMenuItem.Name = "importToolStripMenuItem";
-            this.importToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.importToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
             this.importToolStripMenuItem.Text = "Import";
             // 
             // worldBrowserToolStripMenuItem
             // 
             this.worldBrowserToolStripMenuItem.Name = "worldBrowserToolStripMenuItem";
-            this.worldBrowserToolStripMenuItem.Size = new System.Drawing.Size(155, 22);
+            this.worldBrowserToolStripMenuItem.Size = new System.Drawing.Size(151, 22);
             this.worldBrowserToolStripMenuItem.Text = "World Browser";
             this.worldBrowserToolStripMenuItem.Click += new System.EventHandler(this.worldBrowserToolStripMenuItem_Click);
             // 
@@ -160,25 +160,25 @@ namespace PrimWorkshop
             this.exportToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.oBJToolStripMenuItem});
             this.exportToolStripMenuItem.Name = "exportToolStripMenuItem";
-            this.exportToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.exportToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
             this.exportToolStripMenuItem.Text = "Export";
             // 
             // oBJToolStripMenuItem
             // 
             this.oBJToolStripMenuItem.Name = "oBJToolStripMenuItem";
-            this.oBJToolStripMenuItem.Size = new System.Drawing.Size(141, 22);
+            this.oBJToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
             this.oBJToolStripMenuItem.Text = "OBJ Format";
             this.oBJToolStripMenuItem.Click += new System.EventHandler(this.oBJToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(151, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(150, 6);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -187,7 +187,7 @@ namespace PrimWorkshop
             this.viewToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.wireframeToolStripMenuItem});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(41, 20);
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.viewToolStripMenuItem.Text = "View";
             // 
             // wireframeToolStripMenuItem
@@ -195,7 +195,7 @@ namespace PrimWorkshop
             this.wireframeToolStripMenuItem.Checked = true;
             this.wireframeToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.wireframeToolStripMenuItem.Name = "wireframeToolStripMenuItem";
-            this.wireframeToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+            this.wireframeToolStripMenuItem.Size = new System.Drawing.Size(129, 22);
             this.wireframeToolStripMenuItem.Text = "Wireframe";
             this.wireframeToolStripMenuItem.Click += new System.EventHandler(this.wireframeToolStripMenuItem_Click);
             // 
@@ -204,13 +204,13 @@ namespace PrimWorkshop
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.aboutToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(40, 20);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.helpToolStripMenuItem.Text = "Help";
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
@@ -381,10 +381,10 @@ namespace PrimWorkshop
             this.picTexture.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.picTexture.TabIndex = 17;
             this.picTexture.TabStop = false;
+            this.picTexture.Paint += new System.Windows.Forms.PaintEventHandler(this.picTexture_Paint);
+            this.picTexture.MouseDown += new System.Windows.Forms.MouseEventHandler(this.picTexture_MouseDown);
             this.picTexture.MouseLeave += new System.EventHandler(this.picTexture_MouseLeave);
             this.picTexture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.picTexture_MouseMove);
-            this.picTexture.MouseDown += new System.Windows.Forms.MouseEventHandler(this.picTexture_MouseDown);
-            this.picTexture.Paint += new System.Windows.Forms.PaintEventHandler(this.picTexture_Paint);
             this.picTexture.MouseUp += new System.Windows.Forms.MouseEventHandler(this.picTexture_MouseUp);
             // 
             // scrollZoom
