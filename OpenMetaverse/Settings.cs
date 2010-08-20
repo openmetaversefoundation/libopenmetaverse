@@ -281,6 +281,11 @@ namespace OpenMetaverse
         #endregion
         #region Texture Pipeline
 
+        /// <summary>
+        /// Download textures using GetTexture capability when available
+        /// </summary>
+        public bool USE_HTTP_TEXTURES = true;
+
         /// <summary>The maximum number of concurrent texture downloads allowed</summary>
         /// <remarks>Increasing this number will not necessarily increase texture retrieval times due to
         /// simulator throttles</remarks>

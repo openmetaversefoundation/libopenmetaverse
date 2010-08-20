@@ -209,11 +209,16 @@ namespace OpenMetaverse.Http
 
                     int bytesRead = 0;
                     int offset = 0;
+                    int totalBytesRead = 0;
+                    int totalSize = nolength ? 0 : size;
 
                     while ((bytesRead = responseStream.Read(buffer, offset, size)) != 0)
                     {
+                        totalBytesRead += bytesRead;
+
                         if (nolength)
                         {
+                            totalSize += (size - bytesRead);
                             ms.Write(buffer, 0, bytesRead);
                         }
                         else
@@ -224,7 +229,7 @@ namespace OpenMetaverse.Http
 
                         // Fire the download progress callback for each chunk of received data
                         if (state.DownloadProgressCallback != null)
-                            state.DownloadProgressCallback(state.Request, response, bytesRead, size);
+                            state.DownloadProgressCallback(state.Request, response, totalBytesRead, totalSize);
                     }
 
                     if (nolength)

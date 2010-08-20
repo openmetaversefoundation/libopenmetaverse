@@ -28,6 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.IO;
+using System.Net;
 using OpenMetaverse;
 using OpenMetaverse.Packets;
 using OpenMetaverse.Assets;
@@ -443,6 +444,8 @@ namespace OpenMetaverse
 
         private TexturePipeline Texture;
 
+        private DownloadManager HttpDownloads;
+
         private GridClient Client;
 
         private Dictionary<UUID, Transfer> Transfers = new Dictionary<UUID, Transfer>();
@@ -460,6 +463,7 @@ namespace OpenMetaverse
             Client = client;
             Cache = new AssetCache(client);
             Texture = new TexturePipeline(client);
+            HttpDownloads = new DownloadManager();
 
             // Transfer packets for downloading large assets
             Client.Network.RegisterCallback(PacketType.TransferInfo, TransferInfoHandler);
@@ -924,6 +928,8 @@ namespace OpenMetaverse
             }
         }
 
+        #region Texture Downloads
+
         /// <summary>
         /// Request a texture asset from the simulator using the <see cref="TexturePipeline"/> system to 
         /// manage the requests and re-assemble the image from the packets received from the simulator
@@ -997,7 +1003,16 @@ namespace OpenMetaverse
         public void RequestImage(UUID textureID, ImageType imageType, float priority, int discardLevel,
             uint packetStart, TextureDownloadCallback callback, bool progress)
         {
-            Texture.RequestTexture(textureID, imageType, priority, discardLevel, packetStart, callback, progress);
+            if (Client.Settings.USE_HTTP_TEXTURES &&
+                Client.Network.CurrentSim.Caps != null &&
+                Client.Network.CurrentSim.Caps.CapabilityURI("GetTexture") != null)
+            {
+                HttpRequestTexture(textureID, imageType, priority, discardLevel, packetStart, callback, progress);
+            }
+            else
+            {
+                Texture.RequestTexture(textureID, imageType, priority, discardLevel, packetStart, callback, progress);
+            }
         }
 
         /// <summary>
@@ -1063,6 +1078,88 @@ namespace OpenMetaverse
             try { OnImageReceiveProgress(new ImageReceiveProgressEventArgs(texureID, transferredBytes, totalBytes)); }
             catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
         }
+
+        // Helper method for downloading textures via GetTexture cap
+        // Same signature as the UDP variant since we need all the params to
+        // pass to the UDP TexturePipeline in case we need to fall back to it
+        // (Linden servers currently (1.42) don't support bakes downloads via HTTP)
+        private void HttpRequestTexture(UUID textureID, ImageType imageType, float priority, int discardLevel,
+    uint packetStart, TextureDownloadCallback callback, bool progress)
+        {
+            if (textureID == UUID.Zero || callback == null)
+                return;
+
+            // Do we have this image in the cache?
+            if (Client.Assets.Cache.HasAsset(textureID))
+            {
+                ImageDownload image = new ImageDownload();
+                image.ID = textureID;
+                image.AssetData = Client.Assets.Cache.GetCachedAssetBytes(textureID);
+                image.Size = image.AssetData.Length;
+                image.Transferred = image.AssetData.Length;
+                image.ImageType = imageType;
+                image.AssetType = AssetType.Texture;
+                image.Success = true;
+
+                callback(TextureRequestState.Finished, new AssetTexture(image.ID, image.AssetData));
+                FireImageProgressEvent(image.ID, image.Transferred, image.Size);
+                return;
+            }
+
+            CapsBase.DownloadProgressEventHandler progressHandler = null;
+
+            if (progress)
+            {
+                progressHandler = (HttpWebRequest request, HttpWebResponse response, int bytesReceived, int totalBytesToReceive) =>
+                    {
+                        FireImageProgressEvent(textureID, bytesReceived, totalBytesToReceive);
+                    };
+            }
+
+            Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("GetTexture");
+
+            DownloadRequest req = new DownloadRequest(
+                new Uri(string.Format("{0}/?texture_id={1}", url.ToString(), textureID.ToString())),
+                Client.Settings.CAPS_TIMEOUT,
+                "image/x-j2c",
+                progressHandler,
+                (HttpWebRequest request, HttpWebResponse response, byte[] responseData, Exception error) =>
+                {
+                    if (error == null && responseData != null) // success
+                    {
+                        ImageDownload image = new ImageDownload();
+                        image.ID = textureID;
+                        image.AssetData = responseData;
+                        image.Size = image.AssetData.Length;
+                        image.Transferred = image.AssetData.Length;
+                        image.ImageType = imageType;
+                        image.AssetType = AssetType.Texture;
+                        image.Success = true;
+
+                        callback(TextureRequestState.Finished, new AssetTexture(image.ID, image.AssetData));
+                        FireImageProgressEvent(image.ID, image.Transferred, image.Size);
+
+                        Client.Assets.Cache.SaveAssetToCache(textureID, responseData);
+                    }
+                    else // download failed
+                    {
+                        Logger.Log(
+                            string.Format("Failed to fetch texture {0} over HTTP, falling back to UDP: {1}",
+                                textureID,
+                                (error == null) ? "" : error.Message
+                            ),
+                            Helpers.LogLevel.Warning, Client);
+
+                        Texture.RequestTexture(textureID, imageType, priority, discardLevel, packetStart, callback, progress);
+                    }
+                }
+            );
+
+            HttpDownloads.QueueDownlad(req);
+
+        }
+
+        #endregion Texture Downloads
 
         #region Helpers
 
