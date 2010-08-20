@@ -119,7 +119,7 @@ namespace OpenMetaverse
                 if (_EventTable.TryGetValue(packetType, out callback))
                 {
                     callback.Callback -= eventHandler;
-                    if (callback.Callback.GetInvocationList().Length == 0)
+                    if (callback.Callback == null || callback.Callback.GetInvocationList().Length == 0)
                         _EventTable.Remove(packetType);
                 }
             }
