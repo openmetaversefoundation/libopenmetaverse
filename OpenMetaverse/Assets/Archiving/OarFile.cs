@@ -39,10 +39,12 @@ namespace OpenMetaverse.Assets
         public delegate void AssetLoadedCallback(Asset asset, long bytesRead, long totalBytes);
         public delegate void TerrainLoadedCallback(float[,] terrain, long bytesRead, long totalBytes);
         public delegate void SceneObjectLoadedCallback(AssetPrim linkset, long bytesRead, long totalBytes);
+        public delegate void SettingsLoadedCallback(string regionName, RegionSettings settings);
 
         #region Archive Loading
 
-        public static void UnpackageArchive(string filename, AssetLoadedCallback assetCallback, TerrainLoadedCallback terrainCallback, SceneObjectLoadedCallback objectCallback)
+        public static void UnpackageArchive(string filename, AssetLoadedCallback assetCallback, TerrainLoadedCallback terrainCallback,
+            SceneObjectLoadedCallback objectCallback, SettingsLoadedCallback settingsCallback)
         {
             int successfulAssetRestores = 0;
             int failedAssetRestores = 0;
@@ -65,23 +67,28 @@ namespace OpenMetaverse.Assets
                             if (filePath.StartsWith(ArchiveConstants.OBJECTS_PATH))
                             {
                                 // Deserialize the XML bytes
-                                LoadObjects(data, objectCallback, fileStream.Position, fileStream.Length);
+                                if (objectCallback != null)
+                                    LoadObjects(data, objectCallback, fileStream.Position, fileStream.Length);
                             }
                             else if (filePath.StartsWith(ArchiveConstants.ASSETS_PATH))
                             {
-                                if (LoadAsset(filePath, data, assetCallback, fileStream.Position, fileStream.Length))
-                                    successfulAssetRestores++;
-                                else
-                                    failedAssetRestores++;
+                                if (assetCallback != null)
+                                {
+                                    if (LoadAsset(filePath, data, assetCallback, fileStream.Position, fileStream.Length))
+                                        successfulAssetRestores++;
+                                    else
+                                        failedAssetRestores++;
+                                }
                             }
                             else if (filePath.StartsWith(ArchiveConstants.TERRAINS_PATH))
                             {
-                                LoadTerrain(filePath, data, terrainCallback, fileStream.Position, fileStream.Length);
+                                if (terrainCallback != null)
+                                    LoadTerrain(filePath, data, terrainCallback, fileStream.Position, fileStream.Length);
                             }
                             else if (filePath.StartsWith(ArchiveConstants.SETTINGS_PATH))
                             {
-                                // FIXME: Support this
-                                //LoadRegionSettings(filePath, data);
+                                if (settingsCallback != null)
+                                    LoadRegionSettings(filePath, data, settingsCallback);
                             }
                         }
 
@@ -171,6 +178,31 @@ namespace OpenMetaverse.Assets
 
             Logger.Log("[OarFile] Failed to load asset", Helpers.LogLevel.Warning);
             return false;
+        }
+
+        private static bool LoadRegionSettings(string filePath, byte[] data, SettingsLoadedCallback settingsCallback)
+        {
+            RegionSettings settings = null;
+            bool loaded = false;
+
+            try
+            {
+                using (MemoryStream stream = new MemoryStream(data))
+                    settings = RegionSettings.FromStream(stream);
+                loaded = true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("[OarFile] Failed to parse region settings file " + filePath + ": " + ex.Message, Helpers.LogLevel.Warning);
+            }
+
+            // Parse the region name out of the filename
+            string regionName = Path.GetFileNameWithoutExtension(filePath);
+
+            if (loaded)
+                settingsCallback(regionName, settings);
+
+            return loaded;
         }
 
         private static bool LoadTerrain(string filePath, byte[] data, TerrainLoadedCallback terrainCallback, long bytesRead, long totalBytes)
