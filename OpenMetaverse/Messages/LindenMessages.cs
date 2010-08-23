@@ -629,6 +629,12 @@ namespace OpenMetaverse.Messages.Linden
         /// <summary></summary>
         public bool RegionDenyAnonymous;
         /// <summary></summary>
+        public bool RegionDenyIdentified;
+        /// <summary></summary>
+        public bool RegionDenyTransacted;
+        /// <summary>True if the region denies access to age unverified users</summary>
+        public bool RegionDenyAgeUnverified;
+        /// <summary></summary>
         public bool RegionPushOverride;
         /// <summary>This field is no longer used</summary>
         public int RentPrice;
@@ -668,8 +674,6 @@ namespace OpenMetaverse.Messages.Linden
         public Vector3 UserLocation;
         /// <summary></summary>
         public Vector3 UserLookAt;
-        /// <summary>TRUE of region denies access to age unverified users</summary>
-        public bool RegionDenyAgeUnverified;
         /// <summary>A description of the media</summary>
         public string MediaDesc;
         /// <summary>An Integer which represents the height of the media</summary>
@@ -727,6 +731,8 @@ namespace OpenMetaverse.Messages.Linden
             parcelDataMap["PassPrice"] = OSD.FromInteger(PassPrice);
             parcelDataMap["PublicCount"] = OSD.FromInteger(PublicCount);
             parcelDataMap["RegionDenyAnonymous"] = OSD.FromBoolean(RegionDenyAnonymous);
+            parcelDataMap["RegionDenyIdentified"] = OSD.FromBoolean(RegionDenyIdentified);
+            parcelDataMap["RegionDenyTransacted"] = OSD.FromBoolean(RegionDenyTransacted);
             parcelDataMap["RegionPushOverride"] = OSD.FromBoolean(RegionPushOverride);
             parcelDataMap["RentPrice"] = OSD.FromInteger(RentPrice);
             parcelDataMap["RequestResult"] = OSD.FromInteger((int)RequestResult);
@@ -817,6 +823,8 @@ namespace OpenMetaverse.Messages.Linden
             PassPrice = parcelDataMap["PassPrice"].AsInteger();
             PublicCount = parcelDataMap["PublicCount"].AsInteger();
             RegionDenyAnonymous = parcelDataMap["RegionDenyAnonymous"].AsBoolean();
+            RegionDenyIdentified = parcelDataMap["RegionDenyIdentified"].AsBoolean();
+            RegionDenyTransacted = parcelDataMap["RegionDenyTransacted"].AsBoolean();
             RegionPushOverride = parcelDataMap["RegionPushOverride"].AsBoolean();
             RentPrice = parcelDataMap["RentPrice"].AsInteger();
             RequestResult = (ParcelResult)parcelDataMap["RequestResult"].AsInteger();

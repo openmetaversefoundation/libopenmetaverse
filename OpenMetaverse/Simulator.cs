@@ -114,8 +114,8 @@ namespace OpenMetaverse
     /// </summary>
     public enum SimAccess : byte
     {
-        /// <summary>Minimum access level, no additional checks</summary>
-        Min = 0,
+        /// <summary>Unknown or invalid access level</summary>
+        Unknown = 0,
         /// <summary>Trial accounts allowed</summary>
         Trial = 7,
         /// <summary>PG rating</summary>

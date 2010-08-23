@@ -57,8 +57,7 @@ namespace OpenMetaverse.Assets
                     {
                         TarArchiveReader archive = new TarArchiveReader(loadStream);
 
-                        string filePath = "ERROR";
-
+                        string filePath;
                         byte[] data;
                         TarArchiveReader.TarEntryType entryType;
 
