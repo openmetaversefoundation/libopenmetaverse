@@ -179,6 +179,12 @@ namespace GridProxy
     {
         public ProxyConfig proxyConfig;
         private string loginURI;
+        
+        static List<string> BinaryResponseCaps = new List<string>()
+        {
+            "GetTexture",
+            "GetMesh"
+        };
 
         /*
          * Proxy Management
@@ -615,9 +621,16 @@ namespace GridProxy
             CapInfo cap = null;
             lock (this)
             {
-                if (KnownCaps.ContainsKey(uri))
+                string capuri = uri;
+                int ix = uri.IndexOf("/?");
+                if (ix != -1)
                 {
-                    cap = KnownCaps[uri];
+                    capuri = uri.Substring(0, ix);
+                }
+                
+                if (KnownCaps.ContainsKey(capuri))
+                {
+                    cap = KnownCaps[capuri];
                 }
             }
 
@@ -636,15 +649,11 @@ namespace GridProxy
                 }
 
                 capReq.RawRequest = content;
+                capReq.FullUri = uri;
 
                 foreach (CapsDelegate d in cap.GetDelegates())
                 {
                     if (d(capReq, CapsStage.Request)) { shortCircuit = true; break; }
-                }
-
-                if (cap.ReqFmt == CapsDataFormat.OSD)
-                {
-                    content = OSDParser.SerializeLLSDXmlBytes((OSD)capReq.Request);
                 }
             }
 
@@ -734,7 +743,7 @@ namespace GridProxy
                         reqStream.Write(content, 0, content.Length);
                         reqStream.Close();
                     }
-                    else
+                    else if (cap == null)
                     {
                         OpenMetaverse.Logger.Log(string.Format("{0} {1}", req.Method, req.Address.ToString()), Helpers.LogLevel.Info);
                     }
@@ -857,7 +866,7 @@ namespace GridProxy
 
 
             string respString;
-            if (cap == null)
+            if (cap == null || cap.RespFmt == CapsDataFormat.Binary)
             {
                 respString = "<data>";
             }
@@ -905,7 +914,9 @@ namespace GridProxy
                     {
                         if (!KnownCaps.ContainsKey(val))
                         {
-                            CapInfo newCap = new CapInfo(val, capReq.Info.Sim, key);
+                            CapsDataFormat resFmt = BinaryResponseCaps.Contains(key) ? CapsDataFormat.Binary : CapsDataFormat.OSD;
+                            CapsDataFormat reqFmt = CapsDataFormat.OSD;
+                            CapInfo newCap = new CapInfo(val, capReq.Info.Sim, key, reqFmt, resFmt);
                             newCap.AddDelegate(new CapsDelegate(KnownCapDelegate));
                             lock (this) { KnownCaps[val] = newCap; }
                         }
@@ -2177,6 +2188,8 @@ namespace GridProxy
 
         public WebHeaderCollection RequestHeaders = new WebHeaderCollection();
         public WebHeaderCollection ResponseHeaders = new WebHeaderCollection();
+
+        public string FullUri = string.Empty;
 
     }
 
