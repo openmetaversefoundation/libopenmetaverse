@@ -5,7 +5,7 @@ Finding Help
 ------------
 
 If you need any help we have a couple of resources, the primary one being 
-the #libomv IRC channel on EFNet. There is also the libomv-dev mailing list 
+the #libomv-dev IRC channel on EFNet. There is also the libomv-dev mailing list 
 at http://groups.google.com/group/libomv-dev and lastly you can use the e-mail 
 contact@openmv.org for any general inquiries (although we prefer 
 developer-related questions to go to IRC or the mailing list). You can find us 
