@@ -245,16 +245,16 @@ namespace OpenMetaverse
         /// at the given position</returns>
         public static long BytesToInt64(byte[] bytes, int pos)
         {
-            if (bytes.Length < 8) return 0;
+            if (bytes.Length < pos + 8) return 0;
             return (long)
-                ((long)bytes[0] +
-                ((long)bytes[1] << 8) +
-                ((long)bytes[2] << 16) +
-                ((long)bytes[3] << 24) +
-                ((long)bytes[4] << 32) +
-                ((long)bytes[5] << 40) +
-                ((long)bytes[6] << 48) +
-                ((long)bytes[7] << 56));
+                ((long)bytes[pos + 0] +
+                ((long)bytes[pos + 1] << 8) +
+                ((long)bytes[pos + 2] << 16) +
+                ((long)bytes[pos + 3] << 24) +
+                ((long)bytes[pos + 4] << 32) +
+                ((long)bytes[pos + 5] << 40) +
+                ((long)bytes[pos + 6] << 48) +
+                ((long)bytes[pos + 7] << 56));
         }
 
         /// <summary>

@@ -243,6 +243,25 @@ namespace PrimWorkshop
             }
         }
 
+        private void LoadDebugPrim()
+        {
+            Prims = new List<FacetedMesh>();
+            Primitive prim = new Primitive();
+            prim.Textures = new Primitive.TextureEntry(UUID.Zero);
+            prim.Scale = Vector3.One;
+            prim.PrimData = ObjectManager.BuildBasicShape(PrimType.Cylinder);
+            prim.PrimData.ProfileHollow = 0.95f;
+            SimpleMesh simpleMesh = Render.Plugin.GenerateSimpleMesh(prim, DetailLevel.High);
+            FacetedMesh facetedMesh = new FacetedMesh();
+            facetedMesh.Faces = new List<Face> { new Face { Vertices = simpleMesh.Vertices, Indices = simpleMesh.Indices } };
+            facetedMesh.Path = simpleMesh.Path;
+            facetedMesh.Profile = simpleMesh.Profile;
+            facetedMesh.Prim = prim;
+            LoadMesh(facetedMesh, ".");
+            PopulatePrimCombobox();
+            glControl.Invalidate();
+        }
+
         private void LoadXmlPrim(string filename)
         {
             byte[] data = File.ReadAllBytes(filename);
@@ -641,7 +660,7 @@ namespace PrimWorkshop
         {
             cboFace.Items.Clear();
 
-            if (CurrentPrim != null)
+            if (CurrentPrim != null && CurrentPrim.Profile.Faces != null)
             {
                 for (int i = 0; i < CurrentPrim.Profile.Faces.Count; i++)
                     cboFace.Items.Add(CurrentPrim.Profile.Faces[i]);
