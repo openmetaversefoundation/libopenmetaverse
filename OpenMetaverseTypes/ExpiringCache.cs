@@ -103,7 +103,7 @@ namespace OpenMetaverse
 
         #region Public methods
 
-        public bool Add(TKey key, TValue value, DateTime expiration)
+        public bool Add(TKey key, TValue value, double expirationSeconds)
         {
             if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
                 throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
@@ -116,7 +116,7 @@ namespace OpenMetaverse
                 }
                 else
                 {
-                    TimedCacheKey<TKey> internalKey = new TimedCacheKey<TKey>(key, expiration);
+                    TimedCacheKey<TKey> internalKey = new TimedCacheKey<TKey>(key, DateTime.UtcNow + TimeSpan.FromSeconds(expirationSeconds));
                     timedStorage.Add(internalKey, value);
                     timedStorageIndex.Add(key, internalKey);
                     return true;
@@ -147,7 +147,7 @@ namespace OpenMetaverse
             finally { Monitor.Exit(syncRoot); }
         }
 
-        public bool AddOrUpdate(TKey key, TValue value, DateTime expiration)
+        public bool AddOrUpdate(TKey key, TValue value, double expirationSeconds)
         {
             if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
                 throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
@@ -155,12 +155,12 @@ namespace OpenMetaverse
             {
                 if (Contains(key))
                 {
-                    Update(key, value, expiration);
+                    Update(key, value, expirationSeconds);
                     return false;
                 }
                 else
                 {
-                    Add(key, value, expiration);
+                    Add(key, value, expirationSeconds);
                     return true;
                 }
             }
@@ -245,22 +245,6 @@ namespace OpenMetaverse
             }
         }
 
-        public TValue this[TKey key, DateTime expiration]
-        {
-            set
-            {
-                AddOrUpdate(key, value, expiration);
-            }
-        }
-
-        public TValue this[TKey key, TimeSpan slidingExpiration]
-        {
-            set
-            {
-                AddOrUpdate(key, value, slidingExpiration);
-            }
-        }
-
         public bool Remove(TKey key)
         {
             if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
@@ -327,7 +311,7 @@ namespace OpenMetaverse
             finally { Monitor.Exit(syncRoot); }
         }
 
-        public bool Update(TKey key, TValue value, DateTime expiration)
+        public bool Update(TKey key, TValue value, double expirationSeconds)
         {
             if (!Monitor.TryEnter(syncRoot, MAX_LOCK_WAIT))
                 throw new ApplicationException("Lock could not be acquired after " + MAX_LOCK_WAIT + "ms");
@@ -343,7 +327,7 @@ namespace OpenMetaverse
                     return false;
                 }
 
-                TimedCacheKey<TKey> internalKey = new TimedCacheKey<TKey>(key, expiration);
+                TimedCacheKey<TKey> internalKey = new TimedCacheKey<TKey>(key, DateTime.UtcNow + TimeSpan.FromSeconds(expirationSeconds));
                 timedStorage.Add(internalKey, value);
                 timedStorageIndex.Add(key, internalKey);
                 return true;
@@ -414,6 +398,9 @@ namespace OpenMetaverse
             // happening on the cache
             if (!Monitor.TryEnter(isPurging))
                 return;
+
+            DateTime signalTime = DateTime.UtcNow;
+
             try
             {
                 // If we fail to acquire a lock on the synchronization root after MAX_LOCK_WAIT, skip this purge cycle
@@ -421,14 +408,14 @@ namespace OpenMetaverse
                     return;
                 try
                 {
-                    List<object> expiredItems = new List<object>();
+                    Lazy<List<object>> expiredItems = new Lazy<List<object>>();
 
                     foreach (TimedCacheKey<TKey> timedKey in timedStorage.Keys)
                     {
-                        if (timedKey.ExpirationDate < e.SignalTime)
+                        if (timedKey.ExpirationDate < signalTime)
                         {
                             // Mark the object for purge
-                            expiredItems.Add(timedKey.Key);
+                            expiredItems.Value.Add(timedKey.Key);
                         }
                         else
                         {
@@ -436,11 +423,14 @@ namespace OpenMetaverse
                         }
                     }
 
-                    foreach (TKey key in expiredItems)
+                    if (expiredItems.IsValueCreated)
                     {
-                        TimedCacheKey<TKey> timedKey = timedStorageIndex[key];
-                        timedStorageIndex.Remove(timedKey.Key);
-                        timedStorage.Remove(timedKey);
+                        foreach (TKey key in expiredItems.Value)
+                        {
+                            TimedCacheKey<TKey> timedKey = timedStorageIndex[key];
+                            timedStorageIndex.Remove(timedKey.Key);
+                            timedStorage.Remove(timedKey);
+                        }
                     }
                 }
                 finally { Monitor.Exit(syncRoot); }
