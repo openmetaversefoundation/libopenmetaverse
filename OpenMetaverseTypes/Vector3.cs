@@ -524,16 +524,39 @@ namespace OpenMetaverse
 
         public static Vector3 operator *(Vector3 vec, Quaternion rot)
         {
-            float rw = -rot.X * vec.X - rot.Y * vec.Y - rot.Z * vec.Z;
-            float rx = rot.W * vec.X + rot.Y * vec.Z - rot.Z * vec.Y;
-            float ry = rot.W * vec.Y + rot.Z * vec.X - rot.X * vec.Z;
-            float rz = rot.W * vec.Z + rot.X * vec.Y - rot.Y * vec.X;
+            Vector3 vec2;
 
-            vec.X = -rw * rot.X + rx * rot.W - ry * rot.Z + rz * rot.Y;
-            vec.Y = -rw * rot.Y + ry * rot.W - rz * rot.X + rx * rot.Z;
-            vec.Z = -rw * rot.Z + rz * rot.W - rx * rot.Y + ry * rot.X;
+            vec2.X =
+                     rot.W * rot.W * vec.X +
+                2f * rot.Y * rot.W * vec.Z -
+                2f * rot.Z * rot.W * vec.Y +
+                     rot.X * rot.X * vec.X +
+                2f * rot.Y * rot.X * vec.Y +
+                2f * rot.Z * rot.X * vec.Z -
+                     rot.Z * rot.Z * vec.X -
+                     rot.Y * rot.Y * vec.X;
 
-            return vec;
+            vec2.Y =
+                2f * rot.X * rot.Y * vec.X +
+                     rot.Y * rot.Y * vec.Y +
+                2f * rot.Z * rot.Y * vec.Z +
+                2f * rot.W * rot.Z * vec.X -
+                     rot.Z * rot.Z * vec.Y +
+                     rot.W * rot.W * vec.Y -
+                2f * rot.X * rot.W * vec.Z -
+                     rot.X * rot.X * vec.Y;
+
+            vec2.Z =
+                2f * rot.X * rot.Z * vec.X +
+                2f * rot.Y * rot.Z * vec.Y +
+                     rot.Z * rot.Z * vec.Z -
+                2f * rot.W * rot.Y * vec.X -
+                     rot.Y * rot.Y * vec.Z +
+                2f * rot.W * rot.X * vec.Y -
+                     rot.X * rot.X * vec.Z +
+                     rot.W * rot.W * vec.Z;
+
+            return vec2;
         }
 
         public static Vector3 operator *(Vector3 vector, Matrix4 matrix)
