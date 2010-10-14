@@ -121,8 +121,6 @@ namespace OpenMetaverse.StructuredData
         public static OSD FromDate(DateTime value) { return new OSDDate(value); }
         public static OSD FromUri(Uri value) { return new OSDUri(value); }
         public static OSD FromBinary(byte[] value) { return new OSDBinary(value); }
-        public static OSD FromBinary(long value) { return new OSDBinary(value); }
-        public static OSD FromBinary(ulong value) { return new OSDBinary(value); }
 
         public static OSD FromVector2(Vector2 value)
         {
@@ -296,6 +294,52 @@ namespace OpenMetaverse.StructuredData
                 return null;
             }
         }
+
+        #region Implicit Conversions
+
+        public static implicit operator OSD(bool value) { return new OSDBoolean(value); }
+        public static implicit operator OSD(int value) { return new OSDInteger(value); }
+        public static implicit operator OSD(uint value) { return new OSDInteger((int)value); }
+        public static implicit operator OSD(short value) { return new OSDInteger((int)value); }
+        public static implicit operator OSD(ushort value) { return new OSDInteger((int)value); }
+        public static implicit operator OSD(sbyte value) { return new OSDInteger((int)value); }
+        public static implicit operator OSD(byte value) { return new OSDInteger((int)value); }
+        public static implicit operator OSD(long value) { return new OSDBinary(value); }
+        public static implicit operator OSD(ulong value) { return new OSDBinary(value); }
+        public static implicit operator OSD(double value) { return new OSDReal(value); }
+        public static implicit operator OSD(float value) { return new OSDReal(value); }
+        public static implicit operator OSD(string value) { return new OSDString(value); }
+        public static implicit operator OSD(UUID value) { return new OSDUUID(value); }
+        public static implicit operator OSD(DateTime value) { return new OSDDate(value); }
+        public static implicit operator OSD(Uri value) { return new OSDUri(value); }
+        public static implicit operator OSD(byte[] value) { return new OSDBinary(value); }
+        public static implicit operator OSD(Vector2 value) { return OSD.FromVector2(value); }
+        public static implicit operator OSD(Vector3 value) { return OSD.FromVector3(value); }
+        public static implicit operator OSD(Vector3d value) { return OSD.FromVector3d(value); }
+        public static implicit operator OSD(Vector4 value) { return OSD.FromVector4(value); }
+        public static implicit operator OSD(Quaternion value) { return OSD.FromQuaternion(value); }
+        public static implicit operator OSD(Color4 value) { return OSD.FromColor4(value); }
+
+        public static implicit operator bool(OSD value) { return value.AsBoolean(); }
+        public static implicit operator int(OSD value) { return value.AsInteger(); }
+        public static implicit operator uint(OSD value) { return value.AsUInteger(); }
+        public static implicit operator long(OSD value) { return value.AsLong(); }
+        public static implicit operator ulong(OSD value) { return value.AsULong(); }
+        public static implicit operator double(OSD value) { return value.AsReal(); }
+        public static implicit operator float(OSD value) { return (float)value.AsReal(); }
+        public static implicit operator string(OSD value) { return value.AsString(); }
+        public static implicit operator UUID(OSD value) { return value.AsUUID(); }
+        public static implicit operator DateTime(OSD value) { return value.AsDate(); }
+        public static implicit operator Uri(OSD value) { return value.AsUri(); }
+        public static implicit operator byte[](OSD value) { return value.AsBinary(); }
+        public static implicit operator Vector2(OSD value) { return value.AsVector2(); }
+        public static implicit operator Vector3(OSD value) { return value.AsVector3(); }
+        public static implicit operator Vector3d(OSD value) { return value.AsVector3d(); }
+        public static implicit operator Vector4(OSD value) { return value.AsVector4(); }
+        public static implicit operator Quaternion(OSD value) { return value.AsQuaternion(); }
+        public static implicit operator Color4(OSD value) { return value.AsColor4(); }
+
+        #endregion Implicit Conversions
 
         /// <summary>
         /// Uses reflection to create an SDMap from all of the SD
@@ -1066,12 +1110,6 @@ namespace OpenMetaverse.StructuredData
         public void Add(OSD llsd)
         {
             value.Add(llsd);
-        }
-
-        public void Add(string str)
-        {
-            // This is so common that we throw a little helper in here
-            value.Add(OSD.FromString(str));
         }
 
         public void Clear()
