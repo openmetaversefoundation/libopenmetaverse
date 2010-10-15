@@ -141,6 +141,7 @@ namespace OpenMetaverse
             req.Add("FetchLib");
             req.Add("FetchLibDescendents");
             req.Add("GetTexture");
+            req.Add("GetMesh");
             req.Add("GroupProposalBallot");
             req.Add("HomeLocation");
             req.Add("LandResources");
