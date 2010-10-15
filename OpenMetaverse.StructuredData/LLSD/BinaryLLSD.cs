@@ -87,6 +87,7 @@ namespace OpenMetaverse.StructuredData
         /// Deserializes binary LLSD
         /// </summary>
         /// <param name="binaryData">Serialized data</param>
+        /// <param name="headerOptional">Treat LLSD binary header as optional</param>
         /// <returns>OSD containting deserialized data</returns>
         public static OSD DeserializeLLSDBinary(byte[] binaryData, bool headerOptional)
         {
