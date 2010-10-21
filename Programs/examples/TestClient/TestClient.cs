@@ -77,7 +77,7 @@ namespace OpenMetaverse.TestClient
                 if (e.IM.Dialog == InstantMessageDialog.RequestTeleport)
                 {
                     Console.WriteLine("Accepting teleport lure.");
-                    Self.TeleportLureRespond(e.IM.FromAgentID, true);
+                    Self.TeleportLureRespond(e.IM.FromAgentID, e.IM.IMSessionID, true);
                 }
                 else if (
                     e.IM.Dialog == InstantMessageDialog.MessageFromAgent ||

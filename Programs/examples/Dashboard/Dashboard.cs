@@ -86,7 +86,7 @@ namespace Dashboard
                 {
                     DialogResult result = MessageBox.Show(this, e.IM.FromAgentName + " has offered you a teleport request:" + Environment.NewLine + e.IM.Message, this.Text, MessageBoxButtons.YesNo);
                     if (result == DialogResult.Yes)
-                        Client.Self.TeleportLureRespond(e.IM.FromAgentID, true);
+                        Client.Self.TeleportLureRespond(e.IM.FromAgentID, e.IM.IMSessionID, true);
                 });
             }
         }

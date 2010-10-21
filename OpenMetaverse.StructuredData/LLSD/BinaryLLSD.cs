@@ -80,20 +80,9 @@ namespace OpenMetaverse.StructuredData
         /// <returns>OSD containting deserialized data</returns>
         public static OSD DeserializeLLSDBinary(byte[] binaryData)
         {
-            return DeserializeLLSDBinary(binaryData, false);
-        }
-
-        /// <summary>
-        /// Deserializes binary LLSD
-        /// </summary>
-        /// <param name="binaryData">Serialized data</param>
-        /// <param name="headerOptional">Treat LLSD binary header as optional</param>
-        /// <returns>OSD containting deserialized data</returns>
-        public static OSD DeserializeLLSDBinary(byte[] binaryData, bool headerOptional)
-        {
 
             MemoryStream stream = new MemoryStream(binaryData);
-            OSD osd = DeserializeLLSDBinary(stream, headerOptional);
+            OSD osd = DeserializeLLSDBinary(stream);
             stream.Close();
             return osd;
         }
@@ -105,25 +94,15 @@ namespace OpenMetaverse.StructuredData
         /// <returns>OSD containting deserialized data</returns>
         public static OSD DeserializeLLSDBinary(Stream stream)
         {
-            return DeserializeLLSDBinary(stream, false);
-        }
-
-        /// <summary>
-        /// Deserializes binary LLSD
-        /// </summary>
-        /// <param name="stream">Stream to read the data from</param>
-        /// <param name="headerOptional">Treat LLSD binary header as optional</param>
-        /// <returns>OSD containting deserialized data</returns>
-        public static OSD DeserializeLLSDBinary(Stream stream, bool headerOptional)
-        {
             if (!stream.CanSeek)
                 throw new OSDException("Cannot deserialize binary LLSD from unseekable streams");
 
             SkipWhiteSpace(stream);
 
             if (!FindString(stream, llsdBinaryHead) && !FindString(stream, llsdBinaryHead2))
-                if (!headerOptional)
-                    throw new OSDException("Failed to decode binary LLSD");
+            {
+                //throw new OSDException("Failed to decode binary LLSD");
+            }
 
             SkipWhiteSpace(stream);
 
