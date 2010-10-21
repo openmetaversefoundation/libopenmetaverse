@@ -2837,23 +2837,26 @@ namespace OpenMetaverse
         /// the teleport, or denying it
         /// </summary>
         /// <param name="requesterID"><seealso cref="UUID"/> of the avatar sending the lure</param>
+        /// <param name="sessionID">IM session <seealso cref="UUID"/> of the incoming lure request</param>
         /// <param name="accept">true to accept the lure, false to decline it</param>
-        public void TeleportLureRespond(UUID requesterID, bool accept)
+        public void TeleportLureRespond(UUID requesterID, UUID sessionID, bool accept)
         {
-            InstantMessage(Name, requesterID, String.Empty, UUID.Random(),
-                accept ? InstantMessageDialog.AcceptTeleport : InstantMessageDialog.DenyTeleport,
-                InstantMessageOnline.Offline, this.SimPosition, UUID.Zero, Utils.EmptyBytes);
-
             if (accept)
             {
                 TeleportLureRequestPacket lure = new TeleportLureRequestPacket();
 
                 lure.Info.AgentID = Client.Self.AgentID;
                 lure.Info.SessionID = Client.Self.SessionID;
-                lure.Info.LureID = Client.Self.AgentID;
+                lure.Info.LureID = sessionID;
                 lure.Info.TeleportFlags = (uint)TeleportFlags.ViaLure;
 
                 Client.Network.SendPacket(lure);
+            }
+            else
+            {
+                InstantMessage(Name, requesterID, String.Empty, sessionID,
+                    accept ? InstantMessageDialog.AcceptTeleport : InstantMessageDialog.DenyTeleport,
+                    InstantMessageOnline.Offline, this.SimPosition, UUID.Zero, Utils.EmptyBytes);
             }
         }
 

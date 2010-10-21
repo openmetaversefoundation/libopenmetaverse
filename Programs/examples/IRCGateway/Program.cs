@@ -44,7 +44,7 @@ namespace IRCGateway
             {
                 if (e.IM.FromAgentID == _MasterID)
                 {
-                    _Client.Self.TeleportLureRespond(e.IM.FromAgentID, true);
+                    _Client.Self.TeleportLureRespond(e.IM.FromAgentID, e.IM.IMSessionID, true);
                 }
             }
         }
