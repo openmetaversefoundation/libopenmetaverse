@@ -63,7 +63,16 @@ namespace OpenMetaverse
         LowerUnderpants,
         Skirt,
         SkirtBaked,
-        HairBaked
+        HairBaked,
+        LowerAlpha,
+        UpperAlpha,
+        HeadAlpha,
+        EyesAlpha,
+        HairAlpha,
+        HeadTattoo,
+        UpperTattoo,
+        LowerTattoo,
+        NumberOfEntries
     }
 
     /// <summary>
@@ -110,18 +119,16 @@ namespace OpenMetaverse
         /// <summary>Total number of baked textures on each avatar</summary>
         public const int BAKED_TEXTURE_COUNT = 6;
         /// <summary>Total number of wearables per bake layer</summary>
-        public const int WEARABLES_PER_LAYER = 7;
-        /// <summary>Total number of textures on an avatar, baked or not</summary>
-        public const int AVATAR_TEXTURE_COUNT = 21;
+        public const int WEARABLES_PER_LAYER = 9;
         /// <summary>Map of what wearables are included in each bake</summary>
         public static readonly WearableType[][] WEARABLE_BAKE_MAP = new WearableType[][]
         {
-            new WearableType[] { WearableType.Shape, WearableType.Skin,    WearableType.Hair,    WearableType.Invalid, WearableType.Invalid, WearableType.Invalid,    WearableType.Invalid    },
-            new WearableType[] { WearableType.Shape, WearableType.Skin,    WearableType.Shirt,   WearableType.Jacket,  WearableType.Gloves,  WearableType.Undershirt, WearableType.Invalid    },
-            new WearableType[] { WearableType.Shape, WearableType.Skin,    WearableType.Pants,   WearableType.Shoes,   WearableType.Socks,   WearableType.Jacket,     WearableType.Underpants },
-            new WearableType[] { WearableType.Eyes,  WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid,    WearableType.Invalid    },
-            new WearableType[] { WearableType.Skirt, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid,    WearableType.Invalid    },
-            new WearableType[] { WearableType.Hair,  WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid,    WearableType.Invalid    }
+            new WearableType[] { WearableType.Shape, WearableType.Skin,    WearableType.Tattoo,  WearableType.Hair,    WearableType.Alpha,   WearableType.Invalid, WearableType.Invalid,    WearableType.Invalid,      WearableType.Invalid },
+            new WearableType[] { WearableType.Shape, WearableType.Skin,    WearableType.Tattoo,  WearableType.Shirt,   WearableType.Jacket,  WearableType.Gloves,  WearableType.Undershirt, WearableType.Alpha,        WearableType.Invalid },
+            new WearableType[] { WearableType.Shape, WearableType.Skin,    WearableType.Tattoo,  WearableType.Pants,   WearableType.Shoes,   WearableType.Socks,   WearableType.Jacket,     WearableType.Underpants,   WearableType.Alpha   },
+            new WearableType[] { WearableType.Eyes,  WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid,    WearableType.Invalid,      WearableType.Invalid },
+            new WearableType[] { WearableType.Skirt, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid,    WearableType.Invalid,      WearableType.Invalid },
+            new WearableType[] { WearableType.Hair,  WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid, WearableType.Invalid,    WearableType.Invalid,      WearableType.Invalid }
         };
         /// <summary>Magic values to finalize the cache check hashes for each
         /// bake</summary>
@@ -192,6 +199,8 @@ namespace OpenMetaverse
             public Dictionary<VisualAlphaParam, float> AlphaMasks;
             /// <summary>Tint that should be applied to the texture</summary>
             public Color4 Color;
+            /// <summary>Where on avatar does this texture belong</summary>
+            public AvatarTextureIndex TextureIndex;
 
             public override string ToString()
             {
@@ -332,7 +341,7 @@ namespace OpenMetaverse
         /// <summary>A cache of wearables currently being worn</summary>
         private Dictionary<WearableType, WearableData> Wearables = new Dictionary<WearableType, WearableData>();
         /// <summary>A cache of textures currently being worn</summary>
-        private TextureData[] Textures = new TextureData[AVATAR_TEXTURE_COUNT];
+        private TextureData[] Textures = new TextureData[(int)AvatarTextureIndex.NumberOfEntries];
         /// <summary>Incrementing serial number for AgentCachedTexture packets</summary>
         private int CacheCheckSerialNum = -1;
         /// <summary>Incrementing serial number for AgentSetAppearance packets</summary>
@@ -1368,6 +1377,10 @@ namespace OpenMetaverse
         /// <returns>A list of texture AssetIDs to download</returns>
         private List<UUID> GetTextureDownloadList(BakeType bakeType)
         {
+            if (bakeType == BakeType.UpperBody)
+            {
+                int foo = 1;
+            }
             List<AvatarTextureIndex> indices = BakeTypeToTextures(bakeType);
             List<UUID> textures = new List<UUID>();
 
@@ -1523,6 +1536,7 @@ namespace OpenMetaverse
             {
                 AvatarTextureIndex textureIndex = textureIndices[i];
                 TextureData texture = Textures[(int)textureIndex];
+                texture.TextureIndex = textureIndex;
 
                 oven.AddTexture(texture);
             }
@@ -2037,6 +2051,8 @@ namespace OpenMetaverse
                 case WearableType.Undershirt:
                 case WearableType.Underpants:
                 case WearableType.Skirt:
+                case WearableType.Tattoo:
+                case WearableType.Alpha:
                     return AssetType.Clothing;
                 default:
                     return AssetType.Unknown;
@@ -2074,7 +2090,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="bakeType">>A BakeType</param>
         /// <returns>Which layer number as defined in BakeTypeToTextures is used for morph mask</returns>
-        public static int MorphLayerForBakeType(BakeType bakeType)
+        public static AvatarTextureIndex MorphLayerForBakeType(BakeType bakeType)
         {
             // Indexes return here correspond to those returned
             // in BakeTypeToTextures(), those two need to be in sync.
@@ -2086,17 +2102,17 @@ namespace OpenMetaverse
             switch (bakeType)
             {
                 case BakeType.Head:
-                    return 1; // hair
+                    return AvatarTextureIndex.Hair; // hair
                 case BakeType.UpperBody:
-                    return 3; // shirt
+                    return AvatarTextureIndex.UpperShirt; // shirt
                 case BakeType.LowerBody:
-                    return 4; // lower pants
+                    return AvatarTextureIndex.LowerPants; // lower pants
                 case BakeType.Skirt:
-                    return 0; // skirt
+                    return AvatarTextureIndex.Skirt; // skirt
                 case BakeType.Hair:
-                    return 0; // hair
+                    return AvatarTextureIndex.Hair; // hair
                 default:
-                    return -1;
+                    return AvatarTextureIndex.Unknown;
             }
         }
 
@@ -2113,31 +2129,39 @@ namespace OpenMetaverse
             {
                 case BakeType.Head:
                     textures.Add(AvatarTextureIndex.HeadBodypaint);
+                    textures.Add(AvatarTextureIndex.HeadTattoo);
                     textures.Add(AvatarTextureIndex.Hair);
+                    textures.Add(AvatarTextureIndex.HeadAlpha);
                     break;
                 case BakeType.UpperBody:
                     textures.Add(AvatarTextureIndex.UpperBodypaint);
+                    textures.Add(AvatarTextureIndex.UpperTattoo);
                     textures.Add(AvatarTextureIndex.UpperGloves);
                     textures.Add(AvatarTextureIndex.UpperUndershirt);
                     textures.Add(AvatarTextureIndex.UpperShirt);
                     textures.Add(AvatarTextureIndex.UpperJacket);
+                    textures.Add(AvatarTextureIndex.UpperAlpha);
                     break;
                 case BakeType.LowerBody:
                     textures.Add(AvatarTextureIndex.LowerBodypaint);
+                    textures.Add(AvatarTextureIndex.LowerTattoo);
                     textures.Add(AvatarTextureIndex.LowerUnderpants);
                     textures.Add(AvatarTextureIndex.LowerSocks);
                     textures.Add(AvatarTextureIndex.LowerShoes);
                     textures.Add(AvatarTextureIndex.LowerPants);
                     textures.Add(AvatarTextureIndex.LowerJacket);
+                    textures.Add(AvatarTextureIndex.LowerAlpha);
                     break;
                 case BakeType.Eyes:
                     textures.Add(AvatarTextureIndex.EyesIris);
+                    textures.Add(AvatarTextureIndex.EyesAlpha);
                     break;
                 case BakeType.Skirt:
                     textures.Add(AvatarTextureIndex.Skirt);
                     break;
                 case BakeType.Hair:
                     textures.Add(AvatarTextureIndex.Hair);
+                    textures.Add(AvatarTextureIndex.HairAlpha);
                     break;
             }
 
