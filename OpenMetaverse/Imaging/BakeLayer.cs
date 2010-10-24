@@ -136,11 +136,24 @@ namespace OpenMetaverse.Imaging
                 DrawLayer(LoadResourceLayer("lowerbody_color.tga"), false);
             }
 
+            ManagedImage alphaWearableTexture = null;
+
             // Layer each texture on top of one other, applying alpha masks as we go
             for (int i = 0; i < textures.Count; i++)
             {
                 // Skip if we have no texture on this layer
                 if (textures[i].Texture == null) continue;
+
+                // Is this Alpha wearable and does it have an alpha channel?
+                if (textures[i].TextureIndex >= AvatarTextureIndex.LowerAlpha &&
+                    textures[i].TextureIndex <= AvatarTextureIndex.HairAlpha)
+                {
+                    if (textures[i].Texture.Image.Alpha != null)
+                    {
+                        alphaWearableTexture = textures[i].Texture.Image.Clone();
+                    }
+                    continue;
+                }
 
                 // Don't draw skin on head bake first
                 // For head bake skin texture is drawn last, go figure
@@ -233,7 +246,7 @@ namespace OpenMetaverse.Imaging
 
                             // Is this layer used for morph mask? If it is, use its
                             // alpha as the morth for the whole bake
-                            if (i == AppearanceManager.MorphLayerForBakeType(bakeType))
+                            if (Textures[i].TextureIndex == AppearanceManager.MorphLayerForBakeType(bakeType))
                             {
                                 bakedTexture.Image.Bump = combinedMask.Alpha;
                             }
@@ -257,6 +270,12 @@ namespace OpenMetaverse.Imaging
                     catch (Exception) { }
                 }
                 DrawLayer(texture, false);
+            }
+
+            // Apply any alpha wearable textures to make parts of the avatar disappear
+            if (alphaWearableTexture != null)
+            {
+                AddAlpha(bakedTexture.Image, alphaWearableTexture);
             }
 
             // We are done, encode asset for finalized bake
