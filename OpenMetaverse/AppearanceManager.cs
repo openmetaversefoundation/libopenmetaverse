@@ -1377,10 +1377,6 @@ namespace OpenMetaverse
         /// <returns>A list of texture AssetIDs to download</returns>
         private List<UUID> GetTextureDownloadList(BakeType bakeType)
         {
-            if (bakeType == BakeType.UpperBody)
-            {
-                int foo = 1;
-            }
             List<AvatarTextureIndex> indices = BakeTypeToTextures(bakeType);
             List<UUID> textures = new List<UUID>();
 
