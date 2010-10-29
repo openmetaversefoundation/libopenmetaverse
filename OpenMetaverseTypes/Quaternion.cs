@@ -602,10 +602,10 @@ namespace OpenMetaverse
         public static Quaternion Multiply(Quaternion a, Quaternion b)
         {
             return new Quaternion(
-                b.W * a.X + b.X * a.W + b.Y * a.Z - b.Z * a.Y,
-                b.W * a.Y + b.Y * a.W + b.Z * a.X - b.X * a.Z,
-                b.W * a.Z + b.Z * a.W + b.X * a.Y - b.Y * a.X,
-                b.W * a.W - b.X * a.X - b.Y * a.Y - b.Z * a.Z
+                a.W * b.X + a.X * b.W + a.Y * b.Z - a.Z * b.Y,
+                a.W * b.Y + a.Y * b.W + a.Z * b.X - a.X * b.Z,
+                a.W * b.Z + a.Z * b.W + a.X * b.Y - a.Y * b.X,
+                a.W * b.W - a.X * b.X - a.Y * b.Y - a.Z * b.Z
             );
         }
 
