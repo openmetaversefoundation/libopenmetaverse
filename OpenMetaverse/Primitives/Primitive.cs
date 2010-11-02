@@ -465,7 +465,7 @@ namespace OpenMetaverse
                 byte[] data = new byte[17];
 
                 SculptTexture.GetBytes().CopyTo(data, 0);
-                data[16] = (byte)Type;
+                data[16] = type;
 
                 return data;
             }
