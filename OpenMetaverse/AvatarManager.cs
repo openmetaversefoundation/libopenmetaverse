@@ -36,6 +36,7 @@ using OpenMetaverse.StructuredData;
 namespace OpenMetaverse
 {
 
+    #region Structs
     /// <summary> Information about agents display name </summary>
     public struct AgentDisplayName
     {
@@ -112,7 +113,6 @@ namespace OpenMetaverse
         }
     }
 
-    #region Structs
     /// <summary>
     /// Holds group information for Avatars such as those you might find in a profile
     /// </summary>
@@ -554,6 +554,16 @@ namespace OpenMetaverse
 
         #endregion Events
 
+        #region Delegates
+        /// <summary>
+        /// Callback giving results when fetching display names
+        /// </summary>
+        /// <param name="success">If the request was successful</param>
+        /// <param name="names">Array of display names</param>
+        /// <param name="badIDs">Array of UUIDs that could not be fetched</param>
+        public delegate void DisplayNamesCallback(bool success, AgentDisplayName[] names, UUID[] badIDs);
+        #endregion Delegates
+
         private GridClient Client;
 
         /// <summary>
@@ -671,14 +681,6 @@ namespace OpenMetaverse
         {
             return (Client.Network.CurrentSim != null && Client.Network.CurrentSim.Caps != null) && Client.Network.CurrentSim.Caps.CapabilityURI("GetDisplayNames") != null;
         }
-
-        /// <summary>
-        /// Callback giving results when fetching display names
-        /// </summary>
-        /// <param name="success">If the request was successful</param>
-        /// <param name="names">Array of display names</param>
-        /// <param name="badIDs">Array of UUIDs that could not be fetched</param>
-        public delegate void DisplayNamesCallback(bool success, AgentDisplayName[] names, UUID[] badIDs);
 
         /// <summary>
         /// Request retrieval of display names
