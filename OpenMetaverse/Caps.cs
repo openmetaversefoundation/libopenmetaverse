@@ -128,8 +128,9 @@ namespace OpenMetaverse
             // Create a request list
             OSDArray req = new OSDArray();
             // This list can be updated by using the following command to obtain a current list of capabilities the official linden viewer supports:
-            // wget -q -O - http://svn.secondlife.com/svn/linden/branches/2010/viewer-external/indra/newview/llviewerregion.cpp | grep 'capabilityNames.append'  | sed 's/^[ \t]*//;s/capabilityNames.append("/req.Add("/'
+            // wget -q -O - http://bitbucket.org/lindenlab/viewer-development/raw/default/indra/newview/llviewerregion.cpp | grep 'capabilityNames.append'  | sed 's/^[ \t]*//;s/capabilityNames.append("/req.Add("/'
             req.Add("AttachmentResources");
+            req.Add("AvatarPickerSearch");
             req.Add("ChatSessionRequest");
             req.Add("CopyInventoryFromNotecard");
             req.Add("DispatchRegionInfo");
@@ -140,6 +141,7 @@ namespace OpenMetaverse
             req.Add("ObjectMediaNavigate");
             req.Add("FetchLib");
             req.Add("FetchLibDescendents");
+            req.Add("GetDisplayNames");
             req.Add("GetTexture");
             req.Add("GetMesh");
             req.Add("GroupProposalBallot");
@@ -162,6 +164,9 @@ namespace OpenMetaverse
             req.Add("SendUserReport");
             req.Add("SendUserReportWithScreenshot");
             req.Add("ServerReleaseNotes");
+            req.Add("SetDisplayName");
+            req.Add("SimConsole");
+            req.Add("SimConsoleAsync");
             req.Add("StartGroupProposal");
             req.Add("TextureStats");
             req.Add("UntrustedSimulatorMessage");
