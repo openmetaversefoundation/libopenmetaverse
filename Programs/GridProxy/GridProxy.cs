@@ -984,7 +984,7 @@ namespace GridProxy
 
                 if (stage == CapsStage.Response)
                 {
-                    if (capReq.Response != null)
+                    if (capReq.Response != null && capReq.Response is OSDMap)
                     {
                         OSDMap map = (OSDMap)capReq.Response;
 
