@@ -99,7 +99,7 @@ namespace OpenMetaverse
         /// <summary>Maximum number of concurrent downloads for wearable assets and textures</summary>
         const int MAX_CONCURRENT_DOWNLOADS = 5;
         /// <summary>Maximum number of concurrent uploads for baked textures</summary>
-        const int MAX_CONCURRENT_UPLOADS = 3;
+        const int MAX_CONCURRENT_UPLOADS = 6;
         /// <summary>Timeout for fetching inventory listings</summary>
         const int INVENTORY_TIMEOUT = 1000 * 30;
         /// <summary>Timeout for fetching a single wearable, or receiving a single packet response</summary>
