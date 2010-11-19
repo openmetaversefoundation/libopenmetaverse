@@ -4767,4 +4767,182 @@ namespace OpenMetaverse.Messages.Linden
     }
 
     #endregion Resource usage
+
+    #region Display names
+    /// <summary>
+    /// Reply to request for bunch if display names
+    /// </summary>
+    public class GetDisplayNamesMessage : IMessage
+    {
+        /// <summary> Current display name </summary>
+        public AgentDisplayName[] Agents = new AgentDisplayName[0];
+
+        /// <summary> Following UUIDs failed to return a valid display name </summary>
+        public UUID[] BadIDs = new UUID[0];
+
+        /// <summary>
+        /// Serializes the message
+        /// </summary>
+        /// <returns>OSD containting the messaage</returns>
+        public OSDMap Serialize()
+        {
+            OSDArray agents = new OSDArray();
+            
+            if (Agents != null && Agents.Length > 0)
+            {
+                for (int i=0; i<Agents.Length; i++)
+                {
+                    agents.Add(Agents[i].GetOSD());
+                }
+            }
+
+            OSDArray badIDs = new OSDArray();
+            if (BadIDs != null && BadIDs.Length > 0)
+            {
+                for (int i=0; i<BadIDs.Length; i++)
+                {
+                    badIDs.Add(new OSDUUID(BadIDs[i]));
+                }
+            }
+
+            OSDMap ret = new OSDMap();
+            ret["agents"] = agents;
+            ret["bad_ids"] = badIDs;
+            return ret;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            if (map["agents"].Type == OSDType.Array)
+            {
+                OSDArray osdAgents = (OSDArray) map["agents"];
+
+                if (osdAgents.Count > 0)
+                {
+                    Agents = new AgentDisplayName[osdAgents.Count];
+
+                    for (int i = 0; i < osdAgents.Count; i++)
+                    {
+                        Agents[i] = AgentDisplayName.FromOSD(osdAgents[i]);
+                    }
+                }
+            }
+
+            if (map["bad_ids"].Type == OSDType.Array)
+            {
+                OSDArray osdBadIDs = (OSDArray) map["bad_ids"];
+                if (osdBadIDs.Count > 0)
+                {
+                    BadIDs = new UUID[osdBadIDs.Count];
+
+                    for (int i=0; i<osdBadIDs.Count; i++)
+                    {
+                        BadIDs[i] = osdBadIDs[i];
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Message sent when requesting change of the display name
+    /// </summary>
+    public class SetDisplayNameMessage : IMessage
+    {
+        /// <summary> Current display name </summary>
+        public string OldDisplayName;
+
+        /// <summary> Desired new display name </summary>
+        public string NewDisplayName;
+
+        /// <summary>
+        /// Serializes the message
+        /// </summary>
+        /// <returns>OSD containting the messaage</returns>
+        public OSDMap Serialize()
+        {
+            OSDArray names = new OSDArray(2) {OldDisplayName, NewDisplayName};
+
+            OSDMap name = new OSDMap();
+            name["display_name"] = names;
+            return name;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDArray names = (OSDArray)map["display_name"];
+            OldDisplayName = names[0];
+            NewDisplayName = names[1];
+        }
+    }
+
+    /// <summary>
+    /// Message recieved in response to request to change display name
+    /// </summary>
+    public class SetDisplayNameReplyMessage : IMessage
+    {
+        /// <summary> New display name </summary>
+        public AgentDisplayName DisplayName;
+
+        /// <summary> String message indicating the result of the operation </summary>
+        public string Reason;
+
+        /// <summary> Numerical code of the result, 200 indicates success </summary>
+        public int Status;
+
+        /// <summary>
+        /// Serializes the message
+        /// </summary>
+        /// <returns>OSD containting the messaage</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap agent = (OSDMap)DisplayName.GetOSD();
+            OSDMap ret = new OSDMap();
+            ret["content"] = agent;
+            ret["reason"] = Reason;
+            ret["status"] = Status;
+            return ret;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDMap agent = (OSDMap)map["content"];
+            DisplayName = AgentDisplayName.FromOSD(agent);
+            Reason = map["reason"];
+            Status = map["status"];
+        }
+    }
+
+    /// <summary>
+    /// Message recieved when someone nearby changes their display name
+    /// </summary>
+    public class DisplayNameUpdateMessage : IMessage
+    {
+        /// <summary> Previous display name, empty string if default </summary>
+        public string OldDisplayName;
+
+        /// <summary> New display name </summary>
+        public AgentDisplayName DisplayName;
+
+        /// <summary>
+        /// Serializes the message
+        /// </summary>
+        /// <returns>OSD containting the messaage</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap agent = (OSDMap)DisplayName.GetOSD();
+            agent["old_display_name"] = OldDisplayName;
+            OSDMap ret = new OSDMap();
+            ret["agent"] = agent;
+            return ret;
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            OSDMap agent = (OSDMap)map["agent"];
+            DisplayName = AgentDisplayName.FromOSD(agent);
+            OldDisplayName = agent["old_display_name"];
+        }
+    }
+    #endregion Display names
 }

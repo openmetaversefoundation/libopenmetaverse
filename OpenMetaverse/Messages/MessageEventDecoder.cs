@@ -92,6 +92,10 @@ namespace OpenMetaverse.Messages
                 case "ObjectMedia": message = new ObjectMediaMessage(); break;
                 case "AttachmentResources": message = AttachmentResourcesMessage.GetMessageHandler(map); break;
                 case "LandResources": message = LandResourcesMessage.GetMessageHandler(map); break;
+                case "GetDisplayNames": message = new GetDisplayNamesMessage(); break;
+                case "SetDisplayName": message = new SetDisplayNameMessage(); break;
+                case "SetDisplayNameReply": message = new SetDisplayNameReplyMessage(); break;
+                case "DisplayNameUpdate": message = new DisplayNameUpdateMessage(); break;
                 //case "ProductInfoRequest": message = new ProductInfoRequestMessage(); break;
 
                 // Capabilities TODO:
