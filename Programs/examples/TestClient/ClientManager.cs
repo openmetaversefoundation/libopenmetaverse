@@ -199,15 +199,24 @@ namespace OpenMetaverse.TestClient
         /// <summary>
         /// 
         /// </summary>
-        public void Run()
+        public void Run(bool noGUI)
         {
-            Console.WriteLine("Type quit to exit.  Type help for a command list.");
-
-            while (Running)
+            if (noGUI)
             {
-                PrintPrompt();
-                string input = Console.ReadLine();
-                DoCommandAll(input, UUID.Zero);
+                while (Running)
+                {
+                    Thread.Sleep(2 * 1000);
+                }
+            }
+            else {
+                Console.WriteLine("Type quit to exit.  Type help for a command list.");
+
+                while (Running)
+                {
+                    PrintPrompt();
+                    string input = Console.ReadLine();
+                    DoCommandAll(input, UUID.Zero);
+                }
             }
 
             foreach (GridClient client in Clients.Values)

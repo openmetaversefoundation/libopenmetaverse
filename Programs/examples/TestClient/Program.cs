@@ -30,6 +30,7 @@ namespace OpenMetaverse.TestClient
             UUID masterKey = UUID.Zero;
             string file = String.Empty;
             bool getTextures = false;
+            bool noGUI = false; // true if to not prompt for input
             string scriptFile = String.Empty;
 
             if (arguments["groupcommands"] != null)
@@ -49,6 +50,9 @@ namespace OpenMetaverse.TestClient
 
             if (arguments["gettextures"] != null)
                 getTextures = true;
+
+            if (arguments["nogui"] != null)
+                noGUI = true;
 
             if (arguments["scriptfile"] != null)
             {
@@ -154,7 +158,7 @@ namespace OpenMetaverse.TestClient
                 ClientManager.Instance.DoCommandAll("script " + scriptFile, UUID.Zero);
 
             // Then Run the ClientManager normally
-            ClientManager.Instance.Run();
+            ClientManager.Instance.Run(noGUI);
         }
     }
 }
