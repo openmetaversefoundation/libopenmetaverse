@@ -849,7 +849,7 @@ namespace OpenMetaverse
             volume["path"] = path;
             volume["profile"] = profile;
 
-            OSDMap prim = new OSDMap(9);
+            OSDMap prim = new OSDMap(20);
             if (Properties != null)
             {
                 prim["name"] = OSD.FromString(Properties.Name);
@@ -869,8 +869,11 @@ namespace OpenMetaverse
             prim["pcode"] = OSD.FromInteger((int)PrimData.PCode);
             prim["material"] = OSD.FromInteger((int)PrimData.Material);
             prim["shadows"] = OSD.FromBoolean(((Flags & PrimFlags.CastShadows) != 0));
-            prim["localid"] = OSD.FromInteger(LocalID);
-            prim["parentid"] = OSD.FromInteger(ParentID);
+            prim["state"] = OSD.FromInteger(PrimData.State);
+
+            prim["id"] = OSD.FromUUID(ID);
+            prim["localid"] = OSD.FromUInteger(LocalID);
+            prim["parentid"] = OSD.FromUInteger(ParentID);
 
             prim["volume"] = volume;
 
@@ -902,9 +905,9 @@ namespace OpenMetaverse
             #region Path/Profile
 
             data.profileCurve = (byte)0;
-            data.State = 0;
             data.Material = (Material)map["material"].AsInteger();
             data.PCode = (PCode)map["pcode"].AsInteger();
+            data.State = (byte)map["state"].AsInteger();
 
             data.PathBegin = (float)path["begin"].AsReal();
             data.PathCurve = (PathCurve)path["curve"].AsInteger();
@@ -940,8 +943,9 @@ namespace OpenMetaverse
             if (map["shadows"].AsBoolean())
                 prim.Flags |= PrimFlags.CastShadows;
 
-            prim.LocalID = (uint)map["localid"].AsInteger();
-            prim.ParentID = (uint)map["parentid"].AsInteger();
+            prim.ID = map["id"].AsUUID();
+            prim.LocalID = map["localid"].AsUInteger();
+            prim.ParentID = map["parentid"].AsUInteger();
             prim.Position = ((OSDArray)map["position"]).AsVector3();
             prim.Rotation = ((OSDArray)map["rotation"]).AsQuaternion();
             prim.Scale = ((OSDArray)map["scale"]).AsVector3();
