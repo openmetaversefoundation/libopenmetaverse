@@ -1152,11 +1152,31 @@ namespace OpenMetaverse
             add { lock (m_ChatSessionMemberLeftLock) { m_ChatSessionMemberLeft += value; } }
             remove { lock (m_ChatSessionMemberLeftLock) { m_ChatSessionMemberLeft -= value; } }
         }
+
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<SetDisplayNameReplyEventArgs> m_SetDisplayNameReply;
+
+        ///<summary>Raises the SetDisplayNameReply Event</summary>
+        /// <param name="e">A SetDisplayNameReplyEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnSetDisplayNameReply(SetDisplayNameReplyEventArgs e)
+        {
+            EventHandler<SetDisplayNameReplyEventArgs> handler = m_SetDisplayNameReply;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_SetDisplayNameReplyLock = new object();
+
+        /// <summary>Raised when the simulator sends us data containing
+        /// the details of display name change</summary>
+        public event EventHandler<SetDisplayNameReplyEventArgs> SetDisplayNameReply
+        {
+            add { lock (m_SetDisplayNameReplyLock) { m_SetDisplayNameReply += value; } }
+            remove { lock (m_SetDisplayNameReplyLock) { m_SetDisplayNameReply -= value; } }
+        }
         #endregion Callbacks
-
-        #region Events
-
-        #endregion Events
 
         /// <summary>Reference to the GridClient instance</summary>
         private readonly GridClient Client;
@@ -1419,6 +1439,7 @@ namespace OpenMetaverse
             Client.Network.RegisterEventCallback("CrossedRegion", new Caps.EventQueueCallback(CrossedRegionEventHandler));
             // CAPS callbacks
             Client.Network.RegisterEventCallback("EstablishAgentCommunication", new Caps.EventQueueCallback(EstablishAgentCommunicationEventHandler));
+            Client.Network.RegisterEventCallback("SetDisplayNameReply", new Caps.EventQueueCallback(SetDisplayNameReplyEventHandler));
             // Incoming Group Chat
             Client.Network.RegisterEventCallback("ChatterBoxInvitation", new Caps.EventQueueCallback(ChatterBoxInvitationEventHandler));
             // Outgoing Group Chat Reply
@@ -3179,6 +3200,30 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>
+        /// Initates request to set a new display name
+        /// </summary>
+        /// <param name="oldName">Previous display name</param>
+        /// <param name="newName">Desired new display name</param>
+        public void SetDisplayName(string oldName, string newName)
+        {
+            Uri uri;
+
+            if (Client.Network.CurrentSim == null ||
+                Client.Network.CurrentSim.Caps == null ||
+                (uri = Client.Network.CurrentSim.Caps.CapabilityURI("SetDisplayName")) == null)
+            {
+                Logger.Log("Unable to invoke SetDisplyName capability at this time", Helpers.LogLevel.Warning, Client);
+                return;
+            }
+
+            SetDisplayNameMessage msg = new SetDisplayNameMessage();
+            msg.OldDisplayName = oldName;
+            msg.NewDisplayName = newName;
+
+            CapsClient cap = new CapsClient(uri);
+            cap.BeginGetResponse(msg.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+        }
         #endregion Misc
 
         #region Packet Handlers
@@ -3430,6 +3475,21 @@ namespace OpenMetaverse
             if (m_Balance != null)
             {
                 OnBalance(new BalanceEventArgs(balance));
+            }
+        }
+
+        /// <summary>
+        /// EQ Message fired with the result of SetDisplayName request
+        /// </summary>
+        /// <param name="capsKey">The message key</param>
+        /// <param name="message">the IMessage object containing the deserialized data sent from the simulator</param>
+        /// <param name="simulator">The <see cref="Simulator"/> which originated the packet</param>
+        protected void SetDisplayNameReplyEventHandler(string capsKey, IMessage message, Simulator simulator)
+        {
+            if (m_SetDisplayNameReply != null)
+            {
+                SetDisplayNameReplyMessage msg = (SetDisplayNameReplyMessage)message;
+                OnSetDisplayNameReply(new SetDisplayNameReplyEventArgs(msg.Status, msg.Reason, msg.DisplayName));
             }
         }
 
@@ -4743,5 +4803,31 @@ namespace OpenMetaverse
             this.m_AgentID = agentID;
         }
     }
+
+    /// <summary>Event arguments with the result of setting display name operation</summary>
+    public class SetDisplayNameReplyEventArgs : EventArgs
+    {
+        private readonly int m_Status;
+        private readonly string m_Reason;
+        private readonly AgentDisplayName m_DisplayName;
+
+        /// <summary>Status code, 200 indicates settign display name was successful</summary>
+        public int Status { get { return m_Status; } }
+
+        /// <summary>Textual description of the status</summary>
+        public string Reason { get { return m_Reason; } }
+
+        /// <summary>Details of the newly set display name</summary>
+        public AgentDisplayName DisplayName { get { return m_DisplayName; } }
+
+        /// <summary>Default constructor</summary>
+        public SetDisplayNameReplyEventArgs(int status, string reason, AgentDisplayName displayName)
+        {
+            m_Status = status;
+            m_Reason = reason;
+            m_DisplayName = displayName;
+        }
+    }
+
     #endregion
 }

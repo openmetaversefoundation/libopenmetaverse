@@ -683,7 +683,7 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Request retrieval of display names
+        /// Request retrieval of display names (max 90 names per request)
         /// </summary>
         /// <param name="ids">List of UUIDs to lookup</param>
         /// <param name="callback">Callback to report result of the operation</param>
