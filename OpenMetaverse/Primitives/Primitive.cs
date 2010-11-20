@@ -866,8 +866,10 @@ namespace OpenMetaverse
             prim["position"] = OSD.FromVector3(Position);
             prim["rotation"] = OSD.FromQuaternion(Rotation);
             prim["scale"] = OSD.FromVector3(Scale);
+            prim["pcode"] = OSD.FromInteger((int)PrimData.PCode);
             prim["material"] = OSD.FromInteger((int)PrimData.Material);
             prim["shadows"] = OSD.FromBoolean(((Flags & PrimFlags.CastShadows) != 0));
+            prim["localid"] = OSD.FromInteger(LocalID);
             prim["parentid"] = OSD.FromInteger(ParentID);
 
             prim["volume"] = volume;
@@ -902,7 +904,7 @@ namespace OpenMetaverse
             data.profileCurve = (byte)0;
             data.State = 0;
             data.Material = (Material)map["material"].AsInteger();
-            data.PCode = PCode.Prim; // TODO: Put this in SD
+            data.PCode = (PCode)map["pcode"].AsInteger();
 
             data.PathBegin = (float)path["begin"].AsReal();
             data.PathCurve = (PathCurve)path["curve"].AsInteger();
@@ -938,6 +940,7 @@ namespace OpenMetaverse
             if (map["shadows"].AsBoolean())
                 prim.Flags |= PrimFlags.CastShadows;
 
+            prim.LocalID = (uint)map["localid"].AsInteger();
             prim.ParentID = (uint)map["parentid"].AsInteger();
             prim.Position = ((OSDArray)map["position"]).AsVector3();
             prim.Rotation = ((OSDArray)map["rotation"]).AsQuaternion();
