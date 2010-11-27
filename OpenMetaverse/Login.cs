@@ -1112,7 +1112,7 @@ namespace OpenMetaverse
                                     request.Send(CurrentContext.URI, CurrentContext.Timeout),
                                     loginParams);
                             }
-                            catch (WebException e)
+                            catch (Exception e)
                             {
                                 UpdateLoginStatus(LoginStatus.Failed, "Error opening the login server connection: " + e.Message);
                             }
@@ -1150,16 +1150,24 @@ namespace OpenMetaverse
             }
         }
 
+
+		/// <summary>
+		/// LoginParams and the initial login XmlRpcRequest were made on a remote machine.
+		/// This method now initializes libomv with the results.
+		/// </summary>
+		public void RemoteLoginHandler(LoginResponseData response, LoginParams newContext) 
+		{
+			CurrentContext = newContext;
+			LoginReplyXmlRpcHandler(response, newContext);
+		}
+
+
         /// <summary>
         /// Handles response from XML-RPC login replies
         /// </summary>
         private void LoginReplyXmlRpcHandler(XmlRpcResponse response, LoginParams context)
         {
             LoginResponseData reply = new LoginResponseData();
-            ushort simPort = 0;
-            uint regionX = 0;
-            uint regionY = 0;
-
             // Fetch the login response
             if (response == null || !(response.Value is Hashtable))
             {
@@ -1184,8 +1192,19 @@ namespace OpenMetaverse
                 Logger.Log("Login response failure: " + e.Message + " " + e.StackTrace, Helpers.LogLevel.Warning);
                 return;
             }
+			LoginReplyXmlRpcHandler(reply, context);
+		}
 
-            string reason = reply.Reason;
+
+		/// <summary>
+		/// Handles response from XML-RPC login replies with already parsed LoginResponseData
+		/// </summary>
+		private void LoginReplyXmlRpcHandler(LoginResponseData reply, LoginParams context)
+		{
+			ushort simPort = 0;
+			uint regionX = 0;
+			uint regionY = 0;
+			string reason = reply.Reason;
             string message = reply.Message;
 
             if (reply.Login == "true")
