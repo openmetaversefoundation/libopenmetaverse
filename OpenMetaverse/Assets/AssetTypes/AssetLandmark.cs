@@ -80,7 +80,7 @@ namespace OpenMetaverse.Assets
                 String[] vecStrings = text.Substring(text.IndexOf("local_pos") + 10).Split(vecDelim.ToCharArray());
                 if (vecStrings.Length == 3)
                 {
-                    Position = new Vector3(float.Parse(vecStrings[0]), float.Parse(vecStrings[1]), float.Parse(vecStrings[2]));
+                    Position = new Vector3(float.Parse(vecStrings[0], System.Globalization.CultureInfo.InvariantCulture), float.Parse(vecStrings[1], System.Globalization.CultureInfo.InvariantCulture), float.Parse(vecStrings[2], System.Globalization.CultureInfo.InvariantCulture));
                     return true;
                 }
             }
