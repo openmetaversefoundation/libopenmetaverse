@@ -38,7 +38,7 @@ namespace OpenMetaverse
 
     #region Structs
     /// <summary> Information about agents display name </summary>
-    public struct AgentDisplayName
+    public class AgentDisplayName
     {
         /// <summary> Agent UUID </summary>
         public UUID ID;
