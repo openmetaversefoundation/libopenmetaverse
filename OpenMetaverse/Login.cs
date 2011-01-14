@@ -259,6 +259,8 @@ namespace OpenMetaverse
         public string AgentRegionAccess;
         public int AOTransition;
         public string InventoryHost;
+        public int MaxAgentGroups;
+        public string OpenIDUrl;
 
         /// <summary>
         /// Parse LLSD Login Reply Data
@@ -475,6 +477,21 @@ namespace OpenMetaverse
             {
                 UDPBlacklist = ParseString("udp_blacklist", reply);
             }
+
+            if (reply.ContainsKey("max-agent-groups"))
+            {
+                MaxAgentGroups = (int)ParseUInt("max-agent-groups", reply);
+            }
+            else
+            {
+                MaxAgentGroups = -1;
+            }
+
+            if (reply.ContainsKey("openid_url"))
+            {
+                OpenIDUrl = ParseString("openid_url", reply);
+            }
+
         }
 
         #region Parsing Helpers
@@ -805,6 +822,8 @@ namespace OpenMetaverse
         /// message of the day, and after a failed login a descriptive error 
         /// message will be returned</summary>
         public string LoginMessage { get { return InternalLoginMessage; } }
+        /// <summary>Maximum number of groups an agent can belong to, -1 for unlimited</summary>
+        public int MaxAgentGroups = -1;
 
         #endregion
 
@@ -1240,6 +1259,8 @@ namespace OpenMetaverse
                     UDPBlacklist.AddRange(reply.UDPBlacklist.Split(','));
 
                 // Misc:
+                MaxAgentGroups = reply.MaxAgentGroups;
+
                 //uint timestamp = (uint)reply.seconds_since_epoch;
                 //DateTime time = Helpers.UnixTimeToDateTime(timestamp); // TODO: Do something with this?
 
