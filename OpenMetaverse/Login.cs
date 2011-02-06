@@ -261,6 +261,7 @@ namespace OpenMetaverse
         public string InventoryHost;
         public int MaxAgentGroups;
         public string OpenIDUrl;
+        public string XMPPHost;
 
         /// <summary>
         /// Parse LLSD Login Reply Data
@@ -490,6 +491,11 @@ namespace OpenMetaverse
             if (reply.ContainsKey("openid_url"))
             {
                 OpenIDUrl = ParseString("openid_url", reply);
+            }
+
+            if (reply.ContainsKey("xmpp_host"))
+            {
+                XMPPHost = ParseString("xmpp_host", reply);
             }
 
         }
@@ -824,7 +830,8 @@ namespace OpenMetaverse
         public string LoginMessage { get { return InternalLoginMessage; } }
         /// <summary>Maximum number of groups an agent can belong to, -1 for unlimited</summary>
         public int MaxAgentGroups = -1;
-
+        /// <summary>XMPP server to connect to for Group chat and IM services</summary>
+        public string XMPPHost;
         #endregion
 
         #region Private Members
@@ -1260,6 +1267,7 @@ namespace OpenMetaverse
 
                 // Misc:
                 MaxAgentGroups = reply.MaxAgentGroups;
+                XMPPHost = reply.XMPPHost;
 
                 //uint timestamp = (uint)reply.seconds_since_epoch;
                 //DateTime time = Helpers.UnixTimeToDateTime(timestamp); // TODO: Do something with this?
