@@ -4287,7 +4287,6 @@ namespace OpenMetaverse
                     if (gotMuteList.WaitOne(60 * 1000, false))
                     {
                         muteList = Utils.BytesToString(assetData);
-                        Logger.DebugLog("\n" + muteList);
 
                         lock (MuteList.Dictionary)
                         {
