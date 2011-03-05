@@ -27,6 +27,7 @@
 using System;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Reflection;
 using System.Collections.Generic;
@@ -631,6 +632,42 @@ namespace OpenMetaverse
         Scripted = 8,
     }
 
+    /// <summary>
+    /// Type of mute entry
+    /// </summary>
+    public enum MuteType
+    {
+        /// <summary>Object muted by name</summary>
+        ByName = 0,
+        /// <summary>Muted residet</summary>
+        Resident = 1,
+        /// <summary>Object muted by UUID</summary>
+        Object = 2,
+        /// <summary>Muted group</summary>
+        Group = 3,
+        /// <summary>Muted external entry</summary>
+        External = 4
+    }
+
+    /// <summary>
+    /// Flags of mute entry
+    /// </summary>
+    [Flags]
+    public enum MuteFlags : int
+    {
+        /// <summary>No exceptions</summary>
+        Default = 0x0,
+        /// <summary>Don't mute text chat</summary>
+        TextChat = 0x1,
+        /// <summary>Don't mute voice chat</summary>
+        VoiceChat = 0x2,
+        /// <summary>Don't mute particles</summary>
+        Particles = 0x4,
+        /// <summary>Don't mute sounds</summary>
+        ObjectSounds = 0x8,
+        /// <summary>Don't mute</summary>
+        All = 0xf
+    }
     #endregion Enums
 
     #region Structs
@@ -675,6 +712,18 @@ namespace OpenMetaverse
         }
     }
 
+    /// <summary>Represents muted object or resident</summary>
+    public class MuteEntry
+    {
+        /// <summary>Type of the mute entry</summary>
+        public MuteType Type;
+        /// <summary>UUID of the mute etnry</summary>
+        public UUID ID;
+        /// <summary>Mute entry name</summary>
+        public string Name;
+        /// <summary>Mute flags</summary>
+        public MuteFlags Flags;
+    }
     #endregion Structs
 
     /// <summary>
@@ -1176,6 +1225,29 @@ namespace OpenMetaverse
             add { lock (m_SetDisplayNameReplyLock) { m_SetDisplayNameReply += value; } }
             remove { lock (m_SetDisplayNameReplyLock) { m_SetDisplayNameReply -= value; } }
         }
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<EventArgs> m_MuteListUpdated;
+
+        /// <summary>Raises the MuteListUpdated event</summary>
+        /// <param name="e">A EventArgs object containing the
+        /// data returned from the data server</param>
+        protected virtual void OnMuteListUpdated(EventArgs e)
+        {
+            EventHandler<EventArgs> handler = m_MuteListUpdated;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_MuteListUpdatedLock = new object();
+
+        /// <summary>Raised when a scripted object or agent within range sends a public message</summary>
+        public event EventHandler<EventArgs> MuteListUpdated
+        {
+            add { lock (m_MuteListUpdatedLock) { m_MuteListUpdated += value; } }
+            remove { lock (m_MuteListUpdatedLock) { m_MuteListUpdated -= value; } }
+        }
         #endregion Callbacks
 
         /// <summary>Reference to the GridClient instance</summary>
@@ -1188,6 +1260,8 @@ namespace OpenMetaverse
         public InternalDictionary<UUID, int> SignaledAnimations = new InternalDictionary<UUID, int>();
         /// <summary>Dictionary containing current Group Chat sessions and members</summary>
         public InternalDictionary<UUID, List<ChatSessionMember>> GroupChatSessions = new InternalDictionary<UUID, List<ChatSessionMember>>();
+        /// <summary>Dictionary containing mute list keyead on mute name and key</summary>
+        public InternalDictionary<string, MuteEntry> MuteList = new InternalDictionary<string, MuteEntry>();
 
         #region Properties
 
@@ -1456,6 +1530,8 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.CameraConstraint, CameraConstraintHandler);
             Client.Network.RegisterCallback(PacketType.ScriptSensorReply, ScriptSensorReplyHandler);
             Client.Network.RegisterCallback(PacketType.AvatarSitResponse, AvatarSitResponseHandler);
+            // Process mute list update message
+            Client.Network.RegisterCallback(PacketType.MuteListUpdate, MuteListUpdateHander);
         }
 
         #region Chat and instant messages
@@ -2957,6 +3033,77 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Mute an object, resident, etc.
+        /// </summary>
+        /// <param name="type">Mute type</param>
+        /// <param name="id">Mute UUID</param>
+        /// <param name="name">Mute name</param>
+        public void UpdateMuteListEntry(MuteType type, UUID id, string name)
+        {
+            UpdateMuteListEntry(type, id, name, MuteFlags.Default);
+        }
+
+        /// <summary>
+        /// Mute an object, resident, etc.
+        /// </summary>
+        /// <param name="type">Mute type</param>
+        /// <param name="id">Mute UUID</param>
+        /// <param name="name">Mute name</param>
+        /// <param name="flags">Mute flags</param>
+        public void UpdateMuteListEntry(MuteType type, UUID id, string name, MuteFlags flags)
+        {
+            UpdateMuteListEntryPacket p = new UpdateMuteListEntryPacket();
+            p.AgentData.AgentID = Client.Self.AgentID;
+            p.AgentData.SessionID = Client.Self.SessionID;
+
+            p.MuteData.MuteType = (int)type;
+            p.MuteData.MuteID = id;
+            p.MuteData.MuteName = Utils.StringToBytes(name);
+            p.MuteData.MuteFlags = (uint)flags;
+
+            Client.Network.SendPacket(p);
+
+            MuteEntry me = new MuteEntry();
+            me.Type = type;
+            me.ID = id;
+            me.Name = name;
+            me.Flags = flags;
+            lock (MuteList.Dictionary)
+            {
+                MuteList[string.Format("{0}|{1}", me.ID, me.Name)] = me;
+            }
+            OnMuteListUpdated(EventArgs.Empty);
+
+        }
+
+        /// <summary>
+        /// Unmute an object, resident, etc.
+        /// </summary>
+        /// <param name="id">Mute UUID</param>
+        /// <param name="name">Mute name</param>
+        public void RemoveMuteListEntry(UUID id, string name)
+        {
+            RemoveMuteListEntryPacket p = new RemoveMuteListEntryPacket();
+            p.AgentData.AgentID = Client.Self.AgentID;
+            p.AgentData.SessionID = Client.Self.SessionID;
+
+            p.MuteData.MuteID = id;
+            p.MuteData.MuteName = Utils.StringToBytes(name);
+            
+            Client.Network.SendPacket(p);
+
+            string listKey = string.Format("{0}|{1}", id, name);
+            if (MuteList.ContainsKey(listKey))
+            {
+                lock (MuteList.Dictionary)
+                {
+                    MuteList.Remove(listKey);
+                }
+                OnMuteListUpdated(EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
         /// Sets home location to agents current position
         /// </summary>
         /// <remarks>will fire an AlertMessage (<seealso cref="E:OpenMetaverse.AgentManager.OnAlertMessage"/>) with 
@@ -4105,6 +4252,87 @@ namespace OpenMetaverse
                   sit.SitTransform.CameraEyeOffset, sit.SitTransform.ForceMouselook, sit.SitTransform.SitPosition,
                   sit.SitTransform.SitRotation));
             }
+        }
+
+        protected void MuteListUpdateHander(object sender, PacketReceivedEventArgs e)
+        {
+            MuteListUpdatePacket packet = (MuteListUpdatePacket)e.Packet;
+            if (packet.MuteData.AgentID != Client.Self.AgentID)
+            {
+                return;
+            }
+
+            ThreadPool.QueueUserWorkItem(sync =>
+            {
+                using (AutoResetEvent gotMuteList = new AutoResetEvent(false))
+                {
+                    string fileName = Utils.BytesToString(packet.MuteData.Filename);
+                    string muteList = string.Empty;
+                    ulong xferID = 0;
+                    byte[] assetData = null;
+
+                    EventHandler<XferReceivedEventArgs> xferCallback = (object xsender, XferReceivedEventArgs xe) =>
+                    {
+                        if (xe.Xfer.XferID == xferID)
+                        {
+                            assetData = xe.Xfer.AssetData;
+                            gotMuteList.Set();
+                        }
+                    };
+
+
+                    Client.Assets.XferReceived += xferCallback;
+                    xferID = Client.Assets.RequestAssetXfer(fileName, true, false, UUID.Zero, AssetType.Unknown, true);
+
+                    if (gotMuteList.WaitOne(60 * 1000, false))
+                    {
+                        muteList = Utils.BytesToString(assetData);
+                        Logger.DebugLog("\n" + muteList);
+
+                        lock (MuteList.Dictionary)
+                        {
+                            MuteList.Dictionary.Clear();
+                            foreach (var line in muteList.Split('\n'))
+                            {
+                                if (line.Trim() == string.Empty) continue;
+
+                                try
+                                {
+                                    Match m;
+                                    if ((m = Regex.Match(line, @"(?<MyteType>\d+)\s+(?<Key>[a-zA-Z0-9-]+)\s+(?<Name>[^|]+)|(?<Flags>.+)", RegexOptions.CultureInvariant)).Success)
+                                    {
+                                        MuteEntry me = new MuteEntry();
+                                        me.Type = (MuteType)int.Parse(m.Groups["MyteType"].Value);
+                                        me.ID = new UUID(m.Groups["Key"].Value);
+                                        me.Name = m.Groups["Name"].Value;
+                                        int flags = 0;
+                                        int.TryParse(m.Groups["Flags"].Value, out flags);
+                                        me.Flags = (MuteFlags)flags;
+                                        MuteList[string.Format("{0}|{1}", me.ID, me.Name)] = me;
+                                    }
+                                    else
+                                    {
+                                        throw new ArgumentException("Invalid mutelist entry line");
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger.Log("Failed to parse the mute list line: " + line, Helpers.LogLevel.Warning, Client, ex);
+                                }
+                            }
+                        }
+
+                        OnMuteListUpdated(EventArgs.Empty);
+                    }
+                    else
+                    {
+                        Logger.Log("Timed out waiting for mute list download", Helpers.LogLevel.Warning, Client);
+                    }
+
+                    Client.Assets.XferReceived -= xferCallback;
+
+                }
+            });
         }
 
         #endregion Packet Handlers
