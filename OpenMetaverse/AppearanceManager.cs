@@ -723,7 +723,7 @@ namespace OpenMetaverse
         /// </summary>
         /// <param name="wearableItems">List of wearable inventory items that
         /// define a new outfit</param>
-        /// <param name="wearableItems">Check if we have all body parts, set this to false only
+        /// <param name="safe">Check if we have all body parts, set this to false only
         /// if you know what you're doing</param>
         public void ReplaceOutfit(List<InventoryItem> wearableItems, bool safe)
         {
