@@ -341,10 +341,17 @@ namespace OpenMetaverse.TestClient
                         {
                             TestClient testClient = (TestClient)state;
                             if ((String.Empty == onlyAvatar) || (testClient.ToString() == onlyAvatar)) {
-                                if (testClient.Commands.ContainsKey(firstToken))
-                                    Logger.Log(testClient.Commands[firstToken].Execute(args, fromAgentID),
-                                        Helpers.LogLevel.Info, testClient);
-                                else
+                                if (testClient.Commands.ContainsKey(firstToken)) {
+                                	string result;
+                                	try {
+                                		result = testClient.Commands[firstToken].Execute(args, fromAgentID);
+										Logger.Log(result, Helpers.LogLevel.Info, testClient);
+                                	} catch(Exception e) {
+                                		Logger.Log(String.Format("{0} raised exception {1}", firstToken, e),
+                                		           Helpers.LogLevel.Error,
+                                		           testClient);
+                                	}
+                                } else
                                     Logger.Log("Unknown command " + firstToken, Helpers.LogLevel.Warning);
                             }
 
