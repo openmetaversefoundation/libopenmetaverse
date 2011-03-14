@@ -32,31 +32,31 @@ namespace OpenMetaverse.TestClient
             DownloadHandle.Reset();
 
             if (!UUID.TryParse(args[0], out AssetID))
-            	return usage;
+                return usage;
 
-			try {
-				assetType = (AssetType)Enum.Parse(typeof(AssetType), args[1], ignoreCase: true);
-			} catch (ArgumentException) {
-				return usage;
-			}
-			if (!Enum.IsDefined(typeof(AssetType), assetType))
-				return usage;
+            try {
+                assetType = (AssetType)Enum.Parse(typeof(AssetType), args[1], ignoreCase: true);
+            } catch (ArgumentException) {
+                return usage;
+            }
+            if (!Enum.IsDefined(typeof(AssetType), assetType))
+                return usage;
 
-			// Start the asset download
-			Client.Assets.RequestAsset(AssetID, assetType, true, Assets_OnAssetReceived);
+            // Start the asset download
+            Client.Assets.RequestAsset(AssetID, assetType, true, Assets_OnAssetReceived);
 
-			if (DownloadHandle.WaitOne(120 * 1000, false))
-			{
-				if (Success)
-					return String.Format("Saved {0}.{1}", AssetID, assetType.ToString().ToLower());
-				else
-					return String.Format("Failed to download asset {0}, perhaps {1} is the incorrect asset type?",
-						AssetID, assetType);
-			}
-			else
-			{
-				return "Timed out waiting for texture download";
-			}
+            if (DownloadHandle.WaitOne(120 * 1000, false))
+            {
+                if (Success)
+                    return String.Format("Saved {0}.{1}", AssetID, assetType.ToString().ToLower());
+                else
+                    return String.Format("Failed to download asset {0}, perhaps {1} is the incorrect asset type?",
+                        AssetID, assetType);
+            }
+            else
+            {
+                return "Timed out waiting for texture download";
+            }
         }
 
         private void Assets_OnAssetReceived(AssetDownload transfer, Asset asset)
