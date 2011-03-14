@@ -12,6 +12,7 @@ namespace OpenMetaverse.TestClient
         AssetType assetType;
         AutoResetEvent DownloadHandle = new AutoResetEvent(false);
         bool Success;
+        string usage = "Usage: download [uuid] [assetType]";
 
         public DownloadCommand(TestClient testClient)
         {
@@ -23,45 +24,39 @@ namespace OpenMetaverse.TestClient
         public override string Execute(string[] args, UUID fromAgentID)
         {
             if (args.Length != 2)
-                return "Usage: download [uuid] [assetType]";
+                return usage;
 
             Success = false;
             AssetID = UUID.Zero;
             assetType = AssetType.Unknown;
             DownloadHandle.Reset();
 
-            if (UUID.TryParse(args[0], out AssetID))
-            {
-                int typeInt;
-                if (Int32.TryParse(args[1], out typeInt) && typeInt >= 0 && typeInt <= 22)
-                {
-                    assetType = (AssetType)typeInt;
+            if (!UUID.TryParse(args[0], out AssetID))
+            	return usage;
 
-                    // Start the asset download
-                    Client.Assets.RequestAsset(AssetID, assetType, true, Assets_OnAssetReceived);
+			try {
+				assetType = (AssetType)Enum.Parse(typeof(AssetType), args[1], ignoreCase: true);
+			} catch (ArgumentException) {
+				return usage;
+			}
+			if (!Enum.IsDefined(typeof(AssetType), assetType))
+				return usage;
 
-                    if (DownloadHandle.WaitOne(120 * 1000, false))
-                    {
-                        if (Success)
-                            return String.Format("Saved {0}.{1}", AssetID, assetType.ToString().ToLower());
-                        else
-                            return String.Format("Failed to download asset {0}, perhaps {1} is the incorrect asset type?",
-                                AssetID, assetType);
-                    }
-                    else
-                    {
-                        return "Timed out waiting for texture download";
-                    }
-                }
-                else
-                {
-                    return "Usage: download [uuid] [assetType]";
-                }
-            }
-            else
-            {
-                return "Usage: download [uuid] [assetType]";
-            }
+			// Start the asset download
+			Client.Assets.RequestAsset(AssetID, assetType, true, Assets_OnAssetReceived);
+
+			if (DownloadHandle.WaitOne(120 * 1000, false))
+			{
+				if (Success)
+					return String.Format("Saved {0}.{1}", AssetID, assetType.ToString().ToLower());
+				else
+					return String.Format("Failed to download asset {0}, perhaps {1} is the incorrect asset type?",
+						AssetID, assetType);
+			}
+			else
+			{
+				return "Timed out waiting for texture download";
+			}
         }
 
         private void Assets_OnAssetReceived(AssetDownload transfer, Asset asset)
