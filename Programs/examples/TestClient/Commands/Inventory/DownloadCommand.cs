@@ -35,7 +35,7 @@ namespace OpenMetaverse.TestClient
                 return usage;
 
             try {
-                assetType = (AssetType)Enum.Parse(typeof(AssetType), args[1], ignoreCase: true);
+                assetType = (AssetType)Enum.Parse(typeof(AssetType), args[1], true);
             } catch (ArgumentException) {
                 return usage;
             }
