@@ -244,8 +244,8 @@ namespace OpenMetaverse
                     // Unfortunately, this breaks the nice unified tree
                     // while we're waiting for the parent's data to come in.
                     // As soon as we get the parent, the tree repairs itself.
-                    Logger.DebugLog("Attempting to update inventory child of " +
-                        item.ParentUUID.ToString() + " when we have no local reference to that folder", Client);
+                    //Logger.DebugLog("Attempting to update inventory child of " +
+                    //    item.ParentUUID.ToString() + " when we have no local reference to that folder", Client);
 
                     if (Client.Settings.FETCH_MISSING_INVENTORY)
                     {
