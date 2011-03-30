@@ -136,11 +136,12 @@ namespace OpenMetaverse
             req.Add("DispatchRegionInfo");
             req.Add("EstateChangeInfo");
             req.Add("EventQueueGet");
-            req.Add("FetchInventory");
             req.Add("ObjectMedia");
             req.Add("ObjectMediaNavigate");
-            req.Add("FetchLib");
-            req.Add("FetchLibDescendents");
+            req.Add("FetchLib2");
+            req.Add("FetchLibDescendents2");
+            req.Add("FetchInventory2");
+            req.Add("FetchInventoryDescendents2");
             req.Add("GetDisplayNames");
             req.Add("GetTexture");
             req.Add("GetMesh");
@@ -165,7 +166,6 @@ namespace OpenMetaverse
             req.Add("SendUserReportWithScreenshot");
             req.Add("ServerReleaseNotes");
             req.Add("SetDisplayName");
-            req.Add("SimConsole");
             req.Add("SimConsoleAsync");
             req.Add("StartGroupProposal");
             req.Add("TextureStats");
@@ -179,9 +179,9 @@ namespace OpenMetaverse
             req.Add("UpdateNotecardTaskInventory");
             req.Add("UpdateScriptTask");
             req.Add("UploadBakedTexture");
+            req.Add("ViewerMetrics");
             req.Add("ViewerStartAuction");
             req.Add("ViewerStats");
-            req.Add("WebFetchInventoryDescendents");
 
             _SeedRequest = new CapsClient(new Uri(_SeedCapsURI));
             _SeedRequest.OnComplete += new CapsClient.CompleteCallback(SeedRequestCompleteHandler);
