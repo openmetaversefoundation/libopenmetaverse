@@ -149,7 +149,8 @@ namespace OpenMetaverse.Http
             // Caps requests are never sent as trickles of data, so Nagle's
             // coalescing algorithm won't help us
             request.ServicePoint.UseNagleAlgorithm = false;
-
+            // Set accept-encoding header that allows response compression
+            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             return request;
         }
 
