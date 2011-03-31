@@ -1368,6 +1368,7 @@ namespace OpenMetaverse
                 null == (url = Client.Network.CurrentSim.Caps.CapabilityURI("FetchInventoryDescendents2")))
             {
                 Logger.Log("FetchInventoryDescendents2 capability not available in the current sim", Helpers.LogLevel.Warning, Client);
+                OnFolderUpdated(new FolderUpdatedEventArgs(folderID, false));
                 return;
             }
 
@@ -1467,12 +1468,13 @@ namespace OpenMetaverse
                                 }
                             }
 
-                            OnFolderUpdated(new FolderUpdatedEventArgs(res["folder_id"]));
+                            OnFolderUpdated(new FolderUpdatedEventArgs(res["folder_id"], true));
                         }
                     }
                     catch (Exception exc)
                     {
                         Logger.Log(string.Format("Failed to fetch inventory descendants for folder id {0}: {1}", folderID, exc.Message), Helpers.LogLevel.Warning, Client);
+                        OnFolderUpdated(new FolderUpdatedEventArgs(folderID, false));
                         return;
                     }
 
@@ -1496,6 +1498,7 @@ namespace OpenMetaverse
             catch (Exception ex)
             {
                 Logger.Log(string.Format("Failed to fetch inventory descendants for folder id {0}: {1}", folderID, ex.Message), Helpers.LogLevel.Warning, Client);
+                OnFolderUpdated(new FolderUpdatedEventArgs(folderID, false));
                 return;
             }
         }
@@ -4199,10 +4202,7 @@ namespace OpenMetaverse
             #endregion FindObjectsByPath Handling
 
             // Callback for inventory folder contents being updated
-            if (m_FolderUpdated != null)
-            {
-                OnFolderUpdated(new FolderUpdatedEventArgs(parentFolder.UUID));
-            }
+            OnFolderUpdated(new FolderUpdatedEventArgs(parentFolder.UUID, true));
         }
 
         /// <summary>
@@ -4516,9 +4516,13 @@ namespace OpenMetaverse
     {
         private readonly UUID m_FolderID;
         public UUID FolderID { get { return m_FolderID; } }
-        public FolderUpdatedEventArgs(UUID folderID)
+        private readonly bool m_Success;
+        public bool Success { get { return m_Success; } }
+
+        public FolderUpdatedEventArgs(UUID folderID, bool success)
         {
             this.m_FolderID = folderID;
+            this.m_Success = success;
         }
     }
 
