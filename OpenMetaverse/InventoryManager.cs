@@ -1473,7 +1473,7 @@ namespace OpenMetaverse
                     }
                     catch (Exception exc)
                     {
-                        Logger.Log(string.Format("Failed to fetch inventory descendants for folder id {0}: {1}", folderID, exc.Message), Helpers.LogLevel.Warning, Client);
+                        Logger.Log(string.Format("Failed to fetch inventory descendants for folder id {0}: {1}\n{2}", folderID, exc.Message, exc.StackTrace.ToString()), Helpers.LogLevel.Warning, Client);
                         OnFolderUpdated(new FolderUpdatedEventArgs(folderID, false));
                         return;
                     }
@@ -1497,7 +1497,7 @@ namespace OpenMetaverse
             }
             catch (Exception ex)
             {
-                Logger.Log(string.Format("Failed to fetch inventory descendants for folder id {0}: {1}", folderID, ex.Message), Helpers.LogLevel.Warning, Client);
+                Logger.Log(string.Format("Failed to fetch inventory descendants for folder id {0}: {1}\n{2}", folderID, ex.Message, ex.StackTrace.ToString()), Helpers.LogLevel.Warning, Client);
                 OnFolderUpdated(new FolderUpdatedEventArgs(folderID, false));
                 return;
             }
