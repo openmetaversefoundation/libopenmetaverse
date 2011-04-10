@@ -133,7 +133,7 @@ namespace OpenMetaverse
             // Disable stupid Expect-100: Continue header
             request.ServicePoint.Expect100Continue = false;
             // Crank up the max number of connections per endpoint (default is 2!)
-            request.ServicePoint.ConnectionLimit = m_ParallelDownloads;
+            request.ServicePoint.ConnectionLimit = Math.Max(request.ServicePoint.ConnectionLimit, m_ParallelDownloads);
 
             return request;
         }
