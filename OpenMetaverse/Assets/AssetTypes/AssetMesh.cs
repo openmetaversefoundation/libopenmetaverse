@@ -25,7 +25,11 @@
  */
 
 using System;
+using System.IO;
+using System.IO.Compression;
 using OpenMetaverse;
+using OpenMetaverse.StructuredData;
+using zlib;
 
 namespace OpenMetaverse.Assets
 {
@@ -36,6 +40,11 @@ namespace OpenMetaverse.Assets
     {
         /// <summary>Override the base classes AssetType</summary>
         public override AssetType AssetType { get { return AssetType.Mesh; } }
+
+        /// <summary>
+        /// Decoded mesh data
+        /// </summary>
+        public OSDMap MeshData;
 
         /// <summary>Initializes a new instance of an AssetMesh object</summary>
         public AssetMesh() { }
@@ -49,14 +58,63 @@ namespace OpenMetaverse.Assets
         }
 
         /// <summary>
-        /// TODO: Encodes a scripts contents into a LSO Bytecode file
+        /// TODO: Encodes Collada file into LLMesh format
         /// </summary>
         public override void Encode() { }
 
         /// <summary>
-        /// TODO: Decode LSO Bytecode into a string
+        /// Decodes mesh asset
         /// </summary>
         /// <returns>true</returns>
-        public override bool Decode() { return true; }
+        public override bool Decode()
+        {
+            try
+            {
+                MeshData = new OSDMap();
+
+                using (MemoryStream data = new MemoryStream(AssetData))
+                {
+                    OSDMap header = (OSDMap)OSDParser.DeserializeLLSDBinary(data);
+                    long start = data.Position;
+
+                    foreach(string partName in header.Keys)
+                    {
+                        if (header[partName].Type != OSDType.Map)
+                            continue;
+                        OSDMap partInfo = (OSDMap)header[partName];
+                        if (partInfo["offset"] < 0 || partInfo["size"] == 0)
+                            continue;
+
+                        byte[] part = new byte[partInfo["size"]];
+                        Buffer.BlockCopy(AssetData, partInfo["offset"] + (int)start, part, 0, part.Length);
+
+                        using (MemoryStream input = new MemoryStream(part))
+                        {
+                            using (MemoryStream output = new MemoryStream())
+                            {
+                                using (ZOutputStream zout = new ZOutputStream(output))
+                                {
+                                    byte[] buffer = new byte[2048];
+                                    int len;
+                                    while ((len = input.Read(buffer, 0, buffer.Length)) > 0)
+                                    {
+                                        zout.Write(buffer, 0, len);
+                                    }
+                                    zout.Flush();
+                                    output.Seek(0, SeekOrigin.Begin);
+                                    MeshData[partName] = OSDParser.DeserializeLLSDBinary(output);
+                                }
+                            }
+                        }
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Failed to decode mesh asset", Helpers.LogLevel.Error, ex);
+                return false;
+            }
+        }
     }
 }
