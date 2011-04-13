@@ -1449,7 +1449,7 @@ namespace OpenMetaverse
                                         item.OwnerID = descItem["agent_id"];
                                         item.AssetUUID = descItem["asset_id"];
                                         item.AssetType = (AssetType)descItem["type"].AsInteger();
-                                        item.CreationDate = descItem["created_at"];
+                                        item.CreationDate =  Utils.UnixTimeToDateTime(descItem["created_at"]);
                                         item.Flags = descItem["flags"];
 
                                         OSDMap perms = (OSDMap)descItem["permissions"];
