@@ -102,11 +102,14 @@ namespace OpenMetaverse
             public int ResendCount;
             /// <summary>Environment.TickCount when this packet was last sent over the wire</summary>
             public int TickCount;
+            /// <summary>Type of the packet</summary>
+            public PacketType Type;
 
-            public OutgoingPacket(Simulator simulator, UDPPacketBuffer buffer)
+            public OutgoingPacket(Simulator simulator, UDPPacketBuffer buffer, PacketType type)
             {
                 Simulator = simulator;
                 Buffer = buffer;
+                this.Type = type;
             }
         }
 
@@ -621,7 +624,7 @@ namespace OpenMetaverse
             {
                 // Move in to this simulator
                 simulator.handshakeComplete = false;
-                simulator.UseCircuitCode();
+                simulator.UseCircuitCode(true);
                 Client.Self.CompleteAgentMovement(simulator);
 
                 // We're already connected to this server, but need to set it to the default

@@ -456,7 +456,7 @@ namespace OpenMetaverse
         // simulator <> parcel LocalID Map
         private int[,] _ParcelMap = new int[64, 64];
         internal bool DownloadingParcelMap = false;
-
+        private AutoResetEvent GotUseCircuitCodeAck = new AutoResetEvent(false);
         #endregion Internal/Private Members
 
         /// <summary>
@@ -523,7 +523,7 @@ namespace OpenMetaverse
 
             if (connected)
             {
-                UseCircuitCode();
+                UseCircuitCode(true);
                 if (moveToSim) Client.Self.CompleteAgentMovement(this);
                 return true;
             }
@@ -555,7 +555,7 @@ namespace OpenMetaverse
                 connected = true;
 
                 // Initiate connection
-                UseCircuitCode();
+                UseCircuitCode(true);
 
                 Stats.ConnectTime = Environment.TickCount;
 
@@ -587,7 +587,8 @@ namespace OpenMetaverse
         /// <summary>
         /// Initiates connection to the simulator
         /// </summary>
-        public void UseCircuitCode()
+        /// <param name="waitForAck">Should we block until ack for this packet is recieved</param>
+        public void UseCircuitCode(bool waitForAck)
         {
             // Send the UseCircuitCode packet to initiate the connection
             UseCircuitCodePacket use = new UseCircuitCodePacket();
@@ -595,8 +596,21 @@ namespace OpenMetaverse
             use.CircuitCode.ID = Client.Self.AgentID;
             use.CircuitCode.SessionID = Client.Self.SessionID;
 
+            if (waitForAck)
+            {
+                GotUseCircuitCodeAck.Reset();
+            }
+            
             // Send the initial packet out
             SendPacket(use);
+            
+            if (waitForAck)
+            {
+                if (!GotUseCircuitCodeAck.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false))
+                {
+                    Logger.Log("Failed to get ACK for UseCircuitCode packet", Helpers.LogLevel.Error, Client);
+                }
+            }
         }
 
         public void SetSeedCaps(string seedcaps)
@@ -783,7 +797,7 @@ namespace OpenMetaverse
 
             #region Queue or Send
 
-            NetworkManager.OutgoingPacket outgoingPacket = new NetworkManager.OutgoingPacket(this, buffer);
+            NetworkManager.OutgoingPacket outgoingPacket = new NetworkManager.OutgoingPacket(this, buffer, type);
 
             // Send ACK and logout packets directly, everything else goes through the queue
             if (Client.Settings.THROTTLE_OUTGOING_PACKETS == false ||
@@ -1003,7 +1017,13 @@ namespace OpenMetaverse
                 lock (NeedAck)
                 {
                     for (int i = 0; i < packet.Header.AckList.Length; i++)
+                    {
+                        if (NeedAck.ContainsKey(packet.Header.AckList[i]) && NeedAck[packet.Header.AckList[i]].Type == PacketType.UseCircuitCode)
+                        {
+                            GotUseCircuitCodeAck.Set();
+                        }
                         NeedAck.Remove(packet.Header.AckList[i]);
+                    }
                 }
             }
 
@@ -1015,7 +1035,13 @@ namespace OpenMetaverse
                 lock (NeedAck)
                 {
                     for (int i = 0; i < ackPacket.Packets.Length; i++)
+                    {
+                        if (NeedAck.ContainsKey(ackPacket.Packets[i].ID) && NeedAck[ackPacket.Packets[i].ID].Type == PacketType.UseCircuitCode)
+                        {
+                            GotUseCircuitCodeAck.Set();
+                        }
                         NeedAck.Remove(ackPacket.Packets[i].ID);
+                    }
                 }
             }
 
