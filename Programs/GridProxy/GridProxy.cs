@@ -196,6 +196,7 @@ namespace GridProxy
             this.proxyConfig = proxyConfig;
 
             ServicePointManager.CertificatePolicy = new TrustAllCertificatePolicy();
+            ServicePointManager.Expect100Continue = false;
             // Even though this will compile on Mono 2.4, it throws a runtime exception
             //ServicePointManager.ServerCertificateValidationCallback = TrustAllCertificatePolicy.TrustAllCertificateHandler;
 
@@ -676,7 +677,7 @@ namespace GridProxy
                        header == "content-length" || header == "date" || header == "expect" ||
                        header == "host" || header == "if-modified-since" || header == "referer" ||
                        header == "transfer-encoding" || header == "user-agent" ||
-                       header == "proxy-connection")
+                       header == "proxy-connection" || header == "accept-encoding")
                     {
                         // can't touch these!
                     }
