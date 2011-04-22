@@ -949,9 +949,16 @@ namespace OpenMetaverse
             prim.Position = ((OSDArray)map["position"]).AsVector3();
             prim.Rotation = ((OSDArray)map["rotation"]).AsQuaternion();
             prim.Scale = ((OSDArray)map["scale"]).AsVector3();
-            prim.Flexible = FlexibleData.FromOSD(map["flex"]);
-            prim.Light = LightData.FromOSD(map["light"]);
-            prim.Sculpt = SculptData.FromOSD(map["sculpt"]);
+            
+            if (map["flex"])
+                prim.Flexible = FlexibleData.FromOSD(map["flex"]);
+            
+            if (map["light"])
+                prim.Light = LightData.FromOSD(map["light"]);
+            
+            if (map["sculpt"])
+                prim.Sculpt = SculptData.FromOSD(map["sculpt"]);
+            
             prim.Textures = TextureEntry.FromOSD(map["textures"]);
             prim.Properties = new ObjectProperties();
 
