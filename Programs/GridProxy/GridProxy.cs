@@ -435,6 +435,7 @@ namespace GridProxy
                     if (bufFill >= BUF_SIZE) return null;
                     if (!ReadMore()) return null;
                 }
+                if (bufFill < (i + 1)) return null;
                 byte[] ret = new byte[i];
                 Array.Copy(buf, ret, i);
                 Array.Copy(buf, i + 1, buf, 0, bufFill - (i + 1));
@@ -466,6 +467,7 @@ namespace GridProxy
                     read += bufFill; bufFill = 0;
                     if (!ReadMore()) break;
                 }
+                if (bufFill < len) return 0;
                 Array.Copy(buf, 0, rbuf, start, len);
                 Array.Copy(buf, len, buf, 0, bufFill - len);
                 bufFill -= len; read += len;
