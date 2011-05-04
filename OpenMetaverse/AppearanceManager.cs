@@ -115,7 +115,7 @@ namespace OpenMetaverse
         const int REBAKE_DELAY = 1000 * 20;
 
         /// <summary>Total number of wearables for each avatar</summary>
-        public const int WEARABLE_COUNT = 13;
+        public const int WEARABLE_COUNT = 15;
         /// <summary>Total number of baked textures on each avatar</summary>
         public const int BAKED_TEXTURE_COUNT = 6;
         /// <summary>Total number of wearables per bake layer</summary>
