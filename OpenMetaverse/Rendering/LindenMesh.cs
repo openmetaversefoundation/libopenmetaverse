@@ -265,12 +265,11 @@ namespace OpenMetaverse.Rendering
 
                 for (int i = 0; i < morph.NumVertices; i++)
                 {
-                    MorphVertex vertex;
-                    vertex.VertexIndex = input.UnpackUInt();
-                    vertex.Coord = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
-                    vertex.Normal = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
-                    vertex.BiNormal = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
-                    vertex.TexCoord = new Vector2(input.UnpackFloat(), input.UnpackFloat());
+                    morph.Vertices[i].VertexIndex = input.UnpackUInt();
+                    morph.Vertices[i].Coord = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                    morph.Vertices[i].Normal = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                    morph.Vertices[i].BiNormal = new Vector3(input.UnpackFloat(), input.UnpackFloat(), input.UnpackFloat());
+                    morph.Vertices[i].TexCoord = new Vector2(input.UnpackFloat(), input.UnpackFloat());
                 }
 
                 morphs.Add(morph);
