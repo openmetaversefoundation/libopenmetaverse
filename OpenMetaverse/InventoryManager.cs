@@ -2731,6 +2731,16 @@ namespace OpenMetaverse
 
             Client.Network.SendPacket(add, simulator);
 
+            // Remove from store if the item is no copy
+            if (Store.Items.ContainsKey(item.UUID) && Store[item.UUID] is InventoryItem)
+            {
+                InventoryItem invItem = (InventoryItem)Store[item.UUID];
+                if ((invItem.Permissions.OwnerMask & PermissionMask.Copy) == PermissionMask.None)
+                {
+                    Store.RemoveNodeFor(invItem);
+                }
+            }
+
             return queryID;
         }
 
@@ -2850,6 +2860,16 @@ namespace OpenMetaverse
                 Client.Self.BeamEffect(Client.Self.AgentID, recipient, Vector3d.Zero,
                     Client.Settings.DEFAULT_EFFECT_COLOR, 1f, UUID.Random());
             }
+
+            // Remove from store if the item is no copy
+            if (Store.Items.ContainsKey(itemID) && Store[itemID] is InventoryItem)
+            {
+                InventoryItem invItem = (InventoryItem)Store[itemID];
+                if ((invItem.Permissions.OwnerMask & PermissionMask.Copy) == PermissionMask.None)
+                {
+                    Store.RemoveNodeFor(invItem);
+                }
+            }
         }
 
         /// <summary>
@@ -2900,6 +2920,21 @@ namespace OpenMetaverse
             {
                 Client.Self.BeamEffect(Client.Self.AgentID, recipient, Vector3d.Zero,
                     Client.Settings.DEFAULT_EFFECT_COLOR, 1f, UUID.Random());
+            }
+
+            // Remove from store if items were no copy
+            for (int i = 0; i < folderContents.Count; i++)
+            {
+
+                if (Store.Items.ContainsKey(folderContents[i].UUID) && Store[folderContents[i].UUID] is InventoryItem)
+                {
+                    InventoryItem invItem = (InventoryItem)Store[folderContents[i].UUID];
+                    if ((invItem.Permissions.OwnerMask & PermissionMask.Copy) == PermissionMask.None)
+                    {
+                        Store.RemoveNodeFor(invItem);
+                    }
+                }
+
             }
         }
 
