@@ -389,8 +389,8 @@ namespace OpenMetaverse
         public Vector3 SunDirection { get { return sunDirection; } }
         /// <summary>Current angular velocity of the sun</summary>
         public Vector3 SunAngVelocity { get { return sunAngVelocity; } }
-        /// <summary>Current world time</summary>
-        public DateTime WorldTime { get { return WorldTime; } }
+        /// <summary>Microseconds since the start of SL 4-hour day</summary>
+        public ulong TimeOfDay { get { return timeOfDay; } }
 
         /// <summary>A dictionary of all the regions, indexed by region name</summary>
         internal Dictionary<string, GridRegion> Regions = new Dictionary<string, GridRegion>();
@@ -401,6 +401,7 @@ namespace OpenMetaverse
         private float sunPhase;
         private Vector3 sunDirection;
         private Vector3 sunAngVelocity;
+        private ulong timeOfDay;
 
         /// <summary>
         /// Constructor
@@ -785,7 +786,7 @@ namespace OpenMetaverse
             sunPhase = time.TimeInfo.SunPhase;
             sunDirection = time.TimeInfo.SunDirection;
             sunAngVelocity = time.TimeInfo.SunAngVelocity;
-            
+            timeOfDay = time.TimeInfo.UsecSinceStart;
             // TODO: Does anyone have a use for the time stuff?
         }
 
