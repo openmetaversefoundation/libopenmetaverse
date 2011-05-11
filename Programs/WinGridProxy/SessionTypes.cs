@@ -172,42 +172,8 @@ namespace WinGridProxy
             this.Length = packetData.Length;
 
             int packetEnd = packetData.Length - 1;
-
-            try
-            {
-                bool msg_zer = ((packetData[0] & Helpers.MSG_ZEROCODED) != 0);
-                bool msg_res = ((packetData[0] & Helpers.MSG_RESENT) != 0);
-                bool msg_rel = ((packetData[0] & Helpers.MSG_RELIABLE) != 0);
-                bool msg_ack = ((packetData[0] & Helpers.MSG_APPENDED_ACKS) != 0);
-
-                if ((packetData[0] & Helpers.MSG_ZEROCODED) != 0)
-                {
-                    packetData[0] = 0x00;
-                }
-
-                this.Packet = Packet.BuildPacket(packetData, ref packetEnd, null);
-
-                this.Packet.Header.Resent = msg_res;
-                this.Packet.Header.Reliable = msg_rel;
-                this.Packet.Header.Zerocoded = msg_zer;
-                this.Packet.Header.AppendedAcks = msg_ack;
-
-                this.Name = this.Packet.Type.ToString();
-            }
-            catch (IndexOutOfRangeException ex)
-            {
-                this.Name = ex.Message;
-            }
-            catch (MalformedDataException ex)
-            {
-                this.Name = ex.Message;
-                //throw;
-            }
-            catch (NullReferenceException ex)
-            {                
-                this.Name = ex.Message;
-            }            
-            
+            this.Packet = Packet.BuildPacket(packetData, ref packetEnd, null);
+            this.Name = this.Packet.Type.ToString();
             return this;
         }
     }
@@ -220,11 +186,12 @@ namespace WinGridProxy
         byte[] ResponseBytes { get; set; }
         WebHeaderCollection RequestHeaders { get; set; }
         WebHeaderCollection ResponseHeaders { get; set; }
+        string FullUri { get; set; }
 
         public SessionCaps() : base() { /*this.Protocol = "Caps";*/ }
         public SessionCaps(byte[] requestBytes, byte[] responseBytes,
             WebHeaderCollection requestHeaders, WebHeaderCollection responseHeaders,
-            Direction direction, string uri, string capsKey, String proto)
+            Direction direction, string uri, string capsKey, String proto, string fullUri)
             : base()
         {
             if (requestBytes != null)
@@ -239,6 +206,7 @@ namespace WinGridProxy
             this.RequestHeaders = requestHeaders;
             this.ResponseHeaders = responseHeaders;
             this.Protocol = proto;
+            this.FullUri = fullUri;
 
             this.Name = capsKey;
             this.Direction = direction;
@@ -250,107 +218,122 @@ namespace WinGridProxy
 
         public override string ToPrettyString(Direction direction)
         {
-            if (direction == Direction.Incoming)
+            try
             {
-                if (this.ResponseBytes != null && this.ResponseBytes.Length > 0)
+                if (direction == Direction.Incoming)
                 {
-                    IMessage message = null;
-                    OSD osd = OSDParser.Deserialize(this.ResponseBytes);
-                    
-                    OSDMap data = (OSDMap)osd;
-
-                    if (data.ContainsKey("body"))
-                        message = OpenMetaverse.Messages.MessageUtils.DecodeEvent(this.Name, (OSDMap)data["body"]);
-                    else
-                        message = OpenMetaverse.Messages.MessageUtils.DecodeEvent(this.Name, data);
-
-                    if (message != null)
-                        return PacketDecoder.MessageToString(message, 0);
-                    else
-                        return "No Decoder for " + this.Name + Environment.NewLine + data.ToString() + Environment.NewLine +
-                            "Please report this at http://jira.openmv.org Be sure to include the entire message.";
-                }              
-            }
-            else
-            {
-                if (this.RequestBytes != null && this.RequestBytes.Length > 0)
-                {
-                    if (this.RequestBytes[0] == 60)
+                    if (this.ResponseBytes != null && this.ResponseBytes.Length > 0)
                     {
-                        OSD osd = OSDParser.Deserialize(this.RequestBytes);
+                        IMessage message = null;
+                        OSD osd = OSDParser.Deserialize(this.ResponseBytes);
+
                         if (osd is OSDMap)
                         {
-                            IMessage message = null;
                             OSDMap data = (OSDMap)osd;
 
                             if (data.ContainsKey("body"))
-                                message = MessageUtils.DecodeEvent(this.Name, (OSDMap)data["body"]);
+                                message = OpenMetaverse.Messages.MessageUtils.DecodeEvent(this.Name, (OSDMap)data["body"]);
                             else
-                                message = MessageUtils.DecodeEvent(this.Name, data);
+                                message = OpenMetaverse.Messages.MessageUtils.DecodeEvent(this.Name, data);
 
                             if (message != null)
                                 return PacketDecoder.MessageToString(message, 0);
                             else
-                                return "No Decoder for " + this.Name + Environment.NewLine + data.ToString() + Environment.NewLine +
-                                    "Please report this at http://jira.openmv.org Be sure to include the entire message.";
+                                return "No Decoder for " + this.Name + Environment.NewLine +
+                                       OSDParser.SerializeLLSDNotationFormatted(data) + Environment.NewLine +
+                                       "Please report this at http://jira.openmetaverse.org Be sure to include the entire message.";
                         }
-                        else
-                        {
-                            return osd.ToString();
-                        }
-                    }
-                    else
-                    {
-                        // this means its probably a script or asset using the uploader capability
-                        // so we'll just return the raw bytes as a string
-                        //if (this.RequestBytes[0] == 100)
-                        //{
-                            return Utils.BytesToString(this.RequestBytes);
-                        //}
                     }
                 }
                 else
                 {
-                    return String.Empty;
+                    if (this.RequestBytes != null && this.RequestBytes.Length > 0)
+                    {
+                        if (this.RequestBytes[0] == 60)
+                        {
+                            OSD osd = OSDParser.Deserialize(this.RequestBytes);
+                            if (osd is OSDMap)
+                            {
+                                IMessage message = null;
+                                OSDMap data = (OSDMap)osd;
+
+                                if (data.ContainsKey("body"))
+                                    message = MessageUtils.DecodeEvent(this.Name, (OSDMap)data["body"]);
+                                else
+                                    message = MessageUtils.DecodeEvent(this.Name, data);
+
+                                if (message != null)
+                                    return PacketDecoder.MessageToString(message, 0);
+                                else
+                                    return "No Decoder for " + this.Name + Environment.NewLine +
+                                        OSDParser.SerializeLLSDNotationFormatted(data) + Environment.NewLine +
+                                        "Please report this at http://jira.openmetaverse.org Be sure to include the entire message.";
+                            }
+                            else
+                            {
+                                return osd.ToString();
+                            }
+                        }
+                        else
+                        {
+                            // this means its probably a script or asset using the uploader capability
+                            // so we'll just return the raw bytes as a string
+                            //if (this.RequestBytes[0] == 100)
+                            //{
+                            return Utils.BytesToString(this.RequestBytes);
+                            //}
+                        }
+                    }
+                    else
+                    {
+                        return String.Empty;
+                    }
                 }
             }
+            catch { }
             return String.Empty;
         }
 
         public override string ToRawString(Direction direction)
         {
-            if (direction == Direction.Incoming)
+            try
             {
-                if (this.ResponseBytes != null)
+                if (direction == Direction.Incoming)
                 {
-                    StringBuilder result = new StringBuilder();
-                    foreach (String key in ResponseHeaders.Keys)
+                    if (this.ResponseBytes != null)
                     {
-                        result.AppendFormat("{0} {1}" + Environment.NewLine, key, ResponseHeaders[key]);
+                        StringBuilder result = new StringBuilder();
+                        foreach (String key in ResponseHeaders.Keys)
+                        {
+                            result.AppendFormat("{0} {1}" + Environment.NewLine, key, ResponseHeaders[key]);
+                        }
+                        result.AppendLine();
+                        result.AppendLine(OpenMetaverse.Utils.BytesToString(this.ResponseBytes));
+                        return result.ToString();
                     }
-                    result.AppendLine();
-                    result.AppendLine(OpenMetaverse.Utils.BytesToString(this.ResponseBytes));
-                    return result.ToString();
+                    else
+                        return String.Empty;
                 }
                 else
-                    return String.Empty;
-            }
-            else
-            {
-                if (this.RequestBytes != null)
                 {
-                    StringBuilder result = new StringBuilder();
-                    foreach (String key in RequestHeaders.Keys)
+                    if (this.RequestBytes != null)
                     {
-                        result.AppendFormat("{0} {1}" + Environment.NewLine, key, RequestHeaders[key]);
+                        StringBuilder result = new StringBuilder();
+                        result.AppendFormat("Request URI: {0}{1}", FullUri, Environment.NewLine);
+                        foreach (String key in RequestHeaders.Keys)
+                        {
+                            result.AppendFormat("{0}: {1}" + Environment.NewLine, key, RequestHeaders[key]);
+                        }
+                        result.AppendLine();
+                        result.AppendLine(OpenMetaverse.Utils.BytesToString(this.RequestBytes));
+                        return result.ToString();
                     }
-                    result.AppendLine();
-                    result.AppendLine(OpenMetaverse.Utils.BytesToString(this.RequestBytes));
-                    return result.ToString();
+                    else
+                        return String.Empty;
                 }
-                else
-                    return String.Empty;
             }
+            catch { }
+            return string.Empty;
         }
 
         public override byte[] ToBytes(Direction direction)
@@ -373,41 +356,51 @@ namespace WinGridProxy
 
         public override string ToStringNotation(Direction direction)
         {
-            if (direction == Direction.Incoming)
+            try
             {
-                if (this.ResponseBytes != null)
-                    return BytesToOsd(this.ResponseBytes);
-                //return this.ResponseBytes;
-                else
-                    return base.ToStringNotation(direction);
-            }
-            else
-            {
-                if (this.RequestBytes != null)
+                if (direction == Direction.Incoming)
                 {
-                    return BytesToOsd(this.RequestBytes);
+                    if (this.ResponseBytes != null)
+                        return BytesToOsd(this.ResponseBytes);
+                    //return this.ResponseBytes;
+                    else
+                        return base.ToStringNotation(direction);
                 }
                 else
-                    return base.ToStringNotation(direction);
+                {
+                    if (this.RequestBytes != null)
+                    {
+                        return BytesToOsd(this.RequestBytes);
+                    }
+                    else
+                        return base.ToStringNotation(direction);
+                }
             }
+            catch { }
+            return string.Empty;
         }
 
         public override string ToXml(Direction direction)
         {
-            if (direction == Direction.Incoming)
+            try
             {
-                if (this.ResponseBytes != null)
-                    return BytesToXml(this.ResponseBytes);
+                if (direction == Direction.Incoming)
+                {
+                    if (this.ResponseBytes != null)
+                        return BytesToXml(this.ResponseBytes);
+                    else
+                        return base.ToXml(direction);
+                }
                 else
-                    return base.ToXml(direction);
+                {
+                    if (this.RequestBytes != null)
+                        return BytesToXml(this.RequestBytes);
+                    else
+                        return base.ToXml(direction);
+                }
             }
-            else
-            {
-                if (this.RequestBytes != null)
-                    return BytesToXml(this.RequestBytes);
-                else
-                    return base.ToXml(direction);
-            }
+            catch { }
+            return string.Empty;
         }
 
         // Sanity check the bytes are infact OSD
@@ -416,7 +409,7 @@ namespace WinGridProxy
             try
             {
                 OSD osd = OSDParser.Deserialize(bytes);
-                return osd.ToString();
+                return OSDParser.SerializeLLSDNotationFormatted(osd);
             }
             catch (LitJson.JsonException)
             {
@@ -441,7 +434,7 @@ namespace WinGridProxy
             OSDMap map = new OSDMap(5);
             map["Name"] = OSD.FromString(this.Name);
             map["Host"] = OSD.FromString(this.Host);
-            map["RequestBytes"] = OSD.FromBinary(this.RequestBytes);            
+            map["RequestBytes"] = OSD.FromBinary(this.RequestBytes);
             map["ResponseBytes"] = OSD.FromBinary(this.ResponseBytes);
             map["Direction"] = OSD.FromInteger((int)this.Direction);
             map["ContentType"] = OSD.FromString(this.ContentType);
@@ -472,10 +465,8 @@ namespace WinGridProxy
 
         public override Session Deserialize(byte[] bytes)
         {
-            var s = OpenMetaverse.Utils.BytesToString(bytes);
-            
-            //OSDMap map = (OSDMap)OSDParser.Deserialize(bytes);
             OSDMap map = (OSDMap)OSDParser.DeserializeLLSDNotation(OpenMetaverse.Utils.BytesToString(bytes));
+
             this.Name = map["Name"].AsString();
             this.Host = map["Host"].AsString();
             this.RequestBytes = map["RequestBytes"].AsBinary();
@@ -559,17 +550,18 @@ namespace WinGridProxy
                 return String.Empty;
             }
         }
-
         public override string ToXml(Direction direction)
         {
-            if (direction == this.Direction)
-            {
-                return this.Data.ToString();
-            }
-            else
-            {
-                return base.ToXml(direction);
-            }
+            return base.ToXml(direction);
+
+            //if (direction == this.Direction)
+            //{
+            //    return this.Data.ToString();
+            //}
+            //else
+            //{
+            //    return base.ToXml(direction);
+            //}
         }
 
         public override byte[] ToBytes(Direction direction)

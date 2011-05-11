@@ -76,16 +76,8 @@ namespace WinGridProxy
         private int PacketsOutCounter;
         private int PacketsOutBytes;
 
+        private List<ListViewItem> QueuedSessions;
         private bool monoRuntime;
-
-        // Sessions & Sessions ListView related
-        private List<Session> m_SessionViewItems;
-        private Dictionary<int, ListViewItem> m_SessionViewCache = new Dictionary<int, ListViewItem>();
-        private SortOrder m_ListViewSortOrder = SortOrder.None;
-        // disable listview virtual items counter being updated
-        // if we're scrolling the listview to get around a flicker issue
-        // due to an item selected going out of view
-        private bool m_AllowUpdate = true;
 
         private const string PROTO_CAPABILITIES = "Cap";
         private const string PROTO_EVENTMESSAGE = "Event";
@@ -98,18 +90,9 @@ namespace WinGridProxy
         private readonly Color Color_Cap = Color.Honeydew;
         private readonly Color Color_Event = Color.AliceBlue;
 
-        // some UI customization
-        private Dictionary<string, string> m_InstalledViewers = new Dictionary<string, string>();
-        private List<string> m_DefaultGridLoginServers;
-
-        // a reference to the last selected session item
-        private Session m_CurrentSession;
-
         public FormWinGridProxy()
-        {            
+        {
             InitializeComponent();
-
-            m_SessionViewItems = new List<Session>();
 
             Logger.Log("WinGridProxy ready", Helpers.LogLevel.Info);
 
@@ -118,9 +101,7 @@ namespace WinGridProxy
                 FireEventAppender.Instance.MessageLoggedEvent += new MessageLoggedEventHandler(Instance_MessageLoggedEvent);
             }
 
-
-
-            // Attempt to work around some mono inefficiencies
+            // Attempt to work around some mono bugs
             monoRuntime = Type.GetType("Mono.Runtime") != null; // Officially supported way of detecting mono
             if (monoRuntime)
             {
@@ -133,7 +114,12 @@ namespace WinGridProxy
                     richTextBoxRawResponse.Font = fixedFont;
             }
 
-            InitializeInterfaceDefaults();
+            QueuedSessions = new List<ListViewItem>();
+
+            // populate the listen box with the known IP Addresses of this host
+            IPHostEntry iphostentry = Dns.GetHostByName(Dns.GetHostName());
+            foreach (IPAddress address in iphostentry.AddressList)
+                comboBoxListenAddress.Items.Add(address.ToString());
 
             ProxyManager.OnPacketLog += ProxyManager_OnPacketLog;
             ProxyManager.OnMessageLog += ProxyManager_OnMessageLog;
@@ -142,96 +128,7 @@ namespace WinGridProxy
             ProxyManager.OnEventMessageLog += ProxyManager_OnEventMessageLog;
         }
 
-        #region GUI Initialization
-        private void InitializeInterfaceDefaults()
-        {
-            // populate the listen box with the known IP Addresses of this host
-            IPHostEntry iphostentry = Dns.GetHostByName(Dns.GetHostName());
-            foreach (IPAddress address in iphostentry.AddressList)
-                comboBoxListenAddress.Items.Add(address.ToString());
-
-            // Initialize login server combo box:
-            // * If gridservers.ini exists, read it and use values from that file
-            // * If gridservers.ini does not exist or is blank, use some pre-defined defaults
-            m_DefaultGridLoginServers = new List<string>();
-            string[] gridServers;
-            if (File.Exists("gridservers.ini"))
-            {
-                gridServers = File.ReadAllLines("gridservers.ini");
-                for (int i = 0; i < gridServers.Length; i++)
-                {
-                    if (String.IsNullOrEmpty(gridServers[i]) || !gridServers[i].Trim().StartsWith("http"))
-                        continue;
-                    m_DefaultGridLoginServers.Add(gridServers[i]);
-                }
-            }
-            string[] loginServers = {"https://login.agni.lindenlab.com/cgi-bin/login.cgi", 
-                                            "https://login.aditi.lindenlab.com/cgi-bin/login.cgi",
-                                            "http://127.0.0.1:12043",
-                                            "http://127.0.0.1:8002", 
-                                            "http://osgrid.org:8002"};
-
-            if (m_DefaultGridLoginServers.Count <= 0)
-                m_DefaultGridLoginServers.AddRange(loginServers);
-
-            comboBoxLoginURL.Items.AddRange(m_DefaultGridLoginServers.ToArray());
-            comboBoxLoginURL.Text = comboBoxLoginURL.Items[0].ToString();
-
-            // Find installed viewers for launch toolbar if running under windows
-            string[] viewerDistKeys = { "Linden Research, Inc.", "Open Metaverse Foundation" };
-            Microsoft.Win32.RegistryKey viewerKeyRoot = null;
-            if (!monoRuntime)
-            {
-               viewerKeyRoot = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"Software\Wow6432Node");
-               if (viewerKeyRoot == null)
-               {
-                   viewerKeyRoot = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"Software");
-               }
-            }
-
-            if (viewerKeyRoot != null)
-            {
-                foreach (string key in viewerDistKeys)
-                {
-                    Microsoft.Win32.RegistryKey viewerKey = viewerKeyRoot.OpenSubKey(key);
-                    if (viewerKey != null)
-                    {
-                        string[] installed = viewerKey.GetSubKeyNames();
-                        foreach (string viewer in installed)
-                        {
-                            if (!m_InstalledViewers.ContainsKey(viewer))
-                            {
-                                Microsoft.Win32.RegistryKey me = viewerKey.OpenSubKey(viewer);
-                                if (me != null)
-                                {
-                                    string dir = me.GetValue("").ToString(); // the install directory
-                                    string exe = me.GetValue("Exe").ToString(); // the executable name
-                                    string ver = me.GetValue("Version").ToString(); // the viewer version
-
-                                    if (!String.IsNullOrEmpty(dir) && !String.IsNullOrEmpty(exe) && !String.IsNullOrEmpty(ver) && File.Exists(Path.Combine(dir, exe)))
-                                    {
-                                        toolStripComboBox1.Items.Add(viewer + " " + ver);
-                                        m_InstalledViewers.Add(viewer + " " + ver, Path.Combine(dir, exe));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (toolStripComboBox1.Items.Count > 0)
-            {
-                toolStripComboBox1.Text = toolStripComboBox1.Items[0].ToString();
-            }
-            else
-            {
-                toolStripQuickLaunch.Visible = false;
-            }
-        }
-        #endregion
-
-        #region Event Handlers for Messages/Packets arriving via GridProxy
+        #region Event Handlers for Messages/Packets
 
         /// <summary>
         /// Adds a new EventQueue message to the Message Filters listview.
@@ -327,7 +224,7 @@ namespace WinGridProxy
                     sessionEntry.Tag = sessionLogin;
                     sessionEntry.ImageIndex = (int)sessionLogin.Direction;
 
-                    m_SessionViewItems.Add(sessionLogin);
+                    AddSession(sessionEntry);
                 }
             }
         }
@@ -351,8 +248,11 @@ namespace WinGridProxy
             SessionPacket sessionPacket = new SessionPacket(packet, direction, endpoint,
                 PacketDecoder.InterpretOptions(packet.Header) + " Seq: " + packet.Header.Sequence.ToString() + " Freq:" + packet.Header.Frequency.ToString());
 
-            m_SessionViewItems.Add(sessionPacket);
+            ListViewItem sessionItem = new ListViewItem(new string[] { PacketCounter.ToString(), sessionPacket.Protocol, sessionPacket.Name, sessionPacket.Length.ToString(), sessionPacket.Host, sessionPacket.ContentType });
+            sessionItem.Tag = sessionPacket;
+            sessionItem.ImageIndex = (int)sessionPacket.Direction;
 
+            AddSession(sessionItem);
         }
 
         /// <summary>
@@ -405,7 +305,7 @@ namespace WinGridProxy
                     if (found.Group.Header.Equals("Capabilities"))
                     {
                         capsSession = new SessionCaps(req.RawRequest, req.RawResponse, req.RequestHeaders,
-                        req.ResponseHeaders, direction, req.Info.URI, req.Info.CapType, proto);
+                        req.ResponseHeaders, direction, req.Info.URI, req.Info.CapType, proto, req.FullUri);
                     }
                     else
                     {
@@ -420,7 +320,7 @@ namespace WinGridProxy
 
                     session.BackColor = found.BackColor;
 
-                    m_SessionViewItems.Add(capsSession);
+                    AddSession(session);
                 }
                 else
                 {
@@ -452,28 +352,6 @@ namespace WinGridProxy
             return null;
         }
 
-        private void UpdateVirtualListSize(int newSize)
-        {
-            if (listViewSessions.VirtualListSize != newSize && listViewSessions.InvokeRequired)
-            {
-                this.BeginInvoke((MethodInvoker)(() => UpdateVirtualListSize(newSize)));
-            }
-            else
-            {
-                //if(listViewSessions.VirtualListSize != newSize)
-                //{
-                listViewSessions.VirtualListSize = newSize;
-                //}
-            }
-        }
-
-        private void ClearCache()
-        {
-            lock (m_SessionViewCache)
-            {
-                m_SessionViewCache.Clear();
-            }
-        }
 
         private static string FormatBytes(long bytes)
         {
@@ -506,7 +384,7 @@ namespace WinGridProxy
 
                 proxy.Start();
 
-                toolStripQuickLaunch.Enabled = loadFilterSelectionsToolStripMenuItem.Enabled = saveFilterSelectionsToolStripMenuItem.Enabled = true;
+                loadFilterSelectionsToolStripMenuItem.Enabled = saveFilterSelectionsToolStripMenuItem.Enabled = true;
 
                 // enable any gui elements
                 toolStripSplitButton1.Enabled =
@@ -518,7 +396,7 @@ namespace WinGridProxy
             }
             else if (buttonStartProxy.Text.StartsWith("Stop") && m_ProxyRunning.Equals(true))
             {
-                toolStripQuickLaunch.Enabled = loadFilterSelectionsToolStripMenuItem.Enabled = saveFilterSelectionsToolStripMenuItem.Enabled = false;
+                loadFilterSelectionsToolStripMenuItem.Enabled = saveFilterSelectionsToolStripMenuItem.Enabled = false;
                 // stop the proxy
                 proxy.Stop();
                 toolStripMenuItemPlugins.Enabled = grpUDPFilters.Enabled = grpCapsFilters.Enabled = m_ProxyRunning = false;
@@ -539,6 +417,47 @@ namespace WinGridProxy
             }
         }
 
+        private void listViewSessions_ItemSelectionChanged(object sender, ListViewItemSelectionChangedEventArgs e)
+        {
+
+            if (e.IsSelected && listViewSessions.SelectedItems.Count == 1)
+            {
+                tabControlMain.SelectTab("tabPageInspect");
+
+                object tag = e.Item.Tag;
+
+                if (tag is Session)
+                {
+                    Session session = (Session)tag;
+
+                    treeViewXmlResponse.Nodes.Clear();
+                    treeViewXMLRequest.Nodes.Clear();
+
+                    Be.Windows.Forms.DynamicByteProvider responseBytes = new Be.Windows.Forms.DynamicByteProvider(session.ToBytes(Direction.Incoming));
+                    richTextBoxDecodedResponse.Text = session.ToPrettyString(Direction.Incoming);
+                    richTextBoxRawResponse.Text = session.ToRawString(Direction.Incoming);
+                    richTextBoxNotationResponse.Text = session.ToStringNotation(Direction.Incoming);
+                    hexBoxResponse.ByteProvider = responseBytes;
+                    updateTreeView(session.ToXml(Direction.Incoming), treeViewXmlResponse);
+
+                    Be.Windows.Forms.DynamicByteProvider requestBytes = new Be.Windows.Forms.DynamicByteProvider(session.ToBytes(Direction.Outgoing));
+                    richTextBoxDecodedRequest.Text = session.ToPrettyString(Direction.Outgoing);
+                    richTextBoxRawRequest.Text = session.ToRawString(Direction.Outgoing);
+                    richTextBoxNotationRequest.Text = session.ToStringNotation(Direction.Outgoing);
+                    hexBoxRequest.ByteProvider = requestBytes;
+                    updateTreeView(session.ToXml(Direction.Outgoing), treeViewXMLRequest);
+
+                    RequestPosition_Changed(this, EventArgs.Empty);
+                    ReplyPosition_Changed(this, EventArgs.Empty);
+                }
+                else
+                {
+                    richTextBoxDecodedResponse.Text = "Unknown data object encountered: " + tag.GetType().ToString();
+                }
+
+            }
+        }
+
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (m_ProxyRunning)
@@ -551,125 +470,54 @@ namespace WinGridProxy
         // select all items in session list
         private void sessionSelectAll_Click(object sender, EventArgs e)
         {
-            lock (m_SessionViewItems)
+            foreach (ListViewItem item in listViewSessions.Items)
             {
-                m_SessionViewItems.ForEach((session) => session.Selected = true);
+                item.Selected = true;
             }
-
-            ClearCache();
-            listViewSessions.Invalidate();
         }
 
         // unselect all items in session list
         private void sessionSelectNone_Click(object sender, EventArgs e)
         {
-            lock (m_SessionViewItems)
+            foreach (ListViewItem item in listViewSessions.Items)
             {
-                m_SessionViewItems.ForEach((session) => session.Selected = false);
+                item.Selected = false;
             }
-
-            ClearCache();
-            listViewSessions.Invalidate();
         }
 
         // invert selection
         private void sessionInvertSelection_Click(object sender, EventArgs e)
         {
-            lock (m_SessionViewItems)
+            foreach (ListViewItem item in listViewSessions.Items)
             {
-                m_SessionViewItems.ForEach((session) => session.Selected = !session.Selected);
+                item.Selected = !item.Selected;
             }
-
-            ClearCache();
-            listViewSessions.Invalidate();
         }
 
         // remove all sessions
         private void sessionRemoveAll_Click(object sender, EventArgs e)
         {
-            lock (m_SessionViewItems)
-            {
-                m_SessionViewItems.Clear();
-            }
-
-            ClearCache();
-            listViewSessions.VirtualListSize = 0;
-            listViewSessions.Invalidate();
+            listViewSessions.Items.Clear();
         }
 
         // remove sessions that are currently selected
         private void sessionRemoveSelected_Click(object sender, EventArgs e)
         {
-
-            // first we'll check for any highlighted items
-            if (listViewSessions.SelectedIndices.Count > 0)
+            foreach (ListViewItem item in listViewSessions.Items)
             {
-                for (int i = 0; i < listViewSessions.SelectedIndices.Count; i++)
-                {
-                    int index = listViewSessions.SelectedIndices[i];
-                    lock (m_SessionViewItems)
-                    {
-                        m_SessionViewItems.RemoveAt(index);
-                    }
-                }
+                if (item.Selected)
+                    listViewSessions.Items.Remove(item);
             }
-
-            // now we'll check for items that have their selected bool set
-            bool hasSelected = false;
-
-            m_SessionViewItems.ForEach(delegate(Session action)
-             {
-                 if (action.Selected)
-                 {
-                     hasSelected = true;
-                     return;
-                 }
-             });
-
-            if (hasSelected)
-            {
-                progressBar1.Step = 1;
-                progressBar1.Maximum = m_SessionViewItems.Count;
-                progressBar1.Value = 0;
-                panelActionProgress.Visible = true;
-
-                lock (m_SessionViewItems)
-                {
-                    m_SessionViewItems.RemoveAll(delegate(Session sess)
-                    {
-                        progressBar1.PerformStep();
-                        return sess.Selected;
-                    });
-                }
-            }
-
-            ClearCache();
-            panelActionProgress.Visible = false;
-            listViewSessions.VirtualListSize = m_SessionViewItems.Count;
-            listViewSessions.SelectedIndices.Clear();
-            listViewSessions.Invalidate();
         }
 
         // remove sessions that are not currently selected
         private void sessionRemoveUnselected_Click(object sender, EventArgs e)
         {
-            progressBar1.Step = m_SessionViewItems.Count / 100;
-            progressBar1.Value = 0;
-            panelActionProgress.Visible = true;
-
-            lock (m_SessionViewItems)
+            foreach (ListViewItem item in listViewSessions.Items)
             {
-                for (int i = 0; i < m_SessionViewItems.Count; i++)
-                {
-                    progressBar1.PerformStep();
-                    if (!m_SessionViewItems[i].Selected)
-                        m_SessionViewItems.RemoveAt(i);//.Remove(m_SessionViewItems[i]);
-                }
+                if (!item.Selected)
+                    listViewSessions.Items.Remove(item);
             }
-
-            ClearCache();
-            listViewSessions.Invalidate();
-            panelActionProgress.Visible = false;
         }
 
         // Colorize selected sessions
@@ -677,30 +525,22 @@ namespace WinGridProxy
         {
             ToolStripMenuItem menu = (ToolStripMenuItem)sender;
 
-            lock (m_SessionViewItems)
+            foreach (ListViewItem item in listViewSessions.Items)
             {
-                for (int i = 0; i < m_SessionViewItems.Count; i++)
-                {
-                    if (m_SessionViewItems[i].Selected)
-                        m_SessionViewItems[i].BackColor = Color.FromName(menu.Text);
-                }
+                if (item.Selected)
+                    item.BackColor = Color.FromName(menu.Text);
             }
-
             sessionSelectNone_Click(sender, e);
         }
 
         // Unmark selected sessions
         private void sessionUnmarkSelected_Click(object sender, EventArgs e)
         {
-            lock (m_SessionViewItems)
+            foreach (ListViewItem item in listViewSessions.Items)
             {
-                for (int i = 0; i < m_SessionViewItems.Count; i++)
-                {
-                    if (m_SessionViewItems[i].Selected)
-                        m_SessionViewItems[i].BackColor = Color.White;
-                }
+                if (item.Selected)
+                    item.BackColor = Color.White;
             }
-
             sessionSelectNone_Click(sender, e);
         }
 
@@ -736,18 +576,11 @@ namespace WinGridProxy
         // select all specified sessions by packet name
         private void sessionSelectAllPacketType_Click(object sender, EventArgs e)
         {
-            lock (m_SessionViewItems)
+            foreach (ListViewItem item in listViewSessions.Items)
             {
-                for (int i = 0; i < m_SessionViewItems.Count; i++)
-                {
-                    Session item = m_SessionViewItems[i];
-                    if (item.Name.Equals(toolStripMenuItemSelectPacketName.Tag) && !item.Selected)
-                        item.Selected = true;
-                }
+                if (item.SubItems[2].Text.Equals(toolStripMenuItemSelectPacketName.Tag) && !item.Selected)
+                    item.Selected = true;
             }
-
-            ClearCache();
-            listViewSessions.Invalidate();
         }
 
         // stop capturing selected filters
@@ -774,16 +607,19 @@ namespace WinGridProxy
         /// <summary>
         /// Setup the context menu prior to it being displayed with specific entries for filtering packets/messages
         /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void contextMenuStripSessions_Opening(object sender, CancelEventArgs e)
         {
-            if (listViewSessions.FocusedItem != null)
+            if (listViewSessions.SelectedItems.Count == 1)
             {
-                string strPacketOrMessage = (listViewSessions.FocusedItem.SubItems[1].Text.Equals(PROTO_PACKETSTRING)) ? "Packets" : "Messages";
+                ListViewItem item = listViewSessions.SelectedItems[0];
+                string strPacketOrMessage = (item.SubItems[1].Text.Equals(PROTO_PACKETSTRING)) ? "Packets" : "Messages";
 
-                enableDisableFilterByNameToolStripMenuItem.Text = String.Format("Capture {0} {1}", listViewSessions.FocusedItem.SubItems[2].Text, strPacketOrMessage);
-                toolStripMenuItemSelectPacketName.Tag = enableDisableFilterByNameToolStripMenuItem.Tag = listViewSessions.FocusedItem.SubItems[2].Text;
+                enableDisableFilterByNameToolStripMenuItem.Text = String.Format("Capture {0} {1}", item.SubItems[2].Text, strPacketOrMessage);
+                toolStripMenuItemSelectPacketName.Tag = enableDisableFilterByNameToolStripMenuItem.Tag = item.SubItems[2].Text;
 
-                toolStripMenuItemSelectPacketName.Text = String.Format("All {0} {1}", listViewSessions.FocusedItem.SubItems[2].Text, strPacketOrMessage);
+                toolStripMenuItemSelectPacketName.Text = String.Format("All {0} {1}", item.SubItems[2].Text, strPacketOrMessage);
 
                 enableDisableFilterByNameToolStripMenuItem.Visible =
                 toolStripSeparatorSelectPacketProto.Visible =
@@ -818,7 +654,6 @@ namespace WinGridProxy
 
             if (listViewSessions.Items.Count > 0)
             {
-                toolStripMenuItemRemoveAll.Visible =
                 markToolStripMenuItem2.Enabled =
                 findToolStripMenuItem1.Enabled =
                 toolStripMenuSessionsRemove.Enabled =
@@ -826,7 +661,6 @@ namespace WinGridProxy
             }
             else
             {
-                toolStripMenuItemRemoveAll.Visible =
                 markToolStripMenuItem2.Enabled =
                 findToolStripMenuItem1.Enabled =
                 toolStripMenuSessionsRemove.Enabled =
@@ -836,7 +670,7 @@ namespace WinGridProxy
 
         private void findSessions_Click(object sender, EventArgs e)
         {
-            FilterOptions opts = new FilterOptions((listViewSessions.SelectedIndices.Count > 0));
+            FilterOptions opts = new FilterOptions((listViewSessions.SelectedItems.Count > 0));
             FormSessionSearch search = new FormSessionSearch(ref opts);
             search.ShowDialog();
 
@@ -849,6 +683,17 @@ namespace WinGridProxy
                 sThread.Name = "Search";
                 sThread.Start();
             }
+        }
+
+        // Enable Inject button if box contains text
+        private void richTextBoxInject_TextChanged(object sender, EventArgs e)
+        {
+            buttonInjectPacket.Enabled = (richTextBoxInject.TextLength > 0);
+        }
+
+        private void buttonInjectPacket_Click(object sender, EventArgs e)
+        {
+            proxy.InjectPacket(richTextBoxInject.Text, true);
         }
 
         private void saveFilterSelectionsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -903,7 +748,6 @@ namespace WinGridProxy
                 item.Checked = checkBoxCheckAllMessages.Checked;
             }
         }
-        #endregion
 
         /// <summary>
         /// Start/Stop the statistics gathering timer
@@ -925,13 +769,47 @@ namespace WinGridProxy
             {
                 OSDMap map = new OSDMap(1);
                 OSDArray sessionArray = new OSDArray();
-
-                foreach (Session item in m_SessionViewItems)
+                foreach (ListViewItem item in listViewSessions.Items)
                 {
-                    OSDMap session = new OSDMap();
-                    session["type"] = OSD.FromString(item.GetType().Name);
-                    session["tag"] = OSD.FromBinary(item.Serialize());
-                    sessionArray.Add(session);
+                    if (item.Tag is Session)
+                    {
+                        Session data = null;
+                        if (item.Tag is SessionCaps)
+                        {
+                            data = (SessionCaps)item.Tag;
+                        }
+                        else if (item.Tag is SessionEvent)
+                        {
+                            data = (SessionEvent)item.Tag;
+                        }
+                        else if (item.Tag is SessionLogin)
+                        {
+                            data = (SessionLogin)item.Tag;
+                        }
+                        else if (item.Tag is SessionPacket)
+                        {
+                            data = (SessionPacket)item.Tag;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Not a valid session type?");
+                            continue;
+                        }
+                        //Type t = item.Tag.GetType();
+
+                        //Session data = (SessionCaps)item.Tag;
+                        OSDMap session = new OSDMap();
+                        //session["name"] = OSD.FromString(item.Name);
+                        //session["image_index"] = OSD.FromInteger(item.ImageIndex);
+                        session["id"] = OSD.FromString(item.SubItems[0].Text);
+                        //session["protocol"] = OSD.FromString(item.SubItems[1].Text);
+                        //session["packet"] = OSD.FromString(item.SubItems[2].Text);
+                        //session["size"] = OSD.FromString(item.SubItems[3].Text);
+                        //session["host"] = OSD.FromString(item.SubItems[4].Text);
+                        session["type"] = OSD.FromString(data.GetType().ToString());
+                        session["tag"] = OSD.FromBinary(data.Serialize());
+                        sessionArray.Add(session);
+                    }
                 }
 
                 map["sessions"] = sessionArray;
@@ -947,131 +825,38 @@ namespace WinGridProxy
             }
         }
 
-        private void SetProgressStep(int step)
-        {
-            if (progressBar1.InvokeRequired)
-            {
-                progressBar1.Invoke(new MethodInvoker(delegate()
-                {
-                    SetProgressStep(step);
-                }));
-            }
-            else
-            {
-                //progressBar1.Step = step;
-                progressBar1.Value += step;
-            }
-        }
-
-        private void SetProgressVisible(bool visible)
-        {
-            if (panelActionProgress.InvokeRequired)
-            {
-                panelActionProgress.BeginInvoke(new MethodInvoker(delegate()
-                    {
-                        SetProgressVisible(visible);
-                    }));
-            }
-            else
-            {
-                panelActionProgress.Visible = visible;
-            }
-        }
-
         private void loadSessionArchiveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-                FileInfo fi = new FileInfo(openFileDialog1.FileName);
-                progressBar1.Maximum = (int)fi.Length;
-                progressBar1.Value = 0;
+                OSDMap map = (OSDMap)OSDParser.DeserializeLLSDNotation(File.ReadAllText(openFileDialog1.FileName));
 
-                // toss this job into a thread so the UI remains responsive for large files
-                System.Threading.ThreadPool.QueueUserWorkItem(new WaitCallback(delegate(Object obj)
-                {
-                    lock (m_FileIOLockerObject)
-                    {
-                        SetProgressVisible(true);
-                        StringBuilder fileContents = new StringBuilder((int)fi.Length);
-                        using (StreamReader sr = fi.OpenText())
-                        {
-                            String input;
-                            while ((input = sr.ReadLine()) != null)
-                            {
-                                fileContents.AppendLine(input);
-                                SetProgressStep(input.Length);
-                            }
-                            input = null;
-                        }
-
-                        OSDMap map = (OSDMap)OSDParser.DeserializeLLSDNotation(fileContents.ToString());
-
-                        // Give the GC a little push
-                        fileContents = null;
-                        GC.Collect(0);
-                        GC.WaitForPendingFinalizers();
-
-                        // turn the map into a list
-                        OSDMapToSessions(map);
-                        SetProgressVisible(false);
-                    }
-                }));
-            }
-        }
-
-        private void OSDMapToSessions(OSDMap map)
-        {
-            if (!map.ContainsKey("sessions"))
-                return;
-
-            if (listViewSessions.InvokeRequired)
-                listViewSessions.BeginInvoke((MethodInvoker)(() => OSDMapToSessions(map)));
-            else
-            {
                 OSDArray sessionsArray = (OSDArray)map["sessions"];
 
-                progressBar1.Maximum = sessionsArray.Count;
-                progressBar1.Value = 0;
-                progressBar1.Step = 1;
-
-                panelActionProgress.Visible = true;
-
-                listViewSessions.VirtualListSize = 0;
-                m_SessionViewItems.Clear();
-
-                ClearCache();
-
+                listViewSessions.Items.Clear();
+                listViewSessions.BeginUpdate();
                 for (int i = 0; i < sessionsArray.Count; i++)
                 {
                     OSDMap session = (OSDMap)sessionsArray[i];
-                    
-                        Session importedSession = (Session)m_CurrentAssembly.CreateInstance("WinGridProxy." + session["type"].AsString());
-                        if (importedSession == null)
-                        {
 
-                          //  System.Diagnostics.Debug.Assert(importedSession != null, session["type"].AsString() + );
-                        }                        
-                        
-                        importedSession.Deserialize(session["tag"].AsBinary());
-                        m_SessionViewItems.Add(importedSession);
-                        progressBar1.PerformStep();                    
+                    Session importedSession = (Session)m_CurrentAssembly.CreateInstance(session["type"].AsString());
+                    importedSession.Deserialize(session["tag"].AsBinary());
+
+                    ListViewItem addedItem = new ListViewItem(new string[] {
+                        session["id"].AsString(), 
+                        importedSession.Protocol,
+                        importedSession.Name,
+                        importedSession.Length.ToString(),
+                        importedSession.Host, 
+                        importedSession.ContentType});
+                    AddSession(addedItem);
+                    //addedItem.ImageIndex = session["image_index"].AsInteger();
+                    addedItem.ImageIndex = (int)importedSession.Direction;
+                    addedItem.BackColor = Color.GhostWhite; // give imported items a different color
+                    addedItem.Tag = importedSession;
                 }
 
-                listViewSessions.VirtualListSize = m_SessionViewItems.Count;
-
-                listViewSessions.Invalidate();
-
-                // resize columns to fit whats currently on screen
-                listViewSessions.Columns[0].Width =
-                    listViewSessions.Columns[1].Width =
-                    listViewSessions.Columns[2].Width =
-                    listViewSessions.Columns[3].Width =
-                    listViewSessions.Columns[5].Width = -2;
-
-                panelActionProgress.Visible = false;
-
-                map = null;
+                listViewSessions.EndUpdate();
             }
         }
 
@@ -1094,14 +879,9 @@ namespace WinGridProxy
         {
             // TODO: warn if client is connected!
 
-            if (timer1 != null)
-                timer1.Dispose();
-
-            if (timerCleanupCache != null)
-                timerCleanupCache.Dispose();
-
             this.Close();
         }
+        #endregion GUI Event Handlers
 
         #region Helpers
 
@@ -1136,77 +916,73 @@ namespace WinGridProxy
             Store.SaveSessionOnExit = saveOptionsOnExitToolStripMenuItem.Checked;
             Store.AutoCheckNewCaps = autoAddNewDiscoveredMessagesToolStripMenuItem.Checked;
 
-            lock (m_FileIOLockerObject)
-            {
-                Store.SerializeToFile(fileName);
-            }
+            Store.SerializeToFile(fileName);
         }
 
         private void RestoreSavedSettings(string fileName)
         {
             // load saved settings from OSD Formatted file
-            lock (m_FileIOLockerObject)
+
+            if (Store.DeserializeFromFile(fileName))
             {
-                if (!Store.DeserializeFromFile(fileName))
-                    return;
+                enableStatisticsToolStripMenuItem.Checked = Store.StatisticsEnabled;
+                saveOptionsOnExitToolStripMenuItem.Checked = Store.SaveSessionOnExit;
+                autoAddNewDiscoveredMessagesToolStripMenuItem.Checked = Store.AutoCheckNewCaps;
+
+                // Update message filter listview
+                listViewMessageFilters.BeginUpdate();
+                foreach (KeyValuePair<string, FilterEntryOptions> kvp in Store.MessageSessions)
+                {
+                    ListViewItem foundMessage = FindListViewItem(listViewPacketFilters, kvp.Key, false);
+                    if (foundMessage == null)
+                    {
+                        ListViewItem addedItem = listViewMessageFilters.Items.Add(
+                            new ListViewItem(kvp.Key, listViewMessageFilters.Groups[kvp.Value.Group]));
+                        addedItem.Name = kvp.Key;
+                        addedItem.Checked = kvp.Value.Checked;
+                        addedItem.SubItems.Add(kvp.Value.Type);
+                        //addedItem.Group = listViewMessageFilters.Groups[kvp.Value.Group];
+
+                        addedItem.BackColor = (kvp.Value.Type.Equals(PROTO_CAPABILITIES)) ? Color_Cap : Color_Event;
+                    }
+                    else
+                    {
+                        foundMessage.Checked = kvp.Value.Checked;
+                    }
+                    if (kvp.Value.Type.Equals(PROTO_CAPABILITIES))
+                    {
+                        proxy.AddCapsDelegate(kvp.Key, kvp.Value.Checked);
+                    }
+                }
+                listViewMessageFilters.EndUpdate();
+
+                // updateTreeView packet filter listview
+                listViewPacketFilters.BeginUpdate();
+                foreach (KeyValuePair<string, FilterEntryOptions> kvp in Store.PacketSessions)
+                {
+                    ListViewItem foundPacket = FindListViewItem(listViewPacketFilters, kvp.Key, false);
+                    if (foundPacket == null)
+                    {
+                        ListViewItem addedItem = listViewPacketFilters.Items.Add(
+                            new ListViewItem(kvp.Key, listViewPacketFilters.Groups[kvp.Value.Group]));
+
+                        addedItem.Name = kvp.Key;
+                        addedItem.Checked = kvp.Value.Checked;
+                        addedItem.SubItems.Add(kvp.Value.Type);
+
+                        addedItem.BackColor = (kvp.Value.Type.Equals(PROTO_AUTHENTICATE)) ? Color_Login : Color_Packet;
+                    }
+                    else
+                    {
+                        foundPacket.Checked = kvp.Value.Checked;
+                    }
+                    if (kvp.Value.Type.Equals(PROTO_PACKETSTRING))
+                    {
+                        proxy.AddUDPDelegate(PacketTypeFromName(kvp.Key), kvp.Value.Checked);
+                    }
+                }
+                listViewPacketFilters.EndUpdate();
             }
-
-            enableStatisticsToolStripMenuItem.Checked = Store.StatisticsEnabled;
-            saveOptionsOnExitToolStripMenuItem.Checked = Store.SaveSessionOnExit;
-            autoAddNewDiscoveredMessagesToolStripMenuItem.Checked = Store.AutoCheckNewCaps;
-
-            // Update message filter listview
-            listViewMessageFilters.BeginUpdate();
-            foreach (KeyValuePair<string, FilterEntryOptions> kvp in Store.MessageSessions)
-            {
-                ListViewItem foundMessage = FindListViewItem(listViewPacketFilters, kvp.Key, false);
-                if (foundMessage == null)
-                {
-                    ListViewItem addedItem = listViewMessageFilters.Items.Add(
-                        new ListViewItem(kvp.Key, listViewMessageFilters.Groups[kvp.Value.Group]));
-                    addedItem.Name = kvp.Key;
-                    addedItem.Checked = kvp.Value.Checked;
-                    addedItem.SubItems.Add(kvp.Value.Type);
-
-                    addedItem.BackColor = (kvp.Value.Type.Equals(PROTO_CAPABILITIES)) ? Color_Cap : Color_Event;
-                }
-                else
-                {
-                    foundMessage.Checked = kvp.Value.Checked;
-                }
-                if (kvp.Value.Type.Equals(PROTO_CAPABILITIES))
-                {
-                    proxy.AddCapsDelegate(kvp.Key, kvp.Value.Checked);
-                }
-            }
-            listViewMessageFilters.EndUpdate();
-
-            // updateTreeView packet filter listview
-            listViewPacketFilters.BeginUpdate();
-            foreach (KeyValuePair<string, FilterEntryOptions> kvp in Store.PacketSessions)
-            {
-                ListViewItem foundPacket = FindListViewItem(listViewPacketFilters, kvp.Key, false);
-                if (foundPacket == null)
-                {
-                    ListViewItem addedItem = listViewPacketFilters.Items.Add(
-                        new ListViewItem(kvp.Key, listViewPacketFilters.Groups[kvp.Value.Group]));
-
-                    addedItem.Name = kvp.Key;
-                    addedItem.Checked = kvp.Value.Checked;
-                    addedItem.SubItems.Add(kvp.Value.Type);
-
-                    addedItem.BackColor = (kvp.Value.Type.Equals(PROTO_AUTHENTICATE)) ? Color_Login : Color_Packet;
-                }
-                else
-                {
-                    foundPacket.Checked = kvp.Value.Checked;
-                }
-                if (kvp.Value.Type.Equals(PROTO_PACKETSTRING))
-                {
-                    proxy.AddUDPDelegate(PacketTypeFromName(kvp.Key), kvp.Value.Checked);
-                }
-            }
-            listViewPacketFilters.EndUpdate();
         }
 
         private void InitProxyFilters()
@@ -1268,51 +1044,40 @@ namespace WinGridProxy
             else
             {
                 int resultCount = 0;
-                progressBar1.Step = 1;// m_SessionViewItems.Count / 100 / 100;
-                progressBar1.Maximum = m_SessionViewItems.Count;
-                progressBar1.Value = 0;
-                panelActionProgress.Visible = true;
 
-                lock (m_SessionViewItems)
+                foreach (ListViewItem item in listViewSessions.Items)
                 {
-                    for (int i = 0; i < m_SessionViewItems.Count; i++)
+                    if (opts.UnMarkPrevious)
+                        item.BackColor = Color.White;
+
+                    if (opts.SearchSelected && !item.Selected)
                     {
-                        Session session = m_SessionViewItems[i];
+                        continue;
+                    }
 
-                        if (opts.UnMarkPrevious)
-                            session.BackColor = Color.White;
-
-                        if (opts.SearchSelected && !session.Selected)
-                            continue;
-
-                        if (
+                    if (
                         (opts.MatchCase
-                        && (session.Name.Contains(opts.SearchText)
-                        || session.ToPrettyString(session.Direction).Contains(opts.SearchText))
+                        && (item.SubItems[2].Text.Contains(opts.SearchText)
+                        /*|| TagToString(item.Tag, item.SubItems[2].Text).Contains(opts.SearchText)*/)
                         ) // no case matching
-                        || ((session.Name.ToLower().Contains(opts.SearchText.ToLower())
-                        || session.ToPrettyString(session.Direction).ToLower().Contains(opts.SearchText.ToLower())
+                        || ((item.SubItems[2].Text.ToLower().Contains(opts.SearchText.ToLower())
+                        /*|| TagToString(item.Tag, item.SubItems[2].Text).ToLower().Contains(opts.SearchText.ToLower())*/
                             ))
                         )
-                        {
-                            if (opts.MarkMatches)
-                                session.BackColor = opts.HighlightMatchColor;
+                    {
+                        resultCount++;
 
-                            if (opts.SelectResults)
-                                session.Selected = true;
-                            else
-                                session.Selected = false;
+                        if (opts.MarkMatches)
+                            item.BackColor = opts.HighlightMatchColor;
 
-                            resultCount++;
-                        }
-                        progressBar1.PerformStep();
+                        if (opts.SelectResults)
+                            item.Selected = true;
+                        else
+                            item.Selected = false;
                     }
                 }
-                ClearCache();
-                listViewSessions.Invalidate();
-                panelActionProgress.Visible = false;
-                toolStripLowerStatusLabel.Text = String.Format("Searched {0} session{2} and found {1} matche{2}", m_SessionViewItems.Count, resultCount,
-                    (resultCount != 1) ? "s" : "");
+
+                //toolStripMainLabel.Text = String.Format("Search found {0} Matches", resultCount);
             }
         }
 
@@ -1322,10 +1087,10 @@ namespace WinGridProxy
 
         private void updateTreeView(string xml, TreeView treeView)
         {
-            treeView.BeginUpdate();
             try
             {
                 treeView.Nodes.Clear();
+
                 XmlDocument tmpxmldoc = new XmlDocument();
                 tmpxmldoc.LoadXml(xml);
                 FillTree(tmpxmldoc.DocumentElement, treeView.Nodes);
@@ -1333,11 +1098,7 @@ namespace WinGridProxy
             }
             catch (Exception ex)
             {
-                Logger.Log("Error during XML conversion", Helpers.LogLevel.Error, ex);
-            }
-            finally
-            {
-                treeView.EndUpdate();
+                Console.WriteLine("Error during xml conversion:" + ex.Message);
             }
         }
 
@@ -1399,118 +1160,115 @@ namespace WinGridProxy
             }
             else
             {
-                label1PacketsOut.Text = String.Format("{0} ({1})", PacketsOutCounter, FormatBytes(PacketsOutBytes));
-                labelPacketsIn.Text = String.Format("{0} ({1})", PacketsInCounter, FormatBytes(PacketsInBytes));
-                labelPacketsTotal.Text = String.Format("{0} ({1})", PacketsOutCounter + PacketsInCounter, FormatBytes(PacketsOutBytes + PacketsInBytes));
+                label1PacketsOut.Text = String.Format("{0} ({1} bytes)", PacketsOutCounter, PacketsOutBytes);
+                labelPacketsIn.Text = String.Format("{0} ({1} bytes)", PacketsInCounter, PacketsInBytes);
+                labelPacketsTotal.Text = String.Format("{0} ({1} bytes)", PacketsOutCounter + PacketsInCounter, PacketsOutBytes + PacketsInBytes);
 
-                labelCapsIn.Text = String.Format("{0} ({1})", CapsInCounter, FormatBytes(CapsInBytes));
-                labelCapsOut.Text = String.Format("{0} ({1})", CapsOutCounter, FormatBytes(CapsOutBytes));
-                labelCapsTotal.Text = String.Format("{0} ({1})", CapsInCounter + CapsOutCounter, FormatBytes(CapsOutBytes + CapsInBytes));
-
-                // pause during scroll
-                if (m_AllowUpdate)
-                    UpdateVirtualListSize(m_SessionViewItems.Count);
-
+                labelCapsIn.Text = String.Format("{0} ({1} bytes)", CapsInCounter, CapsInBytes);
+                labelCapsOut.Text = String.Format("{0} ({1} bytes)", CapsOutCounter, CapsOutBytes);
+                labelCapsTotal.Text = String.Format("{0} ({1} bytes)", CapsInCounter + CapsOutCounter, CapsOutBytes + CapsInBytes);
             }
         }
 
-        private void timerExpireCache_Tick(object sender, EventArgs e)
+        private void timerSessionQueue_Tick(object sender, EventArgs e)
         {
-            int expired = 0;
-            lock (m_SessionViewCache)
+            lock (QueuedSessions)
             {
-                int[] keys = new int[m_SessionViewCache.Keys.Count];
-                m_SessionViewCache.Keys.CopyTo(keys, 0);
-
-                foreach (int key in keys)
+                if (QueuedSessions.Count > 0)
                 {
-                    long expires = 0;
-                    if (long.TryParse(m_SessionViewCache[key].Name, out expires))
+                    listViewSessions.BeginUpdate();
+                    listViewSessions.Items.AddRange(QueuedSessions.ToArray());
+                    if (listViewSessions.Items.Count > 0 && autoscrollToolStripMenuItem.Checked)
                     {
-                        if (expires > 0 && expires <= DateTime.UtcNow.ToLocalTime().Ticks)
-                        {
-                            expired++;
-                            m_SessionViewCache.Remove(key);
-                        }
+                        listViewSessions.Items[listViewSessions.Items.Count - 1].EnsureVisible();
                     }
+                    listViewSessions.EndUpdate();
+                    QueuedSessions.Clear();
                 }
             }
         }
+
         #endregion
 
         private void EditToolStripButton_DropDownOpening(object sender, EventArgs e)
         {
-            lock (m_SessionViewItems)
+            if (listViewSessions.Items.Count > 0)
             {
-                if (m_SessionViewItems.Count > 0)
+                toolStripMenuSessionsRemove.Enabled =
+                removeToolStripMenuItem2.Enabled =
+                selectToolStripMenuItem1.Enabled =
+                saveSessionArchiveToolStripMenuItem.Enabled =
+                toolStripMenuItemRemoveAll.Enabled = true;
+
+                if (listViewSessions.SelectedItems.Count < listViewSessions.Items.Count)
                 {
-                    toolStripMenuSessionsRemove.Enabled =
-                        removeToolStripMenuItem2.Enabled =
-                        selectToolStripMenuItem1.Enabled =
-                        saveSessionArchiveToolStripMenuItem.Enabled =
-                        toolStripMenuItemRemoveAll.Enabled = true;
-
-                    if (listViewSessions.SelectedIndices.Count > 0)
-                    {
-                        toolStripMenuItemRemoveUnselected.Enabled =
-                        markToolStripMenuItem1.Enabled =
-                        toolStripSeparatorSelectPacketProto.Visible =
-                        toolStripMenuItemSelectPacketName.Visible =
-                        noneToolStripMenuItem2.Enabled =
-                        copyToolStripMenuItem1.Enabled =
-                        toolStripMenuItemRemoveSelected.Enabled = true;
-                    }
-                    else
-                    {
-                        toolStripMenuItemRemoveUnselected.Enabled =
-                        markToolStripMenuItem1.Enabled =
-                        toolStripSeparatorSelectPacketProto.Visible =
-                        toolStripMenuItemSelectPacketName.Visible =
-                        noneToolStripMenuItem2.Enabled =
-                        noneToolStripMenuItem2.Enabled =
-                        copyToolStripMenuItem1.Enabled =
-                        toolStripMenuItemRemoveSelected.Enabled = false;
-                    }
-
-                    //if (listViewSessions.SelectedIndices.Count > 0
-                    //    && listViewSessions.SelectedItems.Count != listViewSessions.Items.Count)
-                    //{
-                    //    toolStripMenuItemRemoveUnselected.Enabled =
-                    //    invertToolStripMenuItem1.Enabled =
-                    //    noneToolStripMenuItem2.Enabled = true;
-                    //}
-                    //else
-                    //{
-                    //    toolStripMenuItemRemoveUnselected.Enabled =
-                    //    invertToolStripMenuItem1.Enabled =
-                    //    noneToolStripMenuItem2.Enabled = false;
-                    //}
-
+                    toolStripMenuItemRemoveUnselected.Enabled = true;
                 }
                 else
                 {
-                    toolStripMenuSessionsRemove.Enabled =
+                    toolStripMenuItemRemoveUnselected.Enabled = false;
+                }
+
+                if (listViewSessions.SelectedItems.Count > 0)
+                {
+                    markToolStripMenuItem1.Enabled =
                     toolStripSeparatorSelectPacketProto.Visible =
                     toolStripMenuItemSelectPacketName.Visible =
-                    findToolStripMenuItem.Enabled =
-                    selectToolStripMenuItem1.Enabled =
-                    removeToolStripMenuItem2.Enabled =
-                    toolStripMenuItemRemoveUnselected.Enabled =
+                    noneToolStripMenuItem2.Enabled =
                     copyToolStripMenuItem1.Enabled =
-                    markToolStripMenuItem1.Enabled =
-                    saveSessionArchiveToolStripMenuItem.Enabled =
-                    toolStripMenuItemRemoveAll.Enabled = false;
-                }
-
-                if (listViewPacketFilters.Items.Count + m_SessionViewItems.Count > 0)
-                {
-                    saveFilterSelectionsToolStripMenuItem.Enabled = true;
+                    toolStripMenuItemRemoveSelected.Enabled = true;
                 }
                 else
                 {
-                    saveFilterSelectionsToolStripMenuItem.Enabled = false;
+                    markToolStripMenuItem1.Enabled =
+                    toolStripSeparatorSelectPacketProto.Visible =
+                    toolStripMenuItemSelectPacketName.Visible =
+                    noneToolStripMenuItem2.Enabled =
+                    noneToolStripMenuItem2.Enabled =
+                    copyToolStripMenuItem1.Enabled =
+                    toolStripMenuItemRemoveSelected.Enabled = false;
                 }
+
+                if (listViewSessions.SelectedItems.Count > 0
+                    && listViewSessions.SelectedItems.Count != listViewSessions.Items.Count)
+                {
+                    toolStripMenuItemRemoveUnselected.Enabled =
+                    invertToolStripMenuItem1.Enabled =
+                    noneToolStripMenuItem2.Enabled = true;
+                }
+                else
+                {
+                    toolStripMenuItemRemoveUnselected.Enabled =
+                    invertToolStripMenuItem1.Enabled =
+                    noneToolStripMenuItem2.Enabled = false;
+                }
+
             }
+            else
+            {
+                toolStripMenuSessionsRemove.Enabled =
+                toolStripSeparatorSelectPacketProto.Visible =
+                    //                toolStripMenuItemSelectProtocol.Visible =
+                toolStripMenuItemSelectPacketName.Visible =
+                findToolStripMenuItem.Enabled =
+                selectToolStripMenuItem1.Enabled =
+                removeToolStripMenuItem2.Enabled =
+                toolStripMenuItemRemoveUnselected.Enabled =
+                copyToolStripMenuItem1.Enabled =
+                markToolStripMenuItem1.Enabled =
+                saveSessionArchiveToolStripMenuItem.Enabled =
+                toolStripMenuItemRemoveAll.Enabled = false;
+            }
+
+            if (listViewPacketFilters.Items.Count + listViewSessions.Items.Count > 0)
+            {
+                saveFilterSelectionsToolStripMenuItem.Enabled = true;
+            }
+            else
+            {
+                saveFilterSelectionsToolStripMenuItem.Enabled = false;
+            }
+
         }
 
         private void autoColorizeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1585,6 +1343,14 @@ namespace WinGridProxy
             }
         }
 
+        private void AddSession(ListViewItem item)
+        {
+            lock (QueuedSessions)
+            {
+                QueuedSessions.Add(item);
+            }
+        }
+
         private void asDecodedTextToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
@@ -1625,13 +1391,41 @@ namespace WinGridProxy
         {
             SaveAllSettings("settings.osd");
         }
+        // Column sorter
+        private void listViewSessions_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            ListView listView1 = (ListView)sender;
 
+            ListViewSorter Sorter = new ListViewSorter();
+            listView1.ListViewItemSorter = Sorter;
+            if (!(listView1.ListViewItemSorter is ListViewSorter))
+                return;
+
+            Sorter = (ListViewSorter)listView1.ListViewItemSorter;
+
+            if (Sorter.LastSort == e.Column)
+            {
+                if (listView1.Sorting == SortOrder.Ascending)
+                    listView1.Sorting = SortOrder.Descending;
+                else
+                    listView1.Sorting = SortOrder.Ascending;
+            }
+            else
+            {
+                listView1.Sorting = SortOrder.Descending;
+            }
+            Sorter.ByColumn = e.Column;
+
+            listView1.Sort();
+
+            listView1.Columns[e.Column].Width = -2;// = listView1.Columns[e.Column].Text + " " + '\u23BC';
+        }
 
         private void buttonSaveRequestHex_Click(object sender, EventArgs e)
         {
             if (hexBoxRequest.ByteProvider != null && hexBoxRequest.ByteProvider.Length > 0)
             {
-                saveFileDialog3.FileName = m_CurrentSession.Name;
+                saveFileDialog3.FileName = listViewSessions.SelectedItems[0].Name;
                 if (saveFileDialog3.ShowDialog() == DialogResult.OK)
                 {
                     byte[] bytes = new byte[hexBoxRequest.ByteProvider.Length];
@@ -1648,7 +1442,7 @@ namespace WinGridProxy
         {
             if (hexBoxResponse.ByteProvider != null && hexBoxResponse.ByteProvider.Length > 0)
             {
-                saveFileDialog3.FileName = m_CurrentSession.Name;
+                saveFileDialog3.FileName = listViewSessions.SelectedItems[0].Name;
                 if (saveFileDialog3.ShowDialog() == DialogResult.OK)
                 {
                     byte[] bytes = new byte[hexBoxResponse.ByteProvider.Length];
@@ -1659,245 +1453,76 @@ namespace WinGridProxy
                     File.WriteAllBytes(saveFileDialog3.FileName, bytes);
                 }
             }
-        }
-
-
-        /// <summary>
-        /// Column Sorting
-        /// </summary>
-        private void listViewSessions_ColumnClick(object sender, ColumnClickEventArgs e)
-        {
-            if (m_ListViewSortOrder == SortOrder.Ascending)
-                m_ListViewSortOrder = SortOrder.Descending;
             else
-                m_ListViewSortOrder = SortOrder.Ascending;
-
-            string name = ((ListView)sender).Columns[e.Column].Text;
-            lock (m_SessionViewItems)
             {
-                switch (name)
-                {
-                    case "#":
-                        if (m_ListViewSortOrder == SortOrder.Ascending)
-                            m_SessionViewItems.Sort((x, y) => x.TimeStamp.CompareTo(y.TimeStamp));
-                        else
-                            m_SessionViewItems.Sort((x, y) => y.TimeStamp.CompareTo(x.TimeStamp));
-                        break;
-                    case "Protocol":
-                        if (m_ListViewSortOrder == SortOrder.Ascending)
-                            m_SessionViewItems.Sort((x, y) => x.Protocol.CompareTo(y.Protocol));
-                        else
-                            m_SessionViewItems.Sort((x, y) => y.Protocol.CompareTo(x.Protocol));
-                        break;
-                    case "Name":
-                        if (m_ListViewSortOrder == SortOrder.Ascending)
-                            m_SessionViewItems.Sort((x, y) => x.Name.CompareTo(y.Name));
-                        else
-                            m_SessionViewItems.Sort((x, y) => y.Name.CompareTo(x.Name));
-                        break;
-                    case "Bytes":
-                        if (m_ListViewSortOrder == SortOrder.Ascending)
-                            m_SessionViewItems.Sort((x, y) => x.Length.CompareTo(y.Length));
-                        else
-                            m_SessionViewItems.Sort((x, y) => y.Length.CompareTo(x.Length));
-                        break;
-                    case "Host":
-                        if (m_ListViewSortOrder == SortOrder.Ascending)
-                            m_SessionViewItems.Sort((x, y) => x.Host.CompareTo(y.Host));
-                        else
-                            m_SessionViewItems.Sort((x, y) => y.Host.CompareTo(x.Host));
-                        break;
-                    case "Content Type":
-                        if (m_ListViewSortOrder == SortOrder.Ascending)
-                            m_SessionViewItems.Sort((x, y) => x.ContentType.CompareTo(y.ContentType));
-                        else
-                            m_SessionViewItems.Sort((x, y) => y.ContentType.CompareTo(x.ContentType));
-                        break;
-                }
+                // no bytes to read!
+            }
+        }
+    }
+
+    public class ListViewSorter : System.Collections.IComparer
+    {
+        public int Compare(object o1, object o2)
+        {
+            if (!(o1 is ListViewItem))
+                return 0;
+            if (!(o2 is ListViewItem))
+                return 0;
+
+            int result;
+
+            ListViewItem lvi1 = (ListViewItem)o2;
+            ListViewItem lvi2 = (ListViewItem)o1;
+
+            if (lvi1.ListView.Columns[ByColumn].Tag == null
+                || lvi1.ListView.Columns[ByColumn].Tag == null)
+            {
+                return 0;
             }
 
-            ClearCache();
-            listViewSessions.Invalidate();
-            ((ListView)sender).Columns[e.Column].Width = -2;
-        }
-
-        /// <summary>
-        /// Retrieve an item for display in the listview, first trying the cache
-        /// </summary>        
-        private void listViewSessions_RetrieveVirtualItem(object sender, RetrieveVirtualItemEventArgs e)
-        {
-            lock (m_SessionViewCache)
+            if (lvi1.ListView.Columns[ByColumn].Tag.ToString().ToLower().Equals("number"))
             {
-                if (m_SessionViewCache.ContainsKey(e.ItemIndex))
-                {
-                    e.Item = m_SessionViewCache[e.ItemIndex];
-                }
+                float fl1 = float.Parse(lvi1.SubItems[ByColumn].Text);
+                float fl2 = float.Parse(lvi2.SubItems[ByColumn].Text);
+
+                if (lvi1.ListView.Sorting == SortOrder.Ascending)
+                    result = fl1.CompareTo(fl2);
                 else
-                {
-                    e.Item = GenerateListViewItem(e.ItemIndex);
-                    m_SessionViewCache.Add(e.ItemIndex, e.Item);
-                }
+                    result = fl2.CompareTo(fl1);
             }
-        }
-
-        private ListViewItem GenerateListViewItem(int index)
-        {
-            Session sessionItem = null;
-            lock (m_SessionViewItems)
+            else if (lvi1.ListView.Columns[ByColumn].Tag.ToString().ToLower().Equals("string"))
             {
-                sessionItem = m_SessionViewItems[index];
-            }
+                string str1 = lvi1.SubItems[ByColumn].Text;
+                string str2 = lvi2.SubItems[ByColumn].Text;
 
-            ListViewItem sessionViewItem = new ListViewItem(new string[] { sessionItem.TimeStamp.ToLocalTime().ToString("hh:m:s.fff")/*index.ToString()*/, sessionItem.Protocol, sessionItem.Name, 
-                    sessionItem.Length.ToString(), sessionItem.Host, sessionItem.ContentType });
-
-            sessionViewItem.Checked = sessionItem.Selected;
-            sessionViewItem.Tag = sessionItem;
-            sessionViewItem.ImageIndex = (int)sessionItem.Direction;
-
-            sessionViewItem.BackColor = sessionItem.BackColor;
-
-            if (sessionItem is SessionPacket && Int32.Parse(sessionViewItem.SubItems[3].Text) > 1400)
-            {
-                sessionViewItem.UseItemStyleForSubItems = false;
-                sessionViewItem.SubItems[3].ForeColor = Color.Red;
-            }
-
-            // this is used for expiring the cache
-            sessionViewItem.Name = DateTime.UtcNow.ToLocalTime().AddMinutes(1).Ticks.ToString();
-
-            return sessionViewItem;
-        }
-
-        private void listViewSessions_VirtualItemsSelectionRangeChanged(object sender, ListViewVirtualItemsSelectionRangeChangedEventArgs e)
-        {
-            int end = (e.EndIndex + 2 <= m_SessionViewItems.Count) ? e.EndIndex + 2 : m_SessionViewItems.Count;
-
-            lock (m_SessionViewItems)
-            {
-                for (int i = e.StartIndex; i < end; i++)
-                {
-                    m_SessionViewItems[i].Selected = e.IsSelected;
-                }
-            }
-
-            ClearCache();
-            listViewSessions.Invalidate();
-        }
-
-        private void listViewSessions_CacheVirtualItems(object sender, CacheVirtualItemsEventArgs e)
-        {
-            for (int i = e.StartIndex; i < e.EndIndex + 1; i++)
-            {
-                lock (m_SessionViewCache)
-                {
-                    if (!m_SessionViewCache.ContainsKey(i))
-                        m_SessionViewCache.Add(i, GenerateListViewItem(i));
-                }
-            }
-        }
-
-        private void listViewSessions_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (listViewSessions.SelectedIndices.Count == 1)
-            {
-                // update the context menus
-                contextMenuStripSessions_Opening(sender, null);
-
-                tabControlMain.SelectTab("tabPageInspect");
-
-                int index = listViewSessions.SelectedIndices[0];
-
-                object tag = null;
-                if (m_SessionViewCache.ContainsKey(index))
-                    tag = m_SessionViewCache[index].Tag;
+                if (lvi1.ListView.Sorting == SortOrder.Ascending)
+                    result = String.Compare(str1, str2);
                 else
-                    tag = GenerateListViewItem(listViewSessions.SelectedIndices[0]).Tag; //e.Item.Tag;
-
-                if (tag is Session)
-                {
-                    Session session = (Session)tag;
-
-                    this.m_CurrentSession = session;
-
-                    treeViewXmlResponse.Nodes.Clear();
-                    treeViewXMLRequest.Nodes.Clear();
-
-                    Be.Windows.Forms.DynamicByteProvider responseBytes = new Be.Windows.Forms.DynamicByteProvider(session.ToBytes(Direction.Incoming));
-                    richTextBoxDecodedResponse.Text = session.ToPrettyString(Direction.Incoming);
-                    richTextBoxRawResponse.Text = session.ToRawString(Direction.Incoming);
-                    richTextBoxNotationResponse.Text = session.ToStringNotation(Direction.Incoming);
-                    hexBoxResponse.ByteProvider = responseBytes;
-                    updateTreeView(session.ToXml(Direction.Incoming), treeViewXmlResponse);
-
-                    Be.Windows.Forms.DynamicByteProvider requestBytes = new Be.Windows.Forms.DynamicByteProvider(session.ToBytes(Direction.Outgoing));
-                    richTextBoxDecodedRequest.Text = session.ToPrettyString(Direction.Outgoing);
-                    richTextBoxRawRequest.Text = session.ToRawString(Direction.Outgoing);
-                    richTextBoxNotationRequest.Text = session.ToStringNotation(Direction.Outgoing);
-                    hexBoxRequest.ByteProvider = requestBytes;
-                    updateTreeView(session.ToXml(Direction.Outgoing), treeViewXMLRequest);
-
-                    RequestPosition_Changed(this, EventArgs.Empty);
-                    ReplyPosition_Changed(this, EventArgs.Empty);
-                }
-                else
-                {
-                    richTextBoxDecodedResponse.Text = "Unknown data object encountered: " + tag.GetType().ToString();
-                }
+                    result = String.Compare(str2, str1);
             }
-        }
-
-        private void toolStripButtonLaunchViewer_Click(object sender, EventArgs e)
-        {
-            System.Diagnostics.Process.Start(String.Format("{0}", m_InstalledViewers[toolStripComboBox1.Text]), String.Format("--set InstallLanguage en -multiple -loginuri http://{0}:{1}", comboBoxListenAddress.Text, textBoxProxyPort));
-        }
-
-        private void listViewSessions_Scrolling(object sender, ScrollingEventArgs e)
-        {
-            m_AllowUpdate = !e.Scrolling;
-            if (!e.Scrolling)
+            else
             {
-                listViewSessions.TopItem.Focused = true;
+                return 0;
             }
+
+            LastSort = ByColumn;
+
+            return (result);
         }
 
-        private void comboBoxLoginURL_Leave(object sender, EventArgs e)
+
+        public int ByColumn
         {
-            if (!String.IsNullOrEmpty(comboBoxLoginURL.Text))
-            {
-                if (m_DefaultGridLoginServers.Contains(comboBoxLoginURL.Text))
-                {
-                    // make the selection the default for next time
-                    m_DefaultGridLoginServers.Remove(comboBoxLoginURL.Text);
-                }
-                m_DefaultGridLoginServers.Insert(0, comboBoxLoginURL.Text);
-
-                File.WriteAllLines("gridservers.ini", m_DefaultGridLoginServers.ToArray());
-            }
+            get { return Column; }
+            set { Column = value; }
         }
+        int Column = 0;
 
-        private void documentationToolStripMenuItem_Click(object sender, EventArgs e)
+        public int LastSort
         {
-            System.Diagnostics.Process.Start("http://lib.openmetaverse.org/wiki/WinGridProxy");
+            get { return LastColumn; }
+            set { LastColumn = value; }
         }
-
-        #region Inject Tab
-        // Enable Inject button if box contains text
-        private void richTextBoxInject_TextChanged(object sender, EventArgs e)
-        {
-            toolStripButtonInject.Enabled = (richTextBoxInject.TextLength > 0);
-        }
-
-        private void toolStripButtonInject_Click(object sender, EventArgs e)
-        {
-            proxy.InjectPacket(richTextBoxInject.Text, true);
-        }
-
-        #endregion Inject Tab
-
-        private void listViewSessions_SearchForVirtualItem(object sender, SearchForVirtualItemEventArgs e)
-        {
-
-        }
-    }   
+        int LastColumn = 0;
+    }
 }
