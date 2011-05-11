@@ -484,6 +484,9 @@ namespace mapgenerator
 							}
 							else 
 							{
+                                // Skip comments
+                                if (trimmedline.StartsWith("//")) continue;
+
 								// The packet header
 								#region ParsePacketHeader
 
