@@ -38,19 +38,13 @@
             this.splitContainerSessionsTabs = new System.Windows.Forms.SplitContainer();
             this.panelActionProgress = new System.Windows.Forms.Panel();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.listViewSessions = new WinGridProxy.ListViewNoFlicker();
-            this.columnHeaderCounter = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderProtocol = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderType = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderSize = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderUrl = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderContentType = new System.Windows.Forms.ColumnHeader();
             this.contextMenuStripSessions = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuSessionsRemove = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripRemove = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuItemRemoveAll = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemRemoveSelected = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItemRemoveUnselected = new System.Windows.Forms.ToolStripMenuItem();
+            this.removeToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.selectToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripSelect = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.allToolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
@@ -58,7 +52,6 @@
             this.noneToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparatorSelectPacketProto = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripMenuItemSelectPacketName = new System.Windows.Forms.ToolStripMenuItem();
-            this.selectToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparatorFilterPacketByName = new System.Windows.Forms.ToolStripSeparator();
             this.enableDisableFilterByNameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
@@ -71,7 +64,6 @@
             this.orangeToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator17 = new System.Windows.Forms.ToolStripSeparator();
             this.unmarkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.markToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator16 = new System.Windows.Forms.ToolStripSeparator();
             this.findToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
@@ -97,12 +89,8 @@
             this.splitContainerFilters = new System.Windows.Forms.SplitContainer();
             this.checkBoxCheckAllPackets = new System.Windows.Forms.CheckBox();
             this.grpUDPFilters = new System.Windows.Forms.GroupBox();
-            this.listViewPacketFilters = new WinGridProxy.ListViewNoFlicker();
-            this.columnHeaderPacketName = new System.Windows.Forms.ColumnHeader();
             this.checkBoxCheckAllMessages = new System.Windows.Forms.CheckBox();
             this.grpCapsFilters = new System.Windows.Forms.GroupBox();
-            this.listViewMessageFilters = new WinGridProxy.ListViewNoFlicker();
-            this.columnHeaderName = new System.Windows.Forms.ColumnHeader();
             this.toolStripFilters = new System.Windows.Forms.ToolStrip();
             this.loadFilterSelectionsToolStripMenuItem = new System.Windows.Forms.ToolStripButton();
             this.saveFilterSelectionsToolStripMenuItem = new System.Windows.Forms.ToolStripButton();
@@ -141,7 +129,8 @@
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripButtonInject = new System.Windows.Forms.ToolStripButton();
             this.richTextBoxInject = new System.Windows.Forms.RichTextBox();
-            this.removeToolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.selectToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.markToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripLabelHexEditorRequest = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripMenu = new System.Windows.Forms.ToolStrip();
@@ -237,6 +226,17 @@
             this.buttonLaunchViewer = new System.Windows.Forms.ToolStripButton();
             this.saveFileDialog3 = new System.Windows.Forms.SaveFileDialog();
             this.timerCleanupCache = new System.Windows.Forms.Timer(this.components);
+            this.listViewSessions = new WinGridProxy.ListViewNoFlicker();
+            this.columnHeaderCounter = new System.Windows.Forms.ColumnHeader();
+            this.columnHeaderProtocol = new System.Windows.Forms.ColumnHeader();
+            this.columnHeaderType = new System.Windows.Forms.ColumnHeader();
+            this.columnHeaderSize = new System.Windows.Forms.ColumnHeader();
+            this.columnHeaderUrl = new System.Windows.Forms.ColumnHeader();
+            this.columnHeaderContentType = new System.Windows.Forms.ColumnHeader();
+            this.listViewPacketFilters = new WinGridProxy.ListViewNoFlicker();
+            this.columnHeaderPacketName = new System.Windows.Forms.ColumnHeader();
+            this.listViewMessageFilters = new WinGridProxy.ListViewNoFlicker();
+            this.columnHeaderName = new System.Windows.Forms.ColumnHeader();
             this.panelMainWindow.SuspendLayout();
             this.splitContainerSessionsTabs.Panel1.SuspendLayout();
             this.splitContainerSessionsTabs.Panel2.SuspendLayout();
@@ -294,7 +294,7 @@
             this.panelMainWindow.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelMainWindow.Location = new System.Drawing.Point(0, 0);
             this.panelMainWindow.Name = "panelMainWindow";
-            this.panelMainWindow.Size = new System.Drawing.Size(1111, 467);
+            this.panelMainWindow.Size = new System.Drawing.Size(1111, 442);
             this.panelMainWindow.TabIndex = 1;
             // 
             // splitContainerSessionsTabs
@@ -312,7 +312,7 @@
             // splitContainerSessionsTabs.Panel2
             // 
             this.splitContainerSessionsTabs.Panel2.Controls.Add(this.tabControlMain);
-            this.splitContainerSessionsTabs.Size = new System.Drawing.Size(1111, 467);
+            this.splitContainerSessionsTabs.Size = new System.Drawing.Size(1111, 442);
             this.splitContainerSessionsTabs.SplitterDistance = 479;
             this.splitContainerSessionsTabs.SplitterWidth = 5;
             this.splitContainerSessionsTabs.TabIndex = 0;
@@ -338,69 +338,6 @@
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(242, 16);
             this.progressBar1.TabIndex = 0;
-            // 
-            // listViewSessions
-            // 
-            this.listViewSessions.Activation = System.Windows.Forms.ItemActivation.OneClick;
-            this.listViewSessions.AllowColumnReorder = true;
-            this.listViewSessions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.listViewSessions.CheckBoxes = true;
-            this.listViewSessions.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeaderCounter,
-            this.columnHeaderProtocol,
-            this.columnHeaderType,
-            this.columnHeaderSize,
-            this.columnHeaderUrl,
-            this.columnHeaderContentType});
-            this.listViewSessions.ContextMenuStrip = this.contextMenuStripSessions;
-            this.listViewSessions.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listViewSessions.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.listViewSessions.FullRowSelect = true;
-            this.listViewSessions.GridLines = true;
-            this.listViewSessions.Location = new System.Drawing.Point(0, 0);
-            this.listViewSessions.Name = "listViewSessions";
-            this.listViewSessions.ShowItemToolTips = true;
-            this.listViewSessions.Size = new System.Drawing.Size(479, 467);
-            this.listViewSessions.SmallImageList = this.imageList1;
-            this.listViewSessions.TabIndex = 0;
-            this.listViewSessions.UseCompatibleStateImageBehavior = false;
-            this.listViewSessions.View = System.Windows.Forms.View.Details;
-            this.listViewSessions.VirtualMode = true;
-            this.listViewSessions.Scrolling += new System.EventHandler<WinGridProxy.ScrollingEventArgs>(this.listViewSessions_Scrolling);
-            this.listViewSessions.VirtualItemsSelectionRangeChanged += new System.Windows.Forms.ListViewVirtualItemsSelectionRangeChangedEventHandler(this.listViewSessions_VirtualItemsSelectionRangeChanged);
-            this.listViewSessions.SelectedIndexChanged += new System.EventHandler(this.listViewSessions_SelectedIndexChanged);
-            this.listViewSessions.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewSessions_ColumnClick);
-            this.listViewSessions.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.listViewSessions_RetrieveVirtualItem);
-            this.listViewSessions.CacheVirtualItems += new System.Windows.Forms.CacheVirtualItemsEventHandler(this.listViewSessions_CacheVirtualItems);
-            // 
-            // columnHeaderCounter
-            // 
-            this.columnHeaderCounter.Text = "#";
-            this.columnHeaderCounter.Width = 50;
-            // 
-            // columnHeaderProtocol
-            // 
-            this.columnHeaderProtocol.Text = "Protocol";
-            // 
-            // columnHeaderType
-            // 
-            this.columnHeaderType.Text = "Name";
-            this.columnHeaderType.Width = 151;
-            // 
-            // columnHeaderSize
-            // 
-            this.columnHeaderSize.Text = "Bytes";
-            this.columnHeaderSize.Width = 42;
-            // 
-            // columnHeaderUrl
-            // 
-            this.columnHeaderUrl.Text = "Host";
-            this.columnHeaderUrl.Width = 150;
-            // 
-            // columnHeaderContentType
-            // 
-            this.columnHeaderContentType.Text = "Content Type";
-            this.columnHeaderContentType.Width = 250;
             // 
             // contextMenuStripSessions
             // 
@@ -456,6 +393,13 @@
             this.toolStripMenuItemRemoveUnselected.Text = "Unselected";
             this.toolStripMenuItemRemoveUnselected.Click += new System.EventHandler(this.sessionRemoveUnselected_Click);
             // 
+            // removeToolStripMenuItem2
+            // 
+            this.removeToolStripMenuItem2.DropDown = this.contextMenuStripRemove;
+            this.removeToolStripMenuItem2.Name = "removeToolStripMenuItem2";
+            this.removeToolStripMenuItem2.Size = new System.Drawing.Size(137, 22);
+            this.removeToolStripMenuItem2.Text = "Remove";
+            // 
             // selectToolStripMenuItem2
             // 
             this.selectToolStripMenuItem2.DropDown = this.contextMenuStripSelect;
@@ -508,13 +452,6 @@
             this.toolStripMenuItemSelectPacketName.Size = new System.Drawing.Size(163, 22);
             this.toolStripMenuItemSelectPacketName.Text = "All (Packet Type)";
             this.toolStripMenuItemSelectPacketName.Click += new System.EventHandler(this.sessionSelectAllPacketType_Click);
-            // 
-            // selectToolStripMenuItem1
-            // 
-            this.selectToolStripMenuItem1.DropDown = this.contextMenuStripSelect;
-            this.selectToolStripMenuItem1.Name = "selectToolStripMenuItem1";
-            this.selectToolStripMenuItem1.Size = new System.Drawing.Size(137, 22);
-            this.selectToolStripMenuItem1.Text = "Select";
             // 
             // toolStripSeparatorFilterPacketByName
             // 
@@ -604,13 +541,6 @@
             this.unmarkToolStripMenuItem.Text = "Unmark";
             this.unmarkToolStripMenuItem.Click += new System.EventHandler(this.sessionUnmarkSelected_Click);
             // 
-            // markToolStripMenuItem1
-            // 
-            this.markToolStripMenuItem1.DropDown = this.contextMenuStripMark;
-            this.markToolStripMenuItem1.Name = "markToolStripMenuItem1";
-            this.markToolStripMenuItem1.Size = new System.Drawing.Size(137, 22);
-            this.markToolStripMenuItem1.Text = "Mark";
-            // 
             // toolStripSeparator16
             // 
             this.toolStripSeparator16.Name = "toolStripSeparator16";
@@ -640,12 +570,13 @@
             this.tabControlMain.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControlMain.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tabControlMain.HotTrack = true;
+            this.tabControlMain.ItemSize = new System.Drawing.Size(100, 26);
             this.tabControlMain.Location = new System.Drawing.Point(0, 0);
             this.tabControlMain.Multiline = true;
             this.tabControlMain.Name = "tabControlMain";
             this.tabControlMain.Padding = new System.Drawing.Point(10, 6);
             this.tabControlMain.SelectedIndex = 0;
-            this.tabControlMain.Size = new System.Drawing.Size(627, 467);
+            this.tabControlMain.Size = new System.Drawing.Size(627, 442);
             this.tabControlMain.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControlMain.TabIndex = 0;
             // 
@@ -657,7 +588,7 @@
             this.tabPageSummary.Location = new System.Drawing.Point(4, 30);
             this.tabPageSummary.Name = "tabPageSummary";
             this.tabPageSummary.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageSummary.Size = new System.Drawing.Size(619, 433);
+            this.tabPageSummary.Size = new System.Drawing.Size(619, 408);
             this.tabPageSummary.TabIndex = 0;
             this.tabPageSummary.Text = "Summary";
             this.tabPageSummary.UseVisualStyleBackColor = true;
@@ -674,7 +605,7 @@
             this.richTextBoxDebugLog.Name = "richTextBoxDebugLog";
             this.richTextBoxDebugLog.ReadOnly = true;
             this.richTextBoxDebugLog.ShowSelectionMargin = true;
-            this.richTextBoxDebugLog.Size = new System.Drawing.Size(606, 324);
+            this.richTextBoxDebugLog.Size = new System.Drawing.Size(606, 299);
             this.richTextBoxDebugLog.TabIndex = 3;
             this.richTextBoxDebugLog.Text = "";
             this.richTextBoxDebugLog.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBoxDecodedRequest_LinkClicked);
@@ -690,7 +621,7 @@
             this.panelStats.Controls.Add(this.groupBox1);
             this.panelStats.Location = new System.Drawing.Point(6, 6);
             this.panelStats.Name = "panelStats";
-            this.panelStats.Size = new System.Drawing.Size(606, 89);
+            this.panelStats.Size = new System.Drawing.Size(606, 64);
             this.panelStats.TabIndex = 2;
             // 
             // groupBox2
@@ -740,7 +671,7 @@
             this.label10.AutoSize = true;
             this.label10.Location = new System.Drawing.Point(6, 58);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(84, 15);
+            this.label10.Size = new System.Drawing.Size(83, 15);
             this.label10.TabIndex = 5;
             this.label10.Text = "Packets Total:";
             // 
@@ -828,7 +759,7 @@
             this.label7.AutoSize = true;
             this.label7.Location = new System.Drawing.Point(14, 58);
             this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(70, 15);
+            this.label7.Size = new System.Drawing.Size(69, 15);
             this.label7.TabIndex = 2;
             this.label7.Text = "Caps Total:";
             // 
@@ -839,7 +770,7 @@
             this.tabPageFilters.Location = new System.Drawing.Point(4, 30);
             this.tabPageFilters.Name = "tabPageFilters";
             this.tabPageFilters.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageFilters.Size = new System.Drawing.Size(619, 433);
+            this.tabPageFilters.Size = new System.Drawing.Size(619, 408);
             this.tabPageFilters.TabIndex = 1;
             this.tabPageFilters.Text = "Filters";
             this.tabPageFilters.UseVisualStyleBackColor = true;
@@ -859,7 +790,7 @@
             // 
             this.splitContainerFilters.Panel2.Controls.Add(this.checkBoxCheckAllMessages);
             this.splitContainerFilters.Panel2.Controls.Add(this.grpCapsFilters);
-            this.splitContainerFilters.Size = new System.Drawing.Size(613, 402);
+            this.splitContainerFilters.Size = new System.Drawing.Size(613, 377);
             this.splitContainerFilters.SplitterDistance = 303;
             this.splitContainerFilters.SplitterWidth = 5;
             this.splitContainerFilters.TabIndex = 0;
@@ -870,9 +801,9 @@
             this.checkBoxCheckAllPackets.AutoSize = true;
             this.checkBoxCheckAllPackets.Checked = true;
             this.checkBoxCheckAllPackets.CheckState = System.Windows.Forms.CheckState.Indeterminate;
-            this.checkBoxCheckAllPackets.Location = new System.Drawing.Point(3, 378);
+            this.checkBoxCheckAllPackets.Location = new System.Drawing.Point(3, 353);
             this.checkBoxCheckAllPackets.Name = "checkBoxCheckAllPackets";
-            this.checkBoxCheckAllPackets.Size = new System.Drawing.Size(128, 19);
+            this.checkBoxCheckAllPackets.Size = new System.Drawing.Size(127, 19);
             this.checkBoxCheckAllPackets.TabIndex = 1;
             this.checkBoxCheckAllPackets.Text = "Check/Uncheck All";
             this.checkBoxCheckAllPackets.UseVisualStyleBackColor = true;
@@ -887,43 +818,10 @@
             this.grpUDPFilters.Enabled = false;
             this.grpUDPFilters.Location = new System.Drawing.Point(3, 3);
             this.grpUDPFilters.Name = "grpUDPFilters";
-            this.grpUDPFilters.Size = new System.Drawing.Size(297, 369);
+            this.grpUDPFilters.Size = new System.Drawing.Size(297, 344);
             this.grpUDPFilters.TabIndex = 0;
             this.grpUDPFilters.TabStop = false;
             this.grpUDPFilters.Text = "UDP Packets && Login";
-            // 
-            // listViewPacketFilters
-            // 
-            this.listViewPacketFilters.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listViewPacketFilters.CheckBoxes = true;
-            this.listViewPacketFilters.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeaderPacketName});
-            this.listViewPacketFilters.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listViewPacketFilters.FullRowSelect = true;
-            this.listViewPacketFilters.GridLines = true;
-            listViewGroup1.Header = "Login";
-            listViewGroup1.Name = "Login";
-            listViewGroup2.Header = "Packets";
-            listViewGroup2.Name = "Packets";
-            this.listViewPacketFilters.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup1,
-            listViewGroup2});
-            this.listViewPacketFilters.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-            this.listViewPacketFilters.Location = new System.Drawing.Point(3, 17);
-            this.listViewPacketFilters.MultiSelect = false;
-            this.listViewPacketFilters.Name = "listViewPacketFilters";
-            this.listViewPacketFilters.Size = new System.Drawing.Size(291, 349);
-            this.listViewPacketFilters.Sorting = System.Windows.Forms.SortOrder.Ascending;
-            this.listViewPacketFilters.TabIndex = 0;
-            this.listViewPacketFilters.UseCompatibleStateImageBehavior = false;
-            this.listViewPacketFilters.View = System.Windows.Forms.View.Details;
-            this.listViewPacketFilters.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listViewPacketFilters_ItemChecked);
-            this.listViewPacketFilters.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewFilterSorter_ColumnClick);
-            // 
-            // columnHeaderPacketName
-            // 
-            this.columnHeaderPacketName.Text = "Name";
-            this.columnHeaderPacketName.Width = 287;
             // 
             // checkBoxCheckAllMessages
             // 
@@ -931,9 +829,9 @@
             this.checkBoxCheckAllMessages.AutoSize = true;
             this.checkBoxCheckAllMessages.Checked = true;
             this.checkBoxCheckAllMessages.CheckState = System.Windows.Forms.CheckState.Indeterminate;
-            this.checkBoxCheckAllMessages.Location = new System.Drawing.Point(6, 378);
+            this.checkBoxCheckAllMessages.Location = new System.Drawing.Point(6, 353);
             this.checkBoxCheckAllMessages.Name = "checkBoxCheckAllMessages";
-            this.checkBoxCheckAllMessages.Size = new System.Drawing.Size(128, 19);
+            this.checkBoxCheckAllMessages.Size = new System.Drawing.Size(127, 19);
             this.checkBoxCheckAllMessages.TabIndex = 2;
             this.checkBoxCheckAllMessages.Text = "Check/Uncheck All";
             this.checkBoxCheckAllMessages.UseVisualStyleBackColor = true;
@@ -948,43 +846,10 @@
             this.grpCapsFilters.Enabled = false;
             this.grpCapsFilters.Location = new System.Drawing.Point(3, 3);
             this.grpCapsFilters.Name = "grpCapsFilters";
-            this.grpCapsFilters.Size = new System.Drawing.Size(299, 366);
+            this.grpCapsFilters.Size = new System.Drawing.Size(299, 341);
             this.grpCapsFilters.TabIndex = 1;
             this.grpCapsFilters.TabStop = false;
             this.grpCapsFilters.Text = "Capabilities && EventQueue messages";
-            // 
-            // listViewMessageFilters
-            // 
-            this.listViewMessageFilters.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listViewMessageFilters.CheckBoxes = true;
-            this.listViewMessageFilters.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeaderName});
-            this.listViewMessageFilters.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listViewMessageFilters.FullRowSelect = true;
-            this.listViewMessageFilters.GridLines = true;
-            listViewGroup3.Header = "Capabilities";
-            listViewGroup3.Name = "Capabilities";
-            listViewGroup4.Header = "EventQueue Messages";
-            listViewGroup4.Name = "EventQueueMessages";
-            this.listViewMessageFilters.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup3,
-            listViewGroup4});
-            this.listViewMessageFilters.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-            this.listViewMessageFilters.Location = new System.Drawing.Point(3, 17);
-            this.listViewMessageFilters.MultiSelect = false;
-            this.listViewMessageFilters.Name = "listViewMessageFilters";
-            this.listViewMessageFilters.Size = new System.Drawing.Size(293, 346);
-            this.listViewMessageFilters.Sorting = System.Windows.Forms.SortOrder.Ascending;
-            this.listViewMessageFilters.TabIndex = 1;
-            this.listViewMessageFilters.UseCompatibleStateImageBehavior = false;
-            this.listViewMessageFilters.View = System.Windows.Forms.View.Details;
-            this.listViewMessageFilters.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listViewMessageFilters_ItemChecked);
-            this.listViewMessageFilters.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewFilterSorter_ColumnClick);
-            // 
-            // columnHeaderName
-            // 
-            this.columnHeaderName.Text = "Name";
-            this.columnHeaderName.Width = 289;
             // 
             // toolStripFilters
             // 
@@ -1051,7 +916,7 @@
             this.tabPageInspect.Controls.Add(this.splitContainerInspectorTab);
             this.tabPageInspect.Location = new System.Drawing.Point(4, 30);
             this.tabPageInspect.Name = "tabPageInspect";
-            this.tabPageInspect.Size = new System.Drawing.Size(619, 433);
+            this.tabPageInspect.Size = new System.Drawing.Size(619, 408);
             this.tabPageInspect.TabIndex = 3;
             this.tabPageInspect.Text = "Inspector";
             this.tabPageInspect.UseVisualStyleBackColor = true;
@@ -1073,8 +938,8 @@
             // splitContainerInspectorTab.Panel2
             // 
             this.splitContainerInspectorTab.Panel2.Controls.Add(this.tabControlInspectorResponse);
-            this.splitContainerInspectorTab.Size = new System.Drawing.Size(619, 433);
-            this.splitContainerInspectorTab.SplitterDistance = 204;
+            this.splitContainerInspectorTab.Size = new System.Drawing.Size(619, 408);
+            this.splitContainerInspectorTab.SplitterDistance = 192;
             this.splitContainerInspectorTab.SplitterWidth = 6;
             this.splitContainerInspectorTab.TabIndex = 1;
             // 
@@ -1088,10 +953,11 @@
             this.tabControlInspectorRequest.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControlInspectorRequest.HotTrack = true;
             this.tabControlInspectorRequest.ImageList = this.imageList1;
+            this.tabControlInspectorRequest.ItemSize = new System.Drawing.Size(100, 20);
             this.tabControlInspectorRequest.Location = new System.Drawing.Point(0, 0);
             this.tabControlInspectorRequest.Name = "tabControlInspectorRequest";
             this.tabControlInspectorRequest.SelectedIndex = 0;
-            this.tabControlInspectorRequest.Size = new System.Drawing.Size(619, 204);
+            this.tabControlInspectorRequest.Size = new System.Drawing.Size(619, 192);
             this.tabControlInspectorRequest.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControlInspectorRequest.TabIndex = 0;
             // 
@@ -1102,7 +968,7 @@
             this.tabPageDecodedRequest.Location = new System.Drawing.Point(4, 24);
             this.tabPageDecodedRequest.Name = "tabPageDecodedRequest";
             this.tabPageDecodedRequest.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageDecodedRequest.Size = new System.Drawing.Size(611, 176);
+            this.tabPageDecodedRequest.Size = new System.Drawing.Size(611, 164);
             this.tabPageDecodedRequest.TabIndex = 4;
             this.tabPageDecodedRequest.Text = "Request";
             this.tabPageDecodedRequest.UseVisualStyleBackColor = true;
@@ -1115,7 +981,7 @@
             this.richTextBoxDecodedRequest.Location = new System.Drawing.Point(3, 3);
             this.richTextBoxDecodedRequest.Name = "richTextBoxDecodedRequest";
             this.richTextBoxDecodedRequest.ShowSelectionMargin = true;
-            this.richTextBoxDecodedRequest.Size = new System.Drawing.Size(605, 170);
+            this.richTextBoxDecodedRequest.Size = new System.Drawing.Size(605, 158);
             this.richTextBoxDecodedRequest.TabIndex = 0;
             this.richTextBoxDecodedRequest.Text = "";
             this.richTextBoxDecodedRequest.WordWrap = false;
@@ -1129,7 +995,7 @@
             this.tabPageRawRequest.Location = new System.Drawing.Point(4, 24);
             this.tabPageRawRequest.Name = "tabPageRawRequest";
             this.tabPageRawRequest.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageRawRequest.Size = new System.Drawing.Size(611, 176);
+            this.tabPageRawRequest.Size = new System.Drawing.Size(611, 164);
             this.tabPageRawRequest.TabIndex = 0;
             this.tabPageRawRequest.Text = "Raw";
             this.tabPageRawRequest.UseVisualStyleBackColor = true;
@@ -1143,7 +1009,7 @@
             this.richTextBoxRawRequest.Location = new System.Drawing.Point(3, 3);
             this.richTextBoxRawRequest.Name = "richTextBoxRawRequest";
             this.richTextBoxRawRequest.ShowSelectionMargin = true;
-            this.richTextBoxRawRequest.Size = new System.Drawing.Size(605, 170);
+            this.richTextBoxRawRequest.Size = new System.Drawing.Size(605, 158);
             this.richTextBoxRawRequest.TabIndex = 1;
             this.richTextBoxRawRequest.Text = "";
             this.richTextBoxRawRequest.WordWrap = false;
@@ -1155,7 +1021,7 @@
             this.tabPageXMLRequest.Location = new System.Drawing.Point(4, 24);
             this.tabPageXMLRequest.Name = "tabPageXMLRequest";
             this.tabPageXMLRequest.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageXMLRequest.Size = new System.Drawing.Size(611, 176);
+            this.tabPageXMLRequest.Size = new System.Drawing.Size(611, 164);
             this.tabPageXMLRequest.TabIndex = 1;
             this.tabPageXMLRequest.Text = "XML";
             this.tabPageXMLRequest.UseVisualStyleBackColor = true;
@@ -1166,7 +1032,7 @@
             this.treeViewXMLRequest.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeViewXMLRequest.Location = new System.Drawing.Point(3, 3);
             this.treeViewXMLRequest.Name = "treeViewXMLRequest";
-            this.treeViewXMLRequest.Size = new System.Drawing.Size(605, 170);
+            this.treeViewXMLRequest.Size = new System.Drawing.Size(605, 158);
             this.treeViewXMLRequest.TabIndex = 1;
             // 
             // tabPageRequestJson
@@ -1176,7 +1042,7 @@
             this.tabPageRequestJson.Location = new System.Drawing.Point(4, 24);
             this.tabPageRequestJson.Name = "tabPageRequestJson";
             this.tabPageRequestJson.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageRequestJson.Size = new System.Drawing.Size(611, 176);
+            this.tabPageRequestJson.Size = new System.Drawing.Size(611, 164);
             this.tabPageRequestJson.TabIndex = 3;
             this.tabPageRequestJson.Text = "Notation";
             this.tabPageRequestJson.UseVisualStyleBackColor = true;
@@ -1189,7 +1055,7 @@
             this.richTextBoxNotationRequest.Location = new System.Drawing.Point(3, 3);
             this.richTextBoxNotationRequest.Name = "richTextBoxNotationRequest";
             this.richTextBoxNotationRequest.ShowSelectionMargin = true;
-            this.richTextBoxNotationRequest.Size = new System.Drawing.Size(605, 170);
+            this.richTextBoxNotationRequest.Size = new System.Drawing.Size(605, 158);
             this.richTextBoxNotationRequest.TabIndex = 0;
             this.richTextBoxNotationRequest.Text = "";
             // 
@@ -1201,7 +1067,7 @@
             this.tabPageHexRequest.ImageIndex = 1;
             this.tabPageHexRequest.Location = new System.Drawing.Point(4, 24);
             this.tabPageHexRequest.Name = "tabPageHexRequest";
-            this.tabPageHexRequest.Size = new System.Drawing.Size(611, 176);
+            this.tabPageHexRequest.Size = new System.Drawing.Size(611, 164);
             this.tabPageHexRequest.TabIndex = 2;
             this.tabPageHexRequest.Text = "Hex";
             this.tabPageHexRequest.UseVisualStyleBackColor = true;
@@ -1210,7 +1076,7 @@
             // 
             this.buttonSaveRequestHex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonSaveRequestHex.Font = new System.Drawing.Font("Arial", 3.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonSaveRequestHex.Location = new System.Drawing.Point(594, 160);
+            this.buttonSaveRequestHex.Location = new System.Drawing.Point(594, 161);
             this.buttonSaveRequestHex.Name = "buttonSaveRequestHex";
             this.buttonSaveRequestHex.Size = new System.Drawing.Size(13, 13);
             this.buttonSaveRequestHex.TabIndex = 4;
@@ -1223,7 +1089,7 @@
             this.labelHexRequestStatus.AutoSize = true;
             this.labelHexRequestStatus.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.labelHexRequestStatus.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelHexRequestStatus.Location = new System.Drawing.Point(0, 163);
+            this.labelHexRequestStatus.Location = new System.Drawing.Point(0, 151);
             this.labelHexRequestStatus.Name = "labelHexRequestStatus";
             this.labelHexRequestStatus.Size = new System.Drawing.Size(66, 13);
             this.labelHexRequestStatus.TabIndex = 3;
@@ -1239,7 +1105,7 @@
             this.hexBoxRequest.Location = new System.Drawing.Point(0, 0);
             this.hexBoxRequest.Name = "hexBoxRequest";
             this.hexBoxRequest.ShadowSelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(60)))), ((int)(((byte)(188)))), ((int)(((byte)(255)))));
-            this.hexBoxRequest.Size = new System.Drawing.Size(611, 154);
+            this.hexBoxRequest.Size = new System.Drawing.Size(611, 155);
             this.hexBoxRequest.StringViewVisible = true;
             this.hexBoxRequest.TabIndex = 2;
             this.hexBoxRequest.UseFixedBytesPerLine = true;
@@ -1257,11 +1123,12 @@
             this.tabControlInspectorResponse.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControlInspectorResponse.HotTrack = true;
             this.tabControlInspectorResponse.ImageList = this.imageList1;
+            this.tabControlInspectorResponse.ItemSize = new System.Drawing.Size(100, 20);
             this.tabControlInspectorResponse.Location = new System.Drawing.Point(0, 0);
             this.tabControlInspectorResponse.Multiline = true;
             this.tabControlInspectorResponse.Name = "tabControlInspectorResponse";
             this.tabControlInspectorResponse.SelectedIndex = 0;
-            this.tabControlInspectorResponse.Size = new System.Drawing.Size(619, 223);
+            this.tabControlInspectorResponse.Size = new System.Drawing.Size(619, 210);
             this.tabControlInspectorResponse.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControlInspectorResponse.TabIndex = 0;
             // 
@@ -1272,7 +1139,7 @@
             this.tabPageDecodeResponse.Location = new System.Drawing.Point(4, 24);
             this.tabPageDecodeResponse.Name = "tabPageDecodeResponse";
             this.tabPageDecodeResponse.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageDecodeResponse.Size = new System.Drawing.Size(611, 195);
+            this.tabPageDecodeResponse.Size = new System.Drawing.Size(611, 182);
             this.tabPageDecodeResponse.TabIndex = 6;
             this.tabPageDecodeResponse.Text = "Response";
             this.tabPageDecodeResponse.UseVisualStyleBackColor = true;
@@ -1285,7 +1152,7 @@
             this.richTextBoxDecodedResponse.Location = new System.Drawing.Point(3, 3);
             this.richTextBoxDecodedResponse.Name = "richTextBoxDecodedResponse";
             this.richTextBoxDecodedResponse.ShowSelectionMargin = true;
-            this.richTextBoxDecodedResponse.Size = new System.Drawing.Size(605, 189);
+            this.richTextBoxDecodedResponse.Size = new System.Drawing.Size(605, 176);
             this.richTextBoxDecodedResponse.TabIndex = 0;
             this.richTextBoxDecodedResponse.Text = "";
             this.richTextBoxDecodedResponse.WordWrap = false;
@@ -1299,7 +1166,7 @@
             this.tabPageInspectorRAWResponse.Location = new System.Drawing.Point(4, 24);
             this.tabPageInspectorRAWResponse.Name = "tabPageInspectorRAWResponse";
             this.tabPageInspectorRAWResponse.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageInspectorRAWResponse.Size = new System.Drawing.Size(611, 195);
+            this.tabPageInspectorRAWResponse.Size = new System.Drawing.Size(611, 182);
             this.tabPageInspectorRAWResponse.TabIndex = 0;
             this.tabPageInspectorRAWResponse.Text = "Raw";
             this.tabPageInspectorRAWResponse.UseVisualStyleBackColor = true;
@@ -1313,7 +1180,7 @@
             this.richTextBoxRawResponse.Location = new System.Drawing.Point(3, 3);
             this.richTextBoxRawResponse.Name = "richTextBoxRawResponse";
             this.richTextBoxRawResponse.ShowSelectionMargin = true;
-            this.richTextBoxRawResponse.Size = new System.Drawing.Size(605, 189);
+            this.richTextBoxRawResponse.Size = new System.Drawing.Size(605, 177);
             this.richTextBoxRawResponse.TabIndex = 0;
             this.richTextBoxRawResponse.Text = "";
             this.richTextBoxRawResponse.WordWrap = false;
@@ -1325,7 +1192,7 @@
             this.tabPageInspectorXMLResponse.Location = new System.Drawing.Point(4, 24);
             this.tabPageInspectorXMLResponse.Name = "tabPageInspectorXMLResponse";
             this.tabPageInspectorXMLResponse.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageInspectorXMLResponse.Size = new System.Drawing.Size(611, 195);
+            this.tabPageInspectorXMLResponse.Size = new System.Drawing.Size(611, 182);
             this.tabPageInspectorXMLResponse.TabIndex = 1;
             this.tabPageInspectorXMLResponse.Text = "XML";
             this.tabPageInspectorXMLResponse.UseVisualStyleBackColor = true;
@@ -1336,7 +1203,7 @@
             this.treeViewXmlResponse.Dock = System.Windows.Forms.DockStyle.Fill;
             this.treeViewXmlResponse.Location = new System.Drawing.Point(3, 3);
             this.treeViewXmlResponse.Name = "treeViewXmlResponse";
-            this.treeViewXmlResponse.Size = new System.Drawing.Size(605, 189);
+            this.treeViewXmlResponse.Size = new System.Drawing.Size(605, 177);
             this.treeViewXmlResponse.TabIndex = 0;
             // 
             // tabPageResponseJson
@@ -1346,7 +1213,7 @@
             this.tabPageResponseJson.Location = new System.Drawing.Point(4, 24);
             this.tabPageResponseJson.Name = "tabPageResponseJson";
             this.tabPageResponseJson.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageResponseJson.Size = new System.Drawing.Size(611, 195);
+            this.tabPageResponseJson.Size = new System.Drawing.Size(611, 182);
             this.tabPageResponseJson.TabIndex = 5;
             this.tabPageResponseJson.Text = "Notation";
             this.tabPageResponseJson.UseVisualStyleBackColor = true;
@@ -1359,7 +1226,7 @@
             this.richTextBoxNotationResponse.Location = new System.Drawing.Point(3, 3);
             this.richTextBoxNotationResponse.Name = "richTextBoxNotationResponse";
             this.richTextBoxNotationResponse.ShowSelectionMargin = true;
-            this.richTextBoxNotationResponse.Size = new System.Drawing.Size(605, 189);
+            this.richTextBoxNotationResponse.Size = new System.Drawing.Size(605, 177);
             this.richTextBoxNotationResponse.TabIndex = 0;
             this.richTextBoxNotationResponse.Text = "";
             // 
@@ -1371,7 +1238,7 @@
             this.tabPageHexViewResponse.ImageIndex = 0;
             this.tabPageHexViewResponse.Location = new System.Drawing.Point(4, 24);
             this.tabPageHexViewResponse.Name = "tabPageHexViewResponse";
-            this.tabPageHexViewResponse.Size = new System.Drawing.Size(611, 195);
+            this.tabPageHexViewResponse.Size = new System.Drawing.Size(611, 182);
             this.tabPageHexViewResponse.TabIndex = 4;
             this.tabPageHexViewResponse.Text = "Hex";
             this.tabPageHexViewResponse.UseVisualStyleBackColor = true;
@@ -1380,7 +1247,7 @@
             // 
             this.buttonExportRawHex.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonExportRawHex.Font = new System.Drawing.Font("Arial", 3.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.buttonExportRawHex.Location = new System.Drawing.Point(594, 179);
+            this.buttonExportRawHex.Location = new System.Drawing.Point(594, 180);
             this.buttonExportRawHex.Name = "buttonExportRawHex";
             this.buttonExportRawHex.Size = new System.Drawing.Size(13, 13);
             this.buttonExportRawHex.TabIndex = 3;
@@ -1393,7 +1260,7 @@
             this.labelHexBoxResponseStatus.AutoSize = true;
             this.labelHexBoxResponseStatus.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.labelHexBoxResponseStatus.Font = new System.Drawing.Font("Segoe UI", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelHexBoxResponseStatus.Location = new System.Drawing.Point(0, 182);
+            this.labelHexBoxResponseStatus.Location = new System.Drawing.Point(0, 170);
             this.labelHexBoxResponseStatus.Name = "labelHexBoxResponseStatus";
             this.labelHexBoxResponseStatus.Size = new System.Drawing.Size(66, 13);
             this.labelHexBoxResponseStatus.TabIndex = 2;
@@ -1409,7 +1276,7 @@
             this.hexBoxResponse.Location = new System.Drawing.Point(0, 0);
             this.hexBoxResponse.Name = "hexBoxResponse";
             this.hexBoxResponse.ShadowSelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(60)))), ((int)(((byte)(188)))), ((int)(((byte)(255)))));
-            this.hexBoxResponse.Size = new System.Drawing.Size(611, 173);
+            this.hexBoxResponse.Size = new System.Drawing.Size(611, 174);
             this.hexBoxResponse.StringViewVisible = true;
             this.hexBoxResponse.TabIndex = 1;
             this.hexBoxResponse.UseFixedBytesPerLine = true;
@@ -1424,7 +1291,7 @@
             this.tabPageInject.Location = new System.Drawing.Point(4, 30);
             this.tabPageInject.Name = "tabPageInject";
             this.tabPageInject.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageInject.Size = new System.Drawing.Size(619, 433);
+            this.tabPageInject.Size = new System.Drawing.Size(619, 408);
             this.tabPageInject.TabIndex = 2;
             this.tabPageInject.Text = "Inject";
             this.tabPageInject.UseVisualStyleBackColor = true;
@@ -1434,7 +1301,7 @@
             this.toolStrip1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripButtonInject});
-            this.toolStrip1.Location = new System.Drawing.Point(3, 405);
+            this.toolStrip1.Location = new System.Drawing.Point(3, 380);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(613, 25);
             this.toolStrip1.TabIndex = 2;
@@ -1466,12 +1333,19 @@
             this.richTextBoxInject.Text = "";
             this.richTextBoxInject.TextChanged += new System.EventHandler(this.richTextBoxInject_TextChanged);
             // 
-            // removeToolStripMenuItem2
+            // selectToolStripMenuItem1
             // 
-            this.removeToolStripMenuItem2.DropDown = this.contextMenuStripRemove;
-            this.removeToolStripMenuItem2.Name = "removeToolStripMenuItem2";
-            this.removeToolStripMenuItem2.Size = new System.Drawing.Size(137, 22);
-            this.removeToolStripMenuItem2.Text = "Remove";
+            this.selectToolStripMenuItem1.DropDown = this.contextMenuStripSelect;
+            this.selectToolStripMenuItem1.Name = "selectToolStripMenuItem1";
+            this.selectToolStripMenuItem1.Size = new System.Drawing.Size(137, 22);
+            this.selectToolStripMenuItem1.Text = "Select";
+            // 
+            // markToolStripMenuItem1
+            // 
+            this.markToolStripMenuItem1.DropDown = this.contextMenuStripMark;
+            this.markToolStripMenuItem1.Name = "markToolStripMenuItem1";
+            this.markToolStripMenuItem1.Size = new System.Drawing.Size(137, 22);
+            this.markToolStripMenuItem1.Text = "Mark";
             // 
             // toolStripLabelHexEditorRequest
             // 
@@ -1490,7 +1364,7 @@
             this.toolStripFileMenu,
             this.EditToolStripButton,
             this.toolStripDropDownButton4});
-            this.toolStripMenu.Location = new System.Drawing.Point(3, 0);
+            this.toolStripMenu.Location = new System.Drawing.Point(3, 25);
             this.toolStripMenu.Name = "toolStripMenu";
             this.toolStripMenu.Size = new System.Drawing.Size(108, 25);
             this.toolStripMenu.TabIndex = 2;
@@ -2076,7 +1950,7 @@
             // 
             this.toolStripContainer1.ContentPanel.AutoScroll = true;
             this.toolStripContainer1.ContentPanel.Controls.Add(this.panelMainWindow);
-            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1111, 467);
+            this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(1111, 442);
             this.toolStripContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.toolStripContainer1.LeftToolStripPanelVisible = false;
             this.toolStripContainer1.Location = new System.Drawing.Point(0, 0);
@@ -2089,9 +1963,9 @@
             // toolStripContainer1.TopToolStripPanel
             // 
             this.toolStripContainer1.TopToolStripPanel.BackColor = System.Drawing.SystemColors.Control;
+            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.toolStripQuickLaunch);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.toolStripMenu);
             this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.toolStripLogin);
-            this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.toolStripQuickLaunch);
             // 
             // statusStrip1
             // 
@@ -2134,7 +2008,7 @@
             this.comboBoxLoginURL,
             this.buttonStartProxy});
             this.toolStripLogin.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
-            this.toolStripLogin.Location = new System.Drawing.Point(111, 0);
+            this.toolStripLogin.Location = new System.Drawing.Point(111, 25);
             this.toolStripLogin.Name = "toolStripLogin";
             this.toolStripLogin.Size = new System.Drawing.Size(726, 25);
             this.toolStripLogin.TabIndex = 3;
@@ -2193,7 +2067,7 @@
             this.toolStripQuickLaunch.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripComboBox1,
             this.buttonLaunchViewer});
-            this.toolStripQuickLaunch.Location = new System.Drawing.Point(837, 0);
+            this.toolStripQuickLaunch.Location = new System.Drawing.Point(3, 0);
             this.toolStripQuickLaunch.Name = "toolStripQuickLaunch";
             this.toolStripQuickLaunch.Size = new System.Drawing.Size(164, 25);
             this.toolStripQuickLaunch.TabIndex = 4;
@@ -2225,6 +2099,135 @@
             this.timerCleanupCache.Enabled = true;
             this.timerCleanupCache.Interval = 30000;
             this.timerCleanupCache.Tick += new System.EventHandler(this.timerExpireCache_Tick);
+            // 
+            // listViewSessions
+            // 
+            this.listViewSessions.Activation = System.Windows.Forms.ItemActivation.OneClick;
+            this.listViewSessions.AllowColumnReorder = true;
+            this.listViewSessions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.listViewSessions.CheckBoxes = true;
+            this.listViewSessions.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeaderCounter,
+            this.columnHeaderProtocol,
+            this.columnHeaderType,
+            this.columnHeaderSize,
+            this.columnHeaderUrl,
+            this.columnHeaderContentType});
+            this.listViewSessions.ContextMenuStrip = this.contextMenuStripSessions;
+            this.listViewSessions.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listViewSessions.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.listViewSessions.FullRowSelect = true;
+            this.listViewSessions.GridLines = true;
+            this.listViewSessions.Location = new System.Drawing.Point(0, 0);
+            this.listViewSessions.Name = "listViewSessions";
+            this.listViewSessions.ShowItemToolTips = true;
+            this.listViewSessions.Size = new System.Drawing.Size(479, 442);
+            this.listViewSessions.SmallImageList = this.imageList1;
+            this.listViewSessions.TabIndex = 0;
+            this.listViewSessions.UseCompatibleStateImageBehavior = false;
+            this.listViewSessions.View = System.Windows.Forms.View.Details;
+            this.listViewSessions.VirtualMode = true;
+            this.listViewSessions.Scrolling += new System.EventHandler<WinGridProxy.ScrollingEventArgs>(this.listViewSessions_Scrolling);
+            this.listViewSessions.VirtualItemsSelectionRangeChanged += new System.Windows.Forms.ListViewVirtualItemsSelectionRangeChangedEventHandler(this.listViewSessions_VirtualItemsSelectionRangeChanged);
+            this.listViewSessions.SelectedIndexChanged += new System.EventHandler(this.listViewSessions_SelectedIndexChanged);
+            this.listViewSessions.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewSessions_ColumnClick);
+            this.listViewSessions.RetrieveVirtualItem += new System.Windows.Forms.RetrieveVirtualItemEventHandler(this.listViewSessions_RetrieveVirtualItem);
+            this.listViewSessions.CacheVirtualItems += new System.Windows.Forms.CacheVirtualItemsEventHandler(this.listViewSessions_CacheVirtualItems);
+            // 
+            // columnHeaderCounter
+            // 
+            this.columnHeaderCounter.Text = "#";
+            this.columnHeaderCounter.Width = 50;
+            // 
+            // columnHeaderProtocol
+            // 
+            this.columnHeaderProtocol.Text = "Protocol";
+            // 
+            // columnHeaderType
+            // 
+            this.columnHeaderType.Text = "Name";
+            this.columnHeaderType.Width = 151;
+            // 
+            // columnHeaderSize
+            // 
+            this.columnHeaderSize.Text = "Bytes";
+            this.columnHeaderSize.Width = 42;
+            // 
+            // columnHeaderUrl
+            // 
+            this.columnHeaderUrl.Text = "Host";
+            this.columnHeaderUrl.Width = 150;
+            // 
+            // columnHeaderContentType
+            // 
+            this.columnHeaderContentType.Text = "Content Type";
+            this.columnHeaderContentType.Width = 250;
+            // 
+            // listViewPacketFilters
+            // 
+            this.listViewPacketFilters.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.listViewPacketFilters.CheckBoxes = true;
+            this.listViewPacketFilters.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeaderPacketName});
+            this.listViewPacketFilters.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listViewPacketFilters.FullRowSelect = true;
+            this.listViewPacketFilters.GridLines = true;
+            listViewGroup1.Header = "Login";
+            listViewGroup1.Name = "Login";
+            listViewGroup2.Header = "Packets";
+            listViewGroup2.Name = "Packets";
+            this.listViewPacketFilters.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
+            listViewGroup1,
+            listViewGroup2});
+            this.listViewPacketFilters.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.listViewPacketFilters.Location = new System.Drawing.Point(3, 17);
+            this.listViewPacketFilters.MultiSelect = false;
+            this.listViewPacketFilters.Name = "listViewPacketFilters";
+            this.listViewPacketFilters.Size = new System.Drawing.Size(291, 324);
+            this.listViewPacketFilters.Sorting = System.Windows.Forms.SortOrder.Ascending;
+            this.listViewPacketFilters.TabIndex = 0;
+            this.listViewPacketFilters.UseCompatibleStateImageBehavior = false;
+            this.listViewPacketFilters.View = System.Windows.Forms.View.Details;
+            this.listViewPacketFilters.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listViewPacketFilters_ItemChecked);
+            this.listViewPacketFilters.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewFilterSorter_ColumnClick);
+            // 
+            // columnHeaderPacketName
+            // 
+            this.columnHeaderPacketName.Text = "Name";
+            this.columnHeaderPacketName.Width = 287;
+            // 
+            // listViewMessageFilters
+            // 
+            this.listViewMessageFilters.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.listViewMessageFilters.CheckBoxes = true;
+            this.listViewMessageFilters.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeaderName});
+            this.listViewMessageFilters.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listViewMessageFilters.FullRowSelect = true;
+            this.listViewMessageFilters.GridLines = true;
+            listViewGroup3.Header = "Capabilities";
+            listViewGroup3.Name = "Capabilities";
+            listViewGroup4.Header = "EventQueue Messages";
+            listViewGroup4.Name = "EventQueueMessages";
+            this.listViewMessageFilters.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
+            listViewGroup3,
+            listViewGroup4});
+            this.listViewMessageFilters.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.listViewMessageFilters.Location = new System.Drawing.Point(3, 17);
+            this.listViewMessageFilters.MultiSelect = false;
+            this.listViewMessageFilters.Name = "listViewMessageFilters";
+            this.listViewMessageFilters.Size = new System.Drawing.Size(293, 321);
+            this.listViewMessageFilters.Sorting = System.Windows.Forms.SortOrder.Ascending;
+            this.listViewMessageFilters.TabIndex = 1;
+            this.listViewMessageFilters.UseCompatibleStateImageBehavior = false;
+            this.listViewMessageFilters.View = System.Windows.Forms.View.Details;
+            this.listViewMessageFilters.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listViewMessageFilters_ItemChecked);
+            this.listViewMessageFilters.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewFilterSorter_ColumnClick);
+            // 
+            // columnHeaderName
+            // 
+            this.columnHeaderName.Text = "Name";
+            this.columnHeaderName.Width = 289;
             // 
             // FormWinGridProxy
             // 
