@@ -724,6 +724,25 @@ namespace OpenMetaverse
         /// <summary>Mute flags</summary>
         public MuteFlags Flags;
     }
+
+    /// <summary>Transaction detail sent with MoneyBalanceReply message</summary>
+    public class TransactionInfo
+    {
+        /// <summary>Type of the transaction</summary>
+        public int TransactionType; // FIXME: this should be an enum
+        /// <summary>UUID of the transaction source</summary>
+        public UUID SourceID;
+        /// <summary>Is the transaction source a group</summary>
+        public bool IsSourceGroup;
+        /// <summary>UUID of the transaction destination</summary>
+        public UUID DestID;
+        /// <summary>Is transaction destination a group</summary>
+        public bool IsDestGroup;
+        /// <summary>Transaction amount</summary>
+        public int Amount;
+        /// <summary>Transaction description</summary>
+        public string ItemDescription;
+    }
     #endregion Structs
 
     /// <summary>
@@ -3618,12 +3637,22 @@ namespace OpenMetaverse
 
                 if (m_MoneyBalance != null)
                 {
+                    TransactionInfo transactionInfo = new TransactionInfo();
+                    transactionInfo.TransactionType = reply.TransactionInfo.TransactionType;
+                    transactionInfo.SourceID = reply.TransactionInfo.SourceID;
+                    transactionInfo.IsSourceGroup = reply.TransactionInfo.IsSourceGroup;
+                    transactionInfo.DestID = reply.TransactionInfo.DestID;
+                    transactionInfo.IsDestGroup = reply.TransactionInfo.IsDestGroup;
+                    transactionInfo.Amount = reply.TransactionInfo.Amount;
+                    transactionInfo.ItemDescription =  Utils.BytesToString(reply.TransactionInfo.ItemDescription);
+
                     OnMoneyBalanceReply(new MoneyBalanceReplyEventArgs(reply.MoneyData.TransactionID,
                         reply.MoneyData.TransactionSuccess,
                         reply.MoneyData.MoneyBalance,
                         reply.MoneyData.SquareMetersCredit,
                         reply.MoneyData.SquareMetersCommitted,
-                        Utils.BytesToString(reply.MoneyData.Description)));
+                        Utils.BytesToString(reply.MoneyData.Description),
+                        transactionInfo));
                 }
             }
 
@@ -4611,6 +4640,7 @@ namespace OpenMetaverse
         private readonly int m_MetersCredit;
         private readonly int m_MetersCommitted;
         private readonly string m_Description;
+        private TransactionInfo m_TransactionInfo;
 
         /// <summary>Get the ID of the transaction</summary>
         public UUID TransactionID { get { return m_TransactionID; } }
@@ -4624,7 +4654,8 @@ namespace OpenMetaverse
         public int MetersCommitted { get { return m_MetersCommitted; } }
         /// <summary>Get the description of the transaction</summary>
         public string Description { get { return m_Description; } }
-
+        /// <summary>Detailed transaction information</summary>
+        public TransactionInfo TransactionInfo { get { return m_TransactionInfo; } }
         /// <summary>
         /// Construct a new instance of the MoneyBalanceReplyEventArgs object
         /// </summary>
@@ -4634,7 +4665,7 @@ namespace OpenMetaverse
         /// <param name="metersCredit">The meters credited</param>
         /// <param name="metersCommitted">The meters comitted</param>
         /// <param name="description">A brief description of the transaction</param>
-        public MoneyBalanceReplyEventArgs(UUID transactionID, bool transactionSuccess, int balance, int metersCredit, int metersCommitted, string description)
+        public MoneyBalanceReplyEventArgs(UUID transactionID, bool transactionSuccess, int balance, int metersCredit, int metersCommitted, string description, TransactionInfo transactionInfo)
         {
             this.m_TransactionID = transactionID;
             this.m_Success = transactionSuccess;
@@ -4642,6 +4673,7 @@ namespace OpenMetaverse
             this.m_MetersCredit = metersCredit;
             this.m_MetersCommitted = metersCommitted;
             this.m_Description = description;
+            this.m_TransactionInfo = transactionInfo;
         }
     }
 
