@@ -3456,6 +3456,13 @@ namespace OpenMetaverse
                     buttons.Add(Utils.BytesToString(button.ButtonLabel));
                 }
 
+                UUID ownerID = UUID.Zero;
+
+                if (dialog.OwnerData != null && dialog.OwnerData.Length > 0)
+                {
+                    ownerID = dialog.OwnerData[0].OwnerID;
+                }
+
                 OnScriptDialog(new ScriptDialogEventArgs(Utils.BytesToString(dialog.Data.Message),
                     Utils.BytesToString(dialog.Data.ObjectName),
                     dialog.Data.ImageID,
@@ -3463,7 +3470,8 @@ namespace OpenMetaverse
                     Utils.BytesToString(dialog.Data.FirstName),
                     Utils.BytesToString(dialog.Data.LastName),
                     dialog.Data.ChatChannel,
-                    buttons));
+                    buttons,
+                    ownerID));
             }
         }
 
@@ -4001,6 +4009,7 @@ namespace OpenMetaverse
 
             if (!msg.Success)
             {
+                RequestJoinGroupChat(msg.SessionID);
                 Logger.Log("Attempt to send group chat to non-existant session for group " + msg.SessionID,
                     Helpers.LogLevel.Info, Client);
             }
@@ -4411,6 +4420,7 @@ namespace OpenMetaverse
         private readonly string m_LastName;
         private readonly int m_Channel;
         private readonly List<string> m_ButtonLabels;
+        private readonly UUID m_OwnerID;
 
         /// <summary>Get the dialog message</summary>
         public string Message { get { return m_Message; } }
@@ -4429,6 +4439,8 @@ namespace OpenMetaverse
         public int Channel { get { return m_Channel; } }
         /// <summary>Get the string labels containing the options presented in this dialog</summary>
         public List<string> ButtonLabels { get { return m_ButtonLabels; } }
+        /// <summary>UUID of the scritped object owner</summary>
+        public UUID OwnerID { get { return m_OwnerID; } }
 
         /// <summary>
         /// Construct a new instance of the ScriptDialogEventArgs
@@ -4441,8 +4453,9 @@ namespace OpenMetaverse
         /// <param name="lastName">The last name of the senders owner</param>
         /// <param name="chatChannel">The communication channel the dialog was sent on</param>
         /// <param name="buttons">The string labels containing the options presented in this dialog</param>
+        /// <param name="ownerID">UUID of the scritped object owner</param>
         public ScriptDialogEventArgs(string message, string objectName, UUID imageID,
-            UUID objectID, string firstName, string lastName, int chatChannel, List<string> buttons)
+            UUID objectID, string firstName, string lastName, int chatChannel, List<string> buttons, UUID ownerID)
         {
             this.m_Message = message;
             this.m_ObjectName = objectName;
@@ -4452,6 +4465,7 @@ namespace OpenMetaverse
             this.m_LastName = lastName;
             this.m_Channel = chatChannel;
             this.m_ButtonLabels = buttons;
+            this.m_OwnerID = ownerID;
         }
     }
 

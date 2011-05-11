@@ -2966,7 +2966,7 @@ version 2.0
 		{	BillableFactor		F32			}
 		{	ObjectBonusFactor 	F32			}
 		{	WaterHeight			F32			}
-		{   TerrainRaiseLimit	F32 		}
+		{	TerrainRaiseLimit	F32 		}
 		{	TerrainLowerLimit	F32 		}
 		{	PricePerMeter 		S32			}
 		{	RedirectGridX 		S32			}
@@ -4241,6 +4241,10 @@ version 2.0
 	{
 		Buttons	Variable
 		{	ButtonLabel		Variable	1	}
+	}
+	{
+		OwnerData Variable
+		{	OwnerID		LLUUID	}
 	}
 }
 
@@ -6762,6 +6766,8 @@ version 2.0
 }
 
 // And, the money transfer
+// *NOTE: Unused as of 2010-04-06, because all back-end money transactions
+// are done with web services via L$ API.  JC
 {
 	MoneyTransferBackend Low 312 Trusted Zerocoded
 	{
@@ -6812,6 +6818,19 @@ version 2.0
 		{	SquareMetersCommitted	S32	}
 		{	Description			Variable 1	}	// string
 	}
+	// For replies that are part of a transaction (buying something) provide
+	// metadata for localization.  If TransactionType is 0, the message is
+	// purely a balance update.  Added for server 1.40 and viewer 2.1.  JC
+	{
+		TransactionInfo		Single
+		{	TransactionType			S32			}	// lltransactiontype.h
+		{	SourceID				LLUUID		}
+		{	IsSourceGroup			BOOL		}
+		{	DestID					LLUUID		}
+		{	IsDestGroup				BOOL		}
+		{	Amount					S32			}
+		{	ItemDescription			Variable 1	}	// string
+	}
 }
 
 
@@ -6837,6 +6856,17 @@ version 2.0
 		{	SquareMetersCredit	S32	}
 		{	SquareMetersCommitted	S32	}
 		{	Description			Variable 1	}	// string
+	}
+	// See MoneyBalanceReply above.
+	{
+		TransactionInfo		Single
+		{	TransactionType			S32			}	// lltransactiontype.h
+		{	SourceID				LLUUID		}
+		{	IsSourceGroup			BOOL		}
+		{	DestID					LLUUID		}
+		{	IsDestGroup				BOOL		}
+		{	Amount					S32			}
+		{	ItemDescription			Variable 1	}	// string
 	}
 }
 
@@ -8972,5 +9002,7 @@ version 2.0
 		{	InvType			S8	}
 		{	Name			Variable	1	}
 		{	Description		Variable	1	}
+
 	}
 }
+
