@@ -179,10 +179,14 @@ namespace WinGridProxy
 
             // Find installed viewers for launch toolbar if running under windows
             string[] viewerDistKeys = { "Linden Research, Inc.", "Open Metaverse Foundation" };
-            Microsoft.Win32.RegistryKey viewerKeyRoot = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"Software\Wow6432Node");
-            if (viewerKeyRoot == null)
+            Microsoft.Win32.RegistryKey viewerKeyRoot = null;
+            if (!monoRuntime)
             {
-                viewerKeyRoot = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"Software");
+               viewerKeyRoot = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"Software\Wow6432Node");
+               if (viewerKeyRoot == null)
+               {
+                   viewerKeyRoot = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"Software");
+               }
             }
 
             if (viewerKeyRoot != null)
