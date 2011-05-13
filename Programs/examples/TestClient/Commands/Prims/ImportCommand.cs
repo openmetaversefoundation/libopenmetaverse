@@ -202,20 +202,30 @@ namespace OpenMetaverse.TestClient
                         Client.Objects.SetPosition(e.Simulator, prim.LocalID, currentPosition);
                         Client.Objects.SetTextures(e.Simulator, prim.LocalID, currentPrim.Textures);
 
-                        if (currentPrim.Light.Intensity > 0) {
+                        if (currentPrim.Light != null && currentPrim.Light.Intensity > 0)
+                        {
                             Client.Objects.SetLight(e.Simulator, prim.LocalID, currentPrim.Light);
                         }
 
-                        Client.Objects.SetFlexible(e.Simulator, prim.LocalID, currentPrim.Flexible);
- 
-                        if (currentPrim.Sculpt.SculptTexture != UUID.Zero) {
+                        if (currentPrim.Flexible != null)
+                        {
+                            Client.Objects.SetFlexible(e.Simulator, prim.LocalID, currentPrim.Flexible);
+                        }
+
+                        if (currentPrim.Sculpt != null && currentPrim.Sculpt.SculptTexture != UUID.Zero)
+                        {
                             Client.Objects.SetSculpt(e.Simulator, prim.LocalID, currentPrim.Sculpt);
                         }
 
-                        if (!String.IsNullOrEmpty(currentPrim.Properties.Name))
+                        if (currentPrim.Properties!= null && !String.IsNullOrEmpty(currentPrim.Properties.Name))
+                        {
                             Client.Objects.SetName(e.Simulator, prim.LocalID, currentPrim.Properties.Name);
-                        if (!String.IsNullOrEmpty(currentPrim.Properties.Description))
+                        }
+
+                        if (currentPrim.Properties != null && !String.IsNullOrEmpty(currentPrim.Properties.Description))
+                        {
                             Client.Objects.SetDescription(e.Simulator, prim.LocalID, currentPrim.Properties.Description);
+                        }
 
                         primsCreated.Add(prim);
                         primDone.Set();
