@@ -1467,8 +1467,8 @@ namespace OpenMetaverse
         /// <param name="simulator">A reference to the <seealso cref="OpenMetaverse.Simulator"/> object where the objects reside</param>
         /// <param name="localIDs">An array which contains the IDs of the objects to set the permissions on</param>
         /// <param name="who">The new Who mask to set</param>
-        /// <param name="permissions">The new Permissions mark to set</param>
-        /// <param name="set">TODO: What does this do?</param>
+        /// <param name="permissions">Which permission to modify</param>
+        /// <param name="set">The new state of permission</param>
         public void SetPermissions(Simulator simulator, List<uint> localIDs, PermissionWho who,
             PermissionMask permissions, bool set)
         {
