@@ -148,6 +148,8 @@ namespace OpenMetaverse.Voice
                 }
             }));
 
+            thread.Name = "VoiceDaemonController";
+            thread.IsBackground = true;
             thread.Start();
         }
 

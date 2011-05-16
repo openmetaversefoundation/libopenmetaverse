@@ -109,6 +109,9 @@ namespace OpenMetaverse.Voice
 
         public VoiceGateway(GridClient c)
         {
+            Random rand = new Random();
+            daemonPort = rand.Next(34000, 44000);
+
             Client = c;
 
             sessions = new Dictionary<string, VoiceSession>();
@@ -259,6 +262,8 @@ namespace OpenMetaverse.Voice
             // Close all sessions
             foreach (VoiceSession s in sessions.Values)
             {
+                if (OnSessionRemove != null)
+                    OnSessionRemove(s, EventArgs.Empty);
                 s.Close();
             }
 
@@ -840,12 +845,6 @@ namespace OpenMetaverse.Voice
             if (pCap == null)
             {
                 Logger.Log("Null voice capability", Helpers.LogLevel.Error);
-                return;
-            }
-
-            if (pCap == currentParcelCap)
-            {
-                // Parcel has not changed, so nothing to do.
                 return;
             }
 
