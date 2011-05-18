@@ -126,6 +126,7 @@ Section "!Base Libraries" SEC01
   File "..\README.txt"
   File "..\License.txt"
   File "..\bin\XMLRPC.dll"
+  File "..\bin\zlib.net.dll"
   
   SetOutPath "$INSTDIR\bin\openmetaverse_data"
   File /r "..\bin\openmetaverse_data\*.*"
