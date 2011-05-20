@@ -2807,13 +2807,6 @@ namespace OpenMetaverse
         protected void ObjectPhysicsPropertiesHandler(string capsKey, IMessage message, Simulator simulator)
         {
             ObjectPhysicsPropertiesMessage msg = (ObjectPhysicsPropertiesMessage)message;
-            if (m_PhysicsProperties != null)
-            {
-                for (int i = 0; i < msg.ObjectPhysicsProperties.Length; i++)
-                {
-                    OnPhysicsProperties(new PhysicsPropertiesEventArgs(simulator, msg.ObjectPhysicsProperties[i]));
-                }
-            }
 
             if (Client.Settings.OBJECT_TRACKING)
             {
@@ -2829,6 +2822,13 @@ namespace OpenMetaverse
                 }
             }
 
+            if (m_PhysicsProperties != null)
+            {
+                for (int i = 0; i < msg.ObjectPhysicsProperties.Length; i++)
+                {
+                    OnPhysicsProperties(new PhysicsPropertiesEventArgs(simulator, msg.ObjectPhysicsProperties[i]));
+                }
+            }
         }
 
         #endregion Packet Handlers
