@@ -669,6 +669,26 @@ namespace OpenMetaverse
         /// <param name="castsShadow">true to turn the objects cast shadows property on</param>
         public void SetFlags(Simulator simulator, uint localID, bool physical, bool temporary, bool phantom, bool castsShadow)
         {
+            SetFlags(simulator, localID, physical, temporary, phantom, castsShadow, PhysicsShapeType.Prim, 1000f, 0.6f, 0.5f, 1f);
+        }
+
+        /// <summary>
+        /// Update the properties of an object
+        /// </summary>
+        /// <param name="simulator">The <see cref="Simulator"/> the object is located</param>        
+        /// <param name="localID">The Local ID of the object</param>        
+        /// <param name="physical">true to turn the objects physical property on</param>
+        /// <param name="temporary">true to turn the objects temporary property on</param>
+        /// <param name="phantom">true to turn the objects phantom property on</param>
+        /// <param name="castsShadow">true to turn the objects cast shadows property on</param>
+        /// <param name="physicsType">Type of the represetnation prim will have in the physics engine</param>
+        /// <param name="density">Density - normal value 1000</param>
+        /// <param name="friction">Friction - normal value 0.6</param>
+        /// <param name="restitution">Restitution - standard value 0.5</param>
+        /// <param name="gravityMultiplier">Gravity multiplier - standar value 1.0</param>
+        public void SetFlags(Simulator simulator, uint localID, bool physical, bool temporary, bool phantom, bool castsShadow,
+            PhysicsShapeType physicsType, float density, float friction, float restitution, float gravityMultiplier)
+        {
             ObjectFlagUpdatePacket flags = new ObjectFlagUpdatePacket();
             flags.AgentData.AgentID = Client.Self.AgentID;
             flags.AgentData.SessionID = Client.Self.SessionID;
@@ -677,6 +697,14 @@ namespace OpenMetaverse
             flags.AgentData.IsTemporary = temporary;
             flags.AgentData.IsPhantom = phantom;
             flags.AgentData.CastsShadows = castsShadow;
+
+            flags.ExtraPhysics = new ObjectFlagUpdatePacket.ExtraPhysicsBlock[1];
+            flags.ExtraPhysics[0] = new ObjectFlagUpdatePacket.ExtraPhysicsBlock();
+            flags.ExtraPhysics[0].PhysicsShapeType = (byte)physicsType;
+            flags.ExtraPhysics[0].Density = density;
+            flags.ExtraPhysics[0].Friction = friction;
+            flags.ExtraPhysics[0].Restitution = restitution;
+            flags.ExtraPhysics[0].GravityMultiplier = gravityMultiplier;
 
             Client.Network.SendPacket(flags, simulator);
         }
