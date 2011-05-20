@@ -4112,6 +4112,57 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    /// <summary>
+    /// Event Queue message describing physics engine attributes of a list of objects
+    /// Sim sends these when object is selected
+    /// </summary>
+    public class ObjectPhysicsPropertiesMessage : IMessage
+    {
+        /// <summary> Array with the list of physics properties</summary>
+        public Primitive.PhysicsProperties[] ObjectPhysicsProperties;
+
+        /// <summary>
+        /// Serializes the message
+        /// </summary>
+        /// <returns>Serialized OSD</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap ret = new OSDMap();
+            OSDArray array = new OSDArray();
+            
+            for (int i = 0; i < ObjectPhysicsProperties.Length; i++)
+            {
+                array.Add(ObjectPhysicsProperties[i].GetOSD());
+            }
+
+            ret["ObjectData"] = array;
+            return ret;
+
+        }
+
+        /// <summary>
+        /// Deseializes the message
+        /// </summary>
+        /// <param name="map">Incoming data to deserialize</param>
+        public void Deserialize(OSDMap map)
+        {
+            OSDArray array = map["ObjectData"] as OSDArray;
+            if (array != null)
+            {
+                ObjectPhysicsProperties = new Primitive.PhysicsProperties[array.Count];
+            
+                for (int i = 0; i < array.Count; i++)
+                {
+                    ObjectPhysicsProperties[i] = Primitive.PhysicsProperties.FromOSD(array[i]);
+                }
+            }
+            else
+            {
+                ObjectPhysicsProperties = new Primitive.PhysicsProperties[0];
+            }
+        }
+    }
+
     #endregion Object Messages
 
     #region Object Media Messages

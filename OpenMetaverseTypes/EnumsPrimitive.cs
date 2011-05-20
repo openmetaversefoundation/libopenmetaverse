@@ -533,4 +533,17 @@ namespace OpenMetaverse
         /// <summary>Open parcel media</summary>
         OpenMedia = 6
     }
+
+    /// <summary>
+    /// Type of physics representation used for this prim in the simulator
+    /// </summary>
+    public enum PhysicsShapeType : byte
+    {
+        /// <summary>Use prim physics form this object</summary>
+        Prim = 0,
+        /// <summary>No physics, prim doesn't collide</summary>
+        None,
+        /// <summary>Use convex hull represantion of this prim</summary>
+        ConvexHull
+    }
 }

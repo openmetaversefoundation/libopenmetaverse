@@ -30,6 +30,7 @@ using System.Threading;
 using OpenMetaverse.Packets;
 using OpenMetaverse.Http;
 using OpenMetaverse.StructuredData;
+using OpenMetaverse.Interfaces;
 using OpenMetaverse.Messages.Linden;
 
 namespace OpenMetaverse
@@ -398,6 +399,32 @@ namespace OpenMetaverse
         /// <param name="faceMedia">Array indexed on prim face of media entry data</param>
         public delegate void ObjectMediaCallback(bool success, string version, MediaEntry[] faceMedia);
 
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<PhysicsPropertiesEventArgs> m_PhysicsProperties;
+
+        ///<summary>Raises the PhysicsProperties Event</summary>
+        /// <param name="e">A PhysicsPropertiesEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnPhysicsProperties(PhysicsPropertiesEventArgs e)
+        {
+            EventHandler<PhysicsPropertiesEventArgs> handler = m_PhysicsProperties;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_PhysicsPropertiesLock = new object();
+
+        /// <summary>Raised when the simulator sends us data containing
+        /// additional <seea cref="Primitive"/> information</summary>
+        /// <seealso cref="SelectObject"/>
+        /// <seealso cref="SelectObjects"/>
+        public event EventHandler<PhysicsPropertiesEventArgs> PhysicsProperties
+        {
+            add { lock (m_PhysicsPropertiesLock) { m_PhysicsProperties += value; } }
+            remove { lock (m_PhysicsPropertiesLock) { m_PhysicsProperties -= value; } }
+        }
+
         #endregion Delegates
 
         /// <summary>Reference to the GridClient object</summary>
@@ -422,6 +449,7 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.ObjectPropertiesFamily, ObjectPropertiesFamilyHandler);
             Client.Network.RegisterCallback(PacketType.ObjectProperties, ObjectPropertiesHandler);
             Client.Network.RegisterCallback(PacketType.PayPriceReply, PayPriceReplyHandler);
+            Client.Network.RegisterEventCallback("ObjectPhysicsProperties", ObjectPhysicsPropertiesHandler);
         }
 
         #region Internal event handlers
@@ -1976,12 +2004,12 @@ namespace OpenMetaverse
                                     prim.TreeSpecies = (Tree)block.Data[0];
                                 else
                                     Logger.Log("Got a foliage update with an invalid TreeSpecies field", Helpers.LogLevel.Warning);
-                            //    prim.ScratchPad = Utils.EmptyBytes;
-                            //    break;
-                            //default:
-                            //    prim.ScratchPad = new byte[block.Data.Length];
-                            //    if (block.Data.Length > 0)
-                            //        Buffer.BlockCopy(block.Data, 0, prim.ScratchPad, 0, prim.ScratchPad.Length);
+                                //    prim.ScratchPad = Utils.EmptyBytes;
+                                //    break;
+                                //default:
+                                //    prim.ScratchPad = new byte[block.Data.Length];
+                                //    if (block.Data.Length > 0)
+                                //        Buffer.BlockCopy(block.Data, 0, prim.ScratchPad, 0, prim.ScratchPad.Length);
                                 break;
                         }
                         prim.ScratchPad = Utils.EmptyBytes;
@@ -2770,6 +2798,39 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="capsKey"></param>
+        /// <param name="message"></param>
+        /// <param name="simulator"></param>
+        protected void ObjectPhysicsPropertiesHandler(string capsKey, IMessage message, Simulator simulator)
+        {
+            ObjectPhysicsPropertiesMessage msg = (ObjectPhysicsPropertiesMessage)message;
+            if (m_PhysicsProperties != null)
+            {
+                for (int i = 0; i < msg.ObjectPhysicsProperties.Length; i++)
+                {
+                    OnPhysicsProperties(new PhysicsPropertiesEventArgs(simulator, msg.ObjectPhysicsProperties[i]));
+                }
+            }
+
+            if (Client.Settings.OBJECT_TRACKING)
+            {
+                for (int i = 0; i < msg.ObjectPhysicsProperties.Length; i++)
+                {
+                    lock (simulator.ObjectsPrimitives.Dictionary)
+                    {
+                        if (simulator.ObjectsPrimitives.Dictionary.ContainsKey(msg.ObjectPhysicsProperties[i].LocalID))
+                        {
+                            simulator.ObjectsPrimitives.Dictionary[msg.ObjectPhysicsProperties[i].LocalID].PhysicsProps = msg.ObjectPhysicsProperties[i];
+                        }
+                    }
+                }
+            }
+
+        }
+
         #endregion Packet Handlers
 
         #region Utility Functions
@@ -3556,6 +3617,28 @@ namespace OpenMetaverse
             this.Success = success;
             this.Version = version;
             this.FaceMedia = faceMedia;
+        }
+    }
+
+    /// <summary>
+    /// Set when simulator sends us infomation on primitive's physical properties
+    /// </summary>
+    public class PhysicsPropertiesEventArgs : EventArgs
+    {
+        /// <summary>Simulator where the message originated</summary>
+        public Simulator Simulator;
+        /// <summary>Updated physical properties</summary>
+        public Primitive.PhysicsProperties PhysicsProperties;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="sim">Simulator where the message originated</param>
+        /// <param name="props">Updated physical properties</param>
+        public PhysicsPropertiesEventArgs(Simulator sim, Primitive.PhysicsProperties props)
+        {
+            Simulator = sim;
+            PhysicsProperties = props;
         }
     }
 
