@@ -275,8 +275,6 @@ function ExpandOrCollapseAll(expandNodes)
 // Toggle the state of the specified node
 function Toggle(node)
 {
-    UpdateHash(node);
-
     var i, childNodes, child, div, link;
 
     childNodes = node.parentNode.childNodes;
