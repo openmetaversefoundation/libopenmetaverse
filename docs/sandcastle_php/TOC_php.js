@@ -275,6 +275,8 @@ function ExpandOrCollapseAll(expandNodes)
 // Toggle the state of the specified node
 function Toggle(node)
 {
+    UpdateHash(node);
+
     var i, childNodes, child, div, link;
 
     childNodes = node.parentNode.childNodes;
@@ -308,6 +310,8 @@ function Toggle(node)
 // Expand the selected node
 function Expand(node)
 {
+    UpdateHash(node);
+
     var i, childNodes, child, div, img;
 
     // If not valid, don't bother
@@ -351,11 +355,17 @@ function Expand(node)
     return true;
 }
 
-// Set the style of the specified node to "selected"
-function SelectNode(node)
+// Update hash part of the url to fascilitate deep linking
+function UpdateHash(node)
 {
     var n = node.toString();
     window.location.hash = n.substring(n.lastIndexOf('/')+1);
+}
+
+// Set the style of the specified node to "selected"
+function SelectNode(node)
+{
+    UpdateHash(node);
 
     // If not valid, don't bother
     if(GetCurrentUrl() == "")
@@ -637,8 +647,8 @@ function PerformSearch()
 // Set the style of the specified search result node to "selected"
 function SelectSearchNode(node)
 {
-    var n = node.toString();
-    window.location.hash = n.substring(n.lastIndexOf('/')+1);
+    UpdateHash(node);
+
 
     if(lastSearchNode != null)
         lastSearchNode.className = "UnselectedNode";
@@ -725,8 +735,7 @@ function PopulateIndex(startIndex)
 // Set the style of the specified keyword index node to "selected"
 function SelectIndexNode(node)
 {
-    var n = node.toString();
-    window.location.hash = n.substring(n.lastIndexOf('/')+1);
+    UpdateHash(node);
 
     if(lastIndexNode != null)
         lastIndexNode.className = "UnselectedNode";

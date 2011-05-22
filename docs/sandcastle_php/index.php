@@ -38,7 +38,7 @@ foreach ($root as $node) {
     $title = $node->getAttribute("Title");
     $url = $node->getAttribute("Url");
 
-    if (!$url) {
+    if ($url) {
       $target = " target=\"TopicContent\"";
     } else {
       $url = "#";
