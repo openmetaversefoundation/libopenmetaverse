@@ -405,6 +405,12 @@ namespace OpenMetaverse
             return true;
         }
 
+        /// <summary>
+        /// Is it safe to send agent updates to this sim
+        /// AgentMovementComplete message received
+        /// </summary>
+        public bool AgentMovementComplete;
+
         #endregion Public Members
 
         #region Properties

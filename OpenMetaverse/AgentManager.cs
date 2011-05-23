@@ -3580,6 +3580,7 @@ namespace OpenMetaverse
             Movement.Camera.LookDirection(movement.Data.LookAt);
             simulator.Handle = movement.Data.RegionHandle;
             simulator.SimVersion = Utils.BytesToString(movement.SimData.ChannelVersion);
+            simulator.AgentMovementComplete = true;
         }
 
         /// <summary>Process an incoming packet and raise the appropriate events</summary>
@@ -3797,6 +3798,7 @@ namespace OpenMetaverse
                 Logger.DebugLog("TeleportFinish received, Flags: " + flags.ToString(), Client);
 
                 // Connect to the new sim
+                Client.Network.CurrentSim.AgentMovementComplete = false; // we're not there anymore
                 Simulator newSimulator = Client.Network.Connect(new IPAddress(finish.Info.SimIP),
                     finish.Info.SimPort, finish.Info.RegionHandle, true, seedcaps);
 
@@ -3977,7 +3979,7 @@ namespace OpenMetaverse
             if (newSim != null)
             {
                 Logger.Log("Finished crossing over in to region " + newSim.ToString(), Helpers.LogLevel.Info, Client);
-
+                oldSim.AgentMovementComplete = false; // We're no longer there
                 if (m_RegionCrossed != null)
                 {
                     OnRegionCrossed(new RegionCrossedEventArgs(oldSim, newSim));

@@ -590,7 +590,7 @@ namespace OpenMetaverse
             {
                 // Since version 1.40.4 of the Linden simulator, sending this update
                 // causes corruption of the agent position in the simulator
-                if (simulator != null && (!simulator.HandshakeComplete))
+                if (simulator != null && (!simulator.AgentMovementComplete))
                     return;
 
                 Vector3 origin = Camera.Position;
