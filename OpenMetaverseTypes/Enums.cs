@@ -240,6 +240,8 @@ namespace OpenMetaverse
         Alpha,
         /// <summary>Tattoo</summary>
         Tattoo,
+        /// <summary>Physics</summary>
+        Physics,
         /// <summary>Invalid wearable asset</summary>
         Invalid = 255
     };

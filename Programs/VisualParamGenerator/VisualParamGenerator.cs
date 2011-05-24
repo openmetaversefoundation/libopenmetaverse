@@ -81,7 +81,7 @@ namespace VisualParamGenerator
 
             StringWriter output = new StringWriter();
 
-            // Make sure we end up with 218 Group-0 VisualParams as a sanity check
+            // Make sure we end up with 251 Group-0 VisualParams as a sanity check
             int count = 0;
 
             foreach (XmlNode node in list)
@@ -287,7 +287,7 @@ namespace VisualParamGenerator
                 }
             }
 
-            if (count != 218)
+            if (count != 251)
             {
                 Console.WriteLine("Ended up with the wrong number of Group-0 VisualParams! Exiting...");
                 return;

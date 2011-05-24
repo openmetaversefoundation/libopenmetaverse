@@ -115,7 +115,7 @@ namespace OpenMetaverse
         const int REBAKE_DELAY = 1000 * 20;
 
         /// <summary>Total number of wearables for each avatar</summary>
-        public const int WEARABLE_COUNT = 15;
+        public const int WEARABLE_COUNT = 16;
         /// <summary>Total number of baked textures on each avatar</summary>
         public const int BAKED_TEXTURE_COUNT = 6;
         /// <summary>Total number of wearables per bake layer</summary>
@@ -1671,7 +1671,28 @@ namespace OpenMetaverse
                 #region VisualParam
 
                 int vpIndex = 0;
-                set.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[218];
+                int nrParams;
+                bool wearingPhysics = false;
+                
+                foreach (WearableData wearable in Wearables.Values)
+                {
+                    if (wearable.WearableType == WearableType.Physics)
+                    {
+                        wearingPhysics = true;
+                        break;
+                    }
+                }
+
+                if (wearingPhysics)
+                {
+                    nrParams = 251;
+                }
+                else
+                {
+                    nrParams = 218;
+                }
+
+                set.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[nrParams];
 
                 foreach (KeyValuePair<int, VisualParam> kvp in VisualParams.Params)
                 {
@@ -1726,6 +1747,8 @@ namespace OpenMetaverse
                             agentSizeVPHipLength = paramValue;
                             break;
                     }
+
+                    if (vpIndex == nrParams) break;
                 }
 
                 #endregion VisualParam
@@ -2068,6 +2091,7 @@ namespace OpenMetaverse
                 case WearableType.Skirt:
                 case WearableType.Tattoo:
                 case WearableType.Alpha:
+                case WearableType.Physics:
                     return AssetType.Clothing;
                 default:
                     return AssetType.Unknown;

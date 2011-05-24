@@ -415,9 +415,9 @@ namespace GridAccountant
 
                 // AgentSetAppearance
                 AgentSetAppearancePacket appearance = new AgentSetAppearancePacket();
-                appearance.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[218];
+                appearance.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[251];
                 // Setup some random appearance values
-                for (int i = 0; i < 218; i++)
+                for (int i = 0; i < 251; i++)
                 {
                     appearance.VisualParam[i] = new AgentSetAppearancePacket.VisualParamBlock();
                     appearance.VisualParam[i].ParamValue = (byte)rand.Next(255);
