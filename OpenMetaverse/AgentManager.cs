@@ -3390,6 +3390,29 @@ namespace OpenMetaverse
             CapsClient cap = new CapsClient(uri);
             cap.BeginGetResponse(msg.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
         }
+
+        /// <summary>
+        /// Tells the sim what UI language is used, and if it's ok to share that with scripts
+        /// </summary>
+        /// <param name="language">Two letter language code</param>
+        /// <param name="isPublic">Share language info with scripts</param>
+        public void UpdateAgentLanguage(string language, bool isPublic)
+        {
+            try
+            {
+                UpdateAgentLanguageMessage msg = new UpdateAgentLanguageMessage();
+                msg.Language = language;
+                msg.LanguagePublic = isPublic;
+
+                Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("UpdateAgentLanguage");
+                CapsClient request = new CapsClient(url);
+                request.BeginGetResponse(msg.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Failes to update agent language", Helpers.LogLevel.Error, Client, ex);
+            }
+        }
         #endregion Misc
 
         #region Packet Handlers
