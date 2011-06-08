@@ -95,7 +95,7 @@ namespace OpenMetaverse.Assets
                     {
                         string versionstring = lines[stri];
                         version = Int32.Parse(versionstring.Split(' ')[2]);
-                        if (version != 22 && version != 18)
+                        if (version != 22 && version != 18 && version != 16 && version != 15)
                             return false;
                     }
                     else if (stri == 1)
@@ -207,6 +207,10 @@ namespace OpenMetaverse.Assets
                                     break;
                                 case "sale_info":
                                     // Container for sale_type and sale_price, ignore
+                                    break;
+                                case "perm_mask":
+                                    // Deprecated, apply this as the next owner mask
+                                    Permissions.NextOwnerMask = (PermissionMask)UInt32.Parse(fields[1], System.Globalization.NumberStyles.HexNumber);
                                     break;
                                 default:
                                     return false;
