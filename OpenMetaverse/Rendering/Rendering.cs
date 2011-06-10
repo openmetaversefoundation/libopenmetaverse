@@ -29,6 +29,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using OpenMetaverse.Assets;
+using OpenMetaverse.StructuredData;
 
 // The common elements shared between rendering plugins are defined here
 
@@ -198,9 +200,189 @@ namespace OpenMetaverse.Rendering
         }
     }
 
+    /// <summary>
+    /// Contains all mesh faces that belong to a prim
+    /// </summary>
     public class FacetedMesh : Mesh
     {
+        /// <summary>List of primitive faces</summary>
         public List<Face> Faces;
+
+        /// <summary>
+        /// Decodes mesh asset into FacetedMesh
+        /// </summary>
+        /// <param name="prim">Mesh primitive</param>
+        /// <param name="meshAsset">Asset retrieved from the asset server</param>
+        /// <param name="LOD">Level of detail</param>
+        /// <param name="mesh">Resulting decoded FacetedMesh</param>
+        /// <returns>True if mesh asset decoding was successful</returns>
+        public static bool TryDecodeFromAsset(Primitive prim, AssetMesh meshAsset, DetailLevel LOD, out FacetedMesh mesh)
+        {
+            mesh = null;
+
+            try
+            {
+                if (!meshAsset.Decode())
+                {
+                    return false;
+                }
+
+                OSDMap MeshData = meshAsset.MeshData;
+
+                mesh = new FacetedMesh();
+
+                mesh.Faces = new List<Face>();
+                mesh.Prim = prim;
+                mesh.Profile.Faces = new List<ProfileFace>();
+                mesh.Profile.Positions = new List<Vector3>();
+                mesh.Path.Points = new List<PathPoint>();
+
+                OSD facesOSD = null;
+
+                switch (LOD)
+                {
+                    default:
+                    case DetailLevel.Highest:
+                        facesOSD = MeshData["high_lod"];
+                        break;
+
+                    case DetailLevel.High:
+                        facesOSD = MeshData["medium_lod"];
+                        break;
+
+                    case DetailLevel.Medium:
+                        facesOSD = MeshData["low_lod"];
+                        break;
+
+                    case DetailLevel.Low:
+                        facesOSD = MeshData["lowest_lod"];
+                        break;
+                }
+
+                if (facesOSD == null || !(facesOSD is OSDArray))
+                {
+                    return false;
+                }
+
+                OSDArray decodedMeshOsdArray = (OSDArray)facesOSD;
+
+                for (int faceNr = 0; faceNr < decodedMeshOsdArray.Count; faceNr++)
+                {
+                    OSD subMeshOsd = decodedMeshOsdArray[faceNr];
+
+                    // Decode each individual face
+                    if (subMeshOsd is OSDMap)
+                    {
+                        Face oface = new Face();
+                        oface.ID = faceNr;
+                        oface.Vertices = new List<Vertex>();
+                        oface.Indices = new List<ushort>();
+                        oface.TextureFace = prim.Textures.GetFace((uint)faceNr);
+
+                        OSDMap subMeshMap = (OSDMap)subMeshOsd;
+
+                        Vector3 posMax;
+                        Vector3 posMin;
+
+                        // If PositionDomain is not specified, the default is from -0.5 to 0.5
+                        if (subMeshMap.ContainsKey("PositionDomain"))
+                        {
+                            posMax = ((OSDMap)subMeshMap["PositionDomain"])["Max"];
+                            posMin = ((OSDMap)subMeshMap["PositionDomain"])["Min"];
+                        }
+                        else
+                        {
+                            posMax = new Vector3(0.5f, 0.5f, 0.5f);
+                            posMin = new Vector3(-0.5f, -0.5f, -0.5f);
+                        }
+
+                        // Vertex positions
+                        byte[] posBytes = subMeshMap["Position"];
+
+                        // Normals
+                        byte[] norBytes = null;
+                        if (subMeshMap.ContainsKey("Normal"))
+                        {
+                            norBytes = subMeshMap["Normal"];
+                        }
+
+                        // UV texture map
+                        Vector2 texPosMax = Vector2.Zero;
+                        Vector2 texPosMin = Vector2.Zero;
+                        byte[] texBytes = null;
+                        if (subMeshMap.ContainsKey("TexCoord0"))
+                        {
+                            texBytes = subMeshMap["TexCoord0"];
+                            texPosMax = ((OSDMap)subMeshMap["TexCoord0Domain"])["Max"];
+                            texPosMin = ((OSDMap)subMeshMap["TexCoord0Domain"])["Min"];
+                        }
+
+                        // Extract the vertex position data
+                        // If present normals and texture coordinates too
+                        for (int i = 0; i < posBytes.Length; i += 6)
+                        {
+                            ushort uX = Utils.BytesToUInt16(posBytes, i);
+                            ushort uY = Utils.BytesToUInt16(posBytes, i + 2);
+                            ushort uZ = Utils.BytesToUInt16(posBytes, i + 4);
+
+                            Vertex vx = new Vertex();
+
+                            vx.Position = new Vector3(
+                                Utils.UInt16ToFloat(uX, posMin.X, posMax.X),
+                                Utils.UInt16ToFloat(uY, posMin.Y, posMax.Y),
+                                Utils.UInt16ToFloat(uZ, posMin.Z, posMax.Z));
+
+                            if (norBytes != null && norBytes.Length >= i + 4)
+                            {
+                                ushort nX = Utils.BytesToUInt16(norBytes, i);
+                                ushort nY = Utils.BytesToUInt16(norBytes, i + 2);
+                                ushort nZ = Utils.BytesToUInt16(norBytes, i + 4);
+
+                                vx.Normal = new Vector3(
+                                    Utils.UInt16ToFloat(nX, posMin.X, posMax.X),
+                                    Utils.UInt16ToFloat(nY, posMin.Y, posMax.Y),
+                                    Utils.UInt16ToFloat(nZ, posMin.Z, posMax.Z));
+                            }
+
+                            var vertexIndexOffset = oface.Vertices.Count * 4;
+
+                            if (texBytes != null && texBytes.Length >= vertexIndexOffset + 4)
+                            {
+                                ushort tX = Utils.BytesToUInt16(texBytes, vertexIndexOffset);
+                                ushort tY = Utils.BytesToUInt16(texBytes, vertexIndexOffset + 2);
+
+                                vx.TexCoord = new Vector2(
+                                    Utils.UInt16ToFloat(tX, texPosMin.X, texPosMax.X),
+                                    Utils.UInt16ToFloat(tY, texPosMin.Y, texPosMax.Y));
+                            }
+
+                            oface.Vertices.Add(vx);
+                        }
+
+                        byte[] triangleBytes = subMeshMap["TriangleList"];
+                        for (int i = 0; i < triangleBytes.Length; i += 6)
+                        {
+                            ushort v1 = (ushort)(Utils.BytesToUInt16(triangleBytes, i));
+                            oface.Indices.Add(v1);
+                            ushort v2 = (ushort)(Utils.BytesToUInt16(triangleBytes, i + 2));
+                            oface.Indices.Add(v2);
+                            ushort v3 = (ushort)(Utils.BytesToUInt16(triangleBytes, i + 4));
+                            oface.Indices.Add(v3);
+                        }
+
+                        mesh.Faces.Add(oface);
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Failed to decode mesh asset: " + ex.Message, Helpers.LogLevel.Warning);
+                return false;
+            }
+
+            return true;
+        }
     }
 
     public class SimpleMesh : Mesh

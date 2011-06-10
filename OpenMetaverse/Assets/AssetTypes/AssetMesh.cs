@@ -63,8 +63,8 @@ namespace OpenMetaverse.Assets
         public override void Encode() { }
 
         /// <summary>
-        /// Decodes mesh asset
-        /// </summary>
+        /// Decodes mesh asset. See <see cref="OpenMetaverse.Rendering.FacetedMesh.TryDecodeFromAsset"/>
+        /// to furter decode it for rendering</summary>
         /// <returns>true</returns>
         public override bool Decode()
         {
