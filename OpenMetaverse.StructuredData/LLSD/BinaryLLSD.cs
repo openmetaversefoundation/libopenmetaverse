@@ -110,13 +110,24 @@ namespace OpenMetaverse.StructuredData
         }
 
         /// <summary>
-        /// 
+        /// Serializes OSD to binary format. It does no prepend header
         /// </summary>
-        /// <param name="osd"></param>
-        /// <returns></returns>
+        /// <param name="osd">OSD to serialize</param>
+        /// <returns>Serialized data</returns>
         public static byte[] SerializeLLSDBinary(OSD osd)
         {
-            MemoryStream stream = SerializeLLSDBinaryStream(osd);
+            return SerializeLLSDBinary(osd, false);
+        }
+
+        /// <summary>
+        /// Serializes OSD to binary format
+        /// </summary>
+        /// <param name="osd">OSD to serialize</param>
+        /// <param name="prependHeader"></param>
+        /// <returns>Serialized data</returns>
+        public static byte[] SerializeLLSDBinary(OSD osd, bool prependHeader)
+        {
+            MemoryStream stream = SerializeLLSDBinaryStream(osd, prependHeader);
             byte[] binaryData = stream.ToArray();
 
             stream.Close();
@@ -125,15 +136,28 @@ namespace OpenMetaverse.StructuredData
         }
 
         /// <summary>
-        /// 
+        /// Serializes OSD to binary format. It does no prepend header
         /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
+        /// <param name="data">OSD to serialize</param>
+        /// <returns>Serialized data</returns>
         public static MemoryStream SerializeLLSDBinaryStream(OSD data)
+        {
+            return SerializeLLSDBinaryStream(data, false);
+        }
+        /// <summary>
+        /// Serializes OSD to binary format
+        /// </summary>
+        /// <param name="data">OSD to serialize</param>
+        /// <param name="prependHeader"></param>
+        /// <returns>Serialized data</returns>
+        public static MemoryStream SerializeLLSDBinaryStream(OSD data, bool prependHeader)
         {
             MemoryStream stream = new MemoryStream(initialBufferSize);
 
-            stream.Write(llsdBinaryHeadBytes, 0, llsdBinaryHeadBytes.Length);
+            if (prependHeader)
+            {
+                stream.Write(llsdBinaryHeadBytes, 0, llsdBinaryHeadBytes.Length);
+            }
             SerializeLLSDBinaryElement(stream, data);
             return stream;
         }
@@ -444,7 +468,7 @@ namespace OpenMetaverse.StructuredData
             int intHostEnd = System.Net.IPAddress.NetworkToHostOrder(intNetEnd);
             return intHostEnd;
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
@@ -459,7 +483,7 @@ namespace OpenMetaverse.StructuredData
             byte[] binaryHostEnd = BitConverter.GetBytes(longHostEnd);
             double doubleHostEnd = BitConverter.ToDouble(binaryHostEnd, 0);
             return doubleHostEnd;
-            
+
         }
         /// <summary>
         /// 
