@@ -687,7 +687,7 @@ namespace OpenMetaverse.StructuredData
         public override byte[] AsBinary()
         {
             TimeSpan ts = value.ToUniversalTime() - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            return Utils.DoubleToBytesBig(ts.TotalSeconds);
+            return Utils.DoubleToBytes(ts.TotalSeconds);
         }
 
         public override DateTime AsDate() { return value; }

@@ -283,7 +283,7 @@ namespace OpenMetaverse.StructuredData
                     osd = OSD.FromUri(uri);
                     break;
                 case dateBinaryMarker:
-                    double timestamp = NetworkToHostDouble(ConsumeBytes(stream, doubleLength));
+                    double timestamp = Utils.BytesToDouble(ConsumeBytes(stream, doubleLength), 0);
                     DateTime dateTime = DateTime.SpecifyKind(Utils.Epoch, DateTimeKind.Utc);
                     dateTime = dateTime.AddSeconds(timestamp);
                     osd = OSD.FromDate(dateTime.ToLocalTime());
@@ -444,7 +444,7 @@ namespace OpenMetaverse.StructuredData
             int intHostEnd = System.Net.IPAddress.NetworkToHostOrder(intNetEnd);
             return intHostEnd;
         }
-
+        
         /// <summary>
         /// 
         /// </summary>
@@ -459,8 +459,8 @@ namespace OpenMetaverse.StructuredData
             byte[] binaryHostEnd = BitConverter.GetBytes(longHostEnd);
             double doubleHostEnd = BitConverter.ToDouble(binaryHostEnd, 0);
             return doubleHostEnd;
+            
         }
-
         /// <summary>
         /// 
         /// </summary>
