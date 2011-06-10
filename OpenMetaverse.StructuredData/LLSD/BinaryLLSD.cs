@@ -116,7 +116,7 @@ namespace OpenMetaverse.StructuredData
         /// <returns>Serialized data</returns>
         public static byte[] SerializeLLSDBinary(OSD osd)
         {
-            return SerializeLLSDBinary(osd, false);
+            return SerializeLLSDBinary(osd, true);
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace OpenMetaverse.StructuredData
         /// <returns>Serialized data</returns>
         public static MemoryStream SerializeLLSDBinaryStream(OSD data)
         {
-            return SerializeLLSDBinaryStream(data, false);
+            return SerializeLLSDBinaryStream(data, true);
         }
         /// <summary>
         /// Serializes OSD to binary format
