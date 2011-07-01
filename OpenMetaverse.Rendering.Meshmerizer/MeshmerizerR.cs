@@ -487,5 +487,41 @@ namespace OpenMetaverse.Rendering
 
             return newPrim;
         }
+
+        /// <summary>
+        /// Method for generating mesh Face from a heightmap
+        /// </summary>
+        /// <param name="zMap">Two dimension array of floats containing height information</param>
+        /// <param name="xBegin">Starting value for X</param>
+        /// <param name="xEnd">Max value for X</param>
+        /// <param name="yBegin">Starting value for Y</param>
+        /// <param name="yEnd">Max value of Y</param>
+        /// <returns></returns>
+        public OMVR.Face TerrainMesh(float[,] zMap, float xBegin, float xEnd, float yBegin, float yEnd)
+        {
+            PrimMesher.SculptMesh newMesh = new PrimMesher.SculptMesh(zMap, xBegin, xEnd, yBegin, yEnd, true);
+            OMVR.Face terrain = new OMVR.Face();
+            int faceVertices = newMesh.coords.Count;
+            terrain.Vertices = new List<Vertex>(faceVertices);
+            terrain.Indices = new List<ushort>(newMesh.faces.Count * 3);
+
+            for (int j = 0; j < faceVertices; j++)
+            {
+                var vert = new OMVR.Vertex();
+                vert.Position = new Vector3(newMesh.coords[j].X, newMesh.coords[j].Y, newMesh.coords[j].Z);
+                vert.Normal = new Vector3(newMesh.normals[j].X, newMesh.normals[j].Y, newMesh.normals[j].Z);
+                vert.TexCoord = new Vector2(newMesh.uvs[j].U, newMesh.uvs[j].V);
+                terrain.Vertices.Add(vert);
+            }
+
+            for (int j = 0; j < newMesh.faces.Count; j++)
+            {
+                terrain.Indices.Add((ushort)newMesh.faces[j].v1);
+                terrain.Indices.Add((ushort)newMesh.faces[j].v2);
+                terrain.Indices.Add((ushort)newMesh.faces[j].v3);
+            }
+
+            return terrain;
+        }
     }
 }
