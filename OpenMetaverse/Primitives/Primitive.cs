@@ -729,6 +729,8 @@ namespace OpenMetaverse
         public ObjectProperties Properties;
         /// <summary>Objects physics engine propertis</summary>
         public PhysicsProperties PhysicsProps;
+        /// <summary>Extra data about primitive</summary>
+        public object Tag;
 
         #endregion Public Members
 
