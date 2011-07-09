@@ -118,7 +118,7 @@ namespace OpenMetaverse.Rendering
                 byte[] buffer = File.ReadAllBytes(filename);
                 BitPack input = new BitPack(buffer, 0);
 
-                _header = input.UnpackString(24).TrimEnd(new char[] { '\0' });
+                _header = TrimAt0(input.UnpackString(24));
                 if (!String.Equals(_header, MESH_HEADER))
                     throw new FileLoadException("Unrecognized mesh format");
 
@@ -189,7 +189,7 @@ namespace OpenMetaverse.Rendering
             byte[] buffer = File.ReadAllBytes(filename);
             BitPack input = new BitPack(buffer, 0);
 
-            _header = input.UnpackString(24).TrimEnd(new char[] { '\0' });
+            _header = TrimAt0(input.UnpackString(24));
             if (!String.Equals(_header, MESH_HEADER))
                 throw new FileLoadException("Unrecognized mesh format");
 
@@ -242,7 +242,9 @@ namespace OpenMetaverse.Rendering
                 _skinJoints = new string[_numSkinJoints];
 
                 for (int i = 0; i < _numSkinJoints; i++)
-                    _skinJoints[i] = input.UnpackString(64).TrimEnd(new char[] { '\0' });
+                {
+                    _skinJoints[i] = TrimAt0(input.UnpackString(64));
+                }
             }
             else
             {
@@ -252,7 +254,7 @@ namespace OpenMetaverse.Rendering
 
             // Grab morphs
             List<Morph> morphs = new List<Morph>();
-            string morphName = input.UnpackString(64).TrimEnd(new char[] { '\0' });
+            string morphName = TrimAt0(input.UnpackString(64));
 
             while (morphName != MORPH_FOOTER)
             {
@@ -275,7 +277,7 @@ namespace OpenMetaverse.Rendering
                 morphs.Add(morph);
 
                 // Grab the next name
-                morphName = input.UnpackString(64).TrimEnd(new char[] { '\0' });
+                morphName = TrimAt0(input.UnpackString(64));
             }
 
             _morphs = morphs.ToArray();
@@ -304,6 +306,19 @@ namespace OpenMetaverse.Rendering
             LODMesh lod = new LODMesh();
             lod.LoadMesh(filename);
             _lodMeshes[level] = lod;
+        }
+
+        public static string TrimAt0(string s)
+        {
+            int pos = s.IndexOf("\0");
+            if (pos >= 0)
+            {
+                return s.Substring(0, pos);
+            }
+            else
+            {
+                return s;
+            }
         }
     }
 }
