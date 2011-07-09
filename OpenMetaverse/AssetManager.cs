@@ -1150,12 +1150,14 @@ namespace OpenMetaverse
             if (textureID == UUID.Zero || callback == null)
                 return;
 
+            byte[] assetData;
             // Do we have this image in the cache?
-            if (Client.Assets.Cache.HasAsset(textureID))
+            if (Client.Assets.Cache.HasAsset(textureID)
+                && (assetData = Client.Assets.Cache.GetCachedAssetBytes(textureID)) != null)
             {
                 ImageDownload image = new ImageDownload();
                 image.ID = textureID;
-                image.AssetData = Client.Assets.Cache.GetCachedAssetBytes(textureID);
+                image.AssetData = assetData;
                 image.Size = image.AssetData.Length;
                 image.Transferred = image.AssetData.Length;
                 image.ImageType = imageType;
