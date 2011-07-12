@@ -913,6 +913,8 @@ namespace OpenMetaverse.Messages.Linden
         /// <summary></summary>
         public uint PassPrice;
         /// <summary></summary>
+        public bool Privacy;
+        /// <summary></summary>
         public uint SalePrice;
         /// <summary></summary>
         public UUID SnapshotID;
@@ -948,6 +950,7 @@ namespace OpenMetaverse.Messages.Linden
             ParcelFlags = (ParcelFlags)map["parcel_flags"].AsUInteger();
             PassHours = (float)map["pass_hours"].AsReal();
             PassPrice = map["pass_price"].AsUInteger();
+            Privacy = map["privacy"].AsBoolean();
             SalePrice = map["sale_price"].AsUInteger();
             SnapshotID = map["snapshot_id"].AsUUID();
             UserLocation = map["user_location"].AsVector3();
@@ -982,6 +985,7 @@ namespace OpenMetaverse.Messages.Linden
             map["obscure_music"] = OSD.FromBoolean(ObscureMusic);
             map["parcel_flags"] = OSD.FromUInteger((uint)ParcelFlags);
             map["pass_hours"] = OSD.FromReal(PassHours);
+            map["privacy"] = OSD.FromBoolean(Privacy);
             map["pass_price"] = OSD.FromInteger(PassPrice);
             map["sale_price"] = OSD.FromInteger(SalePrice);
             map["snapshot_id"] = OSD.FromUUID(SnapshotID);
