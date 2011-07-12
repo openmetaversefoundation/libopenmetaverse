@@ -193,6 +193,8 @@ namespace OpenMetaverse
         ForSale = 4,
         /// <summary>Land is being auctioned</summary>
         Auction = 5,
+        /// <summary>Land is private</summary>
+        Private = 32,
         /// <summary>To the west of this area is a parcel border</summary>
         BorderWest = 64,
         /// <summary>To the south of this area is a parcel border</summary>

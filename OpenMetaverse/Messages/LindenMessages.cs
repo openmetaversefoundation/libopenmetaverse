@@ -626,6 +626,8 @@ namespace OpenMetaverse.Messages.Linden
         public int PassPrice;
         /// <summary></summary>
         public int PublicCount;
+        /// <summary>Disallows people outside the parcel from being able to see in</summary>
+        public bool Privacy;
         /// <summary></summary>
         public bool RegionDenyAnonymous;
         /// <summary></summary>
@@ -730,6 +732,7 @@ namespace OpenMetaverse.Messages.Linden
             parcelDataMap["PassHours"] = OSD.FromReal((float)PassHours);
             parcelDataMap["PassPrice"] = OSD.FromInteger(PassPrice);
             parcelDataMap["PublicCount"] = OSD.FromInteger(PublicCount);
+            parcelDataMap["Privacy"] = OSD.FromBoolean(Privacy);
             parcelDataMap["RegionDenyAnonymous"] = OSD.FromBoolean(RegionDenyAnonymous);
             parcelDataMap["RegionDenyIdentified"] = OSD.FromBoolean(RegionDenyIdentified);
             parcelDataMap["RegionDenyTransacted"] = OSD.FromBoolean(RegionDenyTransacted);
@@ -822,6 +825,7 @@ namespace OpenMetaverse.Messages.Linden
             PassHours = (float)parcelDataMap["PassHours"].AsReal();
             PassPrice = parcelDataMap["PassPrice"].AsInteger();
             PublicCount = parcelDataMap["PublicCount"].AsInteger();
+            Privacy = parcelDataMap["Privacy"].AsBoolean();
             RegionDenyAnonymous = parcelDataMap["RegionDenyAnonymous"].AsBoolean();
             RegionDenyIdentified = parcelDataMap["RegionDenyIdentified"].AsBoolean();
             RegionDenyTransacted = parcelDataMap["RegionDenyTransacted"].AsBoolean();
