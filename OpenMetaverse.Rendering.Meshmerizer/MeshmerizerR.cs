@@ -245,15 +245,8 @@ namespace OpenMetaverse.Rendering
         /// <returns>The faceted mesh or null if can't do it</returns>
         public OMVR.FacetedMesh GenerateFacetedSculptMesh(OMV.Primitive prim, System.Drawing.Bitmap scupltTexture, OMVR.DetailLevel lod)
         {
-            byte sculptType = (byte)prim.Sculpt.Type;
-            bool mirror = ((sculptType & 128) != 0);
-            bool invert = ((sculptType & 64) != 0);
-            // mirror = false; // TODO: libomv doesn't support these and letting them flop around causes problems
-            // invert = false;
-            OMV.SculptType omSculptType = (OMV.SculptType)(sculptType & 0x07);
-
             PrimMesher.SculptMesh.SculptType smSculptType;
-            switch (omSculptType)
+            switch (prim.Sculpt.Type)
             {
                 case OpenMetaverse.SculptType.Cylinder:
                     smSculptType = PrimMesher.SculptMesh.SculptType.cylinder;
@@ -289,7 +282,7 @@ namespace OpenMetaverse.Rendering
                     break;
             }
             PrimMesher.SculptMesh newMesh =
-                new PrimMesher.SculptMesh(scupltTexture, smSculptType, mesherLod, true, mirror, invert);
+                new PrimMesher.SculptMesh(scupltTexture, smSculptType, mesherLod, true, prim.Sculpt.Mirror, prim.Sculpt.Invert);
 
             int numPrimFaces = 1;       // a scuplty has only one face
 
@@ -314,9 +307,7 @@ namespace OpenMetaverse.Rendering
                 oface.Indices = new List<ushort>();
                 oface.TextureFace = prim.Textures.GetFace((uint)ii);
                 int faceVertices = newMesh.coords.Count;
-                OMV.Vector3 pos;
                 OMVR.Vertex vert;
-                int indx;
 
                 for (int j = 0; j < faceVertices; j++)
                 {
