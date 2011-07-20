@@ -321,7 +321,7 @@ namespace OpenMetaverse
 
         #endregion
 
-        #region Properties
+        #region Properties and public fields
 
         /// <summary>
         /// Returns true if AppearanceManager is busy and trying to set or change appearance will fail
@@ -333,6 +333,12 @@ namespace OpenMetaverse
                 return AppearanceThreadRunning != 0;
             }
         }
+
+        /// <summary>Visual parameters last sent to the sim</summary>
+        public byte[] MyVisualParameters = null;
+        
+        /// <summary>Textures about this client sent to the sim</summary>
+        public Primitive.TextureEntry MyTextures = null;
 
         #endregion Properties
 
@@ -1751,6 +1757,12 @@ namespace OpenMetaverse
                     if (vpIndex == nrParams) break;
                 }
 
+                MyVisualParameters = new byte[set.VisualParam.Length];
+                for (int i = 0; i < set.VisualParam.Length; i++)
+                {
+                    MyVisualParameters[i] = set.VisualParam[i].ParamValue;
+                }
+
                 #endregion VisualParam
 
                 #region TextureEntry
@@ -1774,6 +1786,7 @@ namespace OpenMetaverse
                 }
 
                 set.ObjectData.TextureEntry = te.GetBytes();
+                MyTextures = te;
 
                 #endregion TextureEntry
 
@@ -1823,6 +1836,16 @@ namespace OpenMetaverse
                 set.AgentData.Size = new Vector3(0.45f, 0.6f, (float)agentHeight);
 
                 #endregion Agent Size
+
+                if (Client.Settings.AVATAR_TRACKING)
+                {
+                    Avatar me;
+                    if (Client.Network.CurrentSim.ObjectsAvatars.TryGetValue(Client.Self.LocalID, out me))
+                    {
+                        me.Textures = MyTextures;
+                        me.VisualParameters = MyVisualParameters;
+                    }
+                }
             }
 
             Client.Network.SendPacket(set);
