@@ -1059,7 +1059,7 @@ namespace OpenMetaverse
                     Flexible = new FlexibleData(data, i);
                 else if (type == ExtraParamType.Light)
                     Light = new LightData(data, i);
-                else if (type == ExtraParamType.Sculpt)
+                else if (type == ExtraParamType.Sculpt || type == ExtraParamType.Mesh)
                     Sculpt = new SculptData(data, i);
 
                 i += (int)paramLength;
@@ -1126,7 +1126,14 @@ namespace OpenMetaverse
             }
             if (sculpt != null)
             {
-                Buffer.BlockCopy(Utils.UInt16ToBytes((ushort)ExtraParamType.Sculpt), 0, buffer, pos, 2);
+                if (Sculpt.Type == SculptType.Mesh)
+                {
+                    Buffer.BlockCopy(Utils.UInt16ToBytes((ushort)ExtraParamType.Mesh), 0, buffer, pos, 2);
+                }
+                else
+                {
+                    Buffer.BlockCopy(Utils.UInt16ToBytes((ushort)ExtraParamType.Sculpt), 0, buffer, pos, 2);
+                }
                 pos += 2;
 
                 Buffer.BlockCopy(Utils.UIntToBytes((uint)sculpt.Length), 0, buffer, pos, 4);
