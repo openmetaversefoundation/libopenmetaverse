@@ -177,7 +177,7 @@ namespace OpenMetaverse
         /// A single textured face. Don't instantiate this class yourself, use the
         /// methods in TextureEntry
         /// </summary>
-        public class TextureEntryFace
+        public class TextureEntryFace : ICloneable
         {
             // +----------+ S = Shiny
             // | SSFBBBBB | F = Fullbright
@@ -548,6 +548,23 @@ namespace OpenMetaverse
                 face.TextureID = map["imageid"].AsUUID();
 
                 return face;
+            }
+
+            public object Clone()
+            {
+                TextureEntryFace ret = new TextureEntryFace(this.DefaultTexture == null ? null : (TextureEntryFace)this.DefaultTexture.Clone());
+                ret.rgba = rgba;
+                ret.repeatU = repeatU;
+                ret.repeatV = repeatV;
+                ret.offsetU = offsetU;
+                ret.offsetV = offsetV;
+                ret.rotation = rotation;
+                ret.glow = glow;
+                ret.materialb = materialb;
+                ret.mediab = mediab;
+                ret.hasAttribute = hasAttribute;
+                ret.textureID = textureID;
+                return ret;
             }
 
             public override int GetHashCode()
