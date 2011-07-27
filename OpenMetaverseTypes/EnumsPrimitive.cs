@@ -212,7 +212,8 @@ namespace OpenMetaverse
         Torus,
         Tube,
         Ring,
-        Sculpt
+        Sculpt,
+        Mesh
     }
 
     /// <summary>

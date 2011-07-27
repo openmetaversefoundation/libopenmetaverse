@@ -741,8 +741,13 @@ namespace OpenMetaverse
         {
             get
             {
-                if (Sculpt != null && Sculpt.Type != SculptType.None)
-                    return PrimType.Sculpt;
+                if (Sculpt != null && Sculpt.Type != SculptType.None && Sculpt.SculptTexture != UUID.Zero)
+                {
+                    if (Sculpt.Type == SculptType.Mesh)
+                        return PrimType.Mesh;
+                    else
+                        return PrimType.Sculpt;
+                }
 
                 bool linearPath = (PrimData.PathCurve == PathCurve.Line || PrimData.PathCurve == PathCurve.Flexible);
                 float scaleY = PrimData.PathScaleY;
