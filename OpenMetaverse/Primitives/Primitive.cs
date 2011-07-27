@@ -154,6 +154,35 @@ namespace OpenMetaverse
             }
 
             #endregion Properties
+
+            /// <summary>
+            /// Calculdates hash code for prim construction data
+            /// </summary>
+            /// <returns>The has</returns>
+            public override int GetHashCode()
+            {
+                return profileCurve.GetHashCode()
+                    ^ PathCurve.GetHashCode()
+                    ^ PathEnd.GetHashCode()
+                    ^ PathRadiusOffset.GetHashCode()
+                    ^ PathSkew.GetHashCode()
+                    ^ PathScaleX.GetHashCode()
+                    ^ PathScaleY.GetHashCode()
+                    ^ PathShearX.GetHashCode()
+                    ^ PathShearY.GetHashCode()
+                    ^ PathTaperX.GetHashCode()
+                    ^ PathTaperY.GetHashCode()
+                    ^ PathBegin.GetHashCode()
+                    ^ PathTwist.GetHashCode()
+                    ^ PathTwistBegin.GetHashCode()
+                    ^ PathRevolutions.GetHashCode()
+                    ^ ProfileBegin.GetHashCode()
+                    ^ ProfileEnd.GetHashCode()
+                    ^ ProfileHollow.GetHashCode()
+                    ^ Material.GetHashCode()
+                    ^ State.GetHashCode()
+                    ^ PCode.GetHashCode();
+            }
         }
 
         /// <summary>
