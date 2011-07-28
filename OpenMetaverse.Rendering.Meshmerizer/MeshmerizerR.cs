@@ -297,11 +297,11 @@ namespace OpenMetaverse.Rendering
             omvrmesh.Path.Points = new List<OMVR.PathPoint>();
 
             Dictionary<OMVR.Vertex, int> vertexAccount = new Dictionary<OMVR.Vertex, int>();
-            
+
 
             for (int ii = 0; ii < numPrimFaces; ii++)
             {
-                vertexAccount.Clear(); 
+                vertexAccount.Clear();
                 OMVR.Face oface = new OMVR.Face();
                 oface.Vertices = new List<OMVR.Vertex>();
                 oface.Indices = new List<ushort>();
@@ -360,27 +360,32 @@ namespace OpenMetaverse.Rendering
                 // tex coord comes to us as a number between zero and one
                 // transform about the center of the texture
                 OMVR.Vertex vert = vertices[ii];
-                float tX = vert.TexCoord.X - 0.5f;
-                float tY = vert.TexCoord.Y - 0.5f;
-                float repeatU = teFace.RepeatU;
-                float repeatV = teFace.RepeatV;
+
                 if (teFace.TexMapType == MappingType.Planar)
                 {
-                    Vector3 scale = primScale;
-                    Vector3 normal = vert.Normal;
-                    //Dunno...
-                    if(normal.X < 0)
-                        normal.X *= -1;
-                    if (normal.Y < 0)
-                        normal.Y *= -1;
-                    //Get the diff between the normal and the 'up', then fix the scale
-                    Quaternion rot = Vector3.RotationBetween (new Vector3 (0, 0, 1), normal);
-                    scale *= rot;
-                    //Viewer sends /2 appearently
-                    repeatU = (teFace.RepeatU * 2) * (scale.Y);
-                    repeatV = (teFace.RepeatV * 2) * (scale.X);
+                    Vector3 binormal;
+                    float d = Vector3.Dot(vert.Normal, Vector3.UnitX);
+                    if (d >= 0.5f || d <= -0.5f)
+                    {
+                        binormal = Vector3.UnitY;
+                        if (vert.Normal.X < 0f) binormal *= -1;
+                    }
+                    else
+                    {
+                        binormal = Vector3.UnitX;
+                        if (vert.Normal.Y > 0f) binormal *= -1;
+                    }
+                    Vector3 tangent = binormal % vert.Normal;
+                    Vector3 scaledPos = vert.Position * primScale;
+                    vert.TexCoord.X = 1f + (Vector3.Dot(binormal, scaledPos) * 2f - 0.5f);
+                    vert.TexCoord.Y = -(Vector3.Dot(tangent, scaledPos) * 2f - 0.5f);
                 }
-                // rotate, scale, offset
+                
+                float repeatU = teFace.RepeatU;
+                float repeatV = teFace.RepeatV;
+                float tX = vert.TexCoord.X - 0.5f;
+                float tY = vert.TexCoord.Y - 0.5f;
+
                 vert.TexCoord.X = (tX * cosineAngle + tY * sinAngle) * repeatU + teFace.OffsetU + 0.5f;
                 vert.TexCoord.Y = (-tX * sinAngle + tY * cosineAngle) * repeatV + teFace.OffsetV + 0.5f;
                 vertices[ii] = vert;
