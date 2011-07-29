@@ -29,9 +29,6 @@
 /*
  * MeshmerizerR class implments OpenMetaverse.Rendering.IRendering interface
  * using PrimMesher (http://forge.opensimulator.org/projects/primmesher).
- * There are a few additions/changes:
- *  TransformTexCoords() does regular transformations but does not do planar
- *      mapping of textures.
  */
 
 using System;
@@ -353,14 +350,13 @@ namespace OpenMetaverse.Rendering
             float cosineAngle = (float)Math.Cos(teFace.Rotation);
             float sinAngle = (float)Math.Sin(teFace.Rotation);
 
-            // need a check for plainer vs default
-            // just do default for now (I don't know what planar is)
             for (int ii = 0; ii < vertices.Count; ii++)
             {
                 // tex coord comes to us as a number between zero and one
                 // transform about the center of the texture
                 OMVR.Vertex vert = vertices[ii];
 
+                // aply planar tranforms to the UV first if applicable
                 if (teFace.TexMapType == MappingType.Planar)
                 {
                     Vector3 binormal;
