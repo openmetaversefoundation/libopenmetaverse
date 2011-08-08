@@ -2000,6 +2000,7 @@ namespace OpenMetaverse
                         prim.MediaURL = Utils.BytesToString(block.MediaURL);
                         prim.Text = Utils.BytesToString(block.Text);
                         prim.TextColor = new Color4(block.TextColor, 0, false, true);
+                        prim.IsAttachment = attachment;
 
                         // Sound information
                         prim.Sound = block.Sound;
@@ -2554,13 +2555,13 @@ namespace OpenMetaverse
 
                     #endregion
 
-                    #region Raise Events
+                    prim.IsAttachment = (flags & CompressedFlags.HasNameValues) != 0 && prim.ParentID != 0;
 
-                    bool isAttachment = (flags & CompressedFlags.HasNameValues) != 0 && prim.ParentID != 0;
+                    #region Raise Events
 
                     EventHandler<PrimEventArgs> handler = m_ObjectUpdate;
                     if (handler != null)
-                        handler(this, new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, isNew, isAttachment));
+                        handler(this, new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, isNew, prim.IsAttachment));
 
                     #endregion
                 }

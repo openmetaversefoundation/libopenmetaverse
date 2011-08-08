@@ -760,6 +760,8 @@ namespace OpenMetaverse
         public PhysicsProperties PhysicsProps;
         /// <summary>Extra data about primitive</summary>
         public object Tag;
+        /// <summary>Indicates if prim is attached to an avatar</summary>
+        public bool IsAttachment;
 
         #endregion Public Members
 
