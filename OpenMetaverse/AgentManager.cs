@@ -1364,7 +1364,7 @@ namespace OpenMetaverse
 
                 if (Client.Network.CurrentSim.ObjectsPrimitives.TryGetValue(sittingOn, out p))
                 {
-                    fullPosition += p.Position;
+                    fullPosition = p.Position + relativePosition * p.Rotation;
                 }
 
                 // go up the hiearchy trying to find the root prim
