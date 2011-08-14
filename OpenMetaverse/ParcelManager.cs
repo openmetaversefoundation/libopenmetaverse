@@ -1471,7 +1471,7 @@ namespace OpenMetaverse
         /// <param name="selectType">Owners, Others, Etc</param>
         /// <param name="ownerID">List containing keys of avatars objects to select; 
         /// if List is null will return Objects of type <c>selectType</c></param>
-        /// <remarks>Response data is returned in the event <seealso cref="E:OnParcelSelectedObjects"/></remarks>
+        /// <remarks>Response data is returned in the event <seealso cref="E:ForceSelectObjectsReply"/></remarks>
         public void RequestSelectObjects(int localID, ObjectReturnType selectType, UUID ownerID)
         {
             ParcelSelectObjectsPacket select = new ParcelSelectObjectsPacket();
