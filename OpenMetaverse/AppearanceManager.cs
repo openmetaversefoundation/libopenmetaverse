@@ -1771,7 +1771,7 @@ namespace OpenMetaverse
 
                 for (uint i = 0; i < Textures.Length; i++)
                 {
-                    if (i == 0 && Client.Settings.CLIENT_IDENTIFICATION_TAG != UUID.Zero)
+                    if ((i == 0 || i == 5 || i == 6) && Client.Settings.CLIENT_IDENTIFICATION_TAG != UUID.Zero)
                     {
                         Primitive.TextureEntryFace face = te.CreateFace(i);
                         face.TextureID = Client.Settings.CLIENT_IDENTIFICATION_TAG;
