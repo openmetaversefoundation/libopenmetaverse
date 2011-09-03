@@ -370,6 +370,11 @@ namespace OpenMetaverse
         /// This seems to only be for the Pelvis?
         /// </summary>
         public binBVHJointKey[] positionkeys;
+
+        /// <summary>
+        /// Custom application data that can be attached to a joint
+        /// </summary>
+        public object Tag;
     }
 
     /// <summary>

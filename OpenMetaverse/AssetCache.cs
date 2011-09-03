@@ -89,17 +89,17 @@ namespace OpenMetaverse
         public AssetCache(GridClient client)
         {
             Client = client;
-            Client.Network.LoginProgress += delegate(object sender, LoginProgressEventArgs e) 
-            { 
-                if(e.Status == LoginStatus.Success) 
-                { 
-                    SetupTimer(); 
-                } 
+            Client.Network.LoginProgress += delegate(object sender, LoginProgressEventArgs e)
+            {
+                if (e.Status == LoginStatus.Success)
+                {
+                    SetupTimer();
+                }
             };
 
             Client.Network.Disconnected += delegate(object sender, DisconnectedEventArgs e) { DestroyTimer(); };
         }
-       
+
 
         /// <summary>
         /// Disposes cleanup timer
@@ -143,8 +143,19 @@ namespace OpenMetaverse
             }
             try
             {
-                Logger.DebugLog("Reading " + FileName(assetID) + " from asset cache.");
-                byte[] data = File.ReadAllBytes(FileName(assetID));
+                byte[] data;
+
+                if (File.Exists(FileName(assetID)))
+                {
+                    Logger.DebugLog("Reading " + FileName(assetID) + " from asset cache.");
+                    data = File.ReadAllBytes(FileName(assetID));
+                }
+                else
+                {
+                    Logger.DebugLog("Reading " + StaticFileName(assetID) + " from static asset cache.");
+                    data = File.ReadAllBytes(StaticFileName(assetID));
+
+                }
                 return data;
             }
             catch (Exception ex)
@@ -186,10 +197,21 @@ namespace OpenMetaverse
         /// <returns>String with the file name of the cahced asset</returns>
         private string FileName(UUID assetID)
         {
-            if (ComputeAssetCacheFilename != null) {
+            if (ComputeAssetCacheFilename != null)
+            {
                 return ComputeAssetCacheFilename(Client.Settings.ASSET_CACHE_DIR, assetID);
             }
             return Client.Settings.ASSET_CACHE_DIR + Path.DirectorySeparatorChar + assetID.ToString();
+        }
+
+        /// <summary>
+        /// Constructs a file name of the static cached asset
+        /// </summary>
+        /// <param name="assetID">UUID of the asset</param>
+        /// <returns>String with the file name of the static cached asset</returns>
+        private string StaticFileName(UUID assetID)
+        {
+            return Settings.RESOURCE_DIR + Path.DirectorySeparatorChar + "static_assets" + Path.DirectorySeparatorChar + assetID.ToString();
         }
 
         /// <summary>
@@ -255,7 +277,11 @@ namespace OpenMetaverse
             if (!Operational())
                 return false;
             else
-                return File.Exists(FileName(assetID));
+                if (File.Exists(FileName(assetID)))
+                    return true;
+                else
+                    return File.Exists(StaticFileName(assetID));
+
         }
 
         /// <summary>

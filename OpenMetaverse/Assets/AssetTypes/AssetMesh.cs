@@ -63,8 +63,8 @@ namespace OpenMetaverse.Assets
         public override void Encode() { }
 
         /// <summary>
-        /// Decodes mesh asset
-        /// </summary>
+        /// Decodes mesh asset. See <see cref="OpenMetaverse.Rendering.FacetedMesh.TryDecodeFromAsset"/>
+        /// to furter decode it for rendering</summary>
         /// <returns>true</returns>
         public override bool Decode()
         {
@@ -80,10 +80,17 @@ namespace OpenMetaverse.Assets
                     foreach(string partName in header.Keys)
                     {
                         if (header[partName].Type != OSDType.Map)
+                        {
+                            MeshData[partName] = header[partName];
                             continue;
+                        }
+
                         OSDMap partInfo = (OSDMap)header[partName];
                         if (partInfo["offset"] < 0 || partInfo["size"] == 0)
+                        {
+                            MeshData[partName] = partInfo;
                             continue;
+                        }
 
                         byte[] part = new byte[partInfo["size"]];
                         Buffer.BlockCopy(AssetData, partInfo["offset"] + (int)start, part, 0, part.Length);

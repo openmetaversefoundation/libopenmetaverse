@@ -1364,7 +1364,7 @@ namespace OpenMetaverse
 
                 if (Client.Network.CurrentSim.ObjectsPrimitives.TryGetValue(sittingOn, out p))
                 {
-                    fullPosition += p.Position;
+                    fullPosition = p.Position + relativePosition * p.Rotation;
                 }
 
                 // go up the hiearchy trying to find the root prim
@@ -3390,6 +3390,29 @@ namespace OpenMetaverse
             CapsClient cap = new CapsClient(uri);
             cap.BeginGetResponse(msg.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
         }
+
+        /// <summary>
+        /// Tells the sim what UI language is used, and if it's ok to share that with scripts
+        /// </summary>
+        /// <param name="language">Two letter language code</param>
+        /// <param name="isPublic">Share language info with scripts</param>
+        public void UpdateAgentLanguage(string language, bool isPublic)
+        {
+            try
+            {
+                UpdateAgentLanguageMessage msg = new UpdateAgentLanguageMessage();
+                msg.Language = language;
+                msg.LanguagePublic = isPublic;
+
+                Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("UpdateAgentLanguage");
+                CapsClient request = new CapsClient(url);
+                request.BeginGetResponse(msg.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Failes to update agent language", Helpers.LogLevel.Error, Client, ex);
+            }
+        }
         #endregion Misc
 
         #region Packet Handlers
@@ -3580,6 +3603,7 @@ namespace OpenMetaverse
             Movement.Camera.LookDirection(movement.Data.LookAt);
             simulator.Handle = movement.Data.RegionHandle;
             simulator.SimVersion = Utils.BytesToString(movement.SimData.ChannelVersion);
+            simulator.AgentMovementComplete = true;
         }
 
         /// <summary>Process an incoming packet and raise the appropriate events</summary>
@@ -3797,6 +3821,7 @@ namespace OpenMetaverse
                 Logger.DebugLog("TeleportFinish received, Flags: " + flags.ToString(), Client);
 
                 // Connect to the new sim
+                Client.Network.CurrentSim.AgentMovementComplete = false; // we're not there anymore
                 Simulator newSimulator = Client.Network.Connect(new IPAddress(finish.Info.SimIP),
                     finish.Info.SimPort, finish.Info.RegionHandle, true, seedcaps);
 
@@ -3977,7 +4002,7 @@ namespace OpenMetaverse
             if (newSim != null)
             {
                 Logger.Log("Finished crossing over in to region " + newSim.ToString(), Helpers.LogLevel.Info, Client);
-
+                oldSim.AgentMovementComplete = false; // We're no longer there
                 if (m_RegionCrossed != null)
                 {
                     OnRegionCrossed(new RegionCrossedEventArgs(oldSim, newSim));

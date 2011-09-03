@@ -68,6 +68,13 @@ namespace OpenMetaverse
         }
     }
 
+    internal class ActiveDownload
+    {
+        public List<CapsBase.DownloadProgressEventHandler> ProgresHadlers = new List<CapsBase.DownloadProgressEventHandler>();
+        public List<CapsBase.RequestCompletedEventHandler> CompletedHandlers = new List<CapsBase.RequestCompletedEventHandler>();
+        public HttpWebRequest Request;
+    }
+
     /// <summary>
     /// Manages async HTTP downloads with a limit on maximum
     /// concurrent downloads
@@ -75,7 +82,7 @@ namespace OpenMetaverse
     public class DownloadManager
     {
         Queue<DownloadRequest> queue = new Queue<DownloadRequest>();
-        List<HttpWebRequest> activeDownloads = new List<HttpWebRequest>();
+        Dictionary<string, ActiveDownload> activeDownloads = new Dictionary<string, ActiveDownload>();
 
         int m_ParallelDownloads = 20;
         X509Certificate2 m_ClientCert;
@@ -104,14 +111,18 @@ namespace OpenMetaverse
         {
             lock (activeDownloads)
             {
-                for (int i = 0; i < activeDownloads.Count; i++)
+                foreach(ActiveDownload download in activeDownloads.Values)
                 {
                     try
                     {
-                        activeDownloads[i].Abort();
+                        if (download.Request != null)
+                        {
+                            download.Request.Abort();
+                        }
                     }
                     catch { }
                 }
+                activeDownloads.Clear();
             }
         }
 
@@ -146,26 +157,60 @@ namespace OpenMetaverse
                 if (queue.Count > 0)
                 {
                     int nr = 0;
-                    lock (activeDownloads) nr = activeDownloads.Count;
+                    lock (activeDownloads)
+                    {
+                        nr = activeDownloads.Count;
+                    }
 
                     for (int i = nr; i < ParallelDownloads && queue.Count > 0; i++)
                     {
                         DownloadRequest item = queue.Dequeue();
-                        Logger.DebugLog("Requesting " + item.Address.ToString());
-                        HttpWebRequest req = SetupRequest(item.Address, item.ContentType);
-                        CapsBase.DownloadDataAsync(
-                            req,
-                            item.MillisecondsTimeout,
-                            item.DownloadProgressCallback,
-                            (HttpWebRequest request, HttpWebResponse response, byte[] responseData, Exception error) =>
+                        lock (activeDownloads)
+                        {
+                            string addr = item.Address.ToString();
+                            if (activeDownloads.ContainsKey(addr))
                             {
-                                lock (activeDownloads) activeDownloads.Remove(request);
-                                item.CompletedCallback(request, response, responseData, error);
-                                EnqueuePending();
+                                activeDownloads[addr].CompletedHandlers.Add(item.CompletedCallback);
+                                if (item.DownloadProgressCallback != null)
+                                {
+                                    activeDownloads[addr].ProgresHadlers.Add(item.DownloadProgressCallback);
+                                }
                             }
-                        );
+                            else
+                            {
+                                ActiveDownload activeDownload = new ActiveDownload();
+                                activeDownload.CompletedHandlers.Add(item.CompletedCallback);
+                                if (item.DownloadProgressCallback != null)
+                                {
+                                    activeDownload.ProgresHadlers.Add(item.DownloadProgressCallback);
+                                }
 
-                        lock (activeDownloads) activeDownloads.Add(req);
+                                Logger.DebugLog("Requesting " + item.Address.ToString());
+                                activeDownload.Request = SetupRequest(item.Address, item.ContentType);
+                                CapsBase.DownloadDataAsync(
+                                    activeDownload.Request,
+                                    item.MillisecondsTimeout,
+                                    (HttpWebRequest request, HttpWebResponse response, int bytesReceived, int totalBytesToReceive) =>
+                                    {
+                                        foreach (CapsBase.DownloadProgressEventHandler handler in activeDownload.ProgresHadlers)
+                                        {
+                                            handler(request, response, bytesReceived, totalBytesToReceive);
+                                        }
+                                    },
+                                    (HttpWebRequest request, HttpWebResponse response, byte[] responseData, Exception error) =>
+                                    {
+                                        lock (activeDownloads) activeDownloads.Remove(addr);
+                                        foreach (CapsBase.RequestCompletedEventHandler handler in activeDownload.CompletedHandlers)
+                                        {
+                                            handler(request, response, responseData, error);
+                                        }
+                                        EnqueuePending();
+                                    }
+                                );
+
+                                activeDownloads[addr] = activeDownload;
+                            }
+                        }
                     }
                 }
             }
@@ -174,6 +219,20 @@ namespace OpenMetaverse
         /// <summary>Enqueue a new HTPP download</summary>
         public void QueueDownlad(DownloadRequest req)
         {
+            lock (activeDownloads)
+            {
+                string addr = req.Address.ToString();
+                if (activeDownloads.ContainsKey(addr))
+                {
+                    activeDownloads[addr].CompletedHandlers.Add(req.CompletedCallback);
+                    if (req.DownloadProgressCallback != null)
+                    {
+                        activeDownloads[addr].ProgresHadlers.Add(req.DownloadProgressCallback);
+                    }
+                    return;
+                }
+            }
+
             lock (queue)
             {
                 queue.Enqueue(req);

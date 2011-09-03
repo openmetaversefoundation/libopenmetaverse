@@ -234,7 +234,7 @@ namespace OpenMetaverse
     public class FriendsManager
     {
         #region Delegates
-        
+
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<FriendInfoEventArgs> m_FriendOnline;
 
@@ -280,7 +280,7 @@ namespace OpenMetaverse
             add { lock (m_FriendOfflineLock) { m_FriendOffline += value; } }
             remove { lock (m_FriendOfflineLock) { m_FriendOffline -= value; } }
         }
-        
+
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<FriendInfoEventArgs> m_FriendRights;
 
@@ -302,7 +302,7 @@ namespace OpenMetaverse
         {
             add { lock (m_FriendRightsLock) { m_FriendRights += value; } }
             remove { lock (m_FriendRightsLock) { m_FriendRights -= value; } }
-        }        
+        }
 
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<FriendNamesEventArgs> m_FriendNames;
@@ -348,7 +348,7 @@ namespace OpenMetaverse
         {
             add { lock (m_FriendshipOfferedLock) { m_FriendshipOffered += value; } }
             remove { lock (m_FriendshipOfferedLock) { m_FriendshipOffered -= value; } }
-        }        
+        }
 
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<FriendshipResponseEventArgs> m_FriendshipResponse;
@@ -372,7 +372,7 @@ namespace OpenMetaverse
             add { lock (m_FriendshipResponseLock) { m_FriendshipResponse += value; } }
             remove { lock (m_FriendshipResponseLock) { m_FriendshipResponse -= value; } }
         }
-        
+
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<FriendshipTerminatedEventArgs> m_FriendshipTerminated;
 
@@ -395,7 +395,7 @@ namespace OpenMetaverse
         {
             add { lock (m_FriendshipTerminatedLock) { m_FriendshipTerminated += value; } }
             remove { lock (m_FriendshipTerminatedLock) { m_FriendshipTerminated -= value; } }
-        }        
+        }
 
         /// <summary>The event subscribers. null if no subcribers</summary>
         private EventHandler<FriendFoundReplyEventArgs> m_FriendFound;
@@ -453,7 +453,7 @@ namespace OpenMetaverse
         {
             Client = client;
 
-            Client.Network.LoginProgress += Network_OnConnect;            
+            Client.Network.LoginProgress += Network_OnConnect;
             Client.Avatars.UUIDNameReply += new EventHandler<UUIDNameReplyEventArgs>(Avatars_OnAvatarNames);
             Client.Self.IM += Self_IM;
 
@@ -898,21 +898,23 @@ namespace OpenMetaverse
         private void Network_OnLoginResponse(bool loginSuccess, bool redirect, string message, string reason,
             LoginResponseData replyData)
         {
+            int uuidLength = UUID.Zero.ToString().Length;
+
             if (loginSuccess && replyData.BuddyList != null)
             {
-                if (replyData.BuddyList != null)
+                foreach (BuddyListEntry buddy in replyData.BuddyList)
                 {
-                    foreach (BuddyListEntry buddy in replyData.BuddyList)
+                    UUID bubid;
+                    string id = buddy.buddy_id.Length > uuidLength ? buddy.buddy_id.Substring(0, uuidLength) : buddy.buddy_id;
+                    if (UUID.TryParse(id, out bubid))
                     {
-                        UUID bubid = UUID.Parse(buddy.buddy_id);
                         lock (FriendList.Dictionary)
                         {
                             if (!FriendList.ContainsKey(bubid))
                             {
-                                FriendList.Add(bubid,
-                                new FriendInfo(UUID.Parse(buddy.buddy_id),
-                                (FriendRights)buddy.buddy_rights_given,
-                                (FriendRights)buddy.buddy_rights_has));
+                                FriendList[bubid] = new FriendInfo(bubid, 
+                                    (FriendRights)buddy.buddy_rights_given,
+                                    (FriendRights)buddy.buddy_rights_has);
                             }
                         }
                     }
@@ -959,7 +961,7 @@ namespace OpenMetaverse
             this.m_Names = names;
         }
     }
-    
+
     /// <summary>Sent when another agent requests a friendship with our agent</summary>
     public class FriendshipOfferedEventArgs : EventArgs
     {
@@ -989,7 +991,7 @@ namespace OpenMetaverse
             this.m_SessionID = imSessionID;
         }
     }
-    
+
     /// <summary>A response containing the results of our request to form a friendship with another agent</summary>
     public class FriendshipResponseEventArgs : EventArgs
     {
@@ -1017,7 +1019,7 @@ namespace OpenMetaverse
             this.m_Accepted = accepted;
         }
     }
-    
+
     /// <summary>Contains data sent when a friend terminates a friendship with us</summary>
     public class FriendshipTerminatedEventArgs : EventArgs
     {
@@ -1040,7 +1042,7 @@ namespace OpenMetaverse
             this.m_AgentName = agentName;
         }
     }
-    
+
     /// <summary>
     /// Data sent in response to a <see cref="FindFriend"/> request which contains the information to allow us to map the friends location
     /// </summary>

@@ -172,9 +172,15 @@ namespace OpenMetaverse.Tests
             byte[] binaryZeroIntSerialized = OSDParser.SerializeLLSDBinary(llsdZeroInt);
             Assert.AreEqual(binaryZeroInt, binaryZeroIntSerialized);
 
+            binaryZeroIntSerialized = OSDParser.SerializeLLSDBinary(llsdZeroInt, false);
+            Assert.AreEqual(binaryZeroIntValue, binaryZeroIntSerialized);
+
             OSD llsdAnInt = OSD.FromInteger(1234843);
             byte[] binaryAnIntSerialized = OSDParser.SerializeLLSDBinary(llsdAnInt);
             Assert.AreEqual(binaryAnInt, binaryAnIntSerialized);
+
+            binaryAnIntSerialized = OSDParser.SerializeLLSDBinary(llsdAnInt, false);
+            Assert.AreEqual(binaryAnIntValue, binaryAnIntSerialized);
         }
 
         private static byte[] binaryRealValue = { 0x72, 0x41, 0x2c, 0xec, 0xf6, 0x77, 0xce, 0xd9, 0x17 };
@@ -193,6 +199,9 @@ namespace OpenMetaverse.Tests
         {
             OSD llsdReal = OSD.FromReal(947835.234d);
             byte[] binaryRealSerialized = OSDParser.SerializeLLSDBinary(llsdReal);
+            Assert.AreEqual(binaryReal, binaryRealSerialized);
+
+            binaryRealSerialized = OSDParser.SerializeLLSDBinary(llsdReal);
             Assert.AreEqual(binaryReal, binaryRealSerialized);
         }
 
@@ -224,8 +233,14 @@ namespace OpenMetaverse.Tests
             byte[] binaryAUUIDSerialized = OSDParser.SerializeLLSDBinary(llsdAUUID);
             Assert.AreEqual(binaryAUUID, binaryAUUIDSerialized);
 
+            binaryAUUIDSerialized = OSDParser.SerializeLLSDBinary(llsdAUUID);
+            Assert.AreEqual(binaryAUUID, binaryAUUIDSerialized);
+
             OSD llsdZeroUUID = OSD.FromUUID(new UUID("00000000-0000-0000-0000-000000000000"));
             byte[] binaryZeroUUIDSerialized = OSDParser.SerializeLLSDBinary(llsdZeroUUID);
+            Assert.AreEqual(binaryZeroUUID, binaryZeroUUIDSerialized);
+
+            binaryZeroUUIDSerialized = OSDParser.SerializeLLSDBinary(llsdZeroUUID);
             Assert.AreEqual(binaryZeroUUID, binaryZeroUUIDSerialized);
         }
 
@@ -353,7 +368,7 @@ namespace OpenMetaverse.Tests
         // which means, this implementation and the reference implementation only work the same in the universal
         // timezone. Therefore this binaryDateTimeValue is generated in the UTC timezone by the reference
         // implementation.
-        private static byte[] binaryDateTimeValue = { 0x64, 0x41, 0xd1, 0xde, 0xa7, 0x8d, 0xc0, 0x0, 0x0 };
+        private static byte[] binaryDateTimeValue = { 100, 0, 0, 192, 141, 167, 222, 209, 65 };
         private static byte[] binaryDateTime = (byte[])ConcatenateArrays(binaryHead, binaryDateTimeValue);
 
         [Test()]
@@ -388,7 +403,6 @@ namespace OpenMetaverse.Tests
             OSD llsdDateTwoDS = OSDParser.DeserializeLLSDBinary(binaryDateTwoSerialized);
             Assert.AreEqual(OSDType.Date, llsdDateOneDS.Type);
             Assert.AreEqual(dtTwo.ToLocalTime(), llsdDateTwoDS.AsDate());
-
         }
 
         // Data for empty array { }
@@ -440,10 +454,16 @@ namespace OpenMetaverse.Tests
             byte[] binaryEmptyArraySerialized = OSDParser.SerializeLLSDBinary(llsdEmptyArray);
             Assert.AreEqual(binaryEmptyArray, binaryEmptyArraySerialized);
 
+            binaryEmptyArraySerialized = OSDParser.SerializeLLSDBinary(llsdEmptyArray, false);
+            Assert.AreEqual(binaryEmptyArrayValue, binaryEmptyArraySerialized);
+
             OSDArray llsdSimpleArray = new OSDArray();
             llsdSimpleArray.Add(OSD.FromInteger(0));
             byte[] binarySimpleArraySerialized = OSDParser.SerializeLLSDBinary(llsdSimpleArray);
             Assert.AreEqual(binarySimpleArray, binarySimpleArraySerialized);
+
+            binarySimpleArraySerialized = OSDParser.SerializeLLSDBinary(llsdSimpleArray, false);
+            Assert.AreEqual(binarySimpleArrayValue, binarySimpleArraySerialized);
 
             OSDArray llsdSimpleArrayTwo = new OSDArray();
             llsdSimpleArrayTwo.Add(OSD.FromInteger(0));
@@ -451,6 +471,8 @@ namespace OpenMetaverse.Tests
             byte[] binarySimpleArrayTwoSerialized = OSDParser.SerializeLLSDBinary(llsdSimpleArrayTwo);
             Assert.AreEqual(binarySimpleArrayTwo, binarySimpleArrayTwoSerialized);
 
+            binarySimpleArrayTwoSerialized = OSDParser.SerializeLLSDBinary(llsdSimpleArrayTwo, false);
+            Assert.AreEqual(binarySimpleArrayTwoValue, binarySimpleArrayTwoSerialized);
         }
 
         // Data for empty dictionary { }

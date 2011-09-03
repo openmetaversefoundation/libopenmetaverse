@@ -17,7 +17,7 @@
     <OutputPath>.\trunk\</OutputPath>
     <HtmlHelpName>OpenMetaverse</HtmlHelpName>
     <ProjectSummary>The OpenMetaverse Developers API Documentation</ProjectSummary>
-    <CopyrightHref>http://www.openmetaverse.org/viewvc/index.cgi/omf/libopenmetaverse/trunk/LICENSE.txt%3fview=markup</CopyrightHref>
+    <CopyrightHref>http://libopenmetaverse.googlecode.com/svn/libopenmetaverse/trunk/LICENSE.txt</CopyrightHref>
     <CopyrightText>%28c%29 2011 The OpenMetaverse Ninjas and Contributors</CopyrightText>
     <HelpTitle>OpenMetaverse Protocol Library Developers API Documentation</HelpTitle>
     <HelpFileFormat>HtmlHelp1, Website</HelpFileFormat>
@@ -101,6 +101,8 @@
       <NamespaceSummaryItem name="OpenMetaverse" isDocumented="True" xmlns="">The Primary namespace used by libOpenMetaverse. Common classes, Structs and Enums are all located within this namespace.</NamespaceSummaryItem>
     </NamespaceSummaries>
     <ShowFeedbackControl>True</ShowFeedbackControl>
+    <MissingTags>AutoDocumentCtors, AutoDocumentDispose</MissingTags>
+    <KeepLogFile>False</KeepLogFile>
   </PropertyGroup>
   <!-- There are no properties for these two groups but they need to appear in
        order for Visual Studio to perform the build. -->

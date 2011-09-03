@@ -71,7 +71,7 @@ namespace OpenMetaverse.Rendering
             return GenerateFacetedMesh(prim, lod);
         }
 
-        public void TransformTexCoords(List<Vertex> vertices, Vector3 center, Primitive.TextureEntryFace teFace)
+        public void TransformTexCoords(List<Vertex> vertices, Vector3 center, Primitive.TextureEntryFace teFace, Vector3 primScale)
         {
             // Lalala...
         }

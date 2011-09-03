@@ -115,7 +115,7 @@ namespace OpenMetaverse
         const int REBAKE_DELAY = 1000 * 20;
 
         /// <summary>Total number of wearables for each avatar</summary>
-        public const int WEARABLE_COUNT = 15;
+        public const int WEARABLE_COUNT = 16;
         /// <summary>Total number of baked textures on each avatar</summary>
         public const int BAKED_TEXTURE_COUNT = 6;
         /// <summary>Total number of wearables per bake layer</summary>
@@ -321,7 +321,7 @@ namespace OpenMetaverse
 
         #endregion
 
-        #region Properties
+        #region Properties and public fields
 
         /// <summary>
         /// Returns true if AppearanceManager is busy and trying to set or change appearance will fail
@@ -333,6 +333,12 @@ namespace OpenMetaverse
                 return AppearanceThreadRunning != 0;
             }
         }
+
+        /// <summary>Visual parameters last sent to the sim</summary>
+        public byte[] MyVisualParameters = null;
+        
+        /// <summary>Textures about this client sent to the sim</summary>
+        public Primitive.TextureEntry MyTextures = null;
 
         #endregion Properties
 
@@ -1671,7 +1677,28 @@ namespace OpenMetaverse
                 #region VisualParam
 
                 int vpIndex = 0;
-                set.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[218];
+                int nrParams;
+                bool wearingPhysics = false;
+                
+                foreach (WearableData wearable in Wearables.Values)
+                {
+                    if (wearable.WearableType == WearableType.Physics)
+                    {
+                        wearingPhysics = true;
+                        break;
+                    }
+                }
+
+                if (wearingPhysics)
+                {
+                    nrParams = 251;
+                }
+                else
+                {
+                    nrParams = 218;
+                }
+
+                set.VisualParam = new AgentSetAppearancePacket.VisualParamBlock[nrParams];
 
                 foreach (KeyValuePair<int, VisualParam> kvp in VisualParams.Params)
                 {
@@ -1726,6 +1753,14 @@ namespace OpenMetaverse
                             agentSizeVPHipLength = paramValue;
                             break;
                     }
+
+                    if (vpIndex == nrParams) break;
+                }
+
+                MyVisualParameters = new byte[set.VisualParam.Length];
+                for (int i = 0; i < set.VisualParam.Length; i++)
+                {
+                    MyVisualParameters[i] = set.VisualParam[i].ParamValue;
                 }
 
                 #endregion VisualParam
@@ -1736,7 +1771,7 @@ namespace OpenMetaverse
 
                 for (uint i = 0; i < Textures.Length; i++)
                 {
-                    if (i == 0 && Client.Settings.CLIENT_IDENTIFICATION_TAG != UUID.Zero)
+                    if ((i == 0 || i == 5 || i == 6) && Client.Settings.CLIENT_IDENTIFICATION_TAG != UUID.Zero)
                     {
                         Primitive.TextureEntryFace face = te.CreateFace(i);
                         face.TextureID = Client.Settings.CLIENT_IDENTIFICATION_TAG;
@@ -1751,6 +1786,7 @@ namespace OpenMetaverse
                 }
 
                 set.ObjectData.TextureEntry = te.GetBytes();
+                MyTextures = te;
 
                 #endregion TextureEntry
 
@@ -1800,6 +1836,16 @@ namespace OpenMetaverse
                 set.AgentData.Size = new Vector3(0.45f, 0.6f, (float)agentHeight);
 
                 #endregion Agent Size
+
+                if (Client.Settings.AVATAR_TRACKING)
+                {
+                    Avatar me;
+                    if (Client.Network.CurrentSim.ObjectsAvatars.TryGetValue(Client.Self.LocalID, out me))
+                    {
+                        me.Textures = MyTextures;
+                        me.VisualParameters = MyVisualParameters;
+                    }
+                }
             }
 
             Client.Network.SendPacket(set);
@@ -2068,6 +2114,7 @@ namespace OpenMetaverse
                 case WearableType.Skirt:
                 case WearableType.Tattoo:
                 case WearableType.Alpha:
+                case WearableType.Physics:
                     return AssetType.Clothing;
                 default:
                     return AssetType.Unknown;

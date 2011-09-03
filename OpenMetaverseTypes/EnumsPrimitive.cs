@@ -212,7 +212,8 @@ namespace OpenMetaverse
         Torus,
         Tube,
         Ring,
-        Sculpt
+        Sculpt,
+        Mesh
     }
 
     /// <summary>
@@ -228,7 +229,9 @@ namespace OpenMetaverse
         /// <summary>Whether this object has light parameters</summary>
         Light = 0x20,
         /// <summary>Whether this object is a sculpted prim</summary>
-        Sculpt = 0x30
+        Sculpt = 0x30,
+        /// <summary>Whether this object is a mesh</summary>
+        Mesh = 0x60,
     }
 
     /// <summary>
@@ -532,5 +535,18 @@ namespace OpenMetaverse
         PlayMedia = 5,
         /// <summary>Open parcel media</summary>
         OpenMedia = 6
+    }
+
+    /// <summary>
+    /// Type of physics representation used for this prim in the simulator
+    /// </summary>
+    public enum PhysicsShapeType : byte
+    {
+        /// <summary>Use prim physics form this object</summary>
+        Prim = 0,
+        /// <summary>No physics, prim doesn't collide</summary>
+        None,
+        /// <summary>Use convex hull represantion of this prim</summary>
+        ConvexHull
     }
 }

@@ -145,12 +145,16 @@ namespace OpenMetaverse
             req.Add("GetDisplayNames");
             req.Add("GetTexture");
             req.Add("GetMesh");
+            req.Add("GetObjectCost");
+            req.Add("GetObjectPhysicsData");
             req.Add("GroupProposalBallot");
             req.Add("HomeLocation");
             req.Add("LandResources");
             req.Add("MapLayer");
             req.Add("MapLayerGod");
             req.Add("NewFileAgentInventory");
+            req.Add("NewFileAgentInventoryVariablePrice");
+            req.Add("ObjectAdd");
             req.Add("ParcelPropertiesUpdate");
             req.Add("ParcelMediaURLFilterList");
             req.Add("ParcelNavigateMedia");
@@ -165,6 +169,8 @@ namespace OpenMetaverse
             req.Add("SendUserReport");
             req.Add("SendUserReportWithScreenshot");
             req.Add("ServerReleaseNotes");
+            req.Add("SimConsole");
+            req.Add("SimulatorFeatures");
             req.Add("SetDisplayName");
             req.Add("SimConsoleAsync");
             req.Add("StartGroupProposal");
@@ -179,6 +185,7 @@ namespace OpenMetaverse
             req.Add("UpdateNotecardTaskInventory");
             req.Add("UpdateScriptTask");
             req.Add("UploadBakedTexture");
+            req.Add("UploadObjectAsset");
             req.Add("ViewerMetrics");
             req.Add("ViewerStartAuction");
             req.Add("ViewerStats");

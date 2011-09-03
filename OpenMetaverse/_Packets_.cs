@@ -14582,20 +14582,73 @@ namespace OpenMetaverse.Packets
 
         }
 
+        /// <exclude/>
+        public sealed class ExtraPhysicsBlock : PacketBlock
+        {
+            public byte PhysicsShapeType;
+            public float Density;
+            public float Friction;
+            public float Restitution;
+            public float GravityMultiplier;
+
+            public override int Length
+            {
+                get
+                {
+                    return 17;
+                }
+            }
+
+            public ExtraPhysicsBlock() { }
+            public ExtraPhysicsBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public override void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    PhysicsShapeType = (byte)bytes[i++];
+                    Density = Utils.BytesToFloat(bytes, i); i += 4;
+                    Friction = Utils.BytesToFloat(bytes, i); i += 4;
+                    Restitution = Utils.BytesToFloat(bytes, i); i += 4;
+                    GravityMultiplier = Utils.BytesToFloat(bytes, i); i += 4;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public override void ToBytes(byte[] bytes, ref int i)
+            {
+                bytes[i++] = PhysicsShapeType;
+                Utils.FloatToBytes(Density, bytes, i); i += 4;
+                Utils.FloatToBytes(Friction, bytes, i); i += 4;
+                Utils.FloatToBytes(Restitution, bytes, i); i += 4;
+                Utils.FloatToBytes(GravityMultiplier, bytes, i); i += 4;
+            }
+
+        }
+
         public override int Length
         {
             get
             {
-                int length = 10;
+                int length = 11;
                 length += AgentData.Length;
+                for (int j = 0; j < ExtraPhysics.Length; j++)
+                    length += ExtraPhysics[j].Length;
                 return length;
             }
         }
         public AgentDataBlock AgentData;
+        public ExtraPhysicsBlock[] ExtraPhysics;
 
         public ObjectFlagUpdatePacket()
         {
-            HasVariableBlocks = false;
+            HasVariableBlocks = true;
             Type = PacketType.ObjectFlagUpdate;
             Header = new Header();
             Header.Frequency = PacketFrequency.Low;
@@ -14603,6 +14656,7 @@ namespace OpenMetaverse.Packets
             Header.Reliable = true;
             Header.Zerocoded = true;
             AgentData = new AgentDataBlock();
+            ExtraPhysics = null;
         }
 
         public ObjectFlagUpdatePacket(byte[] bytes, ref int i) : this()
@@ -14620,6 +14674,14 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             AgentData.FromBytes(bytes, ref i);
+            int count = (int)bytes[i++];
+            if(ExtraPhysics == null || ExtraPhysics.Length != -1) {
+                ExtraPhysics = new ExtraPhysicsBlock[count];
+                for(int j = 0; j < count; j++)
+                { ExtraPhysics[j] = new ExtraPhysicsBlock(); }
+            }
+            for (int j = 0; j < count; j++)
+            { ExtraPhysics[j].FromBytes(bytes, ref i); }
         }
 
         public ObjectFlagUpdatePacket(Header head, byte[] bytes, ref int i): this()
@@ -14632,24 +14694,89 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             AgentData.FromBytes(bytes, ref i);
+            int count = (int)bytes[i++];
+            if(ExtraPhysics == null || ExtraPhysics.Length != count) {
+                ExtraPhysics = new ExtraPhysicsBlock[count];
+                for(int j = 0; j < count; j++)
+                { ExtraPhysics[j] = new ExtraPhysicsBlock(); }
+            }
+            for (int j = 0; j < count; j++)
+            { ExtraPhysics[j].FromBytes(bytes, ref i); }
         }
 
         public override byte[] ToBytes()
         {
             int length = 10;
             length += AgentData.Length;
+            length++;
+            for (int j = 0; j < ExtraPhysics.Length; j++) { length += ExtraPhysics[j].Length; }
             if (Header.AckList != null && Header.AckList.Length > 0) { length += Header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             Header.ToBytes(bytes, ref i);
             AgentData.ToBytes(bytes, ref i);
+            bytes[i++] = (byte)ExtraPhysics.Length;
+            for (int j = 0; j < ExtraPhysics.Length; j++) { ExtraPhysics[j].ToBytes(bytes, ref i); }
             if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
 
         public override byte[][] ToBytesMultiple()
         {
-            return new byte[][] { ToBytes() };
+            System.Collections.Generic.List<byte[]> packets = new System.Collections.Generic.List<byte[]>();
+            int i = 0;
+            int fixedLength = 10;
+
+            byte[] ackBytes = null;
+            int acksLength = 0;
+            if (Header.AckList != null && Header.AckList.Length > 0) {
+                Header.AppendedAcks = true;
+                ackBytes = new byte[Header.AckList.Length * 4 + 1];
+                Header.AcksToBytes(ackBytes, ref acksLength);
+            }
+
+            fixedLength += AgentData.Length;
+            byte[] fixedBytes = new byte[fixedLength];
+            Header.ToBytes(fixedBytes, ref i);
+            AgentData.ToBytes(fixedBytes, ref i);
+            fixedLength += 1;
+
+            int ExtraPhysicsStart = 0;
+            do
+            {
+                int variableLength = 0;
+                int ExtraPhysicsCount = 0;
+
+                i = ExtraPhysicsStart;
+                while (fixedLength + variableLength + acksLength < Packet.MTU && i < ExtraPhysics.Length) {
+                    int blockLength = ExtraPhysics[i].Length;
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                        variableLength += blockLength;
+                        ++ExtraPhysicsCount;
+                    }
+                    else { break; }
+                    ++i;
+                }
+
+                byte[] packet = new byte[fixedLength + variableLength + acksLength];
+                int length = fixedBytes.Length;
+                Buffer.BlockCopy(fixedBytes, 0, packet, 0, length);
+                if (packets.Count > 0) { packet[0] = (byte)(packet[0] & ~0x10); }
+
+                packet[length++] = (byte)ExtraPhysicsCount;
+                for (i = ExtraPhysicsStart; i < ExtraPhysicsStart + ExtraPhysicsCount; i++) { ExtraPhysics[i].ToBytes(packet, ref length); }
+                ExtraPhysicsStart += ExtraPhysicsCount;
+
+                if (acksLength > 0) {
+                    Buffer.BlockCopy(ackBytes, 0, packet, length, acksLength);
+                    acksLength = 0;
+                }
+
+                packets.Add(packet);
+            } while (
+                ExtraPhysicsStart < ExtraPhysics.Length);
+
+            return packets.ToArray();
         }
     }
 

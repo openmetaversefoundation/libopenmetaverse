@@ -154,6 +154,35 @@ namespace OpenMetaverse
             }
 
             #endregion Properties
+
+            /// <summary>
+            /// Calculdates hash code for prim construction data
+            /// </summary>
+            /// <returns>The has</returns>
+            public override int GetHashCode()
+            {
+                return profileCurve.GetHashCode()
+                    ^ PathCurve.GetHashCode()
+                    ^ PathEnd.GetHashCode()
+                    ^ PathRadiusOffset.GetHashCode()
+                    ^ PathSkew.GetHashCode()
+                    ^ PathScaleX.GetHashCode()
+                    ^ PathScaleY.GetHashCode()
+                    ^ PathShearX.GetHashCode()
+                    ^ PathShearY.GetHashCode()
+                    ^ PathTaperX.GetHashCode()
+                    ^ PathTaperY.GetHashCode()
+                    ^ PathBegin.GetHashCode()
+                    ^ PathTwist.GetHashCode()
+                    ^ PathTwistBegin.GetHashCode()
+                    ^ PathRevolutions.GetHashCode()
+                    ^ ProfileBegin.GetHashCode()
+                    ^ ProfileEnd.GetHashCode()
+                    ^ ProfileHollow.GetHashCode()
+                    ^ Material.GetHashCode()
+                    ^ State.GetHashCode()
+                    ^ PCode.GetHashCode();
+            }
         }
 
         /// <summary>
@@ -597,6 +626,64 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>
+        /// Describes physics attributes of the prim
+        /// </summary>
+        public class PhysicsProperties
+        {
+            /// <summary>Primitive's local ID</summary>
+            public uint LocalID;
+            /// <summary>Density (1000 for normal density)</summary>
+            public float Density;
+            /// <summary>Friction</summary>
+            public float Friction;
+            /// <summary>Gravity multiplier (1 for normal gravity) </summary>
+            public float GravityMultiplier;
+            /// <summary>Type of physics representation of this primitive in the simulator</summary>
+            public PhysicsShapeType PhysicsShapeType;
+            /// <summary>Restitution</summary>
+            public float Restitution;
+
+            /// <summary>
+            /// Creates PhysicsProperties from OSD
+            /// </summary>
+            /// <param name="osd">OSDMap with incoming data</param>
+            /// <returns>Deserialized PhysicsProperties object</returns>
+            public static PhysicsProperties FromOSD(OSD osd)
+            {
+                PhysicsProperties ret = new PhysicsProperties();
+
+                if (osd is OSDMap)
+                {
+                    OSDMap map = (OSDMap)osd;
+                    ret.LocalID = map["LocalID"];
+                    ret.Density = map["Density"];
+                    ret.Friction = map["Friction"];
+                    ret.GravityMultiplier = map["GravityMultiplier"];
+                    ret.Restitution = map["Restitution"];
+                    ret.PhysicsShapeType = (PhysicsShapeType)map["PhysicsShapeType"].AsInteger();
+                }
+
+                return ret;
+            }
+
+            /// <summary>
+            /// Serializes PhysicsProperties to OSD
+            /// </summary>
+            /// <returns>OSDMap with serialized PhysicsProperties data</returns>
+            public OSD GetOSD()
+            {
+                OSDMap map = new OSDMap(6);
+                map["LocalID"] = LocalID;
+                map["Density"] = Density;
+                map["Friction"] = Friction;
+                map["GravityMultiplier"] = GravityMultiplier;
+                map["Restitution"] = Restitution;
+                map["PhysicsShapeType"] = (int)PhysicsShapeType;
+                return map;
+            }
+        }
+
         #endregion Subclasses
 
         #region Public Members
@@ -669,6 +756,12 @@ namespace OpenMetaverse
         public ConstructionData PrimData;
         /// <summary></summary>
         public ObjectProperties Properties;
+        /// <summary>Objects physics engine propertis</summary>
+        public PhysicsProperties PhysicsProps;
+        /// <summary>Extra data about primitive</summary>
+        public object Tag;
+        /// <summary>Indicates if prim is attached to an avatar</summary>
+        public bool IsAttachment;
 
         #endregion Public Members
 
@@ -679,8 +772,13 @@ namespace OpenMetaverse
         {
             get
             {
-                if (Sculpt != null && Sculpt.Type != SculptType.None)
-                    return PrimType.Sculpt;
+                if (Sculpt != null && Sculpt.Type != SculptType.None && Sculpt.SculptTexture != UUID.Zero)
+                {
+                    if (Sculpt.Type == SculptType.Mesh)
+                        return PrimType.Mesh;
+                    else
+                        return PrimType.Sculpt;
+                }
 
                 bool linearPath = (PrimData.PathCurve == PathCurve.Line || PrimData.PathCurve == PathCurve.Flexible);
                 float scaleY = PrimData.PathScaleY;
@@ -997,7 +1095,7 @@ namespace OpenMetaverse
                     Flexible = new FlexibleData(data, i);
                 else if (type == ExtraParamType.Light)
                     Light = new LightData(data, i);
-                else if (type == ExtraParamType.Sculpt)
+                else if (type == ExtraParamType.Sculpt || type == ExtraParamType.Mesh)
                     Sculpt = new SculptData(data, i);
 
                 i += (int)paramLength;
@@ -1064,7 +1162,14 @@ namespace OpenMetaverse
             }
             if (sculpt != null)
             {
-                Buffer.BlockCopy(Utils.UInt16ToBytes((ushort)ExtraParamType.Sculpt), 0, buffer, pos, 2);
+                if (Sculpt.Type == SculptType.Mesh)
+                {
+                    Buffer.BlockCopy(Utils.UInt16ToBytes((ushort)ExtraParamType.Mesh), 0, buffer, pos, 2);
+                }
+                else
+                {
+                    Buffer.BlockCopy(Utils.UInt16ToBytes((ushort)ExtraParamType.Sculpt), 0, buffer, pos, 2);
+                }
                 pos += 2;
 
                 Buffer.BlockCopy(Utils.UIntToBytes((uint)sculpt.Length), 0, buffer, pos, 4);
