@@ -326,7 +326,8 @@ namespace LitJson
             Put (str);
 
             if (str.IndexOf ('.') == -1 &&
-                str.IndexOf ('E') == -1)
+                str.IndexOf ('E') == -1 &&
+                !double.IsNaN(number))
                 writer.Write (".0");
 
             context.ExpectingValue = false;
