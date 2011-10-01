@@ -94,6 +94,8 @@ namespace OpenMetaverse
     public class AppearanceManager
     {
         #region Constants
+        /// <summary>Mask for multiple attachments</summary>
+        public static readonly byte ATTACHMENT_ADD = 0x80;
         /// <summary>Mapping between BakeType and AvatarTextureIndex</summary>
         public static readonly byte[] BakeIndexToTextureIndex = new byte[BAKED_TEXTURE_COUNT] { 8, 9, 10, 11, 19, 20 };
         /// <summary>Maximum number of concurrent downloads for wearable assets and textures</summary>
@@ -855,6 +857,18 @@ namespace OpenMetaverse
         /// first</param>
         public void AddAttachments(List<InventoryItem> attachments, bool removeExistingFirst)
         {
+            AddAttachments(attachments, removeExistingFirst, true);
+        }
+
+        /// <summary>
+        /// Adds a list of attachments to our agent
+        /// </summary>
+        /// <param name="attachments">A List containing the attachments to add</param>
+        /// <param name="removeExistingFirst">If true, tells simulator to remove existing attachment
+        /// <param name="replace">If true replace existing attachment on this attachment point, otherwise add to it (multi-attachments)</param>
+        /// first</param>
+        public void AddAttachments(List<InventoryItem> attachments, bool removeExistingFirst, bool replace)
+        {
             // Use RezMultipleAttachmentsFromInv  to clear out current attachments, and attach new ones
             RezMultipleAttachmentsFromInvPacket attachmentsPacket = new RezMultipleAttachmentsFromInvPacket();
             attachmentsPacket.AgentData.AgentID = Client.Self.AgentID;
@@ -871,7 +885,7 @@ namespace OpenMetaverse
                 {
                     InventoryAttachment attachment = (InventoryAttachment)attachments[i];
                     attachmentsPacket.ObjectData[i] = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock();
-                    attachmentsPacket.ObjectData[i].AttachmentPt = (byte)attachment.AttachmentPoint;
+                    attachmentsPacket.ObjectData[i].AttachmentPt = replace ? (byte)attachment.AttachmentPoint : (byte)(ATTACHMENT_ADD | (byte)attachment.AttachmentPoint);
                     attachmentsPacket.ObjectData[i].EveryoneMask = (uint)attachment.Permissions.EveryoneMask;
                     attachmentsPacket.ObjectData[i].GroupMask = (uint)attachment.Permissions.GroupMask;
                     attachmentsPacket.ObjectData[i].ItemFlags = (uint)attachment.Flags;
@@ -885,7 +899,7 @@ namespace OpenMetaverse
                 {
                     InventoryObject attachment = (InventoryObject)attachments[i];
                     attachmentsPacket.ObjectData[i] = new RezMultipleAttachmentsFromInvPacket.ObjectDataBlock();
-                    attachmentsPacket.ObjectData[i].AttachmentPt = 0;
+                    attachmentsPacket.ObjectData[i].AttachmentPt = replace ? (byte)0 : ATTACHMENT_ADD;
                     attachmentsPacket.ObjectData[i].EveryoneMask = (uint)attachment.Permissions.EveryoneMask;
                     attachmentsPacket.ObjectData[i].GroupMask = (uint)attachment.Permissions.GroupMask;
                     attachmentsPacket.ObjectData[i].ItemFlags = (uint)attachment.Flags;
@@ -912,8 +926,20 @@ namespace OpenMetaverse
         /// to attach the item to</param>
         public void Attach(InventoryItem item, AttachmentPoint attachPoint)
         {
+            Attach(item, attachPoint, true);
+        }
+
+        /// <summary>
+        /// Attach an item to our agent at a specific attach point
+        /// </summary>
+        /// <param name="item">A <seealso cref="OpenMetaverse.InventoryItem"/> to attach</param>
+        /// <param name="attachPoint">the <seealso cref="OpenMetaverse.AttachmentPoint"/> on the avatar 
+        /// <param name="replace">If true replace existing attachment on this attachment point, otherwise add to it (multi-attachments)</param>
+        /// to attach the item to</param>
+        public void Attach(InventoryItem item, AttachmentPoint attachPoint, bool replace)
+        {
             Attach(item.UUID, item.OwnerID, item.Name, item.Description, item.Permissions, item.Flags,
-                attachPoint);
+                attachPoint, replace);
         }
 
         /// <summary>
@@ -930,6 +956,24 @@ namespace OpenMetaverse
         public void Attach(UUID itemID, UUID ownerID, string name, string description,
             Permissions perms, uint itemFlags, AttachmentPoint attachPoint)
         {
+            Attach(itemID, ownerID, name, description, perms, itemFlags, attachPoint, true);
+        }
+
+        /// <summary>
+        /// Attach an item to our agent specifying attachment details
+        /// </summary>
+        /// <param name="itemID">The <seealso cref="OpenMetaverse.UUID"/> of the item to attach</param>
+        /// <param name="ownerID">The <seealso cref="OpenMetaverse.UUID"/> attachments owner</param>
+        /// <param name="name">The name of the attachment</param>
+        /// <param name="description">The description of the attahment</param>
+        /// <param name="perms">The <seealso cref="OpenMetaverse.Permissions"/> to apply when attached</param>
+        /// <param name="itemFlags">The <seealso cref="OpenMetaverse.InventoryItemFlags"/> of the attachment</param>
+        /// <param name="attachPoint">The <seealso cref="OpenMetaverse.AttachmentPoint"/> on the agent
+        /// <param name="replace">If true replace existing attachment on this attachment point, otherwise add to it (multi-attachments)</param>
+        /// to attach the item to</param>
+        public void Attach(UUID itemID, UUID ownerID, string name, string description,
+            Permissions perms, uint itemFlags, AttachmentPoint attachPoint, bool replace)
+        {
             // TODO: At some point it might be beneficial to have AppearanceManager track what we
             // are currently wearing for attachments to make enumeration and detachment easier
             RezSingleAttachmentFromInvPacket attach = new RezSingleAttachmentFromInvPacket();
@@ -937,7 +981,7 @@ namespace OpenMetaverse
             attach.AgentData.AgentID = Client.Self.AgentID;
             attach.AgentData.SessionID = Client.Self.SessionID;
 
-            attach.ObjectData.AttachmentPt = (byte)attachPoint;
+            attach.ObjectData.AttachmentPt = replace ? (byte)attachPoint : (byte)(ATTACHMENT_ADD | (byte)attachPoint);
             attach.ObjectData.Description = Utils.StringToBytes(description);
             attach.ObjectData.EveryoneMask = (uint)perms.EveryoneMask;
             attach.ObjectData.GroupMask = (uint)perms.GroupMask;
