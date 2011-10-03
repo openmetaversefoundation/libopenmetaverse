@@ -271,9 +271,15 @@ namespace OpenMetaverse
                 pJoint.Priority = Utils.BytesToInt(data, i); i += 4; // Joint Priority override?
                 rotationkeys = Utils.BytesToInt(data, i); i += 4; // How many rotation keyframes
             }
+            
+            // Sanity check how many rotation keys there are
+            if (rotationkeys < 0 || rotationkeys > 10000)
+            {
+                rotationkeys = 0;
+            }
+
             rotations = readKeys(data, ref i, rotationkeys, -1.0f, 1.0f);
-
-
+            
             if (!BitConverter.IsLittleEndian)
             {
                 positionkeys = Utils.BytesToInt(EndianSwap(data, i, 4)); i += 4; // How many position keyframes
@@ -281,6 +287,12 @@ namespace OpenMetaverse
             else
             {
                 positionkeys = Utils.BytesToInt(data, i); i += 4; // How many position keyframes
+            }
+
+            // Sanity check how many positions keys there are
+            if (positionkeys < 0 || positionkeys > 10000)
+            {
+                positionkeys = 0;
             }
 
             // Read in position keyframes
