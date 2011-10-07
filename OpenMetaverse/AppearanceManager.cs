@@ -644,7 +644,7 @@ namespace OpenMetaverse
 
             if (attachments.Count > 0)
             {
-                AddAttachments(attachments, false);
+                AddAttachments(attachments, false, false);
             }
 
             if (wearables.Count > 0)
@@ -783,7 +783,7 @@ namespace OpenMetaverse
                 SetAppearanceSerialNum++;
             }
             ReplaceOutfit(wearables);
-            AddAttachments(attachments, true);
+            AddAttachments(attachments, true, false);
             SendAgentIsNowWearing();
             DelayedRequestSetAppearance();
         }
