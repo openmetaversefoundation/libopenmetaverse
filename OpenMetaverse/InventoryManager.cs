@@ -4372,7 +4372,7 @@ namespace OpenMetaverse
                     InventoryFolder folder;
                     if (!_Store.Contains(dataBlock.FolderID))
                     {
-                        Logger.Log("Received BulkUpdate for unknown folder: " + dataBlock.FolderID, Helpers.LogLevel.Warning, Client);
+                        Logger.Log("Received BulkUpdate for unknown folder: " + dataBlock.FolderID, Helpers.LogLevel.Debug, Client);
                         folder = new InventoryFolder(dataBlock.FolderID);
                     }
                     else
@@ -4395,11 +4395,6 @@ namespace OpenMetaverse
                 for (int i = 0; i < update.ItemData.Length; i++)
                 {
                     BulkUpdateInventoryPacket.ItemDataBlock dataBlock = update.ItemData[i];
-
-                    // If we are given a folder of items, the item information might arrive before the folder
-                    // (parent) is in the store
-                    if (!_Store.Contains(dataBlock.ItemID))
-                        Logger.Log("Received BulkUpdate for unknown item: " + dataBlock.ItemID, Helpers.LogLevel.Warning, Client);
 
                     InventoryItem item = SafeCreateInventoryItem((InventoryType)dataBlock.InvType, dataBlock.ItemID);
 

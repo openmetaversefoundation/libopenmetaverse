@@ -170,6 +170,11 @@ namespace OpenMetaverse.Packets
                 {
                     Type fieldType = field.FieldType;
 
+                    if (field.Name.EndsWith("Mask"))
+                    {
+                        int foo = 1;
+                    }
+
                     if (fieldType == typeof(ulong))
                     {
                         // ulongs come in as a byte array, convert it manually here
@@ -193,6 +198,10 @@ namespace OpenMetaverse.Packets
                     {
                         // Just need a bit of manual typecasting love here
                         field.SetValue(block, (byte)blockData[field.Name].AsInteger());
+                    }
+                    else if (fieldType == typeof(sbyte))
+                    {
+                        field.SetValue(block, (sbyte)blockData[field.Name].AsInteger());
                     }
                     else if (fieldType == typeof(short))
                     {
@@ -236,6 +245,10 @@ namespace OpenMetaverse.Packets
                     {
                         Quaternion quat = ((OSDArray)blockData[field.Name]).AsQuaternion();
                         field.SetValue(block, quat);
+                    }
+                    else if (fieldType == typeof(byte[]) && blockData[field.Name].Type == OSDType.String)
+                    {
+                        field.SetValue(block, Utils.StringToBytes(blockData[field.Name]));
                     }
                 }
             }
