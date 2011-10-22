@@ -170,11 +170,6 @@ namespace OpenMetaverse.Packets
                 {
                     Type fieldType = field.FieldType;
 
-                    if (field.Name.EndsWith("Mask"))
-                    {
-                        int foo = 1;
-                    }
-
                     if (fieldType == typeof(ulong))
                     {
                         // ulongs come in as a byte array, convert it manually here
