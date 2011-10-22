@@ -4369,11 +4369,21 @@ namespace OpenMetaverse
             {
                 foreach (BulkUpdateInventoryPacket.FolderDataBlock dataBlock in update.FolderData)
                 {
+                    InventoryFolder folder;
                     if (!_Store.Contains(dataBlock.FolderID))
+                    {
                         Logger.Log("Received BulkUpdate for unknown folder: " + dataBlock.FolderID, Helpers.LogLevel.Warning, Client);
+                        folder = new InventoryFolder(dataBlock.FolderID);
+                    }
+                    else
+                    {
+                        folder = (InventoryFolder)_Store[dataBlock.FolderID];
+                    }
 
-                    InventoryFolder folder = new InventoryFolder(dataBlock.FolderID);
-                    folder.Name = Utils.BytesToString(dataBlock.Name);
+                    if (dataBlock.Name != null)
+                    {
+                        folder.Name = Utils.BytesToString(dataBlock.Name);
+                    }
                     folder.OwnerID = update.AgentData.AgentID;
                     folder.ParentUUID = dataBlock.ParentID;
                     _Store[folder.UUID] = folder;
