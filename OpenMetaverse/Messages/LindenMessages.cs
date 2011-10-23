@@ -408,8 +408,8 @@ namespace OpenMetaverse.Messages.Linden
             this.ReportType = requestMap["ReportType"].AsUInteger();
             this.RequestFlags = requestMap["RequestFlags"].AsUInteger();
             this.TotalObjectCount = requestMap["TotalObjectCount"].AsUInteger();
-            
-            if(TotalObjectCount < 1)
+
+            if (TotalObjectCount < 1)
             {
                 ReportDataBlocks = new ReportDataBlock[0];
                 return;
@@ -1070,7 +1070,7 @@ namespace OpenMetaverse.Messages.Linden
         public override void Deserialize(OSDMap map)
         {
             if (map == null || !map.ContainsKey("parcel_id"))
-                ParcelID =  UUID.Zero;
+                ParcelID = UUID.Zero;
             else
                 ParcelID = map["parcel_id"].AsUUID();
         }
@@ -1307,6 +1307,144 @@ namespace OpenMetaverse.Messages.Linden
             NewEveryoneMask = (PermissionMask)map["new_everyone_mask"].AsInteger();
             NewOwnerMask = (PermissionMask)map["new_owner_mask"].AsInteger();
             NewNextOwnerMask = (PermissionMask)map["new_next_owner_mask"].AsInteger();
+        }
+    }
+
+    public class BulkUpdateInventoryMessage : IMessage
+    {
+        public class FolderDataInfo
+        {
+            public UUID FolderID;
+            public UUID ParentID;
+            public string Name;
+            public AssetType Type;
+
+            public static FolderDataInfo FromOSD(OSD data)
+            {
+                FolderDataInfo ret = new FolderDataInfo();
+
+                if (!(data is OSDMap)) return ret;
+
+                OSDMap map = (OSDMap)data;
+
+                ret.FolderID = map["FolderID"];
+                ret.ParentID = map["ParentID"];
+                ret.Name = map["Name"];
+                ret.Type = (AssetType)map["Type"].AsInteger();
+                return ret;
+            }
+        }
+
+        public class ItemDataInfo
+        {
+            public UUID ItemID;
+            public uint CallbackID;
+            public UUID FolderID;
+            public UUID CreatorID;
+            public UUID OwnerID;
+            public UUID GroupID;
+            public PermissionMask BaseMask;
+            public PermissionMask OwnerMask;
+            public PermissionMask GroupMask;
+            public PermissionMask EveryoneMask;
+            public PermissionMask NextOwnerMask;
+            public bool GroupOwned;
+            public UUID AssetID;
+            public AssetType Type;
+            public InventoryType InvType;
+            public uint Flags;
+            public SaleType SaleType;
+            public int SalePrice;
+            public string Name;
+            public string Description;
+            public DateTime CreationDate;
+            public uint CRC;
+
+            public static ItemDataInfo FromOSD(OSD data)
+            {
+                ItemDataInfo ret = new ItemDataInfo();
+
+                if (!(data is OSDMap)) return ret;
+
+                OSDMap map = (OSDMap)data;
+
+                ret.ItemID = map["ItemID"];
+                ret.CallbackID = map["CallbackID"];
+                ret.FolderID = map["FolderID"];
+                ret.CreatorID = map["CreatorID"];
+                ret.OwnerID = map["OwnerID"];
+                ret.GroupID = map["GroupID"];
+                ret.BaseMask = (PermissionMask)map["BaseMask"].AsUInteger();
+                ret.OwnerMask = (PermissionMask)map["OwnerMask"].AsUInteger();
+                ret.GroupMask = (PermissionMask)map["GroupMask"].AsUInteger();
+                ret.EveryoneMask = (PermissionMask)map["EveryoneMask"].AsUInteger();
+                ret.NextOwnerMask = (PermissionMask)map["NextOwnerMask"].AsUInteger();
+                ret.GroupOwned = map["GroupOwned"];
+                ret.AssetID = map["AssetID"];
+                ret.Type = (AssetType)map["Type"].AsInteger();
+                ret.InvType = (InventoryType)map["InvType"].AsInteger();
+                ret.Flags = map["Flags"];
+                ret.SaleType = (SaleType)map["SaleType"].AsInteger();
+                ret.SalePrice = map["SaleType"];
+                ret.Name = map["Name"];
+                ret.Description = map["Description"];
+                ret.CreationDate = Utils.UnixTimeToDateTime(map["CreationDate"]);
+                ret.CRC = map["CRC"];
+
+                return ret;
+            }
+        }
+
+        public UUID AgentID;
+        public UUID TransactionID;
+        public FolderDataInfo[] FolderData;
+        public ItemDataInfo[] ItemData;
+
+        public OSDMap Serialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Deserialize(OSDMap map)
+        {
+            if (map["AgentData"] is OSDArray)
+            {
+                OSDArray array = (OSDArray)map["AgentData"];
+                if (array.Count > 0)
+                {
+                    OSDMap adata = (OSDMap)array[0];
+                    AgentID = adata["AgentID"];
+                    TransactionID = adata["TransactionID"];
+                }
+            }
+            
+            if (map["FolderData"] is OSDArray)
+            {
+                OSDArray array = (OSDArray)map["FolderData"];
+                FolderData =  new FolderDataInfo[array.Count];
+                for (int i = 0; i < array.Count; i++)
+                {
+                    FolderData[i] = FolderDataInfo.FromOSD(array[i]);
+                }
+            }
+            else
+            {
+                FolderData = new FolderDataInfo[0];
+            }
+
+            if (map["ItemData"] is OSDArray)
+            {
+                OSDArray array = (OSDArray)map["ItemData"];
+                ItemData = new ItemDataInfo[array.Count];
+                for (int i = 0; i < array.Count; i++)
+                {
+                    ItemData[i] = ItemDataInfo.FromOSD(array[i]);
+                }
+            }
+            else
+            {
+                ItemData = new ItemDataInfo[0];
+            }
         }
     }
 
@@ -3904,7 +4042,7 @@ namespace OpenMetaverse.Messages.Linden
                     ExtraParamData = map["param_data"].AsBinary();
                 }
             }
-            
+
             public Face[] Faces;
             public ExtraParam[] ExtraParams;
             public UUID GroupID;
@@ -3944,7 +4082,7 @@ namespace OpenMetaverse.Messages.Linden
                 map["pos"] = OSD.FromVector3(Position);
                 map["rotation"] = OSD.FromQuaternion(Rotation);
                 map["scale"] = OSD.FromVector3(Scale);
-                
+
                 // Extra params
                 OSDArray extraParams = new OSDArray();
                 if (ExtraParams != null)
@@ -4137,7 +4275,7 @@ namespace OpenMetaverse.Messages.Linden
         {
             OSDMap ret = new OSDMap();
             OSDArray array = new OSDArray();
-            
+
             for (int i = 0; i < ObjectPhysicsProperties.Length; i++)
             {
                 array.Add(ObjectPhysicsProperties[i].GetOSD());
@@ -4158,7 +4296,7 @@ namespace OpenMetaverse.Messages.Linden
             if (array != null)
             {
                 ObjectPhysicsProperties = new Primitive.PhysicsProperties[array.Count];
-            
+
                 for (int i = 0; i < array.Count; i++)
                 {
                     ObjectPhysicsProperties[i] = Primitive.PhysicsProperties.FromOSD(array[i]);
@@ -4819,10 +4957,10 @@ namespace OpenMetaverse.Messages.Linden
         public OSDMap Serialize()
         {
             OSDArray agents = new OSDArray();
-            
+
             if (Agents != null && Agents.Length > 0)
             {
-                for (int i=0; i<Agents.Length; i++)
+                for (int i = 0; i < Agents.Length; i++)
                 {
                     agents.Add(Agents[i].GetOSD());
                 }
@@ -4831,7 +4969,7 @@ namespace OpenMetaverse.Messages.Linden
             OSDArray badIDs = new OSDArray();
             if (BadIDs != null && BadIDs.Length > 0)
             {
-                for (int i=0; i<BadIDs.Length; i++)
+                for (int i = 0; i < BadIDs.Length; i++)
                 {
                     badIDs.Add(new OSDUUID(BadIDs[i]));
                 }
@@ -4847,7 +4985,7 @@ namespace OpenMetaverse.Messages.Linden
         {
             if (map["agents"].Type == OSDType.Array)
             {
-                OSDArray osdAgents = (OSDArray) map["agents"];
+                OSDArray osdAgents = (OSDArray)map["agents"];
 
                 if (osdAgents.Count > 0)
                 {
@@ -4862,12 +5000,12 @@ namespace OpenMetaverse.Messages.Linden
 
             if (map["bad_ids"].Type == OSDType.Array)
             {
-                OSDArray osdBadIDs = (OSDArray) map["bad_ids"];
+                OSDArray osdBadIDs = (OSDArray)map["bad_ids"];
                 if (osdBadIDs.Count > 0)
                 {
                     BadIDs = new UUID[osdBadIDs.Count];
 
-                    for (int i=0; i<osdBadIDs.Count; i++)
+                    for (int i = 0; i < osdBadIDs.Count; i++)
                     {
                         BadIDs[i] = osdBadIDs[i];
                     }
@@ -4893,7 +5031,7 @@ namespace OpenMetaverse.Messages.Linden
         /// <returns>OSD containting the messaage</returns>
         public OSDMap Serialize()
         {
-            OSDArray names = new OSDArray(2) {OldDisplayName, NewDisplayName};
+            OSDArray names = new OSDArray(2) { OldDisplayName, NewDisplayName };
 
             OSDMap name = new OSDMap();
             name["display_name"] = names;

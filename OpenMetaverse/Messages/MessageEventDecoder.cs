@@ -97,6 +97,7 @@ namespace OpenMetaverse.Messages
                 case "DisplayNameUpdate": message = new DisplayNameUpdateMessage(); break;
                 //case "ProductInfoRequest": message = new ProductInfoRequestMessage(); break;
                 case "ObjectPhysicsProperties": message = new ObjectPhysicsPropertiesMessage(); break;
+                case "BulkUpdateInventory": message = new BulkUpdateInventoryMessage(); break; 
 
                 // Capabilities TODO:
                 // DispatchRegionInfo
