@@ -445,7 +445,13 @@ namespace OpenMetaverse
         HUDBottom,
         /// <summary>HUD Bottom-right</summary>
         [EnumInfo(Text = "HUD Bottom Right")]
-        HUDBottomRight
+        HUDBottomRight,
+        /// <summary>Neck</summary>
+        [EnumInfo(Text = "Neck")]
+        Neck,
+        /// <summary>Avatar Center</summary>
+        [EnumInfo(Text = "Avatar Center")]
+        Root,
     }
 
     /// <summary>
