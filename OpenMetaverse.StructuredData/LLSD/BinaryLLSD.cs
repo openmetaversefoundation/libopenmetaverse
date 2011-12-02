@@ -71,7 +71,7 @@ namespace OpenMetaverse.StructuredData
         private const byte mapEndBinaryMarker = (byte)'}';
         private const byte keyBinaryMarker = (byte)'k';
 
-        private static readonly byte[] llsdBinaryHeadBytes = Encoding.ASCII.GetBytes(llsdBinaryHead);
+        private static readonly byte[] llsdBinaryHeadBytes = Encoding.ASCII.GetBytes(llsdBinaryHead2);
 
         /// <summary>
         /// Deserializes binary LLSD
@@ -157,6 +157,7 @@ namespace OpenMetaverse.StructuredData
             if (prependHeader)
             {
                 stream.Write(llsdBinaryHeadBytes, 0, llsdBinaryHeadBytes.Length);
+                stream.WriteByte((byte)'\n');
             }
             SerializeLLSDBinaryElement(stream, data);
             return stream;
