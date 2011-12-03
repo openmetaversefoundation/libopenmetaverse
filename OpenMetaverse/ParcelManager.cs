@@ -1546,6 +1546,9 @@ namespace OpenMetaverse
         /// <returns>If successful UUID of the remote parcel, UUID.Zero otherwise</returns>
         public UUID RequestRemoteParcelID(Vector3 location, ulong regionHandle, UUID regionID)
         {
+            if (Client.Network.CurrentSim == null || Client.Network.CurrentSim.Caps == null)
+                return UUID.Zero;
+
             Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("RemoteParcelRequest");
 
             if (url != null)
