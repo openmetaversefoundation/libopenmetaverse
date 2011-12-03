@@ -654,7 +654,7 @@ namespace OpenMetaverse
 
             foreach (MapBlockReplyPacket.DataBlock block in map.Data)
             {
-                if (block.X != 0 && block.Y != 0)
+                if (block.X != 0 || block.Y != 0)
                 {
                     GridRegion region;
 
