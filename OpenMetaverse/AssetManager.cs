@@ -1467,9 +1467,11 @@ namespace OpenMetaverse
                     }
                 }
 
+                // This assumes that every transfer packet except the last one is exactly 1000 bytes,
+                // hopefully that is a safe assumption to make
                 try
                 {
-                    Buffer.BlockCopy(asset.TransferData.Data, 0, download.AssetData, download.Transferred,
+                    Buffer.BlockCopy(asset.TransferData.Data, 0, download.AssetData, 1000 * asset.TransferData.Packet,
                         asset.TransferData.Data.Length);
                     download.Transferred += asset.TransferData.Data.Length;
                 }
