@@ -2355,7 +2355,7 @@ namespace OpenMetaverse
 
                     bool isNew;
                     lock (simulator.ObjectsPrimitives.Dictionary)
-                        isNew = simulator.ObjectsPrimitives.ContainsKey(LocalID);
+                        isNew = !simulator.ObjectsPrimitives.ContainsKey(LocalID);
 
                     Primitive prim = GetPrimitive(simulator, LocalID, FullID);
 
