@@ -126,6 +126,12 @@ namespace OpenMetaverse
         MyOutfitsFolder = 48,
         /// <summary>Linden mesh format</summary>
         Mesh = 49,
+        /// <summary>Marketplace direct delivery inbox ("Received Items")</summary>
+        Inbox = 50,
+        /// <summary>Marketplace direct delivery outbox</summary>
+        Outbox = 51,
+        /// <summary></summary>
+        BasicRoot = 51m
     }
 
     /// <summary>
