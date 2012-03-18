@@ -131,7 +131,7 @@ namespace OpenMetaverse
         /// <summary>Marketplace direct delivery outbox</summary>
         Outbox = 51,
         /// <summary></summary>
-        BasicRoot = 51m
+        BasicRoot = 51,
     }
 
     /// <summary>
