@@ -1022,8 +1022,16 @@ namespace GridProxy
         {
             if (stage != CapsStage.Response) return false;
 
-            OSDMap map = (OSDMap)capReq.Response;
-            OSDArray array = (OSDArray)map["events"];
+            OSDMap map = null;
+            if (capReq.Response is OSDMap)
+                map = (OSDMap)capReq.Response;
+            else return false;
+
+            OSDArray array = null;
+            if (map.ContainsKey("events") && map["events"] is OSDArray)
+                array = (OSDArray)map["events"];
+            else
+                return false;
 
             for (int i = 0; i < array.Count; i++)
             {
