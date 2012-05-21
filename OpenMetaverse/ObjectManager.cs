@@ -2896,7 +2896,7 @@ namespace OpenMetaverse
                     prim.PathRevolutions = 1f;
                     break;
                 case PrimType.Prism:
-                    prim.ProfileCurve = ProfileCurve.Square;
+                    prim.ProfileCurve = ProfileCurve.EqualTriangle;
                     prim.PathCurve = PathCurve.Line;
                     prim.ProfileEnd = 1f;
                     prim.PathEnd = 1f;
