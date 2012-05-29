@@ -856,14 +856,14 @@ namespace OpenMetaverse
         /// <param name="firstName">Account first name</param>
         /// <param name="lastName">Account last name</param>
         /// <param name="password">Account password</param>
-        /// <param name="userAgent">Client application name</param>
-        /// <param name="userVersion">Client application version</param>
+        /// <param name="channel">Client application name (channel)</param>
+        /// <param name="version">Client application name + version</param>
         /// <returns>A populated <seealso cref="LoginParams"/> struct containing
         /// sane defaults</returns>
         public LoginParams DefaultLoginParams(string firstName, string lastName, string password,
-            string userAgent, string userVersion)
+            string channel, string version)
         {
-            return new LoginParams(Client, firstName, lastName, password, userAgent, userVersion);
+            return new LoginParams(Client, firstName, lastName, password, channel, version);
         }
 
         /// <summary>
@@ -872,14 +872,14 @@ namespace OpenMetaverse
         /// <param name="firstName">Account first name</param>
         /// <param name="lastName">Account last name</param>
         /// <param name="password">Account password</param>
-        /// <param name="userAgent">Client application name</param>
-        /// <param name="userVersion">Client application version</param>
+        /// <param name="channel">Client application name (channel)</param>
+        /// <param name="version">Client application name + version</param>
         /// <returns>Whether the login was successful or not. On failure the
         /// LoginErrorKey string will contain the error code and LoginMessage
         /// will contain a description of the error</returns>
-        public bool Login(string firstName, string lastName, string password, string userAgent, string userVersion)
+        public bool Login(string firstName, string lastName, string password, string channel, string version)
         {
-            return Login(firstName, lastName, password, userAgent, "last", userVersion);
+            return Login(firstName, lastName, password, channel, "last", version);
         }
 
         /// <summary>
@@ -891,17 +891,17 @@ namespace OpenMetaverse
         /// <param name="lastName">Account last name</param>
         /// <param name="password">Account password or MD5 hash of the password
         /// such as $1$1682a1e45e9f957dcdf0bb56eb43319c</param>
-        /// <param name="userAgent">Client application name</param>
+        /// <param name="channel">Client application name (channel)</param>
         /// <param name="start">Starting location URI that can be built with
         /// StartLocation()</param>
-        /// <param name="userVersion">Client application version</param>
+        /// <param name="version">Client application name + version</param>
         /// <returns>Whether the login was successful or not. On failure the
         /// LoginErrorKey string will contain the error code and LoginMessage
         /// will contain a description of the error</returns>
-        public bool Login(string firstName, string lastName, string password, string userAgent, string start,
-            string userVersion)
+        public bool Login(string firstName, string lastName, string password, string channel, string start,
+            string version)
         {
-            LoginParams loginParams = DefaultLoginParams(firstName, lastName, password, userAgent, userVersion);
+            LoginParams loginParams = DefaultLoginParams(firstName, lastName, password, channel, version);
             loginParams.Start = start;
 
             return Login(loginParams);
@@ -1012,8 +1012,11 @@ namespace OpenMetaverse
             if (loginParams.MAC == null)
                 loginParams.MAC = String.Empty;
 
-            if (loginParams.Channel == null)
-                loginParams.Channel = String.Empty;
+            if (string.IsNullOrEmpty(loginParams.Channel))
+            {
+                Logger.Log("Viewer channel not set. This is a TOS violation on some grids.", Helpers.LogLevel.Warning);
+                loginParams.Channel = "libopenmetaverse generic client";
+            }
 
             if (loginParams.Author == null)
                 loginParams.Author = String.Empty;
