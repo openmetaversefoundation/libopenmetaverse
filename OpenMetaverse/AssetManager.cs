@@ -1226,7 +1226,7 @@ namespace OpenMetaverse
 
         #region Helpers
 
-        private Asset CreateAssetWrapper(AssetType type)
+        public Asset CreateAssetWrapper(AssetType type)
         {
             Asset asset;
 
@@ -1265,9 +1265,13 @@ namespace OpenMetaverse
                 case AssetType.Gesture:
                     asset = new AssetGesture();
                     break;
+                case AssetType.CallingCard:
+                    asset = new AssetCallingCard();
+                    break;
                 default:
-                    Logger.Log("Unimplemented asset type: " + type, Helpers.LogLevel.Error, Client);
-                    return null;
+                    asset = new AssetMutable(type);
+                    Logger.Log("Unimplemented asset type: " + type, Helpers.LogLevel.Error);
+                    break;
             }
 
             return asset;
