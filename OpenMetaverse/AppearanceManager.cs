@@ -1702,6 +1702,13 @@ namespace OpenMetaverse
         /// </summary>
         private void RequestAgentSetAppearance()
         {
+            AgentSetAppearancePacket set = MakeAppearancePacket();
+            Client.Network.SendPacket(set);
+            Logger.DebugLog("Send AgentSetAppearance packet");
+        }
+
+        public AgentSetAppearancePacket MakeAppearancePacket()
+        {
             AgentSetAppearancePacket set = new AgentSetAppearancePacket();
             set.AgentData.AgentID = Client.Self.AgentID;
             set.AgentData.SessionID = Client.Self.SessionID;
@@ -1891,9 +1898,7 @@ namespace OpenMetaverse
                     }
                 }
             }
-
-            Client.Network.SendPacket(set);
-            Logger.DebugLog("Send AgentSetAppearance packet");
+            return set;
         }
 
         private void DelayedRequestSetAppearance()
