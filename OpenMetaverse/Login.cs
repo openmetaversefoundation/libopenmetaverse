@@ -976,6 +976,22 @@ namespace OpenMetaverse
         {
             return String.Format("uri:{0}&{1}&{2}&{3}", sim, x, y, z);
         }
+        public void AbortLogin()
+        {
+            LoginParams loginParams = CurrentContext;
+            CurrentContext = null; // Will force any pending callbacks to bail out early
+            // FIXME: Now that we're using CAPS we could cancel the current login and start a new one
+            if (loginParams == null)
+            {
+                Logger.DebugLog("No Login was in progress: " + CurrentContext, Client);
+            }
+            else
+            {
+                InternalStatusCode = LoginStatus.Failed;
+                InternalLoginMessage = "Aborted";
+            }
+            UpdateLoginStatus(LoginStatus.Failed, "Abort Requested");
+        }
 
         #endregion
 
@@ -992,6 +1008,9 @@ namespace OpenMetaverse
 
             if (loginParams.Options == null)
                 loginParams.Options = new List<string>().ToArray();
+
+            if (loginParams.Password == null)
+                loginParams.Password = String.Empty;
 
             // Convert the password to MD5 if it isn't already
             if (loginParams.Password.Length != 35 && !loginParams.Password.StartsWith("$1$"))
