@@ -105,7 +105,7 @@ namespace OpenMetaverse
                 lock (syncRoot)
                 {
                     Dictionary[key] = value;
-                    this.SDictionary[key] = value;
+                    if (Settings.SORT_INVENTORY) this.SDictionary[key] = value;
                 }
             }
         }
@@ -133,7 +133,7 @@ namespace OpenMetaverse
             lock (syncRoot)
             {
                 Dictionary[key] = value;
-                this.SDictionary.Add(key, value);
+                if (Settings.SORT_INVENTORY) this.SDictionary.Add(key, value);
             } 
         }
 
