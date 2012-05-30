@@ -325,6 +325,7 @@ namespace OpenMetaverse
 
         private GridClient Client;
         private int priceUpload = 0;
+        public static bool SORT_INVENTORY = false;
 
         /// <summary>Constructor</summary>
         /// <param name="client">Reference to a GridClient object</param>

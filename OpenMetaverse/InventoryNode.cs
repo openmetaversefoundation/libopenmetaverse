@@ -73,6 +73,32 @@ namespace OpenMetaverse
             set { nodes = value; }
         }
 
+
+        public System.DateTime ModifyTime
+        {
+            get
+            {
+                if (Data is InventoryItem)
+                {
+                    return ((InventoryItem)Data).CreationDate;
+                }
+                DateTime newest = default(DateTime);//.MinValue;
+                if (Data is InventoryFolder)
+                {
+                    foreach (var node in Nodes.Values)
+                    {
+                        var t = node.ModifyTime;
+                        if (t > newest) newest = t;
+                    }
+                }
+                return newest;
+            }
+        }
+        public void Sort()
+        {
+            Nodes.Sort();
+        }
+
         /// <summary>
         /// For inventory folder nodes specifies weather the folder needs to be
         /// refreshed from the server

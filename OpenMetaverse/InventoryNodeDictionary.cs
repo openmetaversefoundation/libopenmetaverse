@@ -30,11 +30,55 @@ using System.Text;
 
 namespace OpenMetaverse
 {
-    public class InventoryNodeDictionary
+    public class InventoryNodeDictionary: IComparer<UUID>
     {
+        protected SortedDictionary<UUID, InventoryNode> SDictionary;
         protected Dictionary<UUID, InventoryNode> Dictionary = new Dictionary<UUID, InventoryNode>();
         protected InventoryNode parent;
         protected object syncRoot = new object();
+        public int Compare(UUID id1, UUID id2)
+        {
+            InventoryNode n1 = Get(id1);
+            InventoryNode n2 = Get(id2);
+            int diff = NullCompare(n1, n2);
+            if (diff != 0) return diff;
+            if (n1 == null) return id1.CompareTo(id2);
+            DateTime t1 = n1.ModifyTime;
+            DateTime t2 = n2.ModifyTime;
+            diff = t1.CompareTo(t2);
+            if (diff != 0) return diff;
+            var d1 = n1.Data;
+            var d2 = n2.Data;
+            diff = NullCompare(d1, d2);
+            if (diff != 0) return diff;
+            if (d1 != null)
+            {
+                diff = NullCompare(d1.Name, d2.Name);
+                if (diff != 0) return diff;
+                if (d1.Name != null)
+                {
+                    // both are not null.. due to NullCoimpare code
+                    diff = d1.Name.CompareTo(d2.Name);
+                    if (diff != 0) return diff;
+                }
+            }
+            return id1.CompareTo(id2);
+        }
+
+        private InventoryNode Get(UUID uuid)
+        {
+            InventoryNode val;
+            if (Dictionary.TryGetValue(uuid, out val))
+            {
+                return val;
+            }
+            return null;
+        }
+
+        static int NullCompare(object o1, object o2)
+        {
+            return ReferenceEquals(o1, null).CompareTo(ReferenceEquals(o2, null));
+        }
 
         public InventoryNode Parent
         {
@@ -48,6 +92,7 @@ namespace OpenMetaverse
 
         public InventoryNodeDictionary(InventoryNode parentNode)
         {
+            if (Settings.SORT_INVENTORY) SDictionary = new SortedDictionary<UUID, InventoryNode>(this);
             parent = parentNode;
         }
 
@@ -57,27 +102,61 @@ namespace OpenMetaverse
             set
             {
                 value.Parent = parent;
-                lock (syncRoot) this.Dictionary[key] = value;
+                lock (syncRoot)
+                {
+                    Dictionary[key] = value;
+                    this.SDictionary[key] = value;
+                }
             }
         }
 
-        public ICollection<UUID> Keys { get { return this.Dictionary.Keys; } }
-        public ICollection<InventoryNode> Values { get { return this.Dictionary.Values; } }
+        public ICollection<UUID> Keys
+        {
+            get
+            {
+                if (Settings.SORT_INVENTORY) return this.SDictionary.Keys;
+                return Dictionary.Keys;
+            }
+        }
+        public ICollection<InventoryNode> Values
+        {
+            get
+            {
+                if (Settings.SORT_INVENTORY) return this.SDictionary.Values;
+                return this.Dictionary.Values;
+            }
+        }
 
         public void Add(UUID key, InventoryNode value)
         {
             value.Parent = parent;
-            lock (syncRoot) this.Dictionary.Add(key, value); 
+            lock (syncRoot)
+            {
+                Dictionary[key] = value;
+                this.SDictionary.Add(key, value);
+            } 
         }
 
         public void Remove(UUID key)
         {
-            lock (syncRoot) this.Dictionary.Remove(key);
+            lock (syncRoot)
+            {
+                this.Dictionary.Remove(key);
+                if (Settings.SORT_INVENTORY) this.SDictionary.Remove(key);
+            }
         }
 
         public bool Contains(UUID key)
         {
             return this.Dictionary.ContainsKey(key);
+        }
+
+        internal void Sort()
+        {
+            if (Settings.SORT_INVENTORY)
+            {
+                // TODO resort SDictionary now that more data has come?  
+            } 
         }
     }
 }
