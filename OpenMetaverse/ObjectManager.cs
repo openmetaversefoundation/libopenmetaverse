@@ -3401,8 +3401,8 @@ namespace OpenMetaverse
     /// </example>
     public class ObjectPropertiesEventArgs : EventArgs
     {
-        private readonly Simulator m_Simulator;
-        private readonly Primitive.ObjectProperties m_Properties;
+        protected readonly Simulator m_Simulator;
+        protected readonly Primitive.ObjectProperties m_Properties;
 
         /// <summary>Get the simulator the object is located</summary>
         public Simulator Simulator { get { return m_Simulator; } }
@@ -3428,19 +3428,13 @@ namespace OpenMetaverse
     /// <para>The <see cref="ObjectManager.ObjectPropertiesUpdated"/> event is also raised when a <see cref="ObjectManager.SelectObject"/> request is
     /// made and <see cref="Settings.OBJECT_TRACKING"/> is enabled</para>    
     /// </remarks>    
-    public class ObjectPropertiesUpdatedEventArgs : EventArgs
+    public class ObjectPropertiesUpdatedEventArgs : ObjectPropertiesEventArgs
     {
 
-        private readonly Simulator m_Simulator;
         private readonly Primitive m_Prim;
-        private readonly Primitive.ObjectProperties m_Properties;
 
-        /// <summary>Get the simulator the object is located</summary>
-        public Simulator Simulator { get { return m_Simulator; } }
         /// <summary>Get the primitive details</summary>
         public Primitive Prim { get { return m_Prim; } }
-        /// <summary>Get the primitive properties</summary>
-        public Primitive.ObjectProperties Properties { get { return m_Properties; } }
 
         /// <summary>
         /// Construct a new instance of the ObjectPropertiesUpdatedEvenrArgs class
@@ -3448,11 +3442,9 @@ namespace OpenMetaverse
         /// <param name="simulator">The simulator the object is located</param>
         /// <param name="prim">The Primitive</param>
         /// <param name="props">The primitive Properties</param>
-        public ObjectPropertiesUpdatedEventArgs(Simulator simulator, Primitive prim, Primitive.ObjectProperties props)
+        public ObjectPropertiesUpdatedEventArgs(Simulator simulator, Primitive prim, Primitive.ObjectProperties props) : base(simulator, props)
         {
-            this.m_Simulator = simulator;
             this.m_Prim = prim;
-            this.m_Properties = props;
         }
     }
 
