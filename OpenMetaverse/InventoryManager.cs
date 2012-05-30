@@ -208,8 +208,14 @@ namespace OpenMetaverse
     /// <summary>
     /// An Item in Inventory
     /// </summary>
+    [Serializable()]
     public class InventoryItem : InventoryBase
     {
+        public override string ToString()
+        {
+            return AssetType + " " + AssetUUID + " (" + InventoryType + " " + UUID + ") '" + Name + "'/'" +
+                   Description + "' " + Permissions;
+        }
         /// <summary>The <seealso cref="OpenMetaverse.UUID"/> of this item</summary>
         public UUID AssetUUID;
         /// <summary>The combined <seealso cref="OpenMetaverse.Permissions"/> of this item</summary>
@@ -369,6 +375,7 @@ namespace OpenMetaverse
     /// InventoryTexture Class representing a graphical image
     /// </summary>
     /// <seealso cref="ManagedImage"/>
+    [Serializable()]
     public class InventoryTexture : InventoryItem
     {
         /// <summary>
@@ -395,6 +402,7 @@ namespace OpenMetaverse
     /// <summary>
     /// InventorySound Class representing a playable sound
     /// </summary>
+    [Serializable()]
     public class InventorySound : InventoryItem
     {
         /// <summary>
@@ -421,6 +429,7 @@ namespace OpenMetaverse
     /// <summary>
     /// InventoryCallingCard Class, contains information on another avatar
     /// </summary>
+    [Serializable()]
     public class InventoryCallingCard : InventoryItem
     {
         /// <summary>
@@ -447,6 +456,7 @@ namespace OpenMetaverse
     /// <summary>
     /// InventoryLandmark Class, contains details on a specific location
     /// </summary>
+    [Serializable()]
     public class InventoryLandmark : InventoryItem
     {
         /// <summary>
@@ -487,6 +497,7 @@ namespace OpenMetaverse
     /// <summary>
     /// InventoryObject Class contains details on a primitive or coalesced set of primitives
     /// </summary>
+    [Serializable()]
     public class InventoryObject : InventoryItem
     {
         /// <summary>
@@ -531,6 +542,7 @@ namespace OpenMetaverse
     /// <summary>
     /// InventoryNotecard Class, contains details on an encoded text document
     /// </summary>
+    [Serializable()]
     public class InventoryNotecard : InventoryItem
     {
         /// <summary>
@@ -558,6 +570,7 @@ namespace OpenMetaverse
     /// InventoryCategory Class
     /// </summary>
     /// <remarks>TODO: Is this even used for anything?</remarks>
+    [Serializable()]
     public class InventoryCategory : InventoryItem
     {
         /// <summary>
@@ -584,6 +597,7 @@ namespace OpenMetaverse
     /// <summary>
     /// InventoryLSL Class, represents a Linden Scripting Language object
     /// </summary>
+    [Serializable()]
     public class InventoryLSL : InventoryItem
     {
         /// <summary>
@@ -610,6 +624,7 @@ namespace OpenMetaverse
     /// <summary>
     /// InventorySnapshot Class, an image taken with the viewer
     /// </summary>
+    [Serializable()]
     public class InventorySnapshot : InventoryItem
     {
         /// <summary>
@@ -636,6 +651,7 @@ namespace OpenMetaverse
     /// <summary>
     /// InventoryAttachment Class, contains details on an attachable object
     /// </summary>
+    [Serializable()]
     public class InventoryAttachment : InventoryItem
     {
         /// <summary>
@@ -671,6 +687,7 @@ namespace OpenMetaverse
     /// <summary>
     /// InventoryWearable Class, details on a clothing item or body part
     /// </summary>
+    [Serializable()]
     public class InventoryWearable : InventoryItem
     {
         /// <summary>
@@ -702,6 +719,7 @@ namespace OpenMetaverse
     /// <summary>
     /// InventoryAnimation Class, A bvh encoded object which animates an avatar
     /// </summary>
+    [Serializable()]
     public class InventoryAnimation : InventoryItem
     {
         /// <summary>
@@ -757,6 +775,7 @@ namespace OpenMetaverse
     /// A folder contains <seealso cref="T:OpenMetaverse.InventoryItem"/>s and has certain attributes specific 
     /// to itself
     /// </summary>
+    [Serializable()]
     public class InventoryFolder : InventoryBase
     {
         /// <summary>The Preferred <seealso cref="T:OpenMetaverse.AssetType"/> for a folder.</summary>
@@ -859,6 +878,7 @@ namespace OpenMetaverse
     /// <summary>
     /// Tools for dealing with agents inventory
     /// </summary>
+    [Serializable()]
     public class InventoryManager
     {
         /// <summary>Used for converting shadow_id to asset_id</summary>
@@ -3837,6 +3857,18 @@ namespace OpenMetaverse
                 try { callback(false, error.Message, UUID.Zero, UUID.Zero); }
                 catch (Exception e) { Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e); }
                 return;
+            }
+
+            if (result.Type == OSDType.Unknown)
+            {
+                try
+                {
+                    callback(false, "Failed to parse asset and item UUIDs", UUID.Zero, UUID.Zero);
+                }
+                catch (Exception e)
+                {
+                    Logger.Log(e.Message, Helpers.LogLevel.Error, Client, e);
+                }
             }
 
             OSDMap contents = (OSDMap)result;
