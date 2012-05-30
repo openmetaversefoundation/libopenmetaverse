@@ -3058,7 +3058,7 @@ namespace OpenMetaverse
 
         #region Object Tracking Link
 
-        /// <summary>
+                /// <summary>
         /// 
         /// </summary>
         /// <param name="simulator"></param>
@@ -3066,6 +3066,18 @@ namespace OpenMetaverse
         /// <param name="fullID"></param>
         /// <returns></returns>
         protected Primitive GetPrimitive(Simulator simulator, uint localID, UUID fullID)
+        {
+            return GetPrimitive(simulator, localID, fullID, true);
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="simulator"></param>
+        /// <param name="localID"></param>
+        /// <param name="fullID"></param>
+        /// <param name="createIfMissing"></param>
+        /// <returns></returns>
+        public Primitive GetPrimitive(Simulator simulator, uint localID, UUID fullID, bool createIfMissing)
         {
             if (Client.Settings.OBJECT_TRACKING)
             {
@@ -3080,6 +3092,7 @@ namespace OpenMetaverse
                     }
                     else
                     {
+                        if (!createIfMissing) return null;                        
                         prim = new Primitive();
                         prim.LocalID = localID;
                         prim.ID = fullID;
