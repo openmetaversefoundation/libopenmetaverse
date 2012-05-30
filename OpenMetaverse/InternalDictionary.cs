@@ -45,6 +45,12 @@ namespace OpenMetaverse
         /// on this member</summary>
         internal Dictionary<TKey, TValue> Dictionary;
 
+        public Dictionary<TKey,TValue> Copy()
+        {
+            lock (Dictionary)
+                return new Dictionary<TKey, TValue>(Dictionary);
+        }
+
         /// <summary>
         /// Gets the number of Key/Value pairs contained in the <seealso cref="T:InternalDictionary"/>
         /// </summary>
