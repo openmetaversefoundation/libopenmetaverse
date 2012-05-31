@@ -461,7 +461,7 @@ namespace OpenMetaverse
             {
                 Assembly gea = Assembly.GetEntryAssembly();
                 string dirname = ".";
-                if (gea != null)
+                if (gea != null && gea.Location != null)
                 {
                     dirname = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(gea.Location), searchPath);
                 }
