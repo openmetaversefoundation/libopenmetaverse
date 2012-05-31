@@ -1149,7 +1149,7 @@ namespace OpenMetaverse
                     ArrayList loginArray = new ArrayList(1);
                     loginArray.Add(loginXmlRpc);
                     XmlRpcRequest request = new XmlRpcRequest(CurrentContext.MethodName, loginArray);
-
+                    var cc = CurrentContext;
                     // Start the request
                     Thread requestThread = new Thread(
                         delegate()
@@ -1157,7 +1157,7 @@ namespace OpenMetaverse
                             try
                             {
                                 LoginReplyXmlRpcHandler(
-                                    request.Send(CurrentContext.URI, CurrentContext.Timeout),
+                                    request.Send(cc.URI, cc.Timeout),
                                     loginParams);
                             }
                             catch (Exception e)
