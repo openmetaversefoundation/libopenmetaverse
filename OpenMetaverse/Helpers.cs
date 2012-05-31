@@ -460,6 +460,7 @@ namespace OpenMetaverse
             if (searchPath != null)
             {
                 Assembly gea = Assembly.GetEntryAssembly();
+                if (gea == null) gea = typeof (Helpers).Assembly;
                 string dirname = ".";
                 if (gea != null && gea.Location != null)
                 {
