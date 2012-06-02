@@ -748,6 +748,7 @@ namespace OpenMetaverse
     /// <summary>
     /// InventoryGesture Class, details on a series of animations, sounds, and actions
     /// </summary>
+    [Serializable()]
     public class InventoryGesture : InventoryItem
     {
         /// <summary>
@@ -2710,13 +2711,32 @@ namespace OpenMetaverse
         public UUID RequestRezFromInventory(Simulator simulator, Quaternion rotation, Vector3 position,
             InventoryItem item, UUID groupOwner, UUID queryID, bool rezSelected)
         {
+            return RequestRezFromInventory(simulator, UUID.Zero, rotation, position, item, groupOwner, queryID,
+                                           rezSelected);
+        }
+
+        /// <summary>
+        /// Rez an object from inventory
+        /// </summary>
+        /// <param name="simulator">Simulator to place object in</param>
+        /// <param name="taskID">TaskID object when rezzed</param>
+        /// <param name="rotation">Rotation of the object when rezzed</param>
+        /// <param name="position">Vector of where to place object</param>
+        /// <param name="item">InventoryItem object containing item details</param>
+        /// <param name="groupOwner">UUID of group to own the object</param>        
+        /// <param name="queryID">User defined queryID to correlate replies</param>
+        /// <param name="rezSelected">If set to true, the CreateSelected flag
+        /// will be set on the rezzed object</param>        
+        public UUID RequestRezFromInventory(Simulator simulator, UUID taskID, Quaternion rotation, Vector3 position,
+            InventoryItem item, UUID groupOwner, UUID queryID, bool rezSelected)
+        {
             RezObjectPacket add = new RezObjectPacket();
 
             add.AgentData.AgentID = Client.Self.AgentID;
             add.AgentData.SessionID = Client.Self.SessionID;
             add.AgentData.GroupID = groupOwner;
 
-            add.RezData.FromTaskID = UUID.Zero;
+            add.RezData.FromTaskID = taskID;
             add.RezData.BypassRaycast = 1;
             add.RezData.RayStart = position;
             add.RezData.RayEnd = position;
