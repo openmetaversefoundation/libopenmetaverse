@@ -197,11 +197,16 @@ namespace OpenMetaverse
         public float Priority;
         public Simulator Simulator;
         public AssetManager.AssetReceivedCallback Callback;
+
+        public int nextPacket;
+        public InternalDictionary<int, byte[]> outOfOrderPackets;
         internal ManualResetEvent HeaderReceivedEvent = new ManualResetEvent(false);
 
         public AssetDownload()
             : base()
         {
+            nextPacket = 0;
+            outOfOrderPackets = new InternalDictionary<int, byte[]>();
         }
     }
 
@@ -1433,11 +1438,10 @@ namespace OpenMetaverse
         {
             TransferPacketPacket asset = (TransferPacketPacket)e.Packet;
             Transfer transfer;
-            AssetDownload download;
 
             if (Transfers.TryGetValue(asset.TransferData.TransferID, out transfer))
             {
-                download = (AssetDownload)transfer;
+                AssetDownload download = (AssetDownload)transfer;
 
                 if (download.Size == 0)
                 {
@@ -1471,13 +1475,25 @@ namespace OpenMetaverse
                     }
                 }
 
-                // This assumes that every transfer packet except the last one is exactly 1000 bytes,
-                // hopefully that is a safe assumption to make
+                // If packets arrive out of order, we add them to the out of order packet directory
+                // until all previous packets have arrived
                 try
                 {
-                    Buffer.BlockCopy(asset.TransferData.Data, 0, download.AssetData, 1000 * asset.TransferData.Packet,
-                        asset.TransferData.Data.Length);
-                    download.Transferred += asset.TransferData.Data.Length;
+                    if (download.nextPacket == asset.TransferData.Packet)
+                    {
+                        byte[] data = asset.TransferData.Data;
+                        do
+                        {
+                            Buffer.BlockCopy(data, 0, download.AssetData, download.Transferred, data.Length);
+                            download.Transferred += data.Length;
+                            download.nextPacket++;
+                        } while (download.outOfOrderPackets.TryGetValue(download.nextPacket, out data));
+                    }
+                    else
+                    {
+                        //Logger.Log(string.Format("Fixing out of order packet {0} when expecting {1}!", asset.TransferData.Packet, download.nextPacket), Helpers.LogLevel.Debug);
+                        download.outOfOrderPackets.Add(asset.TransferData.Packet, asset.TransferData.Data);
+                    }
                 }
                 catch (ArgumentException)
                 {
