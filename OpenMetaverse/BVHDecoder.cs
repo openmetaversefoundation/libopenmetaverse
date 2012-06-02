@@ -355,13 +355,147 @@ namespace OpenMetaverse
             }
             return m_keys;
         }
+
+        public bool Equals(BinBVHAnimationReader other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return other.Loop.Equals(Loop) && other.OutPoint == OutPoint && other.InPoint == InPoint && other.Length == Length && other.HandPose == HandPose && other.JointCount == JointCount && Equals(other.joints, joints) && other.EaseInTime == EaseInTime && other.EaseOutTime == EaseOutTime && other.Priority == Priority && other.unknown1 == unknown1 && other.unknown0 == unknown0 && other.positionkeys == positionkeys && other.rotationkeys == rotationkeys;
+        }
+
+        /// <summary> 
+        /// Determines whether the specified <see cref="T:System.Object"/> is equal to the current <see cref="T:System.Object"/>. 
+        /// </summary> 
+        /// <returns> 
+        /// true if the specified <see cref="T:System.Object"/> is equal to the current <see cref="T:System.Object"/>; otherwise, false. 
+        /// </returns> 
+        /// <param name="obj">The <see cref="T:System.Object"/> to compare with the current <see cref="T:System.Object"/>.  
+        ///                 </param><exception cref="T:System.NullReferenceException">The <paramref name="obj"/> parameter is null. 
+        ///                 </exception><filterpriority>2</filterpriority> 
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != typeof(BinBVHAnimationReader)) return false;
+            return Equals((BinBVHAnimationReader)obj);
     }
 
     /// <summary>
+        /// Serves as a hash function for a particular type.  
+        /// </summary> 
+        /// <returns> 
+        /// A hash code for the current <see cref="T:System.Object"/>. 
+        /// </returns> 
+        /// <filterpriority>2</filterpriority> 
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int result = Loop.GetHashCode();
+                result = (result * 397) ^ OutPoint.GetHashCode();
+                result = (result * 397) ^ InPoint.GetHashCode();
+                result = (result * 397) ^ Length.GetHashCode();
+                result = (result * 397) ^ HandPose.GetHashCode();
+                result = (result * 397) ^ JointCount.GetHashCode();
+                result = (result * 397) ^ (joints != null ? joints.GetHashCode() : 0);
+                result = (result * 397) ^ EaseInTime.GetHashCode();
+                result = (result * 397) ^ EaseOutTime.GetHashCode();
+                result = (result * 397) ^ Priority;
+                result = (result * 397) ^ unknown1.GetHashCode();
+                result = (result * 397) ^ unknown0.GetHashCode();
+                result = (result * 397) ^ positionkeys;
+                result = (result * 397) ^ rotationkeys;
+                return result;
+            }
+        }
+
+        public static bool Equals(binBVHJoint[] arr1, binBVHJoint[] arr2)
+        {
+            if (arr1.Length == arr2.Length)
+            {
+                for (int i = 0; i < arr1.Length; i++)
+                    if (!arr1[i].Equals(arr2[i]))
+                        return false;
+                /* not same*/
+                return true;
+            }
+            return false;
+        }
+
+    }
+
+
+    /// <summary> 
     /// A Joint and it's associated meta data and keyframes
     /// </summary>
     public struct binBVHJoint
     {
+        public static bool Equals(binBVHJointKey[] arr1, binBVHJointKey[] arr2)
+        {
+            if (arr1.Length == arr2.Length)
+            {
+                for (int i = 0; i < arr1.Length; i++)
+                    if (!Equals(arr1[i], arr2[i]))
+                        return false;
+                /* not same*/
+                return true;
+            }
+            return false;
+        }
+        public static bool Equals(binBVHJointKey arr1, binBVHJointKey arr2)
+        {
+            return (arr1.time == arr2.time && arr1.key_element == arr2.key_element);
+        }
+
+        public bool Equals(binBVHJoint other)
+        {
+            return other.Priority == Priority && Equals(other.rotationkeys, rotationkeys) && Equals(other.Name, Name) && Equals(other.positionkeys, positionkeys);
+        }
+
+        /// <summary> 
+        /// Indicates whether this instance and a specified object are equal. 
+        /// </summary> 
+        /// <returns> 
+        /// true if <paramref name="obj"/> and this instance are the same type and represent the same value; otherwise, false. 
+        /// </returns> 
+        /// <param name="obj">Another object to compare to.  
+        ///                 </param><filterpriority>2</filterpriority> 
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (obj.GetType() != typeof(binBVHJoint)) return false;
+            return Equals((binBVHJoint)obj);
+        }
+
+        /// <summary> 
+        /// Returns the hash code for this instance. 
+        /// </summary> 
+        /// <returns> 
+        /// A 32-bit signed integer that is the hash code for this instance. 
+        /// </returns> 
+        /// <filterpriority>2</filterpriority> 
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int result = Priority;
+                result = (result * 397) ^ (rotationkeys != null ? rotationkeys.GetHashCode() : 0);
+                result = (result * 397) ^ (Name != null ? Name.GetHashCode() : 0);
+                result = (result * 397) ^ (positionkeys != null ? positionkeys.GetHashCode() : 0);
+                return result;
+            }
+        }
+
+        public static bool operator ==(binBVHJoint left, binBVHJoint right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(binBVHJoint left, binBVHJoint right)
+        {
+            return !left.Equals(right);
+        }
+
         /// <summary>
         /// Name of the Joint.  Matches the avatar_skeleton.xml in client distros
         /// </summary>
