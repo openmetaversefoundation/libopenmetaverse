@@ -85,7 +85,6 @@ namespace OpenMetaverse.Assets
             if (text.ToLower().Contains("callingcard version 2"))
             {
                 AvatarID = new UUID(text.Substring(text.IndexOf("avatar_id") + 10, 36));
-                String vecDelim = " ";
                 return true;
             }
             return false;
