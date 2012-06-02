@@ -58,7 +58,6 @@ namespace OpenMetaverse.Assets
         /// Constuct an asset of type Callingcard
         /// </summary>
         /// <param name="avatarID">UUID of the target avatar</param>
-        /// <param name="pos">Local position of callingcard</param>
         public AssetCallingCard(UUID avatarID)
         {
             AvatarID = avatarID;
