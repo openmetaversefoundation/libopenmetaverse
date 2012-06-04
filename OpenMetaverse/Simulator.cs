@@ -434,7 +434,7 @@ namespace OpenMetaverse
         internal bool DisconnectCandidate = false;
         /// <summary>Event that is triggered when the simulator successfully
         /// establishes a connection</summary>
-        internal AutoResetEvent ConnectedEvent = new AutoResetEvent(false);
+        internal ManualResetEvent ConnectedEvent = new ManualResetEvent(false);
         /// <summary>Whether this sim is currently connected or not. Hooked up
         /// to the property Connected</summary>
         internal bool connected;
@@ -568,7 +568,7 @@ namespace OpenMetaverse
                 // Move our agent in to the sim to complete the connection
                 if (moveToSim) Client.Self.CompleteAgentMovement(this);
 
-                if (!ConnectedEvent.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false))
+                if (!ConnectedEvent.WaitOne(Client.Settings.LOGIN_TIMEOUT, false))
                 {
                     Logger.Log("Giving up on waiting for RegionHandshake for " + this.ToString(),
                         Helpers.LogLevel.Warning, Client);
@@ -612,7 +612,7 @@ namespace OpenMetaverse
             
             if (waitForAck)
             {
-                if (!GotUseCircuitCodeAck.WaitOne(Client.Settings.SIMULATOR_TIMEOUT, false))
+                if (!GotUseCircuitCodeAck.WaitOne(Client.Settings.LOGIN_TIMEOUT, false))
                 {
                     Logger.Log("Failed to get ACK for UseCircuitCode packet", Helpers.LogLevel.Error, Client);
                 }
@@ -1172,8 +1172,8 @@ namespace OpenMetaverse
                         {
                             if (Client.Settings.LOG_RESENDS)
                             {
-                                Logger.DebugLog(String.Format("Resending packet #{0}, {1}ms have passed",
-                                    outgoing.SequenceNumber, now - outgoing.TickCount), Client);
+                                Logger.DebugLog(String.Format("Resending {2} packet #{0}, {1}ms have passed",
+                                    outgoing.SequenceNumber, now - outgoing.TickCount, outgoing.Type), Client);
                             }
 
                             // The TickCount will be set to the current time when the packet
