@@ -1427,7 +1427,7 @@ namespace OpenMetaverse
                 Primitive prim;
                 if (!dict.TryGetValue(localID, out prim))
                 {
-                    prim = new Primitive { RegionHandle = Handle, LocalID = localID };
+                    dict[localID] = prim = new Primitive { RegionHandle = Handle, LocalID = localID };
                 }
                 return prim;
             }
