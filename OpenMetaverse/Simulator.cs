@@ -1352,7 +1352,9 @@ namespace OpenMetaverse
                 {
                     InactiveSimReaper = new Timer(RemoveOldSims, null, TimeSpan.FromMinutes(3), TimeSpan.FromMinutes(3));
                 }
-                GetSimulatorData(sim.Handle).ActiveClients++;
+                SimulatorDataPool pool = GetSimulatorData(sim.Handle);
+                if (pool.ActiveClients < 1) pool.ActiveClients = 1; else pool.ActiveClients++;
+                pool.InactiveSince = DateTime.MaxValue;
             }
         }
         public static void SimulatorRelease(Simulator sim)
