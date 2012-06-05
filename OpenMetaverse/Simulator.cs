@@ -1332,7 +1332,7 @@ namespace OpenMetaverse
                 List<ulong> reap = new List<ulong>();
                 foreach (var pool in SimulatorDataPools.Values)
                 {
-                    if (pool.InactiveSince.AddMilliseconds(SimTimeout) < DateTime.Now)
+                    if (pool.InactiveSince != DateTime.MaxValue && pool.InactiveSince.AddMilliseconds(SimTimeout) < DateTime.Now)
                     {
                         reap.Add(pool.Handle);
                     }
