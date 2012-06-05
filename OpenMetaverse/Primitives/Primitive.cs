@@ -762,6 +762,8 @@ namespace OpenMetaverse
         public object Tag;
         /// <summary>Indicates if prim is attached to an avatar</summary>
         public bool IsAttachment;
+        /// <summary>Number of clients referencing this prim</summary>
+        public int ActiveClients = 0;
 
         #endregion Public Members
 

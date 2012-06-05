@@ -139,6 +139,28 @@ namespace OpenMetaverse
         public int STATS_QUEUE_SIZE = 5;
 
         #endregion
+
+        #region Experimental options
+
+        /// <summary>
+        /// Primitives will be reused when falling in/out of interest list (and shared between clients)
+        ///  prims returning to interest list do not need re-requested
+        ///  Helps also in not re-requesting prim.Properties for code that checks for a Properties == null per client
+        /// </summary>
+        public bool CACHE_PRIMITIVES = false;
+        /// <summary>
+        /// Pool parcel data between clients (saves on requesting multiple times when all clients may need it)
+        /// </summary>
+        public bool POOL_PARCEL_DATA = false;
+        /// <summary>
+        /// How long to preserve cached data when no client is connected to a simulator
+        ///   The reason for setting it to something like 2 minutes is in case a client 
+        ///    is running back and forth between region edges or a sim is comming and going
+        /// </summary>
+        public static int SIMULATOR_POOL_TIMEOUT = 2 * 60 * 1000;
+
+        #endregion
+
         #region Configuration options (mostly booleans)
 
         /// <summary>Enable/disable storing terrain heightmaps in the 

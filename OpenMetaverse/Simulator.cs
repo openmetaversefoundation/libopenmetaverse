@@ -368,7 +368,19 @@ namespace OpenMetaverse
         /// Provides access to an internal thread-safe dictionary containing parcel
         /// information found in this simulator
         /// </summary>
-        public InternalDictionary<int, Parcel> Parcels = new InternalDictionary<int, Parcel>();
+        public InternalDictionary<int, Parcel> Parcels
+        {
+            get
+            {
+                if (Client.Settings.POOL_PARCEL_DATA)
+                {
+                    return DataPool.Parcels;
+                }
+                if (_Parcels == null) _Parcels = new InternalDictionary<int, Parcel>();
+                return _Parcels;
+            }
+        }
+        private InternalDictionary<int, Parcel> _Parcels;
 
         /// <summary>
         /// Provides access to an internal thread-safe multidimensional array containing a x,y grid mapped
@@ -379,12 +391,14 @@ namespace OpenMetaverse
             get
             {
                 lock (this)
+                {
+                    if (Client.Settings.POOL_PARCEL_DATA)
+                    {
+                        return DataPool.ParcelMap;
+                    }
+                    if (_ParcelMap == null) _ParcelMap = new int[64, 64];
                     return _ParcelMap;
-            }
-            set
-            {
-                lock (this)
-                    _ParcelMap = value;
+                }
             }
         }
 
@@ -460,9 +474,25 @@ namespace OpenMetaverse
         private Timer PingTimer;
         private Timer StatsTimer;
         // simulator <> parcel LocalID Map
-        private int[,] _ParcelMap = new int[64, 64];
-        internal bool DownloadingParcelMap = false;
-        private AutoResetEvent GotUseCircuitCodeAck = new AutoResetEvent(false);
+        private int[,] _ParcelMap;
+        public readonly SimulatorDataPool DataPool;
+        internal bool DownloadingParcelMap
+        {
+            get
+            {
+                return Client.Settings.POOL_PARCEL_DATA ? DataPool.DownloadingParcelMap : _DownloadingParcelMap;
+            }
+            set
+            {
+                if (Client.Settings.POOL_PARCEL_DATA) DataPool.DownloadingParcelMap = value;
+                _DownloadingParcelMap = value;
+            }
+        }
+
+        internal bool _DownloadingParcelMap = false;
+
+
+        private ManualResetEvent GotUseCircuitCodeAck = new ManualResetEvent(false);
         #endregion Internal/Private Members
 
         /// <summary>
@@ -475,7 +505,12 @@ namespace OpenMetaverse
             : base(address)
         {
             Client = client;            
-            
+            if (Client.Settings.POOL_PARCEL_DATA || Client.Settings.CACHE_PRIMITIVES)
+            {
+                SimulatorDataPool.SimulatorAdd(this);
+                DataPool = SimulatorDataPool.GetSimulatorData(Handle);
+            }
+
             Handle = handle;
             Network = Client.Network;
             PacketArchive = new IncomingPacketIDCollection(Settings.PACKET_ARCHIVE_SIZE);
@@ -676,6 +711,11 @@ namespace OpenMetaverse
                     buf.DataLength = data.Length;
 
                     AsyncBeginSend(buf);
+                }
+
+                if (Client.Settings.POOL_PARCEL_DATA || Client.Settings.CACHE_PRIMITIVES)
+                {
+                    SimulatorDataPool.SimulatorRelease(this);
                 }
 
                 // Shut the socket communication down
@@ -1277,6 +1317,137 @@ namespace OpenMetaverse
             }
 
             return false;
+        }
+    }
+
+    public class SimulatorDataPool
+    {
+        private static Timer InactiveSimReaper;
+
+        private static void RemoveOldSims(object state)
+        {
+            lock (SimulatorDataPools)
+            {
+                int SimTimeout = Settings.SIMULATOR_POOL_TIMEOUT;
+                List<ulong> reap = new List<ulong>();
+                foreach (var pool in SimulatorDataPools.Values)
+                {
+                    if (pool.InactiveSince.AddMilliseconds(SimTimeout) < DateTime.Now)
+                    {
+                        reap.Add(pool.Handle);
+                    }
+                }
+                foreach (var hndl in reap)
+                {
+                    SimulatorDataPools.Remove(hndl);
+                }
+            }
+        }
+
+        public static void SimulatorAdd(Simulator sim)
+        {
+            lock (SimulatorDataPools)
+            {
+                if (InactiveSimReaper == null)
+                {
+                    InactiveSimReaper = new Timer(RemoveOldSims, null, TimeSpan.FromMinutes(3), TimeSpan.FromMinutes(3));
+                }
+                GetSimulatorData(sim.Handle).ActiveClients++;
+            }
+        }
+        public static void SimulatorRelease(Simulator sim)
+        {
+            ulong hndl = sim.Handle;
+            lock (SimulatorDataPools)
+            {
+                SimulatorDataPool dataPool = GetSimulatorData(hndl);
+                dataPool.ActiveClients--;
+                if (dataPool.ActiveClients <= 0)
+                {
+                    dataPool.InactiveSince = DateTime.Now;
+                }
+            }
+        }
+
+        static public Dictionary<ulong, SimulatorDataPool> SimulatorDataPools = new Dictionary<ulong, SimulatorDataPool>();
+
+        /// <summary>
+        /// Simulator handle
+        /// </summary>
+        readonly public ulong Handle;
+        /// <summary>
+        /// Number of GridClients using this datapool
+        /// </summary>
+        public int ActiveClients;
+        /// <summary>
+        /// Time that the last client disconnected from the simulator
+        /// </summary>
+        public DateTime InactiveSince = DateTime.MaxValue;
+
+        #region Pooled Items
+        /// <summary>
+        /// The cache of prims used and unused in this simulator
+        /// </summary>
+        public Dictionary<uint, Primitive> PrimCache = new Dictionary<uint, Primitive>();
+
+        /// <summary>
+        /// Shared parcel info only when POOL_PARCEL_DATA == true
+        /// </summary>
+        public InternalDictionary<int, Parcel> Parcels = new InternalDictionary<int, Parcel>();
+        public int[,] ParcelMap = new int[64, 64];
+        public bool DownloadingParcelMap = false;
+
+        #endregion Pooled Items
+
+        private SimulatorDataPool(ulong hndl)
+        {
+            this.Handle = hndl;
+        }
+
+        public static SimulatorDataPool GetSimulatorData(ulong hndl)
+        {
+            SimulatorDataPool dict;
+            lock (SimulatorDataPools)
+            {
+                if (!SimulatorDataPools.TryGetValue(hndl, out dict))
+                {
+                    dict = SimulatorDataPools[hndl] = new SimulatorDataPool(hndl);
+                }
+            }
+            return dict;
+        }
+        #region Factories
+        internal Primitive MakePrimitive(uint localID)
+        {
+            var dict = PrimCache;
+            lock (dict)
+            {
+                Primitive prim;
+                if (!dict.TryGetValue(localID, out prim))
+                {
+                    prim = new Primitive { RegionHandle = Handle, LocalID = localID };
+                }
+                return prim;
+            }
+        }
+
+        internal bool NeedsRequest(uint localID)
+        {
+            var dict = PrimCache;
+            lock (dict) return !dict.ContainsKey(localID);
+        }
+        #endregion Factories
+
+        internal void ReleasePrims(List<uint> removePrims)
+        {
+            lock (PrimCache)
+            {
+                foreach (uint u in removePrims)
+                {
+                    Primitive prim;
+                    if (PrimCache.TryGetValue(u, out prim)) prim.ActiveClients--;
+                }
+            }
         }
     }
 }

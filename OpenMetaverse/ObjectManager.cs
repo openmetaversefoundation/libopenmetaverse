@@ -2580,18 +2580,27 @@ namespace OpenMetaverse
         {
             if (Client.Settings.ALWAYS_REQUEST_OBJECTS)
             {
+                bool cachedPrimitives = Client.Settings.CACHE_PRIMITIVES;
                 Packet packet = e.Packet;
                 Simulator simulator = e.Simulator;
 
                 ObjectUpdateCachedPacket update = (ObjectUpdateCachedPacket)packet;
                 List<uint> ids = new List<uint>(update.ObjectData.Length);
 
-                // No object caching implemented yet, so request updates for all of these objects
+                // Object caching is implemented when Client.Settings.PRIMITIVES_FACTORY is True, otherwise request updates for all of these objects
                 for (int i = 0; i < update.ObjectData.Length; i++)
                 {
-                    ids.Add(update.ObjectData[i].ID);
-                }
+                    uint localID = update.ObjectData[i].ID;
 
+                    if (cachedPrimitives)
+                    {
+                        if (!simulator.DataPool.NeedsRequest(localID))
+                        {
+                            continue;
+                        }
+                    }                        
+                    ids.Add(localID);
+                }               
                 RequestObjects(simulator, ids);
             }
         }
@@ -2681,6 +2690,10 @@ namespace OpenMetaverse
                     }
                 }
 
+                if (Client.Settings.CACHE_PRIMITIVES)
+                {
+                    simulator.DataPool.ReleasePrims(removePrims);
+                }
                 foreach (uint removeID in removePrims)
                     simulator.ObjectsPrimitives.Dictionary.Remove(removeID);
             }
@@ -3092,11 +3105,19 @@ namespace OpenMetaverse
                     }
                     else
                     {
-                        if (!createIfMissing) return null;                        
-                        prim = new Primitive();
-                        prim.LocalID = localID;
+                        if (!createIfMissing) return null;
+                        if (Client.Settings.CACHE_PRIMITIVES)
+                        {
+                            prim = simulator.DataPool.MakePrimitive(localID);
+                        }
+                        else
+                        {
+                            prim = new Primitive();
+                            prim.LocalID = localID;
+                            prim.RegionHandle = simulator.Handle;
+                        }
+                        prim.ActiveClients++;
                         prim.ID = fullID;
-                        prim.RegionHandle = simulator.Handle;
 
                         simulator.ObjectsPrimitives.Dictionary[localID] = prim;
 
