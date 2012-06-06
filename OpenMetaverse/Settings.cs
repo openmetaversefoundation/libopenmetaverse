@@ -342,6 +342,9 @@ namespace OpenMetaverse
         /// <summary>Log packet retransmission info</summary>
         public bool LOG_RESENDS = true;
 
+        /// <summary>Log disk cache misses and other info</summary>
+        public bool LOG_DISKCACHE = true;
+        
         #endregion
         #region Private Fields
 
