@@ -102,9 +102,8 @@ namespace OpenMetaverse
         /// <returns></returns>
         public static short TERotationShort(float rotation)
         {
-            const double TWO_PI = Math.PI * 2.0d;
-            double remainder = Math.IEEERemainder(rotation, TWO_PI);
-            return (short)Math.Round((remainder / TWO_PI) * 32767.0d);
+            const float TWO_PI = 6.283185307179586476925286766559f;
+            return (short)Math.Round(((Math.IEEERemainder(rotation, TWO_PI) / TWO_PI) * 32768.0f) + 0.5f);
         }
 
         /// <summary>
@@ -115,8 +114,8 @@ namespace OpenMetaverse
         /// <returns></returns>
         public static float TERotationFloat(byte[] bytes, int pos)
         {
-            const float TWO_PI = (float)(Math.PI * 2.0d);
-            return (float)((bytes[pos] | (bytes[pos + 1] << 8)) / 32767.0f) * TWO_PI;
+            const float TWO_PI = 6.283185307179586476925286766559f;
+            return ((float)(bytes[pos] | (bytes[pos + 1] << 8)) / 32768.0f) * TWO_PI;
         }
 
         public static byte TEGlowByte(float glow)
