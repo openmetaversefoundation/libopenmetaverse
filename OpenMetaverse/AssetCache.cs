@@ -147,12 +147,12 @@ namespace OpenMetaverse
 
                 if (File.Exists(FileName(assetID)))
                 {
-                    Logger.DebugLog("Reading " + FileName(assetID) + " from asset cache.");
+                    DebugLog("Reading " + FileName(assetID) + " from asset cache.");
                     data = File.ReadAllBytes(FileName(assetID));
                 }
                 else
                 {
-                    Logger.DebugLog("Reading " + StaticFileName(assetID) + " from static asset cache.");
+                    DebugLog("Reading " + StaticFileName(assetID) + " from static asset cache.");
                     data = File.ReadAllBytes(StaticFileName(assetID));
 
                 }
@@ -160,7 +160,7 @@ namespace OpenMetaverse
             }
             catch (Exception ex)
             {
-                Logger.Log("Failed reading asset from cache (" + ex.Message + ")", Helpers.LogLevel.Warning, Client);
+                DebugLog("Failed reading asset from cache (" + ex.Message + ")");
                 return null;
             }
         }
@@ -229,7 +229,7 @@ namespace OpenMetaverse
 
             try
             {
-                Logger.DebugLog("Saving " + FileName(assetID) + " to asset cache.", Client);
+                DebugLog("Saving " + FileName(assetID) + " to asset cache.");
 
                 if (!Directory.Exists(Client.Settings.ASSET_CACHE_DIR))
                 {
@@ -245,6 +245,11 @@ namespace OpenMetaverse
             }
 
             return true;
+        }
+
+        private void DebugLog(string message)
+        {
+            if (Client.Settings.LOG_DISKCACHE) Logger.DebugLog(message, Client);
         }
 
         /// <summary>
@@ -306,7 +311,7 @@ namespace OpenMetaverse
                 ++num;
             }
 
-            Logger.Log("Wiped out " + num + " files from the cache directory.", Helpers.LogLevel.Debug);
+            DebugLog("Wiped out " + num + " files from the cache directory.");
         }
 
         /// <summary>
@@ -340,11 +345,11 @@ namespace OpenMetaverse
                         break;
                     }
                 }
-                Logger.Log(num + " files deleted from the cache, cache size now: " + NiceFileSize(size), Helpers.LogLevel.Debug);
+                DebugLog(num + " files deleted from the cache, cache size now: " + NiceFileSize(size));
             }
             else
             {
-                Logger.Log("Cache size is " + NiceFileSize(size) + ", file deletion not needed", Helpers.LogLevel.Debug);
+                DebugLog("Cache size is " + NiceFileSize(size) + ", file deletion not needed");
             }
 
         }
