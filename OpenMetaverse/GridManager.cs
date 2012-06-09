@@ -618,6 +618,11 @@ namespace OpenMetaverse
         
         protected void MapLayerResponseHandler(CapsClient client, OSD result, Exception error)
         {
+            if (result == null)
+            {
+                Logger.Log("MapLayerResponseHandler error: " + error.Message + ": " + error.StackTrace, Helpers.LogLevel.Error, Client);
+                return;
+            }
             OSDMap body = (OSDMap)result;
             OSDArray layerData = (OSDArray)body["LayerData"];
 
