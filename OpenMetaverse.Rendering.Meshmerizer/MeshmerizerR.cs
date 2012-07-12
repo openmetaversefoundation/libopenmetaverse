@@ -398,6 +398,8 @@ namespace OpenMetaverse.Rendering
             float profileBegin = primData.ProfileBegin;
             float profileEnd = primData.ProfileEnd;
 
+            bool isSphere = false;
+
             if ((OMV.ProfileCurve)(primData.profileCurve & 0x07) == OMV.ProfileCurve.Circle)
             {
                 switch (lod)
@@ -418,6 +420,7 @@ namespace OpenMetaverse.Rendering
             else if ((OMV.ProfileCurve)(primData.profileCurve & 0x07) == OMV.ProfileCurve.HalfCircle)
             {
                 // half circle, prim is a sphere
+                isSphere = true;
                 switch (lod)
                 {
                     case OMVR.DetailLevel.Low:
@@ -456,6 +459,7 @@ namespace OpenMetaverse.Rendering
 
             PrimMesher.PrimMesh newPrim = new PrimMesher.PrimMesh(sides, profileBegin, profileEnd, (float)primData.ProfileHollow, hollowsides);
             newPrim.viewerMode = viewerMode;
+            newPrim.sphereMode = isSphere;
             newPrim.holeSizeX = primData.PathScaleX;
             newPrim.holeSizeY = primData.PathScaleY;
             newPrim.pathCutBegin = primData.PathBegin;
