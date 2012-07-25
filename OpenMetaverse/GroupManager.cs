@@ -442,6 +442,9 @@ namespace OpenMetaverse
         /// <summary>Pay group liabilities and receive group dividends</summary>
         Accountable = 1UL << 40,
 
+        /// <summary>List and Host group events</summary>
+        HostEvent = 1UL << 41,
+
         // Notices and proposals
         /// <summary>Can send group notices</summary>
         SendNotices = 1UL << 42,
