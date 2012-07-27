@@ -169,5 +169,65 @@ namespace OpenMetaverse.Assets
 
             return settings;
         }
+
+        public void ToXML(string filename)
+        {
+            StringWriter sw = new StringWriter();
+            XmlTextWriter writer = new XmlTextWriter(sw) { Formatting = Formatting.Indented };
+            writer.WriteStartDocument();
+
+            writer.WriteStartElement(String.Empty, "RegionSettings", String.Empty);
+            writer.WriteStartElement(String.Empty, "General", String.Empty);
+
+            WriteBoolean(writer, "AllowDamage", AllowDamage);
+            WriteBoolean(writer, "AllowLandResell", AllowLandResell);
+            WriteBoolean(writer, "AllowLandJoinDivide", AllowLandJoinDivide);
+            WriteBoolean(writer, "BlockFly", BlockFly);
+            WriteBoolean(writer, "BlockLandShowInSearch", BlockLandShowInSearch);
+            WriteBoolean(writer, "BlockTerraform", BlockTerraform);
+            WriteBoolean(writer, "DisableCollisions", DisableCollisions);
+            WriteBoolean(writer, "DisablePhysics", DisablePhysics);
+            WriteBoolean(writer, "DisableScripts", DisableScripts);
+            writer.WriteElementString("MaturityRating", MaturityRating.ToString());
+            WriteBoolean(writer, "RestrictPushing", RestrictPushing);
+            writer.WriteElementString("AgentLimit", AgentLimit.ToString());
+            writer.WriteElementString("ObjectBonus", ObjectBonus.ToString());
+            writer.WriteEndElement();
+
+            writer.WriteStartElement(String.Empty, "GroundTextures", String.Empty);
+                
+            writer.WriteElementString("Texture1", TerrainDetail0.ToString());
+            writer.WriteElementString("Texture2", TerrainDetail1.ToString());
+            writer.WriteElementString("Texture3", TerrainDetail2.ToString());
+            writer.WriteElementString("Texture4", TerrainDetail3.ToString());
+            writer.WriteElementString("ElevationLowSW", TerrainStartHeight00.ToString());
+            writer.WriteElementString("ElevationLowNW", TerrainStartHeight01.ToString());
+            writer.WriteElementString("ElevationLowSE", TerrainStartHeight10.ToString());
+            writer.WriteElementString("ElevationLowNE", TerrainStartHeight11.ToString());
+            writer.WriteElementString("ElevationHighSW", TerrainHeightRange00.ToString());
+            writer.WriteElementString("ElevationHighNW", TerrainHeightRange01.ToString());
+            writer.WriteElementString("ElevationHighSE", TerrainHeightRange10.ToString());
+            writer.WriteElementString("ElevationHighNE", TerrainHeightRange11.ToString());
+            writer.WriteEndElement();
+                
+            writer.WriteStartElement(String.Empty, "Terrain", String.Empty);
+
+            writer.WriteElementString("WaterHeight", WaterHeight.ToString());
+            writer.WriteElementString("TerrainRaiseLimit", TerrainRaiseLimit.ToString());
+            writer.WriteElementString("TerrainLowerLimit", TerrainLowerLimit.ToString());
+            WriteBoolean(writer, "UseEstateSun", UseEstateSun);
+            WriteBoolean(writer, "FixedSun", FixedSun);
+
+            writer.WriteEndElement();
+            writer.WriteEndElement();
+            writer.Close();
+            sw.Close();
+            File.WriteAllText(filename, sw.ToString());
+        }
+
+        private void WriteBoolean(XmlTextWriter writer, string name, bool value)
+        {
+            writer.WriteElementString(name, value ? "True" : "False");
+        }
     }
 }

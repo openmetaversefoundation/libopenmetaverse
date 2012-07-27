@@ -59,6 +59,11 @@ namespace OpenMetaverse.Assets
         /// </summary>
         public static readonly string SETTINGS_PATH = "settings/";
 
+        /// <value>
+        ///   Path for region settings.
+        /// </value>
+        public const string LANDDATA_PATH = "landdata/";
+
         /// <summary>
         /// The character the separates the uuid from extension information in an archived asset filename
         /// </summary>

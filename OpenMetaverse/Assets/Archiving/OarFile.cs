@@ -30,6 +30,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using System.Xml;
+using System.Threading;
 using OpenMetaverse;
 
 namespace OpenMetaverse.Assets
@@ -318,10 +319,174 @@ namespace OpenMetaverse.Assets
             foreach (string file in files)
                 archive.WriteFile(ArchiveConstants.TERRAINS_PATH + Path.GetFileName(file), File.ReadAllBytes(file));
 
+            // Add the parcels(s)
+            files = Directory.GetFiles(directoryName + "/" + ArchiveConstants.LANDDATA_PATH);
+            foreach (string file in files)
+                archive.WriteFile(ArchiveConstants.LANDDATA_PATH + Path.GetFileName(file), File.ReadAllBytes(file));
+
+            // Add the setting(s)
+            files = Directory.GetFiles(directoryName + "/" + ArchiveConstants.SETTINGS_PATH);
+            foreach (string file in files)
+                archive.WriteFile(ArchiveConstants.SETTINGS_PATH + Path.GetFileName(file), File.ReadAllBytes(file));
+
             archive.Close();
         }
 
-        public static void SavePrims(IList<AssetPrim> prims, string primsPath, string assetsPath, string textureCacheFolder)
+        public static void SaveTerrain(Simulator sim, string terrainPath)
+        {
+            if (Directory.Exists(terrainPath))
+                Directory.Delete(terrainPath, true);
+            Thread.Sleep(100);
+            Directory.CreateDirectory(terrainPath);
+            Thread.Sleep(100);
+            FileInfo file = new FileInfo(Path.Combine(terrainPath, sim.Name + ".r32"));
+            FileStream s = file.Open(FileMode.Create, FileAccess.Write);
+            SaveTerrainStream(s, sim);
+
+            s.Close();
+        }
+
+        private static void SaveTerrainStream(Stream s, Simulator sim)
+        {
+            BinaryWriter bs = new BinaryWriter(s);
+            
+            int y;
+            for (y = 0; y < 256; y++)
+            {
+                int x;
+                for (x = 0; x < 256; x++)
+                {
+                    float height;
+                    sim.TerrainHeightAtPoint(x, y, out height);
+                    bs.Write(height);
+                }
+            }
+
+            bs.Close();
+        }
+
+        public static void SaveParcels(Simulator sim, string parcelPath)
+        {
+            if (Directory.Exists(parcelPath))
+                Directory.Delete(parcelPath, true);
+            Thread.Sleep(100);
+            Directory.CreateDirectory(parcelPath);
+            Thread.Sleep(100);
+            sim.Parcels.ForEach((Parcel parcel) =>
+                {
+                    UUID globalID = UUID.Random();
+                    SerializeParcel(parcel, globalID, Path.Combine(parcelPath, globalID + ".xml"));
+                });
+        }
+
+        private static void SerializeParcel(Parcel parcel, UUID globalID, string filename)
+        {
+            StringWriter sw = new StringWriter();
+            XmlTextWriter xtw = new XmlTextWriter(sw) { Formatting = Formatting.Indented };
+
+            xtw.WriteStartDocument();
+            xtw.WriteStartElement("LandData");
+
+            xtw.WriteElementString("Area", Convert.ToString(parcel.Area));
+            xtw.WriteElementString("AuctionID", Convert.ToString(parcel.AuctionID));
+            xtw.WriteElementString("AuthBuyerID", parcel.AuthBuyerID.ToString());
+            xtw.WriteElementString("Category", Convert.ToString((sbyte)parcel.Category));
+            TimeSpan t = parcel.ClaimDate.ToUniversalTime() - Utils.Epoch;
+            xtw.WriteElementString("ClaimDate", Convert.ToString((int)t.TotalSeconds));
+            xtw.WriteElementString("ClaimPrice", Convert.ToString(parcel.ClaimPrice));
+            xtw.WriteElementString("GlobalID", globalID.ToString());
+            xtw.WriteElementString("GroupID", parcel.GroupID.ToString());
+            xtw.WriteElementString("IsGroupOwned", Convert.ToString(parcel.IsGroupOwned));
+            xtw.WriteElementString("Bitmap", Convert.ToBase64String(parcel.Bitmap));
+            xtw.WriteElementString("Description", parcel.Desc);
+            xtw.WriteElementString("Flags", Convert.ToString((uint)parcel.Flags));
+            xtw.WriteElementString("LandingType", Convert.ToString((byte)parcel.Landing));
+            xtw.WriteElementString("Name", parcel.Name);
+            xtw.WriteElementString("Status", Convert.ToString((sbyte)parcel.Status));
+            xtw.WriteElementString("LocalID", parcel.LocalID.ToString());
+            xtw.WriteElementString("MediaAutoScale", Convert.ToString(parcel.Media.MediaAutoScale ? 1 : 0));
+            xtw.WriteElementString("MediaID", parcel.Media.MediaID.ToString());
+            xtw.WriteElementString("MediaURL", parcel.Media.MediaURL);
+            xtw.WriteElementString("MusicURL", parcel.MusicURL);
+            xtw.WriteElementString("OwnerID", parcel.OwnerID.ToString());
+
+            xtw.WriteStartElement("ParcelAccessList");
+            foreach (ParcelManager.ParcelAccessEntry pal in parcel.AccessBlackList)
+            {
+                xtw.WriteStartElement("ParcelAccessEntry");
+                xtw.WriteElementString("AgentID", pal.AgentID.ToString());
+                xtw.WriteElementString("Time", pal.Time.ToString("s"));
+                xtw.WriteElementString("AccessList", Convert.ToString((uint)pal.Flags));
+                xtw.WriteEndElement();
+            }
+            foreach (ParcelManager.ParcelAccessEntry pal in parcel.AccessWhiteList)
+            {
+                xtw.WriteStartElement("ParcelAccessEntry");
+                xtw.WriteElementString("AgentID", pal.AgentID.ToString());
+                xtw.WriteElementString("Time", pal.Time.ToString("s"));
+                xtw.WriteElementString("AccessList", Convert.ToString((uint)pal.Flags));
+                xtw.WriteEndElement();
+            }
+            xtw.WriteEndElement();
+
+            xtw.WriteElementString("PassHours", Convert.ToString(parcel.PassHours));
+            xtw.WriteElementString("PassPrice", Convert.ToString(parcel.PassPrice));
+            xtw.WriteElementString("SalePrice", Convert.ToString(parcel.SalePrice));
+            xtw.WriteElementString("SnapshotID", parcel.SnapshotID.ToString());
+            xtw.WriteElementString("UserLocation", parcel.UserLocation.ToString());
+            xtw.WriteElementString("UserLookAt", parcel.UserLookAt.ToString());
+            xtw.WriteElementString("Dwell", "0");
+            xtw.WriteElementString("OtherCleanTime", Convert.ToString(parcel.OtherCleanTime));
+
+            xtw.WriteEndElement();
+
+            xtw.Close();
+            sw.Close();
+            File.WriteAllText(filename, sw.ToString());
+        }
+
+        public static void SaveRegionSettings(Simulator sim, string settingsPath)
+        {
+            if (Directory.Exists(settingsPath))
+                Directory.Delete(settingsPath, true);
+            Thread.Sleep(100);
+            Directory.CreateDirectory(settingsPath);
+            Thread.Sleep(100);
+
+            RegionSettings settings = new RegionSettings();
+            //settings.AgentLimit;
+            settings.AllowDamage = (sim.Flags & RegionFlags.AllowDamage) == RegionFlags.AllowDamage;
+            //settings.AllowLandJoinDivide;
+            settings.AllowLandResell = (sim.Flags & RegionFlags.BlockLandResell) != RegionFlags.BlockLandResell;
+            settings.BlockFly = (sim.Flags & RegionFlags.NoFly) == RegionFlags.NoFly;
+            settings.BlockLandShowInSearch = (sim.Flags & RegionFlags.BlockParcelSearch) == RegionFlags.BlockParcelSearch;
+            settings.BlockTerraform = (sim.Flags & RegionFlags.BlockTerraform) == RegionFlags.BlockTerraform;
+            settings.DisableCollisions = (sim.Flags & RegionFlags.SkipCollisions) == RegionFlags.SkipCollisions;
+            settings.DisablePhysics = (sim.Flags & RegionFlags.SkipPhysics) == RegionFlags.SkipPhysics;
+            settings.DisableScripts = (sim.Flags & RegionFlags.SkipScripts) == RegionFlags.SkipScripts;
+            settings.FixedSun = (sim.Flags & RegionFlags.SunFixed) == RegionFlags.SunFixed;
+            settings.MaturityRating = (int)(sim.Access & SimAccess.Mature & SimAccess.Adult & SimAccess.PG);
+            //settings.ObjectBonus;
+            settings.RestrictPushing = (sim.Flags & RegionFlags.RestrictPushObject) == RegionFlags.RestrictPushObject;
+            settings.TerrainDetail0 = sim.TerrainDetail0;
+            settings.TerrainDetail1 = sim.TerrainDetail1;
+            settings.TerrainDetail2 = sim.TerrainDetail2;
+            settings.TerrainDetail3 = sim.TerrainDetail3;
+            settings.TerrainHeightRange00 = sim.TerrainHeightRange00;
+            settings.TerrainHeightRange01 = sim.TerrainHeightRange01;
+            settings.TerrainHeightRange10 = sim.TerrainHeightRange10;
+            settings.TerrainHeightRange11 = sim.TerrainHeightRange11;
+            settings.TerrainStartHeight00 = sim.TerrainStartHeight00;
+            settings.TerrainStartHeight01 = sim.TerrainStartHeight01;
+            settings.TerrainStartHeight10 = sim.TerrainStartHeight10;
+            settings.TerrainStartHeight11 = sim.TerrainStartHeight11;
+            //settings.UseEstateSun;
+            settings.WaterHeight = sim.WaterHeight;
+
+            settings.ToXML(Path.Combine(settingsPath, sim.Name + ".xml"));
+        }
+
+        public static void SavePrims(AssetManager manager, IList<AssetPrim> prims, string primsPath, string assetsPath)
         {
             Dictionary<UUID, UUID> textureList = new Dictionary<UUID, UUID>();
 
@@ -329,6 +494,7 @@ namespace OpenMetaverse.Assets
             try { Directory.Delete(primsPath, true); }
             catch (Exception) { }
 
+            Thread.Sleep(100);
             // Create a new folder for the linkset files
             try { Directory.CreateDirectory(primsPath); }
             catch (Exception ex)
@@ -336,20 +502,26 @@ namespace OpenMetaverse.Assets
                 Logger.Log("Failed saving prims: " + ex.Message, Helpers.LogLevel.Error);
                 return;
             }
-
-            foreach (AssetPrim assetPrim in prims)
+            Thread.Sleep(100);
+            try
             {
-                SavePrim(assetPrim, Path.Combine(primsPath, "Primitive_" + assetPrim.Parent.ID + ".xml"));
-
-                CollectTextures(assetPrim.Parent, textureList);
-                if (assetPrim.Children != null)
+                foreach (AssetPrim assetPrim in prims)
                 {
-                    foreach (PrimObject child in assetPrim.Children)
-                        CollectTextures(child, textureList);
-                }
-            }
+                    SavePrim(assetPrim, Path.Combine(primsPath, "Primitive_" + assetPrim.Parent.ID + ".xml"));
 
-            SaveTextures(new List<UUID>(textureList.Keys), assetsPath, textureCacheFolder);
+                    CollectTextures(assetPrim.Parent, textureList);
+                    if (assetPrim.Children != null)
+                    {
+                        foreach (PrimObject child in assetPrim.Children)
+                            CollectTextures(child, textureList);
+                    }
+                }
+
+                SaveAssets(manager, AssetType.Texture, new List<UUID>(textureList.Keys), assetsPath);
+            }
+            catch
+            {
+            }
         }
 
         static void CollectTextures(PrimObject prim, Dictionary<UUID, UUID> textureList)
@@ -366,19 +538,20 @@ namespace OpenMetaverse.Assets
                     {
                         Primitive.TextureEntryFace face = prim.Textures.FaceTextures[i];
                         if (face != null)
-                            textureList[face.TextureID] = textureList[face.TextureID];
+                            textureList[face.TextureID] = face.TextureID;
                     }
                 }
+                if(prim.Sculpt != null && prim.Sculpt.Texture != UUID.Zero)
+                    textureList[prim.Sculpt.Texture] = prim.Sculpt.Texture;
             }
         }
 
-        public static void SaveTextures(IList<UUID> textures, string assetsPath, string textureCacheFolder)
+        public static void ClearAssetFolder(string assetsPath)
         {
-            int count = 0;
-
             // Delete the assets folder
             try { Directory.Delete(assetsPath, true); }
             catch (Exception) { }
+            Thread.Sleep(100);
 
             // Create a new assets folder
             try { Directory.CreateDirectory(assetsPath); }
@@ -387,40 +560,94 @@ namespace OpenMetaverse.Assets
                 Logger.Log("Failed saving assets: " + ex.Message, Helpers.LogLevel.Error);
                 return;
             }
+            Thread.Sleep(100);
+        }
 
-            // Create a map of all of the textures in the cache
-            string[] files = Directory.GetFiles(textureCacheFolder, "*.texture", SearchOption.TopDirectoryOnly);
-            Dictionary<UUID, string> idToFiles = new Dictionary<UUID, string>(files.Length);
-            for (int i = 0; i < files.Length; i++)
+        public static void SaveAssets(AssetManager assetManager, AssetType assetType, IList<UUID> assets, string assetsPath)
+        {
+            int count = 0;
+
+            List<UUID> remainingTextures = new List<UUID>(assets);
+            AutoResetEvent AllPropertiesReceived = new AutoResetEvent(false);
+            for (int i = 0; i < assets.Count; i++)
             {
-                string file = files[i];
-                UUID id;
-
-                if (UUID.TryParse(Path.GetFileNameWithoutExtension(file), out id))
-                    idToFiles[id] = file;
-            }
-
-            for (int i = 0; i < textures.Count; i++)
-            {
-                UUID texture = textures[i];
-
-                if (idToFiles.ContainsKey(texture))
+                UUID texture = assets[i];
+                if(assetType == AssetType.Texture)
                 {
-                    try
+                    assetManager.RequestImage(texture, (state, assetTexture) =>
                     {
-                        File.Copy(idToFiles[texture], Path.Combine(assetsPath, texture.ToString() + "_texture.jp2"));
+                        string extension = string.Empty;
+
+                        if (assetTexture == null)
+                        {
+                            Console.WriteLine("Missing asset " + texture);
+                            return;
+                        }
+
+                        if (ArchiveConstants.ASSET_TYPE_TO_EXTENSION.ContainsKey(assetType))
+                            extension = ArchiveConstants.ASSET_TYPE_TO_EXTENSION[assetType];
+
+                        File.WriteAllBytes(Path.Combine(assetsPath, texture.ToString() + extension), assetTexture.AssetData);
+                        remainingTextures.Remove(assetTexture.AssetID);
+                        if (remainingTextures.Count == 0)
+                            AllPropertiesReceived.Set();
                         ++count;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Log("Failed to save texture " + texture.ToString() + ": " + ex.Message, Helpers.LogLevel.Error);
-                    }
+                    });
                 }
                 else
                 {
-                    Logger.Log("Skipping missing texture " + texture.ToString(), Helpers.LogLevel.Warning);
+                    assetManager.RequestAsset(texture, assetType, false, (transfer, asset) =>
+                    {
+                        string extension = string.Empty;
+
+                        if (asset == null)
+                        {
+                            Console.WriteLine("Missing asset " + texture);
+                            return;
+                        }
+
+                        if (ArchiveConstants.ASSET_TYPE_TO_EXTENSION.ContainsKey(assetType))
+                            extension = ArchiveConstants.ASSET_TYPE_TO_EXTENSION[assetType];
+
+                        File.WriteAllBytes(Path.Combine(assetsPath, texture.ToString() + extension), asset.AssetData);
+                        remainingTextures.Remove(asset.AssetID);
+                        if (remainingTextures.Count == 0)
+                            AllPropertiesReceived.Set();
+                        ++count;
+                    });
                 }
+
+                Thread.Sleep(200);
+                if (i % 5 == 0)
+                    Thread.Sleep(250);
             }
+            AllPropertiesReceived.WaitOne(5000 + 350 * assets.Count);
+
+            Logger.Log("Copied " + count + " textures to the asset archive folder", Helpers.LogLevel.Info);
+        }
+
+        public static void SaveSimAssets(AssetManager assetManager, AssetType assetType, UUID assetID, UUID itemID, UUID primID, string assetsPath)
+        {
+            int count = 0;
+
+            AutoResetEvent AllPropertiesReceived = new AutoResetEvent(false);
+            assetManager.RequestAsset(assetID, itemID, primID, assetType, false, SourceType.SimInventoryItem, UUID.Random(), (transfer, asset) =>
+            {
+                string extension = string.Empty;
+
+                if (ArchiveConstants.ASSET_TYPE_TO_EXTENSION.ContainsKey(assetType))
+                    extension = ArchiveConstants.ASSET_TYPE_TO_EXTENSION[assetType];
+
+                if (asset == null)
+                {
+                    AllPropertiesReceived.Set();
+                    return;
+                }
+                File.WriteAllBytes(Path.Combine(assetsPath, assetID.ToString() + extension), asset.AssetData);
+                ++count;
+                AllPropertiesReceived.Set();
+            });
+            AllPropertiesReceived.WaitOne(5000);
 
             Logger.Log("Copied " + count + " textures to the asset archive folder", Helpers.LogLevel.Info);
         }
@@ -432,6 +659,9 @@ namespace OpenMetaverse.Assets
                 using (StreamWriter stream = new StreamWriter(filename))
                 {
                     XmlTextWriter writer = new XmlTextWriter(stream);
+                    writer.Formatting = Formatting.Indented;
+                    writer.Indentation = 4;
+                    writer.IndentChar = ' ';
                     SOGToXml2(writer, prim);
                     writer.Flush();
                 }
@@ -466,7 +696,41 @@ namespace OpenMetaverse.Assets
             writer.WriteElementString("InventorySerial", (prim.Inventory != null) ? prim.Inventory.Serial.ToString() : "0");
             
             // FIXME: Task inventory
-            writer.WriteStartElement("TaskInventory"); writer.WriteEndElement();
+            writer.WriteStartElement("TaskInventory");
+            if (prim.Inventory != null)
+            {
+                foreach (PrimObject.InventoryBlock.ItemBlock item in prim.Inventory.Items)
+                {
+                    writer.WriteStartElement("", "TaskInventoryItem", "");
+
+                    WriteUUID(writer, "AssetID", item.AssetID);
+                    writer.WriteElementString("BasePermissions", item.PermsBase.ToString());
+                    writer.WriteElementString("CreationDate", (item.CreationDate.ToUniversalTime() - Utils.Epoch).TotalSeconds.ToString());
+                    WriteUUID(writer, "CreatorID", item.CreatorID);
+                    writer.WriteElementString("Description", item.Description);
+                    writer.WriteElementString("EveryonePermissions", item.PermsEveryone.ToString());
+                    writer.WriteElementString("Flags", item.Flags.ToString());
+                    WriteUUID(writer, "GroupID", item.GroupID);
+                    writer.WriteElementString("GroupPermissions", item.PermsGroup.ToString());
+                    writer.WriteElementString("InvType", ((int)item.InvType).ToString());
+                    WriteUUID(writer, "ItemID", item.ID);
+                    WriteUUID(writer, "OldItemID", UUID.Zero);
+                    WriteUUID(writer, "LastOwnerID", item.LastOwnerID);
+                    writer.WriteElementString("Name", item.Name);
+                    writer.WriteElementString("NextPermissions", item.PermsNextOwner.ToString());
+                    WriteUUID(writer, "OwnerID", item.OwnerID);
+                    writer.WriteElementString("CurrentPermissions", item.PermsOwner.ToString());
+                    WriteUUID(writer, "ParentID", prim.ID);
+                    WriteUUID(writer, "ParentPartID", prim.ID);
+                    WriteUUID(writer, "PermsGranter", item.PermsGranterID);
+                    writer.WriteElementString("PermsMask", "0");
+                    writer.WriteElementString("Type", ((int)item.Type).ToString());
+                    writer.WriteElementString("OwnerChanged", "false");
+
+                    writer.WriteEndElement();
+                }
+            }
+            writer.WriteEndElement();
 
             PrimFlags flags = PrimFlags.None;
             if (prim.UsePhysics) flags |= PrimFlags.Physics;

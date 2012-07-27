@@ -740,6 +740,30 @@ namespace OpenMetaverse.Assets
                     Flags = map["flags"].AsInteger();
                     CreationDate = map["creation_date"].AsDate();
                 }
+
+                public static ItemBlock FromInventoryBase(InventoryItem item)
+                {
+                    ItemBlock block = new ItemBlock();
+                    block.AssetID = item.AssetUUID;
+                    block.CreationDate = item.CreationDate;
+                    block.CreatorID = item.CreatorID;
+                    block.Description = item.Description;
+                    block.Flags = (int)item.Flags;
+                    block.GroupID = item.GroupID;
+                    block.ID = item.UUID;
+                    block.InvType = item.InventoryType == InventoryType.Unknown && item.AssetType == AssetType.LSLText ? InventoryType.LSL : item.InventoryType; ;
+                    block.LastOwnerID = item.LastOwnerID;
+                    block.Name = item.Name;
+                    block.OwnerID = item.OwnerID;
+                    block.PermsBase = (uint)item.Permissions.BaseMask;
+                    block.PermsEveryone = (uint)item.Permissions.EveryoneMask;
+                    block.PermsGroup = (uint)item.Permissions.GroupMask;
+                    block.PermsNextOwner = (uint)item.Permissions.NextOwnerMask;
+                    block.PermsOwner = (uint)item.Permissions.OwnerMask;
+                    block.PermsGranterID = UUID.Zero;
+                    block.Type = item.AssetType;
+                    return block;
+                }
             }
 
             public int Serial;
@@ -994,6 +1018,145 @@ namespace OpenMetaverse.Assets
             RezDate = map["rez_date"].AsDate();
             SalePrice = map["sale_price"].AsInteger();
             SaleType = map["sale_type"].AsInteger();
+        }
+
+        public static PrimObject FromPrimitive(Primitive obj)
+        {
+            PrimObject prim = new PrimObject();
+            prim.Acceleration = obj.Acceleration;
+            prim.AllowedDrop = (obj.Flags & PrimFlags.AllowInventoryDrop) == PrimFlags.AllowInventoryDrop;
+            prim.AngularVelocity = obj.AngularVelocity;
+            //prim.AttachmentPosition
+            //prim.AttachmentRotation
+            //prim.BeforeAttachmentRotation
+            //prim.CameraAtOffset
+            //prim.CameraEyeOffset
+            prim.ClickAction = (int)obj.ClickAction;
+            //prim.CollisionSound
+            //prim.CollisionSoundVolume;
+            prim.CreationDate = obj.Properties.CreationDate;
+            prim.CreatorID = obj.Properties.CreatorID;
+            prim.Description = obj.Properties.Description;
+            prim.DieAtEdge = (obj.Flags & PrimFlags.DieAtEdge) == PrimFlags.AllowInventoryDrop;
+            if (obj.Flexible != null)
+            {
+                prim.Flexible = new FlexibleBlock();
+                prim.Flexible.Drag = obj.Flexible.Drag;
+                prim.Flexible.Force = obj.Flexible.Force;
+                prim.Flexible.Gravity = obj.Flexible.Gravity;
+                prim.Flexible.Softness = obj.Flexible.Softness;
+                prim.Flexible.Tension = obj.Flexible.Tension;
+                prim.Flexible.Wind = obj.Flexible.Wind;
+            }
+            prim.FolderID = obj.Properties.FolderID;
+            prim.GroupID = obj.Properties.GroupID;
+            prim.ID = obj.Properties.ObjectID;
+            //prim.Inventory;
+            //prim.LastAttachmentPoint;
+            prim.LastOwnerID = obj.Properties.LastOwnerID;
+            if (obj.Light != null)
+            {
+                prim.Light = new LightBlock();
+                prim.Light.Color = obj.Light.Color;
+                prim.Light.Cutoff = obj.Light.Cutoff;
+                prim.Light.Falloff = obj.Light.Falloff;
+                prim.Light.Intensity = obj.Light.Intensity;
+                prim.Light.Radius = obj.Light.Radius;
+            }
+
+            //prim.LinkNumber;
+            prim.LocalID = obj.LocalID;
+            prim.Material = (int)obj.PrimData.Material;
+            prim.Name = obj.Properties.Name;
+            prim.OwnerID = obj.Properties.OwnerID;
+            prim.ParentID = obj.ParentID;
+            
+            prim.Particles = new ParticlesBlock();
+            prim.Particles.AngularVelocity = obj.ParticleSys.AngularVelocity;
+            prim.Particles.Acceleration = obj.ParticleSys.PartAcceleration;
+            prim.Particles.BurstParticleCount = obj.ParticleSys.BurstPartCount;
+            prim.Particles.BurstRate = obj.ParticleSys.BurstRadius;
+            prim.Particles.BurstRate = obj.ParticleSys.BurstRate;
+            prim.Particles.BurstSpeedMax = obj.ParticleSys.BurstSpeedMax;
+            prim.Particles.BurstSpeedMin = obj.ParticleSys.BurstSpeedMin;
+            prim.Particles.DataFlags = (int)obj.ParticleSys.PartDataFlags;
+            prim.Particles.Flags = (int)obj.ParticleSys.PartFlags;
+            prim.Particles.InnerAngle = obj.ParticleSys.InnerAngle;
+            prim.Particles.MaxAge = obj.ParticleSys.MaxAge;
+            prim.Particles.OuterAngle = obj.ParticleSys.OuterAngle;
+            prim.Particles.ParticleEndColor = obj.ParticleSys.PartEndColor;
+            prim.Particles.ParticleEndScale = new Vector2(obj.ParticleSys.PartEndScaleX, obj.ParticleSys.PartEndScaleY);
+            prim.Particles.ParticleMaxAge = obj.ParticleSys.MaxAge;
+            prim.Particles.ParticleStartColor = obj.ParticleSys.PartStartColor;
+            prim.Particles.ParticleStartScale = new Vector2(obj.ParticleSys.PartStartScaleX, obj.ParticleSys.PartStartScaleY);
+            prim.Particles.Pattern = (int)obj.ParticleSys.Pattern;
+            prim.Particles.StartAge = obj.ParticleSys.StartAge;
+            prim.Particles.TargetID = obj.ParticleSys.Target;
+            prim.Particles.TextureID = obj.ParticleSys.Texture;
+
+            //prim.PassTouches;
+            prim.PCode = (int)obj.PrimData.PCode;
+            prim.PermsBase = (uint)obj.Properties.Permissions.BaseMask;
+            prim.PermsEveryone = (uint)obj.Properties.Permissions.EveryoneMask;
+            prim.PermsGroup = (uint)obj.Properties.Permissions.GroupMask;
+            prim.PermsNextOwner = (uint)obj.Properties.Permissions.NextOwnerMask;
+            prim.PermsOwner = (uint)obj.Properties.Permissions.OwnerMask;
+            prim.Phantom = (obj.Flags & PrimFlags.Phantom) == PrimFlags.Phantom;
+            prim.Position = obj.Position;
+            prim.RegionHandle = obj.RegionHandle;
+            //prim.RemoteScriptAccessPIN;
+            prim.ReturnAtEdge = (obj.Flags & PrimFlags.ReturnAtEdge) == PrimFlags.ReturnAtEdge;
+            //prim.RezDate;
+            prim.Rotation = obj.Rotation;
+            prim.SalePrice = obj.Properties.SalePrice;
+            prim.SaleType = (int)obj.Properties.SaleType;
+            prim.Sandbox = (obj.Flags & PrimFlags.Sandbox) == PrimFlags.Sandbox;
+            prim.Scale = obj.Scale;
+            //prim.ScriptState;
+            if (obj.Sculpt != null)
+            {
+                prim.Sculpt = new SculptBlock();
+                prim.Sculpt.Texture = obj.Sculpt.SculptTexture;
+                prim.Sculpt.Type = (int)obj.Sculpt.Type;
+            }
+            prim.Shape = new ShapeBlock();
+            prim.Shape.PathBegin = obj.PrimData.PathBegin;
+            prim.Shape.PathCurve = (int)obj.PrimData.PathCurve;
+            prim.Shape.PathEnd = obj.PrimData.PathEnd;
+            prim.Shape.PathRadiusOffset = obj.PrimData.PathRadiusOffset;
+            prim.Shape.PathRevolutions = obj.PrimData.PathRevolutions;
+            prim.Shape.PathScaleX = obj.PrimData.PathScaleX;
+            prim.Shape.PathScaleY = obj.PrimData.PathScaleY;
+            prim.Shape.PathShearX = obj.PrimData.PathShearX;
+            prim.Shape.PathShearY = obj.PrimData.PathShearY;
+            prim.Shape.PathSkew = obj.PrimData.PathSkew;
+            prim.Shape.PathTaperX = obj.PrimData.PathTaperX;
+            prim.Shape.PathTaperY = obj.PrimData.PathTaperY;
+
+            prim.Shape.PathTwist = obj.PrimData.PathTwist;
+            prim.Shape.PathTwistBegin = obj.PrimData.PathTwistBegin;
+            prim.Shape.ProfileBegin = obj.PrimData.ProfileBegin;
+            prim.Shape.ProfileCurve = obj.PrimData.profileCurve;
+            prim.Shape.ProfileEnd = obj.PrimData.ProfileEnd;
+            prim.Shape.ProfileHollow = obj.PrimData.ProfileHollow;
+
+            prim.SitName = obj.Properties.SitName;
+            //prim.SitOffset;
+            //prim.SitRotation;
+            prim.SoundFlags = (int)obj.SoundFlags;
+            prim.SoundGain = obj.SoundGain;
+            prim.SoundID = obj.Sound;
+            prim.SoundRadius = obj.SoundRadius;
+            prim.State = obj.PrimData.State;
+            prim.Temporary = (obj.Flags & PrimFlags.Temporary) == PrimFlags.Temporary;
+            prim.Text = obj.Text;
+            prim.TextColor = obj.TextColor;
+            prim.Textures = obj.Textures;
+            //prim.TouchName;
+            prim.UsePhysics = (obj.Flags & PrimFlags.Physics) == PrimFlags.Physics;
+            prim.Velocity = obj.Velocity;
+
+            return prim;
         }
 
         public Primitive ToPrimitive()
