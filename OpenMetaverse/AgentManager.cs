@@ -76,7 +76,9 @@ namespace OpenMetaverse
         /// <summary>Script wants to track avatars camera position and rotation </summary>
         TrackCamera = 1 << 10,
         /// <summary>Script wants to control your camera</summary>
-        ControlCamera = 1 << 11
+        ControlCamera = 1 << 11,
+        /// <summary>Script wants the ability to teleport you</summary>
+        Teleport = 1 << 12
     }
 
     /// <summary>
