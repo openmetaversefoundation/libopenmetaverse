@@ -53,6 +53,14 @@ namespace OpenMetaverse
             W = w;
         }
 
+        public Quaternion(double x, double y, double z, double w)
+        {
+            X = (float)x;
+            Y = (float)y;
+            Z = (float)z;
+            W = (float)w;
+        }
+
         public Quaternion(Vector3 vectorPart, float scalarPart)
         {
             X = vectorPart.X;
