@@ -627,6 +627,10 @@ namespace OpenMetaverse
                 {
                     Logger.Log("Giving up on waiting for RegionHandshake for " + this.ToString(),
                         Helpers.LogLevel.Warning, Client);
+                    //Remove the simulator from the list, not useful if we haven't recieved the RegionHandshake
+                    lock (Client.Network.Simulators) {
+                        Client.Network.Simulators.Remove(this);
+                    }
                 }
 
                 if (Client.Settings.SEND_AGENT_THROTTLE)
