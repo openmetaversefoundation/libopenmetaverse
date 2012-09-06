@@ -8,9 +8,7 @@ class ProxyMain
     {
         ProxyFrame p = new ProxyFrame(args);
 	    ProxyPlugin analyst = new Analyst(p);
-        analyst.Init();
-        ProxyPlugin capAnalyst = new CapAnalyst(p);
-        capAnalyst.Init();
+        analyst.Init(); 
 	    p.proxy.Start();
     }
 }

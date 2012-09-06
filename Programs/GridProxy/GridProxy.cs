@@ -370,9 +370,9 @@ namespace GridProxy
 
                         Thread connThread = new Thread((ThreadStart)delegate
                         {
-//                            OpenMetaverse.Logger.Log(">T> LoginProxy", Helpers.LogLevel.Debug);
+                            OpenMetaverse.Logger.Log(">T> LoginProxy", Helpers.LogLevel.Debug);
                             ProxyHTTP(client);
-//                            OpenMetaverse.Logger.Log("<T< LoginProxy", Helpers.LogLevel.Debug);
+                            OpenMetaverse.Logger.Log("<T< LoginProxy", Helpers.LogLevel.Debug);
                         });
 
                         connThread.IsBackground = true;
@@ -524,7 +524,7 @@ namespace GridProxy
             meth = match.Groups[1].Captures[0].ToString();
             uri = match.Groups[2].Captures[0].ToString();
 
-//            OpenMetaverse.Logger.Log(String.Format("[{0}] {1}:{2}", reqNo, meth, uri), Helpers.LogLevel.Debug);
+            OpenMetaverse.Logger.Log(String.Format("[{0}] {1}:{2}", reqNo, meth, uri), Helpers.LogLevel.Debug);
 
             // read HTTP header
             do
@@ -568,8 +568,8 @@ namespace GridProxy
             byte[] content = new byte[contentLength];
             reader.Read(content, 0, contentLength);
 
-//            if (contentLength < 8192)
-//                OpenMetaverse.Logger.Log(String.Format("[{0}] request length={1}:\n{2}", reqNo, contentLength, Utils.BytesToString(content)), Helpers.LogLevel.Debug);
+            if (contentLength < 8192)
+                OpenMetaverse.Logger.Log(String.Format("[{0}] request length={1}:\n{2}", reqNo, contentLength, Utils.BytesToString(content)), Helpers.LogLevel.Debug);
 
             if (uri == "/")
             {
@@ -612,7 +612,6 @@ namespace GridProxy
 
         private void ProxyCaps(NetworkStream netStream, string meth, string uri, Dictionary<string, string> headers, byte[] content, int reqNo)
         {
-//            Console.WriteLine("ProxyCaps {0} {1}", meth, uri);
             Match match = new Regex(@"^(https?)://([^:/]+)(:\d+)?(/.*)$").Match(uri);
             if (!match.Success)
             {
@@ -641,9 +640,6 @@ namespace GridProxy
             CapsRequest capReq = null; bool shortCircuit = false; bool requestFailed = false;
             if (cap != null)
             {
-//                if (cap.CapType != "GetTexture" && cap.CapType != "ViewerStats" && cap.CapType != "ViewerMetrics")
-//                    Console.WriteLine("CAP request {0} {1}", meth, cap.CapType);
-
                 capReq = new CapsRequest(cap);
 
                 if (cap.ReqFmt == CapsDataFormat.OSD)
@@ -752,7 +748,7 @@ namespace GridProxy
                     }
                     else if (cap == null)
                     {
-//                        OpenMetaverse.Logger.Log(string.Format("{0} {1}", req.Method, req.Address.ToString()), Helpers.LogLevel.Info);
+                        OpenMetaverse.Logger.Log(string.Format("{0} {1}", req.Method, req.Address.ToString()), Helpers.LogLevel.Info);
                     }
                     resp = (HttpWebResponse)req.GetResponse();
                 }
@@ -883,11 +879,8 @@ namespace GridProxy
             }
 
             consoleMsg += "\n" + respString + "\n--------";
-//            OpenMetaverse.Logger.Log(consoleMsg, Helpers.LogLevel.Debug);
-
-//            if (cap.CapType == "FetchInventory2" || cap.CapType == "FetchInventoryDescendents2")
-            
-//            OpenMetaverse.Logger.Log("[" + reqNo + "] Fixed-up response:\n" + respString + "\n--------", Helpers.LogLevel.Debug);
+            OpenMetaverse.Logger.Log(consoleMsg, Helpers.LogLevel.Debug);
+            OpenMetaverse.Logger.Log("[" + reqNo + "] Fixed-up response:\n" + respString + "\n--------", Helpers.LogLevel.Debug);
 
             try
             {
@@ -922,8 +915,6 @@ namespace GridProxy
 
                     if (!String.IsNullOrEmpty(val))
                     {
-                        OpenMetaverse.Logger.Log(string.Format("Got CAP {0}:{1}", key, val), Helpers.LogLevel.Debug);
-
                         if (!KnownCaps.ContainsKey(val))
                         {
                             CapsDataFormat resFmt = BinaryResponseCaps.Contains(key) ? CapsDataFormat.Binary : CapsDataFormat.OSD;
