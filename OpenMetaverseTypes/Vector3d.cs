@@ -498,11 +498,11 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Explicit casting for Vector3 > Vector3d
+        /// Implicit casting for Vector3 > Vector3d
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static explicit operator Vector3d(Vector3 value)
+        public static implicit operator Vector3d(Vector3 value)
         {
             return new Vector3d(value);
         }
