@@ -497,6 +497,16 @@ namespace OpenMetaverse
             return Cross(value1, value2);
         }
 
+        /// <summary>
+        /// Implicit casting for Vector3 > Vector3d
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static implicit operator Vector3d(Vector3 value)
+        {
+            return new Vector3d(value);
+        }
+
         #endregion Operators
 
         /// <summary>A vector with a value of 0,0,0</summary>
