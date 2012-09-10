@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2005, Hervé Drolon, FreeImage Team
+ * Copyright (c) 2005, Herve Drolon, FreeImage Team
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,9 +36,6 @@ opj_image_t* OPJ_CALLCONV opj_image_create(int numcmpts, opj_image_cmptparm_t *c
 	opj_image_t *image = NULL;
 
 	image = (opj_image_t*) opj_calloc(1, sizeof(opj_image_t));
-	/* NOTE: HACK: fixes occasional crash during decode. WHY? */
-	image->comps = NULL;
-
 	if(image) {
 		image->color_space = clrspc;
 		image->numcomps = numcmpts;
