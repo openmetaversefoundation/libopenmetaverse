@@ -15,7 +15,7 @@ AR = ar
 OSNAME = $(shell uname -s)
 
 ifeq ($(OSNAME), Linux)
-  ARCH = $(shell arch)
+  ARCH = $(shell uname -m)
   ARCHSET = 0
   ifeq ($(ARCH), x86_64)
     ARCH=-x86_64
