@@ -259,7 +259,7 @@ namespace OpenMetaverse
             else
             {
                 Logger.Log("No Message handler exists for event " + eventName + ". Unable to decode. Will try Generic Handler next", Helpers.LogLevel.Warning);
-                Logger.Log("Please report this information to http://jira.openmv.org/: \n" + body, Helpers.LogLevel.Debug);
+                Logger.Log("Please report this information to http://jira.openmetaverse.org/: \n" + body, Helpers.LogLevel.Debug);
 
                 // try generic decoder next which takes a caps event and tries to match it to an existing packet
                 if (body.Type == OSDType.Map)
