@@ -14,7 +14,7 @@ LIBTOOLSTAT = libtool
 LIBTOOLDYN = g++
 
 
-COMPILERFLAGS = -O3 -fPIC
+COMPILERFLAGS = -O3 -fPIC -m32
 
 MODULES = $(SRCS:.c=.o)
 CPPMODULES = $(CPPSRCS:.cpp=.o)
@@ -51,7 +51,7 @@ $(STATICLIB): $(MODULES)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(SHAREDLIB): $(MODULES) $(CPPMODULES)
-	$(LIBTOOLDYN) -dynamiclib -o $@ $(MODULES) $(CPPMODULES) $(LIBRARIES)
+	$(LIBTOOLDYN) -m32 -dynamiclib -o $@ $(MODULES) $(CPPMODULES) $(LIBRARIES)
 
 
 
