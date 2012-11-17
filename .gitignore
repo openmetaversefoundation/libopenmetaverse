@@ -1,0 +1,9 @@
+compile.bat
+*.csproj
+*.user
+*.sln
+*.cache
+
+[Oo]bj/
+[Bb]in/
+
