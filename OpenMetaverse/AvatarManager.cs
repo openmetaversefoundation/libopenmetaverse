@@ -56,6 +56,8 @@ namespace OpenMetaverse
         public bool IsDefaultDisplayName;
         /// <summary> Cache display name until </summary>
         public DateTime NextUpdate;
+        /// <summary> Last updated timestamp </summary>
+        public DateTime Updated;
 
         /// <summary>
         /// Creates AgentDisplayName object from OSD
@@ -74,6 +76,7 @@ namespace OpenMetaverse
             ret.LegacyLastName = map["legacy_last_name"];
             ret.IsDefaultDisplayName = map["is_display_name_default"];
             ret.NextUpdate = map["display_name_next_update"];
+            ret.Updated = map["last_updated"];
 
             return ret;
         }
@@ -93,23 +96,14 @@ namespace OpenMetaverse
             map["legacy_last_name"] = LegacyLastName;
             map["is_display_name_default"] = IsDefaultDisplayName;
             map["display_name_next_update"] = NextUpdate;
-            
+            map["last_updated"] = Updated;
+
             return map;
         }
 
         public override string ToString()
         {
             return Helpers.StructToString(this);
-            //StringBuilder result = new StringBuilder();
-            //result.AppendLine();
-            //result.AppendFormat("{0, 30}: {1,-40} [{2}]" + Environment.NewLine, "ID", ID, "UUID");
-            //result.AppendFormat("{0, 30}: {1,-40} [{2}]" + Environment.NewLine, "UserName", UserName, "string");
-            //result.AppendFormat("{0, 30}: {1,-40} [{2}]" + Environment.NewLine, "DisplayName", DisplayName, "string");
-            //result.AppendFormat("{0, 30}: {1,-40} [{2}]" + Environment.NewLine, "LegacyFirstName", LegacyFirstName, "string");
-            //result.AppendFormat("{0, 30}: {1,-40} [{2}]" + Environment.NewLine, "LegaacyLastName", LegaacyLastName, "string");
-            //result.AppendFormat("{0, 30}: {1,-40} [{2}]" + Environment.NewLine, "IsDefaultDisplayName", IsDefaultDisplayName, "bool");
-            //result.AppendFormat("{0, 30}: {1,-40} [{2}]", "NextUpdate", NextUpdate, "DateTime");
-            //return result.ToString();
         }
     }
 
