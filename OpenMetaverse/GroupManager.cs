@@ -30,6 +30,7 @@ using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Messages.Linden;
 using OpenMetaverse.Interfaces;
+using OpenMetaverse.Http;
 
 namespace OpenMetaverse
 {
@@ -1002,6 +1003,27 @@ namespace OpenMetaverse
         public UUID RequestGroupMembers(UUID group)
         {
             UUID requestID = UUID.Random();
+            Uri url = null;
+
+            if (Client.Network.CurrentSim.Caps != null &&
+                null != (url = Client.Network.CurrentSim.Caps.CapabilityURI("GroupMemberData")))
+            {
+                CapsClient req = new CapsClient(url);
+                req.OnComplete += (client, result, error) =>
+                {
+                    if (error == null)
+                    {
+                        GroupMembersHandlerCaps(requestID, result);
+                    }
+                };
+
+                OSDMap requestData = new OSDMap(1);
+                requestData["group_id"] = group;
+                req.BeginGetResponse(requestData, OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT * 4);
+            
+                return requestID;
+            }
+
             lock (GroupMembersRequests) GroupMembersRequests.Add(requestID);
 
             GroupMembersRequestPacket request = new GroupMembersRequestPacket();
@@ -1610,6 +1632,49 @@ namespace OpenMetaverse
             if (m_GroupMembers != null && groupMemberCache != null && groupMemberCache.Count >= members.GroupData.MemberCount)
             {
                 OnGroupMembersReply(new GroupMembersReplyEventArgs(members.GroupData.RequestID, members.GroupData.GroupID, groupMemberCache));
+            }
+        }
+
+        protected void GroupMembersHandlerCaps(UUID requestID, OSD result)
+        {
+            try
+            {
+                OSDMap res = (OSDMap)result;
+                int memberCount = res["member_count"];
+                OSDArray titlesOSD = (OSDArray)res["titles"];
+                string[] titles = new string[titlesOSD.Count];
+                for (int i = 0; i < titlesOSD.Count; i++)
+                {
+                    titles[i] = titlesOSD[i];
+                }
+                UUID groupID = res["group_id"];
+                GroupPowers defaultPowers = (GroupPowers)(ulong)((OSDMap)res["defaults"])["default_powers"];
+                OSDMap membersOSD = (OSDMap)res["members"];
+                Dictionary<UUID, GroupMember> groupMembers = new Dictionary<UUID, GroupMember>(membersOSD.Count);
+                foreach (var memberID in membersOSD.Keys)
+                {
+                    OSDMap member = (OSDMap)membersOSD[memberID];
+
+                    GroupMember groupMember = new GroupMember();
+                    groupMember.ID = (UUID)memberID;
+                    groupMember.Contribution = member["donated_square_meters"];
+                    groupMember.IsOwner = "Y" == member["owner"].AsString();
+                    groupMember.OnlineStatus = member["last_login"];
+                    groupMember.Powers = defaultPowers;
+                    if (member.ContainsKey("powers"))
+                    {
+                        groupMember.Powers = (GroupPowers)(ulong)member["powers"];
+                    }
+                    groupMember.Title = titles[(int)member["title"]];
+
+                    groupMembers[groupMember.ID] = groupMember;
+                }
+
+                OnGroupMembersReply(new GroupMembersReplyEventArgs(requestID, groupID, groupMembers));
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Failed to decode result of GroupMemberData capability: ", Helpers.LogLevel.Error, Client, ex);
             }
         }
 
