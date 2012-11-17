@@ -4692,6 +4692,7 @@ namespace OpenMetaverse
         /// <param name="metersCredit">The meters credited</param>
         /// <param name="metersCommitted">The meters comitted</param>
         /// <param name="description">A brief description of the transaction</param>
+        /// <param name="transactionInfo">Transaction info</param>
         public MoneyBalanceReplyEventArgs(UUID transactionID, bool transactionSuccess, int balance, int metersCredit, int metersCommitted, string description, TransactionInfo transactionInfo)
         {
             this.m_TransactionID = transactionID;
