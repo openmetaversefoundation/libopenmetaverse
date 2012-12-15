@@ -261,7 +261,7 @@ namespace OpenMetaverse
         public string InventoryHost;
         public int MaxAgentGroups;
         public string OpenIDUrl;
-        public string XMPPHost;
+        public string AgentAppearanceServiceURL;
 
         /// <summary>
         /// Parse LLSD Login Reply Data
@@ -493,9 +493,9 @@ namespace OpenMetaverse
                 OpenIDUrl = ParseString("openid_url", reply);
             }
 
-            if (reply.ContainsKey("xmpp_host"))
+            if (reply.ContainsKey("agent_appearance_service"))
             {
-                XMPPHost = ParseString("xmpp_host", reply);
+                AgentAppearanceServiceURL = ParseString("agent_appearance_service", reply);
             }
 
         }
@@ -830,8 +830,8 @@ namespace OpenMetaverse
         public string LoginMessage { get { return InternalLoginMessage; } }
         /// <summary>Maximum number of groups an agent can belong to, -1 for unlimited</summary>
         public int MaxAgentGroups = -1;
-        /// <summary>XMPP server to connect to for Group chat and IM services</summary>
-        public string XMPPHost;
+        /// <summary>Server side baking service URL</summary>
+        public string AgentAppearanceServiceURL;
         #endregion
 
         #region Private Members
@@ -1289,7 +1289,7 @@ namespace OpenMetaverse
 
                 // Misc:
                 MaxAgentGroups = reply.MaxAgentGroups;
-                XMPPHost = reply.XMPPHost;
+                AgentAppearanceServiceURL = reply.AgentAppearanceServiceURL;
 
                 //uint timestamp = (uint)reply.seconds_since_epoch;
                 //DateTime time = Helpers.UnixTimeToDateTime(timestamp); // TODO: Do something with this?
