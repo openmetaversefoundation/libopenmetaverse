@@ -89,6 +89,16 @@ namespace OpenMetaverse
         Hair = 5
     }
 
+    /// <summary>
+    /// Appearance Flags, introdued with server side baking, currently unused
+    /// </summary>
+    [Flags]
+    public enum AppearanceFlags : uint
+    {
+        None = 0
+    }
+
+
     #endregion Enums
 
     public class AppearanceManager

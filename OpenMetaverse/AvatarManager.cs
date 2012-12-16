@@ -920,15 +920,29 @@ namespace OpenMetaverse
                 Primitive.TextureEntryFace defaultTexture = textureEntry.DefaultTexture;
                 Primitive.TextureEntryFace[] faceTextures = textureEntry.FaceTextures;
 
+                byte appearanceVersion = 0;
+                int COFVersion = 0;
+                AppearanceFlags appearanceFlags = 0;
+
+                if (appearance.AppearanceData != null && appearance.AppearanceData.Length > 0)
+                {
+                    appearanceVersion = appearance.AppearanceData[0].AppearanceVersion;
+                    COFVersion = appearance.AppearanceData[0].CofVersion;
+                    appearanceFlags = (AppearanceFlags)appearance.AppearanceData[0].Flags;
+                }
+
                 Avatar av = simulator.ObjectsAvatars.Find((Avatar a) => { return a.ID == appearance.Sender.ID; });
                 if (av != null)
                 {
                     av.Textures = textureEntry;
                     av.VisualParameters = visualParams.ToArray();
+                    av.AppearanceVersion = appearanceVersion;
+                    av.COFVersion = COFVersion;
+                    av.AppearanceFlags = appearanceFlags;
                 }
 
                 OnAvatarAppearance(new AvatarAppearanceEventArgs(simulator, appearance.Sender.ID, appearance.Sender.IsTrial,
-                    defaultTexture, faceTextures, visualParams));
+                    defaultTexture, faceTextures, visualParams, appearanceVersion, COFVersion, appearanceFlags));
             }
         }
 
@@ -1391,6 +1405,9 @@ namespace OpenMetaverse
         private readonly Primitive.TextureEntryFace m_DefaultTexture;
         private readonly Primitive.TextureEntryFace[] m_FaceTextures;
         private readonly List<byte> m_VisualParams;
+        private readonly byte m_AppearanceVersion;
+        private readonly int m_COFVersion;
+        private readonly AppearanceFlags m_AppearanceFlags;
 
         /// <summary>Get the Simulator this request is from of the agent</summary>
         public Simulator Simulator { get { return m_Simulator; } }
@@ -1404,6 +1421,13 @@ namespace OpenMetaverse
         public Primitive.TextureEntryFace[] FaceTextures { get { return m_FaceTextures; } }
         /// <summary>Get the <see cref="VisualParams"/> for the agent</summary>
         public List<byte> VisualParams { get { return m_VisualParams; } }
+        /// <summary>Version of the appearance system used.
+        /// Value greater than 0 indicates that server side baking is used</summary>
+        public byte AppearanceVersion { get { return m_AppearanceVersion; } }
+        /// <summary>Version of the Current Outfit Folder the appearance is based on</summary>
+        public int COFVersion { get { return m_COFVersion; } }
+        /// <summary>Appearance flags, introduced with server side baking, currently unused</summary>
+        public AppearanceFlags AppearanceFlags { get { return m_AppearanceFlags; } }
 
         /// <summary>
         /// Construct a new instance of the AvatarAppearanceEventArgs class
@@ -1415,7 +1439,8 @@ namespace OpenMetaverse
         /// <param name="faceTextures">The agents appearance layer textures</param>
         /// <param name="visualParams">The <see cref="VisualParams"/> for the agent</param>
         public AvatarAppearanceEventArgs(Simulator sim, UUID avatarID, bool isTrial, Primitive.TextureEntryFace defaultTexture,
-            Primitive.TextureEntryFace[] faceTextures, List<byte> visualParams)
+            Primitive.TextureEntryFace[] faceTextures, List<byte> visualParams,
+            byte appearanceVersion, int COFVersion, AppearanceFlags appearanceFlags)
         {
             this.m_Simulator = sim;
             this.m_AvatarID = avatarID;
@@ -1423,6 +1448,9 @@ namespace OpenMetaverse
             this.m_DefaultTexture = defaultTexture;
             this.m_FaceTextures = faceTextures;
             this.m_VisualParams = visualParams;
+            this.m_AppearanceVersion = appearanceVersion;
+            this.m_COFVersion = COFVersion;
+            this.m_AppearanceFlags = appearanceFlags;
         }
     }
 
