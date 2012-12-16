@@ -184,6 +184,7 @@ namespace OpenMetaverse
             req.Add("UntrustedSimulatorMessage");
             req.Add("UpdateAgentInformation");
             req.Add("UpdateAgentLanguage");
+            req.Add("UpdateAvatarAppearance");
             req.Add("UpdateGestureAgentInventory");
             req.Add("UpdateGestureTaskInventory");
             req.Add("UpdateNotecardAgentInventory");
