@@ -1359,6 +1359,14 @@ namespace OpenMetaverse
         public void RequestFolderContents(UUID folder, UUID owner, bool folders, bool items,
             InventorySortOrder order)
         {
+            if (Client.Settings.HTTP_INVENTORY &&
+                Client.Network.CurrentSim.Caps != null &&
+                Client.Network.CurrentSim.Caps.CapabilityURI("FetchInventoryDescendents2") != null)
+            {
+                RequestFolderContentsCap(folder, owner, folders, items, order);
+                return;
+            }
+
             FetchInventoryDescendentsPacket fetch = new FetchInventoryDescendentsPacket();
             fetch.AgentData.AgentID = Client.Self.AgentID;
             fetch.AgentData.SessionID = Client.Self.SessionID;

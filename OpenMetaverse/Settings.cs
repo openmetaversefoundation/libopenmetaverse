@@ -70,6 +70,10 @@ namespace OpenMetaverse
         /// GridClient initializes an Inventory store for the library.
         /// </summary>
         public const bool ENABLE_LIBRARY_STORE = true;
+        /// <summary>
+        /// Use Caps for fetching inventory where available
+        /// </summary>
+        public bool HTTP_INVENTORY = true;
         #endregion
         #region Timeouts and Intervals
 

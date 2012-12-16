@@ -366,6 +366,8 @@ namespace OpenMetaverse
         private int CacheCheckSerialNum = -1;
         /// <summary>Incrementing serial number for AgentSetAppearance packets</summary>
         private int SetAppearanceSerialNum = 0;
+        /// <summary>Indicates if WearablesRequest succeeded</summary>
+        private bool GotWearables = false;
         /// <summary>Indicates whether or not the appearance thread is currently
         /// running, to prevent multiple appearance threads from running
         /// simultaneously</summary>
@@ -464,7 +466,7 @@ namespace OpenMetaverse
                                 Textures[(int)BakeTypeToAgentTextureIndex((BakeType)bakedIndex)].TextureID = UUID.Zero;
                         }
 
-                        if (SetAppearanceSerialNum == 0)
+                        if (!GotWearables)
                         {
                             // Fetch a list of the current agent wearables
                             if (!GetAgentWearables())
@@ -473,6 +475,7 @@ namespace OpenMetaverse
                                     Helpers.LogLevel.Error, Client);
                                 throw new Exception("Failed to retrieve a list of current agent wearables, appearance cannot be set");
                             }
+                            GotWearables = true;
                         }
 
                         // Is this server side baking enabled sim
@@ -1757,7 +1760,6 @@ namespace OpenMetaverse
             {
                 // TODO: create Current Outfit Folder
             }
-            
 
             CapsClient capsRequest = new CapsClient(url);
             OSDMap request = new OSDMap(1);
@@ -1766,11 +1768,13 @@ namespace OpenMetaverse
             string msg = "Setting server side baking failed";
 
             OSD res = capsRequest.GetResponse(request, OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT * 2);
+
             if (res != null && res is OSDMap)
             {
                 OSDMap result = (OSDMap)res;
                 if (result["success"])
                 {
+                    Logger.Log("Successfully set appearance", Helpers.LogLevel.Info, Client);
                     // TODO: Set local visual params and baked textures based on the result here
                     return true;
                 }
@@ -1788,17 +1792,25 @@ namespace OpenMetaverse
             return false;
         }
 
+        /// <summary>
+        /// Get the latest version of COF
+        /// </summary>
+        /// <returns>Current Outfit Folder (or null if getting the data failed)</returns>
         private InventoryFolder GetCOF()
         {
             InventoryFolder COF = null;
 
-            List<InventoryBase> rootContent = Client.Inventory.Store.GetContents(Client.Inventory.Store.RootFolder.UUID);
-            foreach (InventoryBase baseItem in rootContent)
+            // COF should be in the root folder. Request update to get the latest versio number
+            List<InventoryBase> root = Client.Inventory.FolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Self.AgentID, true, true, InventorySortOrder.ByDate, Client.Settings.CAPS_TIMEOUT);
+            if (root != null)
             {
-                if (baseItem is InventoryFolder && ((InventoryFolder)baseItem).PreferredType == AssetType.CurrentOutfitFolder)
+                foreach (InventoryBase baseItem in root)
                 {
-                    COF = (InventoryFolder)baseItem;
-                    break;
+                    if (baseItem is InventoryFolder && ((InventoryFolder)baseItem).PreferredType == AssetType.CurrentOutfitFolder)
+                    {
+                        COF = (InventoryFolder)baseItem;
+                        break;
+                    }
                 }
             }
 
