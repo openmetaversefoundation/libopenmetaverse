@@ -203,6 +203,12 @@ namespace OpenMetaverse
                 && o.Name == Name
                 && o.OwnerID == OwnerID;
         }
+
+        /// <summary>
+        /// Convert inventory to OSD
+        /// </summary>
+        /// <returns>OSD representation</returns>
+        public abstract OSD GetOSD();
     }
 
     /// <summary>
@@ -390,6 +396,7 @@ namespace OpenMetaverse
             item.Name = descItem["name"];
             item.Description = descItem["desc"];
             item.OwnerID = descItem["agent_id"];
+            item.ParentUUID = descItem["parent_id"];
             item.AssetUUID = descItem["asset_id"];
             item.AssetType = (AssetType)descItem["type"].AsInteger();
             item.CreationDate = Utils.UnixTimeToDateTime(descItem["created_at"]);
@@ -413,7 +420,7 @@ namespace OpenMetaverse
         /// Convert InventoryItem to OSD
         /// </summary>
         /// <returns>OSD representation of InventoryItem</returns>
-        public OSD GetOSD()
+        public override OSD GetOSD()
         {
             OSDMap map = new OSDMap();
             map["inv_type"] = (int)InventoryType;
@@ -421,6 +428,7 @@ namespace OpenMetaverse
             map["name"] = Name;
             map["desc"] = Description;
             map["agent_id"] = OwnerID;
+            map["parent_id"] = ParentUUID;
             map["asset_id"] = AssetUUID;
             map["type"] = (int)AssetType;
             map["created_at"] = CreationDate;
@@ -943,6 +951,43 @@ namespace OpenMetaverse
                 && o.PreferredType == PreferredType
                 && o.Version == Version;
         }
+
+        /// <summary>
+        /// Create InventoryFolder from OSD
+        /// </summary>
+        /// <param name="data">OSD Data that makes up InventoryFolder</param>
+        /// <returns>Inventory folder created</returns>
+        public static InventoryFolder FromOSD(OSD data)
+        {
+            OSDMap res = (OSDMap)data;
+            UUID folderID = res.ContainsKey("category_id") ? res["category_id"] : res["folder_id"];
+            InventoryFolder folder = new InventoryFolder(folderID);
+            folder.Name = res["name"];
+            folder.DescendentCount = res["descendents"];
+            folder.Version = res["version"];
+            folder.OwnerID = res.ContainsKey("agent_id") ? res["agent_id"] : res["owner_id"];
+            folder.ParentUUID = res["parent_id"];
+            folder.PreferredType = (AssetType)(int)res["type_default"];
+            return folder;
+        }
+
+        /// <summary>
+        /// Convert InventoryItem to OSD
+        /// </summary>
+        /// <returns>OSD representation of InventoryItem</returns>
+        public override OSD GetOSD()
+        {
+            OSDMap res = new OSDMap(4);
+            res["name"] = Name;
+            res["type_default"] = (int)PreferredType;
+            res["folder_id"] = UUID;
+            res["descendents"] = DescendentCount;
+            res["version"] = Version;
+            res["owner_id"] = OwnerID;
+            res["parent_id"] = ParentUUID;
+            return res;
+        }
+
     }
 
     #endregion Inventory Object Classes
