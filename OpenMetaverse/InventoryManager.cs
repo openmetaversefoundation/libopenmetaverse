@@ -1291,6 +1291,7 @@ namespace OpenMetaverse
         private uint _CallbackPos;
         private Dictionary<uint, ItemCreatedCallback> _ItemCreatedCallbacks = new Dictionary<uint, ItemCreatedCallback>();
         private Dictionary<uint, ItemCopiedCallback> _ItemCopiedCallbacks = new Dictionary<uint, ItemCopiedCallback>();
+        private Dictionary<uint, InventoryType> _ItemInventoryTypeRequest = new Dictionary<uint, InventoryType>();
         private List<InventorySearch> _Searches = new List<InventorySearch>();
 
         #region Properties
@@ -2466,6 +2467,10 @@ namespace OpenMetaverse
             create.AgentData.SessionID = Client.Self.SessionID;
 
             create.InventoryBlock.CallbackID = RegisterItemCreatedCallback(callback);
+            lock (_ItemInventoryTypeRequest)
+            {
+                _ItemInventoryTypeRequest[create.InventoryBlock.CallbackID] = invType;
+            }
             create.InventoryBlock.FolderID = folderID;
             create.InventoryBlock.TransactionID = transactionID;
             create.InventoryBlock.OldItemID = itemID;
@@ -4591,8 +4596,15 @@ namespace OpenMetaverse
             foreach (BulkUpdateInventoryMessage.ItemDataInfo newItem in msg.ItemData)
             {
                 if (newItem.ItemID == UUID.Zero) continue;
+                InventoryType invType = newItem.InvType;
 
-                InventoryItem item = SafeCreateInventoryItem(newItem.InvType, newItem.ItemID);
+                InventoryType storedType = 0;
+                if (_ItemInventoryTypeRequest.TryGetValue(newItem.CallbackID, out storedType))
+                {
+                    _ItemInventoryTypeRequest.Remove(newItem.CallbackID);
+                    invType = storedType;
+                }
+                InventoryItem item = SafeCreateInventoryItem(invType, newItem.ItemID);
 
                 item.AssetType = newItem.Type;
                 item.AssetUUID = newItem.AssetID;

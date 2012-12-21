@@ -495,6 +495,9 @@ namespace OpenMetaverse
                         }
                         else // Classic client side baking
                         {
+                            // If we get back to server side backing region re-request server bake
+                            ServerBakingDone = false;
+
                             // Download and parse all of the agent wearables
                             if (!DownloadWearables())
                             {
