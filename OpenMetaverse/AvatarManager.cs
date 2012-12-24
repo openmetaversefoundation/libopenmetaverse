@@ -51,7 +51,7 @@ namespace OpenMetaverse
         /// <summary> Last name (legacy) </summary>
         public string LegacyLastName;
         /// <summary> Full name (legacy) </summary>
-        public string LegacyFullName { get { return string.Format("{0} {1}", LegacyFirstName, LegacyLastName); }}
+        public string LegacyFullName { get { return string.Format("{0} {1}", LegacyFirstName, LegacyLastName); } }
         /// <summary> Is display name default display name </summary>
         public bool IsDefaultDisplayName;
         /// <summary> Cache display name until </summary>
@@ -88,7 +88,7 @@ namespace OpenMetaverse
         public OSD GetOSD()
         {
             OSDMap map = new OSDMap();
-            
+
             map["id"] = ID;
             map["username"] = UserName;
             map["display_name"] = DisplayName;
@@ -708,7 +708,7 @@ namespace OpenMetaverse
                                           if (error != null)
                                               throw error;
                                           GetDisplayNamesMessage msg = new GetDisplayNamesMessage();
-                                          msg.Deserialize((OSDMap) result);
+                                          msg.Deserialize((OSDMap)result);
                                           callback(true, msg.Agents, msg.BadIDs);
                                       }
                                       catch (Exception ex)
@@ -873,27 +873,30 @@ namespace OpenMetaverse
         {
             Packet packet = e.Packet;
 
-            if (m_AvatarAnimation != null)
+            AvatarAnimationPacket data = (AvatarAnimationPacket)packet;
+
+            List<Animation> signaledAnimations = new List<Animation>(data.AnimationList.Length);
+
+            for (int i = 0; i < data.AnimationList.Length; i++)
             {
-                AvatarAnimationPacket data = (AvatarAnimationPacket)packet;
-
-                List<Animation> signaledAnimations = new List<Animation>(data.AnimationList.Length);
-
-                for (int i = 0; i < data.AnimationList.Length; i++)
+                Animation animation = new Animation();
+                animation.AnimationID = data.AnimationList[i].AnimID;
+                animation.AnimationSequence = data.AnimationList[i].AnimSequenceID;
+                if (i < data.AnimationSourceList.Length)
                 {
-                    Animation animation = new Animation();
-                    animation.AnimationID = data.AnimationList[i].AnimID;
-                    animation.AnimationSequence = data.AnimationList[i].AnimSequenceID;
-                    if (i < data.AnimationSourceList.Length)
-                    {
-                        animation.AnimationSourceObjectID = data.AnimationSourceList[i].ObjectID;
-                    }
-
-                    signaledAnimations.Add(animation);
+                    animation.AnimationSourceObjectID = data.AnimationSourceList[i].ObjectID;
                 }
 
-                OnAvatarAnimation(new AvatarAnimationEventArgs(data.Sender.ID, signaledAnimations));
+                signaledAnimations.Add(animation);
             }
+
+            Avatar avatar = e.Simulator.ObjectsAvatars.Find(avi => avi.ID == data.Sender.ID);
+            if (avatar != null)
+            {
+                avatar.Animations = signaledAnimations;
+            }
+
+            OnAvatarAnimation(new AvatarAnimationEventArgs(data.Sender.ID, signaledAnimations));
         }
 
         /// <summary>Process an incoming packet and raise the appropriate events</summary>
@@ -1020,7 +1023,7 @@ namespace OpenMetaverse
         {
             if (m_DisplayNameUpdate != null)
             {
-                DisplayNameUpdateMessage msg = (DisplayNameUpdateMessage) message;
+                DisplayNameUpdateMessage msg = (DisplayNameUpdateMessage)message;
                 OnDisplayNameUpdate(new DisplayNameUpdateEventArgs(msg.OldDisplayName, msg.DisplayName));
             }
         }
@@ -1689,7 +1692,7 @@ namespace OpenMetaverse
         private string oldDisplayName;
         private AgentDisplayName displayName;
 
-        public string OldDisplayName { get { return oldDisplayName; }}
+        public string OldDisplayName { get { return oldDisplayName; } }
         public AgentDisplayName DisplayName { get { return displayName; } }
 
         public DisplayNameUpdateEventArgs(string oldDisplayName, AgentDisplayName displayName)

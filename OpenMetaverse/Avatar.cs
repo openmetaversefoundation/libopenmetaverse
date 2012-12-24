@@ -323,6 +323,11 @@ namespace OpenMetaverse
         /// </summary>
         public AppearanceFlags AppearanceFlags = AppearanceFlags.None;
 
+        /// <summary>
+        /// List of current avatar animations
+        /// </summary>
+        public List<Animation> Animations;
+
         #endregion Public Members
 
         protected string name;
