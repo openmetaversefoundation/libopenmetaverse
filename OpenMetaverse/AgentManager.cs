@@ -142,9 +142,8 @@ namespace OpenMetaverse
         DenyTeleport = 24,
         /// <summary>Only useful if you have Linden permissions</summary>
         GodLikeRequestTeleport = 25,
-        /// <summary>A placeholder type for future expansion, currently not
-        /// used</summary>
-        CurrentlyUnused = 26,
+        /// <summary>Request a teleport lure</summary>
+        RequestLure = 26,
         // <summary>Notification of a new group election, this is 
         // deprecated</summary>
         //[Obsolete]
