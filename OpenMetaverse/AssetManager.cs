@@ -120,7 +120,7 @@ namespace OpenMetaverse
         /// <summary>Avatar texture</summary>
         Baked = 1,
         /// <summary>Server baked avatar texture</summary>
-        ServerBaked = 1
+        ServerBaked = 2
     }
 
     /// <summary>
