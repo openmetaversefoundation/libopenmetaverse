@@ -166,6 +166,7 @@ namespace OpenMetaverse
             req.Add("ProductInfoRequest");
             req.Add("ProvisionVoiceAccountRequest");
             req.Add("RemoteParcelRequest");
+            req.Add("RenderMaterials");
             req.Add("RequestTextureDownload");
             req.Add("ResourceCostSelected");
             req.Add("RetrieveNavMeshSrc");
