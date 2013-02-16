@@ -1449,6 +1449,9 @@ namespace OpenMetaverse
             }
         }
 
+        /// <summary>Various abilities and preferences sent by the grid</summary>
+        public AgentStateUpdateMessage AgentStateStatus;
+
         #endregion Properties
 
         internal uint localID;
@@ -1534,6 +1537,7 @@ namespace OpenMetaverse
             // CAPS callbacks
             Client.Network.RegisterEventCallback("EstablishAgentCommunication", new Caps.EventQueueCallback(EstablishAgentCommunicationEventHandler));
             Client.Network.RegisterEventCallback("SetDisplayNameReply", new Caps.EventQueueCallback(SetDisplayNameReplyEventHandler));
+            Client.Network.RegisterEventCallback("AgentStateUpdate", new Caps.EventQueueCallback(AgentStateUpdateEventHandler));
             // Incoming Group Chat
             Client.Network.RegisterEventCallback("ChatterBoxInvitation", new Caps.EventQueueCallback(ChatterBoxInvitationEventHandler));
             // Outgoing Group Chat Reply
@@ -3699,6 +3703,14 @@ namespace OpenMetaverse
             {
                 SetDisplayNameReplyMessage msg = (SetDisplayNameReplyMessage)message;
                 OnSetDisplayNameReply(new SetDisplayNameReplyEventArgs(msg.Status, msg.Reason, msg.DisplayName));
+            }
+        }
+
+        protected void AgentStateUpdateEventHandler(string capsKey, IMessage message, Simulator simulator)
+        {
+            if (message is AgentStateUpdateMessage)
+            {
+                AgentStateStatus = (AgentStateUpdateMessage)message;
             }
         }
 

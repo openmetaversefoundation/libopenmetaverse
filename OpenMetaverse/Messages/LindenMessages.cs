@@ -1703,6 +1703,64 @@ namespace OpenMetaverse.Messages.Linden
         }
     }
 
+    public class AgentStateUpdateMessage : IMessage
+    {
+        public OSDMap RawData;
+        public bool CanModifyNavmesh;
+        public bool HasModifiedNavmesh;
+        public string MaxAccess; // PG, M, A
+        public bool AlterNavmeshObjects;
+        public bool AlterPermanentObjects;
+        public int GodLevel;
+        public string Language;
+        public bool LanguageIsPublic;
+
+        public void Deserialize(OSDMap map)
+        {
+            RawData = map;
+            CanModifyNavmesh = map["can_modify_navmesh"];
+            HasModifiedNavmesh = map["has_modified_navmesh"];
+            if (map["preferences"] is OSDMap)
+            {
+                var prefs = (OSDMap)map["preferences"];
+                AlterNavmeshObjects = prefs["alter_navmesh_objects"];
+                AlterPermanentObjects = prefs["alter_permanent_objects"];
+                GodLevel = prefs["god_level"];
+                Language = prefs["language"];
+                LanguageIsPublic = prefs["language_is_public"];
+                if (prefs["access_prefs"] is OSDMap)
+                {
+                    var access = (OSDMap)prefs["access_prefs"];
+                    MaxAccess = access["max"];
+                }
+            }
+        }
+
+        public OSDMap Serialize()
+        {
+            RawData = new OSDMap();
+            RawData["can_modify_navmesh"] = CanModifyNavmesh;
+            RawData["has_modified_navmesh"] = HasModifiedNavmesh;
+
+            OSDMap prefs = new OSDMap();
+            {
+                OSDMap access = new OSDMap();
+                {
+                    access["max"] = MaxAccess;
+                }
+                prefs["access_prefs"] = access;
+                prefs["alter_navmesh_objects"] = AlterNavmeshObjects;
+                prefs["alter_permanent_objects"] = AlterPermanentObjects;
+                prefs["god_level"] = GodLevel;
+                prefs["language"] = Language;
+                prefs["language_is_public"] = LanguageIsPublic;
+            }
+            RawData["preferences"] = prefs;
+            return RawData;
+        }
+
+    }
+
     /// <summary>Base class for Asset uploads/results via Capabilities</summary>
     public abstract class AssetUploaderBlock
     {

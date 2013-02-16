@@ -84,6 +84,7 @@ namespace OpenMetaverse.Messages
                 case "ScriptRunningReply": message = new ScriptRunningReplyMessage(); break;
                 case "SearchStatRequest": message = new SearchStatRequestMessage(); break;
                 case "AgentDropGroup": message = new AgentDropGroupMessage(); break;
+                case "AgentStateUpdate": message = new AgentStateUpdateMessage(); break;
                 case "ForceCloseChatterBoxSession": message = new ForceCloseChatterBoxSessionMessage(); break;
                 case "UploadBakedTexture": message = new UploadBakedTextureMessage(); break;
                 case "RegionInfo": message = new RegionInfoMessage(); break;
