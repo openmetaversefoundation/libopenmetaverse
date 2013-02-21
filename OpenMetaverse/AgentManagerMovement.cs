@@ -647,9 +647,9 @@ namespace OpenMetaverse
                     update.AgentData.SessionID = Client.Self.SessionID;
                     update.AgentData.HeadRotation = HeadRotation;
                     update.AgentData.BodyRotation = BodyRotation;
-                    update.AgentData.CameraAtAxis = yAxis;
+                    update.AgentData.CameraAtAxis = xAxis;
                     update.AgentData.CameraCenter = origin;
-                    update.AgentData.CameraLeftAxis = xAxis;
+                    update.AgentData.CameraLeftAxis = yAxis;
                     update.AgentData.CameraUpAxis = zAxis;
                     update.AgentData.Far = Camera.Far;
                     update.AgentData.State = (byte)State;
