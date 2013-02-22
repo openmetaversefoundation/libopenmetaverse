@@ -316,6 +316,10 @@ namespace OpenMetaverse.Voice
                         break;
                     case "Aux.GetCaptureDevices.1":
                         inputDevices = new List<string>();
+
+                        if (rsp.Results.CaptureDevices.Count == 0 || rsp.Results.CurrentCaptureDevice == null)
+                            break;
+
                         foreach (CaptureDevice device in rsp.Results.CaptureDevices)
                             inputDevices.Add(device.Device);
                         currentCaptureDevice = rsp.Results.CurrentCaptureDevice.Device;
@@ -335,8 +339,14 @@ namespace OpenMetaverse.Voice
                         break;
                     case "Aux.GetRenderDevices.1":
                         outputDevices = new List<string>();
+
+                        if (rsp.Results.RenderDevices.Count == 0 || rsp.Results.CurrentRenderDevice == null)
+                            break;
+						
                         foreach (RenderDevice device in rsp.Results.RenderDevices)
                             outputDevices.Add(device.Device);
+
+
                         currentPlaybackDevice = rsp.Results.CurrentRenderDevice.Device;
 
                         if (OnAuxGetRenderDevicesResponse != null)
