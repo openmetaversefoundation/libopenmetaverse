@@ -52,6 +52,9 @@ namespace OpenMetaverse.TestClient
 
             Network.RegisterCallback(PacketType.AgentDataUpdate, AgentDataUpdateHandler);
             Network.LoginProgress += LoginHandler;
+            Objects.AvatarUpdate += new EventHandler<AvatarUpdateEventArgs>(Objects_AvatarUpdate);
+            Objects.TerseObjectUpdate += new EventHandler<TerseObjectUpdateEventArgs>(Objects_TerseObjectUpdate);
+            Network.SimChanged += new EventHandler<SimChangedEventArgs>(Network_SimChanged);
             Self.IM += Self_IM;
             Groups.GroupMembersReply += GroupMembersHandler;
             Inventory.InventoryObjectOffered += Inventory_OnInventoryObjectReceived;            
@@ -63,6 +66,42 @@ namespace OpenMetaverse.TestClient
 
             updateTimer.Start();
         }
+
+        void Objects_TerseObjectUpdate(object sender, TerseObjectUpdateEventArgs e)
+        {
+            if (e.Prim.LocalID == Self.LocalID)
+            {
+                SetDefaultCamera();
+            }
+        }
+
+        void Objects_AvatarUpdate(object sender, AvatarUpdateEventArgs e)
+        {
+            if (e.Avatar.LocalID == Self.LocalID)
+            {
+                SetDefaultCamera();
+            }
+        }
+
+        void Network_SimChanged(object sender, SimChangedEventArgs e)
+        {
+            OpenMetaverse.Packets.AgentFOVPacket msg = new OpenMetaverse.Packets.AgentFOVPacket();
+            msg.AgentData.AgentID = Self.AgentID;
+            msg.AgentData.SessionID = Self.SessionID;
+            msg.AgentData.CircuitCode = Network.CircuitCode;
+            msg.FOVBlock.GenCounter = 0;
+            msg.FOVBlock.VerticalAngle = Utils.TWO_PI;
+            Network.SendPacket(msg);
+        }
+
+        public void SetDefaultCamera()
+        {
+            Self.Movement.Camera.LookAt(
+                Self.SimPosition + new Vector3(-5, 0, 0) * Self.Movement.BodyRotation,
+                Self.SimPosition
+            );
+        }
+
 
         void Self_IM(object sender, InstantMessageEventArgs e)
         {
