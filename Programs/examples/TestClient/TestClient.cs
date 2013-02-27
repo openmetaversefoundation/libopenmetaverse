@@ -90,12 +90,13 @@ namespace OpenMetaverse.TestClient
             msg.AgentData.SessionID = Self.SessionID;
             msg.AgentData.CircuitCode = Network.CircuitCode;
             msg.FOVBlock.GenCounter = 0;
-            msg.FOVBlock.VerticalAngle = Utils.TWO_PI;
+            msg.FOVBlock.VerticalAngle = Utils.TWO_PI - 0.05f;
             Network.SendPacket(msg);
         }
 
         public void SetDefaultCamera()
         {
+            // SetCamera 5m behind the avatar
             Self.Movement.Camera.LookAt(
                 Self.SimPosition + new Vector3(-5, 0, 0) * Self.Movement.BodyRotation,
                 Self.SimPosition
