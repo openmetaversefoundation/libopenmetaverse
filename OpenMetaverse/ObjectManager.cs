@@ -166,6 +166,7 @@ namespace OpenMetaverse
 
         #region Delegates
 
+        #region ObjectUpdate event
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<PrimEventArgs> m_ObjectUpdate;
 
@@ -181,7 +182,9 @@ namespace OpenMetaverse
             add { lock (m_ObjectUpdateLock) { m_ObjectUpdate += value; } }
             remove { lock (m_ObjectUpdateLock) { m_ObjectUpdate -= value; } }
         }
+        #endregion ObjectUpdate event
 
+        #region ObjectProperties event
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<ObjectPropertiesEventArgs> m_ObjectProperties;
 
@@ -231,7 +234,9 @@ namespace OpenMetaverse
             add { lock (m_ObjectPropertiesUpdatedLock) { m_ObjectPropertiesUpdated += value; } }
             remove { lock (m_ObjectPropertiesUpdatedLock) { m_ObjectPropertiesUpdated -= value; } }
         }
+        #endregion ObjectProperties event
 
+        #region ObjectPropertiesFamily event
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<ObjectPropertiesFamilyEventArgs> m_ObjectPropertiesFamily;
 
@@ -256,7 +261,9 @@ namespace OpenMetaverse
             add { lock (m_ObjectPropertiesFamilyLock) { m_ObjectPropertiesFamily += value; } }
             remove { lock (m_ObjectPropertiesFamilyLock) { m_ObjectPropertiesFamily -= value; } }
         }
+        #endregion ObjectPropertiesFamily
 
+        #region AvatarUpdate event
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<AvatarUpdateEventArgs> m_AvatarUpdate;
 
@@ -280,7 +287,9 @@ namespace OpenMetaverse
             add { lock (m_AvatarUpdateLock) { m_AvatarUpdate += value; } }
             remove { lock (m_AvatarUpdateLock) { m_AvatarUpdate -= value; } }
         }
+        #endregion AvatarUpdate event
 
+        #region TerseObjectUpdate event
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<TerseObjectUpdateEventArgs> m_TerseObjectUpdate;
 
@@ -294,7 +303,9 @@ namespace OpenMetaverse
             add { lock (m_TerseObjectUpdateLock) { m_TerseObjectUpdate += value; } }
             remove { lock (m_TerseObjectUpdateLock) { m_TerseObjectUpdate -= value; } }
         }
+        #endregion TerseObjectUpdate event
 
+        #region ObjectDataBlockUpdate event
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<ObjectDataBlockUpdateEventArgs> m_ObjectDataBlockUpdate;
 
@@ -318,7 +329,9 @@ namespace OpenMetaverse
             add { lock (m_ObjectDataBlockUpdateLock) { m_ObjectDataBlockUpdate += value; } }
             remove { lock (m_ObjectDataBlockUpdateLock) { m_ObjectDataBlockUpdate -= value; } }
         }
+        #endregion ObjectDataBlockUpdate event
 
+        #region KillObject event
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<KillObjectEventArgs> m_KillObject;
 
@@ -342,7 +355,35 @@ namespace OpenMetaverse
             add { lock (m_KillObjectLock) { m_KillObject += value; } }
             remove { lock (m_KillObjectLock) { m_KillObject -= value; } }
         }
+        #endregion KillObject event
 
+        #region KillObjects event
+        /// <summary>The event subscribers, null of no subscribers</summary>
+        private EventHandler<KillObjectsEventArgs> m_KillObjects;
+
+        ///<summary>Raises the KillObjects Event</summary>
+        /// <param name="e">A KillObjectsEventArgs object containing
+        /// the data sent from the simulator</param>
+        protected virtual void OnKillObjects(KillObjectsEventArgs e)
+        {
+            EventHandler<KillObjectsEventArgs> handler = m_KillObjects;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_KillObjectsLock = new object();
+
+        /// <summary>Raised when the simulator informs us when a group of <see cref="Primitive"/>
+        /// or <see cref="Avatar"/> is no longer within view</summary>
+        public event EventHandler<KillObjectsEventArgs> KillObjects
+        {
+            add { lock (m_KillObjectsLock) { m_KillObjects += value; } }
+            remove { lock (m_KillObjectsLock) { m_KillObjects -= value; } }
+        }
+        #endregion KillObjects event
+
+        #region AvatarSitChanged event
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<AvatarSitChangedEventArgs> m_AvatarSitChanged;
 
@@ -366,7 +407,9 @@ namespace OpenMetaverse
             add { lock (m_AvatarSitChangedLock) { m_AvatarSitChanged += value; } }
             remove { lock (m_AvatarSitChangedLock) { m_AvatarSitChanged -= value; } }
         }
+        #endregion AvatarSitChanged event
 
+        #region PayPriceReply event
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<PayPriceReplyEventArgs> m_PayPriceReply;
 
@@ -390,7 +433,9 @@ namespace OpenMetaverse
             add { lock (m_PayPriceReplyLock) { m_PayPriceReply += value; } }
             remove { lock (m_PayPriceReplyLock) { m_PayPriceReply -= value; } }
         }
+        #endregion PayPriceReply
 
+        #region PhysicsProperties event
         /// <summary>
         /// Callback for getting object media data via CAP
         /// </summary>
@@ -424,6 +469,7 @@ namespace OpenMetaverse
             add { lock (m_PhysicsPropertiesLock) { m_PhysicsProperties += value; } }
             remove { lock (m_PhysicsPropertiesLock) { m_PhysicsProperties -= value; } }
         }
+        #endregion PhysicsProperties event
 
         #endregion Delegates
 
@@ -2617,10 +2663,13 @@ namespace OpenMetaverse
 
             // Notify first, so that handler has a chance to get a
             // reference from the ObjectTracker to the object being killed
+            uint[] killed = new uint[kill.ObjectData.Length];
             for (int i = 0; i < kill.ObjectData.Length; i++)
             {
                 OnKillObject(new KillObjectEventArgs(simulator, kill.ObjectData[i].ID));
+                killed[i] = kill.ObjectData[i].ID;
             }
+            OnKillObjects(new KillObjectsEventArgs(e.Simulator, killed));
 
 
             lock (simulator.ObjectsPrimitives.Dictionary)
@@ -3591,6 +3640,25 @@ namespace OpenMetaverse
         {
             this.m_Simulator = simulator;
             this.m_ObjectLocalID = objectID;
+        }
+    }
+
+    /// <summary>Provides notification when an Avatar, Object or Attachment is DeRezzed or moves out of the avatars view for the 
+    /// <see cref="ObjectManager.KillObjects"/> event</summary>
+    public class KillObjectsEventArgs : EventArgs
+    {
+        private readonly Simulator m_Simulator;
+        private readonly uint[] m_ObjectLocalIDs;
+
+        /// <summary>Get the simulator the object is located</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
+        /// <summary>The LocalID of the object</summary>
+        public uint[] ObjectLocalIDs { get { return m_ObjectLocalIDs; } }
+
+        public KillObjectsEventArgs(Simulator simulator, uint[] objectIDs)
+        {
+            this.m_Simulator = simulator;
+            this.m_ObjectLocalIDs = objectIDs;
         }
     }
 
