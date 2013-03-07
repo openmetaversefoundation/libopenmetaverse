@@ -62,6 +62,26 @@ namespace OpenMetaverse
         Success
     }
 
+    /// <summary>
+    /// Status of the last application run.
+    /// Used for error reporting to the grid login service for statistical purposes.
+    /// </summary>
+    public enum LastExecStatus
+    {
+        /// <summary> Application exited normally </summary>
+        Normal = 0,
+        /// <summary> Application froze </summary>
+        Froze,
+        /// <summary> Application detected error and exited abnormally </summary>
+        ForcedCrash,
+        /// <summary> Other crash </summary>
+        OtherCrash,
+        /// <summary> Application froze during logout </summary>
+        LogoutFroze,
+        /// <summary> Application crashed during logout </summary>
+        LogoutCrash
+    }
+
     #endregion Enums
 
     #region Structs
@@ -115,6 +135,9 @@ namespace OpenMetaverse
         public bool AgreeToTos;
         /// <summary>Unknown</summary>
         public bool ReadCritical;
+        /// <summary>Status of the last application run sent to the grid login server for statistical purposes</summary>
+        public LastExecStatus LastExecEvent = LastExecStatus.Normal;
+
         /// <summary>An array of string sent to the login server to enable various options</summary>
         public string[] Options;
 
@@ -154,6 +177,7 @@ namespace OpenMetaverse
             this.ID0 = NetworkManager.GetMAC();
             this.AgreeToTos = true;
             this.ReadCritical = true;
+            this.LastExecEvent = LastExecStatus.Normal;
         }
 
         /// <summary>
@@ -261,7 +285,7 @@ namespace OpenMetaverse
         public string InventoryHost;
         public int MaxAgentGroups;
         public string OpenIDUrl;
-        public string XMPPHost;
+        public string AgentAppearanceServiceURL;
 
         /// <summary>
         /// Parse LLSD Login Reply Data
@@ -493,9 +517,9 @@ namespace OpenMetaverse
                 OpenIDUrl = ParseString("openid_url", reply);
             }
 
-            if (reply.ContainsKey("xmpp_host"))
+            if (reply.ContainsKey("agent_appearance_service"))
             {
-                XMPPHost = ParseString("xmpp_host", reply);
+                AgentAppearanceServiceURL = ParseString("agent_appearance_service", reply);
             }
 
         }
@@ -830,8 +854,8 @@ namespace OpenMetaverse
         public string LoginMessage { get { return InternalLoginMessage; } }
         /// <summary>Maximum number of groups an agent can belong to, -1 for unlimited</summary>
         public int MaxAgentGroups = -1;
-        /// <summary>XMPP server to connect to for Group chat and IM services</summary>
-        public string XMPPHost;
+        /// <summary>Server side baking service URL</summary>
+        public string AgentAppearanceServiceURL;
         #endregion
 
         #region Private Members
@@ -1065,6 +1089,7 @@ namespace OpenMetaverse
                 loginLLSD["read_critical"] = OSD.FromBoolean(loginParams.ReadCritical);
                 loginLLSD["viewer_digest"] = OSD.FromString(loginParams.ViewerDigest);
                 loginLLSD["id0"] = OSD.FromString(loginParams.ID0);
+                loginLLSD["last_exec_event"] = OSD.FromInteger((int)loginParams.LastExecEvent);
 
                 // Create the options LLSD array
                 OSDArray optionsOSD = new OSDArray();
@@ -1124,7 +1149,7 @@ namespace OpenMetaverse
                 if (loginParams.ReadCritical)
                     loginXmlRpc["read_critical"] = "true";
                 loginXmlRpc["id0"] = loginParams.ID0;
-                loginXmlRpc["last_exec_event"] = 0;
+                loginXmlRpc["last_exec_event"] = (int)loginParams.LastExecEvent;
 
                 // Create the options array
                 ArrayList options = new ArrayList();
@@ -1199,15 +1224,15 @@ namespace OpenMetaverse
         }
 
 
-		/// <summary>
-		/// LoginParams and the initial login XmlRpcRequest were made on a remote machine.
-		/// This method now initializes libomv with the results.
-		/// </summary>
-		public void RemoteLoginHandler(LoginResponseData response, LoginParams newContext) 
-		{
-			CurrentContext = newContext;
-			LoginReplyXmlRpcHandler(response, newContext);
-		}
+        /// <summary>
+        /// LoginParams and the initial login XmlRpcRequest were made on a remote machine.
+        /// This method now initializes libomv with the results.
+        /// </summary>
+        public void RemoteLoginHandler(LoginResponseData response, LoginParams newContext)
+        {
+            CurrentContext = newContext;
+            LoginReplyXmlRpcHandler(response, newContext);
+        }
 
 
         /// <summary>
@@ -1240,19 +1265,19 @@ namespace OpenMetaverse
                 Logger.Log("Login response failure: " + e.Message + " " + e.StackTrace, Helpers.LogLevel.Warning);
                 return;
             }
-			LoginReplyXmlRpcHandler(reply, context);
-		}
+            LoginReplyXmlRpcHandler(reply, context);
+        }
 
 
-		/// <summary>
-		/// Handles response from XML-RPC login replies with already parsed LoginResponseData
-		/// </summary>
-		private void LoginReplyXmlRpcHandler(LoginResponseData reply, LoginParams context)
-		{
-			ushort simPort = 0;
-			uint regionX = 0;
-			uint regionY = 0;
-			string reason = reply.Reason;
+        /// <summary>
+        /// Handles response from XML-RPC login replies with already parsed LoginResponseData
+        /// </summary>
+        private void LoginReplyXmlRpcHandler(LoginResponseData reply, LoginParams context)
+        {
+            ushort simPort = 0;
+            uint regionX = 0;
+            uint regionY = 0;
+            string reason = reply.Reason;
             string message = reply.Message;
 
             if (reply.Login == "true")
@@ -1289,7 +1314,7 @@ namespace OpenMetaverse
 
                 // Misc:
                 MaxAgentGroups = reply.MaxAgentGroups;
-                XMPPHost = reply.XMPPHost;
+                AgentAppearanceServiceURL = reply.AgentAppearanceServiceURL;
 
                 //uint timestamp = (uint)reply.seconds_since_epoch;
                 //DateTime time = Helpers.UnixTimeToDateTime(timestamp); // TODO: Do something with this?

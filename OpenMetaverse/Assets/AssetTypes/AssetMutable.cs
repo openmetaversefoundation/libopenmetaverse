@@ -48,6 +48,7 @@ namespace OpenMetaverse.Assets
         /// <summary>
         /// Construct an Asset object of type Animation
         /// </summary>
+        /// <param name="type">Asset type</param>
         /// <param name="assetID">A unique <see cref="UUID"/> specific to this asset</param>
         /// <param name="assetData">A byte array containing the raw asset data</param>
         public AssetMutable(AssetType type, UUID assetID, byte[] assetData)

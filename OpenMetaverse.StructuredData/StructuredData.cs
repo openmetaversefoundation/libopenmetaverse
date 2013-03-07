@@ -1212,6 +1212,18 @@ namespace OpenMetaverse.StructuredData
         {
             string header = Encoding.ASCII.GetString(data, 0, data.Length >= 17 ? 17 : data.Length);
 
+            try
+            {
+                string uHeader = Encoding.UTF8.GetString(data, 0, data.Length >= 17 ? 17 : data.Length).TrimStart();
+                if (uHeader.StartsWith(LLSD_XML_HEADER, StringComparison.InvariantCultureIgnoreCase) ||
+                    uHeader.StartsWith(LLSD_XML_ALT_HEADER, StringComparison.InvariantCultureIgnoreCase) ||
+                    uHeader.StartsWith(LLSD_XML_ALT2_HEADER, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return DeserializeLLSDXml(data);
+                }
+            }
+            catch { }
+
             if (header.StartsWith(LLSD_BINARY_HEADER, StringComparison.InvariantCultureIgnoreCase))
             {
                 return DeserializeLLSDBinary(data);

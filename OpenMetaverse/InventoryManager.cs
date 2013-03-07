@@ -203,6 +203,12 @@ namespace OpenMetaverse
                 && o.Name == Name
                 && o.OwnerID == OwnerID;
         }
+
+        /// <summary>
+        /// Convert inventory to OSD
+        /// </summary>
+        /// <returns>OSD representation</returns>
+        public abstract OSD GetOSD();
     }
 
     /// <summary>
@@ -368,6 +374,79 @@ namespace OpenMetaverse
                 && o.SalePrice == SalePrice
                 && o.SaleType == SaleType
                 && o.LastOwnerID == LastOwnerID;
+        }
+
+        /// <summary>
+        /// Create InventoryItem from OSD
+        /// </summary>
+        /// <param name="data">OSD Data that makes up InventoryItem</param>
+        /// <returns>Inventory item created</returns>
+        public static InventoryItem FromOSD(OSD data)
+        {
+            OSDMap descItem = (OSDMap)data;
+
+            InventoryType type = (InventoryType)descItem["inv_type"].AsInteger();
+            if (type == InventoryType.Texture && (AssetType)descItem["type"].AsInteger() == AssetType.Object)
+            {
+                type = InventoryType.Attachment;
+            }
+            InventoryItem item = InventoryManager.CreateInventoryItem(type, descItem["item_id"]);
+
+            item.ParentUUID = descItem["parent_id"];
+            item.Name = descItem["name"];
+            item.Description = descItem["desc"];
+            item.OwnerID = descItem["agent_id"];
+            item.ParentUUID = descItem["parent_id"];
+            item.AssetUUID = descItem["asset_id"];
+            item.AssetType = (AssetType)descItem["type"].AsInteger();
+            item.CreationDate = Utils.UnixTimeToDateTime(descItem["created_at"]);
+            item.Flags = descItem["flags"];
+
+            OSDMap perms = (OSDMap)descItem["permissions"];
+            item.CreatorID = perms["creator_id"];
+            item.LastOwnerID = perms["last_owner_id"];
+            item.Permissions = new Permissions(perms["base_mask"], perms["everyone_mask"], perms["group_mask"], perms["next_owner_mask"], perms["owner_mask"]);
+            item.GroupOwned = perms["is_owner_group"];
+            item.GroupID = perms["group_id"];
+
+            OSDMap sale = (OSDMap)descItem["sale_info"];
+            item.SalePrice = sale["sale_price"];
+            item.SaleType = (SaleType)sale["sale_type"].AsInteger();
+
+            return item;
+        }
+
+        /// <summary>
+        /// Convert InventoryItem to OSD
+        /// </summary>
+        /// <returns>OSD representation of InventoryItem</returns>
+        public override OSD GetOSD()
+        {
+            OSDMap map = new OSDMap();
+            map["inv_type"] = (int)InventoryType;
+            map["parent_id"] = ParentUUID;
+            map["name"] = Name;
+            map["desc"] = Description;
+            map["agent_id"] = OwnerID;
+            map["parent_id"] = ParentUUID;
+            map["asset_id"] = AssetUUID;
+            map["type"] = (int)AssetType;
+            map["created_at"] = CreationDate;
+            map["flags"] = Flags;
+
+            OSDMap perms = (OSDMap)Permissions.GetOSD();
+            perms["creator_id"] = CreatorID;
+            perms["last_owner_id"] = LastOwnerID;
+            perms["is_owner_group"] = GroupOwned;
+            perms["group_id"] = GroupID;
+            map["permissions"] = perms;
+
+            OSDMap sale = new OSDMap();
+            sale["sale_price"] = SalePrice;
+            sale["sale_type"] = (int)SaleType;
+            map["sale_info"] = sale;
+            
+            return map;
         }
     }
 
@@ -872,6 +951,43 @@ namespace OpenMetaverse
                 && o.PreferredType == PreferredType
                 && o.Version == Version;
         }
+
+        /// <summary>
+        /// Create InventoryFolder from OSD
+        /// </summary>
+        /// <param name="data">OSD Data that makes up InventoryFolder</param>
+        /// <returns>Inventory folder created</returns>
+        public static InventoryFolder FromOSD(OSD data)
+        {
+            OSDMap res = (OSDMap)data;
+            UUID folderID = res.ContainsKey("category_id") ? res["category_id"] : res["folder_id"];
+            InventoryFolder folder = new InventoryFolder(folderID);
+            folder.Name = res["name"];
+            folder.DescendentCount = res["descendents"];
+            folder.Version = res["version"];
+            folder.OwnerID = res.ContainsKey("agent_id") ? res["agent_id"] : res["owner_id"];
+            folder.ParentUUID = res["parent_id"];
+            folder.PreferredType = (AssetType)(int)res["type_default"];
+            return folder;
+        }
+
+        /// <summary>
+        /// Convert InventoryItem to OSD
+        /// </summary>
+        /// <returns>OSD representation of InventoryItem</returns>
+        public override OSD GetOSD()
+        {
+            OSDMap res = new OSDMap(4);
+            res["name"] = Name;
+            res["type_default"] = (int)PreferredType;
+            res["folder_id"] = UUID;
+            res["descendents"] = DescendentCount;
+            res["version"] = Version;
+            res["owner_id"] = OwnerID;
+            res["parent_id"] = ParentUUID;
+            return res;
+        }
+
     }
 
     #endregion Inventory Object Classes
@@ -1175,6 +1291,7 @@ namespace OpenMetaverse
         private uint _CallbackPos;
         private Dictionary<uint, ItemCreatedCallback> _ItemCreatedCallbacks = new Dictionary<uint, ItemCreatedCallback>();
         private Dictionary<uint, ItemCopiedCallback> _ItemCopiedCallbacks = new Dictionary<uint, ItemCopiedCallback>();
+        private Dictionary<uint, InventoryType> _ItemInventoryTypeRequest = new Dictionary<uint, InventoryType>();
         private List<InventorySearch> _Searches = new List<InventorySearch>();
 
         #region Properties
@@ -1258,17 +1375,7 @@ namespace OpenMetaverse
         /// <seealso cref="InventoryManager.OnItemReceived"/>
         public void RequestFetchInventory(UUID itemID, UUID ownerID)
         {
-            FetchInventoryPacket fetch = new FetchInventoryPacket();
-            fetch.AgentData = new FetchInventoryPacket.AgentDataBlock();
-            fetch.AgentData.AgentID = Client.Self.AgentID;
-            fetch.AgentData.SessionID = Client.Self.SessionID;
-
-            fetch.InventoryData = new FetchInventoryPacket.InventoryDataBlock[1];
-            fetch.InventoryData[0] = new FetchInventoryPacket.InventoryDataBlock();
-            fetch.InventoryData[0].ItemID = itemID;
-            fetch.InventoryData[0].OwnerID = ownerID;
-
-            Client.Network.SendPacket(fetch);
+            RequestFetchInventory(new List<UUID>(1) { itemID }, new List<UUID>(1) { ownerID });
         }
 
         /// <summary>
@@ -1281,6 +1388,15 @@ namespace OpenMetaverse
         {
             if (itemIDs.Count != ownerIDs.Count)
                 throw new ArgumentException("itemIDs and ownerIDs must contain the same number of entries");
+
+            if (Client.Settings.HTTP_INVENTORY &&
+                Client.Network.CurrentSim.Caps != null &&
+                Client.Network.CurrentSim.Caps.CapabilityURI("FetchInventory2") != null)
+            {
+                RequestFetchInventoryCap(itemIDs, ownerIDs);
+                return;
+            }
+
 
             FetchInventoryPacket fetch = new FetchInventoryPacket();
             fetch.AgentData = new FetchInventoryPacket.AgentDataBlock();
@@ -1296,6 +1412,65 @@ namespace OpenMetaverse
             }
 
             Client.Network.SendPacket(fetch);
+        }
+
+        /// <summary>
+        /// Request inventory items via Capabilities
+        /// </summary>
+        /// <param name="itemIDs">Inventory items to request</param>
+        /// <param name="ownerIDs">Owners of the inventory items</param>
+        /// <seealso cref="InventoryManager.OnItemReceived"/>
+        private void RequestFetchInventoryCap(List<UUID> itemIDs, List<UUID> ownerIDs)
+        {
+            if (itemIDs.Count != ownerIDs.Count)
+                throw new ArgumentException("itemIDs and ownerIDs must contain the same number of entries");
+
+            if (Client.Settings.HTTP_INVENTORY &&
+                Client.Network.CurrentSim.Caps != null &&
+                Client.Network.CurrentSim.Caps.CapabilityURI("FetchInventory2") != null)
+            {
+                Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("FetchInventory2");
+                CapsClient request = new CapsClient(url);
+                
+                request.OnComplete += (client, result, error) =>
+                {
+                    if (error == null)
+                    {
+                        try
+                        {
+                            OSDMap res = (OSDMap)result;
+                            OSDArray itemsOSD = (OSDArray)res["items"];
+
+                            for (int i = 0; i < itemsOSD.Count; i++)
+                            {
+                                InventoryItem item = InventoryItem.FromOSD(itemsOSD[i]);
+                                _Store[item.UUID] = item;
+                                OnItemReceived(new ItemReceivedEventArgs(item));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Log("Failed getting data from FetchInventory2 capability.", Helpers.LogLevel.Error, Client, ex);
+                        }
+                    }
+                };
+
+                OSDMap OSDRequest = new OSDMap();
+                OSDRequest["agent_id"] = Client.Self.AgentID;
+
+                OSDArray items = new OSDArray(itemIDs.Count);
+                for (int i = 0; i < itemIDs.Count; i++)
+                {
+                    OSDMap item = new OSDMap(2);
+                    item["item_id"] = itemIDs[i];
+                    item["owner_id"] = ownerIDs[i];
+                    items.Add(item);
+                }
+
+                OSDRequest["items"] = items;
+
+                request.BeginGetResponse(OSDRequest, OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+            }
         }
 
         /// <summary>
@@ -1359,6 +1534,14 @@ namespace OpenMetaverse
         public void RequestFolderContents(UUID folder, UUID owner, bool folders, bool items,
             InventorySortOrder order)
         {
+            if (Client.Settings.HTTP_INVENTORY &&
+                Client.Network.CurrentSim.Caps != null &&
+                Client.Network.CurrentSim.Caps.CapabilityURI("FetchInventoryDescendents2") != null)
+            {
+                RequestFolderContentsCap(folder, owner, folders, items, order);
+                return;
+            }
+
             FetchInventoryDescendentsPacket fetch = new FetchInventoryDescendentsPacket();
             fetch.AgentData.AgentID = Client.Self.AgentID;
             fetch.AgentData.SessionID = Client.Self.SessionID;
@@ -1457,35 +1640,8 @@ namespace OpenMetaverse
                                     OSDArray items = (OSDArray)res["items"];
                                     for (int i = 0; i < items.Count; i++)
                                     {
-                                        OSDMap descItem = (OSDMap)items[i];
-                                        InventoryType type = (InventoryType)descItem["inv_type"].AsInteger();
-                                        if (type == InventoryType.Texture && (AssetType)descItem["type"].AsInteger() == AssetType.Object)
-                                        {
-                                            type = InventoryType.Attachment;
-                                        }
-                                        InventoryItem item = CreateInventoryItem(type, descItem["item_id"]);
-
-                                        item.ParentUUID = descItem["parent_id"];
-                                        item.Name = descItem["name"];
-                                        item.Description = descItem["desc"];
-                                        item.OwnerID = descItem["agent_id"];
-                                        item.AssetUUID = descItem["asset_id"];
-                                        item.AssetType = (AssetType)descItem["type"].AsInteger();
-                                        item.CreationDate =  Utils.UnixTimeToDateTime(descItem["created_at"]);
-                                        item.Flags = descItem["flags"];
-
-                                        OSDMap perms = (OSDMap)descItem["permissions"];
-                                        item.CreatorID = perms["creator_id"];
-                                        item.LastOwnerID = perms["last_owner_id"];
-                                        item.Permissions = new Permissions(perms["base_mask"], perms["everyone_mask"], perms["group_mask"], perms["next_owner_mask"], perms["owner_mask"]);
-                                        item.GroupOwned = perms["is_owner_group"];
-                                        item.GroupID = perms["group_id"];
-
-                                        OSDMap sale = (OSDMap)descItem["sale_info"];
-                                        item.SalePrice = sale["sale_price"];
-                                        item.SaleType = (SaleType)sale["sale_type"].AsInteger();
-
-                                        _Store[item.UUID] = item;
+                                        InventoryItem item = InventoryItem.FromOSD(items[i]);
+                                       _Store[item.UUID] = item;
                                     }
                                 }
                             }
@@ -2311,6 +2467,10 @@ namespace OpenMetaverse
             create.AgentData.SessionID = Client.Self.SessionID;
 
             create.InventoryBlock.CallbackID = RegisterItemCreatedCallback(callback);
+            lock (_ItemInventoryTypeRequest)
+            {
+                _ItemInventoryTypeRequest[create.InventoryBlock.CallbackID] = invType;
+            }
             create.InventoryBlock.FolderID = folderID;
             create.InventoryBlock.TransactionID = transactionID;
             create.InventoryBlock.OldItemID = itemID;
@@ -4436,8 +4596,15 @@ namespace OpenMetaverse
             foreach (BulkUpdateInventoryMessage.ItemDataInfo newItem in msg.ItemData)
             {
                 if (newItem.ItemID == UUID.Zero) continue;
+                InventoryType invType = newItem.InvType;
 
-                InventoryItem item = SafeCreateInventoryItem(newItem.InvType, newItem.ItemID);
+                InventoryType storedType = 0;
+                if (_ItemInventoryTypeRequest.TryGetValue(newItem.CallbackID, out storedType))
+                {
+                    _ItemInventoryTypeRequest.Remove(newItem.CallbackID);
+                    invType = storedType;
+                }
+                InventoryItem item = SafeCreateInventoryItem(invType, newItem.ItemID);
 
                 item.AssetType = newItem.Type;
                 item.AssetUUID = newItem.AssetID;
@@ -4614,10 +4781,7 @@ namespace OpenMetaverse
                 _Store[item.UUID] = item;
 
                 // Fire the callback for an item being fetched
-                if (m_ItemReceived != null)
-                {
-                    OnItemReceived(new ItemReceivedEventArgs(item));
-                }
+                OnItemReceived(new ItemReceivedEventArgs(item));
             }
         }
 

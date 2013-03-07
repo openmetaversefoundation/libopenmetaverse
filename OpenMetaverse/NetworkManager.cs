@@ -1157,6 +1157,13 @@ namespace OpenMetaverse
             simulator.ProductName = Utils.BytesToString(handshake.RegionInfo3.ProductName);
             simulator.ProductSku = Utils.BytesToString(handshake.RegionInfo3.ProductSKU);
 
+            if (handshake.RegionInfo4 != null && handshake.RegionInfo4.Length > 0)
+            {
+                simulator.Protocols = (RegionProtocols)handshake.RegionInfo4[0].RegionProtocols;
+                // Yes, overwrite region flags if we have extended version of them
+                simulator.Flags = (RegionFlags)handshake.RegionInfo4[0].RegionFlagsExtended;
+            }
+
             // Send a RegionHandshakeReply
             RegionHandshakeReplyPacket reply = new RegionHandshakeReplyPacket();
             reply.AgentData.AgentID = Client.Self.AgentID;

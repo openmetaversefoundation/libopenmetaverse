@@ -70,6 +70,10 @@ namespace OpenMetaverse
         /// GridClient initializes an Inventory store for the library.
         /// </summary>
         public const bool ENABLE_LIBRARY_STORE = true;
+        /// <summary>
+        /// Use Caps for fetching inventory where available
+        /// </summary>
+        public bool HTTP_INVENTORY = true;
         #endregion
         #region Timeouts and Intervals
 
@@ -131,7 +135,7 @@ namespace OpenMetaverse
         public const int MAX_SEQUENCE = 0xFFFFFF;
         /// <summary>The maximum size of the sequence number archive, used to
         /// check for resent and/or duplicate packets</summary>
-        public const int PACKET_ARCHIVE_SIZE = 200;
+        public static int PACKET_ARCHIVE_SIZE = 1000;
         /// <summary>Maximum number of queued ACKs to be sent before SendAcks()
         /// is forced</summary>
         public int MAX_PENDING_ACKS = 10;

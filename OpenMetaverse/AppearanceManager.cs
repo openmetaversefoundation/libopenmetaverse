@@ -32,6 +32,8 @@ using OpenMetaverse;
 using OpenMetaverse.Packets;
 using OpenMetaverse.Imaging;
 using OpenMetaverse.Assets;
+using OpenMetaverse.Http;
+using OpenMetaverse.StructuredData;
 
 namespace OpenMetaverse
 {
@@ -88,6 +90,16 @@ namespace OpenMetaverse
         Skirt = 4,
         Hair = 5
     }
+
+    /// <summary>
+    /// Appearance Flags, introdued with server side baking, currently unused
+    /// </summary>
+    [Flags]
+    public enum AppearanceFlags : uint
+    {
+        None = 0
+    }
+
 
     #endregion Enums
 
@@ -354,6 +366,8 @@ namespace OpenMetaverse
         private int CacheCheckSerialNum = -1;
         /// <summary>Incrementing serial number for AgentSetAppearance packets</summary>
         private int SetAppearanceSerialNum = 0;
+        /// <summary>Indicates if WearablesRequest succeeded</summary>
+        private bool GotWearables = false;
         /// <summary>Indicates whether or not the appearance thread is currently
         /// running, to prevent multiple appearance threads from running
         /// simultaneously</summary>
@@ -368,6 +382,10 @@ namespace OpenMetaverse
         /// Main appearance thread
         /// </summary>
         private Thread AppearanceThread;
+        /// <summary>
+        /// Is server baking complete. It needs doing only once
+        /// </summary>
+        private bool ServerBakingDone = false;
         #endregion Private Members
 
         /// <summary>
@@ -448,7 +466,7 @@ namespace OpenMetaverse
                                 Textures[(int)BakeTypeToAgentTextureIndex((BakeType)bakedIndex)].TextureID = UUID.Zero;
                         }
 
-                        if (SetAppearanceSerialNum == 0)
+                        if (!GotWearables)
                         {
                             // Fetch a list of the current agent wearables
                             if (!GetAgentWearables())
@@ -457,38 +475,60 @@ namespace OpenMetaverse
                                     Helpers.LogLevel.Error, Client);
                                 throw new Exception("Failed to retrieve a list of current agent wearables, appearance cannot be set");
                             }
+                            GotWearables = true;
                         }
 
-                        // Download and parse all of the agent wearables
-                        if (!DownloadWearables())
+                        // Is this server side baking enabled sim
+                        if ((Client.Network.CurrentSim.Protocols & RegionProtocols.AgentAppearanceService) != 0)
                         {
-                            success = false;
-                            Logger.Log("One or more agent wearables failed to download, appearance will be incomplete",
-                                Helpers.LogLevel.Warning, Client);
-                        }
-
-                        // If this is the first time setting appearance and we're not forcing rebakes, check the server
-                        // for cached bakes
-                        if (SetAppearanceSerialNum == 0 && !forceRebake)
-                        {
-                            // Compute hashes for each bake layer and compare against what the simulator currently has
-                            if (!GetCachedBakes())
+                            if (!ServerBakingDone || forceRebake)
                             {
-                                Logger.Log("Failed to get a list of cached bakes from the simulator, appearance will be rebaked",
-                                    Helpers.LogLevel.Warning, Client);
+                                if (UpdateAvatarAppearance())
+                                {
+                                    ServerBakingDone = true;
+                                }
+                                else
+                                {
+                                    success = false;
+                                }
                             }
                         }
-
-                        // Download textures, compute bakes, and upload for any cache misses
-                        if (!CreateBakes())
+                        else // Classic client side baking
                         {
-                            success = false;
-                            Logger.Log("Failed to create or upload one or more bakes, appearance will be incomplete",
-                                Helpers.LogLevel.Warning, Client);
-                        }
+                            // If we get back to server side backing region re-request server bake
+                            ServerBakingDone = false;
 
-                        // Send the appearance packet
-                        RequestAgentSetAppearance();
+                            // Download and parse all of the agent wearables
+                            if (!DownloadWearables())
+                            {
+                                success = false;
+                                Logger.Log("One or more agent wearables failed to download, appearance will be incomplete",
+                                    Helpers.LogLevel.Warning, Client);
+                            }
+
+                            // If this is the first time setting appearance and we're not forcing rebakes, check the server
+                            // for cached bakes
+                            if (SetAppearanceSerialNum == 0 && !forceRebake)
+                            {
+                                // Compute hashes for each bake layer and compare against what the simulator currently has
+                                if (!GetCachedBakes())
+                                {
+                                    Logger.Log("Failed to get a list of cached bakes from the simulator, appearance will be rebaked",
+                                        Helpers.LogLevel.Warning, Client);
+                                }
+                            }
+
+                            // Download textures, compute bakes, and upload for any cache misses
+                            if (!CreateBakes())
+                            {
+                                success = false;
+                                Logger.Log("Failed to create or upload one or more bakes, appearance will be incomplete",
+                                    Helpers.LogLevel.Warning, Client);
+                            }
+
+                            // Send the appearance packet
+                            RequestAgentSetAppearance();
+                        }
                     }
                     catch (Exception)
                     {
@@ -1694,6 +1734,90 @@ namespace OpenMetaverse
             }
 
             return paramValues;
+        }
+
+        /// <summary>
+        /// Initate server baking process
+        /// </summary>
+        /// <returns>True if the server baking was successful</returns>
+        private bool UpdateAvatarAppearance()
+        {
+            Caps caps = Client.Network.CurrentSim.Caps;
+            if (caps == null)
+            {
+                return false;
+            }
+
+            Uri url = caps.CapabilityURI("UpdateAvatarAppearance");
+            if (url == null)
+            {
+                return false;
+            }
+
+            InventoryFolder COF = GetCOF();
+            if (COF == null)
+            {
+                return false;
+            }
+            else
+            {
+                // TODO: create Current Outfit Folder
+            }
+
+            CapsClient capsRequest = new CapsClient(url);
+            OSDMap request = new OSDMap(1);
+            request["cof_version"] = COF.Version;
+
+            string msg = "Setting server side baking failed";
+
+            OSD res = capsRequest.GetResponse(request, OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT * 2);
+
+            if (res != null && res is OSDMap)
+            {
+                OSDMap result = (OSDMap)res;
+                if (result["success"])
+                {
+                    Logger.Log("Successfully set appearance", Helpers.LogLevel.Info, Client);
+                    // TODO: Set local visual params and baked textures based on the result here
+                    return true;
+                }
+                else
+                {
+                    if (result.ContainsKey("error"))
+                    {
+                        msg += ": " + result["error"].AsString();
+                    }
+                }
+            }
+
+            Logger.Log(msg, Helpers.LogLevel.Error, Client);
+
+            return false;
+        }
+
+        /// <summary>
+        /// Get the latest version of COF
+        /// </summary>
+        /// <returns>Current Outfit Folder (or null if getting the data failed)</returns>
+        private InventoryFolder GetCOF()
+        {
+            InventoryFolder COF = null;
+
+            // COF should be in the root folder. Request update to get the latest versio number
+            List<InventoryBase> root = Client.Inventory.FolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Self.AgentID, true, true, InventorySortOrder.ByDate, Client.Settings.CAPS_TIMEOUT);
+            if (root != null)
+            {
+                foreach (InventoryBase baseItem in root)
+                {
+                    if (baseItem is InventoryFolder && ((InventoryFolder)baseItem).PreferredType == AssetType.CurrentOutfitFolder)
+                    {
+                        COF = (InventoryFolder)baseItem;
+                        break;
+                    }
+                }
+            }
+
+            return COF;
         }
 
         /// <summary>

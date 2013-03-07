@@ -39,7 +39,7 @@ namespace OpenMetaverse
     /// Simulator (region) properties
     /// </summary>
     [Flags]
-    public enum RegionFlags
+    public enum RegionFlags : ulong
     {
         /// <summary>No flags set</summary>
         None = 0,
@@ -107,6 +107,16 @@ namespace OpenMetaverse
         /// <summary>Deny agents who have not been age verified from entering the region.</summary>
         DenyAgeUnverified = 1 << 30
 
+    }
+
+    /// <summary>
+    /// Region protocol flags
+    /// </summary>
+    [Flags]
+    public enum RegionProtocols : ulong
+    {
+        None = 0,
+        AgentAppearanceService = 1 << 0
     }
 
     /// <summary>
@@ -344,6 +354,12 @@ namespace OpenMetaverse
         /// </list>
         /// </remarks>
         public string ProductSku;
+
+        /// <summary>
+        /// Flags indicating which protocols this region supports
+        /// </summary>
+        public RegionProtocols Protocols;
+       
 
         /// <summary>The current sequence number for packets sent to this
         /// simulator. Must be Interlocked before modifying. Only

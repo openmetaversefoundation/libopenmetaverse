@@ -308,6 +308,26 @@ namespace OpenMetaverse
         /// </summary>
         public byte[] VisualParameters = null;
 
+        /// <summary>
+        /// Appearance version. Value greater than 0 indicates using server side baking
+        /// </summary>
+        public byte AppearanceVersion = 0;
+
+        /// <summary>
+        /// Version of the Current Outfit Folder that the appearance is based on
+        /// </summary>
+        public int COFVersion = 0;
+
+        /// <summary>
+        /// Appearance flags. Introduced with server side baking, currently unused.
+        /// </summary>
+        public AppearanceFlags AppearanceFlags = AppearanceFlags.None;
+
+        /// <summary>
+        /// List of current avatar animations
+        /// </summary>
+        public List<Animation> Animations;
+
         #endregion Public Members
 
         protected string name;

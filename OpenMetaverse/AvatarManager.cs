@@ -51,11 +51,13 @@ namespace OpenMetaverse
         /// <summary> Last name (legacy) </summary>
         public string LegacyLastName;
         /// <summary> Full name (legacy) </summary>
-        public string LegacyFullName { get { return string.Format("{0} {1}", LegacyFirstName, LegacyLastName); }}
+        public string LegacyFullName { get { return string.Format("{0} {1}", LegacyFirstName, LegacyLastName); } }
         /// <summary> Is display name default display name </summary>
         public bool IsDefaultDisplayName;
         /// <summary> Cache display name until </summary>
         public DateTime NextUpdate;
+        /// <summary> Last updated timestamp </summary>
+        public DateTime Updated;
 
         /// <summary>
         /// Creates AgentDisplayName object from OSD
@@ -74,6 +76,7 @@ namespace OpenMetaverse
             ret.LegacyLastName = map["legacy_last_name"];
             ret.IsDefaultDisplayName = map["is_display_name_default"];
             ret.NextUpdate = map["display_name_next_update"];
+            ret.Updated = map["last_updated"];
 
             return ret;
         }
@@ -85,7 +88,7 @@ namespace OpenMetaverse
         public OSD GetOSD()
         {
             OSDMap map = new OSDMap();
-            
+
             map["id"] = ID;
             map["username"] = UserName;
             map["display_name"] = DisplayName;
@@ -93,23 +96,14 @@ namespace OpenMetaverse
             map["legacy_last_name"] = LegacyLastName;
             map["is_display_name_default"] = IsDefaultDisplayName;
             map["display_name_next_update"] = NextUpdate;
-            
+            map["last_updated"] = Updated;
+
             return map;
         }
 
         public override string ToString()
         {
             return Helpers.StructToString(this);
-            //StringBuilder result = new StringBuilder();
-            //result.AppendLine();
-            //result.AppendFormat("{0, 30}: {1,-40} [{2}]" + Environment.NewLine, "ID", ID, "UUID");
-            //result.AppendFormat("{0, 30}: {1,-40} [{2}]" + Environment.NewLine, "UserName", UserName, "string");
-            //result.AppendFormat("{0, 30}: {1,-40} [{2}]" + Environment.NewLine, "DisplayName", DisplayName, "string");
-            //result.AppendFormat("{0, 30}: {1,-40} [{2}]" + Environment.NewLine, "LegacyFirstName", LegacyFirstName, "string");
-            //result.AppendFormat("{0, 30}: {1,-40} [{2}]" + Environment.NewLine, "LegaacyLastName", LegaacyLastName, "string");
-            //result.AppendFormat("{0, 30}: {1,-40} [{2}]" + Environment.NewLine, "IsDefaultDisplayName", IsDefaultDisplayName, "bool");
-            //result.AppendFormat("{0, 30}: {1,-40} [{2}]", "NextUpdate", NextUpdate, "DateTime");
-            //return result.ToString();
         }
     }
 
@@ -714,7 +708,7 @@ namespace OpenMetaverse
                                           if (error != null)
                                               throw error;
                                           GetDisplayNamesMessage msg = new GetDisplayNamesMessage();
-                                          msg.Deserialize((OSDMap) result);
+                                          msg.Deserialize((OSDMap)result);
                                           callback(true, msg.Agents, msg.BadIDs);
                                       }
                                       catch (Exception ex)
@@ -879,27 +873,30 @@ namespace OpenMetaverse
         {
             Packet packet = e.Packet;
 
-            if (m_AvatarAnimation != null)
+            AvatarAnimationPacket data = (AvatarAnimationPacket)packet;
+
+            List<Animation> signaledAnimations = new List<Animation>(data.AnimationList.Length);
+
+            for (int i = 0; i < data.AnimationList.Length; i++)
             {
-                AvatarAnimationPacket data = (AvatarAnimationPacket)packet;
-
-                List<Animation> signaledAnimations = new List<Animation>(data.AnimationList.Length);
-
-                for (int i = 0; i < data.AnimationList.Length; i++)
+                Animation animation = new Animation();
+                animation.AnimationID = data.AnimationList[i].AnimID;
+                animation.AnimationSequence = data.AnimationList[i].AnimSequenceID;
+                if (i < data.AnimationSourceList.Length)
                 {
-                    Animation animation = new Animation();
-                    animation.AnimationID = data.AnimationList[i].AnimID;
-                    animation.AnimationSequence = data.AnimationList[i].AnimSequenceID;
-                    if (i < data.AnimationSourceList.Length)
-                    {
-                        animation.AnimationSourceObjectID = data.AnimationSourceList[i].ObjectID;
-                    }
-
-                    signaledAnimations.Add(animation);
+                    animation.AnimationSourceObjectID = data.AnimationSourceList[i].ObjectID;
                 }
 
-                OnAvatarAnimation(new AvatarAnimationEventArgs(data.Sender.ID, signaledAnimations));
+                signaledAnimations.Add(animation);
             }
+
+            Avatar avatar = e.Simulator.ObjectsAvatars.Find(avi => avi.ID == data.Sender.ID);
+            if (avatar != null)
+            {
+                avatar.Animations = signaledAnimations;
+            }
+
+            OnAvatarAnimation(new AvatarAnimationEventArgs(data.Sender.ID, signaledAnimations));
         }
 
         /// <summary>Process an incoming packet and raise the appropriate events</summary>
@@ -926,15 +923,29 @@ namespace OpenMetaverse
                 Primitive.TextureEntryFace defaultTexture = textureEntry.DefaultTexture;
                 Primitive.TextureEntryFace[] faceTextures = textureEntry.FaceTextures;
 
+                byte appearanceVersion = 0;
+                int COFVersion = 0;
+                AppearanceFlags appearanceFlags = 0;
+
+                if (appearance.AppearanceData != null && appearance.AppearanceData.Length > 0)
+                {
+                    appearanceVersion = appearance.AppearanceData[0].AppearanceVersion;
+                    COFVersion = appearance.AppearanceData[0].CofVersion;
+                    appearanceFlags = (AppearanceFlags)appearance.AppearanceData[0].Flags;
+                }
+
                 Avatar av = simulator.ObjectsAvatars.Find((Avatar a) => { return a.ID == appearance.Sender.ID; });
                 if (av != null)
                 {
                     av.Textures = textureEntry;
                     av.VisualParameters = visualParams.ToArray();
+                    av.AppearanceVersion = appearanceVersion;
+                    av.COFVersion = COFVersion;
+                    av.AppearanceFlags = appearanceFlags;
                 }
 
                 OnAvatarAppearance(new AvatarAppearanceEventArgs(simulator, appearance.Sender.ID, appearance.Sender.IsTrial,
-                    defaultTexture, faceTextures, visualParams));
+                    defaultTexture, faceTextures, visualParams, appearanceVersion, COFVersion, appearanceFlags));
             }
         }
 
@@ -1012,7 +1023,7 @@ namespace OpenMetaverse
         {
             if (m_DisplayNameUpdate != null)
             {
-                DisplayNameUpdateMessage msg = (DisplayNameUpdateMessage) message;
+                DisplayNameUpdateMessage msg = (DisplayNameUpdateMessage)message;
                 OnDisplayNameUpdate(new DisplayNameUpdateEventArgs(msg.OldDisplayName, msg.DisplayName));
             }
         }
@@ -1397,6 +1408,9 @@ namespace OpenMetaverse
         private readonly Primitive.TextureEntryFace m_DefaultTexture;
         private readonly Primitive.TextureEntryFace[] m_FaceTextures;
         private readonly List<byte> m_VisualParams;
+        private readonly byte m_AppearanceVersion;
+        private readonly int m_COFVersion;
+        private readonly AppearanceFlags m_AppearanceFlags;
 
         /// <summary>Get the Simulator this request is from of the agent</summary>
         public Simulator Simulator { get { return m_Simulator; } }
@@ -1410,6 +1424,13 @@ namespace OpenMetaverse
         public Primitive.TextureEntryFace[] FaceTextures { get { return m_FaceTextures; } }
         /// <summary>Get the <see cref="VisualParams"/> for the agent</summary>
         public List<byte> VisualParams { get { return m_VisualParams; } }
+        /// <summary>Version of the appearance system used.
+        /// Value greater than 0 indicates that server side baking is used</summary>
+        public byte AppearanceVersion { get { return m_AppearanceVersion; } }
+        /// <summary>Version of the Current Outfit Folder the appearance is based on</summary>
+        public int COFVersion { get { return m_COFVersion; } }
+        /// <summary>Appearance flags, introduced with server side baking, currently unused</summary>
+        public AppearanceFlags AppearanceFlags { get { return m_AppearanceFlags; } }
 
         /// <summary>
         /// Construct a new instance of the AvatarAppearanceEventArgs class
@@ -1421,7 +1442,8 @@ namespace OpenMetaverse
         /// <param name="faceTextures">The agents appearance layer textures</param>
         /// <param name="visualParams">The <see cref="VisualParams"/> for the agent</param>
         public AvatarAppearanceEventArgs(Simulator sim, UUID avatarID, bool isTrial, Primitive.TextureEntryFace defaultTexture,
-            Primitive.TextureEntryFace[] faceTextures, List<byte> visualParams)
+            Primitive.TextureEntryFace[] faceTextures, List<byte> visualParams,
+            byte appearanceVersion, int COFVersion, AppearanceFlags appearanceFlags)
         {
             this.m_Simulator = sim;
             this.m_AvatarID = avatarID;
@@ -1429,6 +1451,9 @@ namespace OpenMetaverse
             this.m_DefaultTexture = defaultTexture;
             this.m_FaceTextures = faceTextures;
             this.m_VisualParams = visualParams;
+            this.m_AppearanceVersion = appearanceVersion;
+            this.m_COFVersion = COFVersion;
+            this.m_AppearanceFlags = appearanceFlags;
         }
     }
 
@@ -1667,7 +1692,7 @@ namespace OpenMetaverse
         private string oldDisplayName;
         private AgentDisplayName displayName;
 
-        public string OldDisplayName { get { return oldDisplayName; }}
+        public string OldDisplayName { get { return oldDisplayName; } }
         public AgentDisplayName DisplayName { get { return displayName; } }
 
         public DisplayNameUpdateEventArgs(string oldDisplayName, AgentDisplayName displayName)

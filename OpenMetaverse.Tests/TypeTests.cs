@@ -100,6 +100,66 @@ namespace OpenMetaverse.Tests
         }
 
         [Test]
+        public void VectorCasting()
+        {
+            Dictionary<string, double> testNumbers;
+            testNumbers = new Dictionary<string, double>();
+            testNumbers["1.0"] = 1.0;
+            testNumbers["1.1"] = 1.1;
+            testNumbers["1.01"] = 1.01;
+            testNumbers["1.001"] = 1.001;
+            testNumbers["1.0001"] = 1.0001;
+            testNumbers["1.00001"] = 1.00001;
+            testNumbers["1.000001"] = 1.000001;
+            testNumbers["1.0000001"] = 1.0000001;
+            testNumbers["1.00000001"] = 1.00000001;
+
+            foreach (KeyValuePair<string, double> kvp in testNumbers)
+            {
+                double testNumber = kvp.Value;
+                double testNumber2 = (double)((float)testNumber);
+                bool noPrecisionLoss = testNumber == testNumber2;
+
+                Vector3 a = new Vector3(
+                        (float)testNumber,
+                        (float)testNumber, (float)testNumber);
+                Vector3d b = new Vector3d(testNumber, testNumber, testNumber);
+
+                Vector3 c = (Vector3)b;
+                Vector3d d = a;
+
+                if (noPrecisionLoss)
+                {
+                    Console.Error.WriteLine("Unsuitable test value used-" +
+                            " test number should have precision loss when" +
+                            " cast to float ({0}).", kvp.Key);
+                }
+                else
+                {
+                    Assert.IsFalse(a == b, string.Format(
+                            "Vector casting failed, precision loss should" +
+                            " have occurred. " +
+                            "{0}: {1}, {2}", kvp.Key, a.X, b.X));
+                    Assert.IsFalse(b == d, string.Format(
+                            "Vector casting failed, explicit cast of double" +
+                            " to float should result in precision loss" +
+                            " whichwas should not magically disappear when" +
+                            " Vector3 is implicitly cast to Vector3d." +
+                            " {0}: {1}, {2}", kvp.Key, b.X, d.X));
+                }
+                Assert.IsTrue(a == c, string.Format(
+                        "Vector casting failed, Vector3 compared to" +
+                        " explicit cast of Vector3d to Vector3 should" +
+                        " result in identical precision loss." +
+                        " {0}: {1}, {2}", kvp.Key, a.X, c.X));
+                Assert.IsTrue(a == d, string.Format(
+                        "Vector casting failed, implicit cast of Vector3" +
+                        " to Vector3d should not result in precision loss." +
+                        " {0}: {1}, {2}", kvp.Key, a.X, d.X));
+            }
+        }
+
+        [Test]
         public void Quaternions()
         {
             Quaternion a = new Quaternion(1, 0, 0, 0);

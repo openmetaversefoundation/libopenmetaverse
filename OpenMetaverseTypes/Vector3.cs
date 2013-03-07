@@ -569,6 +569,17 @@ namespace OpenMetaverse
             return Cross(value1, value2);
         }
 
+        /// <summary>
+        /// Explicit casting for Vector3d > Vector3
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static explicit operator Vector3(Vector3d value)
+        {
+            Vector3d foo = (Vector3d)Vector3.Zero;
+            return new Vector3(value);
+        }
+
         #endregion Operators
 
         /// <summary>A vector with a value of 0,0,0</summary>

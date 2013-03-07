@@ -443,6 +443,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\libopenjpeg\cidx_manager.c"
+				>
+			</File>
+			<File
 				RelativePath="libopenjpeg\cio.c"
 				>
 				<FileConfiguration
@@ -843,6 +847,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\libopenjpeg\phix_manager.c"
+				>
+			</File>
+			<File
 				RelativePath="libopenjpeg\pi.c"
 				>
 				<FileConfiguration
@@ -877,6 +885,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\libopenjpeg\ppix_manager.c"
+				>
 			</File>
 			<File
 				RelativePath="libopenjpeg\raw.c"
@@ -1058,6 +1070,14 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath=".\libopenjpeg\thix_manager.c"
+				>
+			</File>
+			<File
+				RelativePath=".\libopenjpeg\tpix_manager.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -1065,6 +1085,10 @@
 			>
 			<File
 				RelativePath="libopenjpeg\bio.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libopenjpeg\cidx_manager.h"
 				>
 			</File>
 			<File
@@ -1089,6 +1113,10 @@
 			</File>
 			<File
 				RelativePath="libopenjpeg\image.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libopenjpeg\indexbox_manager.h"
 				>
 			</File>
 			<File
