@@ -646,11 +646,34 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Add a wearable to the current outfit and set appearance
+        /// </summary>
+        /// <param name="wearableItem">Wearable to be added to the outfit</param>
+        /// <param name="replace">Should existing item on the same point or of the same type be replaced</param>
+        public void AddToOutfit(InventoryItem wearableItem, bool replace)
+        {
+            List<InventoryItem> wearableItems = new List<InventoryItem> { wearableItem };
+            AddToOutfit(wearableItems, true);
+        }
+
+        /// <summary>
         /// Add a list of wearables to the current outfit and set appearance
         /// </summary>
         /// <param name="wearableItems">List of wearable inventory items to
         /// be added to the outfit</param>
+        /// <param name="replace">Should existing item on the same point or of the same type be replaced</param>
         public void AddToOutfit(List<InventoryItem> wearableItems)
+        {
+            AddToOutfit(wearableItems, true);
+        }
+
+        /// <summary>
+        /// Add a list of wearables to the current outfit and set appearance
+        /// </summary>
+        /// <param name="wearableItems">List of wearable inventory items to
+        /// be added to the outfit</param>
+        /// <param name="replace">Should existing item on the same point or of the same type be replaced</param>
+        public void AddToOutfit(List<InventoryItem> wearableItems, bool replace)
         {
             List<InventoryWearable> wearables = new List<InventoryWearable>();
             List<InventoryItem> attachments = new List<InventoryItem>();
@@ -684,7 +707,7 @@ namespace OpenMetaverse
 
             if (attachments.Count > 0)
             {
-                AddAttachments(attachments, false, false);
+                AddAttachments(attachments, false, replace);
             }
 
             if (wearables.Count > 0)
