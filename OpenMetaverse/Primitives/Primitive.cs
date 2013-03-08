@@ -434,6 +434,97 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Information on the light properties of a primitive as texture map
+        /// </summary>
+        public class LightImage
+        {
+            /// <summary></summary>
+            public UUID LightTexture;
+            /// <summary></summary>
+            public Vector3 Params;
+
+            /// <summary>
+            /// Default constructor
+            /// </summary>
+            public LightImage()
+            {
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <param name="data"></param>
+            /// <param name="pos"></param>
+            public LightImage(byte[] data, int pos)
+            {
+                if (data.Length - pos >= 28)
+                {
+                    LightTexture = new UUID(data, pos);
+                    Params = new Vector3(data, pos + 16);
+                }
+                else
+                {
+                    LightTexture = UUID.Zero;
+                    Params = Vector3.Zero;
+                }
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public byte[] GetBytes()
+            {
+                byte[] data = new byte[28];
+
+                // Alpha channel in color is intensity
+                LightTexture.ToBytes(data, 0);
+                Params.ToBytes(data, 16);
+
+                return data;
+            }
+
+            public OSD GetOSD()
+            {
+                OSDMap map = new OSDMap();
+
+                map["texture"] = OSD.FromUUID(LightTexture);
+                map["params"] = OSD.FromVector3(Params);
+
+                return map;
+            }
+
+            public static LightImage FromOSD(OSD osd)
+            {
+                LightImage light = new LightImage();
+
+                if (osd.Type == OSDType.Map)
+                {
+                    OSDMap map = (OSDMap)osd;
+
+                    light.LightTexture = map["texture"].AsUUID();
+                    light.Params = map["params"].AsVector3();
+                }
+
+                return light;
+            }
+
+            public override int GetHashCode()
+            {
+                return LightTexture.GetHashCode() ^ Params.GetHashCode();
+            }
+
+            /// <summary>
+            /// 
+            /// </summary>
+            /// <returns></returns>
+            public override string ToString()
+            {
+                return String.Format("LightTexture: {0} Params; {1]", LightTexture, Params);
+            }
+        }
+
+        /// <summary>
         /// Information on the sculpt properties of a sculpted primitive
         /// </summary>
         public class SculptData
@@ -724,6 +815,8 @@ namespace OpenMetaverse
         /// <summary></summary>
         public LightData Light;
         /// <summary></summary>
+        public LightImage LightMap;
+        /// <summary></summary>
         public SculptData Sculpt;
         /// <summary></summary>
         public ClickAction ClickAction;
@@ -879,6 +972,7 @@ namespace OpenMetaverse
             CollisionPlane = prim.CollisionPlane;
             Flexible = prim.Flexible;
             Light = prim.Light;
+            LightMap = prim.LightMap;
             Sculpt = prim.Sculpt;
             ClickAction = prim.ClickAction;
             Sound = prim.Sound;
@@ -979,9 +1073,12 @@ namespace OpenMetaverse
 
             if (Textures != null)
                 prim["textures"] = Textures.GetOSD();
-            
+
             if (Light != null)
                 prim["light"] = Light.GetOSD();
+
+            if (LightMap != null)
+                prim["light_image"] = LightMap.GetOSD();
 
             if (Flexible != null)
                 prim["flex"] = Flexible.GetOSD();
@@ -1055,7 +1152,10 @@ namespace OpenMetaverse
             
             if (map["light"])
                 prim.Light = LightData.FromOSD(map["light"]);
-            
+
+            if (map["light_image"])
+                prim.LightMap = LightImage.FromOSD(map["light_image"]);
+
             if (map["sculpt"])
                 prim.Sculpt = SculptData.FromOSD(map["sculpt"]);
             
@@ -1097,6 +1197,8 @@ namespace OpenMetaverse
                     Flexible = new FlexibleData(data, i);
                 else if (type == ExtraParamType.Light)
                     Light = new LightData(data, i);
+                else if (type == ExtraParamType.LightImage)
+                    LightMap = new LightImage(data, i);
                 else if (type == ExtraParamType.Sculpt || type == ExtraParamType.Mesh)
                     Sculpt = new SculptData(data, i);
 
@@ -1111,6 +1213,7 @@ namespace OpenMetaverse
         {
             byte[] flexible = null;
             byte[] light = null;
+            byte[] lightmap = null;
             byte[] sculpt = null;
             byte[] buffer = null;
             int size = 1;
@@ -1127,6 +1230,12 @@ namespace OpenMetaverse
             {
                 light = Light.GetBytes();
                 size += light.Length + 6;
+                ++count;
+            }
+            if (LightMap != null)
+            {
+                lightmap = LightMap.GetBytes();
+                size += lightmap.Length + 6;
                 ++count;
             }
             if (Sculpt != null)
@@ -1161,6 +1270,17 @@ namespace OpenMetaverse
 
                 Buffer.BlockCopy(light, 0, buffer, pos, light.Length);
                 pos += light.Length;
+            }
+            if (lightmap != null)
+            {
+                Buffer.BlockCopy(Utils.UInt16ToBytes((ushort)ExtraParamType.LightImage), 0, buffer, pos, 2);
+                pos += 2;
+
+                Buffer.BlockCopy(Utils.UIntToBytes((uint)lightmap.Length), 0, buffer, pos, 4);
+                pos += 4;
+
+                Buffer.BlockCopy(lightmap, 0, buffer, pos, lightmap.Length);
+                pos += lightmap.Length;
             }
             if (sculpt != null)
             {

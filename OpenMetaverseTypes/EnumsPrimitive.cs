@@ -230,6 +230,8 @@ namespace OpenMetaverse
         Light = 0x20,
         /// <summary>Whether this object is a sculpted prim</summary>
         Sculpt = 0x30,
+        /// <summary>Whether this object is a light image map</summary>
+        LightImage = 0x40,
         /// <summary>Whether this object is a mesh</summary>
         Mesh = 0x60,
     }
