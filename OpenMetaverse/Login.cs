@@ -1542,20 +1542,24 @@ namespace OpenMetaverse
         {
             string mac = String.Empty;
 
-            System.Net.NetworkInformation.NetworkInterface[] nics = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
-
-            if (nics != null && nics.Length > 0)
+            try
             {
-                for (int i = 0; i < nics.Length; i++)
+                System.Net.NetworkInformation.NetworkInterface[] nics = System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces();
+
+                if (nics != null && nics.Length > 0)
                 {
-                    string adapterMac = nics[i].GetPhysicalAddress().ToString().ToUpper();
-                    if (adapterMac.Length == 12 && adapterMac != "000000000000")
+                    for (int i = 0; i < nics.Length; i++)
                     {
-                        mac = adapterMac;
-                        continue;
+                        string adapterMac = nics[i].GetPhysicalAddress().ToString().ToUpper();
+                        if (adapterMac.Length == 12 && adapterMac != "000000000000")
+                        {
+                            mac = adapterMac;
+                            continue;
+                        }
                     }
                 }
             }
+            catch { }
 
             if (mac.Length < 12)
                 mac = UUID.Random().ToString().Substring(24, 12);
