@@ -731,6 +731,22 @@ namespace OpenMetaverse
                     ControlFlags.AGENT_CONTROL_UP_NEG);
             }
 
+
+            /// <summary>
+            /// Sends update of Field of Vision vertical angle to the simulator
+            /// </summary>
+            /// <param name="angle">Angle in radians</param>
+            public void SetFOVVerticalAngle(float angle)
+            {
+                OpenMetaverse.Packets.AgentFOVPacket msg = new OpenMetaverse.Packets.AgentFOVPacket();
+                msg.AgentData.AgentID = Client.Self.AgentID;
+                msg.AgentData.SessionID = Client.Self.SessionID;
+                msg.AgentData.CircuitCode = Client.Network.CircuitCode;
+                msg.FOVBlock.GenCounter = 0;
+                msg.FOVBlock.VerticalAngle = angle;
+                Client.Network.SendPacket(msg);
+            }
+
             private void UpdateTimer_Elapsed(object obj)
             {
                 if (Client.Network.Connected && Client.Settings.SEND_AGENT_UPDATES)

@@ -85,13 +85,7 @@ namespace OpenMetaverse.TestClient
 
         void Network_SimChanged(object sender, SimChangedEventArgs e)
         {
-            OpenMetaverse.Packets.AgentFOVPacket msg = new OpenMetaverse.Packets.AgentFOVPacket();
-            msg.AgentData.AgentID = Self.AgentID;
-            msg.AgentData.SessionID = Self.SessionID;
-            msg.AgentData.CircuitCode = Network.CircuitCode;
-            msg.FOVBlock.GenCounter = 0;
-            msg.FOVBlock.VerticalAngle = Utils.TWO_PI - 0.05f;
-            Network.SendPacket(msg);
+            Self.Movement.SetFOVVerticalAngle(Utils.TWO_PI - 0.05f);
         }
 
         public void SetDefaultCamera()

@@ -243,14 +243,15 @@ namespace OpenMetaverse.Imaging
                         {
                             // Apply combined alpha mask to the cloned texture
                             AddAlpha(texture, combinedMask);
-
-                            // Is this layer used for morph mask? If it is, use its
-                            // alpha as the morth for the whole bake
-                            if (Textures[i].TextureIndex == AppearanceManager.MorphLayerForBakeType(bakeType))
-                            {
-                                bakedTexture.Image.Bump = combinedMask.Alpha;
-                            }
                         }
+
+                        // Is this layer used for morph mask? If it is, use its
+                        // alpha as the morth for the whole bake
+                        if (Textures[i].TextureIndex == AppearanceManager.MorphLayerForBakeType(bakeType))
+                        {
+                            bakedTexture.Image.Bump = texture.Alpha;
+                        }
+
                         //File.WriteAllBytes(bakeType + "-masked-texture-" + i + ".tga", texture.ExportTGA());
                     }
                 }
