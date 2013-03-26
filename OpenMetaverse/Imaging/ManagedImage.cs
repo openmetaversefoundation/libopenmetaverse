@@ -377,6 +377,68 @@ namespace OpenMetaverse.Imaging
             return raw;
         }
 
+        /// <summary>
+        /// Create a byte array containing 32-bit RGBA data with a bottom-left
+        /// origin, suitable for feeding directly into OpenGL
+        /// </summary>
+        /// <returns>A byte array containing raw texture data</returns>
+        public System.Drawing.Bitmap ExportBitmap()
+        {
+            byte[] raw = new byte[Width * Height * 4];
+
+            if ((Channels & ImageChannels.Alpha) != 0)
+            {
+                if ((Channels & ImageChannels.Color) != 0)
+                {
+                    // RGBA
+                    for (int pos = 0; pos < Height * Width; pos++)
+                    {
+                        raw[pos * 4 + 0] = Blue[pos];
+                        raw[pos * 4 + 1] = Green[pos];
+                        raw[pos * 4 + 2] = Red[pos];
+                        raw[pos * 4 + 3] = Alpha[pos];
+                    }
+                }
+                else
+                {
+                    // Alpha only
+                    for (int pos = 0; pos < Height * Width; pos++)
+                    {
+                        raw[pos * 4 + 0] = Alpha[pos];
+                        raw[pos * 4 + 1] = Alpha[pos];
+                        raw[pos * 4 + 2] = Alpha[pos];
+                        raw[pos * 4 + 3] = Byte.MaxValue;
+                    }
+                }
+            }
+            else
+            {
+                // RGB
+                for (int pos = 0; pos < Height * Width; pos++)
+                {
+                    raw[pos * 4 + 0] = Blue[pos];
+                    raw[pos * 4 + 1] = Green[pos];
+                    raw[pos * 4 + 2] = Red[pos];
+                    raw[pos * 4 + 3] = Byte.MaxValue;
+                }
+            }
+
+            System.Drawing.Bitmap b = new System.Drawing.Bitmap(
+                        Width,
+                        Height,
+                        System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+            System.Drawing.Imaging.BitmapData bd = b.LockBits(new System.Drawing.Rectangle(0, 0, b.Width, b.Height),
+                System.Drawing.Imaging.ImageLockMode.WriteOnly,
+                System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+            System.Runtime.InteropServices.Marshal.Copy(raw, 0, bd.Scan0, Width * Height * 4);
+
+            b.UnlockBits(bd);
+
+            return b;
+        }
+
         public byte[] ExportTGA()
         {
             byte[] tga = new byte[Width * Height * ((Channels & ImageChannels.Alpha) == 0 ? 3 : 4) + 32];

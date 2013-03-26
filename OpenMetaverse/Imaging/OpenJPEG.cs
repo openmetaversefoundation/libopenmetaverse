@@ -255,7 +255,7 @@ namespace OpenMetaverse.Imaging
             {
                 try
                 {
-                    image = LoadTGAClass.LoadTGA(new MemoryStream(managedImage.ExportTGA()));
+                    image = managedImage.ExportBitmap();
                     return true;
                 }
                 catch (Exception ex)
