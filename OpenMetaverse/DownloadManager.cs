@@ -48,6 +48,10 @@ namespace OpenMetaverse
         public CapsBase.RequestCompletedEventHandler CompletedCallback;
         /// <summary>Accept the following content type</summary>
         public string ContentType;
+        /// <summary>How many times will this request be retried</summary>
+        public int Retries = 5;
+        /// <summary>Current fetch attempt</summary>
+        public int Attempt = 0;
 
         /// <summary>Default constructor</summary>
         public DownloadRequest()
@@ -84,7 +88,7 @@ namespace OpenMetaverse
         Queue<DownloadRequest> queue = new Queue<DownloadRequest>();
         Dictionary<string, ActiveDownload> activeDownloads = new Dictionary<string, ActiveDownload>();
 
-        int m_ParallelDownloads = 20;
+        int m_ParallelDownloads = 8;
         X509Certificate2 m_ClientCert;
 
         /// <summary>Maximum number of parallel downloads from a single endpoint</summary>
@@ -111,7 +115,7 @@ namespace OpenMetaverse
         {
             lock (activeDownloads)
             {
-                foreach(ActiveDownload download in activeDownloads.Values)
+                foreach (ActiveDownload download in activeDownloads.Values)
                 {
                     try
                     {
@@ -144,7 +148,7 @@ namespace OpenMetaverse
             // Disable stupid Expect-100: Continue header
             request.ServicePoint.Expect100Continue = false;
             // Crank up the max number of connections per endpoint (default is 2!)
-            request.ServicePoint.ConnectionLimit = Math.Max(request.ServicePoint.ConnectionLimit, m_ParallelDownloads);
+            request.ServicePoint.ConnectionLimit = m_ParallelDownloads;
 
             return request;
         }
@@ -161,6 +165,8 @@ namespace OpenMetaverse
                     {
                         nr = activeDownloads.Count;
                     }
+
+                    Logger.DebugLog(nr.ToString() + " active downloads. Queued textures: " + queue.Count.ToString());
 
                     for (int i = nr; i < ParallelDownloads && queue.Count > 0; i++)
                     {
@@ -200,10 +206,21 @@ namespace OpenMetaverse
                                     (HttpWebRequest request, HttpWebResponse response, byte[] responseData, Exception error) =>
                                     {
                                         lock (activeDownloads) activeDownloads.Remove(addr);
-                                        foreach (CapsBase.RequestCompletedEventHandler handler in activeDownload.CompletedHandlers)
+                                        if (error == null || item.Attempt >= item.Retries || (error != null && error.Message.Contains("404")))
                                         {
-                                            handler(request, response, responseData, error);
+                                            foreach (CapsBase.RequestCompletedEventHandler handler in activeDownload.CompletedHandlers)
+                                            {
+                                                handler(request, response, responseData, error);
+                                            }
                                         }
+                                        else
+                                        {
+                                            item.Attempt++;
+                                            Logger.Log(string.Format("Texture {0} HTTP download failed, trying again retry {1}/{2}",
+                                                item.Address, item.Attempt, item.Retries), Helpers.LogLevel.Warning);
+                                            lock (queue) queue.Enqueue(item);
+                                        }
+
                                         EnqueuePending();
                                     }
                                 );

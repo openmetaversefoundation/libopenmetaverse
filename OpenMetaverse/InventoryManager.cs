@@ -1584,7 +1584,10 @@ namespace OpenMetaverse
                 {
                     try
                     {
-                        if (error != null) throw error;
+                        if (error != null)
+                        {
+                            throw error;
+                        }
 
                         OSDArray fetchedFolders = (OSDArray)((OSDMap)result)["folders"];
                         for (int fetchedFolderNr = 0; fetchedFolderNr < fetchedFolders.Count; fetchedFolderNr++)
