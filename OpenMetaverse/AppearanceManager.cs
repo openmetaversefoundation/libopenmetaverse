@@ -466,21 +466,18 @@ namespace OpenMetaverse
                                 Textures[(int)BakeTypeToAgentTextureIndex((BakeType)bakedIndex)].TextureID = UUID.Zero;
                         }
 
-                        if (!GotWearables)
-                        {
-                            // Fetch a list of the current agent wearables
-                            if (!GetAgentWearables())
-                            {
-                                Logger.Log("Failed to retrieve a list of current agent wearables, appearance cannot be set",
-                                    Helpers.LogLevel.Error, Client);
-                                throw new Exception("Failed to retrieve a list of current agent wearables, appearance cannot be set");
-                            }
-                            GotWearables = true;
-                        }
-
                         // Is this server side baking enabled sim
-                        if ((Client.Network.CurrentSim.Protocols & RegionProtocols.AgentAppearanceService) != 0)
+                        if (ServerBakingRegion())
                         {
+                            if (!GotWearables)
+                            {
+                                // Fetch a list of the current agent wearables
+                                if (GetAgentWearables())
+                                {
+                                    GotWearables = true;
+                                }
+                            }
+
                             if (!ServerBakingDone || forceRebake)
                             {
                                 if (UpdateAvatarAppearance())
@@ -495,6 +492,18 @@ namespace OpenMetaverse
                         }
                         else // Classic client side baking
                         {
+                            if (!GotWearables)
+                            {
+                                // Fetch a list of the current agent wearables
+                                if (!GetAgentWearables())
+                                {
+                                    Logger.Log("Failed to retrieve a list of current agent wearables, appearance cannot be set",
+                                        Helpers.LogLevel.Error, Client);
+                                    throw new Exception("Failed to retrieve a list of current agent wearables, appearance cannot be set");
+                                }
+                                GotWearables = true;
+                            }
+
                             // If we get back to server side backing region re-request server bake
                             ServerBakingDone = false;
 
@@ -545,6 +554,16 @@ namespace OpenMetaverse
             AppearanceThread.Name = "Appearance";
             AppearanceThread.IsBackground = true;
             AppearanceThread.Start();
+        }
+
+        /// <summary>
+        /// Check if current region supports server side baking
+        /// </summary>
+        /// <returns>True if server side baking support is detected</returns>
+        public bool ServerBakingRegion()
+        {
+            return Client.Network.CurrentSim != null &&
+                ((Client.Network.CurrentSim.Protocols & RegionProtocols.AgentAppearanceService) != 0);
         }
 
         /// <summary>
@@ -1824,10 +1843,29 @@ namespace OpenMetaverse
         /// <returns>Current Outfit Folder (or null if getting the data failed)</returns>
         private InventoryFolder GetCOF()
         {
+            List<InventoryBase> root = null;
+            AutoResetEvent folderReceived = new AutoResetEvent(false);
+
+            EventHandler<FolderUpdatedEventArgs> callback = (sender, e) =>
+            {
+                if (e.FolderID == Client.Inventory.Store.RootFolder.UUID)
+                {
+                    if (e.Success)
+                    {
+                        root = Client.Inventory.Store.GetContents(Client.Inventory.Store.RootFolder.UUID);
+                    }
+                    folderReceived.Set();
+                }
+            };
+
+            Client.Inventory.FolderUpdated += callback;
+            Client.Inventory.RequestFolderContentsCap(Client.Inventory.Store.RootFolder.UUID, Client.Self.AgentID, true, true, InventorySortOrder.ByDate);
+            folderReceived.WaitOne(Client.Settings.CAPS_TIMEOUT);
+            Client.Inventory.FolderUpdated -= callback;
+
             InventoryFolder COF = null;
 
             // COF should be in the root folder. Request update to get the latest versio number
-            List<InventoryBase> root = Client.Inventory.FolderContents(Client.Inventory.Store.RootFolder.UUID, Client.Self.AgentID, true, true, InventorySortOrder.ByDate, Client.Settings.CAPS_TIMEOUT);
             if (root != null)
             {
                 foreach (InventoryBase baseItem in root)
