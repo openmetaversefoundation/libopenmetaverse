@@ -27,6 +27,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.IO;
+using zlib;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Interfaces;
 
@@ -4366,6 +4368,49 @@ namespace OpenMetaverse.Messages.Linden
             }
         }
     }
+
+    public class RenderMaterialsMessage : IMessage
+    {
+        public OSD MaterialData;
+
+        public void Deserialize(OSDMap map)
+        {
+            try
+            {
+                using (MemoryStream input = new MemoryStream(map["Zipped"].AsBinary()))
+                {
+                    using (MemoryStream output = new MemoryStream())
+                    {
+                        using (ZOutputStream zout = new ZOutputStream(output))
+                        {
+                            byte[] buffer = new byte[2048];
+                            int len;
+                            while ((len = input.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                zout.Write(buffer, 0, len);
+                            }
+                            zout.Flush();
+                            output.Seek(0, SeekOrigin.Begin);
+                            MaterialData = OSDParser.DeserializeLLSDBinary(output);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Failed to decode RenderMaterials message:", Helpers.LogLevel.Warning, ex);
+                MaterialData = new OSDMap();
+            }
+        }
+        
+        public OSDMap Serialize()
+        {
+            return new OSDMap();
+        }
+
+
+    }
+
 
     #endregion Object Messages
 
