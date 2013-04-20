@@ -262,15 +262,19 @@ namespace OpenMetaverse.Imaging
             }
 
             // For head and tattoo, we add skin last
-            if (SkinTexture && bakeType == BakeType.Head)
+            if (IsSkin && bakeType == BakeType.Head)
             {
-                ManagedImage texture = textures[0].Texture.Image.Clone();
-                if (texture.Width != bakeWidth || texture.Height != bakeHeight)
+                ManagedImage texture;
+                if (textures[0].Texture != null)
                 {
-                    try { texture.ResizeNearestNeighbor(bakeWidth, bakeHeight); }
-                    catch (Exception) { }
+                    texture = textures[0].Texture.Image.Clone();
+                    if (texture.Width != bakeWidth || texture.Height != bakeHeight)
+                    {
+                        try { texture.ResizeNearestNeighbor(bakeWidth, bakeHeight); }
+                        catch (Exception) { }
+                    }
+                    DrawLayer(texture, false);
                 }
-                DrawLayer(texture, false);
 
                 // Add head tattoo here (if available, order-dependant)
                 if (textures.Count > 1 && textures[1].Texture != null)
@@ -317,7 +321,9 @@ namespace OpenMetaverse.Imaging
                 }
                 else
                 {
-                    return new ManagedImage(bitmap);
+                    ManagedImage image = new ManagedImage(bitmap);
+                    bitmap.Dispose();
+                    return image;
                 }
             }
             catch (Exception e)
@@ -497,7 +503,9 @@ namespace OpenMetaverse.Imaging
             for (int i = 0; i < dest.Alpha.Length; i++)
             {
                 byte alpha = src.Alpha[i] <= ((1 - val) * 255) ? (byte)0 : (byte)255;
-
+                if (alpha != 255)
+                {
+                }
                 if (param.MultiplyBlend)
                 {
                     dest.Alpha[i] = (byte)((dest.Alpha[i] * alpha) >> 8);
@@ -543,9 +551,9 @@ namespace OpenMetaverse.Imaging
 
             for (int i = 0; i < dest.Red.Length; i++)
             {
-                dest.Red[i] = (byte)((dest.Red[i] * Utils.FloatToByte(src.R, 0f, 1f)) >> 8);
-                dest.Green[i] = (byte)((dest.Green[i] * Utils.FloatToByte(src.G, 0f, 1f)) >> 8);
-                dest.Blue[i] = (byte)((dest.Blue[i] * Utils.FloatToByte(src.B, 0f, 1f)) >> 8);
+                dest.Red[i] = (byte)((dest.Red[i] * ((byte)(src.R * byte.MaxValue))) >> 8);
+                dest.Green[i] = (byte)((dest.Green[i] * ((byte)(src.G * byte.MaxValue))) >> 8);
+                dest.Blue[i] = (byte)((dest.Blue[i] * ((byte)(src.B * byte.MaxValue))) >> 8);
             }
         }
 
