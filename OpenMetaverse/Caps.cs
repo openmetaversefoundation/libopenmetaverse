@@ -152,6 +152,7 @@ namespace OpenMetaverse
             req.Add("GroupMemberData");
             req.Add("GroupProposalBallot");
             req.Add("HomeLocation");
+            req.Add("IncrementCOFVersion");
             req.Add("LandResources");
             req.Add("MapLayer");
             req.Add("MapLayerGod");
