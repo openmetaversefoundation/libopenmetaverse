@@ -1692,8 +1692,6 @@ namespace OpenMetaverse
                 // If nothing is registered to receive this RequestID drop the data
                 if (GroupRolesRequests.Contains(roles.GroupData.RequestID))
                 {
-                    GroupRolesRequests.Remove(roles.GroupData.RequestID);
-
                     lock (TempGroupRoles.Dictionary)
                     {
                         if (!TempGroupRoles.TryGetValue(roles.GroupData.RequestID, out groupRoleCache))
