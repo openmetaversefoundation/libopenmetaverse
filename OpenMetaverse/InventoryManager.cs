@@ -1568,11 +1568,11 @@ namespace OpenMetaverse
             InventorySortOrder order)
         {
             Uri url = null;
-
+            string cap = ownerID == Client.Self.AgentID ? "FetchInventoryDescendents2" : "FetchLibDescendents2";
             if (Client.Network.CurrentSim.Caps == null ||
-                null == (url = Client.Network.CurrentSim.Caps.CapabilityURI("FetchInventoryDescendents2")))
+                null == (url = Client.Network.CurrentSim.Caps.CapabilityURI(cap)))
             {
-                Logger.Log("FetchInventoryDescendents2 capability not available in the current sim", Helpers.LogLevel.Warning, Client);
+                Logger.Log(cap + " capability not available in the current sim", Helpers.LogLevel.Warning, Client);
                 OnFolderUpdated(new FolderUpdatedEventArgs(folderID, false));
                 return;
             }
@@ -4601,11 +4601,14 @@ namespace OpenMetaverse
                 if (newItem.ItemID == UUID.Zero) continue;
                 InventoryType invType = newItem.InvType;
 
-                InventoryType storedType = 0;
-                if (_ItemInventoryTypeRequest.TryGetValue(newItem.CallbackID, out storedType))
+                lock (_ItemInventoryTypeRequest)
                 {
-                    _ItemInventoryTypeRequest.Remove(newItem.CallbackID);
-                    invType = storedType;
+                    InventoryType storedType = 0;
+                    if (_ItemInventoryTypeRequest.TryGetValue(newItem.CallbackID, out storedType))
+                    {
+                        _ItemInventoryTypeRequest.Remove(newItem.CallbackID);
+                        invType = storedType;
+                    }
                 }
                 InventoryItem item = SafeCreateInventoryItem(invType, newItem.ItemID);
 
