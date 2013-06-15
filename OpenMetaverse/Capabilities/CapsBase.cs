@@ -150,10 +150,7 @@ namespace OpenMetaverse.Http
             // coalescing algorithm won't help us
             request.ServicePoint.UseNagleAlgorithm = false;
             // If not on mono, set accept-encoding header that allows response compression
-            if (Type.GetType("Mono.Runtime") == null)
-            {
-                request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-            }
+            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             return request;
         }
 
@@ -206,7 +203,7 @@ namespace OpenMetaverse.Http
 
                     // If Content-Length is set we create a buffer of the exact size, otherwise
                     // a MemoryStream is used to receive the response
-                    bool nolength = (response.ContentLength <= 0);
+                    bool nolength = (response.ContentLength <= 0) || (Type.GetType("Mono.Runtime") != null);
                     int size = (nolength) ? 8192 : (int)response.ContentLength;
                     MemoryStream ms = (nolength) ? new MemoryStream() : null;
                     byte[] buffer = new byte[size];
