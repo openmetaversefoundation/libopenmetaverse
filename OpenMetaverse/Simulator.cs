@@ -115,8 +115,12 @@ namespace OpenMetaverse
     [Flags]
     public enum RegionProtocols : ulong
     {
+        /// <summary>Nothing special</summary>
         None = 0,
-        AgentAppearanceService = 1 << 0
+        /// <summary>Region supports Server side Appearance</summary>
+        AgentAppearanceService = 1 << 0,
+        /// <summary>Viewer supports Server side Appearance</summary>
+        SelfAppearanceSupport = 1 << 2
     }
 
     /// <summary>

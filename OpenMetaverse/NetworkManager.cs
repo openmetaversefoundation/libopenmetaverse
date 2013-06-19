@@ -1168,7 +1168,7 @@ namespace OpenMetaverse
             RegionHandshakeReplyPacket reply = new RegionHandshakeReplyPacket();
             reply.AgentData.AgentID = Client.Self.AgentID;
             reply.AgentData.SessionID = Client.Self.SessionID;
-            reply.RegionInfo.Flags = 0;
+            reply.RegionInfo.Flags = (uint)RegionProtocols.SelfAppearanceSupport;
             SendPacket(reply, simulator);
 
             // We're officially connected to this sim
