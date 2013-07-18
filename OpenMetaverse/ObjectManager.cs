@@ -2101,7 +2101,7 @@ namespace OpenMetaverse
                         EventHandler<PrimEventArgs> handler = m_ObjectUpdate;
                         if (handler != null)
                         {
-                            ThreadPool.QueueUserWorkItem(delegate(object o)
+                            WorkPool.QueueUserWorkItem(delegate(object o)
                             { handler(this, new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, isNewObject, attachment)); });
                         }
 
@@ -2320,7 +2320,7 @@ namespace OpenMetaverse
                     EventHandler<TerseObjectUpdateEventArgs> handler = m_TerseObjectUpdate;
                     if (handler != null)
                     {
-                        ThreadPool.QueueUserWorkItem(delegate(object o)
+                        WorkPool.QueueUserWorkItem(delegate(object o)
                         { handler(this, new TerseObjectUpdateEventArgs(simulator, obj, update, terse.RegionData.TimeDilation)); });
                     }
 

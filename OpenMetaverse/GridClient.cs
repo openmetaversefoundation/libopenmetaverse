@@ -108,6 +108,9 @@ namespace OpenMetaverse
         /// </summary>
         public GridClient()
         {
+            // Initialise ThreadPool
+            WorkPool.Init(true);
+
             // These are order-dependant
             Network = new NetworkManager(this);
             Settings = new Settings(this);
