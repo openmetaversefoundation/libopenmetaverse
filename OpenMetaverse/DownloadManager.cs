@@ -166,7 +166,7 @@ namespace OpenMetaverse
                         nr = activeDownloads.Count;
                     }
 
-                    Logger.DebugLog(nr.ToString() + " active downloads. Queued textures: " + queue.Count.ToString());
+                    // Logger.DebugLog(nr.ToString() + " active downloads. Queued textures: " + queue.Count.ToString());
 
                     for (int i = nr; i < ParallelDownloads && queue.Count > 0; i++)
                     {
