@@ -3410,8 +3410,11 @@ namespace OpenMetaverse
                 msg.LanguagePublic = isPublic;
 
                 Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("UpdateAgentLanguage");
-                CapsClient request = new CapsClient(url);
-                request.BeginGetResponse(msg.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+                if (url != null)
+                {
+                    CapsClient request = new CapsClient(url);
+                    request.BeginGetResponse(msg.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+                }
             }
             catch (Exception ex)
             {
