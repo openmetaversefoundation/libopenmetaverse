@@ -62,8 +62,11 @@ namespace OpenMetaverse
 
         public static void Shutdown()
         {
-            Pool.Shutdown();
-            Pool = null;
+            if (Pool != null)
+            {
+                Pool.Shutdown();
+                Pool = null;
+            }
         }
 
         public static void QueueUserWorkItem(System.Threading.WaitCallback callback)
