@@ -36,13 +36,6 @@
             System.Windows.Forms.ListViewGroup listViewGroup4 = new System.Windows.Forms.ListViewGroup("EventQueue Messages", System.Windows.Forms.HorizontalAlignment.Left);
             this.panelMainWindow = new System.Windows.Forms.Panel();
             this.splitContainerSessionsTabs = new System.Windows.Forms.SplitContainer();
-            this.listViewSessions = new WinGridProxy.ListViewNoFlicker();
-            this.columnHeaderCounter = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderProtocol = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderType = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderSize = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderUrl = new System.Windows.Forms.ColumnHeader();
-            this.columnHeaderContentType = new System.Windows.Forms.ColumnHeader();
             this.contextMenuStripSessions = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripMenuSessionsRemove = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStripRemove = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -102,12 +95,8 @@
             this.splitContainerFilters = new System.Windows.Forms.SplitContainer();
             this.checkBoxCheckAllPackets = new System.Windows.Forms.CheckBox();
             this.grpUDPFilters = new System.Windows.Forms.GroupBox();
-            this.listViewPacketFilters = new WinGridProxy.ListViewNoFlicker();
-            this.columnHeaderPacketName = new System.Windows.Forms.ColumnHeader();
             this.checkBoxCheckAllMessages = new System.Windows.Forms.CheckBox();
             this.grpCapsFilters = new System.Windows.Forms.GroupBox();
-            this.listViewMessageFilters = new WinGridProxy.ListViewNoFlicker();
-            this.columnHeaderName = new System.Windows.Forms.ColumnHeader();
             this.tabPageInspect = new System.Windows.Forms.TabPage();
             this.splitContainerInspectorTab = new System.Windows.Forms.SplitContainer();
             this.tabControlInspectorRequest = new System.Windows.Forms.TabControl();
@@ -227,6 +216,18 @@
             this.buttonStartProxy = new System.Windows.Forms.ToolStripButton();
             this.saveFileDialog3 = new System.Windows.Forms.SaveFileDialog();
             this.timerSessionQueue = new System.Windows.Forms.Timer(this.components);
+            this.listViewSessions = new WinGridProxy.ListViewNoFlicker();
+            this.columnHeaderTimestamp = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeaderCounter = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeaderProtocol = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeaderType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeaderSize = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeaderUrl = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeaderContentType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.listViewPacketFilters = new WinGridProxy.ListViewNoFlicker();
+            this.columnHeaderPacketName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.listViewMessageFilters = new WinGridProxy.ListViewNoFlicker();
+            this.columnHeaderName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.panelMainWindow.SuspendLayout();
             this.splitContainerSessionsTabs.Panel1.SuspendLayout();
             this.splitContainerSessionsTabs.Panel2.SuspendLayout();
@@ -301,65 +302,6 @@
             this.splitContainerSessionsTabs.SplitterWidth = 5;
             this.splitContainerSessionsTabs.TabIndex = 0;
             // 
-            // listViewSessions
-            // 
-            this.listViewSessions.AllowColumnReorder = true;
-            this.listViewSessions.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeaderCounter,
-            this.columnHeaderProtocol,
-            this.columnHeaderType,
-            this.columnHeaderSize,
-            this.columnHeaderUrl,
-            this.columnHeaderContentType});
-            this.listViewSessions.ContextMenuStrip = this.contextMenuStripSessions;
-            this.listViewSessions.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listViewSessions.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.listViewSessions.FullRowSelect = true;
-            this.listViewSessions.GridLines = true;
-            this.listViewSessions.HideSelection = false;
-            this.listViewSessions.Location = new System.Drawing.Point(0, 0);
-            this.listViewSessions.Name = "listViewSessions";
-            this.listViewSessions.Size = new System.Drawing.Size(479, 494);
-            this.listViewSessions.SmallImageList = this.imageList1;
-            this.listViewSessions.TabIndex = 0;
-            this.listViewSessions.UseCompatibleStateImageBehavior = false;
-            this.listViewSessions.View = System.Windows.Forms.View.Details;
-            this.listViewSessions.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewSessions_ColumnClick);
-            this.listViewSessions.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewSessions_ItemSelectionChanged);
-            // 
-            // columnHeaderCounter
-            // 
-            this.columnHeaderCounter.Tag = "number";
-            this.columnHeaderCounter.Text = "#";
-            this.columnHeaderCounter.Width = 40;
-            // 
-            // columnHeaderProtocol
-            // 
-            this.columnHeaderProtocol.Tag = "string";
-            this.columnHeaderProtocol.Text = "Protocol";
-            // 
-            // columnHeaderType
-            // 
-            this.columnHeaderType.Tag = "string";
-            this.columnHeaderType.Text = "Name";
-            this.columnHeaderType.Width = 151;
-            // 
-            // columnHeaderSize
-            // 
-            this.columnHeaderSize.Tag = "";
-            this.columnHeaderSize.Text = "Bytes";
-            this.columnHeaderSize.Width = 42;
-            // 
-            // columnHeaderUrl
-            // 
-            this.columnHeaderUrl.Text = "Host";
-            this.columnHeaderUrl.Width = 312;
-            // 
-            // columnHeaderContentType
-            // 
-            this.columnHeaderContentType.Text = "Content Type";
-            this.columnHeaderContentType.Width = 250;
-            // 
             // contextMenuStripSessions
             // 
             this.contextMenuStripSessions.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -390,7 +332,7 @@
             this.toolStripMenuItemRemoveSelected,
             this.toolStripMenuItemRemoveUnselected});
             this.contextMenuStripRemove.Name = "contextMenuStripRemove";
-            this.contextMenuStripRemove.OwnerItem = this.toolStripMenuSessionsRemove;
+            this.contextMenuStripRemove.OwnerItem = this.removeToolStripMenuItem2;
             this.contextMenuStripRemove.Size = new System.Drawing.Size(143, 70);
             // 
             // toolStripMenuItemRemoveAll
@@ -438,7 +380,7 @@
             this.toolStripSeparatorSelectPacketProto,
             this.toolStripMenuItemSelectPacketName});
             this.contextMenuStripSelect.Name = "contextMenuStripSelect";
-            this.contextMenuStripSelect.OwnerItem = this.selectToolStripMenuItem2;
+            this.contextMenuStripSelect.OwnerItem = this.selectToolStripMenuItem1;
             this.contextMenuStripSelect.Size = new System.Drawing.Size(164, 98);
             // 
             // allToolStripMenuItem4
@@ -521,7 +463,7 @@
             this.toolStripSeparator17,
             this.unmarkToolStripMenuItem});
             this.contextMenuStripMark.Name = "contextMenuStripMarkDropdown";
-            this.contextMenuStripMark.OwnerItem = this.markToolStripMenuItem1;
+            this.contextMenuStripMark.OwnerItem = this.markToolStripMenuItem2;
             this.contextMenuStripMark.Size = new System.Drawing.Size(117, 142);
             // 
             // redToolStripMenuItem2
@@ -634,9 +576,9 @@
             // 
             // richTextBoxDebugLog
             // 
-            this.richTextBoxDebugLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.richTextBoxDebugLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.richTextBoxDebugLog.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.richTextBoxDebugLog.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.richTextBoxDebugLog.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -652,9 +594,9 @@
             // 
             // panelStats
             // 
-            this.panelStats.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.panelStats.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panelStats.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.panelStats.BackColor = System.Drawing.Color.Transparent;
             this.panelStats.Controls.Add(this.groupBox2);
@@ -877,9 +819,9 @@
             // 
             // splitContainerFilters
             // 
-            this.splitContainerFilters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.splitContainerFilters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.splitContainerFilters.Location = new System.Drawing.Point(3, 31);
             this.splitContainerFilters.Name = "splitContainerFilters";
             // 
@@ -913,9 +855,9 @@
             // 
             // grpUDPFilters
             // 
-            this.grpUDPFilters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpUDPFilters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.grpUDPFilters.Controls.Add(this.listViewPacketFilters);
             this.grpUDPFilters.Enabled = false;
             this.grpUDPFilters.Location = new System.Drawing.Point(3, 3);
@@ -924,39 +866,6 @@
             this.grpUDPFilters.TabIndex = 0;
             this.grpUDPFilters.TabStop = false;
             this.grpUDPFilters.Text = "UDP Packets && Login";
-            // 
-            // listViewPacketFilters
-            // 
-            this.listViewPacketFilters.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listViewPacketFilters.CheckBoxes = true;
-            this.listViewPacketFilters.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeaderPacketName});
-            this.listViewPacketFilters.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listViewPacketFilters.FullRowSelect = true;
-            this.listViewPacketFilters.GridLines = true;
-            listViewGroup1.Header = "Login";
-            listViewGroup1.Name = "Login";
-            listViewGroup2.Header = "Packets";
-            listViewGroup2.Name = "Packets";
-            this.listViewPacketFilters.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup1,
-            listViewGroup2});
-            this.listViewPacketFilters.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-            this.listViewPacketFilters.Location = new System.Drawing.Point(3, 17);
-            this.listViewPacketFilters.MultiSelect = false;
-            this.listViewPacketFilters.Name = "listViewPacketFilters";
-            this.listViewPacketFilters.Size = new System.Drawing.Size(291, 374);
-            this.listViewPacketFilters.Sorting = System.Windows.Forms.SortOrder.Ascending;
-            this.listViewPacketFilters.TabIndex = 0;
-            this.listViewPacketFilters.UseCompatibleStateImageBehavior = false;
-            this.listViewPacketFilters.View = System.Windows.Forms.View.Details;
-            this.listViewPacketFilters.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listViewPacketFilters_ItemChecked);
-            this.listViewPacketFilters.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewFilterSorter_ColumnClick);
-            // 
-            // columnHeaderPacketName
-            // 
-            this.columnHeaderPacketName.Text = "Name";
-            this.columnHeaderPacketName.Width = 287;
             // 
             // checkBoxCheckAllMessages
             // 
@@ -974,9 +883,9 @@
             // 
             // grpCapsFilters
             // 
-            this.grpCapsFilters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpCapsFilters.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.grpCapsFilters.Controls.Add(this.listViewMessageFilters);
             this.grpCapsFilters.Enabled = false;
             this.grpCapsFilters.Location = new System.Drawing.Point(3, 3);
@@ -985,39 +894,6 @@
             this.grpCapsFilters.TabIndex = 1;
             this.grpCapsFilters.TabStop = false;
             this.grpCapsFilters.Text = "Capabilities && EventQueue messages";
-            // 
-            // listViewMessageFilters
-            // 
-            this.listViewMessageFilters.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.listViewMessageFilters.CheckBoxes = true;
-            this.listViewMessageFilters.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeaderName});
-            this.listViewMessageFilters.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listViewMessageFilters.FullRowSelect = true;
-            this.listViewMessageFilters.GridLines = true;
-            listViewGroup3.Header = "Capabilities";
-            listViewGroup3.Name = "Capabilities";
-            listViewGroup4.Header = "EventQueue Messages";
-            listViewGroup4.Name = "EventQueueMessages";
-            this.listViewMessageFilters.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
-            listViewGroup3,
-            listViewGroup4});
-            this.listViewMessageFilters.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
-            this.listViewMessageFilters.Location = new System.Drawing.Point(3, 17);
-            this.listViewMessageFilters.MultiSelect = false;
-            this.listViewMessageFilters.Name = "listViewMessageFilters";
-            this.listViewMessageFilters.Size = new System.Drawing.Size(293, 374);
-            this.listViewMessageFilters.Sorting = System.Windows.Forms.SortOrder.Ascending;
-            this.listViewMessageFilters.TabIndex = 1;
-            this.listViewMessageFilters.UseCompatibleStateImageBehavior = false;
-            this.listViewMessageFilters.View = System.Windows.Forms.View.Details;
-            this.listViewMessageFilters.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listViewMessageFilters_ItemChecked);
-            this.listViewMessageFilters.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewFilterSorter_ColumnClick);
-            // 
-            // columnHeaderName
-            // 
-            this.columnHeaderName.Text = "Name";
-            this.columnHeaderName.Width = 289;
             // 
             // tabPageInspect
             // 
@@ -1205,9 +1081,9 @@
             // 
             // hexBoxRequest
             // 
-            this.hexBoxRequest.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.hexBoxRequest.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.hexBoxRequest.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.hexBoxRequest.LineInfoForeColor = System.Drawing.Color.Empty;
             this.hexBoxRequest.Location = new System.Drawing.Point(0, 0);
@@ -1218,8 +1094,8 @@
             this.hexBoxRequest.TabIndex = 2;
             this.hexBoxRequest.UseFixedBytesPerLine = true;
             this.hexBoxRequest.VScrollBarVisible = true;
-            this.hexBoxRequest.CurrentPositionInLineChanged += new System.EventHandler(this.RequestPosition_Changed);
             this.hexBoxRequest.CurrentLineChanged += new System.EventHandler(this.RequestPosition_Changed);
+            this.hexBoxRequest.CurrentPositionInLineChanged += new System.EventHandler(this.RequestPosition_Changed);
             // 
             // tabControlInspectorResponse
             // 
@@ -1376,9 +1252,9 @@
             // 
             // hexBoxResponse
             // 
-            this.hexBoxResponse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.hexBoxResponse.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.hexBoxResponse.Font = new System.Drawing.Font("Courier New", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.hexBoxResponse.LineInfoForeColor = System.Drawing.Color.Empty;
             this.hexBoxResponse.Location = new System.Drawing.Point(0, 0);
@@ -1389,8 +1265,8 @@
             this.hexBoxResponse.TabIndex = 1;
             this.hexBoxResponse.UseFixedBytesPerLine = true;
             this.hexBoxResponse.VScrollBarVisible = true;
-            this.hexBoxResponse.CurrentPositionInLineChanged += new System.EventHandler(this.ReplyPosition_Changed);
             this.hexBoxResponse.CurrentLineChanged += new System.EventHandler(this.ReplyPosition_Changed);
+            this.hexBoxResponse.CurrentPositionInLineChanged += new System.EventHandler(this.ReplyPosition_Changed);
             // 
             // tabPageInject
             // 
@@ -1418,9 +1294,9 @@
             // 
             // richTextBoxInject
             // 
-            this.richTextBoxInject.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.richTextBoxInject.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.richTextBoxInject.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.richTextBoxInject.Location = new System.Drawing.Point(6, 6);
             this.richTextBoxInject.Name = "richTextBoxInject";
@@ -2116,6 +1992,137 @@
             this.timerSessionQueue.Interval = 250;
             this.timerSessionQueue.Tick += new System.EventHandler(this.timerSessionQueue_Tick);
             // 
+            // listViewSessions
+            // 
+            this.listViewSessions.AllowColumnReorder = true;
+            this.listViewSessions.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeaderCounter,
+            this.columnHeaderTimestamp,
+            this.columnHeaderProtocol,
+            this.columnHeaderType,
+            this.columnHeaderSize,
+            this.columnHeaderUrl,
+            this.columnHeaderContentType});
+            this.listViewSessions.ContextMenuStrip = this.contextMenuStripSessions;
+            this.listViewSessions.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listViewSessions.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.listViewSessions.FullRowSelect = true;
+            this.listViewSessions.GridLines = true;
+            this.listViewSessions.HideSelection = false;
+            this.listViewSessions.Location = new System.Drawing.Point(0, 0);
+            this.listViewSessions.Name = "listViewSessions";
+            this.listViewSessions.Size = new System.Drawing.Size(479, 494);
+            this.listViewSessions.SmallImageList = this.imageList1;
+            this.listViewSessions.TabIndex = 0;
+            this.listViewSessions.UseCompatibleStateImageBehavior = false;
+            this.listViewSessions.View = System.Windows.Forms.View.Details;
+            this.listViewSessions.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewSessions_ColumnClick);
+            this.listViewSessions.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.listViewSessions_ItemSelectionChanged);
+            // 
+            // columnHeaderTimestamp
+            // 
+            this.columnHeaderTimestamp.Text = "Time";
+            this.columnHeaderTimestamp.Width = 30;
+            // 
+            // columnHeaderCounter
+            // 
+            this.columnHeaderCounter.Tag = "number";
+            this.columnHeaderCounter.Text = "#";
+            this.columnHeaderCounter.Width = 40;
+            // 
+            // columnHeaderProtocol
+            // 
+            this.columnHeaderProtocol.Tag = "string";
+            this.columnHeaderProtocol.Text = "Protocol";
+            // 
+            // columnHeaderType
+            // 
+            this.columnHeaderType.Tag = "string";
+            this.columnHeaderType.Text = "Name";
+            this.columnHeaderType.Width = 151;
+            // 
+            // columnHeaderSize
+            // 
+            this.columnHeaderSize.Tag = "";
+            this.columnHeaderSize.Text = "Bytes";
+            this.columnHeaderSize.Width = 42;
+            // 
+            // columnHeaderUrl
+            // 
+            this.columnHeaderUrl.Text = "Host";
+            this.columnHeaderUrl.Width = 312;
+            // 
+            // columnHeaderContentType
+            // 
+            this.columnHeaderContentType.Text = "Content Type";
+            this.columnHeaderContentType.Width = 250;
+            // 
+            // listViewPacketFilters
+            // 
+            this.listViewPacketFilters.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.listViewPacketFilters.CheckBoxes = true;
+            this.listViewPacketFilters.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeaderPacketName});
+            this.listViewPacketFilters.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listViewPacketFilters.FullRowSelect = true;
+            this.listViewPacketFilters.GridLines = true;
+            listViewGroup1.Header = "Login";
+            listViewGroup1.Name = "Login";
+            listViewGroup2.Header = "Packets";
+            listViewGroup2.Name = "Packets";
+            this.listViewPacketFilters.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
+            listViewGroup1,
+            listViewGroup2});
+            this.listViewPacketFilters.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.listViewPacketFilters.Location = new System.Drawing.Point(3, 17);
+            this.listViewPacketFilters.MultiSelect = false;
+            this.listViewPacketFilters.Name = "listViewPacketFilters";
+            this.listViewPacketFilters.Size = new System.Drawing.Size(291, 374);
+            this.listViewPacketFilters.Sorting = System.Windows.Forms.SortOrder.Ascending;
+            this.listViewPacketFilters.TabIndex = 0;
+            this.listViewPacketFilters.UseCompatibleStateImageBehavior = false;
+            this.listViewPacketFilters.View = System.Windows.Forms.View.Details;
+            this.listViewPacketFilters.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewFilterSorter_ColumnClick);
+            this.listViewPacketFilters.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listViewPacketFilters_ItemChecked);
+            // 
+            // columnHeaderPacketName
+            // 
+            this.columnHeaderPacketName.Text = "Name";
+            this.columnHeaderPacketName.Width = 287;
+            // 
+            // listViewMessageFilters
+            // 
+            this.listViewMessageFilters.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.listViewMessageFilters.CheckBoxes = true;
+            this.listViewMessageFilters.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeaderName});
+            this.listViewMessageFilters.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listViewMessageFilters.FullRowSelect = true;
+            this.listViewMessageFilters.GridLines = true;
+            listViewGroup3.Header = "Capabilities";
+            listViewGroup3.Name = "Capabilities";
+            listViewGroup4.Header = "EventQueue Messages";
+            listViewGroup4.Name = "EventQueueMessages";
+            this.listViewMessageFilters.Groups.AddRange(new System.Windows.Forms.ListViewGroup[] {
+            listViewGroup3,
+            listViewGroup4});
+            this.listViewMessageFilters.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+            this.listViewMessageFilters.Location = new System.Drawing.Point(3, 17);
+            this.listViewMessageFilters.MultiSelect = false;
+            this.listViewMessageFilters.Name = "listViewMessageFilters";
+            this.listViewMessageFilters.Size = new System.Drawing.Size(293, 374);
+            this.listViewMessageFilters.Sorting = System.Windows.Forms.SortOrder.Ascending;
+            this.listViewMessageFilters.TabIndex = 1;
+            this.listViewMessageFilters.UseCompatibleStateImageBehavior = false;
+            this.listViewMessageFilters.View = System.Windows.Forms.View.Details;
+            this.listViewMessageFilters.ColumnClick += new System.Windows.Forms.ColumnClickEventHandler(this.listViewFilterSorter_ColumnClick);
+            this.listViewMessageFilters.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.listViewMessageFilters_ItemChecked);
+            // 
+            // columnHeaderName
+            // 
+            this.columnHeaderName.Text = "Name";
+            this.columnHeaderName.Width = 289;
+            // 
             // FormWinGridProxy
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2381,6 +2388,7 @@
         private System.Windows.Forms.SaveFileDialog saveFileDialog3;
         private System.Windows.Forms.ToolStripMenuItem autoscrollToolStripMenuItem;
         private System.Windows.Forms.Timer timerSessionQueue;
+        private System.Windows.Forms.ColumnHeader columnHeaderTimestamp;
     }
 }
 

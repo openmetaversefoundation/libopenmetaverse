@@ -218,7 +218,7 @@ namespace WinGridProxy
 
                     SessionLogin sessionLogin = new SessionLogin(request, direction, comboBoxLoginURL.Text, request.GetType().Name + " " + loginType);
 
-                    ListViewItem sessionEntry = new ListViewItem(new string[] { PacketCounter.ToString(), 
+                    ListViewItem sessionEntry = new ListViewItem(new string[] { PacketCounter.ToString(), sessionLogin.TimeStamp.ToString("HH:mm:ss.fff"),
                         sessionLogin.Protocol, sessionLogin.Name, sessionLogin.Length.ToString(), sessionLogin.Host, sessionLogin.ContentType });
 
                     sessionEntry.Tag = sessionLogin;
@@ -248,7 +248,7 @@ namespace WinGridProxy
             SessionPacket sessionPacket = new SessionPacket(packet, direction, endpoint,
                 PacketDecoder.InterpretOptions(packet.Header) + " Seq: " + packet.Header.Sequence.ToString() + " Freq:" + packet.Header.Frequency.ToString());
 
-            ListViewItem sessionItem = new ListViewItem(new string[] { PacketCounter.ToString(), sessionPacket.Protocol, sessionPacket.Name, sessionPacket.Length.ToString(), sessionPacket.Host, sessionPacket.ContentType });
+            ListViewItem sessionItem = new ListViewItem(new string[] { PacketCounter.ToString(), sessionPacket.TimeStamp.ToString("HH:mm:ss.fff"), sessionPacket.Protocol, sessionPacket.Name, sessionPacket.Length.ToString(), sessionPacket.Host, sessionPacket.ContentType });
             sessionItem.Tag = sessionPacket;
             sessionItem.ImageIndex = (int)sessionPacket.Direction;
 
@@ -312,7 +312,7 @@ namespace WinGridProxy
                         capsSession = new SessionEvent(req.RawResponse, req.ResponseHeaders, req.Info.URI, req.Info.CapType, proto);
                     }
 
-                    string[] s = { PacketCounter.ToString(), capsSession.Protocol, capsSession.Name, capsSession.Length.ToString(), capsSession.Host, capsSession.ContentType };
+                    string[] s = { PacketCounter.ToString(), capsSession.TimeStamp.ToString("HH:mm:ss.fff"), capsSession.Protocol, capsSession.Name, capsSession.Length.ToString(), capsSession.Host, capsSession.ContentType };
                     ListViewItem session = new ListViewItem(s);
 
                     session.ImageIndex = (int)direction;
@@ -578,7 +578,7 @@ namespace WinGridProxy
         {
             foreach (ListViewItem item in listViewSessions.Items)
             {
-                if (item.SubItems[2].Text.Equals(toolStripMenuItemSelectPacketName.Tag) && !item.Selected)
+                if (item.SubItems[3].Text.Equals(toolStripMenuItemSelectPacketName.Tag) && !item.Selected)
                     item.Selected = true;
             }
         }
@@ -614,12 +614,12 @@ namespace WinGridProxy
             if (listViewSessions.SelectedItems.Count == 1)
             {
                 ListViewItem item = listViewSessions.SelectedItems[0];
-                string strPacketOrMessage = (item.SubItems[1].Text.Equals(PROTO_PACKETSTRING)) ? "Packets" : "Messages";
+                string strPacketOrMessage = (item.SubItems[2].Text.Equals(PROTO_PACKETSTRING)) ? "Packets" : "Messages";
 
-                enableDisableFilterByNameToolStripMenuItem.Text = String.Format("Capture {0} {1}", item.SubItems[2].Text, strPacketOrMessage);
-                toolStripMenuItemSelectPacketName.Tag = enableDisableFilterByNameToolStripMenuItem.Tag = item.SubItems[2].Text;
+                enableDisableFilterByNameToolStripMenuItem.Text = String.Format("Capture {0} {1}", item.SubItems[3].Text, strPacketOrMessage);
+                toolStripMenuItemSelectPacketName.Tag = enableDisableFilterByNameToolStripMenuItem.Tag = item.SubItems[3].Text;
 
-                toolStripMenuItemSelectPacketName.Text = String.Format("All {0} {1}", item.SubItems[2].Text, strPacketOrMessage);
+                toolStripMenuItemSelectPacketName.Text = String.Format("All {0} {1}", item.SubItems[3].Text, strPacketOrMessage);
 
                 enableDisableFilterByNameToolStripMenuItem.Visible =
                 toolStripSeparatorSelectPacketProto.Visible =
@@ -717,9 +717,9 @@ namespace WinGridProxy
                         listViewSessions.BeginUpdate();
                         foreach (ListViewItem item in listViewSessions.Items)
                         {
-                            ListViewItem found = FindListViewItem(listViewPacketFilters, item.SubItems[2].Text, false);
+                            ListViewItem found = FindListViewItem(listViewPacketFilters, item.SubItems[3].Text, false);
                             if (found == null)
-                                found = FindListViewItem(listViewMessageFilters, item.SubItems[2].Text, false);
+                                found = FindListViewItem(listViewMessageFilters, item.SubItems[3].Text, false);
 
                             if (found != null && !found.Checked)
                                 listViewSessions.Items.Remove(item);
@@ -844,6 +844,7 @@ namespace WinGridProxy
 
                     ListViewItem addedItem = new ListViewItem(new string[] {
                         session["id"].AsString(), 
+                        importedSession.TimeStamp.ToString("HH:mm:ss.fff"),
                         importedSession.Protocol,
                         importedSession.Name,
                         importedSession.Length.ToString(),
@@ -1057,10 +1058,10 @@ namespace WinGridProxy
 
                     if (
                         (opts.MatchCase
-                        && (item.SubItems[2].Text.Contains(opts.SearchText)
+                        && (item.SubItems[3].Text.Contains(opts.SearchText)
                         /*|| TagToString(item.Tag, item.SubItems[2].Text).Contains(opts.SearchText)*/)
                         ) // no case matching
-                        || ((item.SubItems[2].Text.ToLower().Contains(opts.SearchText.ToLower())
+                        || ((item.SubItems[3].Text.ToLower().Contains(opts.SearchText.ToLower())
                         /*|| TagToString(item.Tag, item.SubItems[2].Text).ToLower().Contains(opts.SearchText.ToLower())*/
                             ))
                         )
