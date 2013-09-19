@@ -39,12 +39,21 @@ namespace OpenMetaverse
         private UUID parentID; //used for de-seralization 
         private InventoryNodeDictionary nodes;
         private bool needsUpdate = true;
+        [NonSerialized]
+        private object tag;
 
         /// <summary></summary>
         public InventoryBase Data
         {
             get { return data; }
             set { data = value; }
+        }
+
+        /// <summary>User data</summary>
+        public object Tag
+        {
+            get { return tag; }
+            set { tag = value; }
         }
 
         /// <summary></summary>

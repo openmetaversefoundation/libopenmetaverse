@@ -1534,9 +1534,11 @@ namespace OpenMetaverse
         public void RequestFolderContents(UUID folder, UUID owner, bool folders, bool items,
             InventorySortOrder order)
         {
+            string cap = owner == Client.Self.AgentID ? "FetchInventoryDescendents2" : "FetchLibDescendents2";
+
             if (Client.Settings.HTTP_INVENTORY &&
                 Client.Network.CurrentSim.Caps != null &&
-                Client.Network.CurrentSim.Caps.CapabilityURI("FetchInventoryDescendents2") != null)
+                Client.Network.CurrentSim.Caps.CapabilityURI(cap) != null)
             {
                 RequestFolderContentsCap(folder, owner, folders, items, order);
                 return;
@@ -1577,6 +1579,15 @@ namespace OpenMetaverse
                 return;
             }
 
+            InventoryFolder folder = new InventoryFolder(folderID);
+            folder.OwnerID = ownerID;
+            folder.UUID = folderID;
+            RequestFolderContentsCap(new List<InventoryFolder>() { folder }, url, fetchFolders, fetchItems, order);
+        }
+
+        public void RequestFolderContentsCap(List<InventoryFolder> batch, Uri url, bool fetchFolders, bool fetchItems, InventorySortOrder order)
+        {
+
             try
             {
                 CapsClient request = new CapsClient(url);
@@ -1589,88 +1600,99 @@ namespace OpenMetaverse
                             throw error;
                         }
 
-                        OSDArray fetchedFolders = (OSDArray)((OSDMap)result)["folders"];
-                        for (int fetchedFolderNr = 0; fetchedFolderNr < fetchedFolders.Count; fetchedFolderNr++)
+                        OSDMap resultMap = ((OSDMap)result);
+                        if (resultMap.ContainsKey("folders"))
                         {
-                            OSDMap res = (OSDMap)fetchedFolders[fetchedFolderNr];
-                            InventoryFolder fetchedFolder = null;
+                            OSDArray fetchedFolders = (OSDArray)resultMap["folders"];
+                            for (int fetchedFolderNr = 0; fetchedFolderNr < fetchedFolders.Count; fetchedFolderNr++)
+                            {
+                                OSDMap res = (OSDMap)fetchedFolders[fetchedFolderNr];
+                                InventoryFolder fetchedFolder = null;
 
-                            if (_Store.Contains(res["folder_id"])
-                                && _Store[res["folder_id"]] is InventoryFolder)
-                            {
-                                fetchedFolder = (InventoryFolder)_Store[res["folder_id"]];
-                            }
-                            else
-                            {
-                                fetchedFolder = new InventoryFolder(res["folder_id"]);
-                                _Store[res["folder_id"]] = fetchedFolder;
-                            }
-                            fetchedFolder.DescendentCount = res["descendents"];
-                            fetchedFolder.Version = res["version"];
-                            fetchedFolder.OwnerID = res["owner_id"];
-                            _Store.GetNodeFor(fetchedFolder.UUID).NeedsUpdate = false;
-
-                            // Do we have any descendants
-                            if (fetchedFolder.DescendentCount > 0)
-                            {
-                                // Fetch descendent folders
-                                if (res["categories"] is OSDArray)
+                                if (_Store.Contains(res["folder_id"])
+                                    && _Store[res["folder_id"]] is InventoryFolder)
                                 {
-                                    OSDArray folders = (OSDArray)res["categories"];
-                                    for (int i = 0; i < folders.Count; i++)
+                                    fetchedFolder = (InventoryFolder)_Store[res["folder_id"]];
+                                }
+                                else
+                                {
+                                    fetchedFolder = new InventoryFolder(res["folder_id"]);
+                                    _Store[res["folder_id"]] = fetchedFolder;
+                                }
+                                fetchedFolder.DescendentCount = res["descendents"];
+                                fetchedFolder.Version = res["version"];
+                                fetchedFolder.OwnerID = res["owner_id"];
+                                _Store.GetNodeFor(fetchedFolder.UUID).NeedsUpdate = false;
+
+                                // Do we have any descendants
+                                if (fetchedFolder.DescendentCount > 0)
+                                {
+                                    // Fetch descendent folders
+                                    if (res["categories"] is OSDArray)
                                     {
-                                        OSDMap descFolder = (OSDMap)folders[i];
-                                        InventoryFolder folder;
-                                        if (!_Store.Contains(descFolder["category_id"]))
+                                        OSDArray folders = (OSDArray)res["categories"];
+                                        for (int i = 0; i < folders.Count; i++)
                                         {
-                                            folder = new InventoryFolder(descFolder["category_id"]);
+                                            OSDMap descFolder = (OSDMap)folders[i];
+                                            InventoryFolder folder;
+                                            UUID folderID = descFolder.ContainsKey("category_id") ? descFolder["category_id"] : descFolder["folder_id"];
+                                            if (!_Store.Contains(folderID))
+                                            {
+                                                folder = new InventoryFolder(folderID);
+                                                folder.ParentUUID = descFolder["parent_id"];
+                                                _Store[folderID] = folder;
+                                            }
+                                            else
+                                            {
+                                                folder = (InventoryFolder)_Store[descFolder["category_id"]];
+                                            }
+
+                                            folder.OwnerID = descFolder["agent_id"];
                                             folder.ParentUUID = descFolder["parent_id"];
-                                            _Store[descFolder["category_id"]] = folder;
+                                            folder.Name = descFolder["name"];
+                                            folder.Version = descFolder["version"];
+                                            folder.PreferredType = (AssetType)(int)descFolder["type_default"];
                                         }
-                                        else
+
+                                        // Fetch descendent items
+                                        OSDArray items = (OSDArray)res["items"];
+                                        for (int i = 0; i < items.Count; i++)
                                         {
-                                            folder = (InventoryFolder)_Store[descFolder["category_id"]];
+                                            InventoryItem item = InventoryItem.FromOSD(items[i]);
+                                            _Store[item.UUID] = item;
                                         }
-
-                                        folder.OwnerID = descFolder["agent_id"];
-                                        folder.ParentUUID = descFolder["parent_id"];
-                                        folder.Name = descFolder["name"];
-                                        folder.Version = descFolder["version"];
-                                        folder.PreferredType = (AssetType)(int)descFolder["type_default"];
-                                    }
-
-                                    // Fetch descendent items
-                                    OSDArray items = (OSDArray)res["items"];
-                                    for (int i = 0; i < items.Count; i++)
-                                    {
-                                        InventoryItem item = InventoryItem.FromOSD(items[i]);
-                                       _Store[item.UUID] = item;
                                     }
                                 }
-                            }
 
-                            OnFolderUpdated(new FolderUpdatedEventArgs(res["folder_id"], true));
+                                OnFolderUpdated(new FolderUpdatedEventArgs(res["folder_id"], true));
+                            }
                         }
                     }
                     catch (Exception exc)
                     {
-                        Logger.Log(string.Format("Failed to fetch inventory descendants for folder id {0}: {1}\n{2}", folderID, exc.Message, exc.StackTrace.ToString()), Helpers.LogLevel.Warning, Client);
-                        OnFolderUpdated(new FolderUpdatedEventArgs(folderID, false));
+                        Logger.Log(string.Format("Failed to fetch inventory descendants: {0}\n{1}", exc.Message, exc.StackTrace.ToString()), Helpers.LogLevel.Warning, Client);
+                        foreach (var f in batch)
+                        {
+                            OnFolderUpdated(new FolderUpdatedEventArgs(f.UUID, false));
+                        }
                         return;
                     }
 
                 };
 
                 // Construct request
-                OSDMap requestedFolder = new OSDMap(1);
-                requestedFolder["folder_id"] = folderID;
-                requestedFolder["owner_id"] = ownerID;
-                requestedFolder["fetch_folders"] = fetchFolders;
-                requestedFolder["fetch_items"] = fetchItems;
-                requestedFolder["sort_order"] = (int)order;
-
                 OSDArray requestedFolders = new OSDArray(1);
-                requestedFolders.Add(requestedFolder);
+                foreach (var f in batch)
+                {
+                    OSDMap requestedFolder = new OSDMap(1);
+                    requestedFolder["folder_id"] = f.UUID;
+                    requestedFolder["owner_id"] = f.OwnerID;
+                    requestedFolder["fetch_folders"] = fetchFolders;
+                    requestedFolder["fetch_items"] = fetchItems;
+                    requestedFolder["sort_order"] = (int)order;
+
+                    requestedFolders.Add(requestedFolder);
+                }
                 OSDMap req = new OSDMap(1);
                 req["folders"] = requestedFolders;
 
@@ -1678,8 +1700,11 @@ namespace OpenMetaverse
             }
             catch (Exception ex)
             {
-                Logger.Log(string.Format("Failed to fetch inventory descendants for folder id {0}: {1}\n{2}", folderID, ex.Message, ex.StackTrace.ToString()), Helpers.LogLevel.Warning, Client);
-                OnFolderUpdated(new FolderUpdatedEventArgs(folderID, false));
+                Logger.Log(string.Format("Failed to fetch inventory descendants: {0}\n{1}", ex.Message, ex.StackTrace.ToString()), Helpers.LogLevel.Warning, Client);
+                foreach (var f in batch)
+                {
+                    OnFolderUpdated(new FolderUpdatedEventArgs(f.UUID, false));
+                }
                 return;
             }
         }
