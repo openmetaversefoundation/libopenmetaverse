@@ -724,7 +724,7 @@ namespace OpenMetaverse
         public void AddAllowedGroup(UUID groupID, bool allEstates)
         {
             List<string> listParams = new List<string>();
-            uint flag = allEstates ? (uint)EstateAccessDelta.AddGroupAllowedAllEstates : (uint)EstateAccessDelta.AddAllowedAllEstates;
+            uint flag = allEstates ? (uint)EstateAccessDelta.AddGroupAllowedAllEstates : (uint)EstateAccessDelta.AddGroupAsAllowed;
             listParams.Add(Client.Self.AgentID.ToString());
             listParams.Add(flag.ToString());
             listParams.Add(groupID.ToString());
