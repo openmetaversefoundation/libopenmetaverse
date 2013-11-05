@@ -34,12 +34,14 @@ namespace OpenMetaverse
     /// A two-dimensional vector with floating-point values
     /// </summary>
     [Serializable]
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Explicit)]
     public struct Vector2 : IComparable<Vector2>, IEquatable<Vector2>
     {
         /// <summary>X value</summary>
+        [FieldOffset(0)]
         public float X;
         /// <summary>Y value</summary>
+        [FieldOffset(sizeof(float))]
         public float Y;
 
         #region Constructors

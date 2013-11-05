@@ -73,6 +73,8 @@ namespace OpenMetaverse
         {
             Data = data;
             bytePos = pos;
+            Data[bytePos] = 0;
+            bitPos = 0;
         }
 
         /// <summary>
@@ -322,6 +324,53 @@ namespace OpenMetaverse
 
         private void PackBitArray(byte[] data, int totalCount)
         {
+            if (totalCount <= 0)
+                return;
+
+            int curBytePos = 0;
+            int count = totalCount;
+
+            if (bitPos == 0)
+            {
+                while (count >= 8)
+                {
+                    Data[bytePos++] = data[curBytePos++];
+                    count -= 8;
+                }
+                if (count > 0)
+                    Data[bytePos] = (byte)(data[curBytePos++] << 8 - count);
+            }
+            else
+            {
+                int nshift = 8 - bitPos;
+                ushort stmp;
+                while (count >= 8)
+                {
+                    stmp = (ushort)(data[curBytePos++] << nshift);
+                    Data[bytePos++] |= (byte)(stmp >> 8);
+                    Data[bytePos] = (byte)stmp;
+                    count -= 8;
+                }
+                if (count > 0)
+                {
+                    stmp = (ushort)(data[curBytePos++] << (nshift + 8 - count));
+                    Data[bytePos] |= (byte)(stmp >> 8);
+                    if (count >= nshift)
+                    {
+                        bytePos++;
+                        if (count > nshift)
+                            Data[bytePos] = (byte)stmp;
+                    }
+                }
+            }
+
+            bitPos = (bitPos + totalCount) & 0x07;
+            if (bitPos == 0 && bytePos < Data.Length)
+                Data[bytePos] = 0;
+
+
+            //                if (weAreBigEndian)
+/*
             int count = 0;
             int curBytePos = 0;
             int curBitPos = 0;
@@ -364,6 +413,7 @@ namespace OpenMetaverse
                     }
                 }
             }
+    */
         }
 
         private byte[] UnpackBitsArray(int totalCount)

@@ -94,7 +94,10 @@ namespace OpenMetaverse.Assets
                     if (stri == 0)
                     {
                         string versionstring = lines[stri];
-                        version = Int32.Parse(versionstring.Split(' ')[2]);
+                        if (versionstring.Split(' ').Length == 1)
+                            version = Int32.Parse(versionstring);
+                        else
+                            version = Int32.Parse(versionstring.Split(' ')[2]);
                         if (version != 22 && version != 18 && version != 16 && version != 15)
                             return false;
                     }
