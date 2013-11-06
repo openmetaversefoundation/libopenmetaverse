@@ -33,7 +33,7 @@ namespace OpenMetaverse
     [StructLayout(LayoutKind.Explicit)]
     public struct Matrix4 : IEquatable<Matrix4>
     {
-        [FieldOffset(sizeof(float))]
+        [FieldOffset(0)]
         public float M11;
         [FieldOffset(sizeof(float))]
         public float M12;
