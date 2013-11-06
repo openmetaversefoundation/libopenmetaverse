@@ -89,7 +89,13 @@ namespace OpenMetaverse
                 /// <summary>Particles emit a glow</summary>
                 Emissive = 0x100,
                 /// <summary>used for point/grab/touch</summary>
-                Beam = 0x200
+                Beam = 0x200,
+                /// <summary>continuous ribbon particle</summary>
+                Ribbon = 0x400,
+                /// <summary>particle data contains glow</summary>
+                DataGlow = 0x10000,
+                /// <summary>particle data contains blend functions</summary>
+                DataBlend = 0x20000,
             }
 
             /// <summary>
@@ -107,6 +113,19 @@ namespace OpenMetaverse
                 UseNewAngle = 0x02
             }
 
+            public enum BlendFunc : byte
+            {
+                One = 0,
+                Zero = 1,
+                DestColor = 2,
+                SourceColor = 3,
+                OneMinusDestColor = 4,
+                OneMinusSourceColor = 5,
+                DestAlpha = 6,
+                SourceAlpha = 7,
+                OneMinusDestAlpha = 8,
+                OneMinusSourceAlpha = 9,
+            }
 
             public uint CRC;
             /// <summary>Particle Flags</summary>
@@ -170,6 +189,42 @@ namespace OpenMetaverse
             /// <remarks>Minimum value is 0, maximum value is 4</remarks>
             public float PartEndScaleY;
 
+            /// <summary>A <see langword="float"/> that represents the start glow value</summary>
+            /// <remarks>Minimum value is 0, maximum value is 1</remarks>
+            public float PartStartGlow;
+            /// <summary>A <see langword="float"/> that represents the end glow value</summary>
+            /// <remarks>Minimum value is 0, maximum value is 1</remarks>
+            public float PartEndGlow;
+
+            /// <summary>OpenGL blend function to use at particle source</summary>
+            public byte BlendFuncSource;
+            /// <summary>OpenGL blend function to use at particle destination</summary>
+            public byte BlendFuncDest;
+
+            public const byte MaxDataBlockSize = 98;
+            public const byte LegacyDataBlockSize = 86;
+            public const byte SysDataSize = 68;
+            public const byte PartDataSize = 18;
+
+            /// <summary>
+            /// Can this particle system be packed in a legacy compatible way
+            /// </summary>
+            /// <returns>True if the particle system doesn't use new particle system features</returns>
+            public bool IsLegacyCompatible()
+            {
+                return !HasGlow() && !HasBlendFunc();
+            }
+
+            public bool HasGlow()
+            {
+                return PartStartGlow > 0f || PartEndGlow > 0f;
+            }
+
+            public bool HasBlendFunc()
+            {
+                return BlendFuncSource != (byte)BlendFunc.SourceAlpha || BlendFuncDest != (byte)BlendFunc.OneMinusSourceAlpha;
+            }
+
             /// <summary>
             /// Decodes a byte[] array into a ParticleSystem Object
             /// </summary>
@@ -177,66 +232,103 @@ namespace OpenMetaverse
             /// <param name="pos">Start position for BitPacker</param>
             public ParticleSystem(byte[] data, int pos)
             {
-                // TODO: Not sure exactly how many bytes we need here, so partial 
-                // (truncated) data will cause an exception to be thrown
-                if (data.Length > 0)
-                {
-                    BitPack pack = new BitPack(data, pos);
+                PartStartGlow = 0f;
+                PartEndGlow = 0f;
+                BlendFuncSource = (byte)BlendFunc.SourceAlpha;
+                BlendFuncDest = (byte)BlendFunc.OneMinusSourceAlpha;
 
-                    CRC = pack.UnpackUBits(32);
-                    PartFlags = pack.UnpackUBits(32);
-                    Pattern = (SourcePattern)pack.UnpackByte();
-                    MaxAge = pack.UnpackFixed(false, 8, 8);
-                    StartAge = pack.UnpackFixed(false, 8, 8);
-                    InnerAngle = pack.UnpackFixed(false, 3, 5);
-                    OuterAngle = pack.UnpackFixed(false, 3, 5);
-                    BurstRate = pack.UnpackFixed(false, 8, 8);
-                    BurstRadius = pack.UnpackFixed(false, 8, 8);
-                    BurstSpeedMin = pack.UnpackFixed(false, 8, 8);
-                    BurstSpeedMax = pack.UnpackFixed(false, 8, 8);
-                    BurstPartCount = pack.UnpackByte();
-                    float x = pack.UnpackFixed(true, 8, 7);
-                    float y = pack.UnpackFixed(true, 8, 7);
-                    float z = pack.UnpackFixed(true, 8, 7);
-                    AngularVelocity = new Vector3(x, y, z);
-                    x = pack.UnpackFixed(true, 8, 7);
-                    y = pack.UnpackFixed(true, 8, 7);
-                    z = pack.UnpackFixed(true, 8, 7);
-                    PartAcceleration = new Vector3(x, y, z);
-                    Texture = pack.UnpackUUID();
-                    Target = pack.UnpackUUID();
+                CRC = PartFlags = 0;
+                Pattern = SourcePattern.None;
+                MaxAge = StartAge = InnerAngle = OuterAngle = BurstRate = BurstRadius = BurstSpeedMin =
+                    BurstSpeedMax = 0.0f;
+                BurstPartCount = 0;
+                AngularVelocity = PartAcceleration = Vector3.Zero;
+                Texture = Target = UUID.Zero;
+                PartDataFlags = ParticleDataFlags.None;
+                PartMaxAge = 0.0f;
+                PartStartColor = PartEndColor = Color4.Black;
+                PartStartScaleX = PartStartScaleY = PartEndScaleX = PartEndScaleY = 0.0f;
 
-                    PartDataFlags = (ParticleDataFlags)pack.UnpackUBits(32);
-                    PartMaxAge = pack.UnpackFixed(false, 8, 8);
-                    byte r = pack.UnpackByte();
-                    byte g = pack.UnpackByte();
-                    byte b = pack.UnpackByte();
-                    byte a = pack.UnpackByte();
-                    PartStartColor = new Color4(r, g, b, a);
-                    r = pack.UnpackByte();
-                    g = pack.UnpackByte();
-                    b = pack.UnpackByte();
-                    a = pack.UnpackByte();
-                    PartEndColor = new Color4(r, g, b, a);
-                    PartStartScaleX = pack.UnpackFixed(false, 3, 5);
-                    PartStartScaleY = pack.UnpackFixed(false, 3, 5);
-                    PartEndScaleX = pack.UnpackFixed(false, 3, 5);
-                    PartEndScaleY = pack.UnpackFixed(false, 3, 5);
-                }
-                else
+                int size = data.Length - pos;
+                BitPack pack = new BitPack(data, pos);
+
+                if (size == LegacyDataBlockSize)
                 {
-                    CRC = PartFlags = 0;
-                    Pattern = SourcePattern.None;
-                    MaxAge = StartAge = InnerAngle = OuterAngle = BurstRate = BurstRadius = BurstSpeedMin =
-                        BurstSpeedMax = 0.0f;
-                    BurstPartCount = 0;
-                    AngularVelocity = PartAcceleration = Vector3.Zero;
-                    Texture = Target = UUID.Zero;
-                    PartDataFlags = ParticleDataFlags.None;
-                    PartMaxAge = 0.0f;
-                    PartStartColor = PartEndColor = Color4.Black;
-                    PartStartScaleX = PartStartScaleY = PartEndScaleX = PartEndScaleY = 0.0f;
+                    UnpackSystem(ref pack);
+                    UnpackLegacyData(ref pack);
                 }
+                else if (size > LegacyDataBlockSize && size <= MaxDataBlockSize)
+                {
+                    int sysSize = pack.UnpackBits(32);
+                    if (sysSize != SysDataSize) return; // unkown particle system data size
+                    UnpackSystem(ref pack);
+                    int dataSize = pack.UnpackBits(32);
+                    UnpackLegacyData(ref pack);
+
+
+                    if ((PartDataFlags & ParticleDataFlags.DataGlow) == ParticleDataFlags.DataGlow)
+                    {
+                        if (pack.Data.Length - pack.BytePos < 2) return;
+                        uint glow = pack.UnpackUBits(8);
+                        PartStartGlow = glow / 255f;
+                        glow = pack.UnpackUBits(8);
+                        PartEndGlow = glow / 255f;
+                    }
+
+                    if ((PartDataFlags & ParticleDataFlags.DataBlend) == ParticleDataFlags.DataBlend)
+                    {
+                        if (pack.Data.Length - pack.BytePos < 2) return;
+                        BlendFuncSource = (byte)pack.UnpackUBits(8);
+                        BlendFuncDest = (byte)pack.UnpackUBits(8);
+                    }
+
+                }
+            }
+
+            void UnpackSystem(ref BitPack pack)
+            {
+                CRC = pack.UnpackUBits(32);
+                PartFlags = pack.UnpackUBits(32);
+                Pattern = (SourcePattern)pack.UnpackByte();
+                MaxAge = pack.UnpackFixed(false, 8, 8);
+                StartAge = pack.UnpackFixed(false, 8, 8);
+                InnerAngle = pack.UnpackFixed(false, 3, 5);
+                OuterAngle = pack.UnpackFixed(false, 3, 5);
+                BurstRate = pack.UnpackFixed(false, 8, 8);
+                BurstRadius = pack.UnpackFixed(false, 8, 8);
+                BurstSpeedMin = pack.UnpackFixed(false, 8, 8);
+                BurstSpeedMax = pack.UnpackFixed(false, 8, 8);
+                BurstPartCount = pack.UnpackByte();
+                float x = pack.UnpackFixed(true, 8, 7);
+                float y = pack.UnpackFixed(true, 8, 7);
+                float z = pack.UnpackFixed(true, 8, 7);
+                AngularVelocity = new Vector3(x, y, z);
+                x = pack.UnpackFixed(true, 8, 7);
+                y = pack.UnpackFixed(true, 8, 7);
+                z = pack.UnpackFixed(true, 8, 7);
+                PartAcceleration = new Vector3(x, y, z);
+                Texture = pack.UnpackUUID();
+                Target = pack.UnpackUUID();
+            }
+
+            void UnpackLegacyData(ref BitPack pack)
+            {
+                PartDataFlags = (ParticleDataFlags)pack.UnpackUBits(32);
+                PartMaxAge = pack.UnpackFixed(false, 8, 8);
+                byte r = pack.UnpackByte();
+                byte g = pack.UnpackByte();
+                byte b = pack.UnpackByte();
+                byte a = pack.UnpackByte();
+                PartStartColor = new Color4(r, g, b, a);
+                r = pack.UnpackByte();
+                g = pack.UnpackByte();
+                b = pack.UnpackByte();
+                a = pack.UnpackByte();
+                PartEndColor = new Color4(r, g, b, a);
+                PartStartScaleX = pack.UnpackFixed(false, 3, 5);
+                PartStartScaleY = pack.UnpackFixed(false, 3, 5);
+                PartEndScaleX = pack.UnpackFixed(false, 3, 5);
+                PartEndScaleY = pack.UnpackFixed(false, 3, 5);
             }
 
             /// <summary>
@@ -245,9 +337,47 @@ namespace OpenMetaverse
             /// <returns>Byte array</returns>
             public byte[] GetBytes()
             {
-                byte[] bytes = new byte[86];
+                int size = LegacyDataBlockSize;
+                if (!IsLegacyCompatible()) size += 8; // two new ints for size
+                if (HasGlow()) size += 2; // two bytes for start and end glow
+                if (HasBlendFunc()) size += 2; // two bytes for start end end blend function
+
+                byte[] bytes = new byte[size];
                 BitPack pack = new BitPack(bytes, 0);
 
+                if (IsLegacyCompatible())
+                {
+                    PackSystemBytes(ref pack);
+                    PackLegacyData(ref pack);
+                }
+                else
+                {
+                    pack.PackBits(SysDataSize, 32);
+                    PackSystemBytes(ref pack);
+                    int partSize = PartDataSize;
+                    if (HasGlow()) partSize += 2; // two bytes for start and end glow
+                    if (HasBlendFunc()) partSize += 2; // two bytes for start end end blend function
+                    pack.PackBits(partSize, 32);
+                    PackLegacyData(ref pack);
+
+                    if (HasGlow())
+                    {
+                        pack.PackBits((byte)(PartStartGlow * 255f), 8);
+                        pack.PackBits((byte)(PartEndGlow * 255f), 8);
+                    }
+
+                    if (HasBlendFunc())
+                    {
+                        pack.PackBits(BlendFuncSource, 8);
+                        pack.PackBits(BlendFuncDest, 8);
+                    }
+                }
+
+                return bytes;
+            }
+
+            void PackSystemBytes(ref BitPack pack)
+            {
                 pack.PackBits(CRC, 32);
                 pack.PackBits((uint)PartFlags, 32);
                 pack.PackBits((uint)Pattern, 8);
@@ -268,7 +398,10 @@ namespace OpenMetaverse
                 pack.PackFixed(PartAcceleration.Z, true, 8, 7);
                 pack.PackUUID(Texture);
                 pack.PackUUID(Target);
+            }
 
+            void PackLegacyData(ref BitPack pack)
+            {
                 pack.PackBits((uint)PartDataFlags, 32);
                 pack.PackFixed(PartMaxAge, false, 8, 8);
                 pack.PackColor(PartStartColor);
@@ -277,8 +410,6 @@ namespace OpenMetaverse
                 pack.PackFixed(PartStartScaleY, false, 3, 5);
                 pack.PackFixed(PartEndScaleX, false, 3, 5);
                 pack.PackFixed(PartEndScaleY, false, 3, 5);
-
-                return bytes;
             }
 
             public OSD GetOSD()
@@ -301,6 +432,25 @@ namespace OpenMetaverse
                 map["part_acceleration"] = OSD.FromVector3(PartAcceleration);
                 map["texture"] = OSD.FromUUID(Texture);
                 map["target"] = OSD.FromUUID(Target);
+
+                map["part_data_flags"] = (uint)PartDataFlags;
+                map["part_max_age"] = PartMaxAge;
+                map["part_start_color"] = PartStartColor;
+                map["part_end_color"] = PartEndColor;
+                map["part_start_scale"] = new Vector3(PartStartScaleX, PartStartScaleY, 0f);
+                map["part_end_scale"] = new Vector3(PartEndScaleX, PartEndScaleY, 0f);
+
+                if (HasGlow())
+                {
+                    map["part_start_glow"] = PartStartGlow;
+                    map["part_end_glow"] = PartEndGlow;
+                }
+
+                if (HasBlendFunc())
+                {
+                    map["blendfunc_source"] = BlendFuncSource;
+                    map["blendfunc_dest"] = BlendFuncDest;
+                }
 
                 return map;
             }
@@ -328,6 +478,29 @@ namespace OpenMetaverse
                     partSys.PartAcceleration = map["part_acceleration"].AsVector3();
                     partSys.Texture = map["texture"].AsUUID();
                     partSys.Target = map["target"].AsUUID();
+
+                    partSys.PartDataFlags = (ParticleDataFlags)map["part_data_flags"].AsUInteger();
+                    partSys.PartMaxAge = map["part_max_age"];
+                    partSys.PartStartColor = map["part_start_color"];
+                    partSys.PartEndColor = map["part_end_color"];
+                    Vector3 ss = map["part_start_scale"];
+                    partSys.PartStartScaleX = ss.X;
+                    partSys.PartStartScaleY = ss.Y;
+                    Vector3 es = map["part_end_scale"];
+                    partSys.PartEndScaleX = es.X;
+                    partSys.PartEndScaleY = es.Y;
+
+                    if (map.ContainsKey("part_start_glow"))
+                    {
+                        partSys.PartStartGlow = map["part_start_glow"];
+                        partSys.PartEndGlow = map["part_end_glow"];
+                    }
+
+                    if (map.ContainsKey("blendfunc_source"))
+                    {
+                        partSys.BlendFuncSource = (byte)map["blendfunc_source"].AsUInteger();
+                        partSys.BlendFuncDest = (byte)map["blendfunc_dest"].AsUInteger();
+                    }
                 }
 
                 return partSys;
