@@ -352,6 +352,9 @@ namespace OpenMetaverse
                 }
                 else
                 {
+                    if (HasGlow()) PartDataFlags |= ParticleDataFlags.DataGlow;
+                    if (HasBlendFunc()) PartDataFlags |= ParticleDataFlags.DataBlend;
+
                     pack.PackBits(SysDataSize, 32);
                     PackSystemBytes(ref pack);
                     int partSize = PartDataSize;
