@@ -29,7 +29,11 @@ using System.IO;
 using System.IO.Compression;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
+#if OPENSIM_SOURCE
+using ComponentAce.Compression.Libs.zlib;
+#else
 using zlib;
+#endif
 
 namespace OpenMetaverse.Assets
 {
