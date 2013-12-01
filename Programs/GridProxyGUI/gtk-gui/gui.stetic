@@ -789,7 +789,7 @@ http://login.orgrid.org/</property>
                       <widget class="Gtk.Notebook" id="tabsRequst1">
                         <property name="MemberName" />
                         <property name="CanFocus">True</property>
-                        <property name="CurrentPage">2</property>
+                        <property name="CurrentPage">0</property>
                         <child>
                           <widget class="Gtk.ScrolledWindow" id="GtkScrolledWindow3">
                             <property name="MemberName" />
@@ -846,7 +846,7 @@ http://login.orgrid.org/</property>
                             <property name="MemberName" />
                             <property name="ShadowType">In</property>
                             <child>
-                              <widget class="Gtk.TextView" id="txtResponseRaw1">
+                              <widget class="Gtk.TextView" id="txtResponseNotation">
                                 <property name="MemberName" />
                                 <property name="CanFocus">True</property>
                                 <property name="ShowScrollbars">True</property>

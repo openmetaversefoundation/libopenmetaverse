@@ -37,6 +37,16 @@ public partial class MainWindow : Gtk.Window
         tabsMain.Page = 1;
         mainSplit.Position = 600;
         txtSummary.ModifyFont(Pango.FontDescription.FromString("monospace bold 9"));
+
+        txtRequest.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
+        txtRequestRaw.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
+        txtRequestNotation.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
+
+        txtResponse.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
+        txtResponseRaw.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
+        txtResponseNotation.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
+        
+        
         sessionLogScroller.Add(messages = new MessageScroller());
         messages.CursorChanged += messages_CursorChanged;
         StatsTimer = new Timer(1000.0);
@@ -310,7 +320,7 @@ public partial class MainWindow : Gtk.Window
     {
         if (UDPFilterItems.Count > 0) return;
 
-        UDPFilterItems["Login Request"] = new FilterItem() { Enabled = false, Name = "Login Request", Type = ItemType.Login };
+        UDPFilterItems["Login Request"] = new FilterItem() { Enabled = true, Name = "Login Request", Type = ItemType.Login };
         UDPFilterItems["Login Response"] = new FilterItem() { Enabled = true, Name = "Login Response", Type = ItemType.Login };
         foreach (string name in Enum.GetNames(typeof(PacketType)))
         {
@@ -386,7 +396,13 @@ public partial class MainWindow : Gtk.Window
             var item = model.GetValue(iter, 0) as Session;
             if (item != null)
             {
-                OpenMetaverse.Logger.Log("Selected: " + item.Name, OpenMetaverse.Helpers.LogLevel.Info);
+                txtRequest.Buffer.Text = item.ToPrettyString(GridProxy.Direction.Outgoing);
+                txtRequestRaw.Buffer.Text = item.ToRawString(GridProxy.Direction.Outgoing);
+                txtRequestNotation.Buffer.Text = item.ToStringNotation(GridProxy.Direction.Outgoing);
+
+                txtResponse.Buffer.Text = item.ToPrettyString(GridProxy.Direction.Incoming);
+                txtResponseRaw.Buffer.Text = item.ToRawString(GridProxy.Direction.Incoming);
+                txtResponseNotation.Buffer.Text = item.ToStringNotation(GridProxy.Direction.Incoming);
             }
         }
     }

@@ -89,7 +89,7 @@ public partial class MainWindow
 	private global::Gtk.TextView txtResponseRaw;
 	private global::Gtk.Label label11;
 	private global::Gtk.ScrolledWindow GtkScrolledWindow5;
-	private global::Gtk.TextView txtResponseRaw1;
+	private global::Gtk.TextView txtResponseNotation;
 	private global::Gtk.Label label12;
 	private global::Gtk.Label label10;
 
@@ -626,7 +626,7 @@ public partial class MainWindow
 		this.tabsRequst1 = new global::Gtk.Notebook ();
 		this.tabsRequst1.CanFocus = true;
 		this.tabsRequst1.Name = "tabsRequst1";
-		this.tabsRequst1.CurrentPage = 2;
+		this.tabsRequst1.CurrentPage = 0;
 		// Container child tabsRequst1.Gtk.Notebook+NotebookChild
 		this.GtkScrolledWindow3 = new global::Gtk.ScrolledWindow ();
 		this.GtkScrolledWindow3.Name = "GtkScrolledWindow3";
@@ -668,11 +668,11 @@ public partial class MainWindow
 		this.GtkScrolledWindow5.Name = "GtkScrolledWindow5";
 		this.GtkScrolledWindow5.ShadowType = ((global::Gtk.ShadowType)(1));
 		// Container child GtkScrolledWindow5.Gtk.Container+ContainerChild
-		this.txtResponseRaw1 = new global::Gtk.TextView ();
-		this.txtResponseRaw1.CanFocus = true;
-		this.txtResponseRaw1.Name = "txtResponseRaw1";
-		this.txtResponseRaw1.Editable = false;
-		this.GtkScrolledWindow5.Add (this.txtResponseRaw1);
+		this.txtResponseNotation = new global::Gtk.TextView ();
+		this.txtResponseNotation.CanFocus = true;
+		this.txtResponseNotation.Name = "txtResponseNotation";
+		this.txtResponseNotation.Editable = false;
+		this.GtkScrolledWindow5.Add (this.txtResponseNotation);
 		this.tabsRequst1.Add (this.GtkScrolledWindow5);
 		global::Gtk.Notebook.NotebookChild w59 = ((global::Gtk.Notebook.NotebookChild)(this.tabsRequst1 [this.GtkScrolledWindow5]));
 		w59.Position = 2;
