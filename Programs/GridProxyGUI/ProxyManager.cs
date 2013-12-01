@@ -36,7 +36,7 @@ using OpenMetaverse.Packets;
 using OpenMetaverse.StructuredData;
 using OpenMetaverse;
 
-namespace WinGridProxy
+namespace GridProxyGUI
 {
     public class ProxyManager
     {
@@ -199,6 +199,23 @@ namespace WinGridProxy
                 }
             }
             return false;
+        }
+
+        private static PacketType PacketTypeFromName(string name)
+        {
+            Type packetTypeType = typeof(PacketType);
+            System.Reflection.FieldInfo f = packetTypeType.GetField(name);
+            if (f == null)
+            {//throw new ArgumentException("Bad packet type");
+                return PacketType.Error;
+            }
+
+            return (PacketType)Enum.ToObject(packetTypeType, (int)f.GetValue(packetTypeType));
+        }
+
+        internal void AddUDPDelegate(string packetType, bool add)
+        {
+            AddUDPDelegate(PacketTypeFromName(packetType), add);
         }
 
         internal void AddUDPDelegate(PacketType packetType, bool add)

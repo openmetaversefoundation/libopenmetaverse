@@ -5,12 +5,36 @@ using GridProxyGUI;
 
 namespace GridProxyGUI
 {
-    public class UDPFilterItem
+
+    public enum ItemType : int
     {
-        public bool Enabled;
-        public string Name;
+        Unknown = 0,
+        Login,
+        UDP,
+        Cap,
+        EQ
     }
 
+    public class FilterItem
+    {
+        public delegate void FilterItemChangedDelegate(object sender, EventArgs e);
+        public event FilterItemChangedDelegate FilterItemChanged;
+        bool enabled;
+        public bool Enabled
+        {
+            get { return enabled; }
+            set
+            {
+                enabled = value;
+                if (FilterItemChanged != null)
+                {
+                    FilterItemChanged(this, EventArgs.Empty);
+                }
+            }
+        }
+        public string Name;
+        public ItemType Type;
+    }
 
     public class FilterScroller : ScrolledWindow
     {
@@ -56,7 +80,7 @@ namespace GridProxyGUI
             TreeIter iter;
             if (store.GetIterFromString(out iter, args.Path))
             {
-                UDPFilterItem item = store.GetValue(iter, 0) as UDPFilterItem;
+                FilterItem item = store.GetValue(iter, 0) as FilterItem;
                 if (null != item)
                 {
                     item.Enabled = !item.Enabled;
@@ -67,7 +91,7 @@ namespace GridProxyGUI
 
         void renderTextCell(TreeViewColumn column, CellRenderer cell, TreeModel model, TreeIter iter)
         {
-            var item = model.GetValue(iter, 0) as UDPFilterItem;
+            var item = model.GetValue(iter, 0) as FilterItem;
             if (item != null)
             {
                 ((CellRendererText)cell).Text = item.Name;
@@ -76,7 +100,7 @@ namespace GridProxyGUI
 
         void renderToggleCell(TreeViewColumn column, CellRenderer cell, TreeModel model, TreeIter iter)
         {
-            var item = model.GetValue(iter, 0) as UDPFilterItem;
+            var item = model.GetValue(iter, 0) as FilterItem;
             if (item != null)
             {
                 ((CellRendererToggle)cell).Active = item.Enabled;

@@ -3,16 +3,30 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using Gtk;
 using GridProxyGUI;
-using WinGridProxy;
 using OpenMetaverse.Packets;
+using System.Timers;
 
 public partial class MainWindow : Gtk.Window
 {
     ProxyManager proxy = null;
-    ConcurrentDictionary<string, UDPFilterItem> UDPFilterItems = new ConcurrentDictionary<string, UDPFilterItem>();
-    ConcurrentDictionary<string, UDPFilterItem> CapFilterItems = new ConcurrentDictionary<string, UDPFilterItem>();
+    ConcurrentDictionary<string, FilterItem> UDPFilterItems = new ConcurrentDictionary<string, FilterItem>();
+    ConcurrentDictionary<string, FilterItem> CapFilterItems = new ConcurrentDictionary<string, FilterItem>();
     ListStore udpStore, capStore;
     FilterScroller capScroller;
+    MessageScroller messages;
+
+    // stats tracking
+    int PacketCounter;
+    int CapsInCounter;
+    int CapsInBytes;
+    int CapsOutCounter;
+    int CapsOutBytes;
+    int PacketsInCounter;
+    int PacketsInBytes;
+    int PacketsOutCounter;
+    int PacketsOutBytes;
+
+    Timer StatsTimer;
 
     public MainWindow()
         : base(Gtk.WindowType.Toplevel)
@@ -22,12 +36,51 @@ public partial class MainWindow : Gtk.Window
         tabsMain.Page = 1;
         mainSplit.Position = 600;
         txtSummary.ModifyFont(Pango.FontDescription.FromString("monospace bold 9"));
+        sessionLogScroller.Add(messages = new MessageScroller());
+
+        StatsTimer = new Timer(1000.0);
+        StatsTimer.Elapsed += StatsTimer_Elapsed;
+        StatsTimer.Enabled = true;
 
         ProxyLogger.Init();
 
+        ProxyManager.OnPacketLog += ProxyManager_OnPacketLog;
         ProxyManager.OnCapabilityAdded += new ProxyManager.CapsAddedHandler(ProxyManager_OnCapabilityAdded);
         ProxyManager.OnEventMessageLog += new ProxyManager.EventQueueMessageHandler(ProxyManager_OnEventMessageLog);
         ProxyManager.OnMessageLog += new ProxyManager.MessageLogHandler(ProxyManager_OnMessageLog);
+    }
+
+    void ProxyManager_OnPacketLog(Packet packet, GridProxy.Direction direction, System.Net.IPEndPoint endpoint)
+    {
+        Application.Invoke((xsender, xe) =>
+        {
+            PacketCounter++;
+
+            if (direction == GridProxy.Direction.Incoming)
+            {
+                PacketsInCounter++;
+                PacketsInBytes += packet.Length;
+            }
+            else
+            {
+                PacketsOutCounter++;
+                PacketsOutBytes += packet.Length;
+            }
+
+            SessionPacket sessionPacket = new SessionPacket(packet, direction, endpoint,
+                PacketDecoder.InterpretOptions(packet.Header) + " Seq: " + packet.Header.Sequence.ToString() + " Freq:" + packet.Header.Frequency.ToString());
+
+            sessionPacket.Columns = new string[] { PacketCounter.ToString(), sessionPacket.TimeStamp.ToString("HH:mm:ss.fff"), sessionPacket.Protocol, sessionPacket.Name, sessionPacket.Length.ToString(), sessionPacket.Host, sessionPacket.ContentType };
+            messages.AddSession(sessionPacket);
+        });
+    }
+
+    void StatsTimer_Elapsed(object sender, ElapsedEventArgs e)
+    {
+        Application.Invoke((xsender, xe) =>
+        {
+
+        });
     }
 
     void ProxyManager_OnCapabilityAdded(GridProxy.CapInfo cap)
@@ -36,12 +89,14 @@ public partial class MainWindow : Gtk.Window
         {
             if (null == capStore)
             {
-                capStore = new ListStore(typeof(UDPFilterItem));
+                capStore = new ListStore(typeof(FilterItem));
             }
 
             if (!CapFilterItems.ContainsKey(cap.CapType))
             {
-                UDPFilterItem item = new UDPFilterItem() { Enabled = true, Name = cap.CapType };
+                FilterItem item = new FilterItem() { Name = cap.CapType, Type = ItemType.Cap };
+                item.FilterItemChanged += item_FilterItemChanged;
+                item.Enabled = true;
                 CapFilterItems[item.Name] = item;
                 capStore.AppendValues(item);
             }
@@ -59,29 +114,95 @@ public partial class MainWindow : Gtk.Window
         {
             if (null == capStore)
             {
-                capStore = new ListStore(typeof(UDPFilterItem));
-            }
-
-            if (!CapFilterItems.ContainsKey(req.Info.CapType))
-            {
-                UDPFilterItem item = new UDPFilterItem() { Enabled = true, Name = req.Info.CapType };
-                CapFilterItems[item.Name] = item;
-                capStore.AppendValues(item);
-            }
-            else
-            {
-                ProxyManager_OnMessageLog(req, GridProxy.CapsStage.Response);
+                capStore = new ListStore(typeof(FilterItem));
             }
 
             if (null == capScroller)
             {
                 capScroller = new FilterScroller(containerFilterCap, capStore);
             }
+
+            if (!CapFilterItems.ContainsKey(req.Info.CapType))
+            {
+                FilterItem item = new FilterItem() { Enabled = true, Name = req.Info.CapType, Type = ItemType.EQ };
+                item.FilterItemChanged += item_FilterItemChanged;
+                CapFilterItems[item.Name] = item;
+                capStore.AppendValues(item);
+            }
+
+            ProxyManager_OnMessageLog(req, GridProxy.CapsStage.Response);
         });
     }
 
     void ProxyManager_OnMessageLog(GridProxy.CapsRequest req, GridProxy.CapsStage stage)
     {
+        Application.Invoke((sender, e) =>
+        {
+            if (CapFilterItems.ContainsKey(req.Info.CapType))
+            {
+                var filter = CapFilterItems[req.Info.CapType];
+                if (!filter.Enabled) return;
+
+                PacketCounter++;
+
+                int size = 0;
+                string contentType = String.Empty;
+                if (req.RawRequest != null)
+                {
+                    size += req.RawRequest.Length;
+                    contentType = req.RequestHeaders.Get("Content-Type");
+                }
+                if (req.RawResponse != null)
+                {
+                    size += req.RawResponse.Length;
+                    contentType = req.ResponseHeaders.Get("Content-Type");
+                }
+
+                GridProxy.Direction direction;
+                if (stage == GridProxy.CapsStage.Request)
+                {
+                    CapsOutCounter++;
+                    CapsOutBytes += req.Request.ToString().Length;
+                    direction = GridProxy.Direction.Outgoing;
+                }
+                else
+                {
+                    CapsInCounter++;
+                    CapsInBytes += req.Response.ToString().Length;
+                    direction = GridProxy.Direction.Incoming;
+                }
+
+                string proto = filter.Type.ToString();
+
+                Session capsSession = null;
+                if (filter.Type == ItemType.Cap)
+                {
+                    capsSession = new SessionCaps(req.RawRequest, req.RawResponse, req.RequestHeaders,
+                    req.ResponseHeaders, direction, req.Info.URI, req.Info.CapType, proto, req.FullUri);
+                }
+                else
+                {
+                    capsSession = new SessionEvent(req.RawResponse, req.ResponseHeaders, req.Info.URI, req.Info.CapType, proto);
+                }
+
+                capsSession.Columns = new string[] { PacketCounter.ToString(), capsSession.TimeStamp.ToString("HH:mm:ss.fff"), capsSession.Protocol, capsSession.Name, capsSession.Length.ToString(), capsSession.Host, capsSession.ContentType };
+                messages.AddSession(capsSession);
+
+            }
+        });
+    }
+
+    void item_FilterItemChanged(object sender, EventArgs e)
+    {
+        FilterItem item = (FilterItem)sender;
+        if (item.Type == ItemType.Cap)
+        {
+            proxy.AddCapsDelegate(item.Name, item.Enabled);
+        }
+        else if (item.Type == ItemType.UDP)
+        {
+            proxy.AddUDPDelegate(item.Name, item.Enabled);
+        }
     }
 
     void Logger_OnLogLine(object sender, LogEventArgs e)
@@ -149,14 +270,15 @@ public partial class MainWindow : Gtk.Window
     void InitUDPFilters()
     {
         if (UDPFilterItems.Count > 0) return;
-    
-        UDPFilterItems["Login Request"] = new UDPFilterItem() { Enabled = false, Name = "Login Request" };
-        UDPFilterItems["Login Response"] = new UDPFilterItem() { Enabled = true, Name = "Login Response" };
+
+        UDPFilterItems["Login Request"] = new FilterItem() { Enabled = false, Name = "Login Request", Type = ItemType.Login };
+        UDPFilterItems["Login Response"] = new FilterItem() { Enabled = true, Name = "Login Response", Type = ItemType.Login};
         foreach (string name in Enum.GetNames(typeof(PacketType)))
         {
             if (!string.IsNullOrEmpty(name))
             {
-                UDPFilterItems[name] = new UDPFilterItem() { Enabled = false, Name = name };
+                var item = new FilterItem() { Enabled = false, Name = name, Type = ItemType.UDP };
+                UDPFilterItems[name] = item;
             }
         }
     }
@@ -165,7 +287,7 @@ public partial class MainWindow : Gtk.Window
     {
         InitUDPFilters();
 
-        udpStore = new ListStore(typeof(UDPFilterItem));
+        udpStore = new ListStore(typeof(FilterItem));
         List<string> keys = new List<string>(UDPFilterItems.Keys);
         keys.Sort((a, b) => { return string.Compare(a.ToLower(), b.ToLower()); });
 
@@ -174,11 +296,38 @@ public partial class MainWindow : Gtk.Window
 
         foreach (var key in keys)
         {
-            if (key == "Login Request" || key == "Login Response") continue;
+            UDPFilterItems[key].FilterItemChanged += item_FilterItemChanged;
+            if (UDPFilterItems[key].Type == ItemType.Login) continue;
             udpStore.AppendValues(UDPFilterItems[key]);
         }
 
         new FilterScroller(containerFilterUDP, udpStore);
     }
 
+    void SetAllToggles(bool on, ListStore store)
+    {
+        if (null == store) return;
+
+        store.Foreach((model, path, iter) =>
+        {
+            var item = model.GetValue(iter, 0) as FilterItem;
+            if (null != item)
+            {
+                item.Enabled = on;
+                model.SetValue(iter, 0, item);
+            }
+
+            return false;
+        });
+    }
+
+    protected void OnCbSelectAllUDPToggled(object sender, EventArgs e)
+    {
+        SetAllToggles(cbSelectAllUDP.Active, udpStore);
+    }
+
+    protected void OnCbSelectAllCapToggled(object sender, EventArgs e)
+    {
+        SetAllToggles(cbSelectAllCap.Active, capStore);
+    }
 }

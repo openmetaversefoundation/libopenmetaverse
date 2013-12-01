@@ -92,11 +92,11 @@
     <property name="AllowShrink">True</property>
     <signal name="DeleteEvent" handler="OnDeleteEvent" />
     <child>
-      <widget class="Gtk.VBox" id="vbox1">
+      <widget class="Gtk.VBox" id="vboxMenuMain">
         <property name="MemberName" />
         <property name="Spacing">6</property>
         <child>
-          <widget class="Gtk.HBox" id="hbox1">
+          <widget class="Gtk.HBox" id="hboxMenu">
             <property name="MemberName" />
             <property name="Spacing">6</property>
             <property name="BorderWidth">3</property>
@@ -265,7 +265,7 @@ http://login.orgrid.org/</property>
             <property name="CanFocus">True</property>
             <property name="Position">400</property>
             <child>
-              <widget class="Gtk.ScrolledWindow" id="scrolledwindow1">
+              <widget class="Gtk.ScrolledWindow" id="sessionLogScroller">
                 <property name="MemberName" />
                 <property name="CanFocus">True</property>
                 <property name="ShadowType">In</property>
@@ -355,19 +355,7 @@ http://login.orgrid.org/</property>
                           </packing>
                         </child>
                         <child>
-                          <widget class="Gtk.CheckButton" id="cbAutoCheckCaps">
-                            <property name="MemberName" />
-                            <property name="CanFocus">True</property>
-                            <property name="Label" translatable="yes">Auto Check New Capabilities</property>
-                            <property name="Active">True</property>
-                            <property name="DrawIndicator">True</property>
-                            <property name="HasLabel">True</property>
-                            <property name="UseUnderline">True</property>
-                          </widget>
-                          <packing>
-                            <property name="Position">2</property>
-                            <property name="AutoSize">True</property>
-                          </packing>
+                          <placeholder />
                         </child>
                       </widget>
                       <packing>
@@ -463,6 +451,7 @@ http://login.orgrid.org/</property>
                             <property name="DrawIndicator">True</property>
                             <property name="HasLabel">True</property>
                             <property name="UseUnderline">True</property>
+                            <signal name="Toggled" handler="OnCbSelectAllUDPToggled" />
                           </widget>
                           <packing>
                             <property name="Position">0</property>
@@ -477,6 +466,7 @@ http://login.orgrid.org/</property>
                             <property name="DrawIndicator">True</property>
                             <property name="HasLabel">True</property>
                             <property name="UseUnderline">True</property>
+                            <signal name="Toggled" handler="OnCbSelectAllCapToggled" />
                           </widget>
                           <packing>
                             <property name="Position">1</property>
