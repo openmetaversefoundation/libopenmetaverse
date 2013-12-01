@@ -6,7 +6,7 @@ namespace GridProxyGUI
 {
     internal class MessageScroller : TreeView
     {
-        public static string[] ColumnLabels = { "Counter", "Timestamp", "Protocol", "Type", "Size", "URL", "Content Type" };
+        public static string[] ColumnLabels = { "Nr", "Timestamp", "Protocol", "Type", "Size", "URL", "Content Type" };
         Dictionary<string, int> ColumnMap = new Dictionary<string, int>();
 
         public ListStore Messages;

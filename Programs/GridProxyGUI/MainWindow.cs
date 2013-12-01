@@ -5,6 +5,7 @@ using Gtk;
 using GridProxyGUI;
 using OpenMetaverse.Packets;
 using System.Timers;
+using Nwc.XmlRpc;
 
 public partial class MainWindow : Gtk.Window
 {
@@ -37,13 +38,14 @@ public partial class MainWindow : Gtk.Window
         mainSplit.Position = 600;
         txtSummary.ModifyFont(Pango.FontDescription.FromString("monospace bold 9"));
         sessionLogScroller.Add(messages = new MessageScroller());
-
+        messages.CursorChanged += messages_CursorChanged;
         StatsTimer = new Timer(1000.0);
         StatsTimer.Elapsed += StatsTimer_Elapsed;
         StatsTimer.Enabled = true;
 
         ProxyLogger.Init();
 
+        ProxyManager.OnLoginResponse += ProxyManager_OnLoginResponse;
         ProxyManager.OnPacketLog += ProxyManager_OnPacketLog;
         ProxyManager.OnCapabilityAdded += new ProxyManager.CapsAddedHandler(ProxyManager_OnCapabilityAdded);
         ProxyManager.OnEventMessageLog += new ProxyManager.EventQueueMessageHandler(ProxyManager_OnEventMessageLog);
@@ -61,6 +63,36 @@ public partial class MainWindow : Gtk.Window
             lblCapIn.Text = string.Format("Caps In {0} ({1} bytes)", CapsInCounter, CapsInBytes);
             lblCapOut.Text = string.Format("Caps Out {0} ({1} bytes)", CapsOutCounter, CapsOutBytes);
             lblCapTotal.Text = string.Format("Caps Total {0} ({1} bytes)", CapsInCounter + CapsOutCounter, CapsInBytes + CapsOutBytes);
+
+        });
+    }
+
+    void ProxyManager_OnLoginResponse(object request, GridProxy.Direction direction)
+    {
+        Application.Invoke((xsender, xe) =>
+        {
+            string loginType;
+
+            if (request is XmlRpcRequest)
+            {
+                loginType = "Login Request";
+            }
+            else
+            {
+                loginType = "Login Response";
+            }
+
+            if (UDPFilterItems.ContainsKey(loginType) && UDPFilterItems[loginType].Enabled)
+            {
+                PacketCounter++;
+
+                SessionLogin sessionLogin = new SessionLogin(request, direction, cbLoginURL.ActiveText, request.GetType().Name + " " + loginType);
+
+                sessionLogin.Columns = new string[] { PacketCounter.ToString(), sessionLogin.TimeStamp.ToString("HH:mm:ss.fff"),
+                        sessionLogin.Protocol, sessionLogin.Name, sessionLogin.Length.ToString(), sessionLogin.Host, sessionLogin.ContentType };
+
+                messages.AddSession(sessionLogin);
+            }
 
         });
     }
@@ -279,7 +311,7 @@ public partial class MainWindow : Gtk.Window
         if (UDPFilterItems.Count > 0) return;
 
         UDPFilterItems["Login Request"] = new FilterItem() { Enabled = false, Name = "Login Request", Type = ItemType.Login };
-        UDPFilterItems["Login Response"] = new FilterItem() { Enabled = true, Name = "Login Response", Type = ItemType.Login};
+        UDPFilterItems["Login Response"] = new FilterItem() { Enabled = true, Name = "Login Response", Type = ItemType.Login };
         foreach (string name in Enum.GetNames(typeof(PacketType)))
         {
             if (!string.IsNullOrEmpty(name))
@@ -338,8 +370,25 @@ public partial class MainWindow : Gtk.Window
         SetAllToggles(cbSelectAllCap.Active, capStore);
     }
 
-	protected void OnCbAutoScrollToggled (object sender, EventArgs e)
-	{
+    protected void OnCbAutoScrollToggled(object sender, EventArgs e)
+    {
         messages.AutoScroll = cbAutoScroll.Active;
-	}
+    }
+
+    void messages_CursorChanged(object sender, EventArgs e)
+    {
+        TreeSelection selection = (sender as TreeView).Selection;
+        TreeModel model;
+        TreeIter iter;
+
+        if (selection.GetSelected(out model, out iter))
+        {
+            var item = model.GetValue(iter, 0) as Session;
+            if (item != null)
+            {
+                OpenMetaverse.Logger.Log("Selected: " + item.Name, OpenMetaverse.Helpers.LogLevel.Info);
+            }
+        }
+    }
+
 }

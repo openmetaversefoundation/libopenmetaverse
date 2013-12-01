@@ -70,7 +70,28 @@ public partial class MainWindow
 	private global::Gtk.CheckButton cbSelectAllUDP;
 	private global::Gtk.CheckButton cbSelectAllCap;
 	private global::Gtk.Label label5;
+	private global::Gtk.VBox vboxInspector;
+	private global::Gtk.Notebook tabsRequst;
+	private global::Gtk.ScrolledWindow GtkScrolledWindow;
+	private global::Gtk.TextView txtRequest;
+	private global::Gtk.Label label7;
+	private global::Gtk.ScrolledWindow GtkScrolledWindow1;
+	private global::Gtk.TextView txtRequestRaw;
 	private global::Gtk.Label label6;
+	private global::Gtk.ScrolledWindow GtkScrolledWindow2;
+	private global::Gtk.TextView txtRequestNotation;
+	private global::Gtk.Label label8;
+	private global::Gtk.Notebook tabsRequst1;
+	private global::Gtk.ScrolledWindow GtkScrolledWindow3;
+	private global::Gtk.TextView txtResponse;
+	private global::Gtk.Label label9;
+	private global::Gtk.ScrolledWindow GtkScrolledWindow4;
+	private global::Gtk.TextView txtResponseRaw;
+	private global::Gtk.Label label11;
+	private global::Gtk.ScrolledWindow GtkScrolledWindow5;
+	private global::Gtk.TextView txtResponseRaw1;
+	private global::Gtk.Label label12;
+	private global::Gtk.Label label10;
 
 	protected virtual void Build ()
 	{
@@ -281,8 +302,7 @@ public partial class MainWindow
 		this.tabsMain = new global::Gtk.Notebook ();
 		this.tabsMain.CanFocus = true;
 		this.tabsMain.Name = "tabsMain";
-		this.tabsMain.CurrentPage = 0;
-		this.tabsMain.EnablePopup = true;
+		this.tabsMain.CurrentPage = 2;
 		// Container child tabsMain.Gtk.Notebook+NotebookChild
 		this.vboxLog = new global::Gtk.VBox ();
 		this.vboxLog.Name = "vboxLog";
@@ -535,25 +555,155 @@ public partial class MainWindow
 		this.label5.LabelProp = global::Mono.Unix.Catalog.GetString ("Filters");
 		this.tabsMain.SetTabLabel (this.hboxFilter, this.label5);
 		this.label5.ShowAll ();
+		// Container child tabsMain.Gtk.Notebook+NotebookChild
+		this.vboxInspector = new global::Gtk.VBox ();
+		this.vboxInspector.Name = "vboxInspector";
+		this.vboxInspector.Spacing = 6;
+		// Container child vboxInspector.Gtk.Box+BoxChild
+		this.tabsRequst = new global::Gtk.Notebook ();
+		this.tabsRequst.CanFocus = true;
+		this.tabsRequst.Name = "tabsRequst";
+		this.tabsRequst.CurrentPage = 2;
+		// Container child tabsRequst.Gtk.Notebook+NotebookChild
+		this.GtkScrolledWindow = new global::Gtk.ScrolledWindow ();
+		this.GtkScrolledWindow.Name = "GtkScrolledWindow";
+		this.GtkScrolledWindow.ShadowType = ((global::Gtk.ShadowType)(1));
+		// Container child GtkScrolledWindow.Gtk.Container+ContainerChild
+		this.txtRequest = new global::Gtk.TextView ();
+		this.txtRequest.CanFocus = true;
+		this.txtRequest.Name = "txtRequest";
+		this.txtRequest.Editable = false;
+		this.GtkScrolledWindow.Add (this.txtRequest);
+		this.tabsRequst.Add (this.GtkScrolledWindow);
 		// Notebook tab
-		global::Gtk.Label w47 = new global::Gtk.Label ();
-		w47.Visible = true;
-		this.tabsMain.Add (w47);
+		this.label7 = new global::Gtk.Label ();
+		this.label7.Name = "label7";
+		this.label7.LabelProp = global::Mono.Unix.Catalog.GetString ("Request");
+		this.tabsRequst.SetTabLabel (this.GtkScrolledWindow, this.label7);
+		this.label7.ShowAll ();
+		// Container child tabsRequst.Gtk.Notebook+NotebookChild
+		this.GtkScrolledWindow1 = new global::Gtk.ScrolledWindow ();
+		this.GtkScrolledWindow1.Name = "GtkScrolledWindow1";
+		this.GtkScrolledWindow1.ShadowType = ((global::Gtk.ShadowType)(1));
+		// Container child GtkScrolledWindow1.Gtk.Container+ContainerChild
+		this.txtRequestRaw = new global::Gtk.TextView ();
+		this.txtRequestRaw.CanFocus = true;
+		this.txtRequestRaw.Name = "txtRequestRaw";
+		this.txtRequestRaw.Editable = false;
+		this.GtkScrolledWindow1.Add (this.txtRequestRaw);
+		this.tabsRequst.Add (this.GtkScrolledWindow1);
+		global::Gtk.Notebook.NotebookChild w50 = ((global::Gtk.Notebook.NotebookChild)(this.tabsRequst [this.GtkScrolledWindow1]));
+		w50.Position = 1;
+		// Notebook tab
 		this.label6 = new global::Gtk.Label ();
 		this.label6.Name = "label6";
-		this.label6.LabelProp = global::Mono.Unix.Catalog.GetString ("Inspector");
-		this.tabsMain.SetTabLabel (w47, this.label6);
+		this.label6.LabelProp = global::Mono.Unix.Catalog.GetString ("Raw");
+		this.tabsRequst.SetTabLabel (this.GtkScrolledWindow1, this.label6);
 		this.label6.ShowAll ();
+		// Container child tabsRequst.Gtk.Notebook+NotebookChild
+		this.GtkScrolledWindow2 = new global::Gtk.ScrolledWindow ();
+		this.GtkScrolledWindow2.Name = "GtkScrolledWindow2";
+		this.GtkScrolledWindow2.ShadowType = ((global::Gtk.ShadowType)(1));
+		// Container child GtkScrolledWindow2.Gtk.Container+ContainerChild
+		this.txtRequestNotation = new global::Gtk.TextView ();
+		this.txtRequestNotation.CanFocus = true;
+		this.txtRequestNotation.Name = "txtRequestNotation";
+		this.txtRequestNotation.Editable = false;
+		this.GtkScrolledWindow2.Add (this.txtRequestNotation);
+		this.tabsRequst.Add (this.GtkScrolledWindow2);
+		global::Gtk.Notebook.NotebookChild w52 = ((global::Gtk.Notebook.NotebookChild)(this.tabsRequst [this.GtkScrolledWindow2]));
+		w52.Position = 2;
+		// Notebook tab
+		this.label8 = new global::Gtk.Label ();
+		this.label8.Name = "label8";
+		this.label8.LabelProp = global::Mono.Unix.Catalog.GetString ("Notation");
+		this.tabsRequst.SetTabLabel (this.GtkScrolledWindow2, this.label8);
+		this.label8.ShowAll ();
+		this.vboxInspector.Add (this.tabsRequst);
+		global::Gtk.Box.BoxChild w53 = ((global::Gtk.Box.BoxChild)(this.vboxInspector [this.tabsRequst]));
+		w53.Position = 0;
+		// Container child vboxInspector.Gtk.Box+BoxChild
+		this.tabsRequst1 = new global::Gtk.Notebook ();
+		this.tabsRequst1.CanFocus = true;
+		this.tabsRequst1.Name = "tabsRequst1";
+		this.tabsRequst1.CurrentPage = 2;
+		// Container child tabsRequst1.Gtk.Notebook+NotebookChild
+		this.GtkScrolledWindow3 = new global::Gtk.ScrolledWindow ();
+		this.GtkScrolledWindow3.Name = "GtkScrolledWindow3";
+		this.GtkScrolledWindow3.ShadowType = ((global::Gtk.ShadowType)(1));
+		// Container child GtkScrolledWindow3.Gtk.Container+ContainerChild
+		this.txtResponse = new global::Gtk.TextView ();
+		this.txtResponse.CanFocus = true;
+		this.txtResponse.Name = "txtResponse";
+		this.txtResponse.Editable = false;
+		this.GtkScrolledWindow3.Add (this.txtResponse);
+		this.tabsRequst1.Add (this.GtkScrolledWindow3);
+		// Notebook tab
+		this.label9 = new global::Gtk.Label ();
+		this.label9.Name = "label9";
+		this.label9.LabelProp = global::Mono.Unix.Catalog.GetString ("Response");
+		this.tabsRequst1.SetTabLabel (this.GtkScrolledWindow3, this.label9);
+		this.label9.ShowAll ();
+		// Container child tabsRequst1.Gtk.Notebook+NotebookChild
+		this.GtkScrolledWindow4 = new global::Gtk.ScrolledWindow ();
+		this.GtkScrolledWindow4.Name = "GtkScrolledWindow4";
+		this.GtkScrolledWindow4.ShadowType = ((global::Gtk.ShadowType)(1));
+		// Container child GtkScrolledWindow4.Gtk.Container+ContainerChild
+		this.txtResponseRaw = new global::Gtk.TextView ();
+		this.txtResponseRaw.CanFocus = true;
+		this.txtResponseRaw.Name = "txtResponseRaw";
+		this.txtResponseRaw.Editable = false;
+		this.GtkScrolledWindow4.Add (this.txtResponseRaw);
+		this.tabsRequst1.Add (this.GtkScrolledWindow4);
+		global::Gtk.Notebook.NotebookChild w57 = ((global::Gtk.Notebook.NotebookChild)(this.tabsRequst1 [this.GtkScrolledWindow4]));
+		w57.Position = 1;
+		// Notebook tab
+		this.label11 = new global::Gtk.Label ();
+		this.label11.Name = "label11";
+		this.label11.LabelProp = global::Mono.Unix.Catalog.GetString ("Raw");
+		this.tabsRequst1.SetTabLabel (this.GtkScrolledWindow4, this.label11);
+		this.label11.ShowAll ();
+		// Container child tabsRequst1.Gtk.Notebook+NotebookChild
+		this.GtkScrolledWindow5 = new global::Gtk.ScrolledWindow ();
+		this.GtkScrolledWindow5.Name = "GtkScrolledWindow5";
+		this.GtkScrolledWindow5.ShadowType = ((global::Gtk.ShadowType)(1));
+		// Container child GtkScrolledWindow5.Gtk.Container+ContainerChild
+		this.txtResponseRaw1 = new global::Gtk.TextView ();
+		this.txtResponseRaw1.CanFocus = true;
+		this.txtResponseRaw1.Name = "txtResponseRaw1";
+		this.txtResponseRaw1.Editable = false;
+		this.GtkScrolledWindow5.Add (this.txtResponseRaw1);
+		this.tabsRequst1.Add (this.GtkScrolledWindow5);
+		global::Gtk.Notebook.NotebookChild w59 = ((global::Gtk.Notebook.NotebookChild)(this.tabsRequst1 [this.GtkScrolledWindow5]));
+		w59.Position = 2;
+		// Notebook tab
+		this.label12 = new global::Gtk.Label ();
+		this.label12.Name = "label12";
+		this.label12.LabelProp = global::Mono.Unix.Catalog.GetString ("Notation");
+		this.tabsRequst1.SetTabLabel (this.GtkScrolledWindow5, this.label12);
+		this.label12.ShowAll ();
+		this.vboxInspector.Add (this.tabsRequst1);
+		global::Gtk.Box.BoxChild w60 = ((global::Gtk.Box.BoxChild)(this.vboxInspector [this.tabsRequst1]));
+		w60.Position = 1;
+		this.tabsMain.Add (this.vboxInspector);
+		global::Gtk.Notebook.NotebookChild w61 = ((global::Gtk.Notebook.NotebookChild)(this.tabsMain [this.vboxInspector]));
+		w61.Position = 2;
+		// Notebook tab
+		this.label10 = new global::Gtk.Label ();
+		this.label10.Name = "label10";
+		this.label10.LabelProp = global::Mono.Unix.Catalog.GetString ("Inspector");
+		this.tabsMain.SetTabLabel (this.vboxInspector, this.label10);
+		this.label10.ShowAll ();
 		this.mainSplit.Add (this.tabsMain);
 		this.vboxMenuMain.Add (this.mainSplit);
-		global::Gtk.Box.BoxChild w49 = ((global::Gtk.Box.BoxChild)(this.vboxMenuMain [this.mainSplit]));
-		w49.Position = 1;
+		global::Gtk.Box.BoxChild w63 = ((global::Gtk.Box.BoxChild)(this.vboxMenuMain [this.mainSplit]));
+		w63.Position = 1;
 		this.Add (this.vboxMenuMain);
 		if ((this.Child != null)) {
 			this.Child.ShowAll ();
 		}
 		this.DefaultWidth = 1211;
-		this.DefaultHeight = 552;
+		this.DefaultHeight = 650;
 		this.Show ();
 		this.DeleteEvent += new global::Gtk.DeleteEventHandler (this.OnDeleteEvent);
 		this.ExitAction.Activated += new global::System.EventHandler (this.OnExitActionActivated);
