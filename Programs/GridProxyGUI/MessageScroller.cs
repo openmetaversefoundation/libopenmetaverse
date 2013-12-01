@@ -17,8 +17,11 @@ namespace GridProxyGUI
             for (int i = 0; i < ColumnLabels.Length; i++)
             {
                 CellRendererText cell = new CellRendererText();
-                AppendColumn(ColumnLabels[i], cell, "text", 0);
-                GetColumn(i).SetCellDataFunc(cell, CellDataFunc);
+                TreeViewColumn col = new TreeViewColumn();
+                col.PackStart(cell, true);
+                col.SetCellDataFunc(cell, CellDataFunc);
+                col.Title = ColumnLabels[i];
+                AppendColumn(col);
                 ColumnMap[ColumnLabels[i]] = i;
             }
 
@@ -45,7 +48,8 @@ namespace GridProxyGUI
 
         public void AddSession(Session s)
         {
-            Messages.AppendValues(s);
+            TreeIter iter = Messages.AppendValues(s);
+            ScrollToCell(Messages.GetPath(iter), null, true, 0, 0);
         }
     }
 }

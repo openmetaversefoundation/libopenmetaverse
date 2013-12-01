@@ -79,7 +79,7 @@ public partial class MainWindow : Gtk.Window
     {
         Application.Invoke((xsender, xe) =>
         {
-
+            
         });
     }
 
