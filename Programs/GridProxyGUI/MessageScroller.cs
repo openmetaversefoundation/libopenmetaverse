@@ -7,9 +7,10 @@ namespace GridProxyGUI
     internal class MessageScroller : TreeView
     {
         public static string[] ColumnLabels = { "Counter", "Timestamp", "Protocol", "Type", "Size", "URL", "Content Type" };
-        Dictionary<string, int> ColumnMap = new Dictionary<string,int>();
+        Dictionary<string, int> ColumnMap = new Dictionary<string, int>();
 
         public ListStore Messages;
+        public bool AutoScroll = true;
 
         public MessageScroller()
         {
@@ -37,7 +38,7 @@ namespace GridProxyGUI
             {
                 if (ColumnMap.ContainsKey(column.Title))
                 {
-                    int pos =ColumnMap[column.Title];
+                    int pos = ColumnMap[column.Title];
                     if (pos < item.Columns.Length)
                     {
                         ((CellRendererText)cell).Text = item.Columns[pos];
@@ -49,7 +50,10 @@ namespace GridProxyGUI
         public void AddSession(Session s)
         {
             TreeIter iter = Messages.AppendValues(s);
-            ScrollToCell(Messages.GetPath(iter), null, true, 0, 0);
+            if (AutoScroll)
+            {
+                ScrollToCell(Messages.GetPath(iter), null, true, 0, 0);
+            }
         }
     }
 }

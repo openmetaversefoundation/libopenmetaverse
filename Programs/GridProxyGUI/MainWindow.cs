@@ -50,6 +50,21 @@ public partial class MainWindow : Gtk.Window
         ProxyManager.OnMessageLog += new ProxyManager.MessageLogHandler(ProxyManager_OnMessageLog);
     }
 
+    void StatsTimer_Elapsed(object sender, ElapsedEventArgs e)
+    {
+        Application.Invoke((xsender, xe) =>
+        {
+            lblUDPIn.Text = string.Format("Packets In {0} ({1} bytes)", PacketsInCounter, PacketsInBytes);
+            lblUDPOut.Text = string.Format("Packets Out {0} ({1} bytes)", PacketsOutCounter, PacketsOutBytes);
+            lblUDPTotal.Text = string.Format("Packets Total {0} ({1} bytes)", PacketsInCounter + PacketsOutCounter, PacketsInBytes + PacketsOutBytes);
+
+            lblCapIn.Text = string.Format("Caps In {0} ({1} bytes)", CapsInCounter, CapsInBytes);
+            lblCapOut.Text = string.Format("Caps Out {0} ({1} bytes)", CapsOutCounter, CapsOutBytes);
+            lblCapTotal.Text = string.Format("Caps Total {0} ({1} bytes)", CapsInCounter + CapsOutCounter, CapsInBytes + CapsOutBytes);
+
+        });
+    }
+
     void ProxyManager_OnPacketLog(Packet packet, GridProxy.Direction direction, System.Net.IPEndPoint endpoint)
     {
         Application.Invoke((xsender, xe) =>
@@ -72,14 +87,6 @@ public partial class MainWindow : Gtk.Window
 
             sessionPacket.Columns = new string[] { PacketCounter.ToString(), sessionPacket.TimeStamp.ToString("HH:mm:ss.fff"), sessionPacket.Protocol, sessionPacket.Name, sessionPacket.Length.ToString(), sessionPacket.Host, sessionPacket.ContentType };
             messages.AddSession(sessionPacket);
-        });
-    }
-
-    void StatsTimer_Elapsed(object sender, ElapsedEventArgs e)
-    {
-        Application.Invoke((xsender, xe) =>
-        {
-            
         });
     }
 
@@ -330,4 +337,9 @@ public partial class MainWindow : Gtk.Window
     {
         SetAllToggles(cbSelectAllCap.Active, capStore);
     }
+
+	protected void OnCbAutoScrollToggled (object sender, EventArgs e)
+	{
+        messages.AutoScroll = cbAutoScroll.Active;
+	}
 }
