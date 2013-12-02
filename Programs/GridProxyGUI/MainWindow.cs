@@ -39,15 +39,17 @@ public partial class MainWindow : Gtk.Window
         mainSplit.Position = 600;
         txtSummary.ModifyFont(Pango.FontDescription.FromString("monospace bold 9"));
 
-        txtRequest.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
-        CreateTags(txtRequest.Buffer);
-        txtRequestRaw.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
-        txtRequestNotation.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
+        string font = "monospace";
 
-        txtResponse.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
+        txtRequest.ModifyFont(Pango.FontDescription.FromString(font));
+        CreateTags(txtRequest.Buffer);
+        txtRequestRaw.ModifyFont(Pango.FontDescription.FromString(font));
+        txtRequestNotation.ModifyFont(Pango.FontDescription.FromString(font));
+
+        txtResponse.ModifyFont(Pango.FontDescription.FromString(font));
         CreateTags(txtResponse.Buffer);
-        txtResponseRaw.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
-        txtResponseNotation.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
+        txtResponseRaw.ModifyFont(Pango.FontDescription.FromString(font));
+        txtResponseNotation.ModifyFont(Pango.FontDescription.FromString(font));
 
 
         sessionLogScroller.Add(messages = new MessageScroller());
