@@ -5,6 +5,7 @@ using Gtk;
 using GridProxyGUI;
 using OpenMetaverse.Packets;
 using System.Timers;
+using System.Text.RegularExpressions;
 using Nwc.XmlRpc;
 
 public partial class MainWindow : Gtk.Window
@@ -39,14 +40,16 @@ public partial class MainWindow : Gtk.Window
         txtSummary.ModifyFont(Pango.FontDescription.FromString("monospace bold 9"));
 
         txtRequest.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
+        CreateTags(txtRequest.Buffer);
         txtRequestRaw.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
         txtRequestNotation.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
 
         txtResponse.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
+        CreateTags(txtResponse.Buffer);
         txtResponseRaw.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
         txtResponseNotation.ModifyFont(Pango.FontDescription.FromString("monospace 9"));
-        
-        
+
+
         sessionLogScroller.Add(messages = new MessageScroller());
         messages.CursorChanged += messages_CursorChanged;
         StatsTimer = new Timer(1000.0);
@@ -396,14 +399,168 @@ public partial class MainWindow : Gtk.Window
             var item = model.GetValue(iter, 0) as Session;
             if (item != null)
             {
-                txtRequest.Buffer.Text = item.ToPrettyString(GridProxy.Direction.Outgoing);
+                ColorizePacket(txtRequest.Buffer, item.ToPrettyString(GridProxy.Direction.Outgoing));
                 txtRequestRaw.Buffer.Text = item.ToRawString(GridProxy.Direction.Outgoing);
                 txtRequestNotation.Buffer.Text = item.ToStringNotation(GridProxy.Direction.Outgoing);
 
-                txtResponse.Buffer.Text = item.ToPrettyString(GridProxy.Direction.Incoming);
+                ColorizePacket(txtResponse.Buffer, item.ToPrettyString(GridProxy.Direction.Incoming));
                 txtResponseRaw.Buffer.Text = item.ToRawString(GridProxy.Direction.Incoming);
                 txtResponseNotation.Buffer.Text = item.ToStringNotation(GridProxy.Direction.Incoming);
+
+                SetVisibility();
             }
+        }
+    }
+
+    void SetVisibility()
+    {
+        var w1 = vboxInspector.Children.GetValue(0) as Widget;
+        var w2 = vboxInspector.Children.GetValue(1) as Widget;
+
+        if (w1 == null || w2 == null) return;
+
+        // check if request is empry
+        if (txtRequest.Buffer.Text.Trim().Length < 3 && txtRequestRaw.Buffer.Text.Trim().Length < 3)
+        {
+            w1.Hide();
+        }
+        else
+        {
+            w1.Show();
+        }
+
+        // check if request is empry
+        if (txtResponse.Buffer.Text.Trim().Length < 3 && txtResponseRaw.Buffer.Text.Trim().Length < 3)
+        {
+            w2.Hide();
+        }
+        else
+        {
+            w2.Show();
+        }
+
+    }
+
+    void CreateTags(TextBuffer buffer)
+    {
+        TextTag tag = buffer.TagTable.Lookup("bold");
+        if (tag == null)
+        {
+            tag = new TextTag("bold");
+            tag.Weight = Pango.Weight.Bold;
+            buffer.TagTable.Add(tag);
+        }
+
+        tag = buffer.TagTable.Lookup("type");
+        if (tag == null)
+        {
+            tag = new TextTag("type");
+            tag.ForegroundGdk = new Gdk.Color(43, 145, 175);
+            buffer.TagTable.Add(tag);
+        }
+
+        tag = buffer.TagTable.Lookup("header");
+        if (tag == null)
+        {
+            tag = new TextTag("header");
+            tag.ForegroundGdk = new Gdk.Color(0, 255, 0);
+            tag.BackgroundGdk = new Gdk.Color(176, 196,	222);
+            buffer.TagTable.Add(tag);
+        }
+
+        tag = buffer.TagTable.Lookup("block");
+        if (tag == null)
+        {
+            tag = new TextTag("block");
+            tag.ForegroundGdk = new Gdk.Color(255, 215, 0);
+            buffer.TagTable.Add(tag);
+        }
+
+        tag = buffer.TagTable.Lookup("tag");
+        if (tag == null)
+        {
+            tag = new TextTag("tag");
+            tag.ForegroundGdk = new Gdk.Color(255, 255, 255);
+            tag.BackgroundGdk = new Gdk.Color(40, 40, 40);
+            buffer.TagTable.Add(tag);
+        }
+
+        tag = buffer.TagTable.Lookup("counter");
+        if (tag == null)
+        {
+            tag = new TextTag("counter");
+            tag.ForegroundGdk = new Gdk.Color(0, 64, 0);
+            buffer.TagTable.Add(tag);
+        }
+
+        tag = buffer.TagTable.Lookup("UUID");
+        if (tag == null)
+        {
+            tag = new TextTag("UUID");
+            tag.ForegroundGdk = new Gdk.Color(148, 0, 211);
+            buffer.TagTable.Add(tag);
+        }
+    }
+
+    void ColorizePacket(TextBuffer buffer, string text)
+    {
+        if (!text.StartsWith("Message Type:") && !text.StartsWith("Packet Type:"))
+        {
+            buffer.Text = text;
+            return;
+        }
+
+        buffer.Text = string.Empty;
+        text = text.Replace("\r", "");
+        TextIter iter = buffer.StartIter;
+
+        Regex typesRegex = new Regex(@"\[(?<Type>\w+|\w+\[\])\]|\((?<Enum>.*)\)|\s-- (?<Header>\w+|\w+ \[\]) --\s|(?<BlockSep>\s\*\*\*\s)|(?<Tag>\s<\w+>\s|\s<\/\w+>\s)|(?<BlockCounter>\s\w+\[\d+\]\s)|(?<UUID>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})", RegexOptions.ExplicitCapture);
+
+        MatchCollection matches = typesRegex.Matches(text);
+        int pos = 0;
+
+        if (matches.Count == 0)
+        {
+            buffer.Text = text;
+        }
+
+        foreach (Match match in matches)
+        {
+            string tag = "bold";
+
+            buffer.Insert(ref iter, text.Substring(pos, match.Index - pos));
+            pos += match.Index - pos;
+
+            if (!String.IsNullOrEmpty(match.Groups["Type"].Value))
+            {
+                tag = "type";
+            }
+            else if (!String.IsNullOrEmpty(match.Groups["Enum"].Value))
+            {
+                tag = "type";
+            }
+            else if (!String.IsNullOrEmpty(match.Groups["Header"].Value))
+            {
+                tag = "heder";
+            }
+            else if (!String.IsNullOrEmpty(match.Groups["BlockSep"].Value))
+            {
+                tag = "block";
+            } else if (!String.IsNullOrEmpty(match.Groups["Tag"].Value))
+            {
+                tag = "tag";
+            }
+            else if (!String.IsNullOrEmpty(match.Groups["BlockCounter"].Value))
+            {
+                tag = "counter";
+            }
+            else if (!String.IsNullOrEmpty(match.Groups["UUID"].Value))
+            {
+                tag = "UUID";
+            }
+
+            buffer.InsertWithTagsByName(ref iter, text.Substring(pos, match.Length), tag);
+            pos += match.Length;
         }
     }
 
