@@ -161,7 +161,7 @@
             this.richTextBox1.Size = new System.Drawing.Size(274, 79);
             this.richTextBox1.TabIndex = 25;
             this.richTextBox1.Text = "Written by Jim Radford <jradford@npl.com>\n\nIcons Courtesy of http://www.famfamfam" +
-                ".com/lab/icons/silk/\n\nHexbox Control \nhttp://sourceforge.net/projects/hexbox/";
+    ".com/lab/icons/silk/\n\nHexbox Control \nhttp://sourceforge.net/projects/hexbox/";
             this.richTextBox1.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.richTextBoxDecodedRequest_LinkClicked);
             // 
             // AboutBox1

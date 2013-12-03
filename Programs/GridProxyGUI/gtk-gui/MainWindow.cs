@@ -15,9 +15,13 @@ public partial class MainWindow
 	private global::Gtk.Action AllAction1;
 	private global::Gtk.Action SelectedAction;
 	private global::Gtk.Action FindAction;
-	private global::Gtk.Action OpenSessionAction;
-	private global::Gtk.Action SaveSessionAction;
-	private global::Gtk.Action SaveSessionAsAction;
+	private global::Gtk.Action OpenAction;
+	private global::Gtk.Action SaveAction;
+	private global::Gtk.Action SaveAsAction;
+	private global::Gtk.Action InvertAction;
+	private global::Gtk.Action NoneAction;
+	private global::Gtk.Action CopyAction;
+	private global::Gtk.Action UnselectedAction;
 	private global::Gtk.VBox vboxMenuMain;
 	private global::Gtk.HBox hboxMenu;
 	private global::Gtk.Alignment alignment2;
@@ -92,7 +96,7 @@ public partial class MainWindow
 	private global::Gtk.TextView txtResponseNotation;
 	private global::Gtk.Label label12;
 	private global::Gtk.Label label10;
-	
+
 	protected virtual void Build ()
 	{
 		global::Stetic.Gui.Initialize (this);
@@ -132,19 +136,32 @@ public partial class MainWindow
 		this.FindAction = new global::Gtk.Action ("FindAction", global::Mono.Unix.Catalog.GetString ("Find"), null, null);
 		this.FindAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Find (Ctrl-F)");
 		w1.Add (this.FindAction, "<Control>f");
-		this.OpenSessionAction = new global::Gtk.Action ("OpenSessionAction", global::Mono.Unix.Catalog.GetString ("Open Session..."), null, null);
-		this.OpenSessionAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Open Session...");
-		w1.Add (this.OpenSessionAction, "<Control>o");
-		this.SaveSessionAction = new global::Gtk.Action ("SaveSessionAction", global::Mono.Unix.Catalog.GetString ("Save Session"), null, null);
-		this.SaveSessionAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Save Session");
-		w1.Add (this.SaveSessionAction, "<Control>s");
-		this.SaveSessionAsAction = new global::Gtk.Action ("SaveSessionAsAction", global::Mono.Unix.Catalog.GetString ("Save Session As..."), null, null);
-		this.SaveSessionAsAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Save Session As...");
-		w1.Add (this.SaveSessionAsAction, null);
+		this.OpenAction = new global::Gtk.Action ("OpenAction", global::Mono.Unix.Catalog.GetString ("Open.."), null, null);
+		this.OpenAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Open Session...");
+		w1.Add (this.OpenAction, "<Control>o");
+		this.SaveAction = new global::Gtk.Action ("SaveAction", global::Mono.Unix.Catalog.GetString ("Save"), null, null);
+		this.SaveAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Save Session");
+		w1.Add (this.SaveAction, "<Control>s");
+		this.SaveAsAction = new global::Gtk.Action ("SaveAsAction", global::Mono.Unix.Catalog.GetString ("Save As..."), null, null);
+		this.SaveAsAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Save Session As...");
+		w1.Add (this.SaveAsAction, null);
+		this.InvertAction = new global::Gtk.Action ("InvertAction", global::Mono.Unix.Catalog.GetString ("Invert"), null, null);
+		this.InvertAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Invert");
+		w1.Add (this.InvertAction, null);
+		this.NoneAction = new global::Gtk.Action ("NoneAction", global::Mono.Unix.Catalog.GetString ("None"), null, null);
+		this.NoneAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("None");
+		w1.Add (this.NoneAction, null);
+		this.CopyAction = new global::Gtk.Action ("CopyAction", global::Mono.Unix.Catalog.GetString ("Copy"), null, null);
+		this.CopyAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Copy");
+		w1.Add (this.CopyAction, "<Primary>c");
+		this.UnselectedAction = new global::Gtk.Action ("UnselectedAction", global::Mono.Unix.Catalog.GetString ("Unselected"), null, null);
+		this.UnselectedAction.ShortLabel = global::Mono.Unix.Catalog.GetString ("Unselected");
+		w1.Add (this.UnselectedAction, null);
 		this.UIManager.InsertActionGroup (w1, 0);
 		this.AddAccelGroup (this.UIManager.AccelGroup);
 		this.Name = "MainWindow";
 		this.Title = global::Mono.Unix.Catalog.GetString ("Grid Proxy");
+		this.Icon = global::Gdk.Pixbuf.LoadFromResource ("GridProxyGUI.libomv.png");
 		this.WindowPosition = ((global::Gtk.WindowPosition)(4));
 		this.AllowShrink = true;
 		// Container child MainWindow.Gtk.Container+ContainerChild
@@ -160,7 +177,7 @@ public partial class MainWindow
 		this.alignment2 = new global::Gtk.Alignment (0.5F, 0.5F, 1F, 1F);
 		this.alignment2.Name = "alignment2";
 		// Container child alignment2.Gtk.Container+ContainerChild
-		this.UIManager.AddUiFromString ("<ui><menubar name='menuMain'><menu name='FileAction' action='FileAction'><menuitem name='OpenSessionAction' action='OpenSessionAction'/><menuitem name='SaveSessionAction' action='SaveSessionAction'/><menuitem name='SaveSessionAsAction' action='SaveSessionAsAction'/><separator/><menuitem name='ExitAction' action='ExitAction'/></menu><menu name='EditAction' action='EditAction'><menu name='RemoveAction' action='RemoveAction'><menuitem name='AllAction1' action='AllAction1'/><menuitem name='SelectedAction' action='SelectedAction'/></menu><menu name='SelectAction' action='SelectAction'><menuitem name='AllAction' action='AllAction'/></menu><separator/><menuitem name='FindAction' action='FindAction'/></menu><menu name='HelpAction' action='HelpAction'><menuitem name='AboutAction' action='AboutAction'/></menu></menubar></ui>");
+		this.UIManager.AddUiFromString (@"<ui><menubar name='menuMain'><menu name='FileAction' action='FileAction'><menuitem name='OpenAction' action='OpenAction'/><menuitem name='SaveAction' action='SaveAction'/><menuitem name='SaveAsAction' action='SaveAsAction'/><separator/><menuitem name='ExitAction' action='ExitAction'/></menu><menu name='EditAction' action='EditAction'><menu name='RemoveAction' action='RemoveAction'><menuitem name='AllAction1' action='AllAction1'/><menuitem name='SelectedAction' action='SelectedAction'/><menuitem name='UnselectedAction' action='UnselectedAction'/></menu><menu name='SelectAction' action='SelectAction'><menuitem name='AllAction' action='AllAction'/><menuitem name='InvertAction' action='InvertAction'/><menuitem name='NoneAction' action='NoneAction'/></menu><separator/><menuitem name='CopyAction' action='CopyAction'/></menu><menu name='HelpAction' action='HelpAction'><menuitem name='AboutAction' action='AboutAction'/></menu></menubar></ui>");
 		this.menuMain = ((global::Gtk.MenuBar)(this.UIManager.GetWidget ("/menuMain")));
 		this.menuMain.Name = "menuMain";
 		this.alignment2.Add (this.menuMain);
@@ -445,58 +462,34 @@ public partial class MainWindow
 		this.btnLoadFilters.CanFocus = true;
 		this.btnLoadFilters.Name = "btnLoadFilters";
 		this.btnLoadFilters.UseUnderline = true;
-		// Container child btnLoadFilters.Gtk.Container+ContainerChild
-		global::Gtk.Alignment w33 = new global::Gtk.Alignment (0.5F, 0.5F, 0F, 0F);
-		// Container child GtkAlignment.Gtk.Container+ContainerChild
-		global::Gtk.HBox w34 = new global::Gtk.HBox ();
-		w34.Spacing = 2;
-		// Container child GtkHBox.Gtk.Container+ContainerChild
-		global::Gtk.Image w35 = new global::Gtk.Image ();
-		w35.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-open", global::Gtk.IconSize.Menu);
-		w34.Add (w35);
-		// Container child GtkHBox.Gtk.Container+ContainerChild
-		global::Gtk.Label w37 = new global::Gtk.Label ();
-		w37.LabelProp = global::Mono.Unix.Catalog.GetString ("Load");
-		w37.UseUnderline = true;
-		w34.Add (w37);
-		w33.Add (w34);
-		this.btnLoadFilters.Add (w33);
+		this.btnLoadFilters.Label = global::Mono.Unix.Catalog.GetString ("Load");
+		global::Gtk.Image w33 = new global::Gtk.Image ();
+		w33.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-open", global::Gtk.IconSize.Menu);
+		this.btnLoadFilters.Image = w33;
 		this.hbox2.Add (this.btnLoadFilters);
-		global::Gtk.Box.BoxChild w41 = ((global::Gtk.Box.BoxChild)(this.hbox2 [this.btnLoadFilters]));
-		w41.Position = 0;
-		w41.Expand = false;
-		w41.Fill = false;
+		global::Gtk.Box.BoxChild w34 = ((global::Gtk.Box.BoxChild)(this.hbox2 [this.btnLoadFilters]));
+		w34.Position = 0;
+		w34.Expand = false;
+		w34.Fill = false;
 		// Container child hbox2.Gtk.Box+BoxChild
 		this.btnSaveFilters = new global::Gtk.Button ();
 		this.btnSaveFilters.CanFocus = true;
 		this.btnSaveFilters.Name = "btnSaveFilters";
 		this.btnSaveFilters.UseUnderline = true;
-		// Container child btnSaveFilters.Gtk.Container+ContainerChild
-		global::Gtk.Alignment w42 = new global::Gtk.Alignment (0.5F, 0.5F, 0F, 0F);
-		// Container child GtkAlignment.Gtk.Container+ContainerChild
-		global::Gtk.HBox w43 = new global::Gtk.HBox ();
-		w43.Spacing = 2;
-		// Container child GtkHBox.Gtk.Container+ContainerChild
-		global::Gtk.Image w44 = new global::Gtk.Image ();
-		w44.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-save", global::Gtk.IconSize.Menu);
-		w43.Add (w44);
-		// Container child GtkHBox.Gtk.Container+ContainerChild
-		global::Gtk.Label w46 = new global::Gtk.Label ();
-		w46.LabelProp = global::Mono.Unix.Catalog.GetString ("Save");
-		w46.UseUnderline = true;
-		w43.Add (w46);
-		w42.Add (w43);
-		this.btnSaveFilters.Add (w42);
+		this.btnSaveFilters.Label = global::Mono.Unix.Catalog.GetString ("Save");
+		global::Gtk.Image w35 = new global::Gtk.Image ();
+		w35.Pixbuf = global::Stetic.IconLoader.LoadIcon (this, "gtk-save", global::Gtk.IconSize.Menu);
+		this.btnSaveFilters.Image = w35;
 		this.hbox2.Add (this.btnSaveFilters);
-		global::Gtk.Box.BoxChild w50 = ((global::Gtk.Box.BoxChild)(this.hbox2 [this.btnSaveFilters]));
-		w50.Position = 1;
-		w50.Expand = false;
-		w50.Fill = false;
+		global::Gtk.Box.BoxChild w36 = ((global::Gtk.Box.BoxChild)(this.hbox2 [this.btnSaveFilters]));
+		w36.Position = 1;
+		w36.Expand = false;
+		w36.Fill = false;
 		this.hboxFilter.Add (this.hbox2);
-		global::Gtk.Box.BoxChild w51 = ((global::Gtk.Box.BoxChild)(this.hboxFilter [this.hbox2]));
-		w51.Position = 0;
-		w51.Expand = false;
-		w51.Fill = false;
+		global::Gtk.Box.BoxChild w37 = ((global::Gtk.Box.BoxChild)(this.hboxFilter [this.hbox2]));
+		w37.Position = 0;
+		w37.Expand = false;
+		w37.Fill = false;
 		// Container child hboxFilter.Gtk.Box+BoxChild
 		this.hbox3 = new global::Gtk.HBox ();
 		this.hbox3.Name = "hbox3";
@@ -517,8 +510,8 @@ public partial class MainWindow
 		this.GtkLabel8.LabelProp = global::Mono.Unix.Catalog.GetString ("UDP Packets & Login");
 		this.frameFilterUDP.LabelWidget = this.GtkLabel8;
 		this.hbox3.Add (this.frameFilterUDP);
-		global::Gtk.Box.BoxChild w53 = ((global::Gtk.Box.BoxChild)(this.hbox3 [this.frameFilterUDP]));
-		w53.Position = 0;
+		global::Gtk.Box.BoxChild w39 = ((global::Gtk.Box.BoxChild)(this.hbox3 [this.frameFilterUDP]));
+		w39.Position = 0;
 		// Container child hbox3.Gtk.Box+BoxChild
 		this.frameFilterCap = new global::Gtk.Frame ();
 		this.frameFilterCap.Name = "frameFilterCap";
@@ -534,11 +527,11 @@ public partial class MainWindow
 		this.GtkLabel9.LabelProp = global::Mono.Unix.Catalog.GetString ("Capabilities & EventQueue Messages");
 		this.frameFilterCap.LabelWidget = this.GtkLabel9;
 		this.hbox3.Add (this.frameFilterCap);
-		global::Gtk.Box.BoxChild w55 = ((global::Gtk.Box.BoxChild)(this.hbox3 [this.frameFilterCap]));
-		w55.Position = 1;
+		global::Gtk.Box.BoxChild w41 = ((global::Gtk.Box.BoxChild)(this.hbox3 [this.frameFilterCap]));
+		w41.Position = 1;
 		this.hboxFilter.Add (this.hbox3);
-		global::Gtk.Box.BoxChild w56 = ((global::Gtk.Box.BoxChild)(this.hboxFilter [this.hbox3]));
-		w56.Position = 1;
+		global::Gtk.Box.BoxChild w42 = ((global::Gtk.Box.BoxChild)(this.hboxFilter [this.hbox3]));
+		w42.Position = 1;
 		// Container child hboxFilter.Gtk.Box+BoxChild
 		this.hbox4 = new global::Gtk.HBox ();
 		this.hbox4.Name = "hbox4";
@@ -552,8 +545,8 @@ public partial class MainWindow
 		this.cbSelectAllUDP.DrawIndicator = true;
 		this.cbSelectAllUDP.UseUnderline = true;
 		this.hbox4.Add (this.cbSelectAllUDP);
-		global::Gtk.Box.BoxChild w57 = ((global::Gtk.Box.BoxChild)(this.hbox4 [this.cbSelectAllUDP]));
-		w57.Position = 0;
+		global::Gtk.Box.BoxChild w43 = ((global::Gtk.Box.BoxChild)(this.hbox4 [this.cbSelectAllUDP]));
+		w43.Position = 0;
 		// Container child hbox4.Gtk.Box+BoxChild
 		this.cbSelectAllCap = new global::Gtk.CheckButton ();
 		this.cbSelectAllCap.CanFocus = true;
@@ -562,17 +555,17 @@ public partial class MainWindow
 		this.cbSelectAllCap.DrawIndicator = true;
 		this.cbSelectAllCap.UseUnderline = true;
 		this.hbox4.Add (this.cbSelectAllCap);
-		global::Gtk.Box.BoxChild w58 = ((global::Gtk.Box.BoxChild)(this.hbox4 [this.cbSelectAllCap]));
-		w58.Position = 1;
+		global::Gtk.Box.BoxChild w44 = ((global::Gtk.Box.BoxChild)(this.hbox4 [this.cbSelectAllCap]));
+		w44.Position = 1;
 		this.hboxFilter.Add (this.hbox4);
-		global::Gtk.Box.BoxChild w59 = ((global::Gtk.Box.BoxChild)(this.hboxFilter [this.hbox4]));
-		w59.PackType = ((global::Gtk.PackType)(1));
-		w59.Position = 2;
-		w59.Expand = false;
-		w59.Fill = false;
+		global::Gtk.Box.BoxChild w45 = ((global::Gtk.Box.BoxChild)(this.hboxFilter [this.hbox4]));
+		w45.PackType = ((global::Gtk.PackType)(1));
+		w45.Position = 2;
+		w45.Expand = false;
+		w45.Fill = false;
 		this.tabsMain.Add (this.hboxFilter);
-		global::Gtk.Notebook.NotebookChild w60 = ((global::Gtk.Notebook.NotebookChild)(this.tabsMain [this.hboxFilter]));
-		w60.Position = 1;
+		global::Gtk.Notebook.NotebookChild w46 = ((global::Gtk.Notebook.NotebookChild)(this.tabsMain [this.hboxFilter]));
+		w46.Position = 1;
 		// Notebook tab
 		this.label5 = new global::Gtk.Label ();
 		this.label5.Name = "label5";
@@ -616,8 +609,8 @@ public partial class MainWindow
 		this.txtRequestRaw.Editable = false;
 		this.GtkScrolledWindow1.Add (this.txtRequestRaw);
 		this.tabsRequst.Add (this.GtkScrolledWindow1);
-		global::Gtk.Notebook.NotebookChild w64 = ((global::Gtk.Notebook.NotebookChild)(this.tabsRequst [this.GtkScrolledWindow1]));
-		w64.Position = 1;
+		global::Gtk.Notebook.NotebookChild w50 = ((global::Gtk.Notebook.NotebookChild)(this.tabsRequst [this.GtkScrolledWindow1]));
+		w50.Position = 1;
 		// Notebook tab
 		this.label6 = new global::Gtk.Label ();
 		this.label6.Name = "label6";
@@ -635,8 +628,8 @@ public partial class MainWindow
 		this.txtRequestNotation.Editable = false;
 		this.GtkScrolledWindow2.Add (this.txtRequestNotation);
 		this.tabsRequst.Add (this.GtkScrolledWindow2);
-		global::Gtk.Notebook.NotebookChild w66 = ((global::Gtk.Notebook.NotebookChild)(this.tabsRequst [this.GtkScrolledWindow2]));
-		w66.Position = 2;
+		global::Gtk.Notebook.NotebookChild w52 = ((global::Gtk.Notebook.NotebookChild)(this.tabsRequst [this.GtkScrolledWindow2]));
+		w52.Position = 2;
 		// Notebook tab
 		this.label8 = new global::Gtk.Label ();
 		this.label8.Name = "label8";
@@ -644,8 +637,8 @@ public partial class MainWindow
 		this.tabsRequst.SetTabLabel (this.GtkScrolledWindow2, this.label8);
 		this.label8.ShowAll ();
 		this.vboxInspector.Add (this.tabsRequst);
-		global::Gtk.Box.BoxChild w67 = ((global::Gtk.Box.BoxChild)(this.vboxInspector [this.tabsRequst]));
-		w67.Position = 0;
+		global::Gtk.Box.BoxChild w53 = ((global::Gtk.Box.BoxChild)(this.vboxInspector [this.tabsRequst]));
+		w53.Position = 0;
 		// Container child vboxInspector.Gtk.Box+BoxChild
 		this.tabsRequst1 = new global::Gtk.Notebook ();
 		this.tabsRequst1.CanFocus = true;
@@ -679,8 +672,8 @@ public partial class MainWindow
 		this.txtResponseRaw.Editable = false;
 		this.GtkScrolledWindow4.Add (this.txtResponseRaw);
 		this.tabsRequst1.Add (this.GtkScrolledWindow4);
-		global::Gtk.Notebook.NotebookChild w71 = ((global::Gtk.Notebook.NotebookChild)(this.tabsRequst1 [this.GtkScrolledWindow4]));
-		w71.Position = 1;
+		global::Gtk.Notebook.NotebookChild w57 = ((global::Gtk.Notebook.NotebookChild)(this.tabsRequst1 [this.GtkScrolledWindow4]));
+		w57.Position = 1;
 		// Notebook tab
 		this.label11 = new global::Gtk.Label ();
 		this.label11.Name = "label11";
@@ -698,8 +691,8 @@ public partial class MainWindow
 		this.txtResponseNotation.Editable = false;
 		this.GtkScrolledWindow5.Add (this.txtResponseNotation);
 		this.tabsRequst1.Add (this.GtkScrolledWindow5);
-		global::Gtk.Notebook.NotebookChild w73 = ((global::Gtk.Notebook.NotebookChild)(this.tabsRequst1 [this.GtkScrolledWindow5]));
-		w73.Position = 2;
+		global::Gtk.Notebook.NotebookChild w59 = ((global::Gtk.Notebook.NotebookChild)(this.tabsRequst1 [this.GtkScrolledWindow5]));
+		w59.Position = 2;
 		// Notebook tab
 		this.label12 = new global::Gtk.Label ();
 		this.label12.Name = "label12";
@@ -707,11 +700,11 @@ public partial class MainWindow
 		this.tabsRequst1.SetTabLabel (this.GtkScrolledWindow5, this.label12);
 		this.label12.ShowAll ();
 		this.vboxInspector.Add (this.tabsRequst1);
-		global::Gtk.Box.BoxChild w74 = ((global::Gtk.Box.BoxChild)(this.vboxInspector [this.tabsRequst1]));
-		w74.Position = 1;
+		global::Gtk.Box.BoxChild w60 = ((global::Gtk.Box.BoxChild)(this.vboxInspector [this.tabsRequst1]));
+		w60.Position = 1;
 		this.tabsMain.Add (this.vboxInspector);
-		global::Gtk.Notebook.NotebookChild w75 = ((global::Gtk.Notebook.NotebookChild)(this.tabsMain [this.vboxInspector]));
-		w75.Position = 2;
+		global::Gtk.Notebook.NotebookChild w61 = ((global::Gtk.Notebook.NotebookChild)(this.tabsMain [this.vboxInspector]));
+		w61.Position = 2;
 		// Notebook tab
 		this.label10 = new global::Gtk.Label ();
 		this.label10.Name = "label10";
@@ -720,8 +713,8 @@ public partial class MainWindow
 		this.label10.ShowAll ();
 		this.mainSplit.Add (this.tabsMain);
 		this.vboxMenuMain.Add (this.mainSplit);
-		global::Gtk.Box.BoxChild w77 = ((global::Gtk.Box.BoxChild)(this.vboxMenuMain [this.mainSplit]));
-		w77.Position = 1;
+		global::Gtk.Box.BoxChild w63 = ((global::Gtk.Box.BoxChild)(this.vboxMenuMain [this.mainSplit]));
+		w63.Position = 1;
 		this.Add (this.vboxMenuMain);
 		if ((this.Child != null)) {
 			this.Child.ShowAll ();
@@ -731,6 +724,17 @@ public partial class MainWindow
 		this.Show ();
 		this.DeleteEvent += new global::Gtk.DeleteEventHandler (this.OnDeleteEvent);
 		this.ExitAction.Activated += new global::System.EventHandler (this.OnExitActionActivated);
+		this.AboutAction.Activated += new global::System.EventHandler (this.OnAboutActionActivated);
+		this.AllAction.Activated += new global::System.EventHandler (this.OnAllActionActivated);
+		this.AllAction1.Activated += new global::System.EventHandler (this.OnAllAction1Activated);
+		this.SelectedAction.Activated += new global::System.EventHandler (this.OnSelectedActionActivated);
+		this.OpenAction.Activated += new global::System.EventHandler (this.OnOpenActionActivated);
+		this.SaveAction.Activated += new global::System.EventHandler (this.OnSaveActionActivated);
+		this.SaveAsAction.Activated += new global::System.EventHandler (this.OnSaveAsActionActivated);
+		this.InvertAction.Activated += new global::System.EventHandler (this.OnInvertActionActivated);
+		this.NoneAction.Activated += new global::System.EventHandler (this.OnNoneActionActivated);
+		this.CopyAction.Activated += new global::System.EventHandler (this.OnCopyActionActivated);
+		this.UnselectedAction.Activated += new global::System.EventHandler (this.OnUnselectedActionActivated);
 		this.btnStart.Clicked += new global::System.EventHandler (this.OnBtnStartClicked);
 		this.cbAutoScroll.Toggled += new global::System.EventHandler (this.OnCbAutoScrollToggled);
 		this.cbSelectAllUDP.Toggled += new global::System.EventHandler (this.OnCbSelectAllUDPToggled);

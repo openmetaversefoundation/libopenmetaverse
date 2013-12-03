@@ -5,7 +5,7 @@
   </configuration>
   <import>
     <widget-library name="glade-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-    <widget-library name="../bin/Release/GridProxyGUI.exe" internal="true" />
+    <widget-library name="../bin/Debug/GridProxyGUI.exe" internal="true" />
   </import>
   <widget class="Gtk.Window" id="MainWindow" design-size="1211 650">
     <action-group name="Default">
@@ -37,6 +37,7 @@
         <property name="Label" translatable="yes">About</property>
         <property name="ShortLabel" translatable="yes">About</property>
         <property name="Tooltip" translatable="yes">Shows the wonderful creator info</property>
+        <signal name="Activated" handler="OnAboutActionActivated" />
       </action>
       <action id="RemoveAction">
         <property name="Type">Action</property>
@@ -52,16 +53,19 @@
         <property name="Type">Action</property>
         <property name="Label" translatable="yes">All</property>
         <property name="ShortLabel" translatable="yes">All</property>
+        <signal name="Activated" handler="OnAllActionActivated" />
       </action>
       <action id="AllAction1">
         <property name="Type">Action</property>
         <property name="Label" translatable="yes">All</property>
         <property name="ShortLabel" translatable="yes">All</property>
+        <signal name="Activated" handler="OnAllAction1Activated" />
       </action>
       <action id="SelectedAction">
         <property name="Type">Action</property>
         <property name="Label" translatable="yes">Selected</property>
         <property name="ShortLabel" translatable="yes">Selected</property>
+        <signal name="Activated" handler="OnSelectedActionActivated" />
       </action>
       <action id="FindAction">
         <property name="Type">Action</property>
@@ -69,26 +73,55 @@
         <property name="Label" translatable="yes">Find</property>
         <property name="ShortLabel" translatable="yes">Find (Ctrl-F)</property>
       </action>
-      <action id="OpenSessionAction">
+      <action id="OpenAction">
         <property name="Type">Action</property>
         <property name="Accelerator">&lt;Control&gt;o</property>
-        <property name="Label" translatable="yes">Open Session...</property>
+        <property name="Label" translatable="yes">Open..</property>
         <property name="ShortLabel" translatable="yes">Open Session...</property>
+        <signal name="Activated" handler="OnOpenActionActivated" />
       </action>
-      <action id="SaveSessionAction">
+      <action id="SaveAction">
         <property name="Type">Action</property>
         <property name="Accelerator">&lt;Control&gt;s</property>
-        <property name="Label" translatable="yes">Save Session</property>
+        <property name="Label" translatable="yes">Save</property>
         <property name="ShortLabel" translatable="yes">Save Session</property>
+        <signal name="Activated" handler="OnSaveActionActivated" />
       </action>
-      <action id="SaveSessionAsAction">
+      <action id="SaveAsAction">
         <property name="Type">Action</property>
-        <property name="Label" translatable="yes">Save Session As...</property>
+        <property name="Label" translatable="yes">Save As...</property>
         <property name="ShortLabel" translatable="yes">Save Session As...</property>
+        <signal name="Activated" handler="OnSaveAsActionActivated" />
+      </action>
+      <action id="InvertAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Invert</property>
+        <property name="ShortLabel" translatable="yes">Invert</property>
+        <signal name="Activated" handler="OnInvertActionActivated" />
+      </action>
+      <action id="NoneAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">None</property>
+        <property name="ShortLabel" translatable="yes">None</property>
+        <signal name="Activated" handler="OnNoneActionActivated" />
+      </action>
+      <action id="CopyAction">
+        <property name="Type">Action</property>
+        <property name="Accelerator">&lt;Primary&gt;c</property>
+        <property name="Label" translatable="yes">Copy</property>
+        <property name="ShortLabel" translatable="yes">Copy</property>
+        <signal name="Activated" handler="OnCopyActionActivated" />
+      </action>
+      <action id="UnselectedAction">
+        <property name="Type">Action</property>
+        <property name="Label" translatable="yes">Unselected</property>
+        <property name="ShortLabel" translatable="yes">Unselected</property>
+        <signal name="Activated" handler="OnUnselectedActionActivated" />
       </action>
     </action-group>
     <property name="MemberName" />
     <property name="Title" translatable="yes">Grid Proxy</property>
+    <property name="Icon">resource:GridProxyGUI.libomv.png</property>
     <property name="WindowPosition">CenterOnParent</property>
     <property name="AllowShrink">True</property>
     <signal name="DeleteEvent" handler="OnDeleteEvent" />
@@ -109,9 +142,9 @@
                     <property name="MemberName" />
                     <node name="menuMain" type="Menubar">
                       <node type="Menu" action="FileAction">
-                        <node type="Menuitem" action="OpenSessionAction" />
-                        <node type="Menuitem" action="SaveSessionAction" />
-                        <node type="Menuitem" action="SaveSessionAsAction" />
+                        <node type="Menuitem" action="OpenAction" />
+                        <node type="Menuitem" action="SaveAction" />
+                        <node type="Menuitem" action="SaveAsAction" />
                         <node type="Separator" />
                         <node type="Menuitem" action="ExitAction" />
                       </node>
@@ -119,12 +152,15 @@
                         <node type="Menu" action="RemoveAction">
                           <node type="Menuitem" action="AllAction1" />
                           <node type="Menuitem" action="SelectedAction" />
+                          <node type="Menuitem" action="UnselectedAction" />
                         </node>
                         <node type="Menu" action="SelectAction">
                           <node type="Menuitem" action="AllAction" />
+                          <node type="Menuitem" action="InvertAction" />
+                          <node type="Menuitem" action="NoneAction" />
                         </node>
                         <node type="Separator" />
-                        <node type="Menuitem" action="FindAction" />
+                        <node type="Menuitem" action="CopyAction" />
                       </node>
                       <node type="Menu" action="HelpAction">
                         <node type="Menuitem" action="AboutAction" />
@@ -264,7 +300,7 @@ http://login.orgrid.org/</property>
           <widget class="Gtk.HPaned" id="mainSplit">
             <property name="MemberName" />
             <property name="CanFocus">True</property>
-            <property name="Position">400</property>
+            <property name="Position">1</property>
             <child>
               <widget class="Gtk.VBox" id="vboxSessions">
                 <property name="MemberName" />
@@ -895,6 +931,110 @@ http://login.orgrid.org/</property>
           <packing>
             <property name="Position">1</property>
             <property name="AutoSize">True</property>
+          </packing>
+        </child>
+      </widget>
+    </child>
+  </widget>
+  <widget class="Gtk.Dialog" id="GridProxyGUI.About" design-size="493 394">
+    <property name="MemberName" />
+    <property name="Title" translatable="yes">About Grid Proxy</property>
+    <property name="Icon">resource:GridProxyGUI.libomv.png</property>
+    <property name="TypeHint">Dialog</property>
+    <property name="WindowPosition">CenterOnParent</property>
+    <property name="Modal">True</property>
+    <property name="Resizable">False</property>
+    <property name="AllowGrow">False</property>
+    <property name="DestroyWithParent">True</property>
+    <property name="Buttons">1</property>
+    <property name="HelpButton">False</property>
+    <child internal-child="VBox">
+      <widget class="Gtk.VBox" id="dialog1_VBox">
+        <property name="MemberName" />
+        <property name="BorderWidth">2</property>
+        <child>
+          <widget class="Gtk.HBox" id="hbox1">
+            <property name="MemberName" />
+            <property name="Spacing">6</property>
+            <child>
+              <widget class="Gtk.Image" id="image3">
+                <property name="MemberName" />
+                <property name="Pixbuf">resource:GridProxyGUI.wgp-logo.png</property>
+              </widget>
+              <packing>
+                <property name="Position">0</property>
+                <property name="AutoSize">True</property>
+                <property name="Expand">False</property>
+                <property name="Fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="Gtk.ScrolledWindow" id="GtkScrolledWindow">
+                <property name="MemberName" />
+                <property name="ShadowType">In</property>
+                <child>
+                  <widget class="Gtk.TextView" id="textview1">
+                    <property name="MemberName" />
+                    <property name="WidthRequest">250</property>
+                    <property name="CanFocus">True</property>
+                    <property name="ShowScrollbars">True</property>
+                    <property name="Editable">False</property>
+                    <property name="CursorVisible">False</property>
+                    <property name="AcceptsTab">False</property>
+                    <property name="Text" translatable="yes">
+Grid Proxy GUI
+Gtk# Interface for Grid Proxy
+
+Based on Win Grid Proxy by
+Jim Radford &lt;jradford@npl.com&gt;
+
+Written by
+Latif Khalifa &lt;latifer@streamgrid.net&gt;
+
+Copyright (c) 2013
+Open Metaverse Foundation
+</property>
+                    <property name="WrapMode">Word</property>
+                  </widget>
+                </child>
+              </widget>
+              <packing>
+                <property name="Position">1</property>
+                <property name="AutoSize">True</property>
+              </packing>
+            </child>
+          </widget>
+          <packing>
+            <property name="Position">0</property>
+            <property name="AutoSize">True</property>
+            <property name="Expand">False</property>
+            <property name="Fill">False</property>
+          </packing>
+        </child>
+      </widget>
+    </child>
+    <child internal-child="ActionArea">
+      <widget class="Gtk.HButtonBox" id="dialog1_ActionArea">
+        <property name="MemberName" />
+        <property name="Spacing">10</property>
+        <property name="BorderWidth">5</property>
+        <property name="Size">1</property>
+        <property name="LayoutStyle">End</property>
+        <child>
+          <widget class="Gtk.Button" id="buttonOk">
+            <property name="MemberName" />
+            <property name="CanDefault">True</property>
+            <property name="CanFocus">True</property>
+            <property name="UseStock">True</property>
+            <property name="Type">StockItem</property>
+            <property name="StockId">gtk-ok</property>
+            <property name="ResponseId">-5</property>
+            <signal name="Clicked" handler="OnButtonOkClicked" />
+            <property name="label">gtk-ok</property>
+          </widget>
+          <packing>
+            <property name="Expand">False</property>
+            <property name="Fill">False</property>
           </packing>
         </child>
       </widget>

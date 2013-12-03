@@ -37,7 +37,6 @@ public partial class MainWindow : Gtk.Window
         ProxyLogger.Init();
         ProxyLogger.OnLogLine += new ProxyLogger.Log(Logger_OnLogLine);
 
-        SetIconFromFile("libomv.png");
         tabsMain.Page = 0;
         mainSplit.Position = 600;
 
@@ -578,6 +577,116 @@ public partial class MainWindow : Gtk.Window
             buffer.InsertWithTagsByName(ref iter, text.Substring(pos, match.Length), tag);
             pos += match.Length;
         }
+    }
+
+    #region edit select menu
+    protected void OnNoneActionActivated(object sender, EventArgs e)
+    {
+    }
+
+
+    protected void OnInvertActionActivated(object sender, EventArgs e)
+    {
+    }
+
+
+    protected void OnAllActionActivated(object sender, EventArgs e)
+    {
+    }
+    #endregion edit select menu
+
+
+    protected void OnCopyActionActivated(object sender, EventArgs e)
+    {
+    }
+
+
+    protected void OnUnselectedActionActivated(object sender, EventArgs e)
+    {
+    }
+
+
+    protected void OnSelectedActionActivated(object sender, EventArgs e)
+    {
+    }
+
+
+    protected void OnAllAction1Activated(object sender, EventArgs e)
+    {
+    }
+
+    List<FileFilter> GetFileFilters()
+    {
+        List<FileFilter> filters = new List<FileFilter>();
+
+        FileFilter filter = new FileFilter();
+        filter.Name = "XML Files (*.xml)";
+        filter.AddMimeType("text/xml");
+        filter.AddPattern("*.xml");
+        filters.Add(filter);
+
+        filter = new FileFilter();
+        filter.Name = "All Files (*.*)";
+        filter.AddPattern("*.*");
+        filters.Add(filter);
+
+
+        return filters;
+    }
+
+    protected void OnOpenActionActivated(object sender, EventArgs e)
+    {
+        var od = new Gtk.FileChooserDialog(null, "Open Session", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+        foreach (var filter in GetFileFilters()) od.AddFilter(filter);
+        
+        if (od.Run() == (int)ResponseType.Accept)
+        {
+            OpenSession(od.Filename);
+        }
+        od.Destroy();
+    }
+
+    string sessionFileName;
+
+    protected void OnSaveAsActionActivated(object sender, EventArgs e)
+    {
+        var od = new Gtk.FileChooserDialog(null, "Save Session", this, FileChooserAction.Save, "Cancel", ResponseType.Cancel, "Save", ResponseType.Accept);
+        foreach (var filter in GetFileFilters()) od.AddFilter(filter);
+
+        if (od.Run() == (int)ResponseType.Accept)
+        {
+            sessionFileName = od.Filename;
+            SaveSession();
+        }
+        od.Destroy();
+    }
+
+    protected void OnSaveActionActivated(object sender, EventArgs e)
+    {
+        if (string.IsNullOrEmpty(sessionFileName))
+        {
+            OnSaveAsActionActivated(sender, e);
+        }
+        else
+        {
+            SaveSession();
+        }
+    }
+
+    void SaveSession()
+    {
+    }
+
+    void OpenSession(string fileName)
+    {
+    }
+
+    protected void OnAboutActionActivated(object sender, EventArgs e)
+    {
+        var about = new GridProxyGUI.About();
+        about.SkipTaskbarHint = about.SkipPagerHint = true;
+        about.Run();
+        about.Destroy();
     }
 
 }
