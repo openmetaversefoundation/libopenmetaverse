@@ -5,7 +5,7 @@
   </configuration>
   <import>
     <widget-library name="glade-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-    <widget-library name="../bin/Debug/GridProxyGUI.exe" internal="true" />
+    <widget-library name="../bin/Release/GridProxyGUI.exe" internal="true" />
   </import>
   <widget class="Gtk.Window" id="MainWindow" design-size="1211 650">
     <action-group name="Default">
@@ -17,7 +17,7 @@
       </action>
       <action id="ExitAction">
         <property name="Type">Action</property>
-        <property name="Accelerator">&lt;Primary&gt;q</property>
+        <property name="Accelerator">&lt;Control&gt;q</property>
         <property name="Label" translatable="yes">Exit</property>
         <property name="ShortLabel" translatable="yes">Exit</property>
         <signal name="Activated" handler="OnExitActionActivated" />
@@ -36,6 +36,7 @@
         <property name="Type">Action</property>
         <property name="Label" translatable="yes">About</property>
         <property name="ShortLabel" translatable="yes">About</property>
+        <property name="Tooltip" translatable="yes">Shows the wonderful creator info</property>
       </action>
       <action id="RemoveAction">
         <property name="Type">Action</property>
@@ -64,19 +65,19 @@
       </action>
       <action id="FindAction">
         <property name="Type">Action</property>
-        <property name="Accelerator">&lt;Primary&gt;f</property>
+        <property name="Accelerator">&lt;Control&gt;f</property>
         <property name="Label" translatable="yes">Find</property>
         <property name="ShortLabel" translatable="yes">Find (Ctrl-F)</property>
       </action>
       <action id="OpenSessionAction">
         <property name="Type">Action</property>
-        <property name="Accelerator">&lt;Primary&gt;o</property>
+        <property name="Accelerator">&lt;Control&gt;o</property>
         <property name="Label" translatable="yes">Open Session...</property>
         <property name="ShortLabel" translatable="yes">Open Session...</property>
       </action>
       <action id="SaveSessionAction">
         <property name="Type">Action</property>
-        <property name="Accelerator">&lt;Primary&gt;s</property>
+        <property name="Accelerator">&lt;Control&gt;s</property>
         <property name="Label" translatable="yes">Save Session</property>
         <property name="ShortLabel" translatable="yes">Save Session</property>
       </action>
@@ -104,9 +105,9 @@
               <widget class="Gtk.Alignment" id="alignment2">
                 <property name="MemberName" />
                 <child>
-                  <widget class="Gtk.MenuBar" id="menubar1">
+                  <widget class="Gtk.MenuBar" id="menuMain">
                     <property name="MemberName" />
-                    <node name="menubar1" type="Menubar">
+                    <node name="menuMain" type="Menubar">
                       <node type="Menu" action="FileAction">
                         <node type="Menuitem" action="OpenSessionAction" />
                         <node type="Menuitem" action="SaveSessionAction" />
@@ -140,7 +141,7 @@
               </packing>
             </child>
             <child>
-              <widget class="Gtk.VSeparator" id="vseparator1">
+              <widget class="Gtk.VSeparator" id="menuSeparator">
                 <property name="MemberName" />
               </widget>
               <packing>
@@ -325,7 +326,7 @@ http://login.orgrid.org/</property>
               <widget class="Gtk.Notebook" id="tabsMain">
                 <property name="MemberName" />
                 <property name="CanFocus">True</property>
-                <property name="CurrentPage">2</property>
+                <property name="CurrentPage">0</property>
                 <child>
                   <widget class="Gtk.VBox" id="vboxLog">
                     <property name="MemberName" />

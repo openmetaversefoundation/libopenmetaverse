@@ -34,12 +34,31 @@ public partial class MainWindow : Gtk.Window
         : base(Gtk.WindowType.Toplevel)
     {
         Build();
-        SetIconFromFile("libomv.png");
-        tabsMain.Page = 1;
-        mainSplit.Position = 600;
-        txtSummary.ModifyFont(Pango.FontDescription.FromString("monospace bold 9"));
+		ProxyLogger.Init();
+		ProxyLogger.OnLogLine += new ProxyLogger.Log(Logger_OnLogLine);
 
-        string font = "monospace";
+		SetIconFromFile("libomv.png");
+        tabsMain.Page = 0;
+        mainSplit.Position = 600;
+
+        string font;
+        if (PlatformDetection.IsMac)
+        {
+            txtSummary.ModifyFont(Pango.FontDescription.FromString("monospace bold"));
+            font = "monospace";
+			IgeMacIntegration.IgeMacMenu.GlobalKeyHandlerEnabled = true;
+			IgeMacIntegration.IgeMacMenu.MenuBar = menuMain;
+			MenuItem quit = new MenuItem("Quit");
+			quit.Activated += (object sender, EventArgs e) => OnExitActionActivated(sender, e);
+			IgeMacIntegration.IgeMacMenu.QuitMenuItem = quit;
+			menuMain.Hide();
+			menuSeparator.Hide();
+        }
+        else
+        {
+            txtSummary.ModifyFont(Pango.FontDescription.FromString("monospace bold 9"));
+            font = "monospace 9";
+        }
 
         txtRequest.ModifyFont(Pango.FontDescription.FromString(font));
         CreateTags(txtRequest.Buffer);
@@ -57,8 +76,6 @@ public partial class MainWindow : Gtk.Window
         StatsTimer = new Timer(1000.0);
         StatsTimer.Elapsed += StatsTimer_Elapsed;
         StatsTimer.Enabled = true;
-
-        ProxyLogger.Init();
 
         ProxyManager.OnLoginResponse += ProxyManager_OnLoginResponse;
         ProxyManager.OnPacketLog += ProxyManager_OnPacketLog;
@@ -200,16 +217,14 @@ public partial class MainWindow : Gtk.Window
                 PacketCounter++;
 
                 int size = 0;
-                string contentType = String.Empty;
                 if (req.RawRequest != null)
                 {
                     size += req.RawRequest.Length;
-                    contentType = req.RequestHeaders.Get("Content-Type");
                 }
-                if (req.RawResponse != null)
+
+				if (req.RawResponse != null)
                 {
                     size += req.RawResponse.Length;
-                    contentType = req.ResponseHeaders.Get("Content-Type");
                 }
 
                 GridProxy.Direction direction;
@@ -276,7 +291,6 @@ public partial class MainWindow : Gtk.Window
     protected void StartPoxy()
     {
         AppendLog("Starting proxy..." + Environment.NewLine);
-        ProxyLogger.OnLogLine += new ProxyLogger.Log(Logger_OnLogLine);
         proxy = new ProxyManager(txtPort.Text, cbListen.ActiveText, cbLoginURL.ActiveText);
         proxy.Start();
     }
@@ -284,7 +298,6 @@ public partial class MainWindow : Gtk.Window
     protected void StopProxy()
     {
         AppendLog("Proxy stopped" + Environment.NewLine);
-        ProxyLogger.OnLogLine -= new ProxyLogger.Log(Logger_OnLogLine);
         if (proxy != null) proxy.Stop();
         proxy = null;
         foreach (var child in new List<Widget>(containerFilterUDP.Children))
