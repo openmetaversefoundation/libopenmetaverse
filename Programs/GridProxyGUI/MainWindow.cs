@@ -34,10 +34,10 @@ public partial class MainWindow : Gtk.Window
         : base(Gtk.WindowType.Toplevel)
     {
         Build();
-		ProxyLogger.Init();
-		ProxyLogger.OnLogLine += new ProxyLogger.Log(Logger_OnLogLine);
+        ProxyLogger.Init();
+        ProxyLogger.OnLogLine += new ProxyLogger.Log(Logger_OnLogLine);
 
-		SetIconFromFile("libomv.png");
+        SetIconFromFile("libomv.png");
         tabsMain.Page = 0;
         mainSplit.Position = 600;
 
@@ -46,13 +46,13 @@ public partial class MainWindow : Gtk.Window
         {
             txtSummary.ModifyFont(Pango.FontDescription.FromString("monospace bold"));
             font = "monospace";
-			IgeMacIntegration.IgeMacMenu.GlobalKeyHandlerEnabled = true;
-			IgeMacIntegration.IgeMacMenu.MenuBar = menuMain;
-			MenuItem quit = new MenuItem("Quit");
-			quit.Activated += (object sender, EventArgs e) => OnExitActionActivated(sender, e);
-			IgeMacIntegration.IgeMacMenu.QuitMenuItem = quit;
-			menuMain.Hide();
-			menuSeparator.Hide();
+            IgeMacIntegration.IgeMacMenu.GlobalKeyHandlerEnabled = true;
+            IgeMacIntegration.IgeMacMenu.MenuBar = menuMain;
+            MenuItem quit = new MenuItem("Quit");
+            quit.Activated += (object sender, EventArgs e) => OnExitActionActivated(sender, e);
+            IgeMacIntegration.IgeMacMenu.QuitMenuItem = quit;
+            menuMain.Hide();
+            menuSeparator.Hide();
         }
         else
         {
@@ -222,7 +222,7 @@ public partial class MainWindow : Gtk.Window
                     size += req.RawRequest.Length;
                 }
 
-				if (req.RawResponse != null)
+                if (req.RawResponse != null)
                 {
                     size += req.RawResponse.Length;
                 }
@@ -479,7 +479,7 @@ public partial class MainWindow : Gtk.Window
         {
             tag = new TextTag("header");
             tag.ForegroundGdk = new Gdk.Color(0, 255, 0);
-            tag.BackgroundGdk = new Gdk.Color(176, 196,	222);
+            tag.BackgroundGdk = new Gdk.Color(176, 196, 222);
             buffer.TagTable.Add(tag);
         }
 
@@ -561,7 +561,8 @@ public partial class MainWindow : Gtk.Window
             else if (!String.IsNullOrEmpty(match.Groups["BlockSep"].Value))
             {
                 tag = "block";
-            } else if (!String.IsNullOrEmpty(match.Groups["Tag"].Value))
+            }
+            else if (!String.IsNullOrEmpty(match.Groups["Tag"].Value))
             {
                 tag = "tag";
             }
