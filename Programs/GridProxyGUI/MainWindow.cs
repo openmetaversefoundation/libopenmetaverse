@@ -597,7 +597,7 @@ public partial class MainWindow : Gtk.Window
         }
     }
 
-     List<FileFilter> GetFileFilters()
+    List<FileFilter> GetFileFilters()
     {
         List<FileFilter> filters = new List<FileFilter>();
 
@@ -664,7 +664,10 @@ public partial class MainWindow : Gtk.Window
         about.Destroy();
     }
 
-    protected void OnBtnLoadPluginClicked (object sender, EventArgs e)
+    protected void OnBtnLoadPluginClicked(object sender, EventArgs e)
     {
+        if (proxy == null) return;
+
+        plugins.LoadPlugin(proxy.Proxy);
     }
 }
