@@ -595,43 +595,7 @@ public partial class MainWindow : Gtk.Window
         }
     }
 
-    #region edit select menu
-    protected void OnNoneActionActivated(object sender, EventArgs e)
-    {
-    }
-
-
-    protected void OnInvertActionActivated(object sender, EventArgs e)
-    {
-    }
-
-
-    protected void OnAllActionActivated(object sender, EventArgs e)
-    {
-    }
-    #endregion edit select menu
-
-
-    protected void OnCopyActionActivated(object sender, EventArgs e)
-    {
-    }
-
-
-    protected void OnUnselectedActionActivated(object sender, EventArgs e)
-    {
-    }
-
-
-    protected void OnSelectedActionActivated(object sender, EventArgs e)
-    {
-    }
-
-
-    protected void OnAllAction1Activated(object sender, EventArgs e)
-    {
-    }
-
-    List<FileFilter> GetFileFilters()
+     List<FileFilter> GetFileFilters()
     {
         List<FileFilter> filters = new List<FileFilter>();
 
