@@ -319,6 +319,7 @@ public partial class MainWindow : Gtk.Window
         {
             containerFilterUDP.Remove(child);
         }
+        plugins.Store.Clear();
     }
 
     protected void OnDeleteEvent(object sender, DeleteEventArgs a)

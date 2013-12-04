@@ -33,7 +33,7 @@ namespace GridProxyGUI
     public class PluginsScroller : TreeView
     {
 
-        ListStore Store;
+        public ListStore Store;
 
         public PluginsScroller()
         {
