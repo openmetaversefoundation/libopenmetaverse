@@ -80,6 +80,7 @@
     <Compile Include="IgeMacMenuGlobal.cs" />
     <Compile Include="MainWindow.cs" />
     <Compile Include="gtk-gui\MainWindow.cs" />
+    <Compile Include="MainWindow.Persistance.cs" />
     <Compile Include="MessageScroller.cs" />
     <Compile Include="PlatformDetection.cs" />
     <Compile Include="Program.cs" />
