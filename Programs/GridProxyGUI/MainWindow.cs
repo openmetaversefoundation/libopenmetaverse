@@ -4,9 +4,9 @@ using System.Collections.Concurrent;
 using Gtk;
 using GridProxyGUI;
 using OpenMetaverse.Packets;
+using Logger = OpenMetaverse.Logger;
 using System.Timers;
 using System.Text.RegularExpressions;
-using Nwc.XmlRpc;
 
 public partial class MainWindow : Gtk.Window
 {
@@ -104,7 +104,7 @@ public partial class MainWindow : Gtk.Window
         {
             string loginType;
 
-            if (request is XmlRpcRequest)
+            if (request is Nwc.XmlRpc.XmlRpcRequest)
             {
                 loginType = "Login Request";
             }
@@ -290,8 +290,22 @@ public partial class MainWindow : Gtk.Window
     protected void StartPoxy()
     {
         AppendLog("Starting proxy..." + Environment.NewLine);
-        proxy = new ProxyManager(txtPort.Text, cbListen.ActiveText, cbLoginURL.ActiveText);
-        proxy.Start();
+        try
+        {
+            proxy = new ProxyManager(txtPort.Text, cbListen.ActiveText, cbLoginURL.ActiveText);
+            proxy.Start();
+        }
+        catch
+        {
+            Logger.Log("Failed to start proxy", OpenMetaverse.Helpers.LogLevel.Error);
+            try
+            {
+                proxy.Stop();
+                proxy = null;
+            }
+            catch { }
+            btnStart.Label = "Start Proxy";
+        }
     }
 
     protected void StopProxy()

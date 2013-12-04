@@ -73,6 +73,8 @@ public partial class MainWindow
                 {
                     if (data != null && data is OSDMap)
                     {
+                        messages.Messages.Clear();
+
                         OSDMap map = (OSDMap)data;
                         OSDArray msgs = (OSDArray)map["Messages"];
                         foreach (var msgOSD in msgs)

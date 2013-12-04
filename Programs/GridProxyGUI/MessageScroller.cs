@@ -28,6 +28,7 @@ namespace GridProxyGUI
 
             Model = Messages = new ListStore(typeof(Session));
             HeadersVisible = true;
+            Selection.Mode = SelectionMode.Multiple;
             ShowAll();
         }
 
