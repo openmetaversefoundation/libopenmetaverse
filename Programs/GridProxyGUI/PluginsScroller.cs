@@ -4,6 +4,7 @@ using System.IO;
 using Gtk;
 using GridProxy;
 using GridProxyGUI;
+using System.Reflection;
 
 namespace GridProxyGUI
 {
@@ -116,6 +117,33 @@ namespace GridProxyGUI
             return filters;
         }
 
+
+        public bool LoadAssembly(string path, ProxyFrame proxy)
+        {
+
+            try
+            {
+                Assembly assembly = Assembly.LoadFile(System.IO.Path.GetFullPath(path));
+                foreach (Type t in assembly.GetTypes())
+                {
+                    if (t.IsSubclassOf(typeof(ProxyPlugin)))
+                    {
+                        ConstructorInfo info = t.GetConstructor(new Type[] { typeof(ProxyFrame) });
+                        ProxyPlugin plugin = (ProxyPlugin)info.Invoke(new object[] { proxy });
+                        plugin.Init();
+                        return true;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                OpenMetaverse.Logger.Log("Failed loading plugin: " + e.Message + Environment.NewLine + e.StackTrace, OpenMetaverse.Helpers.LogLevel.Error);
+                Console.WriteLine(e.ToString());
+            }
+
+            return false;
+        }
+
         public void LoadPlugin(ProxyFrame proxy)
         {
             if (proxy == null) return;
@@ -139,7 +167,7 @@ namespace GridProxyGUI
                     return false;
                 });
 
-                if (!found)
+                if (!found && LoadAssembly(plugin.Path, proxy))
                 {
                     Store.AppendValues(plugin);
                 }
@@ -147,6 +175,6 @@ namespace GridProxyGUI
             od.Destroy();
 
         }
-    
+
     }
 }
