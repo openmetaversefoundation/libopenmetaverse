@@ -123,6 +123,7 @@ namespace GridProxyGUI
 
             try
             {
+                bool started = false;
                 Assembly assembly = Assembly.LoadFile(System.IO.Path.GetFullPath(path));
                 foreach (Type t in assembly.GetTypes())
                 {
@@ -131,9 +132,11 @@ namespace GridProxyGUI
                         ConstructorInfo info = t.GetConstructor(new Type[] { typeof(ProxyFrame) });
                         ProxyPlugin plugin = (ProxyPlugin)info.Invoke(new object[] { proxy });
                         plugin.Init();
-                        return true;
+                        started = true;
                     }
                 }
+
+                return started;
             }
             catch (Exception e)
             {
