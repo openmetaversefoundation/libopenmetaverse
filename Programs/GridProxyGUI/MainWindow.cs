@@ -4,7 +4,11 @@ using System.Collections.Concurrent;
 using Gtk;
 using GridProxyGUI;
 using OpenMetaverse.Packets;
+using OpenMetaverse.StructuredData;
+using System.IO;
+using System.IO.Compression;
 using System.Timers;
+using System.Text;
 using System.Text.RegularExpressions;
 using Nwc.XmlRpc;
 
@@ -620,9 +624,8 @@ public partial class MainWindow : Gtk.Window
         List<FileFilter> filters = new List<FileFilter>();
 
         FileFilter filter = new FileFilter();
-        filter.Name = "XML Files (*.xml)";
-        filter.AddMimeType("text/xml");
-        filter.AddPattern("*.xml");
+        filter.Name = "Grid Proxy Compressed (*.gpz)";
+        filter.AddPattern("*.gpz");
         filters.Add(filter);
 
         filter = new FileFilter();
@@ -638,7 +641,7 @@ public partial class MainWindow : Gtk.Window
     {
         var od = new Gtk.FileChooserDialog(null, "Open Session", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
         foreach (var filter in GetFileFilters()) od.AddFilter(filter);
-        
+
         if (od.Run() == (int)ResponseType.Accept)
         {
             OpenSession(od.Filename);
@@ -656,6 +659,10 @@ public partial class MainWindow : Gtk.Window
         if (od.Run() == (int)ResponseType.Accept)
         {
             sessionFileName = od.Filename;
+            if (string.IsNullOrEmpty(System.IO.Path.GetExtension(sessionFileName)))
+            {
+                sessionFileName += ".gpz";
+            }
             SaveSession();
         }
         od.Destroy();
@@ -675,10 +682,78 @@ public partial class MainWindow : Gtk.Window
 
     void SaveSession()
     {
+        OSDMap s = new OSDMap();
+        OSDArray array = new OSDArray();
+
+        foreach (object[] row in messages.Messages)
+        {
+            array.Add(((Session)row[0]).Serialize());
+        }
+
+        s["Version"] = "1.0";
+        s["Messages"] = array;
+
+        System.Threading.ThreadPool.QueueUserWorkItem((sync) =>
+        {
+            try
+            {
+                using (var file = File.OpenWrite(sessionFileName))
+                {
+                    using (var compressed = new GZipStream(file, CompressionMode.Compress))
+                    {
+                        using (var writer = new System.Xml.XmlTextWriter(compressed, new UTF8Encoding(false)))
+                        {
+                            writer.Formatting = System.Xml.Formatting.Indented;
+                            writer.WriteStartDocument();
+                            writer.WriteStartElement(String.Empty, "llsd", String.Empty);
+                            OSDParser.SerializeLLSDXmlElement(writer, s);
+                            writer.WriteEndElement();
+                        }
+                    }
+                }
+            }
+            catch { }
+        });
     }
 
     void OpenSession(string fileName)
     {
+        System.Threading.ThreadPool.QueueUserWorkItem((sync) =>
+        {
+            OSD data;
+            try
+            {
+                using (var file = File.OpenRead(fileName))
+                {
+                    using (var compressed = new GZipStream(file, CompressionMode.Decompress))
+                    {
+                        data = OSDParser.DeserializeLLSDXml(compressed);
+                    }
+                }
+            }
+            catch
+            {
+                return;
+            }
+
+            Application.Invoke((sender, e) =>
+            {
+                if (data != null && data is OSDMap)
+                {
+                    OSDMap map = (OSDMap)data;
+                    OSDArray msgs = (OSDArray)map["Messages"];
+                    foreach (var msgOSD in msgs)
+                    {
+                        var msg = (OSDMap)msgOSD;
+                        var session = Session.FromOSD(msg);
+                        if (session != null)
+                        {
+                            messages.Messages.AppendValues(session);
+                        }
+                    }
+                }
+            });
+        });
     }
 
     protected void OnAboutActionActivated(object sender, EventArgs e)

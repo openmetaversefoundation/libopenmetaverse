@@ -85,8 +85,74 @@ namespace GridProxyGUI
         }
 
         public abstract string ToPrettyString(Direction direction);
-        public abstract byte[] Serialize();
-        public abstract Session Deserialize(byte[] bytes);
+        
+        public virtual OSDMap Serialize()
+        {
+            OSDMap map = new OSDMap();
+
+            map["Name"] = OSD.FromString(this.Name);
+            map["Host"] = OSD.FromString(this.Host);
+            map["Direction"] = OSD.FromInteger((int)this.Direction);
+            map["ContentType"] = OSD.FromString(this.ContentType);
+
+            OSDArray cols = new OSDArray();
+            if (Columns != null)
+            {
+                foreach (var c in Columns) cols.Add(c);
+            }
+            map["Columns"] = cols;
+
+            return map;
+        }
+
+        public virtual Session Deserialize(OSDMap map)
+        {
+            OSDArray cols = (OSDArray)map["Columns"];
+
+            this.Name = map["Name"];
+            this.Host = map["Host"];
+            this.Direction = (Direction)map["Direction"].AsInteger();
+            this.ContentType = map["ContentType"];
+
+            if (cols.Count > 0)
+            {
+                Columns = new string[cols.Count];
+
+                for (int i = 0; i < cols.Count; i++)
+                {
+                    Columns[i] = cols[i];
+                }
+            }
+
+            return this;
+        }
+
+        public static Session FromOSD(OSDMap map)
+        {
+            Session session;
+
+            switch (map["SessionType"].AsString())
+            {
+                case "SessionCaps":
+                    session = new SessionCaps();
+                    break;
+                case "SessionEvent":
+                    session = new SessionEvent();
+                    break;
+                case "SessionLogin":
+                    session = new SessionLogin();
+                    break;
+                case "SessionPacket":
+                    session = new SessionPacket();
+                    break;
+                default:
+                    return null;
+            }
+
+            session.Deserialize(map);
+            return session;
+        }
+
         public string[] Columns;
     }
     #endregion
@@ -141,40 +207,48 @@ namespace GridProxyGUI
         //        return base.ToXml(direction);
         //}
 
-        //public override string ToStringNotation(Direction direction)
-        //{
-        //    if (direction == this.Direction)
-        //        return Packet.GetLLSD(this.Packet).ToString();
-        //    else
-        //        return base.ToStringNotation(direction);
-        //}
-
-        public override byte[] Serialize()
+        public override string ToStringNotation(Direction direction)
         {
-            OSDMap map = new OSDMap(5);
-            map["Name"] = OSD.FromString(this.Name);
-            map["Host"] = OSD.FromString(this.Host);
-            map["PacketBytes"] = OSD.FromBinary(this.Packet.ToBytes());
-            map["Direction"] = OSD.FromInteger((int)this.Direction);
-            map["ContentType"] = OSD.FromString(this.ContentType);
-
-            return OpenMetaverse.Utils.StringToBytes(map.ToString());
+            if (direction == this.Direction)
+                return Packet.GetLLSD(this.Packet).ToString();
+            else
+                return base.ToStringNotation(direction);
         }
 
-        public override Session Deserialize(byte[] bytes)
+        public override OSDMap Serialize()
         {
-            OSDMap map = (OSDMap)OSDParser.DeserializeLLSDNotation(OpenMetaverse.Utils.BytesToString(bytes));
+            OSDMap map = (OSDMap)base.Serialize();
+            map["SessionType"] = "SessionPacket";
+            map["PacketBytes"] = OSD.FromBinary(this.Packet.ToBytes());
 
-            this.Host = map["Host"].AsString();
-            this.Direction = (Direction)map["Direction"].AsInteger();
-            this.ContentType = map["ContentType"].AsString();
+            return map;
+        }
+
+        public override Session Deserialize(OSDMap map)
+        {
+            base.Deserialize(map);
 
             byte[] packetData = map["PacketBytes"].AsBinary();
             this.Length = packetData.Length;
 
+            // We save packets zero decoded, but header might still have a flag. Reset it
+            bool zeroCoded = (packetData[0] & Helpers.MSG_ZEROCODED) == Helpers.MSG_ZEROCODED;
+            if (zeroCoded)
+            {
+                packetData[0] = (byte)(packetData[0] & ~Helpers.MSG_ZEROCODED);
+            }
+
             int packetEnd = packetData.Length - 1;
-            this.Packet = Packet.BuildPacket(packetData, ref packetEnd, null);
-            this.Name = this.Packet.Type.ToString();
+            try
+            {
+                Packet = Packet.BuildPacket(packetData, ref packetEnd, null);
+                Packet.Header.Zerocoded = zeroCoded;
+            }
+            catch
+            {
+                return null;
+            }
+
             return this;
         }
     }
@@ -430,15 +504,13 @@ namespace GridProxyGUI
         }
 
 
-        public override byte[] Serialize()
+        public override OSDMap Serialize()
         {
-            OSDMap map = new OSDMap(5);
-            map["Name"] = OSD.FromString(this.Name);
-            map["Host"] = OSD.FromString(this.Host);
+            OSDMap map = base.Serialize();
+
+            map["SessionType"] = "SessionCaps";
             map["RequestBytes"] = OSD.FromBinary(this.RequestBytes);
             map["ResponseBytes"] = OSD.FromBinary(this.ResponseBytes);
-            map["Direction"] = OSD.FromInteger((int)this.Direction);
-            map["ContentType"] = OSD.FromString(this.ContentType);
             map["Protocol"] = OSD.FromString(this.Protocol);
 
             OSDArray requestHeadersArray = new OSDArray();
@@ -461,20 +533,15 @@ namespace GridProxyGUI
             if (responseHeadersArray.Count > 0)
                 map["ResponseHeaders"] = responseHeadersArray;
 
-            return OpenMetaverse.Utils.StringToBytes(map.ToString());
+            return map;
         }
 
-        public override Session Deserialize(byte[] bytes)
+        public override Session Deserialize(OSDMap map)
         {
-            OSDMap map = (OSDMap)OSDParser.DeserializeLLSDNotation(OpenMetaverse.Utils.BytesToString(bytes));
-
-            this.Name = map["Name"].AsString();
-            this.Host = map["Host"].AsString();
+            base.Deserialize(map);
             this.RequestBytes = map["RequestBytes"].AsBinary();
             this.ResponseBytes = map["ResponseBytes"].AsBinary();
-            this.Direction = (Direction)map["Direction"].AsInteger();
             this.Length = ResponseBytes.Length + RequestBytes.Length;
-            this.ContentType = map["ContentType"].AsString();
             this.Protocol = map["Protocol"].AsString();
 
             this.RequestHeaders = new WebHeaderCollection();
@@ -577,29 +644,23 @@ namespace GridProxyGUI
             }
         }
 
-        public override byte[] Serialize()
+        public override OSDMap Serialize()
         {
-            OSDMap map = new OSDMap(6);
-            map["Name"] = OSD.FromString(this.Name);
-            map["Host"] = OSD.FromString(this.Host);
+            OSDMap map = base.Serialize();
+
+            map["SessionType"] = "SessionLogin";
             map["Data"] = OSD.FromString(this.Data.ToString());
-            map["Direction"] = OSD.FromInteger((int)this.Direction);
-            map["ContentType"] = OSD.FromString(this.ContentType);
             map["Protocol"] = OSD.FromString(this.Protocol);
 
-            return OpenMetaverse.Utils.StringToBytes(map.ToString());
+            return map;
         }
 
-        public override Session Deserialize(byte[] bytes)
+        public override Session Deserialize(OSDMap map)
         {
-            OSDMap map = (OSDMap)OSDParser.DeserializeLLSDNotation(OpenMetaverse.Utils.BytesToString(bytes));
+            base.Deserialize(map);
 
-            this.Name = map["Name"].AsString();
-            this.Host = map["Host"].AsString();
             this.Data = map["Data"].AsString();
             this.Length = this.Data.ToString().Length;
-            this.Direction = (Direction)map["Direction"].AsInteger();
-            this.ContentType = map["ContentType"].AsString();
             this.Protocol = map["Protocol"].AsString();
 
             return this;
@@ -708,14 +769,12 @@ namespace GridProxyGUI
             }
         }
 
-        public override byte[] Serialize()
+        public override OSDMap Serialize()
         {
-            OSDMap map = new OSDMap(7);
-            map["Name"] = OSD.FromString(this.Name);
-            map["Host"] = OSD.FromString(this.Host);
+            OSDMap map = base.Serialize();
+
+            map["SessionType"] = "SessionEvent";
             map["ResponseBytes"] = OSD.FromBinary(this.ResponseBytes);
-            map["Direction"] = OSD.FromInteger((int)this.Direction);
-            map["ContentType"] = OSD.FromString(this.ContentType);
             map["Protocol"] = OSD.FromString(this.Protocol);
 
             OSDArray responseHeadersArray = new OSDArray();
@@ -727,18 +786,14 @@ namespace GridProxyGUI
             }
             map["ResponseHeaders"] = responseHeadersArray;
 
-            return Utils.StringToBytes(map.ToString());
+            return map;
         }
 
-        public override Session Deserialize(byte[] bytes)
+        public override Session Deserialize(OSDMap map)
         {
-            OSDMap map = (OSDMap)OSDParser.DeserializeLLSDNotation(OpenMetaverse.Utils.BytesToString(bytes));
+            base.Deserialize(map);
 
-            this.Name = map["Name"].AsString();
-            this.Host = map["Host"].AsString();
             this.ResponseBytes = map["ResponseBytes"].AsBinary();
-            this.Direction = (Direction)map["Direction"].AsInteger();
-            this.ContentType = map["ContentType"].AsString();
             this.Protocol = map["Protocol"].AsString();
             this.Length = ResponseBytes.Length;
 
