@@ -418,13 +418,13 @@ public partial class MainWindow : Gtk.Window
 
     void messages_CursorChanged(object sender, EventArgs e)
     {
-        TreeSelection selection = (sender as TreeView).Selection;
-        TreeModel model;
+        var tv = (TreeView)sender;
+        var paths = tv.Selection.GetSelectedRows();
         TreeIter iter;
 
-        if (selection.GetSelected(out model, out iter))
+        if (paths.Length == 1 && tv.Model.GetIter(out iter, paths[0]))
         {
-            var item = model.GetValue(iter, 0) as Session;
+            var item = tv.Model.GetValue(iter, 0) as Session;
             if (item != null)
             {
                 ColorizePacket(txtRequest.Buffer, item.ToPrettyString(GridProxy.Direction.Outgoing));
@@ -491,8 +491,8 @@ public partial class MainWindow : Gtk.Window
         if (tag == null)
         {
             tag = new TextTag("header");
-            tag.ForegroundGdk = new Gdk.Color(0, 255, 0);
-            tag.BackgroundGdk = new Gdk.Color(176, 196, 222);
+            tag.ForegroundGdk = new Gdk.Color(0, 96, 0);
+            tag.BackgroundGdk = new Gdk.Color(206, 226, 252);
             buffer.TagTable.Add(tag);
         }
 
@@ -569,7 +569,7 @@ public partial class MainWindow : Gtk.Window
             }
             else if (!String.IsNullOrEmpty(match.Groups["Header"].Value))
             {
-                tag = "heder";
+                tag = "header";
             }
             else if (!String.IsNullOrEmpty(match.Groups["BlockSep"].Value))
             {

@@ -22,13 +22,14 @@ public partial class MainWindow
         }
 
         s["Version"] = "1.0";
+        s["Description"] = "Grid Proxy Session Archive";
         s["Messages"] = array;
 
         System.Threading.ThreadPool.QueueUserWorkItem((sync) =>
         {
             try
             {
-                using (var file = File.OpenWrite(SessionFileName))
+                using (var file = File.Open(SessionFileName, FileMode.Create))
                 {
                     using (var compressed = new GZipStream(file, CompressionMode.Compress))
                     {
