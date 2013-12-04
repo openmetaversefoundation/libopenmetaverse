@@ -87,6 +87,8 @@ public partial class MainWindow
                                 messages.Messages.AppendValues(session);
                             }
                         }
+
+                        SessionFileName = fileName;
                     }
                 }
                 catch { }

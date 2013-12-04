@@ -442,6 +442,8 @@ public partial class MainWindow : Gtk.Window
 
     void SetVisibility()
     {
+        tabsMain.Page = 2;
+
         var w1 = vboxInspector.Children.GetValue(0) as Widget;
         var w2 = vboxInspector.Children.GetValue(1) as Widget;
 

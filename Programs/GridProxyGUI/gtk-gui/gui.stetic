@@ -22,11 +22,6 @@
         <property name="ShortLabel" translatable="yes">Exit</property>
         <signal name="Activated" handler="OnExitActionActivated" />
       </action>
-      <action id="EditAction">
-        <property name="Type">Action</property>
-        <property name="Label" translatable="yes">Edit</property>
-        <property name="ShortLabel" translatable="yes">Edit</property>
-      </action>
       <action id="HelpAction">
         <property name="Type">Action</property>
         <property name="Label" translatable="yes">Help</property>
@@ -38,40 +33,6 @@
         <property name="ShortLabel" translatable="yes">About</property>
         <property name="Tooltip" translatable="yes">Shows the wonderful creator info</property>
         <signal name="Activated" handler="OnAboutActionActivated" />
-      </action>
-      <action id="RemoveAction">
-        <property name="Type">Action</property>
-        <property name="Label" translatable="yes">Remove</property>
-        <property name="ShortLabel" translatable="yes">Remove</property>
-      </action>
-      <action id="SelectAction">
-        <property name="Type">Action</property>
-        <property name="Label" translatable="yes">Select</property>
-        <property name="ShortLabel" translatable="yes">Select</property>
-      </action>
-      <action id="AllAction">
-        <property name="Type">Action</property>
-        <property name="Label" translatable="yes">All</property>
-        <property name="ShortLabel" translatable="yes">All</property>
-        <signal name="Activated" handler="OnAllActionActivated" />
-      </action>
-      <action id="AllAction1">
-        <property name="Type">Action</property>
-        <property name="Label" translatable="yes">All</property>
-        <property name="ShortLabel" translatable="yes">All</property>
-        <signal name="Activated" handler="OnAllAction1Activated" />
-      </action>
-      <action id="SelectedAction">
-        <property name="Type">Action</property>
-        <property name="Label" translatable="yes">Selected</property>
-        <property name="ShortLabel" translatable="yes">Selected</property>
-        <signal name="Activated" handler="OnSelectedActionActivated" />
-      </action>
-      <action id="FindAction">
-        <property name="Type">Action</property>
-        <property name="Accelerator">&lt;Control&gt;f</property>
-        <property name="Label" translatable="yes">Find</property>
-        <property name="ShortLabel" translatable="yes">Find (Ctrl-F)</property>
       </action>
       <action id="OpenAction">
         <property name="Type">Action</property>
@@ -92,31 +53,6 @@
         <property name="Label" translatable="yes">Save As...</property>
         <property name="ShortLabel" translatable="yes">Save Session As...</property>
         <signal name="Activated" handler="OnSaveAsActionActivated" />
-      </action>
-      <action id="InvertAction">
-        <property name="Type">Action</property>
-        <property name="Label" translatable="yes">Invert</property>
-        <property name="ShortLabel" translatable="yes">Invert</property>
-        <signal name="Activated" handler="OnInvertActionActivated" />
-      </action>
-      <action id="NoneAction">
-        <property name="Type">Action</property>
-        <property name="Label" translatable="yes">None</property>
-        <property name="ShortLabel" translatable="yes">None</property>
-        <signal name="Activated" handler="OnNoneActionActivated" />
-      </action>
-      <action id="CopyAction">
-        <property name="Type">Action</property>
-        <property name="Accelerator">&lt;Primary&gt;c</property>
-        <property name="Label" translatable="yes">Copy</property>
-        <property name="ShortLabel" translatable="yes">Copy</property>
-        <signal name="Activated" handler="OnCopyActionActivated" />
-      </action>
-      <action id="UnselectedAction">
-        <property name="Type">Action</property>
-        <property name="Label" translatable="yes">Unselected</property>
-        <property name="ShortLabel" translatable="yes">Unselected</property>
-        <signal name="Activated" handler="OnUnselectedActionActivated" />
       </action>
     </action-group>
     <property name="MemberName" />
@@ -147,20 +83,6 @@
                         <node type="Menuitem" action="SaveAsAction" />
                         <node type="Separator" />
                         <node type="Menuitem" action="ExitAction" />
-                      </node>
-                      <node type="Menu" action="EditAction">
-                        <node type="Menu" action="RemoveAction">
-                          <node type="Menuitem" action="AllAction1" />
-                          <node type="Menuitem" action="SelectedAction" />
-                          <node type="Menuitem" action="UnselectedAction" />
-                        </node>
-                        <node type="Menu" action="SelectAction">
-                          <node type="Menuitem" action="AllAction" />
-                          <node type="Menuitem" action="InvertAction" />
-                          <node type="Menuitem" action="NoneAction" />
-                        </node>
-                        <node type="Separator" />
-                        <node type="Menuitem" action="CopyAction" />
                       </node>
                       <node type="Menu" action="HelpAction">
                         <node type="Menuitem" action="AboutAction" />
