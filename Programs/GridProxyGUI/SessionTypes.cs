@@ -512,6 +512,7 @@ namespace GridProxyGUI
             map["RequestBytes"] = OSD.FromBinary(this.RequestBytes);
             map["ResponseBytes"] = OSD.FromBinary(this.ResponseBytes);
             map["Protocol"] = OSD.FromString(this.Protocol);
+            map["FullUri"] = this.FullUri;
 
             OSDArray requestHeadersArray = new OSDArray();
             foreach (String key in this.RequestHeaders.Keys)
@@ -543,6 +544,7 @@ namespace GridProxyGUI
             this.ResponseBytes = map["ResponseBytes"].AsBinary();
             this.Length = ResponseBytes.Length + RequestBytes.Length;
             this.Protocol = map["Protocol"].AsString();
+            this.FullUri = map["FullUri"];
 
             this.RequestHeaders = new WebHeaderCollection();
             if (map.ContainsKey("RequestHeaders"))

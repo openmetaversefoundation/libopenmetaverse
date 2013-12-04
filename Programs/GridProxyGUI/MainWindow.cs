@@ -738,20 +738,24 @@ public partial class MainWindow : Gtk.Window
 
             Application.Invoke((sender, e) =>
             {
-                if (data != null && data is OSDMap)
+                try
                 {
-                    OSDMap map = (OSDMap)data;
-                    OSDArray msgs = (OSDArray)map["Messages"];
-                    foreach (var msgOSD in msgs)
+                    if (data != null && data is OSDMap)
                     {
-                        var msg = (OSDMap)msgOSD;
-                        var session = Session.FromOSD(msg);
-                        if (session != null)
+                        OSDMap map = (OSDMap)data;
+                        OSDArray msgs = (OSDArray)map["Messages"];
+                        foreach (var msgOSD in msgs)
                         {
-                            messages.Messages.AppendValues(session);
+                            var msg = (OSDMap)msgOSD;
+                            var session = Session.FromOSD(msg);
+                            if (session != null)
+                            {
+                                messages.Messages.AppendValues(session);
+                            }
                         }
                     }
                 }
+                catch { }
             });
         });
     }
