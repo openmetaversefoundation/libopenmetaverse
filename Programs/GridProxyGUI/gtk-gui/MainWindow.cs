@@ -85,6 +85,11 @@ public partial class MainWindow
 	private global::Gtk.TextView txtResponseNotation;
 	private global::Gtk.Label label12;
 	private global::Gtk.Label label10;
+	private global::Gtk.VBox vboxPlugins;
+	private global::Gtk.HBox hbox1;
+	private global::Gtk.Button btnLoadPlugin;
+	private global::Gtk.ScrolledWindow scrolledwindowPlugin;
+	private global::Gtk.Label label13;
 
 	protected virtual void Build ()
 	{
@@ -235,7 +240,7 @@ public partial class MainWindow
 		this.mainSplit = new global::Gtk.HPaned ();
 		this.mainSplit.CanFocus = true;
 		this.mainSplit.Name = "mainSplit";
-		this.mainSplit.Position = 1;
+		this.mainSplit.Position = 500;
 		// Container child mainSplit.Gtk.Paned+PanedChild
 		this.vboxSessions = new global::Gtk.VBox ();
 		this.vboxSessions.Name = "vboxSessions";
@@ -275,7 +280,7 @@ public partial class MainWindow
 		this.tabsMain = new global::Gtk.Notebook ();
 		this.tabsMain.CanFocus = true;
 		this.tabsMain.Name = "tabsMain";
-		this.tabsMain.CurrentPage = 0;
+		this.tabsMain.CurrentPage = 3;
 		// Container child tabsMain.Gtk.Notebook+NotebookChild
 		this.vboxLog = new global::Gtk.VBox ();
 		this.vboxLog.Name = "vboxLog";
@@ -667,10 +672,51 @@ public partial class MainWindow
 		this.label10.LabelProp = global::Mono.Unix.Catalog.GetString ("Inspector");
 		this.tabsMain.SetTabLabel (this.vboxInspector, this.label10);
 		this.label10.ShowAll ();
+		// Container child tabsMain.Gtk.Notebook+NotebookChild
+		this.vboxPlugins = new global::Gtk.VBox ();
+		this.vboxPlugins.Name = "vboxPlugins";
+		this.vboxPlugins.Spacing = 6;
+		// Container child vboxPlugins.Gtk.Box+BoxChild
+		this.hbox1 = new global::Gtk.HBox ();
+		this.hbox1.Name = "hbox1";
+		this.hbox1.Spacing = 6;
+		// Container child hbox1.Gtk.Box+BoxChild
+		this.btnLoadPlugin = new global::Gtk.Button ();
+		this.btnLoadPlugin.CanFocus = true;
+		this.btnLoadPlugin.Name = "btnLoadPlugin";
+		this.btnLoadPlugin.UseUnderline = true;
+		this.btnLoadPlugin.Label = global::Mono.Unix.Catalog.GetString ("Load Plugin...");
+		this.hbox1.Add (this.btnLoadPlugin);
+		global::Gtk.Box.BoxChild w62 = ((global::Gtk.Box.BoxChild)(this.hbox1 [this.btnLoadPlugin]));
+		w62.Position = 0;
+		w62.Expand = false;
+		w62.Fill = false;
+		this.vboxPlugins.Add (this.hbox1);
+		global::Gtk.Box.BoxChild w63 = ((global::Gtk.Box.BoxChild)(this.vboxPlugins [this.hbox1]));
+		w63.Position = 0;
+		w63.Expand = false;
+		w63.Fill = false;
+		// Container child vboxPlugins.Gtk.Box+BoxChild
+		this.scrolledwindowPlugin = new global::Gtk.ScrolledWindow ();
+		this.scrolledwindowPlugin.CanFocus = true;
+		this.scrolledwindowPlugin.Name = "scrolledwindowPlugin";
+		this.scrolledwindowPlugin.ShadowType = ((global::Gtk.ShadowType)(1));
+		this.vboxPlugins.Add (this.scrolledwindowPlugin);
+		global::Gtk.Box.BoxChild w64 = ((global::Gtk.Box.BoxChild)(this.vboxPlugins [this.scrolledwindowPlugin]));
+		w64.Position = 1;
+		this.tabsMain.Add (this.vboxPlugins);
+		global::Gtk.Notebook.NotebookChild w65 = ((global::Gtk.Notebook.NotebookChild)(this.tabsMain [this.vboxPlugins]));
+		w65.Position = 3;
+		// Notebook tab
+		this.label13 = new global::Gtk.Label ();
+		this.label13.Name = "label13";
+		this.label13.LabelProp = global::Mono.Unix.Catalog.GetString ("Plugins");
+		this.tabsMain.SetTabLabel (this.vboxPlugins, this.label13);
+		this.label13.ShowAll ();
 		this.mainSplit.Add (this.tabsMain);
 		this.vboxMenuMain.Add (this.mainSplit);
-		global::Gtk.Box.BoxChild w63 = ((global::Gtk.Box.BoxChild)(this.vboxMenuMain [this.mainSplit]));
-		w63.Position = 1;
+		global::Gtk.Box.BoxChild w67 = ((global::Gtk.Box.BoxChild)(this.vboxMenuMain [this.mainSplit]));
+		w67.Position = 1;
 		this.Add (this.vboxMenuMain);
 		if ((this.Child != null)) {
 			this.Child.ShowAll ();
@@ -688,5 +734,6 @@ public partial class MainWindow
 		this.cbAutoScroll.Toggled += new global::System.EventHandler (this.OnCbAutoScrollToggled);
 		this.cbSelectAllUDP.Toggled += new global::System.EventHandler (this.OnCbSelectAllUDPToggled);
 		this.cbSelectAllCap.Toggled += new global::System.EventHandler (this.OnCbSelectAllCapToggled);
+		this.btnLoadPlugin.Clicked += new global::System.EventHandler (this.OnBtnLoadPluginClicked);
 	}
 }

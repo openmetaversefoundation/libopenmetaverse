@@ -16,6 +16,7 @@ public partial class MainWindow : Gtk.Window
     ListStore udpStore, capStore;
     FilterScroller capScroller;
     MessageScroller messages;
+    PluginsScroller plugins;
 
     // stats tracking
     int PacketCounter;
@@ -71,6 +72,7 @@ public partial class MainWindow : Gtk.Window
 
 
         sessionLogScroller.Add(messages = new MessageScroller());
+        scrolledwindowPlugin.Add(plugins = new PluginsScroller());
         messages.CursorChanged += messages_CursorChanged;
         StatsTimer = new Timer(1000.0);
         StatsTimer.Elapsed += StatsTimer_Elapsed;
@@ -662,4 +664,7 @@ public partial class MainWindow : Gtk.Window
         about.Destroy();
     }
 
+    protected void OnBtnLoadPluginClicked (object sender, EventArgs e)
+    {
+    }
 }
