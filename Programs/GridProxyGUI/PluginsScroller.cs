@@ -12,6 +12,7 @@ namespace GridProxyGUI
     {
         public bool LoadOnStartup;
         public string Path;
+        
         public string Name
         {
             get
@@ -20,6 +21,7 @@ namespace GridProxyGUI
                 return System.IO.Path.GetFileName(Path);
             }
         }
+        
         public string Dir
         {
             get
@@ -28,6 +30,7 @@ namespace GridProxyGUI
                 return System.IO.Path.GetDirectoryName(Path);
             }
         }
+        public List<string> Modules = new List<string>();
     }
 
     public class PluginsScroller : TreeView
@@ -74,7 +77,7 @@ namespace GridProxyGUI
                 var item = Store.GetValue(iter, 0) as PluginInfo;
                 if (item != null)
                 {
-                    ((CellRendererText)xcell).Text = item.Name;
+                    ((CellRendererText)xcell).Text = string.Format("{0} ({1})", item.Name, string.Join(", ", item.Modules.ToArray()));
                 }
             });
             AppendColumn(col);
@@ -118,30 +121,47 @@ namespace GridProxyGUI
         }
 
 
-        public bool LoadAssembly(string path, ProxyFrame proxy)
+        public bool LoadAssembly(PluginInfo pinfo, ProxyFrame proxy)
         {
 
             try
             {
+                pinfo.Modules.Clear();
                 bool started = false;
-                Assembly assembly = Assembly.LoadFile(System.IO.Path.GetFullPath(path));
+                Assembly assembly = Assembly.LoadFile(System.IO.Path.GetFullPath(pinfo.Path));
                 foreach (Type t in assembly.GetTypes())
                 {
                     if (t.IsSubclassOf(typeof(ProxyPlugin)))
                     {
                         ConstructorInfo info = t.GetConstructor(new Type[] { typeof(ProxyFrame) });
-                        ProxyPlugin plugin = (ProxyPlugin)info.Invoke(new object[] { proxy });
-                        plugin.Init();
-                        started = true;
+                        if (info == null)
+                        {
+                            OpenMetaverse.Logger.Log(string.Format("No suitable contructor for {0} in {1}", t.ToString(), pinfo.Name), OpenMetaverse.Helpers.LogLevel.Warning);
+                        }
+                        else
+                        {
+                            ProxyPlugin plugin = (ProxyPlugin)info.Invoke(new object[] { proxy });
+                            plugin.Init();
+                            pinfo.Modules.Add(t.ToString());
+                            started = true;
+                        }
                     }
+                }
+
+                if (started)
+                {
+                    OpenMetaverse.Logger.Log(string.Format("Loaded {0} plugins from {1}: {2}", pinfo.Modules.Count.ToString(), pinfo.Name, string.Join(", ", pinfo.Modules.ToArray())), OpenMetaverse.Helpers.LogLevel.Info);
+                }
+                else
+                {
+                    OpenMetaverse.Logger.Log("Found no plugins in " + pinfo.Name, OpenMetaverse.Helpers.LogLevel.Warning);
                 }
 
                 return started;
             }
             catch (Exception e)
             {
-                OpenMetaverse.Logger.Log("Failed loading plugin: " + e.Message + Environment.NewLine + e.StackTrace, OpenMetaverse.Helpers.LogLevel.Error);
-                Console.WriteLine(e.ToString());
+                OpenMetaverse.Logger.Log("Failed loading plugins from " + pinfo.Path + ": " + e.Message, OpenMetaverse.Helpers.LogLevel.Error);
             }
 
             return false;
@@ -170,7 +190,7 @@ namespace GridProxyGUI
                     return false;
                 });
 
-                if (!found && LoadAssembly(plugin.Path, proxy))
+                if (!found && LoadAssembly(plugin, proxy))
                 {
                     Store.AppendValues(plugin);
                 }
