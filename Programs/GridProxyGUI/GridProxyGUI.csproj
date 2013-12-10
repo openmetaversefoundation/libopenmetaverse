@@ -94,6 +94,7 @@
     <Compile Include="SessionTypes.cs" />
     <Compile Include="About.cs" />
     <Compile Include="gtk-gui\GridProxyGUI.About.cs" />
+    <Compile Include="Options.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

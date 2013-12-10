@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Diagnostics;
 using Gtk;
 
@@ -10,6 +11,7 @@ namespace GridProxyGUI
         {
             try
             {
+                InitLogging();
                 StartGtkApp();
             }
             catch (Exception ex)
@@ -28,6 +30,28 @@ namespace GridProxyGUI
                 MainWindow win = new MainWindow();
                 win.Show();
                 Application.Run();
+        }
+
+        static bool InitLogging()
+        {
+            try
+            {
+                string userDir = Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "GridProxyGUI");
+
+                if (!Directory.Exists(userDir))
+                {
+                    Directory.CreateDirectory(userDir);
+                }
+
+                string settingsFile = Path.Combine(userDir, "Settings.xml");
+                Options.CreateInstance(settingsFile);
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 
@@ -62,7 +86,7 @@ namespace GridProxyGUI
             }
             else
             {
-                LinuxMessageBox(title, msg + @" foo ""bar"" baz", "error");
+                LinuxMessageBox(title, msg, "error");
             }
 
             Environment.Exit(exitCode);

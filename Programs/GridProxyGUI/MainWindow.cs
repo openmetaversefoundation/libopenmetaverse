@@ -1,8 +1,8 @@
+using GridProxyGUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using Gtk;
-using GridProxyGUI;
 using OpenMetaverse.Packets;
 using Logger = OpenMetaverse.Logger;
 using System.Timers;
@@ -35,11 +35,12 @@ public partial class MainWindow : Gtk.Window
         : base(Gtk.WindowType.Toplevel)
     {
         Build();
+        LoadSavedSettings();
+
         ProxyLogger.Init();
         ProxyLogger.OnLogLine += new ProxyLogger.Log(Logger_OnLogLine);
 
         tabsMain.Page = 0;
-        mainSplit.Position = 600;
 
         string font;
         if (PlatformDetection.IsMac)
@@ -322,17 +323,47 @@ public partial class MainWindow : Gtk.Window
         plugins.Store.Clear();
     }
 
-    protected void OnDeleteEvent(object sender, DeleteEventArgs a)
+    void LoadSavedSettings()
+    {
+        if (Options.Instance.ContainsKey("main_split_pos"))
+        {
+            mainSplit.Position = Options.Instance["main_split_pos"];
+            mainSplit.PositionSet = true;
+        }
+        if (Options.Instance.ContainsKey("main_width"))
+        {
+            Resize(Options.Instance["main_width"], Options.Instance["main_height"]);
+            Move(Options.Instance["main_x"], Options.Instance["main_y"]);
+        }
+    }
+
+    void OnQuit()
     {
         StopProxy();
+        Options.Instance["main_split_pos"] = mainSplit.Position;
+        int x, y;
+
+        GetSize(out x, out y); ;
+        Options.Instance["main_width"] = x;
+        Options.Instance["main_height"] = y;
+
+        GetPosition(out x, out y);
+        Options.Instance["main_x"] = x;
+        Options.Instance["main_y"] = y;
+
+        Options.Instance.Save();
         Application.Quit();
+    }
+
+    protected void OnDeleteEvent(object sender, DeleteEventArgs a)
+    {
+        OnQuit();
         a.RetVal = true;
     }
 
     protected void OnExitActionActivated(object sender, EventArgs e)
     {
-        StopProxy();
-        Application.Quit();
+        OnQuit();
     }
 
     protected void OnBtnStartClicked(object sender, EventArgs e)
@@ -671,4 +702,5 @@ public partial class MainWindow : Gtk.Window
 
         plugins.LoadPlugin(proxy.Proxy);
     }
+
 }

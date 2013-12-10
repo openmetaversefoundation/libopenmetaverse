@@ -240,7 +240,7 @@ public partial class MainWindow
 		this.mainSplit = new global::Gtk.HPaned ();
 		this.mainSplit.CanFocus = true;
 		this.mainSplit.Name = "mainSplit";
-		this.mainSplit.Position = 500;
+		this.mainSplit.Position = 600;
 		// Container child mainSplit.Gtk.Paned+PanedChild
 		this.vboxSessions = new global::Gtk.VBox ();
 		this.vboxSessions.Name = "vboxSessions";

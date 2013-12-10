@@ -222,7 +222,7 @@ http://login.orgrid.org/</property>
           <widget class="Gtk.HPaned" id="mainSplit">
             <property name="MemberName" />
             <property name="CanFocus">True</property>
-            <property name="Position">500</property>
+            <property name="Position">600</property>
             <child>
               <widget class="Gtk.VBox" id="vboxSessions">
                 <property name="MemberName" />
