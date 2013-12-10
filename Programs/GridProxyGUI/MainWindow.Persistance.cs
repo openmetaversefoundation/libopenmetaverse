@@ -11,6 +11,37 @@ public partial class MainWindow
 {
     string SessionFileName;
 
+    void LoadSavedSettings()
+    {
+        if (Options.Instance.ContainsKey("main_split_pos"))
+        {
+            mainSplit.Position = Options.Instance["main_split_pos"];
+            mainSplit.PositionSet = true;
+        }
+        if (Options.Instance.ContainsKey("main_width"))
+        {
+            Resize(Options.Instance["main_width"], Options.Instance["main_height"]);
+            Move(Options.Instance["main_x"], Options.Instance["main_y"]);
+        }
+    }
+
+    void SaveSettings()
+    {
+        Options.Instance["main_split_pos"] = mainSplit.Position;
+        int x, y;
+
+        GetSize(out x, out y); ;
+        Options.Instance["main_width"] = x;
+        Options.Instance["main_height"] = y;
+
+        GetPosition(out x, out y);
+        Options.Instance["main_x"] = x;
+        Options.Instance["main_y"] = y;
+
+        Options.Instance.Save();
+        Application.Quit();
+    }
+
     void SaveSession()
     {
         OSDMap s = new OSDMap();
