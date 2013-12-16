@@ -190,7 +190,7 @@ namespace OpenMetaverse
         /// Data collected from visual params for each wearable
         /// needed for the calculation of the color
         /// </summary>
-        private struct ColorParamInfo
+        public struct ColorParamInfo
         {
             public VisualParam VisualParam;
             public VisualColorParam VisualColorParam;
@@ -1174,7 +1174,7 @@ namespace OpenMetaverse
         /// <param name="param">All the color info gathered from wearable's VisualParams
         /// passed as list of ColorParamInfo tuples</param>
         /// <returns>Base color/tint for the wearable</returns>
-        private Color4 GetColorFromParams(List<ColorParamInfo> param)
+        public static Color4 GetColorFromParams(List<ColorParamInfo> param)
         {
             // Start off with a blank slate, black, fully transparent
             Color4 res = new Color4(0, 0, 0, 0);
@@ -1325,7 +1325,11 @@ namespace OpenMetaverse
         /// Populates textures and visual params from a decoded asset
         /// </summary>
         /// <param name="wearable">Wearable to decode</param>
-        private void DecodeWearableParams(WearableData wearable)
+        /// <summary>
+        /// Populates textures and visual params from a decoded asset
+        /// </summary>
+        /// <param name="wearable">Wearable to decode</param>
+        public static void DecodeWearableParams(WearableData wearable, ref TextureData[] textures)
         {
             Dictionary<VisualAlphaParam, float> alphaMasks = new Dictionary<VisualAlphaParam, float>();
             List<ColorParamInfo> colorParams = new List<ColorParamInfo>();
@@ -1348,12 +1352,32 @@ namespace OpenMetaverse
                 {
                     colorInfo.VisualColorParam = p.ColorParams.Value;
 
-                    // If this is not skin, just add params directly
-                    if (wearable.WearableType != WearableType.Skin)
+                    if (wearable.WearableType == WearableType.Tattoo)
                     {
-                        colorParams.Add(colorInfo);
+                        if (kvp.Key == 1062 || kvp.Key == 1063 || kvp.Key == 1064)
+                        {
+                            colorParams.Add(colorInfo);
+                        }
                     }
-                    else
+                    else if (wearable.WearableType == WearableType.Jacket)
+                    {
+                        if (kvp.Key == 809 || kvp.Key == 810 || kvp.Key == 811)
+                        {
+                            colorParams.Add(colorInfo);
+                        }
+                    }
+                    else if (wearable.WearableType == WearableType.Hair)
+                    {
+                        // Param 112 - Rainbow
+                        // Param 113 - Red
+                        // Param 114 - Blonde
+                        // Param 115 - White
+                        if (kvp.Key == 112 || kvp.Key == 113 || kvp.Key == 114 || kvp.Key == 115)
+                        {
+                            colorParams.Add(colorInfo);
+                        }
+                    }
+                    else if (wearable.WearableType == WearableType.Skin)
                     {
                         // For skin we skip makeup params for now and use only the 3
                         // that are used to determine base skin tone
@@ -1365,12 +1389,16 @@ namespace OpenMetaverse
                             colorParams.Add(colorInfo);
                         }
                     }
+                    else
+                    {
+                        colorParams.Add(colorInfo);
+                    }
                 }
 
                 // Add alpha mask
                 if (p.AlphaParams.HasValue && p.AlphaParams.Value.TGAFile != string.Empty && !p.IsBumpAttribute && !alphaMasks.ContainsKey(p.AlphaParams.Value))
                 {
-                    alphaMasks.Add(p.AlphaParams.Value, kvp.Value);
+                    alphaMasks.Add(p.AlphaParams.Value, kvp.Value == 0 ? 0.01f : kvp.Value);
                 }
 
                 // Alhpa masks can also be specified in sub "driver" params
@@ -1383,7 +1411,7 @@ namespace OpenMetaverse
                             VisualParam driver = VisualParams.Params[p.Drivers[i]];
                             if (driver.AlphaParams.HasValue && driver.AlphaParams.Value.TGAFile != string.Empty && !driver.IsBumpAttribute && !alphaMasks.ContainsKey(driver.AlphaParams.Value))
                             {
-                                alphaMasks.Add(driver.AlphaParams.Value, kvp.Value);
+                                alphaMasks.Add(driver.AlphaParams.Value, kvp.Value == 0 ? 0.01f : kvp.Value);
                             }
                         }
                     }
@@ -1403,20 +1431,19 @@ namespace OpenMetaverse
                 int i = (int)entry.Key;
 
                 // Update information about color and alpha masks for this texture
-                Textures[i].AlphaMasks = alphaMasks;
-                Textures[i].Color = wearableColor;
+                textures[i].AlphaMasks = alphaMasks;
+                textures[i].Color = wearableColor;
 
                 // If this texture changed, update the TextureID and clear out the old cached texture asset
-                if (Textures[i].TextureID != entry.Value)
+                if (textures[i].TextureID != entry.Value)
                 {
                     // Treat DEFAULT_AVATAR_TEXTURE as null
-                    if (entry.Value != DEFAULT_AVATAR_TEXTURE)
-                        Textures[i].TextureID = entry.Value;
+                    if (entry.Value != AppearanceManager.DEFAULT_AVATAR_TEXTURE)
+                        textures[i].TextureID = entry.Value;
                     else
-                        Textures[i].TextureID = UUID.Zero;
-                    Logger.DebugLog("Set " + entry.Key + " to " + Textures[i].TextureID, Client);
+                        textures[i].TextureID = UUID.Zero;
 
-                    Textures[i].Texture = null;
+                    textures[i].Texture = null;
                 }
             }
         }
@@ -1455,7 +1482,7 @@ namespace OpenMetaverse
             {
                 if (wearable.Asset != null)
                 {
-                    DecodeWearableParams(wearable);
+                    DecodeWearableParams(wearable, ref Textures);
                     --pendingWearables;
                 }
             }
@@ -1483,7 +1510,7 @@ namespace OpenMetaverse
 
                                     if (wearable.Asset.Decode())
                                     {
-                                        DecodeWearableParams(wearable);
+                                        DecodeWearableParams(wearable, ref Textures);
                                         Logger.DebugLog("Downloaded wearable asset " + wearable.WearableType + " with " + wearable.Asset.Params.Count +
                                             " visual params and " + wearable.Asset.Textures.Count + " textures", Client);
 

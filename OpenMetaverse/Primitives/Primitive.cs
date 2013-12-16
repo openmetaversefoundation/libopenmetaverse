@@ -1074,6 +1074,9 @@ namespace OpenMetaverse
             if (Textures != null)
                 prim["textures"] = Textures.GetOSD();
 
+            if ((TextureAnim.Flags & TextureAnimMode.ANIM_ON) != 0)
+                prim["texture_anim"] = TextureAnim.GetOSD();
+
             if (Light != null)
                 prim["light"] = Light.GetOSD();
 
@@ -1158,8 +1161,12 @@ namespace OpenMetaverse
 
             if (map["sculpt"])
                 prim.Sculpt = SculptData.FromOSD(map["sculpt"]);
-            
+
             prim.Textures = TextureEntry.FromOSD(map["textures"]);
+            
+            if (map["texture_anim"])
+                prim.TextureAnim = TextureAnimation.FromOSD(map["texture_anim"]);
+
             prim.Properties = new ObjectProperties();
 
             if (!string.IsNullOrEmpty(map["name"].AsString()))

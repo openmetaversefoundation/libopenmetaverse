@@ -120,7 +120,7 @@ namespace OpenMetaverse.Rendering
 
                 _header = TrimAt0(input.UnpackString(24));
                 if (!String.Equals(_header, MESH_HEADER))
-                    throw new FileLoadException("Unrecognized mesh format");
+                    return;
 
                 // Populate base mesh variables
                 _hasWeights = (input.UnpackByte() != 0);
@@ -191,7 +191,7 @@ namespace OpenMetaverse.Rendering
 
             _header = TrimAt0(input.UnpackString(24));
             if (!String.Equals(_header, MESH_HEADER))
-                throw new FileLoadException("Unrecognized mesh format");
+                return;
 
             // Populate base mesh variables
             _hasWeights = (input.UnpackByte() != 0);

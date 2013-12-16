@@ -108,6 +108,12 @@ namespace OpenMetaverse
         /// </summary>
         public GridClient()
         {
+            // Initialise SmartThreadPool when using mono
+            if (Type.GetType("Mono.Runtime") != null)
+            {
+                WorkPool.Init(true);
+            }
+
             // These are order-dependant
             Network = new NetworkManager(this);
             Settings = new Settings(this);

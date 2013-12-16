@@ -3410,8 +3410,11 @@ namespace OpenMetaverse
                 msg.LanguagePublic = isPublic;
 
                 Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("UpdateAgentLanguage");
-                CapsClient request = new CapsClient(url);
-                request.BeginGetResponse(msg.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+                if (url != null)
+                {
+                    CapsClient request = new CapsClient(url);
+                    request.BeginGetResponse(msg.Serialize(), OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+                }
             }
             catch (Exception ex)
             {
@@ -3943,7 +3946,7 @@ namespace OpenMetaverse
 
             if (m_AnimationsChanged != null)
             {
-                ThreadPool.QueueUserWorkItem(delegate(object o)
+                WorkPool.QueueUserWorkItem(delegate(object o)
                 { OnAnimationsChanged(new AnimationsChangedEventArgs(this.SignaledAnimations)); });
             }
 
@@ -4338,7 +4341,7 @@ namespace OpenMetaverse
                 return;
             }
 
-            ThreadPool.QueueUserWorkItem(sync =>
+            WorkPool.QueueUserWorkItem(sync =>
             {
                 using (AutoResetEvent gotMuteList = new AutoResetEvent(false))
                 {

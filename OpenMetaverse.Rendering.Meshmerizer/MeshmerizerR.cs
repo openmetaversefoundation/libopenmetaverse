@@ -124,21 +124,6 @@ namespace OpenMetaverse.Rendering
             if (newPrim == null)
                 return null;
 
-            int numViewerFaces = newPrim.viewerFaces.Count;
-            int numPrimFaces = newPrim.numPrimFaces;
-
-            for (uint i = 0; i < numViewerFaces; i++)
-            {
-                PrimMesher.ViewerFace vf = newPrim.viewerFaces[(int)i];
-
-                if (isSphere)
-                {
-                    vf.uv1.U = (vf.uv1.U - 0.5f) * 2.0f;
-                    vf.uv2.U = (vf.uv2.U - 0.5f) * 2.0f;
-                    vf.uv3.U = (vf.uv3.U - 0.5f) * 2.0f;
-                }
-            }
-
             // copy the vertex information into OMVR.IRendering structures
             OMVR.FacetedMesh omvrmesh = new OMVR.FacetedMesh();
             omvrmesh.Faces = new List<OMVR.Face>();
@@ -148,88 +133,36 @@ namespace OpenMetaverse.Rendering
             omvrmesh.Profile.Positions = new List<OMV.Vector3>();
             omvrmesh.Path = new OMVR.Path();
             omvrmesh.Path.Points = new List<OMVR.PathPoint>();
+            var indexer = newPrim.GetVertexIndexer();
 
-            Dictionary<OMV.Vector3, int> vertexAccount = new Dictionary<OMV.Vector3, int>();
-            for (int ii = 0; ii < numPrimFaces; ii++)
+            for (int i = 0; i < indexer.numPrimFaces; i++)
             {
                 OMVR.Face oface = new OMVR.Face();
                 oface.Vertices = new List<OMVR.Vertex>();
                 oface.Indices = new List<ushort>();
-                oface.TextureFace = prim.Textures.GetFace((uint)ii);
-                int faceVertices = 0;
-                vertexAccount.Clear();
-                OMV.Vector3 pos;
-                int indx;
-                OMVR.Vertex vert;
-                foreach (PrimMesher.ViewerFace vface in newPrim.viewerFaces)
-                {
-                    if (vface.primFaceNumber == ii)
-                    {
-                        faceVertices++;
-                        pos = new OMV.Vector3(vface.v1.X, vface.v1.Y, vface.v1.Z);
-                        if (vertexAccount.ContainsKey(pos))
-                        {
-                            // we aleady have this vertex in the list. Just point the index at it
-                            oface.Indices.Add((ushort)vertexAccount[pos]);
-                        }
-                        else
-                        {
-                            // the vertex is not in the list. Add it and the new index.
-                            vert = new OMVR.Vertex();
-                            vert.Position = pos;
-                            vert.TexCoord = new OMV.Vector2(vface.uv1.U, 1.0f - vface.uv1.V);
-                            vert.Normal = new OMV.Vector3(vface.n1.X, vface.n1.Y, vface.n1.Z);
-                            oface.Vertices.Add(vert);
-                            indx = oface.Vertices.Count - 1;
-                            vertexAccount.Add(pos, indx);
-                            oface.Indices.Add((ushort)indx);
-                        }
+                oface.TextureFace = prim.Textures.GetFace((uint)i);
 
-                        pos = new OMV.Vector3(vface.v2.X, vface.v2.Y, vface.v2.Z);
-                        if (vertexAccount.ContainsKey(pos))
-                        {
-                            oface.Indices.Add((ushort)vertexAccount[pos]);
-                        }
-                        else
-                        {
-                            vert = new OMVR.Vertex();
-                            vert.Position = pos;
-                            vert.TexCoord = new OMV.Vector2(vface.uv2.U, 1.0f - vface.uv2.V);
-                            vert.Normal = new OMV.Vector3(vface.n2.X, vface.n2.Y, vface.n2.Z);
-                            oface.Vertices.Add(vert);
-                            indx = oface.Vertices.Count - 1;
-                            vertexAccount.Add(pos, indx);
-                            oface.Indices.Add((ushort)indx);
-                        }
-
-                        pos = new OMV.Vector3(vface.v3.X, vface.v3.Y, vface.v3.Z);
-                        if (vertexAccount.ContainsKey(pos))
-                        {
-                            oface.Indices.Add((ushort)vertexAccount[pos]);
-                        }
-                        else
-                        {
-                            vert = new OMVR.Vertex();
-                            vert.Position = pos;
-                            vert.TexCoord = new OMV.Vector2(vface.uv3.U, 1.0f - vface.uv3.V);
-                            vert.Normal = new OMV.Vector3(vface.n3.X, vface.n3.Y, vface.n3.Z);
-                            oface.Vertices.Add(vert);
-                            indx = oface.Vertices.Count - 1;
-                            vertexAccount.Add(pos, indx);
-                            oface.Indices.Add((ushort)indx);
-                        }
-                    }
-                }
-                if (faceVertices > 0)
+                for (int j = 0; j < indexer.viewerVertices[i].Count; j++)
                 {
-                    oface.TextureFace = prim.Textures.FaceTextures[ii];
-                    if (oface.TextureFace == null)
-                    {
-                        oface.TextureFace = prim.Textures.DefaultTexture;
-                    }
-                    oface.ID = ii;
-                    omvrmesh.Faces.Add(oface);
+                    var vert = new OMVR.Vertex();
+                    var m = indexer.viewerVertices[i][j];
+                    vert.Position = new Vector3(m.v.X, m.v.Y, m.v.Z);
+                    vert.Normal = new Vector3(m.n.X, m.n.Y, m.n.Z);
+                    vert.TexCoord = new OMV.Vector2(m.uv.U, 1.0f - m.uv.V);
+                    oface.Vertices.Add(vert);
                 }
+
+                for (int j = 0; j < indexer.viewerPolygons[i].Count; j++)
+                {
+                    var p = indexer.viewerPolygons[i][j];
+                    // Skip "degenerate faces" where the same vertex appears twice in the same tri
+                    if (p.v1 == p.v2 || p.v1 == p.v2 || p.v2 == p.v3) continue;
+                    oface.Indices.Add((ushort)p.v1);
+                    oface.Indices.Add((ushort)p.v2);
+                    oface.Indices.Add((ushort)p.v3);
+                }
+
+                omvrmesh.Faces.Add(oface);
             }
 
             return omvrmesh;

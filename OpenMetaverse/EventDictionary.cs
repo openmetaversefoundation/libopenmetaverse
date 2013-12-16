@@ -144,7 +144,7 @@ namespace OpenMetaverse
                     wrapper.Callback = callback.Callback;
                     wrapper.Packet = packet;
                     wrapper.Simulator = simulator;
-                    ThreadPool.QueueUserWorkItem(ThreadPoolDelegate, wrapper);
+                    WorkPool.QueueUserWorkItem(ThreadPoolDelegate, wrapper);
                 }
                 else
                 {
@@ -164,7 +164,7 @@ namespace OpenMetaverse
                     wrapper.Callback = callback.Callback;
                     wrapper.Packet = packet;
                     wrapper.Simulator = simulator;
-                    ThreadPool.QueueUserWorkItem(ThreadPoolDelegate, wrapper);
+                    WorkPool.QueueUserWorkItem(ThreadPoolDelegate, wrapper);
                 }
                 else
                 {
@@ -329,7 +329,7 @@ namespace OpenMetaverse
                     wrapper.CapsEvent = capsEvent;
                     wrapper.Message = message;
                     wrapper.Simulator = simulator;
-                    ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
+                    WorkPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
                 }
             }
             
@@ -341,7 +341,7 @@ namespace OpenMetaverse
                 wrapper.CapsEvent = capsEvent;
                 wrapper.Message = message;
                 wrapper.Simulator = simulator;
-                ThreadPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
+                WorkPool.QueueUserWorkItem(_ThreadPoolCallback, wrapper);
 
                 specialHandler = true;
             }

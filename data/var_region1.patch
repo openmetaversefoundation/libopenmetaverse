@@ -1,0 +1,16 @@
+diff --git a/data/message_template.msg b/data/message_template.msg
+index 6702de9..1ec83cb 100644
+--- a/data/message_template.msg
++++ b/data/message_template.msg
+@@ -8707,6 +8707,11 @@ version 2.0
+ 		{	Agents		U8				}
+ 		{	MapImageID	LLUUID			}
+ 	}
++	{	
++		Size			Variable
++		{	SizeX		U16				}
++		{	SizeY		U16				}
++	}
+ }
+ 
+ // viewer -> sim
