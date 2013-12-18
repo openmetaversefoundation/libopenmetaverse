@@ -6,11 +6,12 @@ using System.IO;
 using System.IO.Compression;
 using System.Text;
 using System.Net;
-
+using System.Collections.Generic;
 
 public partial class MainWindow
 {
     string SessionFileName;
+    List<string> LoginServers = new List<string>();
 
     void LoadSavedSettings()
     {
@@ -45,10 +46,63 @@ public partial class MainWindow
         }
         catch { }
         cbListen.Active = selected;
+
+        if (Options.Instance["login_servers"] is OSDArray)
+        {
+            var servers = (OSDArray)Options.Instance["login_servers"];
+            for (int i = 0; i < servers.Count; i++)
+            {
+                LoginServers.Add(servers[i]);
+            }
+        }
+
+        if (LoginServers.Count < 3)
+        {
+            LoginServers.Add("https://login.agni.lindenlab.com/cgi-bin/login.cgi");
+            LoginServers.Add("https://login.aditi.lindenlab.com/cgi-bin/login.cgi");
+            LoginServers.Add("http://login.osgrid.org/");
+        }
+
+        foreach (var server in LoginServers)
+        {
+            cbLoginURL.AppendText(server);
+        }
+
+        selected = Options.Instance["selected_login_server"];
+
+        if (selected >= 0 && selected < LoginServers.Count)
+        {
+            cbLoginURL.Active = selected;
+        }
+
     }
 
     void SaveSettings()
     {
+        var currentServer = cbLoginURL.ActiveText.Trim();
+        Uri uriResult;
+        if (Uri.TryCreate(currentServer, UriKind.Absolute, out uriResult) 
+            && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps)
+            && !LoginServers.Contains(currentServer))
+        {
+            LoginServers.Add(currentServer);
+            Options.Instance["selected_login_server"] = LoginServers.Count - 1;
+        }
+        else
+        {
+            Options.Instance["selected_login_server"] = cbLoginURL.Active;
+        }
+
+        if (LoginServers.Count > 0)
+        {
+            OSDArray loginServers = new OSDArray();
+            foreach (var s in LoginServers)
+            {
+                loginServers.Add(s);
+            }
+            Options.Instance["login_servers"] = loginServers;
+        }
+
         Options.Instance["listed_address"] = cbListen.ActiveText;
         Options.Instance["main_split_pos"] = mainSplit.Position;
         int x, y;

@@ -126,7 +126,7 @@
                 <property name="MemberName" />
                 <property name="WidthRequest">120</property>
                 <property name="IsTextCombo">True</property>
-                <property name="Items" translatable="yes" />
+                <property name="Items" />
               </widget>
               <packing>
                 <property name="Position">3</property>
@@ -180,10 +180,7 @@
                 <property name="MemberName" />
                 <property name="WidthRequest">300</property>
                 <property name="IsTextCombo">True</property>
-                <property name="Items" translatable="yes">https://login.agni.lindenlab.com/cgi-bin/login.cgi
-https://login.aditi.lindenlab.com/cgi-bin/login.cgi
-http://login.orgrid.org/</property>
-                <property name="Active">0</property>
+                <property name="Items" />
               </widget>
               <packing>
                 <property name="Position">7</property>

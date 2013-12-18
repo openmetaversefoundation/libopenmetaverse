@@ -206,12 +206,8 @@ public partial class MainWindow
 		w9.Fill = false;
 		// Container child hboxMenu.Gtk.Box+BoxChild
 		this.cbLoginURL = global::Gtk.ComboBoxEntry.NewText ();
-		this.cbLoginURL.AppendText (global::Mono.Unix.Catalog.GetString ("https://login.agni.lindenlab.com/cgi-bin/login.cgi"));
-		this.cbLoginURL.AppendText (global::Mono.Unix.Catalog.GetString ("https://login.aditi.lindenlab.com/cgi-bin/login.cgi"));
-		this.cbLoginURL.AppendText (global::Mono.Unix.Catalog.GetString ("http://login.orgrid.org/"));
 		this.cbLoginURL.WidthRequest = 300;
 		this.cbLoginURL.Name = "cbLoginURL";
-		this.cbLoginURL.Active = 0;
 		this.hboxMenu.Add (this.cbLoginURL);
 		global::Gtk.Box.BoxChild w10 = ((global::Gtk.Box.BoxChild)(this.hboxMenu [this.cbLoginURL]));
 		w10.Position = 7;
