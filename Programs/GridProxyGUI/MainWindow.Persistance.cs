@@ -5,6 +5,7 @@ using OpenMetaverse.StructuredData;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Net;
 
 
 public partial class MainWindow
@@ -23,10 +24,32 @@ public partial class MainWindow
             Resize(Options.Instance["main_width"], Options.Instance["main_height"]);
             Move(Options.Instance["main_x"], Options.Instance["main_y"]);
         }
+
+
+        // populate the listen box with the known IP Addresses of this host
+        cbListen.AppendText("127.0.0.1");
+        int selected = 0;
+        try
+        {
+            int current = 0;
+            foreach (var address in Dns.GetHostAddresses(Dns.GetHostName()))
+            {
+                if (address.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork || address.ToString() == "127.0.0.1") continue;
+                current++;
+                if (Options.Instance["listed_address"] == address.ToString())
+                {
+                    selected = current;
+                }
+                cbListen.AppendText(address.ToString());
+            }
+        }
+        catch { }
+        cbListen.Active = selected;
     }
 
     void SaveSettings()
     {
+        Options.Instance["listed_address"] = cbListen.ActiveText;
         Options.Instance["main_split_pos"] = mainSplit.Position;
         int x, y;
 

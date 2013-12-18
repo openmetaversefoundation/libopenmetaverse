@@ -166,11 +166,8 @@ public partial class MainWindow
 		w5.Fill = false;
 		// Container child hboxMenu.Gtk.Box+BoxChild
 		this.cbListen = global::Gtk.ComboBoxEntry.NewText ();
-		this.cbListen.AppendText (global::Mono.Unix.Catalog.GetString ("127.0.0.1"));
-		this.cbListen.AppendText (global::Mono.Unix.Catalog.GetString ("0.0.0.0"));
-		this.cbListen.WidthRequest = 100;
+		this.cbListen.WidthRequest = 120;
 		this.cbListen.Name = "cbListen";
-		this.cbListen.Active = 0;
 		this.hboxMenu.Add (this.cbListen);
 		global::Gtk.Box.BoxChild w6 = ((global::Gtk.Box.BoxChild)(this.hboxMenu [this.cbListen]));
 		w6.Position = 3;

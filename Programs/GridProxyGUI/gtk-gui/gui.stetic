@@ -124,11 +124,9 @@
             <child>
               <widget class="Gtk.ComboBoxEntry" id="cbListen">
                 <property name="MemberName" />
-                <property name="WidthRequest">100</property>
+                <property name="WidthRequest">120</property>
                 <property name="IsTextCombo">True</property>
-                <property name="Items" translatable="yes">127.0.0.1
-0.0.0.0</property>
-                <property name="Active">0</property>
+                <property name="Items" translatable="yes" />
               </widget>
               <packing>
                 <property name="Position">3</property>
