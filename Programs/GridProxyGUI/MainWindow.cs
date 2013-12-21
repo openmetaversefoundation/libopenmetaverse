@@ -11,10 +11,6 @@ using System.Text.RegularExpressions;
 public partial class MainWindow : Gtk.Window
 {
     ProxyManager proxy = null;
-    ConcurrentDictionary<string, FilterItem> UDPFilterItems = new ConcurrentDictionary<string, FilterItem>();
-    ConcurrentDictionary<string, FilterItem> CapFilterItems = new ConcurrentDictionary<string, FilterItem>();
-    ListStore udpStore, capStore;
-    FilterScroller capScroller;
     MessageScroller messages;
     PluginsScroller plugins;
 
@@ -71,6 +67,8 @@ public partial class MainWindow : Gtk.Window
             }
         };
 
+        InitProxyFilters();
+
         txtRequest.ModifyFont(Pango.FontDescription.FromString(font));
         CreateTags(txtRequest.Buffer);
         txtRequestRaw.ModifyFont(Pango.FontDescription.FromString(font));
@@ -82,7 +80,7 @@ public partial class MainWindow : Gtk.Window
         txtResponseNotation.ModifyFont(Pango.FontDescription.FromString(font));
 
 
-        sessionLogScroller.Add(messages = new MessageScroller());
+        sessionLogScroller.Add(messages = new MessageScroller(this));
         scrolledwindowPlugin.Add(plugins = new PluginsScroller());
         messages.CursorChanged += messages_CursorChanged;
         StatsTimer = new Timer(1000.0);
@@ -170,11 +168,6 @@ public partial class MainWindow : Gtk.Window
     {
         Application.Invoke((sender, e) =>
         {
-            if (null == capStore)
-            {
-                capStore = new ListStore(typeof(FilterItem));
-            }
-
             if (!CapFilterItems.ContainsKey(cap.CapType))
             {
                 FilterItem item = new FilterItem() { Name = cap.CapType, Type = ItemType.Cap };
@@ -183,11 +176,6 @@ public partial class MainWindow : Gtk.Window
                 CapFilterItems[item.Name] = item;
                 capStore.AppendValues(item);
             }
-
-            if (null == capScroller)
-            {
-                capScroller = new FilterScroller(containerFilterCap, capStore);
-            }
         });
     }
 
@@ -195,16 +183,6 @@ public partial class MainWindow : Gtk.Window
     {
         Application.Invoke((sender, e) =>
         {
-            if (null == capStore)
-            {
-                capStore = new ListStore(typeof(FilterItem));
-            }
-
-            if (null == capScroller)
-            {
-                capScroller = new FilterScroller(containerFilterCap, capStore);
-            }
-
             if (!CapFilterItems.ContainsKey(req.Info.CapType))
             {
                 FilterItem item = new FilterItem() { Enabled = true, Name = req.Info.CapType, Type = ItemType.EQ };
@@ -273,19 +251,6 @@ public partial class MainWindow : Gtk.Window
         });
     }
 
-    void item_FilterItemChanged(object sender, EventArgs e)
-    {
-        FilterItem item = (FilterItem)sender;
-        if (item.Type == ItemType.Cap)
-        {
-            proxy.AddCapsDelegate(item.Name, item.Enabled);
-        }
-        else if (item.Type == ItemType.UDP)
-        {
-            proxy.AddUDPDelegate(item.Name, item.Enabled);
-        }
-    }
-
     void Logger_OnLogLine(object sender, LogEventArgs e)
     {
         Gtk.Application.Invoke((sx, ex) =>
@@ -308,6 +273,7 @@ public partial class MainWindow : Gtk.Window
             proxy = new ProxyManager(txtPort.Text, cbListen.ActiveText, cbLoginURL.ActiveText);
             proxy.Start();
             btnLoadPlugin.Sensitive = true;
+            ApplyProxyFilters();
         }
         catch (Exception ex)
         {
@@ -315,10 +281,10 @@ public partial class MainWindow : Gtk.Window
             try
             {
                 proxy.Stop();
-                proxy = null;
             }
             catch { }
             btnStart.Label = "Start Proxy";
+            proxy = null;
         }
     }
 
@@ -327,10 +293,6 @@ public partial class MainWindow : Gtk.Window
         AppendLog("Proxy stopped" + Environment.NewLine);
         if (proxy != null) proxy.Stop();
         proxy = null;
-        foreach (var child in new List<Widget>(containerFilterUDP.Children))
-        {
-            containerFilterUDP.Remove(child);
-        }
         plugins.Store.Clear();
         btnLoadPlugin.Sensitive = false;
     }
@@ -354,50 +316,12 @@ public partial class MainWindow : Gtk.Window
         {
             btnStart.Label = "Stop Proxy";
             StartPoxy();
-            InitProxyFilters();
         }
         else if (btnStart.Label.StartsWith("Stop"))
         {
             btnStart.Label = "Start Proxy";
             StopProxy();
         }
-    }
-
-    void InitUDPFilters()
-    {
-        if (UDPFilterItems.Count > 0) return;
-
-        UDPFilterItems["Login Request"] = new FilterItem() { Enabled = true, Name = "Login Request", Type = ItemType.Login };
-        UDPFilterItems["Login Response"] = new FilterItem() { Enabled = true, Name = "Login Response", Type = ItemType.Login };
-        foreach (string name in Enum.GetNames(typeof(PacketType)))
-        {
-            if (!string.IsNullOrEmpty(name))
-            {
-                var item = new FilterItem() { Enabled = false, Name = name, Type = ItemType.UDP };
-                UDPFilterItems[name] = item;
-            }
-        }
-    }
-
-    void InitProxyFilters()
-    {
-        InitUDPFilters();
-
-        udpStore = new ListStore(typeof(FilterItem));
-        List<string> keys = new List<string>(UDPFilterItems.Keys);
-        keys.Sort((a, b) => { return string.Compare(a.ToLower(), b.ToLower()); });
-
-        udpStore.AppendValues(UDPFilterItems["Login Request"]);
-        udpStore.AppendValues(UDPFilterItems["Login Response"]);
-
-        foreach (var key in keys)
-        {
-            UDPFilterItems[key].FilterItemChanged += item_FilterItemChanged;
-            if (UDPFilterItems[key].Type == ItemType.Login) continue;
-            udpStore.AppendValues(UDPFilterItems[key]);
-        }
-
-        new FilterScroller(containerFilterUDP, udpStore);
     }
 
     void SetAllToggles(bool on, ListStore store)
@@ -627,6 +551,12 @@ public partial class MainWindow : Gtk.Window
 
 
         return filters;
+    }
+
+    public void RedrawFilters()
+    {
+        containerFilterCap.QueueDraw();
+        containerFilterUDP.QueueDraw();
     }
 
     protected void OnOpenActionActivated(object sender, EventArgs e)

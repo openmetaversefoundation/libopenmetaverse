@@ -11,9 +11,11 @@ namespace GridProxyGUI
 
         public ListStore Messages;
         public bool AutoScroll = true;
+        MainWindow Main;
 
-        public MessageScroller()
+        public MessageScroller(MainWindow main)
         {
+            this.Main = main;
 
             for (int i = 0; i < ColumnLabels.Length; i++)
             {
@@ -54,13 +56,77 @@ namespace GridProxyGUI
             };
             context.Add(item);
 
-            item = new MenuItem("Remove All");
-            item.Activated += (sender, e) =>
+            if (selected.Length == 1)
             {
-                Selection.UnselectAll();
-                Messages.Clear();
-            };
-            context.Add(item);
+                TreeIter iter;
+                Messages.GetIter(out iter, selected[0]);
+                var session = Messages.GetValue(iter, 0) as Session;
+                if (session != null)
+                {
+                    item = new MenuItem("Remove All " + session.Name);
+                    item.Activated += (sender, e) =>
+                    {
+                        TreeIter delIter;
+                        Messages.GetIterFirst(out delIter);
+
+                        while (Messages.IterIsValid(delIter))
+                        {
+                            var delSession = Messages.GetValue(delIter, 0) as Session;
+                            if (delSession != null && delSession.GetType() == session.GetType() && delSession.Name == session.Name)
+                            {
+                                Messages.Remove(ref delIter);
+                            }
+                            else
+                            {
+                                Messages.IterNext(ref delIter);
+                            }
+                        }
+                    };
+                    context.Add(item);
+
+                    item = new MenuItem("Remove and Filter Out All " + session.Name);
+                    item.Activated += (sender, e) =>
+                    {
+                        TreeIter delIter;
+                        Messages.GetIterFirst(out delIter);
+
+                        FilterItem filterOut = Main.GetFilter(session);
+                        if (filterOut != null)
+                        {
+                            filterOut.Enabled = false;
+                        }
+                        Main.RedrawFilters();
+
+                        while (Messages.IterIsValid(delIter))
+                        {
+                            var delSession = Messages.GetValue(delIter, 0) as Session;
+                            if (delSession != null && delSession.GetType() == session.GetType() && delSession.Name == session.Name)
+                            {
+                                Messages.Remove(ref delIter);
+                            }
+                            else
+                            {
+                                Messages.IterNext(ref delIter);
+                            }
+                        }
+                    };
+                    context.Add(item);
+
+
+                    FilterItem filter = Main.GetFilter(session);
+                    if (filter != null)
+                    {
+                        var citem = new CheckMenuItem("Receive " + session.Name);
+                        citem.Active = filter.Enabled;
+                        citem.Toggled += (sender, e) =>
+                        {
+                            filter.Enabled = !filter.Enabled;
+                            Main.RedrawFilters();
+                        };
+                        context.Add(citem);
+                    }
+                }
+            }
 
             context.Add(new SeparatorMenuItem());
 
@@ -98,6 +164,14 @@ namespace GridProxyGUI
 
                     Gtk.Clipboard.Get(Gdk.Atom.Intern("CLIPBOARD", false)).Text = sb.ToString().TrimEnd();
                 }
+            };
+            context.Add(item);
+
+            item = new MenuItem("Clear");
+            item.Activated += (sender, e) =>
+            {
+                Selection.UnselectAll();
+                Messages.Clear();
             };
             context.Add(item);
 

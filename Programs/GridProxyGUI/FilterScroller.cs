@@ -5,37 +5,6 @@ using GridProxyGUI;
 
 namespace GridProxyGUI
 {
-
-    public enum ItemType : int
-    {
-        Unknown = 0,
-        Login,
-        UDP,
-        Cap,
-        EQ
-    }
-
-    public class FilterItem
-    {
-        public delegate void FilterItemChangedDelegate(object sender, EventArgs e);
-        public event FilterItemChangedDelegate FilterItemChanged;
-        bool enabled;
-        public bool Enabled
-        {
-            get { return enabled; }
-            set
-            {
-                enabled = value;
-                if (FilterItemChanged != null)
-                {
-                    FilterItemChanged(this, EventArgs.Empty);
-                }
-            }
-        }
-        public string Name;
-        public ItemType Type;
-    }
-
     public class FilterScroller : ScrolledWindow
     {
         ListStore store;
