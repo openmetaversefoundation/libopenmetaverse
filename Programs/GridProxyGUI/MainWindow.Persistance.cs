@@ -75,10 +75,21 @@ public partial class MainWindow
             cbLoginURL.Active = selected;
         }
 
+        int port = 8080;
+        if (Options.Instance.ContainsKey("listen_port"))
+        {
+            port = Options.Instance["listen_port"];
+        }
+        txtPort.Text = port.ToString();
+
     }
 
     void SaveSettings()
     {
+        int port = 8080;
+        int.TryParse(txtPort.Text, out port);
+        Options.Instance["listen_port"] = port;
+
         var currentServer = cbLoginURL.ActiveText.Trim();
         Uri uriResult;
         if (Uri.TryCreate(currentServer, UriKind.Absolute, out uriResult) 

@@ -61,6 +61,16 @@ public partial class MainWindow : Gtk.Window
             font = "monospace 9";
         }
 
+        btnLoadPlugin.Sensitive = false;
+        txtPort.TextInserted += (object o, TextInsertedArgs args) =>
+        {
+            if (args.Length != 1) return;
+            if (!char.IsDigit(args.Text[0]))
+            {
+                txtPort.DeleteText(args.Position - 1, args.Position);
+            }
+        };
+
         txtRequest.ModifyFont(Pango.FontDescription.FromString(font));
         CreateTags(txtRequest.Buffer);
         txtRequestRaw.ModifyFont(Pango.FontDescription.FromString(font));
@@ -297,10 +307,11 @@ public partial class MainWindow : Gtk.Window
         {
             proxy = new ProxyManager(txtPort.Text, cbListen.ActiveText, cbLoginURL.ActiveText);
             proxy.Start();
+            btnLoadPlugin.Sensitive = true;
         }
-        catch
+        catch (Exception ex)
         {
-            Logger.Log("Failed to start proxy", OpenMetaverse.Helpers.LogLevel.Error);
+            Logger.Log("Failed to start proxy: " + ex.Message, OpenMetaverse.Helpers.LogLevel.Error);
             try
             {
                 proxy.Stop();
@@ -321,6 +332,7 @@ public partial class MainWindow : Gtk.Window
             containerFilterUDP.Remove(child);
         }
         plugins.Store.Clear();
+        btnLoadPlugin.Sensitive = false;
     }
 
     protected void OnDeleteEvent(object sender, DeleteEventArgs a)

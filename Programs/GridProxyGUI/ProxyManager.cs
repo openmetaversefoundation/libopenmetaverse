@@ -99,7 +99,7 @@ namespace GridProxyGUI
                 quiet
              */
 
-            ProxyConfig pc = new ProxyConfig("WinGridProxy", "Jim Radford", args);
+            ProxyConfig pc = new ProxyConfig("WinGridProxy", "Jim Radford", args, false);
 
             Proxy = new ProxyFrame(args, pc);
 
