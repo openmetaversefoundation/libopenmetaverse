@@ -29,11 +29,7 @@ using System.IO;
 using System.IO.Compression;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
-#if OPENSIM_SOURCE
 using ComponentAce.Compression.Libs.zlib;
-#else
-using zlib;
-#endif
 
 namespace OpenMetaverse.Assets
 {
@@ -79,6 +75,7 @@ namespace OpenMetaverse.Assets
                 using (MemoryStream data = new MemoryStream(AssetData))
                 {
                     OSDMap header = (OSDMap)OSDParser.DeserializeLLSDBinary(data);
+                    MeshData["asset_header"] = header;
                     long start = data.Position;
 
                     foreach(string partName in header.Keys)

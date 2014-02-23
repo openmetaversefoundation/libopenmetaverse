@@ -28,11 +28,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.IO;
-#if OPENSIM_SOURCE
 using ComponentAce.Compression.Libs.zlib;
-#else
-using zlib;
-#endif
 using OpenMetaverse.StructuredData;
 using OpenMetaverse.Interfaces;
 
