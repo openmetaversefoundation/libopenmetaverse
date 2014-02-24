@@ -5,19 +5,17 @@ Finding Help
 ------------
 
 If you need any help we have a couple of resources, the primary one being 
-the #libomv-dev IRC channel on EFNet. There is also the libomv-dev mailing list 
-at http://groups.google.com/group/libomv-dev and lastly you can use the e-mail 
-contact@openmv.org for any general inquiries (although we prefer 
-developer-related questions to go to IRC or the mailing list). You can find us 
+the #libomv-dev IRC channel on Freenode. There is also the libomv-dev mailing list 
+at http://groups.google.com/group/libomv-dev. You can find us 
 in-world via the open invitation libsecondlife group or at our HQ and testing 
 area in Hooper (SLURL: http://slurl.com/secondlife/Hooper/192/43/25/).
 
 Source Code:
    To checkout a copy of libopenmv trunk
-   svn co http://openmetaverse.org/svn/omf/libopenmetaverse/trunk/ libopenmetaverse
+   git clone https://github.com/openmetaversefoundation/libopenmetaverse.git libopenmetaverse
 
 For more details see: 
-   http://lib.openmetaverse.org/wiki/SVN
+   http://lib.openmetaverse.org/wiki/Download#Development
    http://lib.openmetaverse.org/wiki/Getting_Started
 
 Getting started on Windows
