@@ -2,6 +2,7 @@ compile.bat
 *.csproj
 *.user
 *.sln
+*.suo
 *.cache
 
 [Oo]bj/

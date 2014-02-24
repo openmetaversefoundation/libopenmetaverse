@@ -1317,6 +1317,8 @@ namespace OpenMetaverse
         public string FirstName { get { return firstName; } }
         /// <summary>Avatar Last Name (i.e. Linden)</summary>
         public string LastName { get { return lastName; } }
+        /// <summary>LookAt point received with the login response message</summary>
+        public Vector3 LookAt { get { return lookAt; } }
         /// <summary>Avatar Full Name (i.e. Philip Linden)</summary>
         public string Name
         {
@@ -1473,6 +1475,7 @@ namespace OpenMetaverse
         private string agentAccess = String.Empty;
         private Vector3 homePosition;
         private Vector3 homeLookAt;
+        private Vector3 lookAt;
         private string firstName = String.Empty;
         private string lastName = String.Empty;
         private string fullName;
@@ -3987,6 +3990,7 @@ namespace OpenMetaverse
             Movement.Camera.LookDirection(reply.LookAt);
             homePosition = reply.HomePosition;
             homeLookAt = reply.HomeLookAt;
+            lookAt = reply.LookAt;
         }
 
         private void Network_OnDisconnected(object sender, DisconnectedEventArgs e)
