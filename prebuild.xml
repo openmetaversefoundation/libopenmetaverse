@@ -580,6 +580,49 @@
       </Files>
     </Project>
 
+    <!-- GridProxyGUI, requires Gtk-sharp, uncomment block to enable and re-run runprebuil
+    <Project name="GridProxyGUI" path="Programs/GridProxyGUI" icon="libomv.ico" type="WinExe" frameworkVersion="v4_0">
+      <Configuration name="Debug">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+          <PlatformTarget>x86</PlatformTarget>
+        </Options>
+      </Configuration>
+      <Configuration name="Release">
+        <Options>
+          <OutputPath>../../bin/</OutputPath>
+          <PlatformTarget>x86</PlatformTarget>
+        </Options>
+      </Configuration>
+
+      <ReferencePath>../../bin/</ReferencePath>
+      <Reference name="System"/>
+      <Reference name="System.Xml"/>
+      <Reference name="System.Drawing"/>
+      <Reference name="System.Windows.Forms"/>
+      <Reference name="OpenMetaverse"/>
+      <Reference name="OpenMetaverseTypes"/>
+      <Reference name="OpenMetaverse.StructuredData"/>
+      <Reference name="GridProxy"/>
+      <Reference name="XMLRPC"/>
+      <Reference name="log4net"/>
+      <Reference name="atk-sharp"/>
+      <Reference name="gdk-sharp"/>
+      <Reference name="glade-sharp"/>
+      <Reference name="glib-sharp"/>
+      <Reference name="gtk-sharp"/>
+      <Reference name="pango-sharp"/>
+      <Reference name="Mono.Posix"/>
+
+      <Files>
+        <Match pattern="*.cs" recurse="true"/>
+        <Match pattern="*.resx" recurse="true"/>
+        <Match pattern="*.png" recurse="true" buildAction="EmbeddedResource"/>
+        <Match pattern="*.ico" recurse="true"/>
+      </Files>
+    </Project>
+    -->
+    
     <Project name="VisualParamGenerator" path="Programs/VisualParamGenerator" type="Exe" frameworkVersion="v3_5">
       <Configuration name="Debug">
         <Options>
