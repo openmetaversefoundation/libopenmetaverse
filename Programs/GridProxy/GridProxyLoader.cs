@@ -75,7 +75,7 @@ namespace GridProxy
 
             if (proxyConfig == null)
             {
-                proxyConfig = new ProxyConfig("GridProxy", "Austin Jennings / Andrew Ortman", args);
+                proxyConfig = new ProxyConfig("GridProxy", "Austin Jennings / Andrew Ortman", args, true);
             }
             proxy = new Proxy(proxyConfig);
 
