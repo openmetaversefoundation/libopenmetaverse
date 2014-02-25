@@ -207,7 +207,7 @@ namespace Prebuild.Core.Targets
 			#region Project File
 			using (ps)
 			{
-				ps.WriteLine("<Project DefaultTargets=\"Build\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\" ToolsVersion=\"{0}\">", this.Version == VSVersion.VS10 ? "4.0" : "3.5");
+                ps.WriteLine("<Project DefaultTargets=\"Build\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\" ToolsVersion=\"{0}\">", (this.Version == VSVersion.VS10 || this.Version == VSVersion.VS11) ? "4.0" : "3.5");
 				ps.WriteLine("  <PropertyGroup>");
 				ps.WriteLine("    <ProjectType>Local</ProjectType>");
 				ps.WriteLine("    <ProductVersion>{0}</ProductVersion>", this.ProductVersion);
