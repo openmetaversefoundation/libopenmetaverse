@@ -286,6 +286,9 @@ namespace OpenMetaverse
         public int MaxAgentGroups;
         public string OpenIDUrl;
         public string AgentAppearanceServiceURL;
+        public uint COFVersion;
+        public string InitialOutfit;
+        public bool FirstLogin;
 
         /// <summary>
         /// Parse LLSD Login Reply Data
@@ -521,6 +524,41 @@ namespace OpenMetaverse
             {
                 AgentAppearanceServiceURL = ParseString("agent_appearance_service", reply);
             }
+
+            COFVersion = 0;
+            if (reply.ContainsKey("cof_version"))
+            {
+                COFVersion = ParseUInt("cof_version", reply);
+            }
+
+            InitialOutfit = string.Empty;
+            if (reply.ContainsKey("initial-outfit") && reply["initial-outfit"] is ArrayList)
+            {
+                ArrayList array = (ArrayList)reply["initial-outfit"];
+                for (int i = 0; i < array.Count; i++)
+                {
+                    if (array[i] is Hashtable)
+                    {
+                        Hashtable map = (Hashtable)array[i];
+                        InitialOutfit = ParseString("folder_name", map);
+                    }
+                }
+            }
+
+            FirstLogin = false;
+            if (reply.ContainsKey("login-flags") && reply["login-flags"] is ArrayList)
+            {
+                ArrayList array = (ArrayList)reply["login-flags"];
+                for (int i = 0; i < array.Count; i++)
+                {
+                    if (array[i] is Hashtable)
+                    {
+                        Hashtable map = (Hashtable)array[i];
+                        FirstLogin = ParseString("ever_logged_in", map) == "N";
+                    }
+                }
+            }
+
 
         }
 
@@ -856,6 +894,8 @@ namespace OpenMetaverse
         public int MaxAgentGroups = -1;
         /// <summary>Server side baking service URL</summary>
         public string AgentAppearanceServiceURL;
+        /// <summary>Parsed login response data</summary>
+        public LoginResponseData LoginResponseData;
         #endregion
 
         #region Private Members
@@ -1274,6 +1314,7 @@ namespace OpenMetaverse
         /// </summary>
         private void LoginReplyXmlRpcHandler(LoginResponseData reply, LoginParams context)
         {
+            LoginResponseData = reply;
             ushort simPort = 0;
             uint regionX = 0;
             uint regionY = 0;
