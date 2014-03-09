@@ -160,6 +160,8 @@
             <xs:enumeration value="v2_0" />
             <xs:enumeration value="v3_0" />
             <xs:enumeration value="v3_5" />
+            <xs:enumeration value="v4_0" />
+            <xs:enumeration value="v4_5" />
           </xs:restriction>
         </xs:simpleType>
       </xs:attribute>

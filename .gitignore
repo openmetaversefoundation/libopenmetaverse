@@ -1,7 +1,9 @@
 compile.bat
 *.csproj
 *.user
+*.userprefs
 *.sln
+*.suo
 *.cache
 
 [Oo]bj/

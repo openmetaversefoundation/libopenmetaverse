@@ -507,7 +507,7 @@ namespace Prebuild.Core.Nodes
 		}
 
         [OptionNode("PlatformTarget")]
-        private string m_PlatformTarget = "Any CPU";
+        private string m_PlatformTarget = "AnyCPU";
 
         /// <summary>
         /// 

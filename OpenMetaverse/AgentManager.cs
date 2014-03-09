@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2009, openmetaverse.org
+ * Copyright (c) 2006-2014, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -1298,7 +1298,7 @@ namespace OpenMetaverse
         /// <summary>Where the avatar started at login. Can be "last", "home" 
         /// or a login <seealso cref="T:OpenMetaverse.URI"/></summary>
         public string StartLocation { get { return startLocation; } }
-        /// <summary>The access level of this agent, usually M or PG</summary>
+        /// <summary>The access level of this agent, usually M, PG or A</summary>
         public string AgentAccess { get { return agentAccess; } }
         /// <summary>The CollisionPlane of Agent</summary>
         public Vector4 CollisionPlane { get { return collisionPlane; } }
@@ -1317,6 +1317,8 @@ namespace OpenMetaverse
         public string FirstName { get { return firstName; } }
         /// <summary>Avatar Last Name (i.e. Linden)</summary>
         public string LastName { get { return lastName; } }
+        /// <summary>LookAt point received with the login response message</summary>
+        public Vector3 LookAt { get { return lookAt; } }
         /// <summary>Avatar Full Name (i.e. Philip Linden)</summary>
         public string Name
         {
@@ -1473,6 +1475,7 @@ namespace OpenMetaverse
         private string agentAccess = String.Empty;
         private Vector3 homePosition;
         private Vector3 homeLookAt;
+        private Vector3 lookAt;
         private string firstName = String.Empty;
         private string lastName = String.Empty;
         private string fullName;
@@ -3421,6 +3424,67 @@ namespace OpenMetaverse
                 Logger.Log("Failes to update agent language", Helpers.LogLevel.Error, Client, ex);
             }
         }
+
+        public delegate void AgentAccessCallback(AgentAccessEventArgs e);
+
+        /// <summary>
+        /// Sets agents maturity access level
+        /// </summary>
+        /// <param name="access">PG, M or A</param>
+        public void SetAgentAccess(string access)
+        {
+            SetAgentAccess(access, null);
+        }
+
+        /// <summary>
+        /// Sets agents maturity access level
+        /// </summary>
+        /// <param name="access">PG, M or A</param>
+        /// <param name="callback">Callback function</param>
+        public void SetAgentAccess(string access, AgentAccessCallback callback)
+        {
+            if (Client == null || !Client.Network.Connected || Client.Network.CurrentSim.Caps == null) return;
+
+            Uri url = Client.Network.CurrentSim.Caps.CapabilityURI("UpdateAgentInformation");
+
+            if (url == null) return;
+
+            CapsClient request = new CapsClient(url);
+
+            request.OnComplete += (client, result, error) =>
+            {
+                bool success = true;
+
+                if (error == null && result is OSDMap)
+                {
+                    var map = ((OSDMap)result)["access_prefs"];
+                    agentAccess = ((OSDMap)map)["max"];
+                    Logger.Log("Max maturity access set to " + agentAccess, Helpers.LogLevel.Info, Client );
+                }
+                else if (error == null)
+                {
+                    Logger.Log("Max maturity unchanged at " + agentAccess, Helpers.LogLevel.Info, Client);
+                }
+                else
+                {
+                    Logger.Log("Failed setting max maturity access.", Helpers.LogLevel.Warning, Client);
+                    success = false;
+                }
+                
+                if (callback != null)
+                {
+                    try { callback(new AgentAccessEventArgs(success, agentAccess)); }
+                    catch { }
+                }
+
+            };
+            OSDMap req = new OSDMap();
+            OSDMap prefs = new OSDMap();
+            prefs["max"] = access;
+            req["access_prefs"] = prefs;
+
+            request.BeginGetResponse(req, OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+        }
         #endregion Misc
 
         #region Packet Handlers
@@ -3987,6 +4051,7 @@ namespace OpenMetaverse
             Movement.Camera.LookDirection(reply.LookAt);
             homePosition = reply.HomePosition;
             homeLookAt = reply.HomeLookAt;
+            lookAt = reply.LookAt;
         }
 
         private void Network_OnDisconnected(object sender, DisconnectedEventArgs e)
@@ -4417,6 +4482,36 @@ namespace OpenMetaverse
     }
 
     #region Event Argument Classes
+    /// <summary>
+    /// Class for sending info on the success of the opration
+    /// of setting the maturity access level
+    /// </summary>
+    public class AgentAccessEventArgs : EventArgs
+    {
+        readonly string mNewLevel;
+        readonly bool mSuccess;
+        
+        /// <summary>
+        /// New maturity accesss level returned from the sim
+        /// </summary>
+        public string NewLevel { get { return mNewLevel; } }
+        
+        /// <summary>
+        /// True if setting the new maturity access level has succedded
+        /// </summary>
+        public bool Success { get { return mSuccess; } }
+
+        /// <summary>
+        /// Creates new instance of the EventArgs class
+        /// </summary>
+        /// <param name="success">Has setting new maturty access level succeeded</param>
+        /// <param name="newLevel">New maturity access level as returned by the simulator</param>
+        public AgentAccessEventArgs(bool success, string newLevel)
+        {
+            mNewLevel = newLevel;
+            mSuccess = success;
+        }
+    }
 
     /// <summary>
     /// 

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2009, openmetaverse.org
+ * Copyright (c) 2006-2014, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -99,7 +99,7 @@ namespace WinGridProxy
                 quiet
              */
 
-            ProxyConfig pc = new ProxyConfig("WinGridProxy", "Jim Radford", args);
+            ProxyConfig pc = new ProxyConfig("WinGridProxy", "Jim Radford", args, false);
 
             Proxy = new ProxyFrame(args, pc);
             

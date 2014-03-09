@@ -97,7 +97,7 @@ namespace GridProxy
         /// <param name="author">Email address of the proxy application's author</param>
         /// <param name="args">An array containing the parameters to use to override the proxy
         /// servers default settings</param>
-        public ProxyConfig(string userAgent, string author, string[] args)
+        public ProxyConfig(string userAgent, string author, string[] args, bool exitOnError)
             : this(userAgent, author)
         {
             Dictionary<string, ArgumentParser> argumentParsers = new Dictionary<string, ArgumentParser>();
@@ -127,7 +127,14 @@ namespace GridProxy
                         catch
                         {
                             Console.WriteLine("invalid value for --" + argument);
-                            ParseHelp(null);
+                            if (exitOnError)
+                            {
+                                ParseHelp(null);
+                            }
+                            else
+                            {
+                                throw;
+                            }
                         }
                     }
                 }
