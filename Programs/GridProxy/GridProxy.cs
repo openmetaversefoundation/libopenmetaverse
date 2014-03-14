@@ -190,7 +190,8 @@ namespace GridProxy
         static List<string> BinaryResponseCaps = new List<string>()
         {
             "GetTexture",
-            "GetMesh"
+            "GetMesh",
+            "GetMesh2"
         };
 
         /*
@@ -631,13 +632,8 @@ namespace GridProxy
             CapInfo cap = null;
             lock (this)
             {
-                string capuri = uri;
-                int ix = uri.IndexOf("/?");
-                if (ix != -1)
-                {
-                    capuri = uri.Substring(0, ix);
-                }
-                
+                string capuri = Regex.Replace(uri, @"/?\?.*$", string.Empty);
+               
                 if (KnownCaps.ContainsKey(capuri))
                 {
                     cap = KnownCaps[capuri];
