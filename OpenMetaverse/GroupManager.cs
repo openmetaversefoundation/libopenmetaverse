@@ -457,6 +457,17 @@ namespace OpenMetaverse
         VoteOnProposal = 1UL << 45
     }
 
+    /// <summary>
+    /// Ban actions available for group members
+    /// </summary>
+    public enum GroupBanAction : int
+    {
+        /// <summary> Ban agent from joining a group </summary>
+        Ban = 1,
+        /// <summary> Remove restriction on agent jointing a group </summary>
+        Unban = 2,
+    }
+
     #endregion Enums
 
     /// <summary>
@@ -814,11 +825,37 @@ namespace OpenMetaverse
             add { lock (m_GroupInvitationLock) { m_GroupInvitation += value; } }
             remove { lock (m_GroupInvitationLock) { m_GroupInvitation -= value; } }
         }
+
+
+
+
+
+
+        /// <summary>The event subscribers. null if no subcribers</summary>
+        private EventHandler<BannedAgentsEventArgs> m_BannedAgents;
+
+        /// <summary>Raises the BannedAgents event</summary>
+        /// <param name="e">An BannedAgentsEventArgs object containing the
+        /// data returned from the simulator</param>
+        protected virtual void OnBannedAgents(BannedAgentsEventArgs e)
+        {
+            EventHandler<BannedAgentsEventArgs> handler = m_BannedAgents;
+            if (handler != null)
+                handler(this, e);
+        }
+
+        /// <summary>Thread sync lock object</summary>
+        private readonly object m_BannedAgentsLock = new object();
+
+        /// <summary>Raised when another agent invites our avatar to join a group</summary>
+        public event EventHandler<BannedAgentsEventArgs> BannedAgents
+        {
+            add { lock (m_BannedAgentsLock) { m_BannedAgents += value; } }
+            remove { lock (m_BannedAgentsLock) { m_BannedAgents -= value; } }
+        }
+
         #endregion Delegates
 
-        #region Events
-
-        #endregion Events
 
         /// <summary>A reference to the current <seealso cref="GridClient"/> instance</summary>
         private GridClient Client;
@@ -855,7 +892,7 @@ namespace OpenMetaverse
 
             Client.Self.IM += Self_IM;
 
-            Client.Network.RegisterEventCallback("AgentGroupDataUpdate", new Caps.EventQueueCallback(AgentGroupDataUpdateMessageHandler));            
+            Client.Network.RegisterEventCallback("AgentGroupDataUpdate", new Caps.EventQueueCallback(AgentGroupDataUpdateMessageHandler));
             // deprecated in simulator v1.27
             Client.Network.RegisterCallback(PacketType.AgentDropGroup, AgentDropGroupHandler);
             Client.Network.RegisterCallback(PacketType.GroupTitlesReply, GroupTitlesReplyHandler);
@@ -871,14 +908,14 @@ namespace OpenMetaverse
             Client.Network.RegisterCallback(PacketType.LeaveGroupReply, LeaveGroupReplyHandler);
             Client.Network.RegisterCallback(PacketType.UUIDGroupNameReply, UUIDGroupNameReplyHandler);
             Client.Network.RegisterCallback(PacketType.EjectGroupMemberReply, EjectGroupMemberReplyHandler);
-            Client.Network.RegisterCallback(PacketType.GroupNoticesListReply, GroupNoticesListReplyHandler);            
+            Client.Network.RegisterCallback(PacketType.GroupNoticesListReply, GroupNoticesListReplyHandler);
 
             Client.Network.RegisterEventCallback("AgentDropGroup", new Caps.EventQueueCallback(AgentDropGroupMessageHandler));
         }
 
         void Self_IM(object sender, InstantMessageEventArgs e)
         {
-            if(m_GroupInvitation != null && e.IM.Dialog == InstantMessageDialog.GroupInvitation)
+            if (m_GroupInvitation != null && e.IM.Dialog == InstantMessageDialog.GroupInvitation)
             {
                 GroupInvitationEventArgs args = new GroupInvitationEventArgs(e.Simulator, e.IM.FromAgentID, e.IM.FromAgentName, e.IM.Message);
                 OnGroupInvitation(args);
@@ -892,7 +929,7 @@ namespace OpenMetaverse
                 {
                     Client.Self.InstantMessage("name", e.IM.FromAgentID, "message", e.IM.IMSessionID, InstantMessageDialog.GroupInvitationDecline,
                          InstantMessageOnline.Online, Client.Self.SimPosition, UUID.Zero, new byte[1] { 0 });
-                }            
+                }
             }
         }
 
@@ -1020,7 +1057,7 @@ namespace OpenMetaverse
                 OSDMap requestData = new OSDMap(1);
                 requestData["group_id"] = group;
                 req.BeginGetResponse(requestData, OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT * 4);
-            
+
                 return requestID;
             }
 
@@ -1399,7 +1436,7 @@ namespace OpenMetaverse
             gnr.Data.GroupNoticeID = noticeID;
             Client.Network.SendPacket(gnr);
         }
-        
+
         /// <summary>Send out a group notice</summary>
         /// <param name="group">Group ID to update</param>
         /// <param name="notice"><code>GroupNotice</code> structure containing notice data</param>
@@ -1438,12 +1475,141 @@ namespace OpenMetaverse
 
             Client.Network.SendPacket(p);
         }
-#endregion
+
+        /// <summary>
+        /// Gets the URI of the cpability for handling group bans
+        /// </summary>
+        /// <param name="groupID">Group ID</param>
+        /// <returns>null, if the feature is not supported, or URI of the capability</returns>
+        public Uri GetGroupAPIUri(UUID groupID)
+        {
+            Uri ret = null;
+
+            if (Client.Network.Connected
+                && Client.Network.CurrentSim != null
+                && Client.Network.CurrentSim.Caps != null)
+            {
+                ret = Client.Network.CurrentSim.Caps.CapabilityURI("GroupAPIv1");
+                if (ret != null)
+                {
+                    ret = new Uri(string.Format("{0}?group_id={1}", ret.ToString(), groupID.ToString()));
+                }
+            }
+
+            return ret;
+        }
+
+        /// <summary>
+        /// Request a list of residents banned from joining a group
+        /// </summary>
+        /// <param name="groupID">UUID of the group</param>
+        public void RequestBannedAgents(UUID groupID)
+        {
+            RequestBannedAgents(groupID, null);
+        }
+
+        /// <summary>
+        /// Request a list of residents banned from joining a group
+        /// </summary>
+        /// <param name="groupID">UUID of the group</param>
+        /// <param name="callback">Callback on request completition</param>
+        public void RequestBannedAgents(UUID groupID, EventHandler<BannedAgentsEventArgs> callback)
+        {
+            Uri uri = GetGroupAPIUri(groupID);
+            if (uri == null) return;
+
+            CapsClient req = new CapsClient(uri);
+            req.OnComplete += (client, result, error) =>
+            {
+                try
+                {
+
+                    if (error != null)
+                    {
+                        throw error;
+                    }
+                    else
+                    {
+                        UUID gid = ((OSDMap)result)["group_id"];
+                        var banList = (OSDMap)((OSDMap)result)["ban_list"];
+                        Dictionary<UUID, DateTime> bannedAgents = new Dictionary<UUID, DateTime>(banList.Count);
+
+                        foreach (var id in banList.Keys)
+                        {
+                            bannedAgents[new UUID(id)] = ((OSDMap)banList[id])["ban_date"].AsDate();
+                        }
+
+                        var ret = new BannedAgentsEventArgs(groupID, true, bannedAgents);
+                        OnBannedAgents(ret);
+                        if (callback != null) try { callback(this, ret); }
+                            catch { }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log("Failed to get a list of banned group members: " + ex.Message, Helpers.LogLevel.Warning, Client);
+                    var ret = new BannedAgentsEventArgs(groupID, false, null);
+                    OnBannedAgents(ret);
+                    if (callback != null) try { callback(this, ret); }
+                        catch { }
+                }
+
+            };
+
+            req.BeginGetResponse(Client.Settings.CAPS_TIMEOUT);
+        }
+
+        /// <summary>
+        /// Request that group of agents be banned or unbanned from the group
+        /// </summary>
+        /// <param name="groupID">Group ID</param>
+        /// <param name="action">Ban/Unban action</param>
+        /// <param name="agents">Array of agents UUIDs to ban</param>
+        public void RequestBanAction(UUID groupID, GroupBanAction action, UUID[] agents)
+        {
+            RequestBanAction(groupID, action, agents, null);
+        }
+        
+        /// <summary>
+        /// Request that group of agents be banned or unbanned from the group
+        /// </summary>
+        /// <param name="groupID">Group ID</param>
+        /// <param name="action">Ban/Unban action</param>
+        /// <param name="agents">Array of agents UUIDs to ban</param>
+        /// <param name="callback">Callback</param>
+        public void RequestBanAction(UUID groupID, GroupBanAction action, UUID[] agents, EventHandler<EventArgs> callback)
+        {
+            Uri uri = GetGroupAPIUri(groupID);
+            if (uri == null) return;
+
+            CapsClient req = new CapsClient(uri);
+            req.OnComplete += (client, result, error) =>
+            {
+                if (callback != null) try { callback(this, EventArgs.Empty); }
+                    catch { }
+            };
+
+            OSDMap OSDRequest = new OSDMap();
+            OSDRequest["ban_action"] = (int)action;
+            OSDArray banIDs = new OSDArray(agents.Length);
+            foreach (var agent in agents)
+            {
+                banIDs.Add(agent);
+            }
+            OSDRequest["ban_ids"] = banIDs;
+
+            req.BeginGetResponse(OSDRequest, OSDFormat.Xml, Client.Settings.CAPS_TIMEOUT);
+        }
+
+
+
+        #endregion
 
         #region Packet Handlers
-        
+
         protected void AgentGroupDataUpdateMessageHandler(string capsKey, IMessage message, Simulator simulator)
-        {      
+        {
             if (m_CurrentGroups != null)
             {
                 AgentGroupDataUpdateMessage msg = (AgentGroupDataUpdateMessage)message;
@@ -1486,7 +1652,7 @@ namespace OpenMetaverse
 
         protected void AgentDropGroupMessageHandler(string capsKey, IMessage message, Simulator simulator)
         {
-            
+
             if (m_GroupDropped != null)
             {
                 AgentDropGroupMessage msg = (AgentDropGroupMessage)message;
@@ -1501,7 +1667,7 @@ namespace OpenMetaverse
         /// <param name="sender">The sender</param>
         /// <param name="e">The EventArgs object containing the packet data</param>
         protected void GroupProfileReplyHandler(object sender, PacketReceivedEventArgs e)
-        {            
+        {
             if (m_GroupProfile != null)
             {
                 Packet packet = e.Packet;
@@ -1918,13 +2084,13 @@ namespace OpenMetaverse
             {
                 OnGroupMemberEjected(new GroupOperationEventArgs(reply.GroupData.GroupID, reply.EjectData.Success));
             }
-        }        
+        }
 
         #endregion Packet Handlers
     }
 
     #region EventArgs
-    
+
     /// <summary>Contains the current groups your agent is a member of</summary>
     public class CurrentGroupsEventArgs : EventArgs
     {
@@ -1940,7 +2106,7 @@ namespace OpenMetaverse
             this.m_Groups = groups;
         }
     }
-    
+
     /// <summary>A Dictionary of group names, where the Key is the groups ID and the value is the groups name</summary>
     public class GroupNamesEventArgs : EventArgs
     {
@@ -1985,7 +2151,7 @@ namespace OpenMetaverse
             this.m_Members = members;
         }
     }
-    
+
     /// <summary>Represents the roles associated with a group</summary>
     public class GroupRolesDataReplyEventArgs : EventArgs
     {
@@ -2090,7 +2256,7 @@ namespace OpenMetaverse
             this.m_Summary = summary;
         }
     }
-    
+
     /// <summary>A response to a group create request</summary>
     public class GroupCreatedReplyEventArgs : EventArgs
     {
@@ -2116,7 +2282,7 @@ namespace OpenMetaverse
             this.m_Message = messsage;
         }
     }
-    
+
     /// <summary>Represents a response to a request</summary>
     public class GroupOperationEventArgs : EventArgs
     {
@@ -2137,7 +2303,7 @@ namespace OpenMetaverse
             this.m_Success = success;
         }
     }
-    
+
     /// <summary>Represents your agent leaving a group</summary>
     public class GroupDroppedEventArgs : EventArgs
     {
@@ -2173,7 +2339,7 @@ namespace OpenMetaverse
             m_Notices = notices;
         }
     }
-    
+
     /// <summary>Represents the profile of a group</summary>
     public class GroupProfileEventArgs : EventArgs
     {
@@ -2201,7 +2367,7 @@ namespace OpenMetaverse
         private readonly string m_FromAgentName;
         private readonly string m_Message;
         private readonly Simulator m_Simulator;
-     
+
         /// <summary>The ID of the Avatar sending the group invitation</summary>
         public UUID AgentID { get { return m_FromAgentID; } }
         /// <summary>The name of the Avatar sending the group invitation</summary>
@@ -2221,6 +2387,32 @@ namespace OpenMetaverse
             this.m_FromAgentID = agentID;
             this.m_FromAgentName = agentName;
             this.m_Message = message;
+        }
+    }
+
+    /// <summary>
+    /// Result of the request for list of agents banned from a group
+    /// </summary>
+    public class BannedAgentsEventArgs : EventArgs
+    {
+        readonly UUID mGroupID;
+        readonly bool mSuccess;
+        readonly Dictionary<UUID, DateTime> mBannedAgents;
+
+        /// <summary> Indicates if list of banned agents for a group was successfully retrieved </summary>
+        public UUID GroupID { get { return mGroupID; } }
+
+        /// <summary> Indicates if list of banned agents for a group was successfully retrieved </summary>
+        public bool Success { get { return mSuccess; } }
+
+        /// <summary> Array containing a list of UUIDs of the agents banned from a group </summary>
+        public Dictionary<UUID, DateTime> BannedAgents { get { return mBannedAgents; } }
+
+        public BannedAgentsEventArgs(UUID groupID, bool success, Dictionary<UUID, DateTime> bannedAgents)
+        {
+            this.mGroupID = groupID;
+            this.mSuccess = success;
+            this.mBannedAgents = bannedAgents;
         }
     }
 
