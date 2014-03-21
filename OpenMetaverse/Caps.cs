@@ -149,6 +149,7 @@ namespace OpenMetaverse
             req.Add("GetObjectCost");
             req.Add("GetObjectPhysicsData");
             req.Add("GetTexture");
+            req.Add("GroupAPIv1");
             req.Add("GroupMemberData");
             req.Add("GroupProposalBallot");
             req.Add("HomeLocation");
