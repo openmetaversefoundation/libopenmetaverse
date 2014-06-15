@@ -220,7 +220,7 @@ namespace OpenMetaverse.TestClient
         private void AgentDataUpdateHandler(object sender, PacketReceivedEventArgs e)
         {
             AgentDataUpdatePacket p = (AgentDataUpdatePacket)e.Packet;
-            if (p.AgentData.AgentID == e.Simulator.Client.Self.AgentID)
+            if (p.AgentData.AgentID == e.Simulator.Client.Self.AgentID && p.AgentData.ActiveGroupID != UUID.Zero)
             {
                 GroupID = p.AgentData.ActiveGroupID;
                 

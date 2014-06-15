@@ -1042,7 +1042,7 @@ namespace OpenMetaverse
             UUID requestID = UUID.Random();
             Uri url = null;
 
-            if (Client.Network.CurrentSim.Caps != null &&
+            if (Client.Network.CurrentSim != null && Client.Network.CurrentSim.Caps != null &&
                 null != (url = Client.Network.CurrentSim.Caps.CapabilityURI("GroupMemberData")))
             {
                 CapsClient req = new CapsClient(url);
