@@ -67,7 +67,9 @@ namespace OpenMetaverse.TestClient
         {
 //            Console.WriteLine(
 //                "Received packet {0} from {1} for {2}", args.Packet.Type, args.Simulator.Name, m_client.Self.Name);
-            m_logStreamWriter.Write(PacketDecoder.PacketToString(args.Packet));
+
+            m_logStreamWriter.WriteLine("Received at {0}", DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss.fff"));
+            m_logStreamWriter.WriteLine(PacketDecoder.PacketToString(args.Packet));
 
             if (--m_packetsToLogRemaining <= 0)
             {
