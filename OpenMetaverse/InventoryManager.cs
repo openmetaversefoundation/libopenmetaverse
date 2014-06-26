@@ -1644,7 +1644,7 @@ namespace OpenMetaverse
                                             }
                                             else
                                             {
-                                                folder = (InventoryFolder)_Store[descFolder["category_id"]];
+                                                folder = (InventoryFolder)_Store[folderID];
                                             }
 
                                             folder.OwnerID = descFolder["agent_id"];
