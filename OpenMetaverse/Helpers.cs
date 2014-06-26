@@ -28,7 +28,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using OpenMetaverse.Packets;
+using System.IO;
 using System.Reflection;
+using OpenMetaverse.StructuredData;
+using ComponentAce.Compression.Libs.zlib;
 
 namespace OpenMetaverse
 {
@@ -459,7 +462,7 @@ namespace OpenMetaverse
             if (searchPath != null)
             {
                 Assembly gea = Assembly.GetEntryAssembly();
-                if (gea == null) gea = typeof (Helpers).Assembly;
+                if (gea == null) gea = typeof(Helpers).Assembly;
                 string dirname = ".";
                 if (gea != null && gea.Location != null)
                 {
@@ -554,16 +557,59 @@ namespace OpenMetaverse
         /// </example>
         public static string StructToString(object t)
         {
-            StringBuilder result = new StringBuilder();            
+            StringBuilder result = new StringBuilder();
             Type structType = t.GetType();
             FieldInfo[] fields = structType.GetFields();
-            
+
             foreach (FieldInfo field in fields)
             {
                 result.Append(field.Name + ": " + field.GetValue(t) + " ");
             }
             result.AppendLine();
             return result.ToString().TrimEnd();
+        }
+
+        public static void CopyStream(Stream input, Stream output)
+        {
+            byte[] buffer = new byte[4096];
+            int read;
+            while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                output.Write(buffer, 0, read);
+            }
+        }
+
+        public static byte[] ZCompressOSD(OSD data)
+        {
+            byte[] ret = null;
+
+            using (MemoryStream outMemoryStream = new MemoryStream())
+            using (ZOutputStream outZStream = new ZOutputStream(outMemoryStream, zlibConst.Z_BEST_COMPRESSION))
+            using (Stream inMemoryStream = new MemoryStream(OSDParser.SerializeLLSDBinary(data, false)))
+            {
+                CopyStream(inMemoryStream, outZStream);
+                outZStream.finish();
+                ret = outMemoryStream.ToArray();
+            }
+
+            return ret;
+        }
+
+        public static OSD ZDecompressOSD(byte[] data)
+        {
+            OSD ret;
+
+            using (MemoryStream input = new MemoryStream(data))
+            using (MemoryStream output = new MemoryStream())
+            using (ZOutputStream zout = new ZOutputStream(output))
+            {
+                CopyStream(input, zout);
+                zout.finish();
+                output.Seek(0, SeekOrigin.Begin);
+                ret = OSDParser.DeserializeLLSDBinary(output);
+            }
+
+            return ret;
         }
     }
 }
