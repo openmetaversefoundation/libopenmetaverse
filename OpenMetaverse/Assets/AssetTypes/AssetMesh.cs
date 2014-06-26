@@ -26,10 +26,8 @@
 
 using System;
 using System.IO;
-using System.IO.Compression;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
-using ComponentAce.Compression.Libs.zlib;
 
 namespace OpenMetaverse.Assets
 {
@@ -95,25 +93,7 @@ namespace OpenMetaverse.Assets
 
                         byte[] part = new byte[partInfo["size"]];
                         Buffer.BlockCopy(AssetData, partInfo["offset"] + (int)start, part, 0, part.Length);
-
-                        using (MemoryStream input = new MemoryStream(part))
-                        {
-                            using (MemoryStream output = new MemoryStream())
-                            {
-                                using (ZOutputStream zout = new ZOutputStream(output))
-                                {
-                                    byte[] buffer = new byte[2048];
-                                    int len;
-                                    while ((len = input.Read(buffer, 0, buffer.Length)) > 0)
-                                    {
-                                        zout.Write(buffer, 0, len);
-                                    }
-                                    zout.Flush();
-                                    output.Seek(0, SeekOrigin.Begin);
-                                    MeshData[partName] = OSDParser.DeserializeLLSDBinary(output);
-                                }
-                            }
-                        }
+                        MeshData[partName] = Helpers.ZDecompressOSD(part);
                     }
                 }
                 return true;
