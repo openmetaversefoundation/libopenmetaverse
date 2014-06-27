@@ -326,7 +326,7 @@ namespace OpenMetaverse.ImportExport
                         {
                             if (mitem is polylist)
                             {
-                                AddFacesFromPolyList((polylist)mitem, mesh, prim);
+                                AddFacesFromPolyList((polylist)mitem, mesh, prim, primTranform);
                             }
                         }
 
@@ -408,7 +408,7 @@ namespace OpenMetaverse.ImportExport
             return ret;
         }
 
-        void AddFacesFromPolyList(polylist list, mesh mesh, ModelPrim prim)
+        void AddFacesFromPolyList(polylist list, mesh mesh, ModelPrim prim, Matrix4 transform)
         {
             string material = list.material;
             source posSrc = null;
@@ -457,8 +457,9 @@ namespace OpenMetaverse.ImportExport
                 for (int i = 0; i < normals.Length; i++)
                 {
                     normals[i] = new Vector3((float)norVal[i * 3 + 0], (float)norVal[i * 3 + 1], (float)norVal[i * 3 + 2]);
+                    normals[i] = Vector3.TransformNormal(normals[i], transform);
+                    normals[i].Normalize();
                 }
-
             }
 
             Vector2[] uvs = null;
@@ -486,43 +487,47 @@ namespace OpenMetaverse.ImportExport
 
             for (int i = 0; i < vcount.Length; i++)
             {
-                var npoly = vcount[i];
-                if (npoly != 3)
+                var nvert = vcount[i];
+                if (nvert < 3 || nvert > 4)
                 {
-                    throw new InvalidDataException("Only triangulated meshes supported");
+                    throw new InvalidDataException("Only triangles and quads supported");
                 }
 
-                int v1i = idx[curIdx + posOffset + (int)stride * 0];
-                int v2i = idx[curIdx + posOffset + (int)stride * 1];
-                int v3i = idx[curIdx + posOffset + (int)stride * 2];
-
-                Vertex v1 = new Vertex();
-                Vertex v2 = new Vertex();
-                Vertex v3 = new Vertex();
-
-                v1.Position = prim.Positions[v1i];
-                v2.Position = prim.Positions[v2i];
-                v3.Position = prim.Positions[v3i];
-
-                if (normals != null)
+                Vertex[] verts = new Vertex[nvert];
+                for (int j = 0; j < nvert; j++)
                 {
-                    v1.Normal = normals[idx[curIdx + norOffset + (int)stride * 0]];
-                    v2.Normal = normals[idx[curIdx + norOffset + (int)stride * 1]];
-                    v3.Normal = normals[idx[curIdx + norOffset + (int)stride * 2]];
+                    verts[j].Position = prim.Positions[idx[curIdx + posOffset + (int)stride * j]];
+
+                    if (normals != null)
+                    {
+                        verts[j].Normal = normals[idx[curIdx + norOffset + (int)stride * j]];
+                    }
+
+                    if (uvs != null)
+                    {
+                        verts[j].TexCoord = uvs[idx[curIdx + uvOffset + (int)stride * j]];
+                    }
                 }
 
-                if (uvs != null)
+
+                if (nvert == 3) // add the triangle
                 {
-                    v1.TexCoord = uvs[idx[curIdx + uvOffset + (int)stride * 0]];
-                    v2.TexCoord = uvs[idx[curIdx + uvOffset + (int)stride * 1]];
-                    v3.TexCoord = uvs[idx[curIdx + uvOffset + (int)stride * 2]];
+                    face.AddVertex(verts[0]);
+                    face.AddVertex(verts[1]);
+                    face.AddVertex(verts[2]);
+                }
+                else if (nvert == 4) // quad, add two triangles
+                {
+                    face.AddVertex(verts[0]);
+                    face.AddVertex(verts[1]);
+                    face.AddVertex(verts[2]);
+
+                    face.AddVertex(verts[0]);
+                    face.AddVertex(verts[2]);
+                    face.AddVertex(verts[3]);
                 }
 
-                face.AddVertex(v1);
-                face.AddVertex(v2);
-                face.AddVertex(v3);
-
-                curIdx += (int)stride * npoly;
+                curIdx += (int)stride * nvert;
             }
 
             prim.Faces.Add(face);
