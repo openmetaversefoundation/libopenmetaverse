@@ -355,7 +355,9 @@ namespace OpenMetaverse
 
         public override int GetHashCode()
         {
-            return X.GetHashCode() ^ Y.GetHashCode();
+            int hash = X.GetHashCode();
+            hash = hash * 31 + Y.GetHashCode();
+            return hash;
         }
 
         /// <summary>

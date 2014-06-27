@@ -80,7 +80,7 @@ namespace OpenMetaverse.Rendering
     #region Structs
 
     [StructLayout(LayoutKind.Explicit)]
-    public struct Vertex
+    public struct Vertex : IEquatable<Vertex>
     {
         [FieldOffset(0)]
         public Vector3 Position;
@@ -92,6 +92,36 @@ namespace OpenMetaverse.Rendering
         public override string ToString()
         {
             return String.Format("P: {0} N: {1} T: {2}", Position, Normal, TexCoord);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = Position.GetHashCode();
+            hash = hash * 31 + Normal.GetHashCode();
+            hash = hash * 31 + TexCoord.GetHashCode();
+            return hash;
+        }
+
+        public static bool operator ==(Vertex value1, Vertex value2)
+        {
+            return value1.Position == value2.Position
+                && value1.Normal == value2.Normal
+                && value1.TexCoord == value2.TexCoord;
+        }
+
+        public static bool operator !=(Vertex value1, Vertex value2)
+        {
+            return !(value1 == value2);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return (obj is Vertex) ? this == (Vertex)obj : false;
+        }
+
+        public bool Equals(Vertex other)
+        {
+            return this == other;
         }
     }
 
