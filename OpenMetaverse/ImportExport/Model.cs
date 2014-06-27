@@ -46,31 +46,26 @@ namespace OpenMetaverse.ImportExport
         public string MaterialID = string.Empty;
         public ModelMaterial Material = new ModelMaterial();
 
+        Dictionary<Vertex, int> LookUp = new Dictionary<Vertex, int>();
+
         public void AddVertex(Vertex v)
         {
-            int index = -1;
+            int index;
 
-            for (int i = 0; i < Vertices.Count; i++)
+            if (LookUp.ContainsKey(v))
             {
-                if (
-                    v.Position == Vertices[i].Position &&
-                    v.Normal == Vertices[i].Normal &&
-                    v.TexCoord == Vertices[i].TexCoord
-                    )
-                {
-                    index = i;
-                    break;
-                }
+                index = LookUp[v];
             }
-
-            if (index == -1)
+            else
             {
                 index = Vertices.Count;
                 Vertices.Add(v);
+                LookUp[v] = index;
             }
 
             Indices.Add((uint)index);
         }
+
     }
 
     public class ModelPrim
