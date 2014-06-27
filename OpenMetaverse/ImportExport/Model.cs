@@ -37,6 +37,7 @@ namespace OpenMetaverse.ImportExport
         public string ID;
         public Color4 DiffuseColor = Color4.White;
         public string Texture;
+        public byte[] TextureData;
     }
 
     public class ModelFace

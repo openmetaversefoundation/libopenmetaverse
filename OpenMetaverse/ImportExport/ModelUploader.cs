@@ -53,20 +53,34 @@ namespace OpenMetaverse.ImportExport
         GridClient Client;
         List<ModelPrim> Prims;
 
+        /// <summary>
+        /// Callback for mesh upload operations
+        /// </summary>
+        /// <param name="result">null on failure, result from server on success</param>
         public delegate void ModelUploadCallback(OSD result);
+
+
+        string InvName, InvDescription;
 
         /// <summary>
         /// Creates instance of the mesh uploader
         /// </summary>
         /// <param name="client">GridClient instance to communicate with the simulator</param>
         /// <param name="prims">List of ModelPrimitive objects to upload as a linkset</param>
-        public ModelUploader(GridClient client, List<ModelPrim> prims)
+        /// <param name="newInvName">Inventory name for newly uploaded object</param>
+        /// <param name="newInvDesc">Inventory description for newly upload object</param>
+        public ModelUploader(GridClient client, List<ModelPrim> prims, string newInvName, string newInvDesc)
         {
             this.Client = client;
             this.Prims = prims;
+            this.InvName = newInvName;
+            this.InvDescription = newInvDesc;
         }
 
-        OSD AssetResources(bool includeImages)
+        List<byte[]> Images;
+        Dictionary<string, int> ImgIndex;
+
+        OSD AssetResources(bool upload)
         {
             OSDArray instanceList = new OSDArray();
             List<byte[]> meshes = new List<byte[]>();
@@ -84,6 +98,27 @@ namespace OpenMetaverse.ImportExport
 
                     faceMap["diffuse_color"] = face.Material.DiffuseColor;
                     faceMap["fullbright"] = false;
+
+                    if (face.Material.TextureData != null)
+                    {
+                        int index;
+                        if (ImgIndex.ContainsKey(face.Material.Texture))
+                        {
+                            index = ImgIndex[face.Material.Texture];
+                        }
+                        else
+                        {
+                            index = Images.Count;
+                            ImgIndex[face.Material.Texture] = index;
+                            Images.Add(face.Material.TextureData);
+                        }
+                        faceMap["image"] = index;
+                        faceMap["scales"] = 1.0f;
+                        faceMap["scalet"] = 1.0f;
+                        faceMap["offsets"] = 0.0f;
+                        faceMap["offsett"] = 0.0f;
+                        faceMap["imagerot"] = 0.0f;
+                    }
 
                     faceList.Add(faceMap);
                 }
@@ -114,10 +149,21 @@ namespace OpenMetaverse.ImportExport
             resources["mesh_list"] = meshList;
 
             OSDArray textureList = new OSDArray();
+            for (int i = 0; i < Images.Count; i++)
+            {
+                if (upload)
+                {
+                    textureList.Add(new OSDBinary(Images[i]));
+                }
+                else
+                {
+                    textureList.Add(new OSDBinary(Utils.EmptyBytes));
+                }
+            }
+
             resources["texture_list"] = textureList;
 
             resources["metric"] = "MUT_Unspecified";
-
 
             return resources;
         }
@@ -163,9 +209,12 @@ namespace OpenMetaverse.ImportExport
                 return;
             }
 
+            Images = new List<byte[]>();
+            ImgIndex = new Dictionary<string, int>();
+
             OSDMap req = new OSDMap();
-            req["name"] = "Test upload object";
-            req["description"] = "Radegast mesh upload " + DateTime.Now.ToString();
+            req["name"] = InvName;
+            req["description"] = InvDescription;
 
             req["asset_resources"] = AssetResources(false);
             req["asset_type"] = "mesh";
@@ -200,7 +249,7 @@ namespace OpenMetaverse.ImportExport
                 if (callback != null) callback(result);
             };
 
-            request.BeginGetResponse(req, OSDFormat.Xml, 60 * 1000);
+            request.BeginGetResponse(req, OSDFormat.Xml, 3 * 60 * 1000);
 
         }
 
