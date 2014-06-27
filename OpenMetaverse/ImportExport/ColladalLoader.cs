@@ -30,19 +30,24 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Xml;
+using System.Drawing;
 using System.Xml.Serialization;
 using OpenMetaverse.Rendering;
-using OpenMetaverse.StructuredData;
-using OpenMetaverse.Http;
+using OpenMetaverse.Imaging;
 
 namespace OpenMetaverse.ImportExport
 {
+    /// <summary>
+    /// Parsing Collada model files into data structures
+    /// </summary>
     public class ColladaLoader
     {
         COLLADA Model;
         static XmlSerializer Serializer = null;
         List<Node> Nodes;
         List<ModelMaterial> Materials;
+        Dictionary<string, string> MatSymTarget;
+        string FileName;
 
         class Node
         {
@@ -52,7 +57,13 @@ namespace OpenMetaverse.ImportExport
             public string MeshID;
         }
 
-        public List<ModelPrim> Load(string filename)
+        /// <summary>
+        /// Parses Collada document
+        /// </summary>
+        /// <param name="filename">Load .dae model from this file</param>
+        /// <param name="loadImages">Load and decode images for uploading with model</param>
+        /// <returns>A list of mesh prims that were parsed from the collada file</returns>
+        public List<ModelPrim> Load(string filename, bool loadImages)
         {
             try
             {
@@ -62,12 +73,19 @@ namespace OpenMetaverse.ImportExport
                     Serializer = new XmlSerializer(typeof(COLLADA));
                 }
 
+                this.FileName = filename;
+
                 // A FileStream is needed to read the XML document.
                 FileStream fs = new FileStream(filename, FileMode.Open);
                 XmlReader reader = XmlReader.Create(fs);
                 Model = (COLLADA)Serializer.Deserialize(reader);
                 fs.Close();
-                return Parse();
+                var prims = Parse();
+                if (loadImages)
+                {
+                    LoadImages(prims);
+                }
+                return prims;
             }
             catch (Exception ex)
             {
@@ -76,6 +94,101 @@ namespace OpenMetaverse.ImportExport
             }
         }
 
+        void LoadImages(List<ModelPrim> prims)
+        {
+            foreach (var prim in prims)
+            {
+                foreach (var face in prim.Faces)
+                {
+                    if (!string.IsNullOrEmpty(face.Material.Texture))
+                    {
+                        LoadImage(face.Material);
+                    }
+                }
+            }
+        }
+
+        void LoadImage(ModelMaterial material)
+        {
+            var fname = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(FileName), material.Texture);
+
+            try
+            {
+                string ext = System.IO.Path.GetExtension(material.Texture).ToLower();
+
+                Bitmap bitmap = null;
+
+                if (ext == ".jp2" || ext == ".j2c")
+                {
+                    material.TextureData = File.ReadAllBytes(fname);
+                    return;
+                }
+
+                if (ext == ".tga")
+                {
+                    bitmap = LoadTGAClass.LoadTGA(fname);
+                }
+                else
+                {
+                    bitmap = (Bitmap)Image.FromFile(fname);
+                }
+
+                int width = bitmap.Width;
+                int height = bitmap.Height;
+
+                // Handle resizing to prevent excessively large images and irregular dimensions
+                if (!IsPowerOfTwo((uint)width) || !IsPowerOfTwo((uint)height) || width > 1024 || height > 1024)
+                {
+                    var origWidth = width;
+                    var origHieght = height;
+
+                    width = ClosestPowerOwTwo(width);
+                    height = ClosestPowerOwTwo(height);
+
+                    width = width > 1024 ? 1024 : width;
+                    height = height > 1024 ? 1024 : height;
+
+                    Logger.Log("Image has irregular dimensions " + origWidth + "x" + origHieght + ". Resizing to " + width + "x" + height, Helpers.LogLevel.Info);
+
+                    Bitmap resized = new Bitmap(width, height, bitmap.PixelFormat);
+                    Graphics graphics = Graphics.FromImage(resized);
+
+                    graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                    graphics.InterpolationMode =
+                       System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    graphics.DrawImage(bitmap, 0, 0, width, height);
+
+                    bitmap.Dispose();
+                    bitmap = resized;
+                }
+
+                material.TextureData = OpenJPEG.EncodeFromImage(bitmap, false);
+
+                Logger.Log("Successfully encoded " + fname, Helpers.LogLevel.Info);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Failed loading " + fname + ": " + ex.Message, Helpers.LogLevel.Warning);
+            }
+
+        }
+
+        bool IsPowerOfTwo(uint n)
+        {
+            return (n & (n - 1)) == 0 && n != 0;
+        }
+
+        int ClosestPowerOwTwo(int n)
+        {
+            int res = 1;
+
+            while (res < n)
+            {
+                res <<= 1;
+            }
+
+            return res > 1 ? res / 2 : 1;
+        }
 
         ModelMaterial ExtractMaterial(object diffuse)
         {
@@ -217,6 +330,8 @@ namespace OpenMetaverse.ImportExport
             Nodes = new List<Node>();
             if (Model == null) return;
 
+            MatSymTarget = new Dictionary<string, string>();
+
             foreach (var item in Model.Items)
             {
                 if (item is library_visual_scenes)
@@ -249,7 +364,18 @@ namespace OpenMetaverse.ImportExport
                             {
                                 n.MeshID = instGeom.url.Substring(1);
                             }
-
+                            if (instGeom.bind_material != null && instGeom.bind_material.technique_common != null)
+                            {
+                                foreach (var teq in instGeom.bind_material.technique_common)
+                                {
+                                    var target = teq.target;
+                                    if (!string.IsNullOrEmpty(target))
+                                    {
+                                        target = target.Substring(1);
+                                        MatSymTarget[teq.symbol] = target;
+                                    }
+                                }
+                            }
                         }
 
                         Nodes.Add(n);
@@ -477,10 +603,13 @@ namespace OpenMetaverse.ImportExport
 
             ModelFace face = new ModelFace();
             face.MaterialID = list.material;
-            ModelMaterial mat = Materials.Find(m => m.ID == face.MaterialID);
-            if (mat != null)
+            if (MatSymTarget.ContainsKey(list.material))
             {
-                face.Material = mat;
+                ModelMaterial mat = Materials.Find(m => m.ID == MatSymTarget[list.material]);
+                if (mat != null)
+                {
+                    face.Material = mat;
+                }
             }
 
             int curIdx = 0;
