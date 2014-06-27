@@ -184,6 +184,12 @@ namespace OpenMetaverse.ImportExport
         {
             PrepareUpload((result =>
             {
+                if (result == null && callback != null)
+                {
+                    callback(null);
+                    return;
+                }
+
                 if (result is OSDMap)
                 {
                     var res = (OSDMap)result;
@@ -218,6 +224,7 @@ namespace OpenMetaverse.ImportExport
                 null == (url = Client.Network.CurrentSim.Caps.CapabilityURI("NewFileAgentInventory")))
             {
                 Logger.Log("Cannot upload mesh, no connection or NewFileAgentInventory not available", Helpers.LogLevel.Warning);
+                if (callback != null) callback(null);
                 return;
             }
 
