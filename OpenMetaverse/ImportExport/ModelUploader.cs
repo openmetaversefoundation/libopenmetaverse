@@ -188,7 +188,19 @@ namespace OpenMetaverse.ImportExport
                 {
                     var res = (OSDMap)result;
                     Uri uploader = new Uri(res["uploader"]);
-                    PerformUpload(uploader, callback);
+                    PerformUpload(uploader, (contents =>
+                    {
+                        if (contents != null)
+                        {
+                            var reply = (OSDMap)contents;
+                            if (reply.ContainsKey("new_inventory_item") && reply.ContainsKey("new_asset"))
+                            {
+                                // Request full update on the item in order to update the local store
+                                Client.Inventory.RequestFetchInventory(reply["new_inventory_item"].AsUUID(), Client.Self.AgentID);
+                            }
+                        }
+                        if (callback != null) callback(contents);
+                    }));
                 }
             }));
 

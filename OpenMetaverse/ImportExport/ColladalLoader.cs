@@ -603,12 +603,15 @@ namespace OpenMetaverse.ImportExport
 
             ModelFace face = new ModelFace();
             face.MaterialID = list.material;
-            if (MatSymTarget.ContainsKey(list.material))
+            if (face.MaterialID != null)
             {
-                ModelMaterial mat = Materials.Find(m => m.ID == MatSymTarget[list.material]);
-                if (mat != null)
+                if (MatSymTarget.ContainsKey(list.material))
                 {
-                    face.Material = mat;
+                    ModelMaterial mat = Materials.Find(m => m.ID == MatSymTarget[list.material]);
+                    if (mat != null)
+                    {
+                        face.Material = mat;
+                    }
                 }
             }
 
