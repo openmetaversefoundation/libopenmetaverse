@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2006-2014, openmetaverse.org
  * All rights reserved.
  *
@@ -410,7 +410,7 @@ namespace OpenMetaverse
         [EnumInfo(Text = "Left Hip")]
         LeftHip,
         /// <summary>Left upper leg</summary>
-        [EnumInfo(Text = "Left Hip")]
+        [EnumInfo(Text = "Left Upper Leg")]
         LeftUpperLeg,
         /// <summary>Left lower leg</summary>
         [EnumInfo(Text = "Left Lower Leg")]
