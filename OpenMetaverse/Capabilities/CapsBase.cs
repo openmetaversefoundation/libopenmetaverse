@@ -194,59 +194,58 @@ namespace OpenMetaverse.Http
 
             try
             {
-                response = (HttpWebResponse)state.Request.EndGetResponse(ar);
-                // Get the stream for downloading the response
-                using (Stream responseStream = response.GetResponseStream())
+                using (response = (HttpWebResponse)state.Request.EndGetResponse(ar))
                 {
-
-                    #region Read the response
-
-                    // If Content-Length is set we create a buffer of the exact size, otherwise
-                    // a MemoryStream is used to receive the response
-                    bool nolength = (response.ContentLength <= 0) || (Type.GetType("Mono.Runtime") != null);
-                    int size = (nolength) ? 8192 : (int)response.ContentLength;
-                    MemoryStream ms = (nolength) ? new MemoryStream() : null;
-                    byte[] buffer = new byte[size];
-
-                    int bytesRead = 0;
-                    int offset = 0;
-                    int totalBytesRead = 0;
-                    int totalSize = nolength ? 0 : size;
-
-                    while ((bytesRead = responseStream.Read(buffer, offset, size)) != 0)
+                    // Get the stream for downloading the response
+                    using (Stream responseStream = response.GetResponseStream())
                     {
-                        totalBytesRead += bytesRead;
+                        #region Read the response
+
+                        // If Content-Length is set we create a buffer of the exact size, otherwise
+                        // a MemoryStream is used to receive the response
+                        bool nolength = (response.ContentLength <= 0) || (Type.GetType("Mono.Runtime") != null);
+                        int size = (nolength) ? 8192 : (int)response.ContentLength;
+                        MemoryStream ms = (nolength) ? new MemoryStream() : null;
+                        byte[] buffer = new byte[size];
+
+                        int bytesRead = 0;
+                        int offset = 0;
+                        int totalBytesRead = 0;
+                        int totalSize = nolength ? 0 : size;
+
+                        while ((bytesRead = responseStream.Read(buffer, offset, size)) != 0)
+                        {
+                            totalBytesRead += bytesRead;
+
+                            if (nolength)
+                            {
+                                totalSize += (size - bytesRead);
+                                ms.Write(buffer, 0, bytesRead);
+                            }
+                            else
+                            {
+                                offset += bytesRead;
+                                size -= bytesRead;
+                            }
+
+                            // Fire the download progress callback for each chunk of received data
+                            if (state.DownloadProgressCallback != null)
+                                state.DownloadProgressCallback(state.Request, response, totalBytesRead, totalSize);
+                        }
 
                         if (nolength)
                         {
-                            totalSize += (size - bytesRead);
-                            ms.Write(buffer, 0, bytesRead);
+                            responseData = ms.ToArray();
+                            ms.Close();
+                            ms.Dispose();
                         }
                         else
                         {
-                            offset += bytesRead;
-                            size -= bytesRead;
+                            responseData = buffer;
                         }
 
-                        // Fire the download progress callback for each chunk of received data
-                        if (state.DownloadProgressCallback != null)
-                            state.DownloadProgressCallback(state.Request, response, totalBytesRead, totalSize);
+                        #endregion Read the response
                     }
-
-                    if (nolength)
-                    {
-                        responseData = ms.ToArray();
-                        ms.Close();
-                        ms.Dispose();
-                    }
-                    else
-                    {
-                        responseData = buffer;
-                    }
-
-                    #endregion Read the response
-
-                    responseStream.Close();
                 }
             }
             catch (Exception ex)
