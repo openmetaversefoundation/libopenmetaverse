@@ -2016,7 +2016,10 @@ namespace OpenMetaverse
                 if (_Store.Contains(itemID))
                 {
                     InventoryBase inv = _Store[itemID];
-                    inv.Name = newName;
+                    if (!string.IsNullOrEmpty(newName))
+                    {
+                        inv.Name = newName;
+                    }
                     inv.ParentUUID = folderID;
                     _Store.UpdateNodeFor(inv);
                 }
