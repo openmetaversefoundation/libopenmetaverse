@@ -88,15 +88,10 @@ namespace OpenMetaverse
         Queue<DownloadRequest> queue = new Queue<DownloadRequest>();
         Dictionary<string, ActiveDownload> activeDownloads = new Dictionary<string, ActiveDownload>();
 
-        int m_ParallelDownloads = 8;
         X509Certificate2 m_ClientCert;
 
         /// <summary>Maximum number of parallel downloads from a single endpoint</summary>
-        public int ParallelDownloads
-        {
-            get { return m_ParallelDownloads; }
-            set { m_ParallelDownloads = value; }
-        }
+        public int ParallelDownloads { get; set; }
 
         /// <summary>Client certificate</summary>
         public X509Certificate2 ClientCert
@@ -147,8 +142,12 @@ namespace OpenMetaverse
             request.ServicePoint.MaxIdleTime = 0;
             // Disable stupid Expect-100: Continue header
             request.ServicePoint.Expect100Continue = false;
-            // Crank up the max number of connections per endpoint (default is 2!)
-            request.ServicePoint.ConnectionLimit = m_ParallelDownloads;
+            // Crank up the max number of connections per endpoint
+            if (request.ServicePoint.ConnectionLimit < Settings.MAX_HTTP_CONNECTIONS)
+            {
+                Logger.Log(string.Format("In DownloadManager.SetupRequest() setting conn limit for {0}:{1} to {2}", address.Host, address.Port, Settings.MAX_HTTP_CONNECTIONS), Helpers.LogLevel.Debug);
+                request.ServicePoint.ConnectionLimit = Settings.MAX_HTTP_CONNECTIONS;
+            }
 
             return request;
         }

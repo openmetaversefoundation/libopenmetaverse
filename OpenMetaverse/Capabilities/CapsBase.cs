@@ -127,7 +127,6 @@ namespace OpenMetaverse.Http
             ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, TimeoutCallback, state, millisecondsTimeout, true);
         }
 
-
         static HttpWebRequest SetupRequest(Uri address, X509Certificate2 clientCert)
         {
             if (address == null)
@@ -144,8 +143,16 @@ namespace OpenMetaverse.Http
             request.ServicePoint.MaxIdleTime = 1000 * 60;
             // Disable stupid Expect-100: Continue header
             request.ServicePoint.Expect100Continue = false;
-            // Crank up the max number of connections per endpoint (default is 2!)
-            request.ServicePoint.ConnectionLimit = Math.Max(request.ServicePoint.ConnectionLimit, 32);
+            // Crank up the max number of connections per endpoint
+            // We set this manually here instead of in ServicePointManager to avoid intereference with callers.
+            if (request.ServicePoint.ConnectionLimit < Settings.MAX_HTTP_CONNECTIONS)
+            {
+                Logger.Log(
+                    string.Format(
+                        "In CapsBase.SetupRequest() setting conn limit for {0}:{1} to {2}", 
+                        address.Host, address.Port, Settings.MAX_HTTP_CONNECTIONS), Helpers.LogLevel.Debug);
+                request.ServicePoint.ConnectionLimit = Settings.MAX_HTTP_CONNECTIONS;
+            }
             // Caps requests are never sent as trickles of data, so Nagle's
             // coalescing algorithm won't help us
             request.ServicePoint.UseNagleAlgorithm = false;

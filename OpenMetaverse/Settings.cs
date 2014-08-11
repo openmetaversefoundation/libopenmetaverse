@@ -58,8 +58,20 @@ namespace OpenMetaverse
 
         /// <summary>Use XML-RPC Login or LLSD Login, default is XML-RPC Login</summary>
         public bool USE_LLSD_LOGIN = false;
+
+        /// <summary>
+        /// Maximum number of HTTP connections to open to a particular endpoint.
+        /// </summary>
+        /// <remarks>
+        /// An endpoint is defined as a commbination of network address and port.  This is used for Caps.
+        /// This is a static variable which applies to all instances.
+        /// </remarks>
+        public static int MAX_HTTP_CONNECTIONS = 32;
+
         #endregion
+
         #region Inventory
+
         /// <summary>
         /// InventoryManager requests inventory information on login,
         /// GridClient initializes an Inventory store for main inventory.
@@ -74,7 +86,9 @@ namespace OpenMetaverse
         /// Use Caps for fetching inventory where available
         /// </summary>
         public bool HTTP_INVENTORY = true;
+
         #endregion
+
         #region Timeouts and Intervals
 
         /// <summary>Number of milliseconds before an asset transfer will time
