@@ -127,7 +127,6 @@ namespace OpenMetaverse.Http
             ThreadPool.RegisterWaitForSingleObject(result.AsyncWaitHandle, TimeoutCallback, state, millisecondsTimeout, true);
         }
 
-
         static HttpWebRequest SetupRequest(Uri address, X509Certificate2 clientCert)
         {
             if (address == null)
@@ -144,8 +143,16 @@ namespace OpenMetaverse.Http
             request.ServicePoint.MaxIdleTime = 1000 * 60;
             // Disable stupid Expect-100: Continue header
             request.ServicePoint.Expect100Continue = false;
-            // Crank up the max number of connections per endpoint (default is 2!)
-            request.ServicePoint.ConnectionLimit = Math.Max(request.ServicePoint.ConnectionLimit, 32);
+            // Crank up the max number of connections per endpoint
+            // We set this manually here instead of in ServicePointManager to avoid intereference with callers.
+            if (request.ServicePoint.ConnectionLimit < Settings.MAX_HTTP_CONNECTIONS)
+            {
+                Logger.Log(
+                    string.Format(
+                        "In CapsBase.SetupRequest() setting conn limit for {0}:{1} to {2}", 
+                        address.Host, address.Port, Settings.MAX_HTTP_CONNECTIONS), Helpers.LogLevel.Debug);
+                request.ServicePoint.ConnectionLimit = Settings.MAX_HTTP_CONNECTIONS;
+            }
             // Caps requests are never sent as trickles of data, so Nagle's
             // coalescing algorithm won't help us
             request.ServicePoint.UseNagleAlgorithm = false;
@@ -194,59 +201,58 @@ namespace OpenMetaverse.Http
 
             try
             {
-                response = (HttpWebResponse)state.Request.EndGetResponse(ar);
-                // Get the stream for downloading the response
-                using (Stream responseStream = response.GetResponseStream())
+                using (response = (HttpWebResponse)state.Request.EndGetResponse(ar))
                 {
-
-                    #region Read the response
-
-                    // If Content-Length is set we create a buffer of the exact size, otherwise
-                    // a MemoryStream is used to receive the response
-                    bool nolength = (response.ContentLength <= 0) || (Type.GetType("Mono.Runtime") != null);
-                    int size = (nolength) ? 8192 : (int)response.ContentLength;
-                    MemoryStream ms = (nolength) ? new MemoryStream() : null;
-                    byte[] buffer = new byte[size];
-
-                    int bytesRead = 0;
-                    int offset = 0;
-                    int totalBytesRead = 0;
-                    int totalSize = nolength ? 0 : size;
-
-                    while ((bytesRead = responseStream.Read(buffer, offset, size)) != 0)
+                    // Get the stream for downloading the response
+                    using (Stream responseStream = response.GetResponseStream())
                     {
-                        totalBytesRead += bytesRead;
+                        #region Read the response
+
+                        // If Content-Length is set we create a buffer of the exact size, otherwise
+                        // a MemoryStream is used to receive the response
+                        bool nolength = (response.ContentLength <= 0) || (Type.GetType("Mono.Runtime") != null);
+                        int size = (nolength) ? 8192 : (int)response.ContentLength;
+                        MemoryStream ms = (nolength) ? new MemoryStream() : null;
+                        byte[] buffer = new byte[size];
+
+                        int bytesRead = 0;
+                        int offset = 0;
+                        int totalBytesRead = 0;
+                        int totalSize = nolength ? 0 : size;
+
+                        while ((bytesRead = responseStream.Read(buffer, offset, size)) != 0)
+                        {
+                            totalBytesRead += bytesRead;
+
+                            if (nolength)
+                            {
+                                totalSize += (size - bytesRead);
+                                ms.Write(buffer, 0, bytesRead);
+                            }
+                            else
+                            {
+                                offset += bytesRead;
+                                size -= bytesRead;
+                            }
+
+                            // Fire the download progress callback for each chunk of received data
+                            if (state.DownloadProgressCallback != null)
+                                state.DownloadProgressCallback(state.Request, response, totalBytesRead, totalSize);
+                        }
 
                         if (nolength)
                         {
-                            totalSize += (size - bytesRead);
-                            ms.Write(buffer, 0, bytesRead);
+                            responseData = ms.ToArray();
+                            ms.Close();
+                            ms.Dispose();
                         }
                         else
                         {
-                            offset += bytesRead;
-                            size -= bytesRead;
+                            responseData = buffer;
                         }
 
-                        // Fire the download progress callback for each chunk of received data
-                        if (state.DownloadProgressCallback != null)
-                            state.DownloadProgressCallback(state.Request, response, totalBytesRead, totalSize);
+                        #endregion Read the response
                     }
-
-                    if (nolength)
-                    {
-                        responseData = ms.ToArray();
-                        ms.Close();
-                        ms.Dispose();
-                    }
-                    else
-                    {
-                        responseData = buffer;
-                    }
-
-                    #endregion Read the response
-
-                    responseStream.Close();
                 }
             }
             catch (Exception ex)

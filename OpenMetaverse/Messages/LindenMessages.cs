@@ -692,6 +692,12 @@ namespace OpenMetaverse.Messages.Linden
         public bool ObscureMedia;
         /// <summary>true to obscure (hide) music url</summary>
         public bool ObscureMusic;
+        /// <summary> true if avatars in this parcel should be invisible to people outside</summary>
+        public bool SeeAVs;
+        /// <summary> true if avatars outside can hear any sounds avatars inside play</summary>
+        public bool AnyAVSounds;
+        /// <summary> true if group members outside can hear any sounds avatars inside play</summary>
+        public bool GroupAVSounds;
 
         /// <summary>
         /// Serialize the object
@@ -753,6 +759,9 @@ namespace OpenMetaverse.Messages.Linden
             parcelDataMap["TotalPrims"] = OSD.FromInteger(TotalPrims);
             parcelDataMap["UserLocation"] = OSD.FromVector3(UserLocation);
             parcelDataMap["UserLookAt"] = OSD.FromVector3(UserLookAt);
+            parcelDataMap["SeeAVs"] = OSD.FromBoolean(SeeAVs);
+            parcelDataMap["AnyAVSounds"] = OSD.FromBoolean(AnyAVSounds);
+            parcelDataMap["GroupAVSounds"] = OSD.FromBoolean(GroupAVSounds);
             dataArray.Add(parcelDataMap);
             map["ParcelData"] = dataArray;
 
@@ -846,6 +855,9 @@ namespace OpenMetaverse.Messages.Linden
             TotalPrims = parcelDataMap["TotalPrims"].AsInteger();
             UserLocation = parcelDataMap["UserLocation"].AsVector3();
             UserLookAt = parcelDataMap["UserLookAt"].AsVector3();
+            SeeAVs = parcelDataMap["SeeAVs"].AsBoolean();
+            AnyAVSounds = parcelDataMap["AnyAVSounds"].AsBoolean();
+            GroupAVSounds = parcelDataMap["GroupAVSounds"].AsBoolean();
 
             if (map.ContainsKey("MediaData")) // temporary, OpenSim doesn't send this block
             {
@@ -924,6 +936,12 @@ namespace OpenMetaverse.Messages.Linden
         public Vector3 UserLocation;
         /// <summary></summary>
         public Vector3 UserLookAt;
+        /// <summary> true if avatars in this parcel should be invisible to people outside</summary>
+        public bool SeeAVs;
+        /// <summary> true if avatars outside can hear any sounds avatars inside play</summary>
+        public bool AnyAVSounds;
+        /// <summary> true if group members outside can hear any sounds avatars inside play</summary>
+        public bool GroupAVSounds;
 
         /// <summary>
         /// Deserialize the message
@@ -957,6 +975,18 @@ namespace OpenMetaverse.Messages.Linden
             SnapshotID = map["snapshot_id"].AsUUID();
             UserLocation = map["user_location"].AsVector3();
             UserLookAt = map["user_look_at"].AsVector3();
+            if (map.ContainsKey("see_avs"))
+            {
+                SeeAVs = map["see_avs"].AsBoolean();
+                AnyAVSounds = map["any_av_sounds"].AsBoolean();
+                GroupAVSounds = map["group_av_sounds"].AsBoolean();
+            }
+            else
+            {
+                SeeAVs = true;
+                AnyAVSounds = true;
+                GroupAVSounds = true;
+            }
         }
 
         /// <summary>
@@ -993,6 +1023,9 @@ namespace OpenMetaverse.Messages.Linden
             map["snapshot_id"] = OSD.FromUUID(SnapshotID);
             map["user_location"] = OSD.FromVector3(UserLocation);
             map["user_look_at"] = OSD.FromVector3(UserLookAt);
+            map["see_avs"] = OSD.FromBoolean(SeeAVs);
+            map["any_av_sounds"] = OSD.FromBoolean(AnyAVSounds);
+            map["group_av_sounds"] = OSD.FromBoolean(GroupAVSounds);
 
             return map;
         }
