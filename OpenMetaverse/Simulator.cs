@@ -1131,9 +1131,15 @@ namespace OpenMetaverse
                 if (!PacketArchive.TryEnqueue(packet.Header.Sequence))
                 {
                     if (packet.Header.Resent)
-                        Logger.DebugLog("Received a resend of already processed packet #" + packet.Header.Sequence + ", type: " + packet.Type);
+                        Logger.DebugLog(
+                            string.Format(
+                                "Received a resend of already processed packet #{0}, type: {1} from {2}", 
+                                packet.Header.Sequence, packet.Type, Name));
                     else
-                        Logger.Log("Received a duplicate (not marked as resend) of packet #" + packet.Header.Sequence + ", type: " + packet.Type,
+                        Logger.Log(
+                            string.Format(
+                                "Received a duplicate (not marked as resend) of packet #{0}, type: {1} for {2} from {3}", 
+                                packet.Header.Sequence, packet.Type, Client.Self.Name, Name),
                             Helpers.LogLevel.Warning);
 
                     // Avoid firing a callback twice for the same packet
