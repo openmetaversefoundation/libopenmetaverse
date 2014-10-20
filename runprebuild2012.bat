@@ -15,7 +15,7 @@
 ::
 
 echo ##########################################
-echo creating prebuild files for: vs2010
+echo creating prebuild files for: vs2012
 echo Parameters: %1 %2
 echo ##########################################
 
