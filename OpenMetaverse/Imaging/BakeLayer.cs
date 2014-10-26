@@ -38,6 +38,8 @@ namespace OpenMetaverse.Imaging
     /// </summary>
     public class Baker
     {
+        public static readonly UUID IMG_INVISIBLE = new UUID("3a367d1c-bef1-6d43-7595-e88c1e3aadb3");
+
         #region Properties
         /// <summary>Final baked texture</summary>
         public AssetTexture BakedTexture { get { return bakedTexture; } }
@@ -151,6 +153,10 @@ namespace OpenMetaverse.Imaging
                     if (textures[i].Texture.Image.Alpha != null)
                     {
                         alphaWearableTexture = textures[i].Texture.Image.Clone();
+                    }
+                    else if (textures[i].TextureID == IMG_INVISIBLE)
+                    {
+                        alphaWearableTexture = new ManagedImage(bakeWidth, bakeHeight, ManagedImage.ImageChannels.Alpha);
                     }
                     continue;
                 }
