@@ -103,6 +103,7 @@ namespace OpenMetaverse
         /// <summary>Default constructor</summary>
         public DownloadManager()
         {
+            ParallelDownloads = 8;
         }
 
         /// <summary>Cleanup method</summary>

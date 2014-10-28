@@ -1328,7 +1328,6 @@ namespace OpenMetaverse
             );
 
             HttpDownloads.QueueDownlad(req);
-
         }
 
         #endregion Texture Downloads
