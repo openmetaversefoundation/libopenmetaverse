@@ -539,8 +539,11 @@ namespace OpenMetaverse
                             RequestAgentSetAppearance();
                         }
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
+                        Logger.Log(
+                            string.Format("Failed to set appearance with exception {0}", e), Helpers.LogLevel.Warning, Client);
+
                         success = false;
                     }
                     finally
@@ -551,6 +554,7 @@ namespace OpenMetaverse
                     }
                 }
             );
+
             AppearanceThread.Name = "Appearance";
             AppearanceThread.IsBackground = true;
             AppearanceThread.Start();
