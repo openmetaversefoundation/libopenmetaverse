@@ -1147,7 +1147,7 @@ namespace OpenMetaverse
                     }
                 );
 
-                HttpDownloads.QueueDownlad(req);
+                HttpDownloads.QueueDownload(req);
             }
             else
             {
@@ -1233,7 +1233,7 @@ namespace OpenMetaverse
                 }
             );
 
-            HttpDownloads.QueueDownlad(req);
+            HttpDownloads.QueueDownload(req);
 
         }
 
@@ -1327,7 +1327,7 @@ namespace OpenMetaverse
                 }
             );
 
-            HttpDownloads.QueueDownlad(req);
+            HttpDownloads.QueueDownload(req);
         }
 
         #endregion Texture Downloads
