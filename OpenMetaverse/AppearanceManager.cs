@@ -539,8 +539,11 @@ namespace OpenMetaverse
                             RequestAgentSetAppearance();
                         }
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
+                        Logger.Log(
+                            string.Format("Failed to set appearance with exception {0}", e), Helpers.LogLevel.Warning, Client);
+
                         success = false;
                     }
                     finally
@@ -551,6 +554,7 @@ namespace OpenMetaverse
                     }
                 }
             );
+
             AppearanceThread.Name = "Appearance";
             AppearanceThread.IsBackground = true;
             AppearanceThread.Start();
@@ -1614,32 +1618,41 @@ namespace OpenMetaverse
             Parallel.ForEach<UUID>(MAX_CONCURRENT_DOWNLOADS, textureIDs,
                 delegate(UUID textureID)
                 {
-                    AutoResetEvent downloadEvent = new AutoResetEvent(false);
+                    try
+                    {
+                        AutoResetEvent downloadEvent = new AutoResetEvent(false);
 
-                    Client.Assets.RequestImage(textureID,
-                        delegate(TextureRequestState state, AssetTexture assetTexture)
-                        {
-                            if (state == TextureRequestState.Finished)
+                        Client.Assets.RequestImage(textureID,
+                            delegate(TextureRequestState state, AssetTexture assetTexture)
                             {
-                                assetTexture.Decode();
-
-                                for (int i = 0; i < Textures.Length; i++)
+                                if (state == TextureRequestState.Finished)
                                 {
-                                    if (Textures[i].TextureID == textureID)
-                                        Textures[i].Texture = assetTexture;
+                                    assetTexture.Decode();
+
+                                    for (int i = 0; i < Textures.Length; i++)
+                                    {
+                                        if (Textures[i].TextureID == textureID)
+                                            Textures[i].Texture = assetTexture;
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                Logger.Log("Texture " + textureID + " failed to download, one or more bakes will be incomplete",
-                                    Helpers.LogLevel.Warning);
-                            }
+                                else
+                                {
+                                    Logger.Log("Texture " + textureID + " failed to download, one or more bakes will be incomplete",
+                                        Helpers.LogLevel.Warning);
+                                }
 
-                            downloadEvent.Set();
-                        }
-                    );
+                                downloadEvent.Set();
+                            }
+                        );
 
-                    downloadEvent.WaitOne(TEXTURE_TIMEOUT, false);
+                        downloadEvent.WaitOne(TEXTURE_TIMEOUT, false);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Log(
+                            string.Format("Download of texture {0} failed with exception {1}", textureID, e), 
+                            Helpers.LogLevel.Warning, Client);
+                    }
                 }
             );
         }

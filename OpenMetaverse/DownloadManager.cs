@@ -103,6 +103,7 @@ namespace OpenMetaverse
         /// <summary>Default constructor</summary>
         public DownloadManager()
         {
+            ParallelDownloads = 8;
         }
 
         /// <summary>Cleanup method</summary>
@@ -232,8 +233,8 @@ namespace OpenMetaverse
             }
         }
 
-        /// <summary>Enqueue a new HTPP download</summary>
-        public void QueueDownlad(DownloadRequest req)
+        /// <summary>Enqueue a new HTTP download</summary>
+        public void QueueDownload(DownloadRequest req)
         {
             lock (activeDownloads)
             {

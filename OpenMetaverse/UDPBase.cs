@@ -97,6 +97,13 @@ namespace OpenMetaverse
                 {
                     Logger.DebugLog("UDP SIO_UDP_CONNRESET flag not supported on this platform");
                 }
+
+                // On at least Mono 3.2.8, multiple UDP sockets can bind to the same port by default.  This means that
+                // when running multiple connections, two can occasionally bind to the same port, leading to unexpected
+                // errors as they intercept each others messages.  We need to prevent this.  This is not allowed by 
+                // default on Windows.
+                udpSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, false);
+
                 udpSocket.Bind(ipep);
 
                 // we're not shutting down, we're starting up

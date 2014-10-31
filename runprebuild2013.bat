@@ -15,26 +15,31 @@
 ::
 
 echo ##########################################
-echo creating prebuild files for: vs2012
+echo creating prebuild files for: vs2013
 echo Parameters: %1 %2
 echo ##########################################
+
+if %PROCESSOR_ARCHITECTURE%==x86 (
+         set MSBuild="%SystemRoot%\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe"
+) else ( set MSBuild="%SystemRoot%\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe"
+)
 
 :: run prebuild to generate solution/project files from prebuild.xml configuration file
 bin\Prebuild.exe /target vs2012
 
 :: build compile.bat file based on command line parameters
 echo @echo off > compile.bat
-if(.%1)==(.) echo C:\WINDOWS\Microsoft.NET\Framework\v3.5\msbuild OpenMetaverse.sln >> compile.bat
+if(.%1)==(.) echo %MSBuild% OpenMetaverse.sln /p:Configuration=Release >> compile.bat
 
 if(.%1)==(.msbuild) echo echo ==== COMPILE BEGIN ==== >> compile.bat
-if(.%1)==(.msbuild) echo %SystemRoot%\Microsoft.NET\Framework\v3.5\MSBuild.exe /p:Configuration=Release OpenMetaverse.sln >> compile.bat
+if(.%1)==(.msbuild) echo %MSBuild% /p:Configuration=Release OpenMetaverse.sln >> compile.bat
 if(.%1)==(.msbuild) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 
 if(.%1)==(.nant) echo nant >> compile.bat
 if(.%1)==(.nant) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 
 if(.%2)==(.docs) echo echo ==== GENERATE DOCUMENTATION BEGIN ==== >> compile.bat
-if(.%2)==(.docs) echo %SystemRoot%\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe /p:Configuration=Release docs\OpenMetaverse.shfbproj >> compile.bat
+if(.%2)==(.docs) echo %MSBuild% /p:Configuration=Release docs\OpenMetaverse.shfbproj >> compile.bat
 if(.%2)==(.docs) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 if(.%2)==(.docs) echo 7z.exe a -tzip docs\documentation.zip docs\trunk >> compile.bat
 if(.%2)==(.docs) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
