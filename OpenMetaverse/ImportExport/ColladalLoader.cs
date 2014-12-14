@@ -326,6 +326,57 @@ namespace OpenMetaverse.ImportExport
             }
         }
 
+        void ProcessNode(node node)
+        {
+            Node n = new Node();
+            n.ID = node.id;
+
+            if (node.Items != null)
+                // Try finding matrix
+                foreach (var i in node.Items)
+                {
+                    if (i is matrix)
+                    {
+                        var m = (matrix)i;
+                        for (int a = 0; a < 4; a++)
+                            for (int b = 0; b < 4; b++)
+                            {
+                                n.Transform[b, a] = (float)m.Values[a * 4 + b];
+                            }
+                    }
+                }
+
+            // Find geometry and material
+            if (node.instance_geometry != null && node.instance_geometry.Length > 0)
+            {
+                var instGeom = node.instance_geometry[0];
+                if (!string.IsNullOrEmpty(instGeom.url))
+                {
+                    n.MeshID = instGeom.url.Substring(1);
+                }
+                if (instGeom.bind_material != null && instGeom.bind_material.technique_common != null)
+                {
+                    foreach (var teq in instGeom.bind_material.technique_common)
+                    {
+                        var target = teq.target;
+                        if (!string.IsNullOrEmpty(target))
+                        {
+                            target = target.Substring(1);
+                            MatSymTarget[teq.symbol] = target;
+                        }
+                    }
+                }
+            }
+
+            if (node.Items != null && node.instance_geometry != null && node.instance_geometry.Length > 0)
+                Nodes.Add(n);
+
+            // Recurse if the scene is hierarchical
+            if (node.node1 != null)
+                foreach (node nd in node.node1)
+                    ProcessNode(nd);
+        }
+
         void ParseVisualScene()
         {
             Nodes = new List<Node>();
@@ -340,46 +391,7 @@ namespace OpenMetaverse.ImportExport
                     var scene = ((library_visual_scenes)item).visual_scene[0];
                     foreach (var node in scene.node)
                     {
-                        Node n = new Node();
-                        n.ID = node.id;
-
-                        // Try finding matrix
-                        foreach (var i in node.Items)
-                        {
-                            if (i is matrix)
-                            {
-                                var m = (matrix)i;
-                                for (int a = 0; a < 4; a++)
-                                    for (int b = 0; b < 4; b++)
-                                    {
-                                        n.Transform[b, a] = (float)m.Values[a * 4 + b];
-                                    }
-                            }
-                        }
-
-                        // Find geopmetry and material
-                        if (node.instance_geometry != null && node.instance_geometry.Length > 0)
-                        {
-                            var instGeom = node.instance_geometry[0];
-                            if (!string.IsNullOrEmpty(instGeom.url))
-                            {
-                                n.MeshID = instGeom.url.Substring(1);
-                            }
-                            if (instGeom.bind_material != null && instGeom.bind_material.technique_common != null)
-                            {
-                                foreach (var teq in instGeom.bind_material.technique_common)
-                                {
-                                    var target = teq.target;
-                                    if (!string.IsNullOrEmpty(target))
-                                    {
-                                        target = target.Substring(1);
-                                        MatSymTarget[teq.symbol] = target;
-                                    }
-                                }
-                            }
-                        }
-
-                        Nodes.Add(n);
+                        ProcessNode(node);
                     }
                 }
             }
@@ -451,6 +463,10 @@ namespace OpenMetaverse.ImportExport
 
                         foreach (var mitem in mesh.Items)
                         {
+                            if (mitem is triangles)
+                            {
+                                AddFacesFromPolyList(Triangles2Polylist((triangles)mitem), mesh, prim, primTranform);
+                            }
                             if (mitem is polylist)
                             {
                                 AddFacesFromPolyList((polylist)mitem, mesh, prim, primTranform);
@@ -667,5 +683,23 @@ namespace OpenMetaverse.ImportExport
 
 
         }
+
+        polylist Triangles2Polylist(triangles triangles)
+        {
+            polylist poly = new polylist();
+            poly.count = triangles.count;
+            poly.input = triangles.input;
+            poly.material = triangles.material;
+            poly.name = triangles.name;
+            poly.p = triangles.p;
+
+            string str = "3 ";
+            System.Text.StringBuilder builder = new System.Text.StringBuilder(str.Length * (int)poly.count);
+            for (int i = 0; i < (int)poly.count; i++) builder.Append(str);
+            poly.vcount = builder.ToString();
+
+            return poly;
+        }
+
     }
 }
