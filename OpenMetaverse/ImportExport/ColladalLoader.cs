@@ -32,7 +32,6 @@ using System.IO;
 using System.Xml;
 using System.Drawing;
 using System.Xml.Serialization;
-using System.Linq;
 using OpenMetaverse.ImportExport.Collada14;
 using OpenMetaverse.Rendering;
 using OpenMetaverse.Imaging;
