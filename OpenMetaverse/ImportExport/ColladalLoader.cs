@@ -452,6 +452,7 @@ namespace OpenMetaverse.ImportExport
                         var nodes = Nodes.FindAll(n => n.MeshID == geo.id);
                         if (nodes != null)
                         {
+                            byte[] mesh_asset = null;
                             foreach (var node in nodes)
                             {
                                 var prim = new ModelPrim();
@@ -474,7 +475,13 @@ namespace OpenMetaverse.ImportExport
                                     }
                                 }
 
-                                prim.CreateAsset(UUID.Zero);
+                                if (mesh_asset == null)
+                                {
+                                    prim.CreateAsset(UUID.Zero);
+                                    mesh_asset = prim.Asset;
+                                }
+                                else
+                                    prim.Asset = mesh_asset;
                             }
                         }
                     }
