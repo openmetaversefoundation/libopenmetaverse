@@ -405,7 +405,7 @@ namespace OpenMetaverse.ImportExport
 
             if (Model == null) return Prims;
 
-            Matrix4 tranform = Matrix4.Identity;
+            Matrix4 transform = Matrix4.Identity;
 
             UpAxisType upAxis = UpAxisType.Y_UP;
 
@@ -416,9 +416,9 @@ namespace OpenMetaverse.ImportExport
                 if (asset.unit != null)
                 {
                     float meter = (float)asset.unit.meter;
-                    tranform[0, 0] = meter;
-                    tranform[1, 1] = meter;
-                    tranform[2, 2] = meter;
+                    transform[0, 0] = meter;
+                    transform[1, 1] = meter;
+                    transform[2, 2] = meter;
                 }
             }
 
@@ -433,8 +433,8 @@ namespace OpenMetaverse.ImportExport
                 rotation = Matrix4.CreateFromEulers(90.0f * DEG_TO_RAD, 0.0f, 0.0f);
             }
 
-            rotation = rotation * tranform;
-            tranform = rotation;
+            rotation = rotation * transform;
+            transform = rotation;
 
             ParseVisualScene();
             ParseMaterials();
@@ -448,33 +448,42 @@ namespace OpenMetaverse.ImportExport
                     {
                         var mesh = geo.Item as mesh;
                         if (mesh == null) continue;
-                        var prim = new ModelPrim();
-                        prim.ID = geo.id;
-                        Prims.Add(prim);
-                        Matrix4 primTranform = tranform;
 
-                        var node = Nodes.Find(n => n.MeshID == prim.ID);
-                        if (node != null)
+                        var nodes = Nodes.FindAll(n => n.MeshID == geo.id);
+                        if (nodes != null)
                         {
-                            primTranform = primTranform * node.Transform;
-                        }
-
-                        AddPositions(mesh, prim, primTranform);
-
-                        foreach (var mitem in mesh.Items)
-                        {
-                            if (mitem is triangles)
+                            byte[] mesh_asset = null;
+                            foreach (var node in nodes)
                             {
-                                AddFacesFromPolyList(Triangles2Polylist((triangles)mitem), mesh, prim, primTranform);
-                            }
-                            if (mitem is polylist)
-                            {
-                                AddFacesFromPolyList((polylist)mitem, mesh, prim, primTranform);
+                                var prim = new ModelPrim();
+                                prim.ID = node.ID;
+                                Prims.Add(prim);
+                                Matrix4 primTransform = transform;
+                                primTransform = primTransform * node.Transform;
+
+                                AddPositions(mesh, prim, primTransform);
+
+                                foreach (var mitem in mesh.Items)
+                                {
+                                    if (mitem is triangles)
+                                    {
+                                        AddFacesFromPolyList(Triangles2Polylist((triangles)mitem), mesh, prim, primTransform);
+                                    }
+                                    if (mitem is polylist)
+                                    {
+                                        AddFacesFromPolyList((polylist)mitem, mesh, prim, primTransform);
+                                    }
+                                }
+
+                                if (mesh_asset == null)
+                                {
+                                    prim.CreateAsset(UUID.Zero);
+                                    mesh_asset = prim.Asset;
+                                }
+                                else
+                                    prim.Asset = mesh_asset;
                             }
                         }
-
-                        prim.CreateAsset(UUID.Zero);
-
                     }
                 }
             }
