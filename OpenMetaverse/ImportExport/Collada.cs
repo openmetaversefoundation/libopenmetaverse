@@ -38234,6 +38234,7 @@ namespace OpenMetaverse.ImportExport.Collada14
     {
         public static string ConvertFromArray(double[] values)
         {
+            if (values == null) return string.Empty;
             string[] tmp = new string[values.Length];
             for (int i = 0; i < values.Length; i++)
             {
@@ -38244,6 +38245,7 @@ namespace OpenMetaverse.ImportExport.Collada14
 
         public static string ConvertFromArray(long[] values)
         {
+            if (values == null) return string.Empty;
             string[] tmp = new string[values.Length];
             for (int i = 0; i < values.Length; i++)
             {
@@ -38254,6 +38256,7 @@ namespace OpenMetaverse.ImportExport.Collada14
 
         public static string ConvertFromArray(bool[] values)
         {
+            if (values == null) return string.Empty;
             string[] tmp = new string[values.Length];
             for (int i = 0; i < values.Length; i++)
             {
@@ -38264,6 +38267,7 @@ namespace OpenMetaverse.ImportExport.Collada14
 
         public static string ConvertFromArray(string[] values)
         {
+            if (values == null) return string.Empty;
             return string.Join(" ", values);
         }
 
