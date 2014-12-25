@@ -88,9 +88,6 @@ namespace OpenMetaverse.ImportExport
             header["creator"] = creator;
             header["date"] = DateTime.Now;
 
-            header["rez_position"] = Position;
-            header["rez_scale"] = Scale;
-
             OSDArray faces = new OSDArray();
             foreach (var face in Faces)
             {
