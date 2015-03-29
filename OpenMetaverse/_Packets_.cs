@@ -27344,17 +27344,56 @@ namespace OpenMetaverse.Packets
 
         }
 
+        /// <exclude/>
+        public sealed class AppearanceHoverBlock : PacketBlock
+        {
+            public Vector3 HoverHeight;
+
+            public AppearanceHoverBlock() { }
+            public AppearanceHoverBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public override int Length
+            {
+                get
+                {
+                    return 12;
+                }
+            }
+
+            public override void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    HoverHeight.FromBytes(bytes, i);// i += 12;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public override void ToBytes(byte[] bytes, ref int i)
+            {
+                HoverHeight.ToBytes(bytes, i);
+            }
+        }
+
         public override int Length
         {
             get
             {
-                int length = 12;
+                int length = 13;
                 length += Sender.Length;
                 length += ObjectData.Length;
                 for (int j = 0; j < VisualParam.Length; j++)
                     length += VisualParam[j].Length;
                 for (int j = 0; j < AppearanceData.Length; j++)
                     length += AppearanceData[j].Length;
+                for (int j = 0; j < AppearanceHover.Length; j++)
+                    length += AppearanceHover[j].Length;
                 return length;
             }
         }
@@ -27362,6 +27401,7 @@ namespace OpenMetaverse.Packets
         public ObjectDataBlock ObjectData;
         public VisualParamBlock[] VisualParam;
         public AppearanceDataBlock[] AppearanceData;
+        public AppearanceHoverBlock[] AppearanceHover;
 
         public AvatarAppearancePacket()
         {
@@ -27376,6 +27416,7 @@ namespace OpenMetaverse.Packets
             ObjectData = new ObjectDataBlock();
             VisualParam = null;
             AppearanceData = null;
+            AppearanceHover = null;
         }
 
         public AvatarAppearancePacket(byte[] bytes, ref int i) : this()
@@ -27410,6 +27451,14 @@ namespace OpenMetaverse.Packets
             }
             for (int j = 0; j < count; j++)
             { AppearanceData[j].FromBytes(bytes, ref i); }
+            count = (int)bytes[i++];
+            if(AppearanceHover == null || AppearanceHover.Length != -1) {
+                AppearanceHover = new AppearanceHoverBlock[count];
+                for(int j = 0; j < count; j++)
+                { AppearanceHover[j] = new AppearanceHoverBlock(); }
+            }
+            for (int j = 0; j < count; j++)
+            { AppearanceHover[j].FromBytes(bytes, ref i); }
         }
 
         public AvatarAppearancePacket(Header head, byte[] bytes, ref int i): this()
@@ -27439,6 +27488,14 @@ namespace OpenMetaverse.Packets
             }
             for (int j = 0; j < count; j++)
             { AppearanceData[j].FromBytes(bytes, ref i); }
+            count = (int)bytes[i++];
+            if(AppearanceHover == null || AppearanceHover.Length != count) {
+                AppearanceHover = new AppearanceHoverBlock[count];
+                for(int j = 0; j < count; j++)
+                { AppearanceHover[j] = new AppearanceHoverBlock(); }
+            }
+            for (int j = 0; j < count; j++)
+            { AppearanceHover[j].FromBytes(bytes, ref i); }
         }
 
         public override byte[] ToBytes()
@@ -27450,6 +27507,8 @@ namespace OpenMetaverse.Packets
             for (int j = 0; j < VisualParam.Length; j++) { length += VisualParam[j].Length; }
             length++;
             for (int j = 0; j < AppearanceData.Length; j++) { length += AppearanceData[j].Length; }
+            length++;
+            for (int j = 0; j < AppearanceHover.Length; j++) { length += AppearanceHover[j].Length; }
             if (Header.AckList != null && Header.AckList.Length > 0) { length += Header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
@@ -27460,6 +27519,8 @@ namespace OpenMetaverse.Packets
             for (int j = 0; j < VisualParam.Length; j++) { VisualParam[j].ToBytes(bytes, ref i); }
             bytes[i++] = (byte)AppearanceData.Length;
             for (int j = 0; j < AppearanceData.Length; j++) { AppearanceData[j].ToBytes(bytes, ref i); }
+            bytes[i++] = (byte)AppearanceHover.Length;
+            for (int j = 0; j < AppearanceHover.Length; j++) { AppearanceHover[j].ToBytes(bytes, ref i); }
             if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
@@ -27484,15 +27545,17 @@ namespace OpenMetaverse.Packets
             Header.ToBytes(fixedBytes, ref i);
             Sender.ToBytes(fixedBytes, ref i);
             ObjectData.ToBytes(fixedBytes, ref i);
-            fixedLength += 2;
+            fixedLength += 3;
 
             int VisualParamStart = 0;
             int AppearanceDataStart = 0;
+            int AppearanceHoverStart = 0;
             do
             {
                 int variableLength = 0;
                 int VisualParamCount = 0;
                 int AppearanceDataCount = 0;
+                int AppearanceHoverCount = 0;
 
                 i = VisualParamStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < VisualParam.Length) {
@@ -27516,6 +27579,17 @@ namespace OpenMetaverse.Packets
                     ++i;
                 }
 
+                i = AppearanceHoverStart;
+                while (fixedLength + variableLength + acksLength < Packet.MTU && i < AppearanceHover.Length) {
+                    int blockLength = AppearanceHover[i].Length;
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                        variableLength += blockLength;
+                        ++AppearanceHoverCount;
+                    }
+                    else { break; }
+                    ++i;
+                }
+
                 byte[] packet = new byte[fixedLength + variableLength + acksLength];
                 int length = fixedBytes.Length;
                 Buffer.BlockCopy(fixedBytes, 0, packet, 0, length);
@@ -27529,6 +27603,10 @@ namespace OpenMetaverse.Packets
                 for (i = AppearanceDataStart; i < AppearanceDataStart + AppearanceDataCount; i++) { AppearanceData[i].ToBytes(packet, ref length); }
                 AppearanceDataStart += AppearanceDataCount;
 
+                packet[length++] = (byte)AppearanceHoverCount;
+                for (i = AppearanceHoverStart; i < AppearanceHoverStart + AppearanceHoverCount; i++) { AppearanceHover[i].ToBytes(packet, ref length); }
+                AppearanceHoverStart += AppearanceHoverCount;
+
                 if (acksLength > 0) {
                     Buffer.BlockCopy(ackBytes, 0, packet, length, acksLength);
                     acksLength = 0;
@@ -27537,7 +27615,8 @@ namespace OpenMetaverse.Packets
                 packets.Add(packet);
             } while (
                 VisualParamStart < VisualParam.Length ||
-                AppearanceDataStart < AppearanceData.Length);
+                AppearanceDataStart < AppearanceData.Length ||
+                AppearanceHoverStart < AppearanceHover.Length);
 
             return packets.ToArray();
         }
