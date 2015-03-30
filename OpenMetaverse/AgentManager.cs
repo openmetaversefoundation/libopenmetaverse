@@ -217,6 +217,8 @@ namespace OpenMetaverse
         Debug = 6,
         /// <summary>Event message when an object uses llOwnerSay</summary>
         OwnerSay = 8,
+        /// <summary>Event message when an object uses llRegionSayTo</summary>
+        RegionSayTo = 9,
         /// <summary>Special value to support llRegionSay, never sent to the client</summary>
         RegionSay = Byte.MaxValue,
     }
