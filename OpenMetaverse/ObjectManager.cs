@@ -266,6 +266,7 @@ namespace OpenMetaverse
         #region AvatarUpdate event
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<AvatarUpdateEventArgs> m_AvatarUpdate;
+        private EventHandler<ParticleUpdateEventArgs> m_ParticleUpdate;
 
         ///<summary>Raises the AvatarUpdate Event</summary>
         /// <param name="e">A AvatarUpdateEventArgs object containing
@@ -276,9 +277,21 @@ namespace OpenMetaverse
             if (handler != null)
                 handler(this, e);
         }
+        /// <summary>
+        /// Raises the ParticleUpdate Event
+        /// </summary>
+        /// <param name="e">A ParticleUpdateEventArgs object containing 
+        /// the data sent from the simulator</param>
+        protected virtual void OnParticleUpdate(ParticleUpdateEventArgs e) {
+            EventHandler<ParticleUpdateEventArgs> handler = m_ParticleUpdate;
+            if (handler != null)
+                handler(this, e);
+        }
 
         /// <summary>Thread sync lock object</summary>
         private readonly object m_AvatarUpdateLock = new object();
+
+        private readonly object m_ParticleUpdateLock = new object();
 
         /// <summary>Raised when the simulator sends us data containing
         /// updated information for an <see cref="Avatar"/></summary>
@@ -290,6 +303,11 @@ namespace OpenMetaverse
         #endregion AvatarUpdate event
 
         #region TerseObjectUpdate event
+        public event EventHandler<ParticleUpdateEventArgs> ParticleUpdate {
+            add { lock (m_ParticleUpdateLock) { m_ParticleUpdate += value; } }
+            remove { lock (m_ParticleUpdateLock) { m_ParticleUpdate -= value; } }
+        }
+
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<TerseObjectUpdateEventArgs> m_TerseObjectUpdate;
 
@@ -2097,12 +2115,16 @@ namespace OpenMetaverse
                         prim.Rotation = objectupdate.Rotation;
                         prim.AngularVelocity = objectupdate.AngularVelocity;
                         #endregion
-
+                        
                         EventHandler<PrimEventArgs> handler = m_ObjectUpdate;
                         if (handler != null)
                         {
                             WorkPool.QueueUserWorkItem(delegate(object o)
                             { handler(this, new PrimEventArgs(simulator, prim, update.RegionData.TimeDilation, isNewObject, attachment)); });
+                        }
+                        //OnParticleUpdate handler replacing decode particles, PCode.Particle system appears to be deprecated this is a fix
+                        if (prim.ParticleSys.PartMaxAge != 0) {
+                            OnParticleUpdate(new ParticleUpdateEventArgs(simulator, prim.ParticleSys, prim));
                         }
 
                         break;
@@ -2177,7 +2199,6 @@ namespace OpenMetaverse
                     #endregion Avatar
                     case PCode.ParticleSystem:
                         DecodeParticleUpdate(block);
-                        // TODO: Create a callback for particle updates
                         break;
                     default:
                         Logger.DebugLog("Got an ObjectUpdate block with an unrecognized PCode " + pcode.ToString(), Client);
@@ -2189,7 +2210,6 @@ namespace OpenMetaverse
         protected void DecodeParticleUpdate(ObjectUpdatePacket.ObjectDataBlock block)
         {
             // TODO: Handle ParticleSystem ObjectUpdate blocks
-
             // float bounce_b
             // Vector4 scale_range
             // Vector4 alpha_range
@@ -3457,6 +3477,31 @@ namespace OpenMetaverse
             this.m_Avatar = avatar;
             this.m_TimeDilation = timeDilation;
             this.m_IsNew = isNew;
+        }
+    }
+
+    public class ParticleUpdateEventArgs : EventArgs {
+        private readonly Simulator m_Simulator;
+        private readonly Primitive.ParticleSystem m_ParticleSystem;
+        private readonly Primitive m_Source;
+
+        /// <summary>Get the simulator the object originated from</summary>
+        public Simulator Simulator { get { return m_Simulator; } }
+        /// <summary>Get the <see cref="ParticleSystem"/> data</summary>
+        public Primitive.ParticleSystem ParticleSystem { get { return m_ParticleSystem; } }
+        /// <summary>Get <see cref="Primitive"/> source</summary>
+        public Primitive Source { get { return m_Source; } }
+
+        /// <summary>
+        /// Construct a new instance of the ParticleUpdateEventArgs class
+        /// </summary>
+        /// <param name="simulator">The simulator the packet originated from</param>
+        /// <param name="particlesystem">The ParticleSystem data</param>
+        /// <param name="source">The Primitive source</param>
+        public ParticleUpdateEventArgs(Simulator simulator, Primitive.ParticleSystem particlesystem, Primitive source) {
+            this.m_Simulator = simulator;
+            this.m_ParticleSystem = particlesystem;
+            this.m_Source = source;
         }
     }
 
