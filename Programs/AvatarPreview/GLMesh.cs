@@ -63,50 +63,50 @@ namespace AvatarPreview
             maxX = maxY = maxZ = Single.MinValue;
 
             // Generate the vertex array
-            RenderData.Vertices = new float[_numVertices * 3];
+            RenderData.Vertices = new float[NumVertices * 3];
             int current = 0;
-            for (int i = 0; i < _numVertices; i++)
+            for (int i = 0; i < NumVertices; i++)
             {
-                RenderData.Vertices[current++] = _vertices[i].Coord.X;
-                RenderData.Vertices[current++] = _vertices[i].Coord.Y;
-                RenderData.Vertices[current++] = _vertices[i].Coord.Z;
+                RenderData.Vertices[current++] = Vertices[i].Coord.X;
+                RenderData.Vertices[current++] = Vertices[i].Coord.Y;
+                RenderData.Vertices[current++] = Vertices[i].Coord.Z;
 
-                if (_vertices[i].Coord.X < minX)
-                    minX = _vertices[i].Coord.X;
-                else if (_vertices[i].Coord.X > maxX)
-                    maxX = _vertices[i].Coord.X;
+                if (Vertices[i].Coord.X < minX)
+                    minX = Vertices[i].Coord.X;
+                else if (Vertices[i].Coord.X > maxX)
+                    maxX = Vertices[i].Coord.X;
 
-                if (_vertices[i].Coord.Y < minY)
-                    minY = _vertices[i].Coord.Y;
-                else if (_vertices[i].Coord.Y > maxY)
-                    maxY = _vertices[i].Coord.Y;
+                if (Vertices[i].Coord.Y < minY)
+                    minY = Vertices[i].Coord.Y;
+                else if (Vertices[i].Coord.Y > maxY)
+                    maxY = Vertices[i].Coord.Y;
 
-                if (_vertices[i].Coord.Z < minZ)
-                    minZ = _vertices[i].Coord.Z;
-                else if (_vertices[i].Coord.Z > maxZ)
-                    maxZ = _vertices[i].Coord.Z;
+                if (Vertices[i].Coord.Z < minZ)
+                    minZ = Vertices[i].Coord.Z;
+                else if (Vertices[i].Coord.Z > maxZ)
+                    maxZ = Vertices[i].Coord.Z;
             }
 
             // Calculate the center-point from the bounding box edges
             RenderData.Center = new Vector3((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
 
             // Generate the index array
-            RenderData.Indices = new ushort[_numFaces * 3];
+            RenderData.Indices = new ushort[NumFaces * 3];
             current = 0;
-            for (int i = 0; i < _numFaces; i++)
+            for (int i = 0; i < NumFaces; i++)
             {
-                RenderData.Indices[current++] = (ushort)_faces[i].Indices[0];
-                RenderData.Indices[current++] = (ushort)_faces[i].Indices[1];
-                RenderData.Indices[current++] = (ushort)_faces[i].Indices[2];
+                RenderData.Indices[current++] = (ushort)Faces[i].Indices[0];
+                RenderData.Indices[current++] = (ushort)Faces[i].Indices[1];
+                RenderData.Indices[current++] = (ushort)Faces[i].Indices[2];
             }
 
             // Generate the texcoord array
-            RenderData.TexCoords = new float[_numVertices * 2];
+            RenderData.TexCoords = new float[NumVertices * 2];
             current = 0;
-            for (int i = 0; i < _numVertices; i++)
+            for (int i = 0; i < NumVertices; i++)
             {
-                RenderData.TexCoords[current++] = _vertices[i].TexCoord.X;
-                RenderData.TexCoords[current++] = _vertices[i].TexCoord.Y;
+                RenderData.TexCoords[current++] = Vertices[i].TexCoord.X;
+                RenderData.TexCoords[current++] = Vertices[i].TexCoord.Y;
             }
         }
 
@@ -114,7 +114,7 @@ namespace AvatarPreview
         {
             LODMesh lod = new LODMesh();
             lod.LoadMesh(filename);
-            _lodMeshes[level] = lod;
+            LodMeshes[level] = lod;
         }
     }
 }
