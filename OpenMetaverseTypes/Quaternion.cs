@@ -487,25 +487,9 @@ namespace OpenMetaverse
             return quaternion;
         }
 
-        public static Quaternion Divide(Quaternion quaternion1, Quaternion quaternion2)
+        public static Quaternion Divide(Quaternion q1, Quaternion q2)
         {
-            float x = quaternion1.X;
-            float y = quaternion1.Y;
-            float z = quaternion1.Z;
-            float w = quaternion1.W;
-
-            float q2lensq = quaternion2.LengthSquared();
-            float ooq2lensq = 1f / q2lensq;
-            float x2 = -quaternion2.X * ooq2lensq;
-            float y2 = -quaternion2.Y * ooq2lensq;
-            float z2 = -quaternion2.Z * ooq2lensq;
-            float w2 = quaternion2.W * ooq2lensq;
-
-            return new Quaternion(
-                ((x * w2) + (x2 * w)) + (y * z2) - (z * y2),
-                ((y * w2) + (y2 * w)) + (z * x2) - (x * z2),
-                ((z * w2) + (z2 * w)) + (x * y2) - (y * x2),
-                (w * w2) - ((x * x2) + (y * y2)) + (z * z2));
+            return Quaternion.Inverse(q1) * q2;
         }
 
         public static float Dot(Quaternion q1, Quaternion q2)
