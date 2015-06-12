@@ -280,8 +280,15 @@ namespace OpenMetaverse.Rendering
         /// Construct a linden mesh with the given name
         /// </summary>
         /// <param name="name">the name of the mesh</param>
+        public LindenMesh(string name)
+            : this(name, null) { }
+
+        /// <summary>
+        /// Construct a linden mesh with the given name
+        /// </summary>
+        /// <param name="name">the name of the mesh</param>
         /// <param name="skeleton">The skeleton governing mesh deformation</param>
-        public LindenMesh(string name, LindenSkeleton skeleton = null)
+        public LindenMesh(string name, LindenSkeleton skeleton)
         {
             Name = name;
             Skeleton = skeleton;

@@ -48,9 +48,24 @@ namespace OpenMetaverse.Rendering
         /// are guaranteed to hold only 3 float values. This reduces the need for error checking
         /// while working with the loaded skeleton.
         /// </remarks>
+        /// <returns>A valid recursive skeleton</returns>
+        public static LindenSkeleton Load()
+        {
+            return Load(null);
+        }
+
+        /// <summary>
+        /// Load a skeleton from a given file.
+        /// </summary>
+        /// <remarks>
+        /// We use xml scema validation on top of the xml de-serializer, since the schema has
+        /// some stricter checks than the de-serializer provides. E.g. the vector attributes
+        /// are guaranteed to hold only 3 float values. This reduces the need for error checking
+        /// while working with the loaded skeleton.
+        /// </remarks>
         /// <param name="fileName">The path to the skeleton definition file</param>
         /// <returns>A valid recursive skeleton</returns>
-        public static LindenSkeleton Load(string fileName = null)
+        public static LindenSkeleton Load(string fileName)
         {
             if (fileName == null)
                 fileName = System.IO.Path.Combine(Settings.RESOURCE_DIR, "avatar_skeleton.xml");

@@ -51,8 +51,15 @@ namespace OpenMetaverse.Rendering
         /// Construct a reader from a stream
         /// </summary>
         /// <param name="stream">The stream to read from</param>
+        public EndianAwareBinaryReader(Stream stream)
+            : this(stream, SourceFormat.LittleEndian) {}
+
+        /// <summary>
+        /// Construct a reader from a stream
+        /// </summary>
+        /// <param name="stream">The stream to read from</param>
         /// <param name="format">What is the format of the file, assumes PC and similar architecture</param>
-        public EndianAwareBinaryReader(Stream stream, SourceFormat format = SourceFormat.LittleEndian)
+        public EndianAwareBinaryReader(Stream stream, SourceFormat format)
             : base(stream)
         {
             if ((format == SourceFormat.BigEndian && BitConverter.IsLittleEndian) ||
