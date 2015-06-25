@@ -704,9 +704,8 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Initiate the logout process. Check if logout succeeded with the
-        /// <code>OnLogoutReply</code> event, and if this does not fire the
-        /// <code>Shutdown()</code> function needs to be manually called
+        /// Initiate the logout process. The <code>Shutdown()</code> function
+        /// needs to be manually called.
         /// </summary>
         public void RequestLogout()
         {
