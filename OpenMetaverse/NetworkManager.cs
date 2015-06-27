@@ -647,6 +647,39 @@ namespace OpenMetaverse
         }
 
         /// <summary>
+        /// Begins the non-blocking logout. Makes sure that the LoggedOut event is
+        /// called even if the server does not send a logout reply, and Shutdown()
+        /// is properly called.
+        /// </summary>
+        public void BeginLogout()
+        {
+            // Wait for a logout response (by way of the LoggedOut event. If the
+            // response is received, shutdown will be fired in the callback.
+            // Otherwise we fire it manually with a NetworkTimeout type after LOGOUT_TIMEOUT
+            System.Timers.Timer timeout = new System.Timers.Timer();
+
+            EventHandler<LoggedOutEventArgs> callback = delegate(object sender, LoggedOutEventArgs e) {
+                Shutdown(DisconnectType.ClientInitiated);
+                timeout.Stop();
+            };
+
+            LoggedOut += callback;
+
+            timeout.Interval = Client.Settings.LOGOUT_TIMEOUT;
+            timeout.Elapsed += delegate(object sender, System.Timers.ElapsedEventArgs e) {
+                timeout.Stop();
+                Shutdown(DisconnectType.NetworkTimeout);
+                OnLoggedOut(new LoggedOutEventArgs(new List<UUID>()));
+            };
+            timeout.Start();
+
+            // Send the packet requesting a clean logout
+            RequestLogout();
+
+            LoggedOut -= callback;
+        }
+
+        /// <summary>
         /// Initiate a blocking logout request. This will return when the logout
         /// handshake has completed or when <code>Settings.LOGOUT_TIMEOUT</code>
         /// has expired and the network layer is manually shut down
@@ -671,9 +704,8 @@ namespace OpenMetaverse
         }
 
         /// <summary>
-        /// Initiate the logout process. Check if logout succeeded with the
-        /// <code>OnLogoutReply</code> event, and if this does not fire the
-        /// <code>Shutdown()</code> function needs to be manually called
+        /// Initiate the logout process. The <code>Shutdown()</code> function
+        /// needs to be manually called.
         /// </summary>
         public void RequestLogout()
         {
