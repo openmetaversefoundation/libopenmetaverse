@@ -100,6 +100,7 @@ namespace OpenMetaverse.Messages
                 case "ObjectPhysicsProperties": message = new ObjectPhysicsPropertiesMessage(); break;
                 case "BulkUpdateInventory": message = new BulkUpdateInventoryMessage(); break;
                 case "RenderMaterials": message = new RenderMaterialsMessage(); break;
+                case "GetObjectCost": message = GetObjectCostMessage.GetMessageHandler(map); break;
 
                 // Capabilities TODO:
                 // DispatchRegionInfo
@@ -110,7 +111,6 @@ namespace OpenMetaverse.Messages
                 // MapLayerGod
                 // NewFileAgentInventory
                 // RequestTextureDownload
-                // SearchStatRequest
                 // SearchStatTracking
                 // SendUserReport
                 // SendUserReportWithScreenshot

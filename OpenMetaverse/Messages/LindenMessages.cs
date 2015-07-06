@@ -1757,7 +1757,7 @@ namespace OpenMetaverse.Messages.Linden
             HasModifiedNavmesh = map["has_modified_navmesh"];
             if (map["preferences"] is OSDMap)
             {
-                var prefs = (OSDMap)map["preferences"];
+                OSDMap prefs = (OSDMap)map["preferences"];
                 AlterNavmeshObjects = prefs["alter_navmesh_objects"];
                 AlterPermanentObjects = prefs["alter_permanent_objects"];
                 GodLevel = prefs["god_level"];
@@ -1765,7 +1765,7 @@ namespace OpenMetaverse.Messages.Linden
                 LanguageIsPublic = prefs["language_is_public"];
                 if (prefs["access_prefs"] is OSDMap)
                 {
-                    var access = (OSDMap)prefs["access_prefs"];
+                    OSDMap access = (OSDMap)prefs["access_prefs"];
                     MaxAccess = access["max"];
                 }
             }
@@ -4376,11 +4376,10 @@ namespace OpenMetaverse.Messages.Linden
 
             ret["ObjectData"] = array;
             return ret;
-
         }
 
         /// <summary>
-        /// Deseializes the message
+        /// Deserializes the message
         /// </summary>
         /// <param name="map">Incoming data to deserialize</param>
         public void Deserialize(OSDMap map)
@@ -4406,6 +4405,10 @@ namespace OpenMetaverse.Messages.Linden
     {
         public OSD MaterialData;
 
+        /// <summary>
+        /// Deserializes the message
+        /// </summary>
+        /// <param name="map">Incoming data to deserialize</param>
         public void Deserialize(OSDMap map)
         {
             try
@@ -4435,15 +4438,132 @@ namespace OpenMetaverse.Messages.Linden
                 MaterialData = new OSDMap();
             }
         }
-        
+
+        /// <summary>
+        /// Serializes the message
+        /// </summary>
+        /// <returns>Serialized OSD</returns>
         public OSDMap Serialize()
         {
             return new OSDMap();
         }
-
-
     }
 
+    public class GetObjectCostRequest : IMessage
+    {
+        /// <summary> Object IDs for which to request cost information
+        public UUID[] ObjectIDs;
+
+        /// <summary>
+        /// Deserializes the message
+        /// </summary>
+        /// <param name="map">Incoming data to deserialize</param>
+        public void Deserialize(OSDMap map)
+        {
+            OSDArray array = map["object_ids"] as OSDArray;
+            if (array != null)
+            {
+                ObjectIDs = new UUID[array.Count];
+
+                for (int i = 0; i < array.Count; i++)
+                {
+                    ObjectIDs[i] = array[i].AsUUID();
+                }
+            }
+            else
+            {
+                ObjectIDs = new UUID[0];
+            }
+        }
+
+        /// <summary>
+        /// Serializes the message
+        /// </summary>
+        /// <returns>Serialized OSD</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap ret = new OSDMap();
+            OSDArray array = new OSDArray();
+
+            for (int i = 0; i < ObjectIDs.Length; i++)
+            {
+                array.Add(OSD.FromUUID(ObjectIDs[i]));
+            }
+
+            ret["object_ids"] = array;
+            return ret;
+        }
+    }
+
+    public class GetObjectCostMessage : IMessage
+    {
+        public UUID object_id;
+        public double link_cost;
+        public double object_cost;
+        public double physics_cost;
+        public double link_physics_cost;
+
+        /// <summary>
+        /// Deserializes the message
+        /// </summary>
+        /// <param name="map">Incoming data to deserialize</param>
+        public void Deserialize(OSDMap map)
+        {
+            if (map.Count != 1)
+                Logger.Log("GetObjectCostMessage returned values for more than one object! Function needs to be fixed for that!", Helpers.LogLevel.Error);                    
+
+            foreach (string key in map.Keys)
+            {
+                UUID.TryParse(key, out object_id);
+                OSDMap values = (OSDMap)map[key];
+
+                link_cost = values["linked_set_resource_cost"].AsReal();
+                object_cost = values["resource_cost"].AsReal();
+                physics_cost = values["physics_cost"].AsReal();
+                link_physics_cost = values["linked_set_physics_cost"].AsReal();
+                // value["resource_limiting_type"].AsString();
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Serializes the message
+        /// </summary>
+        /// <returns>Serialized OSD</returns>
+        public OSDMap Serialize()
+        {
+            OSDMap values = new OSDMap(4);
+            values.Add("linked_set_resource_cost", OSD.FromReal(link_cost));
+            values.Add("resource_cost", OSD.FromReal(object_cost));
+            values.Add("physics_cost", OSD.FromReal(physics_cost));
+            values.Add("linked_set_physics_cost", OSD.FromReal(link_physics_cost));
+
+            OSDMap map = new OSDMap(1);
+            map.Add(OSD.FromUUID(object_id), values);
+            return map;
+        }
+
+        /// <summary>
+        /// Detects which class handles deserialization of this message
+        /// </summary>
+        /// <param name="map">An <see cref="OSDMap"/> containing the data</param>
+        /// <returns>Object capable of decoding this message</returns>
+        public static IMessage GetMessageHandler(OSDMap map)
+        {
+            if (map == null)
+            {
+                return null;
+            }
+            else if (map.ContainsKey("object_ids"))
+            {
+                return new GetObjectCostRequest();
+            }
+            else
+            {
+                return new GetObjectCostMessage();
+            }
+        }
+    }
 
     #endregion Object Messages
 
@@ -5167,7 +5287,9 @@ namespace OpenMetaverse.Messages.Linden
         /// <returns>OSD containting the messaage</returns>
         public OSDMap Serialize()
         {
-            OSDArray names = new OSDArray(2) { OldDisplayName, NewDisplayName };
+            OSDArray names = new OSDArray(2);
+            names.Add(OldDisplayName);
+            names.Add(NewDisplayName);
 
             OSDMap name = new OSDMap();
             name["display_name"] = names;
