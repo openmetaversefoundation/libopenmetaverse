@@ -48,7 +48,7 @@ namespace GridProxyGUI
 			this.textview1 = new global::Gtk.TextView ();
 			this.textview1.Buffer.Text = "\nGrid Proxy GUI\nGtk# Interface for Grid Proxy\n\nBased on Win Grid Proxy by\nJim Rad" +
 			"ford <jradford@npl.com>\n\nWritten by\nLatif Khalifa <latifer@streamgrid.net>\n\nCopy" +
-			"right (c) 2013\nOpen Metaverse Foundation\n";
+			"right (c) 2015\nOpen Metaverse Foundation\n";
 			this.textview1.WidthRequest = 250;
 			this.textview1.CanFocus = true;
 			this.textview1.Name = "textview1";

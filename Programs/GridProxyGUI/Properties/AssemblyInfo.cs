@@ -8,16 +8,16 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany("Open Metaverse Foundation")]
 [assembly: AssemblyProduct("Grid Proxy GUI")]
-[assembly: AssemblyCopyright("Latif Khalifa")]
+[assembly: AssemblyCopyright("(c) 2015 Latif Khalifa")]
 [assembly: AssemblyTrademark ("")]
 [assembly: AssemblyCulture ("")]
 // The assembly version has the format "{Major}.{Minor}.{Build}.{Revision}".
 // The form "{Major}.{Minor}.*" will automatically update the build and revision,
 // and "{Major}.{Minor}.{Build}.*" will update just the revision.
-[assembly: AssemblyVersion ("1.0.*")]
+[assembly: AssemblyVersion("0.9.3.3318")]
 // The following attributes are used to specify the signing key for the assembly,
 // if desired. See the Mono documentation for more information about signing.
 //[assembly: AssemblyDelaySign(false)]
 //[assembly: AssemblyKeyFile("")]
 
-[assembly: AssemblyFileVersionAttribute("1.0")]
+[assembly: AssemblyFileVersionAttribute("0.9.3.3318")]
