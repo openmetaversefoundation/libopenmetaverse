@@ -24,10 +24,10 @@ bin\Prebuild.exe /target vs2010
 
 :: build compile.bat file based on command line parameters
 echo @echo off > compile.bat
-if(.%1)==(.) echo C:\WINDOWS\Microsoft.NET\Framework\v3.5\msbuild OpenMetaverse.sln >> compile.bat
+if(.%1)==(.) echo C:\WINDOWS\Microsoft.NET\Framework\v4.0.30319\msbuild OpenMetaverse.sln >> compile.bat
 
 if(.%1)==(.msbuild) echo echo ==== COMPILE BEGIN ==== >> compile.bat
-if(.%1)==(.msbuild) echo %SystemRoot%\Microsoft.NET\Framework\v3.5\MSBuild.exe /p:Configuration=Release OpenMetaverse.sln >> compile.bat
+if(.%1)==(.msbuild) echo %SystemRoot%\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe /p:Configuration=Release OpenMetaverse.sln >> compile.bat
 if(.%1)==(.msbuild) echo IF ERRORLEVEL 1 GOTO FAIL >> compile.bat
 
 if(.%1)==(.nant) echo nant >> compile.bat
