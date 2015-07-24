@@ -4,91 +4,177 @@
 public partial class MainWindow
 {
 	private global::Gtk.UIManager UIManager;
+	
 	private global::Gtk.Action FileAction;
+	
 	private global::Gtk.Action ExitAction;
+	
 	private global::Gtk.Action HelpAction;
+	
 	private global::Gtk.Action AboutAction;
+	
 	private global::Gtk.Action OpenAction;
+	
 	private global::Gtk.Action SaveAction;
+	
 	private global::Gtk.Action SaveAsAction;
+	
 	private global::Gtk.VBox vboxMenuMain;
+	
 	private global::Gtk.HBox hboxMenu;
+	
 	private global::Gtk.Alignment alignment2;
+	
 	private global::Gtk.MenuBar menuMain;
+	
 	private global::Gtk.VSeparator menuSeparator;
+	
 	private global::Gtk.Label label1;
+	
 	private global::Gtk.ComboBoxEntry cbListen;
+	
 	private global::Gtk.Label label2;
+	
 	private global::Gtk.Entry txtPort;
+	
 	private global::Gtk.Label label3;
+	
 	private global::Gtk.ComboBoxEntry cbLoginURL;
+	
 	private global::Gtk.Button btnStart;
+	
 	private global::Gtk.HPaned mainSplit;
+	
 	private global::Gtk.VBox vboxSessions;
+	
 	private global::Gtk.ScrolledWindow sessionLogScroller;
+	
 	private global::Gtk.HBox hboxSessionBottom;
+	
 	private global::Gtk.CheckButton cbAutoScroll;
+	
 	private global::Gtk.Notebook tabsMain;
+	
 	private global::Gtk.VBox vboxLog;
+	
 	private global::Gtk.HBox hbox5;
+	
 	private global::Gtk.Frame frame1;
+	
 	private global::Gtk.Alignment GtkAlignment2;
+	
 	private global::Gtk.VBox vbox1;
+	
 	private global::Gtk.Label lblUDPIn;
+	
 	private global::Gtk.Label lblUDPOut;
+	
 	private global::Gtk.Label lblUDPTotal;
+	
 	private global::Gtk.Label GtkLabel5;
+	
 	private global::Gtk.Frame frame2;
+	
 	private global::Gtk.Alignment GtkAlignment3;
+	
 	private global::Gtk.VBox vbox2;
+	
 	private global::Gtk.Label lblCapIn;
+	
 	private global::Gtk.Label lblCapOut;
+	
 	private global::Gtk.Label lblCapTotal;
+	
 	private global::Gtk.Label GtkLabel12;
+	
 	private global::Gtk.ScrolledWindow logFileScroller;
+	
 	private global::Gtk.TextView txtSummary;
+	
 	private global::Gtk.Label label4;
+	
 	private global::Gtk.VBox hboxFilter;
+	
 	private global::Gtk.HBox hbox2;
+	
 	private global::Gtk.Button btnLoadFilters;
+	
 	private global::Gtk.Button btnSaveFilters;
+	
 	private global::Gtk.HBox hbox3;
+	
 	private global::Gtk.Frame frameFilterUDP;
+	
 	private global::Gtk.Alignment containerFilterUDP;
+	
 	private global::Gtk.Label GtkLabel8;
+	
 	private global::Gtk.Frame frameFilterCap;
+	
 	private global::Gtk.Alignment containerFilterCap;
+	
 	private global::Gtk.Label GtkLabel9;
+	
 	private global::Gtk.HBox hbox4;
+	
 	private global::Gtk.CheckButton cbSelectAllUDP;
+	
 	private global::Gtk.CheckButton cbSelectAllCap;
+	
 	private global::Gtk.Label label5;
+	
 	private global::Gtk.VBox vboxInspector;
+	
 	private global::Gtk.Notebook tabsRequst;
+	
 	private global::Gtk.ScrolledWindow GtkScrolledWindow;
+	
 	private global::Gtk.TextView txtRequest;
+	
 	private global::Gtk.Label label7;
+	
 	private global::Gtk.ScrolledWindow GtkScrolledWindow1;
+	
 	private global::Gtk.TextView txtRequestRaw;
+	
 	private global::Gtk.Label label6;
+	
 	private global::Gtk.ScrolledWindow GtkScrolledWindow2;
+	
 	private global::Gtk.TextView txtRequestNotation;
+	
 	private global::Gtk.Label label8;
+	
 	private global::Gtk.Notebook tabsRequst1;
+	
 	private global::Gtk.ScrolledWindow GtkScrolledWindow3;
+	
 	private global::Gtk.TextView txtResponse;
+	
 	private global::Gtk.Label label9;
+	
 	private global::Gtk.ScrolledWindow GtkScrolledWindow4;
+	
 	private global::Gtk.TextView txtResponseRaw;
+	
 	private global::Gtk.Label label11;
+	
 	private global::Gtk.ScrolledWindow GtkScrolledWindow5;
+	
 	private global::Gtk.TextView txtResponseNotation;
+	
 	private global::Gtk.Label label12;
+	
 	private global::Gtk.Label label10;
+	
 	private global::Gtk.VBox vboxPlugins;
+	
 	private global::Gtk.HBox hbox1;
+	
 	private global::Gtk.Button btnLoadPlugin;
+	
 	private global::Gtk.ScrolledWindow scrolledwindowPlugin;
+	
 	private global::Gtk.Label label13;
 
 	protected virtual void Build ()
