@@ -858,8 +858,8 @@ namespace OpenMetaverse
     [Serializable()]
     public class InventoryFolder : InventoryBase
     {
-        /// <summary>The Preferred <seealso cref="T:OpenMetaverse.AssetType"/> for a folder.</summary>
-        public AssetType PreferredType;
+        /// <summary>The Preferred <seealso cref="T:OpenMetaverse.FolderType"/> for a folder.</summary>
+        public FolderType PreferredType;
         /// <summary>The Version of this folder</summary>
         public int Version;
         /// <summary>Number of child items this folder contains.</summary>
@@ -872,7 +872,7 @@ namespace OpenMetaverse
         public InventoryFolder(UUID itemID)
             : base(itemID)
         {
-            PreferredType = AssetType.Unknown;
+            PreferredType = FolderType.None;
             Version = 1;
             DescendentCount = 0;
         }
@@ -892,7 +892,7 @@ namespace OpenMetaverse
         override public void GetObjectData(SerializationInfo info, StreamingContext ctxt)
         {
             base.GetObjectData(info, ctxt);
-            info.AddValue("PreferredType", PreferredType, typeof(AssetType));
+            info.AddValue("PreferredType", PreferredType, typeof(FolderType));
             info.AddValue("Version", Version);
             info.AddValue("DescendentCount", DescendentCount);
         }
@@ -903,7 +903,7 @@ namespace OpenMetaverse
         public InventoryFolder(SerializationInfo info, StreamingContext ctxt)
             : base(info, ctxt)
         {
-            PreferredType = (AssetType)info.GetValue("PreferredType", typeof(AssetType));
+            PreferredType = (FolderType)info.GetValue("PreferredType", typeof(FolderType));
             Version = (int)info.GetValue("Version", typeof(int));
             DescendentCount = (int)info.GetValue("DescendentCount", typeof(int));
         }
@@ -967,7 +967,7 @@ namespace OpenMetaverse
             folder.Version = res["version"];
             folder.OwnerID = res.ContainsKey("agent_id") ? res["agent_id"] : res["owner_id"];
             folder.ParentUUID = res["parent_id"];
-            folder.PreferredType = (AssetType)(int)res["type_default"];
+            folder.PreferredType = (FolderType)(int)res["type_default"];
             return folder;
         }
 
@@ -1255,32 +1255,66 @@ namespace OpenMetaverse
 
         #region String Arrays
 
-        /// <summary>Partial mapping of AssetTypes to folder names</summary>
+        /// <summary>Partial mapping of FolderTypes to folder names</summary>
         private static readonly string[] _NewFolderNames = new string[]
         {
-            "Textures",
-            "Sounds",
-            "Calling Cards",
-            "Landmarks",
-            "Scripts",
-            "Clothing",
-            "Objects",
-            "Notecards",
-            "New Folder",
-            "Inventory",
-            "Scripts",
-            "Scripts",
-            "Uncompressed Images",
-            "Body Parts",
-            "Trash",
-            "Photo Album",
-            "Lost And Found",
-            "Uncompressed Sounds",
-            "Uncompressed Images",
-            "Uncompressed Images",
-            "Animations",
-            "Gestures"
+            "Textures",         //  0
+            "Sounds",           //  1
+            "Calling Cards",    //  2
+            "Landmarks",        //  3
+            String.Empty,       //  4
+            "Clothing",         //  5
+            "Objects",          //  6
+            "Notecards",        //  7
+            "My Inventory",     //  8
+            String.Empty,       //  9
+            "Scripts",          // 10
+            String.Empty,       // 11
+            String.Empty,       // 12
+            "Body Parts",       // 13
+            "Trash",            // 14
+            "Photo Album",      // 15
+            "Lost And Found",   // 16
+            String.Empty,       // 17
+            String.Empty,       // 18
+            String.Empty,       // 19
+            "Animations",       // 20
+            "Gestures",         // 21
+            String.Empty,       // 22
+            "Favorites",        // 23
+            String.Empty,       // 24
+            String.Empty,       // 25
+            "New Folder",       // 26
+            "New Folder",       // 27
+            "New Folder",       // 28
+            "New Folder",       // 29
+            "New Folder",       // 30
+            "New Folder",       // 31
+            "New Folder",       // 32
+            "New Folder",       // 33
+            "New Folder",       // 34
+            "New Folder",       // 35
+            "New Folder",       // 36
+            "New Folder",       // 37
+            "New Folder",       // 38
+            "New Folder",       // 39
+            "New Folder",       // 40
+            "New Folder",       // 41
+            "New Folder",       // 42
+            "New Folder",       // 43
+            "New Folder",       // 44
+            "New Folder",       // 45
+            "Current Outfit",   // 46
+            "New Outfit",       // 47
+            "My Outfits",       // 48
+            "Meshes",           // 49
+            "Received Items",   // 50
+            "Merchant Outbox",  // 51
+            "Basic Root",       // 52
+            "Marketplace Listings",   // 53
+            "New Stock",      // 54
         };
+
 
         #endregion String Arrays
 
@@ -1651,7 +1685,7 @@ namespace OpenMetaverse
                                             folder.ParentUUID = descFolder["parent_id"];
                                             folder.Name = descFolder["name"];
                                             folder.Version = descFolder["version"];
-                                            folder.PreferredType = (AssetType)(int)descFolder["type_default"];
+                                            folder.PreferredType = (FolderType)(int)descFolder["type_default"];
                                         }
 
                                         // Fetch descendent items
@@ -1737,6 +1771,31 @@ namespace OpenMetaverse
 
             // Loop through each top-level directory and check if PreferredType
             // matches the requested type
+            List<InventoryBase> contents = _Store.GetContents(_Store.RootFolder.UUID);
+            foreach (InventoryBase inv in contents)
+            {
+                if (inv is InventoryFolder)
+                {
+                    InventoryFolder folder = inv as InventoryFolder;
+
+                    if (folder.PreferredType == (FolderType)type)
+                        return folder.UUID;
+                }
+            }
+
+            // No match found, return Root Folder ID
+            return _Store.RootFolder.UUID;
+        }
+
+        public UUID FindFolderForType(FolderType type)
+        {
+            if (_Store == null)
+            {
+                Logger.Log("Inventory is null, FindFolderForType() lookup cannot continue",
+                    Helpers.LogLevel.Error, Client);
+                return UUID.Zero;
+            }
+
             List<InventoryBase> contents = _Store.GetContents(_Store.RootFolder.UUID);
             foreach (InventoryBase inv in contents)
             {
@@ -1881,7 +1940,7 @@ namespace OpenMetaverse
         /// <param name="newName">The name to change the folder to</param>
         public void MoveFolder(UUID folderID, UUID newparentID, string newName)
         {
-            UpdateFolderProperties(folderID, newparentID, newName, AssetType.Unknown);
+            UpdateFolderProperties(folderID, newparentID, newName, FolderType.None);
         }
 
         /// <summary>
@@ -1891,7 +1950,7 @@ namespace OpenMetaverse
         /// <param name="parentID">Sets folder's parent to <seealso cref="UUID"/></param>
         /// <param name="name">Folder name</param>
         /// <param name="type">Folder type</param>
-        public void UpdateFolderProperties(UUID folderID, UUID parentID, string name, AssetType type)
+        public void UpdateFolderProperties(UUID folderID, UUID parentID, string name, FolderType type)
         {
             lock (Store)
             {
@@ -2203,7 +2262,7 @@ namespace OpenMetaverse
         /// </summary>
         public void EmptyLostAndFound()
         {
-            EmptySystemFolder(AssetType.LostAndFoundFolder);
+            EmptySystemFolder(FolderType.LostAndFound);
         }
 
         /// <summary>
@@ -2211,10 +2270,10 @@ namespace OpenMetaverse
         /// </summary>
         public void EmptyTrash()
         {
-            EmptySystemFolder(AssetType.TrashFolder);
+            EmptySystemFolder(FolderType.Trash);
         }
 
-        private void EmptySystemFolder(AssetType folderType)
+        private void EmptySystemFolder(FolderType folderType)
         {
             List<InventoryBase> items = _Store.GetContents(_Store.RootFolder);
 
@@ -2310,7 +2369,7 @@ namespace OpenMetaverse
         /// <returns>The UUID of the newly created folder</returns>
         public UUID CreateFolder(UUID parentID, string name)
         {
-            return CreateFolder(parentID, name, AssetType.Unknown);
+            return CreateFolder(parentID, name, FolderType.None);
         }
 
         /// <summary>
@@ -2319,25 +2378,29 @@ namespace OpenMetaverse
         /// <param name="parentID">ID of the folder to put this folder in</param>
         /// <param name="name">Name of the folder to create</param>
         /// <param name="preferredType">Sets this folder as the default folder
-        /// for new assets of the specified type. Use <code>AssetType.Unknown</code>
+        /// for new assets of the specified type. Use <code>FolderType.None</code>
         /// to create a normal folder, otherwise it will likely create a
         /// duplicate of an existing folder type</param>
         /// <returns>The UUID of the newly created folder</returns>
         /// <remarks>If you specify a preferred type of <code>AsseType.Folder</code>
         /// it will create a new root folder which may likely cause all sorts
         /// of strange problems</remarks>
-        public UUID CreateFolder(UUID parentID, string name, AssetType preferredType)
+        public UUID CreateFolder(UUID parentID, string name, FolderType preferredType)
         {
             UUID id = UUID.Random();
 
             // Assign a folder name if one is not already set
             if (String.IsNullOrEmpty(name))
             {
-                if (preferredType >= AssetType.Texture && preferredType <= AssetType.Gesture)
+                if (preferredType >= FolderType.Texture && preferredType <= FolderType.MarkplaceStock)
                 {
                     name = _NewFolderNames[(int)preferredType];
                 }
                 else
+                {
+                    name = "New Folder";
+                }
+                if (name == string.Empty)
                 {
                     name = "New Folder";
                 }
@@ -4333,7 +4396,7 @@ namespace OpenMetaverse
                             InventoryFolder folder = new InventoryFolder(reply.FolderData[i].FolderID);
                             folder.ParentUUID = reply.FolderData[i].ParentID;
                             folder.Name = Utils.BytesToString(reply.FolderData[i].Name);
-                            folder.PreferredType = (AssetType)reply.FolderData[i].Type;
+                            folder.PreferredType = (FolderType)reply.FolderData[i].Type;
                             folder.OwnerID = reply.AgentData.OwnerID;
 
                             _Store[folder.UUID] = folder;
