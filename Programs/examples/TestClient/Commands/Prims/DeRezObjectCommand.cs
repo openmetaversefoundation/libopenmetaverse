@@ -29,7 +29,7 @@ namespace OpenMetaverse.TestClient
                 {
                     uint objectLocalID = target.LocalID;
                     Client.Inventory.RequestDeRezToInventory(objectLocalID, DeRezDestination.AgentInventoryTake,
-                                                             Client.Inventory.FindFolderForType(AssetType.TrashFolder),
+                                                             Client.Inventory.FindFolderForType(FolderType.Trash),
                                                              UUID.Random());
                     return "removing " + target;
                 }
