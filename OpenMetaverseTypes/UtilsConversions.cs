@@ -46,24 +46,24 @@ namespace OpenMetaverse
 	        "object",     //  6
 	        "notecard",   //  7
 	        "category",   //  8
-	        "root",       //  9
+	        String.Empty, //  9
 	        "lsltext",    // 10
 	        "lslbyte",    // 11
 	        "txtr_tga",   // 12
 	        "bodypart",   // 13
-	        "trash",      // 14
-	        "snapshot",   // 15
-	        "lstndfnd",   // 16
+	        String.Empty, // 14
+	        String.Empty, // 15
+	        String.Empty, // 16
 	        "snd_wav",    // 17
 	        "img_tga",    // 18
 	        "jpeg",       // 19
 	        "animatn",    // 20
 	        "gesture",    // 21
 	        "simstate",   // 22
-            "favorite",   // 23
+            String.Empty, // 23
             "link",       // 24
             "linkfolder", // 25
-            String.Empty, // 26
+            "marketplacefolder", // 26
             String.Empty, // 27
             String.Empty, // 28
             String.Empty, // 29
@@ -83,10 +83,69 @@ namespace OpenMetaverse
             String.Empty, // 43
             String.Empty, // 44
             String.Empty, // 45
-            "curoutfit",  // 46
-            "outfit",     // 47
-            "myoutfits",  // 48
+            String.Empty, // 46
+            String.Empty, // 47
+            String.Empty, // 48
             "mesh",       // 49
+        };
+
+        private static readonly string[] _FolderTypeNames = new string[]
+        {
+            "texture",    //  0
+            "sound",      //  1
+            "callcard",   //  2
+            "landmark",   //  3
+            String.Empty, //  4
+            "clothing",   //  5
+            "object",     //  6
+            "notecard",   //  7
+            "root_inv",   //  8
+            String.Empty, //  9
+            "lsltext",    // 10
+            String.Empty, // 11
+            String.Empty, // 12
+            "bodypart",   // 13
+            "trash",      // 14
+            "snapshot",   // 15
+            "lstndfnd",   // 16
+            String.Empty, // 17
+            String.Empty, // 18
+            String.Empty, // 19
+            "animatn",    // 20
+            "gesture",    // 21
+            String.Empty, // 22
+            "favorite",   // 23
+            String.Empty, // 24
+            String.Empty, // 25
+            "ensemble",   // 26
+            "ensemble",   // 27
+            "ensemble",   // 28
+            "ensemble",   // 29
+            "ensemble",   // 30
+            "ensemble",   // 31
+            "ensemble",   // 32
+            "ensemble",   // 33
+            "ensemble",   // 34
+            "ensemble",   // 35
+            "ensemble",   // 36
+            "ensemble",   // 37
+            "ensemble",   // 38
+            "ensemble",   // 39
+            "ensemble",   // 40
+            "ensemble",   // 41
+            "ensemble",   // 42
+            "ensemble",   // 43
+            "ensemble",   // 44
+            "ensemble",   // 45
+            "current",    // 46
+            "outfit",     // 47
+            "my_otfts",   // 48
+            "mesh",       // 49
+            "inbox",      // 50
+            "outbox",     // 51
+            "basic_rt",   // 52
+            "merchant",   // 53
+            "stock",      // 54
         };
 
         private static readonly string[] _InventoryTypeNames = new string[]
@@ -947,6 +1006,32 @@ namespace OpenMetaverse
             }
 
             return AssetType.Unknown;
+        }
+
+        /// <summary>
+        /// Takes a FolderType and returns the string representation
+        /// </summary>
+        /// <param name="type">The source <seealso cref="FolderType"/></param>
+        /// <returns>The string version of the FolderType</returns>
+        public static string FolderTypeToString(FolderType type)
+        {
+            return _FolderTypeNames[(int)type];
+        }
+
+        /// <summary>
+        /// Translate a string name of an FolderType into the proper Type
+        /// </summary>
+        /// <param name="type">A string containing the FolderType name</param>
+        /// <returns>The FolderType which matches the string name, or FolderType. None if no match was found</returns>
+        public static FolderType StringToFolderType(string type)
+        {
+            for (int i = 0; i < _FolderTypeNames.Length; i++)
+            {
+                if (_FolderTypeNames[i] == type)
+                    return (FolderType)i;
+            }
+
+            return FolderType.None;
         }
 
         /// <summary>

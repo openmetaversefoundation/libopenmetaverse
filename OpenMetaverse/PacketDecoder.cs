@@ -1070,10 +1070,10 @@ namespace OpenMetaverse.Packets
 
         private static string DecodeFolderType(string fieldName, object fieldData)
         {
-            return String.Format("{0,30}: {1,-2} {2,-37} [AssetType]",
+            return String.Format("{0,30}: {1,-2} {2,-37} [Folderype]",
                                  fieldName,
                                  (sbyte)fieldData,
-                                 "(" + (AssetType)fieldData + ")");
+                                 "(" + (FolderType)fieldData + ")");
         }
 
         private static string DecodeInventoryFlags(string fieldName, object fieldData)

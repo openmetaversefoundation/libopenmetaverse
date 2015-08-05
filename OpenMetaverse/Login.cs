@@ -719,7 +719,7 @@ namespace OpenMetaverse
                     {
                         OSDMap map = (OSDMap)array[i];
                         InventoryFolder folder = new InventoryFolder(map["folder_id"].AsUUID());
-                        folder.PreferredType = (AssetType)map["type_default"].AsInteger();
+                        folder.PreferredType = (FolderType)map["type_default"].AsInteger();
                         folder.Version = map["version"].AsInteger();
                         folder.OwnerID = owner;
                         folder.ParentUUID = map["parent_id"].AsUUID();
@@ -749,7 +749,7 @@ namespace OpenMetaverse
                         InventoryFolder folder = new InventoryFolder(map["folder_id"].AsUUID());
                         folder.Name = map["name"].AsString();
                         folder.ParentUUID = map["parent_id"].AsUUID();
-                        folder.PreferredType = (AssetType)map["type_default"].AsInteger();
+                        folder.PreferredType = (FolderType)map["type_default"].AsInteger();
                         folder.Version = map["version"].AsInteger();
                         folders.Add(folder);
                     }
@@ -779,7 +779,7 @@ namespace OpenMetaverse
                         InventoryFolder folder = new InventoryFolder(ParseUUID("folder_id", map));
                         folder.Name = ParseString("name", map);
                         folder.ParentUUID = ParseUUID("parent_id", map);
-                        folder.PreferredType = (AssetType)ParseUInt("type_default", map);
+                        folder.PreferredType = (FolderType)ParseUInt("type_default", map);
                         folder.Version = (int)ParseUInt("version", map);
                         folder.OwnerID = ownerID;
 

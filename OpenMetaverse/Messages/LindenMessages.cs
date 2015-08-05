@@ -1352,7 +1352,7 @@ namespace OpenMetaverse.Messages.Linden
             public UUID FolderID;
             public UUID ParentID;
             public string Name;
-            public AssetType Type;
+            public FolderType Type;
 
             public static FolderDataInfo FromOSD(OSD data)
             {
@@ -1365,7 +1365,7 @@ namespace OpenMetaverse.Messages.Linden
                 ret.FolderID = map["FolderID"];
                 ret.ParentID = map["ParentID"];
                 ret.Name = map["Name"];
-                ret.Type = (AssetType)map["Type"].AsInteger();
+                ret.Type = (FolderType)map["Type"].AsInteger();
                 return ret;
             }
         }
