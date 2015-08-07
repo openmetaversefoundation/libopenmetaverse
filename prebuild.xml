@@ -580,6 +580,7 @@
       </Files>
     </Project>
 
+    <!--
     <Project name="GridProxyGUI" path="Programs/GridProxyGUI" icon="libomv.ico" type="WinExe" frameworkVersion="v4_0">
       <Configuration name="Debug">
         <Options>
@@ -620,6 +621,7 @@
         <Match pattern="*.ico" recurse="true"/>
       </Files>
     </Project>
+    -->
     
     <Project name="VisualParamGenerator" path="Programs/VisualParamGenerator" type="Exe" frameworkVersion="v4_0">
       <Configuration name="Debug">
