@@ -32349,16 +32349,55 @@ namespace OpenMetaverse.Packets
 
         }
 
+        /// <exclude/>
+        public sealed class ExperienceBlock : PacketBlock
+        {
+            public UUID ExperienceID;
+
+            public override int Length
+            {
+                get
+                {
+                    return 16;
+                }
+            }
+
+            public ExperienceBlock() { }
+            public ExperienceBlock(byte[] bytes, ref int i)
+            {
+                FromBytes(bytes, ref i);
+            }
+
+            public override void FromBytes(byte[] bytes, ref int i)
+            {
+                try
+                {
+                    ExperienceID.FromBytes(bytes, i); i += 16;
+                }
+                catch (Exception)
+                {
+                    throw new MalformedDataException();
+                }
+            }
+
+            public override void ToBytes(byte[] bytes, ref int i)
+            {
+                ExperienceID.ToBytes(bytes, i); i += 16;
+            }
+        }
+
         public override int Length
         {
             get
             {
                 int length = 10;
                 length += Data.Length;
+                length += Experience.Length;
                 return length;
             }
         }
         public DataBlock Data;
+        public ExperienceBlock Experience;
 
         public ScriptQuestionPacket()
         {
@@ -32369,6 +32408,7 @@ namespace OpenMetaverse.Packets
             Header.ID = 188;
             Header.Reliable = true;
             Data = new DataBlock();
+            Experience = new ExperienceBlock();
         }
 
         public ScriptQuestionPacket(byte[] bytes, ref int i) : this()
@@ -32386,6 +32426,7 @@ namespace OpenMetaverse.Packets
                 bytes = zeroBuffer;
             }
             Data.FromBytes(bytes, ref i);
+            Experience.FromBytes(bytes, ref i);
         }
 
         public ScriptQuestionPacket(Header head, byte[] bytes, ref int i): this()
@@ -32398,17 +32439,20 @@ namespace OpenMetaverse.Packets
         {
             Header = header;
             Data.FromBytes(bytes, ref i);
+            Experience.FromBytes(bytes, ref i);
         }
 
         public override byte[] ToBytes()
         {
             int length = 10;
             length += Data.Length;
+            length += Experience.Length;
             if (Header.AckList != null && Header.AckList.Length > 0) { length += Header.AckList.Length * 4 + 1; }
             byte[] bytes = new byte[length];
             int i = 0;
             Header.ToBytes(bytes, ref i);
             Data.ToBytes(bytes, ref i);
+            Experience.ToBytes(bytes, ref i);
             if (Header.AckList != null && Header.AckList.Length > 0) { Header.AcksToBytes(bytes, ref i); }
             return bytes;
         }
