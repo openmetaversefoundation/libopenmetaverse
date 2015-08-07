@@ -64,33 +64,23 @@ namespace OpenMetaverse
         // <summary>Legacy script asset, you should never see one of these</summary>
         //[Obsolete]
         //Script = 4,
-        /// <summary>Collection of textures and parameters that can be 
-        /// worn by an avatar</summary>
+        /// <summary>Collection of textures and parameters that can be worn by an avatar</summary>
         Clothing = 5,
         /// <summary>Primitive that can contain textures, sounds, 
         /// scripts and more</summary>
         Object = 6,
         /// <summary>Notecard asset</summary>
         Notecard = 7,
-        /// <summary>Holds a collection of inventory items</summary>
+        /// <summary>Holds a collection of inventory items. "Category" in the Linden viewer</summary>
         Folder = 8,
-        /// <summary>Root inventory folder</summary>
-        RootFolder = 9,
         /// <summary>Linden scripting language script</summary>
         LSLText = 10,
         /// <summary>LSO bytecode for a script</summary>
         LSLBytecode = 11,
         /// <summary>Uncompressed TGA texture</summary>
         TextureTGA = 12,
-        /// <summary>Collection of textures and shape parameters that can
-        /// be worn</summary>
+        /// <summary>Collection of textures and shape parameters that can be worn</summary>
         Bodypart = 13,
-        /// <summary>Trash folder</summary>
-        TrashFolder = 14,
-        /// <summary>Snapshot folder</summary>
-        SnapshotFolder = 15,
-        /// <summary>Lost and found folder</summary>
-        LostAndFoundFolder = 16,
         /// <summary>Uncompressed sound</summary>
         SoundWAV = 17,
         /// <summary>Uncompressed TGA non-square image, not to be used as a
@@ -105,33 +95,77 @@ namespace OpenMetaverse
         Gesture = 21,
         /// <summary>Simstate file</summary>
         Simstate = 22,
-        /// <summary>Contains landmarks for favorites</summary>
-        FavoriteFolder = 23,
         /// <summary>Asset is a link to another inventory item</summary>
         Link = 24,
         /// <summary>Asset is a link to another inventory folder</summary>
         LinkFolder = 25,
-        /// <summary>Beginning of the range reserved for ensembles</summary>
-        EnsembleStart = 26,
-        /// <summary>End of the range reserved for ensembles</summary>
-        EnsembleEnd = 45,
-        /// <summary>Folder containing inventory links to wearables and attachments
-        /// that are part of the current outfit</summary>
-        CurrentOutfitFolder = 46,
-        /// <summary>Folder containing inventory items or links to
-        /// inventory items of wearables and attachments
-        /// together make a full outfit</summary>
-        OutfitFolder = 47,
-        /// <summary>Root folder for the folders of type OutfitFolder</summary>
-        MyOutfitsFolder = 48,
+        /// <summary>Marketplace Folder. Same as an Category but different display methods.</summary>
+        MarketplaceFolder = 26,
         /// <summary>Linden mesh format</summary>
+        Mesh = 49,
+    }
+
+    /// <summary>
+    /// The different types of folder.
+    /// </summary>
+    public enum FolderType : sbyte
+    {
+        /// <summary>None folder type</summary>
+        None = -1,
+        /// <summary>Texture folder type</summary>
+        Texture = 0,
+        /// <summary>Sound folder type</summary>
+        Sound = 1,
+        /// <summary>Calling card folder type</summary>
+        CallingCard = 2,
+        /// <summary>Landmark folder type</summary>
+        Landmark = 3,
+        /// <summary>Clothing folder type</summary>
+        Clothing = 5,
+        /// <summary>Object folder type</summary>
+        Object = 6,
+        /// <summary>Notecard folder type</summary>
+        Notecard = 7,
+        /// <summary>The root folder type</summary>
+        Root = 8,
+        /// <summary>LSLText folder</summary>
+        LSLText = 10,
+        /// <summary>Bodyparts folder</summary>
+        BodyPart = 13,
+        /// <summary>Trash folder</summary>
+        Trash = 14,
+        /// <summary>Snapshot folder</summary>
+        Snapshot = 15,
+        /// <summary>Lost And Found folder</summary>
+        LostAndFound = 16,
+        /// <summary>Animation folder</summary>
+        Animation = 20,
+        /// <summary>Gesture folder</summary>
+        Gesture = 21,
+        /// <summary>Favorites folder</summary>
+        Favorites = 23,
+        /// <summary>Ensemble beginning range</summary>
+        EnsembleStart = 26,
+        /// <summary>Ensemble ending range</summary>
+        EnsembleEnd= 45,
+        /// <summary>Current outfit folder</summary>
+        CurrentOutfit = 46,
+        /// <summary>Outfit folder</summary>
+        Outfit = 47,
+        /// <summary>My outfits folder</summary>
+        MyOutfits = 48,
+        /// <summary>Mesh folder</summary>
         Mesh = 49,
         /// <summary>Marketplace direct delivery inbox ("Received Items")</summary>
         Inbox = 50,
         /// <summary>Marketplace direct delivery outbox</summary>
         Outbox = 51,
-        /// <summary></summary>
-        BasicRoot = 51,
+        /// <summary>Basic root folder</summary>
+        BasicRoot = 52,
+        /// <summary>Marketplace listings folder</summary>
+        MarketplaceListings = 53,
+        /// <summary>Marketplace stock folder</summary>
+        MarkplaceStock = 54
     }
 
     /// <summary>

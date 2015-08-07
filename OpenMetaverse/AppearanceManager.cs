@@ -1910,7 +1910,7 @@ namespace OpenMetaverse
             {
                 foreach (InventoryBase baseItem in root)
                 {
-                    if (baseItem is InventoryFolder && ((InventoryFolder)baseItem).PreferredType == AssetType.CurrentOutfitFolder)
+                    if (baseItem is InventoryFolder && ((InventoryFolder)baseItem).PreferredType == FolderType.CurrentOutfit)
                     {
                         COF = (InventoryFolder)baseItem;
                         break;

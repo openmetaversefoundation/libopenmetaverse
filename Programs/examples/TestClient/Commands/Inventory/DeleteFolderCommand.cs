@@ -38,7 +38,7 @@ namespace OpenMetaverse.TestClient
             if (found.Count.Equals(1))
             {
                 // move the folder to the trash folder
-                Client.Inventory.MoveFolder(found[0].UUID, Client.Inventory.FindFolderForType(AssetType.TrashFolder));
+                Client.Inventory.MoveFolder(found[0].UUID, Client.Inventory.FindFolderForType(FolderType.Trash));
                 
                 return String.Format("Moved folder {0} to Trash", found[0].Name);
             }
