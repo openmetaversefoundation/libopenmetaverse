@@ -165,7 +165,9 @@ namespace OpenMetaverse
         /// <summary>Marketplace listings folder</summary>
         MarketplaceListings = 53,
         /// <summary>Marketplace stock folder</summary>
-        MarkplaceStock = 54
+        MarkplaceStock = 54,
+        /// <summary>Hypergrid Suitcase folder</summary>
+        Suitcase = 100
     }
 
     /// <summary>
