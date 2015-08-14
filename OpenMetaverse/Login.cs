@@ -1095,7 +1095,7 @@ namespace OpenMetaverse
             if (loginParams.Platform == null)
                 loginParams.Platform = String.Empty;
 
-            if (loginParams.Platform == null)
+            if (loginParams.PlatformVersion == null)
                 loginParams.PlatformVersion = String.Empty;
 
             if (loginParams.MAC == null)
