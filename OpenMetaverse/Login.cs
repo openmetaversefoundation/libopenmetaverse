@@ -119,6 +119,8 @@ namespace OpenMetaverse
         public string Version;
         /// <summary>A string containing the platform information the agent is running on</summary>
         public string Platform;
+        /// <summary>A string containing version number for OS the agent is running on</summary>
+        public string PlatformVersion;
         /// <summary>A string hash of the network cards Mac Address</summary>
         public string MAC;
         /// <summary>Unknown or deprecated</summary>
@@ -172,6 +174,7 @@ namespace OpenMetaverse
             this.MethodName = "login_to_simulator";
             this.Start = "last";
             this.Platform = NetworkManager.GetPlatform();
+            this.PlatformVersion = NetworkManager.GetPlatformVersion();
             this.MAC = NetworkManager.GetMAC();
             this.ViewerDigest = String.Empty;
             this.ID0 = NetworkManager.GetMAC();
@@ -1092,6 +1095,9 @@ namespace OpenMetaverse
             if (loginParams.Platform == null)
                 loginParams.Platform = String.Empty;
 
+            if (loginParams.PlatformVersion == null)
+                loginParams.PlatformVersion = String.Empty;
+
             if (loginParams.MAC == null)
                 loginParams.MAC = String.Empty;
 
@@ -1124,6 +1130,7 @@ namespace OpenMetaverse
                 loginLLSD["channel"] = OSD.FromString(loginParams.Channel);
                 loginLLSD["version"] = OSD.FromString(loginParams.Version);
                 loginLLSD["platform"] = OSD.FromString(loginParams.Platform);
+                loginLLSD["platform_version"] = OSD.FromString(loginParams.PlatformVersion);
                 loginLLSD["mac"] = OSD.FromString(loginParams.MAC);
                 loginLLSD["agree_to_tos"] = OSD.FromBoolean(loginParams.AgreeToTos);
                 loginLLSD["read_critical"] = OSD.FromBoolean(loginParams.ReadCritical);
@@ -1183,6 +1190,7 @@ namespace OpenMetaverse
                 loginXmlRpc["channel"] = loginParams.Channel;
                 loginXmlRpc["version"] = loginParams.Version;
                 loginXmlRpc["platform"] = loginParams.Platform;
+                loginXmlRpc["platform_version"] = loginParams.PlatformVersion;
                 loginXmlRpc["mac"] = loginParams.MAC;
                 if (loginParams.AgreeToTos)
                     loginXmlRpc["agree_to_tos"] = "true";
@@ -1568,11 +1576,22 @@ namespace OpenMetaverse
         {
             switch (Environment.OSVersion.Platform)
             {
+                case PlatformID.MacOSX:
+                    return "mac";
                 case PlatformID.Unix:
-                    return "Linux";
+                    return "lnx";
                 default:
-                    return "Win";
+                    return "win";
             }
+        }
+
+        /// <summary>
+        /// Gets the current OS version number
+        /// </summary>
+        /// <returns>The platform version.</returns>
+        public static string GetPlatformVersion()
+        {
+            return Environment.OSVersion.Version.ToString();
         }
 
         /// <summary>
