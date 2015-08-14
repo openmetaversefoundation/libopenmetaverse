@@ -2382,7 +2382,7 @@ namespace OpenMetaverse.Packets
                 i = SpawnPointBlockStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < SpawnPointBlock.Length) {
                     int blockLength = SpawnPointBlock[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == SpawnPointBlockStart) {
                         variableLength += blockLength;
                         ++SpawnPointBlockCount;
                     }
@@ -3021,7 +3021,7 @@ namespace OpenMetaverse.Packets
                 i = DataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Data.Length) {
                     int blockLength = Data[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == DataStart) {
                         variableLength += blockLength;
                         ++DataCount;
                     }
@@ -3575,7 +3575,7 @@ namespace OpenMetaverse.Packets
                 i = QueryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < QueryData.Length) {
                     int blockLength = QueryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == QueryDataStart) {
                         variableLength += blockLength;
                         ++QueryDataCount;
                     }
@@ -4308,7 +4308,7 @@ namespace OpenMetaverse.Packets
                 i = QueryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < QueryData.Length) {
                     int blockLength = QueryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == QueryDataStart) {
                         variableLength += blockLength;
                         ++QueryDataCount;
                     }
@@ -4319,7 +4319,7 @@ namespace OpenMetaverse.Packets
                 i = QueryRepliesStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < QueryReplies.Length) {
                     int blockLength = QueryReplies[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == QueryRepliesStart) {
                         variableLength += blockLength;
                         ++QueryRepliesCount;
                     }
@@ -4330,7 +4330,7 @@ namespace OpenMetaverse.Packets
                 i = StatusDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < StatusData.Length) {
                     int blockLength = StatusData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == StatusDataStart) {
                         variableLength += blockLength;
                         ++StatusDataCount;
                     }
@@ -4643,7 +4643,7 @@ namespace OpenMetaverse.Packets
                 i = QueryRepliesStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < QueryReplies.Length) {
                     int blockLength = QueryReplies[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == QueryRepliesStart) {
                         variableLength += blockLength;
                         ++QueryRepliesCount;
                     }
@@ -5006,7 +5006,7 @@ namespace OpenMetaverse.Packets
                 i = QueryRepliesStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < QueryReplies.Length) {
                     int blockLength = QueryReplies[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == QueryRepliesStart) {
                         variableLength += blockLength;
                         ++QueryRepliesCount;
                     }
@@ -5017,7 +5017,7 @@ namespace OpenMetaverse.Packets
                 i = StatusDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < StatusData.Length) {
                     int blockLength = StatusData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == StatusDataStart) {
                         variableLength += blockLength;
                         ++StatusDataCount;
                     }
@@ -5311,7 +5311,7 @@ namespace OpenMetaverse.Packets
                 i = QueryRepliesStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < QueryReplies.Length) {
                     int blockLength = QueryReplies[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == QueryRepliesStart) {
                         variableLength += blockLength;
                         ++QueryRepliesCount;
                     }
@@ -5848,7 +5848,7 @@ namespace OpenMetaverse.Packets
                 i = QueryRepliesStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < QueryReplies.Length) {
                     int blockLength = QueryReplies[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == QueryRepliesStart) {
                         variableLength += blockLength;
                         ++QueryRepliesCount;
                     }
@@ -5859,7 +5859,7 @@ namespace OpenMetaverse.Packets
                 i = StatusDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < StatusData.Length) {
                     int blockLength = StatusData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == StatusDataStart) {
                         variableLength += blockLength;
                         ++StatusDataCount;
                     }
@@ -6102,7 +6102,7 @@ namespace OpenMetaverse.Packets
                 i = DataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Data.Length) {
                     int blockLength = Data[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == DataStart) {
                         variableLength += blockLength;
                         ++DataCount;
                     }
@@ -7467,7 +7467,7 @@ namespace OpenMetaverse.Packets
                 i = QueryRepliesStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < QueryReplies.Length) {
                     int blockLength = QueryReplies[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == QueryRepliesStart) {
                         variableLength += blockLength;
                         ++QueryRepliesCount;
                     }
@@ -7916,7 +7916,7 @@ namespace OpenMetaverse.Packets
                 i = QueryRepliesStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < QueryReplies.Length) {
                     int blockLength = QueryReplies[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == QueryRepliesStart) {
                         variableLength += blockLength;
                         ++QueryRepliesCount;
                     }
@@ -8636,7 +8636,7 @@ namespace OpenMetaverse.Packets
                 i = DataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Data.Length) {
                     int blockLength = Data[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == DataStart) {
                         variableLength += blockLength;
                         ++DataCount;
                     }
@@ -9051,7 +9051,7 @@ namespace OpenMetaverse.Packets
                 i = DataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Data.Length) {
                     int blockLength = Data[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == DataStart) {
                         variableLength += blockLength;
                         ++DataCount;
                     }
@@ -10371,7 +10371,7 @@ namespace OpenMetaverse.Packets
                 i = TargetDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < TargetData.Length) {
                     int blockLength = TargetData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == TargetDataStart) {
                         variableLength += blockLength;
                         ++TargetDataCount;
                     }
@@ -10964,7 +10964,7 @@ namespace OpenMetaverse.Packets
                 i = AlertInfoStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < AlertInfo.Length) {
                     int blockLength = AlertInfo[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == AlertInfoStart) {
                         variableLength += blockLength;
                         ++AlertInfoCount;
                     }
@@ -11196,7 +11196,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -11428,7 +11428,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -13487,7 +13487,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -13770,7 +13770,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -14027,7 +14027,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -14260,7 +14260,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -14493,7 +14493,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -14750,7 +14750,7 @@ namespace OpenMetaverse.Packets
                 i = ExtraPhysicsStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ExtraPhysics.Length) {
                     int blockLength = ExtraPhysics[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ExtraPhysicsStart) {
                         variableLength += blockLength;
                         ++ExtraPhysicsCount;
                     }
@@ -14983,7 +14983,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -15230,7 +15230,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -15463,7 +15463,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -15752,7 +15752,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -16001,7 +16001,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -16284,7 +16284,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -16517,7 +16517,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -16759,7 +16759,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -17326,7 +17326,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -17562,7 +17562,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -17801,7 +17801,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -18040,7 +18040,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -18273,7 +18273,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -18503,7 +18503,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -18733,7 +18733,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -18969,7 +18969,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -19198,7 +19198,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -19427,7 +19427,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -19656,7 +19656,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -19885,7 +19885,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -20180,7 +20180,7 @@ namespace OpenMetaverse.Packets
                 i = SurfaceInfoStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < SurfaceInfo.Length) {
                     int blockLength = SurfaceInfo[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == SurfaceInfoStart) {
                         variableLength += blockLength;
                         ++SurfaceInfoCount;
                     }
@@ -20481,7 +20481,7 @@ namespace OpenMetaverse.Packets
                 i = SurfaceInfoStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < SurfaceInfo.Length) {
                     int blockLength = SurfaceInfo[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == SurfaceInfoStart) {
                         variableLength += blockLength;
                         ++SurfaceInfoCount;
                     }
@@ -20772,7 +20772,7 @@ namespace OpenMetaverse.Packets
                 i = SurfaceInfoStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < SurfaceInfo.Length) {
                     int blockLength = SurfaceInfo[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == SurfaceInfoStart) {
                         variableLength += blockLength;
                         ++SurfaceInfoCount;
                     }
@@ -21489,7 +21489,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -21851,7 +21851,7 @@ namespace OpenMetaverse.Packets
                 i = ParcelDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ParcelData.Length) {
                     int blockLength = ParcelData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ParcelDataStart) {
                         variableLength += blockLength;
                         ++ParcelDataCount;
                     }
@@ -21862,7 +21862,7 @@ namespace OpenMetaverse.Packets
                 i = ModifyBlockExtendedStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ModifyBlockExtended.Length) {
                     int blockLength = ModifyBlockExtended[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ModifyBlockExtendedStart) {
                         variableLength += blockLength;
                         ++ModifyBlockExtendedCount;
                     }
@@ -23165,7 +23165,7 @@ namespace OpenMetaverse.Packets
                 i = MiscStatsStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < MiscStats.Length) {
                     int blockLength = MiscStats[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == MiscStatsStart) {
                         variableLength += blockLength;
                         ++MiscStatsCount;
                     }
@@ -23787,7 +23787,7 @@ namespace OpenMetaverse.Packets
                 i = AlertInfoStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < AlertInfo.Length) {
                     int blockLength = AlertInfo[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == AlertInfoStart) {
                         variableLength += blockLength;
                         ++AlertInfoCount;
                     }
@@ -24144,7 +24144,7 @@ namespace OpenMetaverse.Packets
                 i = MeanCollisionStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < MeanCollision.Length) {
                     int blockLength = MeanCollision[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == MeanCollisionStart) {
                         variableLength += blockLength;
                         ++MeanCollisionCount;
                     }
@@ -25313,7 +25313,7 @@ namespace OpenMetaverse.Packets
                 i = RegionInfo3Start;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < RegionInfo3.Length) {
                     int blockLength = RegionInfo3[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == RegionInfo3Start) {
                         variableLength += blockLength;
                         ++RegionInfo3Count;
                     }
@@ -25617,7 +25617,7 @@ namespace OpenMetaverse.Packets
                 i = RegionInfo2Start;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < RegionInfo2.Length) {
                     int blockLength = RegionInfo2[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == RegionInfo2Start) {
                         variableLength += blockLength;
                         ++RegionInfo2Count;
                     }
@@ -26042,7 +26042,7 @@ namespace OpenMetaverse.Packets
                 i = RegionInfo4Start;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < RegionInfo4.Length) {
                     int blockLength = RegionInfo4[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == RegionInfo4Start) {
                         variableLength += blockLength;
                         ++RegionInfo4Count;
                     }
@@ -27561,7 +27561,7 @@ namespace OpenMetaverse.Packets
                 i = VisualParamStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < VisualParam.Length) {
                     int blockLength = VisualParam[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == VisualParamStart) {
                         variableLength += blockLength;
                         ++VisualParamCount;
                     }
@@ -27572,7 +27572,7 @@ namespace OpenMetaverse.Packets
                 i = AppearanceDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < AppearanceData.Length) {
                     int blockLength = AppearanceData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == AppearanceDataStart) {
                         variableLength += blockLength;
                         ++AppearanceDataCount;
                     }
@@ -27583,7 +27583,7 @@ namespace OpenMetaverse.Packets
                 i = AppearanceHoverStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < AppearanceHover.Length) {
                     int blockLength = AppearanceHover[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == AppearanceHoverStart) {
                         variableLength += blockLength;
                         ++AppearanceHoverCount;
                     }
@@ -27822,7 +27822,7 @@ namespace OpenMetaverse.Packets
                 i = CameraPropertyStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < CameraProperty.Length) {
                     int blockLength = CameraProperty[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == CameraPropertyStart) {
                         variableLength += blockLength;
                         ++CameraPropertyCount;
                     }
@@ -28273,7 +28273,7 @@ namespace OpenMetaverse.Packets
                 i = ButtonDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ButtonData.Length) {
                     int blockLength = ButtonData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ButtonDataStart) {
                         variableLength += blockLength;
                         ++ButtonDataCount;
                     }
@@ -30609,7 +30609,7 @@ namespace OpenMetaverse.Packets
                 i = DataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Data.Length) {
                     int blockLength = Data[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == DataStart) {
                         variableLength += blockLength;
                         ++DataCount;
                     }
@@ -32620,7 +32620,7 @@ namespace OpenMetaverse.Packets
                 i = DataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Data.Length) {
                     int blockLength = Data[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == DataStart) {
                         variableLength += blockLength;
                         ++DataCount;
                     }
@@ -32954,7 +32954,7 @@ namespace OpenMetaverse.Packets
                 i = ButtonsStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Buttons.Length) {
                     int blockLength = Buttons[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ButtonsStart) {
                         variableLength += blockLength;
                         ++ButtonsCount;
                     }
@@ -32965,7 +32965,7 @@ namespace OpenMetaverse.Packets
                 i = OwnerDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < OwnerData.Length) {
                     int blockLength = OwnerData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == OwnerDataStart) {
                         variableLength += blockLength;
                         ++OwnerDataCount;
                     }
@@ -34552,7 +34552,7 @@ namespace OpenMetaverse.Packets
                 i = TaskIDsStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < TaskIDs.Length) {
                     int blockLength = TaskIDs[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == TaskIDsStart) {
                         variableLength += blockLength;
                         ++TaskIDsCount;
                     }
@@ -34563,7 +34563,7 @@ namespace OpenMetaverse.Packets
                 i = OwnerIDsStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < OwnerIDs.Length) {
                     int blockLength = OwnerIDs[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == OwnerIDsStart) {
                         variableLength += blockLength;
                         ++OwnerIDsCount;
                     }
@@ -35075,7 +35075,7 @@ namespace OpenMetaverse.Packets
                 i = TaskIDsStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < TaskIDs.Length) {
                     int blockLength = TaskIDs[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == TaskIDsStart) {
                         variableLength += blockLength;
                         ++TaskIDsCount;
                     }
@@ -35086,7 +35086,7 @@ namespace OpenMetaverse.Packets
                 i = OwnerIDsStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < OwnerIDs.Length) {
                     int blockLength = OwnerIDs[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == OwnerIDsStart) {
                         variableLength += blockLength;
                         ++OwnerIDsCount;
                     }
@@ -35371,7 +35371,7 @@ namespace OpenMetaverse.Packets
                 i = ReturnIDsStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ReturnIDs.Length) {
                     int blockLength = ReturnIDs[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ReturnIDsStart) {
                         variableLength += blockLength;
                         ++ReturnIDsCount;
                     }
@@ -35837,7 +35837,7 @@ namespace OpenMetaverse.Packets
                 i = DataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Data.Length) {
                     int blockLength = Data[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == DataStart) {
                         variableLength += blockLength;
                         ++DataCount;
                     }
@@ -36609,7 +36609,7 @@ namespace OpenMetaverse.Packets
                 i = ParcelDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ParcelData.Length) {
                     int blockLength = ParcelData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ParcelDataStart) {
                         variableLength += blockLength;
                         ++ParcelDataCount;
                     }
@@ -37895,7 +37895,7 @@ namespace OpenMetaverse.Packets
                 i = ListStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < List.Length) {
                     int blockLength = List[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ListStart) {
                         variableLength += blockLength;
                         ++ListCount;
                     }
@@ -38190,7 +38190,7 @@ namespace OpenMetaverse.Packets
                 i = ListStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < List.Length) {
                     int blockLength = List[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ListStart) {
                         variableLength += blockLength;
                         ++ListCount;
                     }
@@ -39014,7 +39014,7 @@ namespace OpenMetaverse.Packets
                 i = UUIDNameBlockStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < UUIDNameBlock.Length) {
                     int blockLength = UUIDNameBlock[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == UUIDNameBlockStart) {
                         variableLength += blockLength;
                         ++UUIDNameBlockCount;
                     }
@@ -39209,7 +39209,7 @@ namespace OpenMetaverse.Packets
                 i = UUIDNameBlockStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < UUIDNameBlock.Length) {
                     int blockLength = UUIDNameBlock[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == UUIDNameBlockStart) {
                         variableLength += blockLength;
                         ++UUIDNameBlockCount;
                     }
@@ -39388,7 +39388,7 @@ namespace OpenMetaverse.Packets
                 i = UUIDNameBlockStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < UUIDNameBlock.Length) {
                     int blockLength = UUIDNameBlock[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == UUIDNameBlockStart) {
                         variableLength += blockLength;
                         ++UUIDNameBlockCount;
                     }
@@ -39576,7 +39576,7 @@ namespace OpenMetaverse.Packets
                 i = UUIDNameBlockStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < UUIDNameBlock.Length) {
                     int blockLength = UUIDNameBlock[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == UUIDNameBlockStart) {
                         variableLength += blockLength;
                         ++UUIDNameBlockCount;
                     }
@@ -40768,7 +40768,7 @@ namespace OpenMetaverse.Packets
                 i = SensedDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < SensedData.Length) {
                     int blockLength = SensedData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == SensedDataStart) {
                         variableLength += blockLength;
                         ++SensedDataCount;
                     }
@@ -41449,7 +41449,7 @@ namespace OpenMetaverse.Packets
                 i = InventoryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < InventoryData.Length) {
                     int blockLength = InventoryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == InventoryDataStart) {
                         variableLength += blockLength;
                         ++InventoryDataCount;
                     }
@@ -42007,7 +42007,7 @@ namespace OpenMetaverse.Packets
                 i = LocationBlockStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < LocationBlock.Length) {
                     int blockLength = LocationBlock[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == LocationBlockStart) {
                         variableLength += blockLength;
                         ++LocationBlockCount;
                     }
@@ -42626,7 +42626,7 @@ namespace OpenMetaverse.Packets
                 i = ParamListStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ParamList.Length) {
                     int blockLength = ParamList[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ParamListStart) {
                         variableLength += blockLength;
                         ++ParamListCount;
                     }
@@ -42921,7 +42921,7 @@ namespace OpenMetaverse.Packets
                 i = ParamListStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ParamList.Length) {
                     int blockLength = ParamList[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ParamListStart) {
                         variableLength += blockLength;
                         ++ParamListCount;
                     }
@@ -43216,7 +43216,7 @@ namespace OpenMetaverse.Packets
                 i = ParamListStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ParamList.Length) {
                     int blockLength = ParamList[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ParamListStart) {
                         variableLength += blockLength;
                         ++ParamListCount;
                     }
@@ -44000,7 +44000,7 @@ namespace OpenMetaverse.Packets
                 i = InventoryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < InventoryData.Length) {
                     int blockLength = InventoryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == InventoryDataStart) {
                         variableLength += blockLength;
                         ++InventoryDataCount;
                     }
@@ -44306,7 +44306,7 @@ namespace OpenMetaverse.Packets
                 i = InventoryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < InventoryData.Length) {
                     int blockLength = InventoryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == InventoryDataStart) {
                         variableLength += blockLength;
                         ++InventoryDataCount;
                     }
@@ -44612,7 +44612,7 @@ namespace OpenMetaverse.Packets
                 i = InventoryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < InventoryData.Length) {
                     int blockLength = InventoryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == InventoryDataStart) {
                         variableLength += blockLength;
                         ++InventoryDataCount;
                     }
@@ -44857,7 +44857,7 @@ namespace OpenMetaverse.Packets
                 i = InventoryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < InventoryData.Length) {
                     int blockLength = InventoryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == InventoryDataStart) {
                         variableLength += blockLength;
                         ++InventoryDataCount;
                     }
@@ -45105,7 +45105,7 @@ namespace OpenMetaverse.Packets
                 i = InventoryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < InventoryData.Length) {
                     int blockLength = InventoryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == InventoryDataStart) {
                         variableLength += blockLength;
                         ++InventoryDataCount;
                     }
@@ -45334,7 +45334,7 @@ namespace OpenMetaverse.Packets
                 i = InventoryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < InventoryData.Length) {
                     int blockLength = InventoryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == InventoryDataStart) {
                         variableLength += blockLength;
                         ++InventoryDataCount;
                     }
@@ -45566,7 +45566,7 @@ namespace OpenMetaverse.Packets
                 i = InventoryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < InventoryData.Length) {
                     int blockLength = InventoryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == InventoryDataStart) {
                         variableLength += blockLength;
                         ++InventoryDataCount;
                     }
@@ -46143,7 +46143,7 @@ namespace OpenMetaverse.Packets
                 i = FolderDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < FolderData.Length) {
                     int blockLength = FolderData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == FolderDataStart) {
                         variableLength += blockLength;
                         ++FolderDataCount;
                     }
@@ -46379,7 +46379,7 @@ namespace OpenMetaverse.Packets
                 i = InventoryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < InventoryData.Length) {
                     int blockLength = InventoryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == InventoryDataStart) {
                         variableLength += blockLength;
                         ++InventoryDataCount;
                     }
@@ -46608,7 +46608,7 @@ namespace OpenMetaverse.Packets
                 i = FolderDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < FolderData.Length) {
                     int blockLength = FolderData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == FolderDataStart) {
                         variableLength += blockLength;
                         ++FolderDataCount;
                     }
@@ -47168,7 +47168,7 @@ namespace OpenMetaverse.Packets
                 i = FolderDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < FolderData.Length) {
                     int blockLength = FolderData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == FolderDataStart) {
                         variableLength += blockLength;
                         ++FolderDataCount;
                     }
@@ -47179,7 +47179,7 @@ namespace OpenMetaverse.Packets
                 i = ItemDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ItemData.Length) {
                     int blockLength = ItemData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ItemDataStart) {
                         variableLength += blockLength;
                         ++ItemDataCount;
                     }
@@ -47417,7 +47417,7 @@ namespace OpenMetaverse.Packets
                 i = InventoryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < InventoryData.Length) {
                     int blockLength = InventoryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == InventoryDataStart) {
                         variableLength += blockLength;
                         ++InventoryDataCount;
                     }
@@ -47714,7 +47714,7 @@ namespace OpenMetaverse.Packets
                 i = InventoryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < InventoryData.Length) {
                     int blockLength = InventoryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == InventoryDataStart) {
                         variableLength += blockLength;
                         ++InventoryDataCount;
                     }
@@ -48096,7 +48096,7 @@ namespace OpenMetaverse.Packets
                 i = FolderDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < FolderData.Length) {
                     int blockLength = FolderData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == FolderDataStart) {
                         variableLength += blockLength;
                         ++FolderDataCount;
                     }
@@ -48107,7 +48107,7 @@ namespace OpenMetaverse.Packets
                 i = ItemDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ItemData.Length) {
                     int blockLength = ItemData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ItemDataStart) {
                         variableLength += blockLength;
                         ++ItemDataCount;
                     }
@@ -48405,7 +48405,7 @@ namespace OpenMetaverse.Packets
                 i = FolderDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < FolderData.Length) {
                     int blockLength = FolderData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == FolderDataStart) {
                         variableLength += blockLength;
                         ++FolderDataCount;
                     }
@@ -48416,7 +48416,7 @@ namespace OpenMetaverse.Packets
                 i = ItemDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ItemData.Length) {
                     int blockLength = ItemData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ItemDataStart) {
                         variableLength += blockLength;
                         ++ItemDataCount;
                     }
@@ -49763,7 +49763,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -50551,7 +50551,7 @@ namespace OpenMetaverse.Packets
                 i = InventoryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < InventoryData.Length) {
                     int blockLength = InventoryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == InventoryDataStart) {
                         variableLength += blockLength;
                         ++InventoryDataCount;
                     }
@@ -50827,7 +50827,7 @@ namespace OpenMetaverse.Packets
                 i = FolderDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < FolderData.Length) {
                     int blockLength = FolderData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == FolderDataStart) {
                         variableLength += blockLength;
                         ++FolderDataCount;
                     }
@@ -51583,7 +51583,7 @@ namespace OpenMetaverse.Packets
                 i = FolderDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < FolderData.Length) {
                     int blockLength = FolderData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == FolderDataStart) {
                         variableLength += blockLength;
                         ++FolderDataCount;
                     }
@@ -53700,7 +53700,7 @@ namespace OpenMetaverse.Packets
                 i = DataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Data.Length) {
                     int blockLength = Data[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == DataStart) {
                         variableLength += blockLength;
                         ++DataCount;
                     }
@@ -53935,7 +53935,7 @@ namespace OpenMetaverse.Packets
                 i = DataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Data.Length) {
                     int blockLength = Data[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == DataStart) {
                         variableLength += blockLength;
                         ++DataCount;
                     }
@@ -54398,7 +54398,7 @@ namespace OpenMetaverse.Packets
                 i = RightsStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Rights.Length) {
                     int blockLength = Rights[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == RightsStart) {
                         variableLength += blockLength;
                         ++RightsCount;
                     }
@@ -54627,7 +54627,7 @@ namespace OpenMetaverse.Packets
                 i = RightsStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Rights.Length) {
                     int blockLength = Rights[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == RightsStart) {
                         variableLength += blockLength;
                         ++RightsCount;
                     }
@@ -54806,7 +54806,7 @@ namespace OpenMetaverse.Packets
                 i = AgentBlockStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < AgentBlock.Length) {
                     int blockLength = AgentBlock[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == AgentBlockStart) {
                         variableLength += blockLength;
                         ++AgentBlockCount;
                     }
@@ -54985,7 +54985,7 @@ namespace OpenMetaverse.Packets
                 i = AgentBlockStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < AgentBlock.Length) {
                     int blockLength = AgentBlock[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == AgentBlockStart) {
                         variableLength += blockLength;
                         ++AgentBlockCount;
                     }
@@ -56193,7 +56193,7 @@ namespace OpenMetaverse.Packets
                 i = RoleChangeStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < RoleChange.Length) {
                     int blockLength = RoleChange[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == RoleChangeStart) {
                         variableLength += blockLength;
                         ++RoleChangeCount;
                     }
@@ -56788,7 +56788,7 @@ namespace OpenMetaverse.Packets
                 i = EjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < EjectData.Length) {
                     int blockLength = EjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == EjectDataStart) {
                         variableLength += blockLength;
                         ++EjectDataCount;
                     }
@@ -57586,7 +57586,7 @@ namespace OpenMetaverse.Packets
                 i = InviteDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < InviteData.Length) {
                     int blockLength = InviteData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == InviteDataStart) {
                         variableLength += blockLength;
                         ++InviteDataCount;
                     }
@@ -58832,7 +58832,7 @@ namespace OpenMetaverse.Packets
                 i = HistoryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < HistoryData.Length) {
                     int blockLength = HistoryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == HistoryDataStart) {
                         variableLength += blockLength;
                         ++HistoryDataCount;
                     }
@@ -59319,7 +59319,7 @@ namespace OpenMetaverse.Packets
                 i = HistoryDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < HistoryData.Length) {
                     int blockLength = HistoryData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == HistoryDataStart) {
                         variableLength += blockLength;
                         ++HistoryDataCount;
                     }
@@ -59852,7 +59852,7 @@ namespace OpenMetaverse.Packets
                 i = ProposalDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ProposalData.Length) {
                     int blockLength = ProposalData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ProposalDataStart) {
                         variableLength += blockLength;
                         ++ProposalDataCount;
                     }
@@ -60449,7 +60449,7 @@ namespace OpenMetaverse.Packets
                 i = VoteItemStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < VoteItem.Length) {
                     int blockLength = VoteItem[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == VoteItemStart) {
                         variableLength += blockLength;
                         ++VoteItemCount;
                     }
@@ -61265,7 +61265,7 @@ namespace OpenMetaverse.Packets
                 i = MemberDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < MemberData.Length) {
                     int blockLength = MemberData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == MemberDataStart) {
                         variableLength += blockLength;
                         ++MemberDataCount;
                     }
@@ -62222,7 +62222,7 @@ namespace OpenMetaverse.Packets
                 i = RoleDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < RoleData.Length) {
                     int blockLength = RoleData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == RoleDataStart) {
                         variableLength += blockLength;
                         ++RoleDataCount;
                     }
@@ -62622,7 +62622,7 @@ namespace OpenMetaverse.Packets
                 i = MemberDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < MemberData.Length) {
                     int blockLength = MemberData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == MemberDataStart) {
                         variableLength += blockLength;
                         ++MemberDataCount;
                     }
@@ -62987,7 +62987,7 @@ namespace OpenMetaverse.Packets
                 i = GroupDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < GroupData.Length) {
                     int blockLength = GroupData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == GroupDataStart) {
                         variableLength += blockLength;
                         ++GroupDataCount;
                     }
@@ -63368,7 +63368,7 @@ namespace OpenMetaverse.Packets
                 i = RoleDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < RoleData.Length) {
                     int blockLength = RoleData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == RoleDataStart) {
                         variableLength += blockLength;
                         ++RoleDataCount;
                     }
@@ -63958,7 +63958,7 @@ namespace OpenMetaverse.Packets
                 i = WearableDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < WearableData.Length) {
                     int blockLength = WearableData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == WearableDataStart) {
                         variableLength += blockLength;
                         ++WearableDataCount;
                     }
@@ -64191,7 +64191,7 @@ namespace OpenMetaverse.Packets
                 i = WearableDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < WearableData.Length) {
                     int blockLength = WearableData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == WearableDataStart) {
                         variableLength += blockLength;
                         ++WearableDataCount;
                     }
@@ -64426,7 +64426,7 @@ namespace OpenMetaverse.Packets
                 i = WearableDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < WearableData.Length) {
                     int blockLength = WearableData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == WearableDataStart) {
                         variableLength += blockLength;
                         ++WearableDataCount;
                     }
@@ -64670,7 +64670,7 @@ namespace OpenMetaverse.Packets
                 i = WearableDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < WearableData.Length) {
                     int blockLength = WearableData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == WearableDataStart) {
                         variableLength += blockLength;
                         ++WearableDataCount;
                     }
@@ -65127,7 +65127,7 @@ namespace OpenMetaverse.Packets
                 i = AgentGroupDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < AgentGroupData.Length) {
                     int blockLength = AgentGroupData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == AgentGroupDataStart) {
                         variableLength += blockLength;
                         ++AgentGroupDataCount;
                     }
@@ -65375,7 +65375,7 @@ namespace OpenMetaverse.Packets
                 i = GroupDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < GroupData.Length) {
                     int blockLength = GroupData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == GroupDataStart) {
                         variableLength += blockLength;
                         ++GroupDataCount;
                     }
@@ -66001,7 +66001,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -66394,7 +66394,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -67382,7 +67382,7 @@ namespace OpenMetaverse.Packets
                 i = LayerDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < LayerData.Length) {
                     int blockLength = LayerData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == LayerDataStart) {
                         variableLength += blockLength;
                         ++LayerDataCount;
                     }
@@ -68064,7 +68064,7 @@ namespace OpenMetaverse.Packets
                 i = DataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Data.Length) {
                     int blockLength = Data[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == DataStart) {
                         variableLength += blockLength;
                         ++DataCount;
                     }
@@ -68075,7 +68075,7 @@ namespace OpenMetaverse.Packets
                 i = SizeStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Size.Length) {
                     int blockLength = Size[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == SizeStart) {
                         variableLength += blockLength;
                         ++SizeCount;
                     }
@@ -68548,7 +68548,7 @@ namespace OpenMetaverse.Packets
                 i = DataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Data.Length) {
                     int blockLength = Data[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == DataStart) {
                         variableLength += blockLength;
                         ++DataCount;
                     }
@@ -69456,7 +69456,7 @@ namespace OpenMetaverse.Packets
                 i = ReportDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ReportData.Length) {
                     int blockLength = ReportData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ReportDataStart) {
                         variableLength += blockLength;
                         ++ReportDataCount;
                     }
@@ -69880,7 +69880,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -70479,7 +70479,7 @@ namespace OpenMetaverse.Packets
                 i = PacketsStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Packets.Length) {
                     int blockLength = Packets[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == PacketsStart) {
                         variableLength += blockLength;
                         ++PacketsCount;
                     }
@@ -71154,7 +71154,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -71387,7 +71387,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -71620,7 +71620,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -72648,7 +72648,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -73412,7 +73412,7 @@ namespace OpenMetaverse.Packets
                 i = DataBlockStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < DataBlock.Length) {
                     int blockLength = DataBlock[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == DataBlockStart) {
                         variableLength += blockLength;
                         ++DataBlockCount;
                     }
@@ -73664,7 +73664,7 @@ namespace OpenMetaverse.Packets
                 i = EffectStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < Effect.Length) {
                     int blockLength = Effect[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == EffectStart) {
                         variableLength += blockLength;
                         ++EffectCount;
                     }
@@ -74336,7 +74336,7 @@ namespace OpenMetaverse.Packets
                 i = AnimationListStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < AnimationList.Length) {
                     int blockLength = AnimationList[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == AnimationListStart) {
                         variableLength += blockLength;
                         ++AnimationListCount;
                     }
@@ -74347,7 +74347,7 @@ namespace OpenMetaverse.Packets
                 i = PhysicalAvatarEventListStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < PhysicalAvatarEventList.Length) {
                     int blockLength = PhysicalAvatarEventList[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == PhysicalAvatarEventListStart) {
                         variableLength += blockLength;
                         ++PhysicalAvatarEventListCount;
                     }
@@ -74870,7 +74870,7 @@ namespace OpenMetaverse.Packets
                 i = RequestImageStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < RequestImage.Length) {
                     int blockLength = RequestImage[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == RequestImageStart) {
                         variableLength += blockLength;
                         ++RequestImageCount;
                     }
@@ -75786,7 +75786,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -76026,7 +76026,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -76262,7 +76262,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -76506,7 +76506,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -76685,7 +76685,7 @@ namespace OpenMetaverse.Packets
                 i = ObjectDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < ObjectData.Length) {
                     int blockLength = ObjectData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == ObjectDataStart) {
                         variableLength += blockLength;
                         ++ObjectDataCount;
                     }
@@ -77458,7 +77458,7 @@ namespace OpenMetaverse.Packets
                 i = AnimationListStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < AnimationList.Length) {
                     int blockLength = AnimationList[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == AnimationListStart) {
                         variableLength += blockLength;
                         ++AnimationListCount;
                     }
@@ -77469,7 +77469,7 @@ namespace OpenMetaverse.Packets
                 i = AnimationSourceListStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < AnimationSourceList.Length) {
                     int blockLength = AnimationSourceList[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == AnimationSourceListStart) {
                         variableLength += blockLength;
                         ++AnimationSourceListCount;
                     }
@@ -77480,7 +77480,7 @@ namespace OpenMetaverse.Packets
                 i = PhysicalAvatarEventListStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < PhysicalAvatarEventList.Length) {
                     int blockLength = PhysicalAvatarEventList[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == PhysicalAvatarEventListStart) {
                         variableLength += blockLength;
                         ++PhysicalAvatarEventListCount;
                     }
@@ -78814,7 +78814,7 @@ namespace OpenMetaverse.Packets
                 i = GroupDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < GroupData.Length) {
                     int blockLength = GroupData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == GroupDataStart) {
                         variableLength += blockLength;
                         ++GroupDataCount;
                     }
@@ -78825,7 +78825,7 @@ namespace OpenMetaverse.Packets
                 i = AnimationDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < AnimationData.Length) {
                     int blockLength = AnimationData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == AnimationDataStart) {
                         variableLength += blockLength;
                         ++AnimationDataCount;
                     }
@@ -78836,7 +78836,7 @@ namespace OpenMetaverse.Packets
                 i = GranterBlockStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < GranterBlock.Length) {
                     int blockLength = GranterBlock[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == GranterBlockStart) {
                         variableLength += blockLength;
                         ++GranterBlockCount;
                     }
@@ -78847,7 +78847,7 @@ namespace OpenMetaverse.Packets
                 i = NVPairDataStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < NVPairData.Length) {
                     int blockLength = NVPairData[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == NVPairDataStart) {
                         variableLength += blockLength;
                         ++NVPairDataCount;
                     }
@@ -78858,7 +78858,7 @@ namespace OpenMetaverse.Packets
                 i = VisualParamStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < VisualParam.Length) {
                     int blockLength = VisualParam[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == VisualParamStart) {
                         variableLength += blockLength;
                         ++VisualParamCount;
                     }
@@ -78869,7 +78869,7 @@ namespace OpenMetaverse.Packets
                 i = AgentAccessStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < AgentAccess.Length) {
                     int blockLength = AgentAccess[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == AgentAccessStart) {
                         variableLength += blockLength;
                         ++AgentAccessCount;
                     }
@@ -78880,7 +78880,7 @@ namespace OpenMetaverse.Packets
                 i = AgentInfoStart;
                 while (fixedLength + variableLength + acksLength < Packet.MTU && i < AgentInfo.Length) {
                     int blockLength = AgentInfo[i].Length;
-                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {
+                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == AgentInfoStart) {
                         variableLength += blockLength;
                         ++AgentInfoCount;
                     }

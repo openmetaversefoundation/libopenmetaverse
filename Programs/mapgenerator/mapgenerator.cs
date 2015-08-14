@@ -847,7 +847,7 @@ namespace mapgenerator
                         writer.WriteLine("                i = " + sanitizedName + "Start;");
                         writer.WriteLine("                while (fixedLength + variableLength + acksLength < Packet.MTU && i < " + sanitizedName + ".Length) {");
                         writer.WriteLine("                    int blockLength = " + sanitizedName + "[i].Length;");
-                        writer.WriteLine("                    if (fixedLength + variableLength + blockLength + acksLength <= MTU) {");
+                        writer.WriteLine("                    if (fixedLength + variableLength + blockLength + acksLength <= MTU || i == " + sanitizedName + "Start) {");
                         writer.WriteLine("                        variableLength += blockLength;");
                         writer.WriteLine("                        ++" + sanitizedName + "Count;");
                         writer.WriteLine("                    }");
