@@ -76,6 +76,7 @@ namespace groupmanager
 
                 LoginParams loginParams = Client.Network.DefaultLoginParams(txtFirstName.Text, txtLastName.Text,
                     txtPassword.Text, "GroupManager", "1.0.0");
+                loginParams.URI = comboGrid.Text;
                 Client.Network.BeginLogin(loginParams);
             }
 			else
@@ -148,7 +149,6 @@ namespace groupmanager
                 Client.Groups.RequestCurrentGroups();
             }
         }
-
         #endregion
     }
 }
