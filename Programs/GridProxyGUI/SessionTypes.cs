@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2009, openmetaverse.org
+ * Copyright (c) 2009, openmetaverse.co
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the openmetaverse.org nor the names
+ * - Neither the name of the openmetaverse.co nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -316,7 +316,7 @@ namespace GridProxyGUI
                             else
                                 return "No Decoder for " + this.Name + Environment.NewLine +
                                        OSDParser.SerializeLLSDNotationFormatted(data) + Environment.NewLine +
-                                       "Please report this at http://jira.openmetaverse.org Be sure to include the entire message.";
+                                       "Please report this at http://jira.openmetaverse.co Be sure to include the entire message.";
                         }
                     }
                 }
@@ -342,7 +342,7 @@ namespace GridProxyGUI
                                 else
                                     return "No Decoder for " + this.Name + Environment.NewLine +
                                         OSDParser.SerializeLLSDNotationFormatted(data) + Environment.NewLine +
-                                        "Please report this at http://jira.openmetaverse.org Be sure to include the entire message.";
+                                        "Please report this at http://jira.openmetaverse.co Be sure to include the entire message.";
                             }
                             else
                             {

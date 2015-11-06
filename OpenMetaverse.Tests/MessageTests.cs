@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2006-2014, openmetaverse.org
+ * Copyright (c) 2006-2014, openmetaverse.co
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the openmetaverse.org nor the names
+ * - Neither the name of the openmetaverse.co nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -665,7 +665,7 @@ namespace OpenMetaverse.Tests
             s.MediaID = UUID.Random();
             s.MediaLoop = false;
             s.MediaType = "text/html";
-            s.MediaURL = "http://www.openmetaverse.org";
+            s.MediaURL = "http://www.openmetaverse.co";
             s.MediaWidth = 640;
             s.MusicURL = "http://scfire-ntc-aa04.stream.aol.com:80/stream/1075"; // Yee Haw
             s.Name = "Test Name";
@@ -777,7 +777,7 @@ namespace OpenMetaverse.Tests
             s.MediaID = UUID.Random();
             s.MediaLoop = false;
             s.MediaType = "image/jpeg";
-            s.MediaURL = "http://www.openmetaverse.org/test.jpeg";
+            s.MediaURL = "http://www.openmetaverse.co/test.jpeg";
             s.MediaWidth = 800;
             s.MusicURL = "http://scfire-ntc-aa04.stream.aol.com:80/stream/1075";
             s.Name = "Example Parcel Description";
@@ -906,7 +906,7 @@ namespace OpenMetaverse.Tests
         public void SendPostcardMessage()
         {
             SendPostcardMessage s = new SendPostcardMessage();
-            s.FromEmail = "contact@openmetaverse.org";
+            s.FromEmail = "contact@openmetaverse.co";
             s.FromName = "Jim Radford";
             s.GlobalPosition = Vector3.One;
             s.Message = "Hello, How are you today?";
@@ -1395,7 +1395,7 @@ namespace OpenMetaverse.Tests
                 s.MediaID = UUID.Random();
                 s.MediaLoop = false;
                 s.MediaType = "text/html";
-                s.MediaURL = "http://www.openmetaverse.org";
+                s.MediaURL = "http://www.openmetaverse.co";
                 s.MediaWidth = 640;
                 s.MusicURL = "http://scfire-ntc-aa04.stream.aol.com:80/stream/1075"; // Yee Haw
                 s.Name = "Test Name";
@@ -1522,7 +1522,7 @@ namespace OpenMetaverse.Tests
                 s.MediaID = UUID.Random();
                 s.MediaLoop = false;
                 s.MediaType = "text/html";
-                s.MediaURL = "http://www.openmetaverse.org";
+                s.MediaURL = "http://www.openmetaverse.co";
                 s.MediaWidth = 640;
                 s.MusicURL = "http://scfire-ntc-aa04.stream.aol.com:80/stream/1075"; // Yee Haw
                 s.Name = "Test Name";

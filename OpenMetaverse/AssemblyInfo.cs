@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTitle("OpenMetaverse")]
 [assembly: AssemblyDescription("OpenMetaverse library")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("openmetaverse.org")]
+[assembly: AssemblyCompany("openmetaverse.co")]
 [assembly: AssemblyProduct("OpenMetaverse")]
 [assembly: AssemblyCopyright("Copyright © openmetaverse.co 2006-2015")]
 [assembly: AssemblyTrademark("")]

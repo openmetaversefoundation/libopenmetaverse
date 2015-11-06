@@ -46,7 +46,7 @@ FunctionEnd
 !define PRODUCT_NAME "OpenMetaverse"
 !define PRODUCT_VERSION "$PRODUCT_MAJOR.$PRODUCT_MINOR.$PRODUCT_RELEASE (build $PRODUCT_BUILD)"
 !define PRODUCT_PUBLISHER "OpenMetaverse Ninjas"
-!define PRODUCT_WEB_SITE "http://www.openmetaverse.org/"
+!define PRODUCT_WEB_SITE "http://www.openmetaverse.co/"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\OpenMetaverse.dll"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
@@ -89,7 +89,7 @@ BrandingText "OpenMetaverse Installer v2.36"
 ;!define MUI_FINISHPAGE_RUN "$INSTDIR\GUITestClient.exe"
 !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\docs\README.txt"
 !define MUI_FINISHPAGE_LINK "OpenMetaverse"
-!define MUI_FINISHPAGE_LINK_LOCATION "http://www.openmetaverse.org/"
+!define MUI_FINISHPAGE_LINK_LOCATION "http://www.openmetaverse.co/"
 !insertmacro MUI_PAGE_FINISH
 
 ; Uninstaller pages

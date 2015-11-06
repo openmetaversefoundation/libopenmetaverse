@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2014, openmetaverse.org
+ * Copyright (c) 2006-2014, openmetaverse.co
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the openmetaverse.org nor the names
+ * - Neither the name of the openmetaverse.co nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -62,7 +62,7 @@ namespace OpenMetaverse.Tests
             // Connect to the grid
             string startLoc = NetworkManager.StartLocation("Hooper", 179, 18, 32);
             Assert.IsTrue(Client.Network.Login("Testing", "Anvil", "testinganvil", "Unit Test Framework", startLoc,
-                "contact@OpenMetaverse.org"), "Client failed to login, reason: " + Client.Network.LoginMessage);
+                "contact@openmetaverse.co"), "Client failed to login, reason: " + Client.Network.LoginMessage);
             Console.WriteLine("Done");
 
             Assert.IsTrue(Client.Network.Connected, "Client is not connected to the grid");

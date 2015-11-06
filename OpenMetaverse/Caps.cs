@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2014, openmetaverse.org
+ * Copyright (c) 2006-2014, openmetaverse.co
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the openmetaverse.org nor the names 
+ * - Neither the name of the openmetaverse.co nor the names 
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -275,7 +275,7 @@ namespace OpenMetaverse
             else
             {
                 Logger.Log("No Message handler exists for event " + eventName + ". Unable to decode. Will try Generic Handler next", Helpers.LogLevel.Warning);
-                Logger.Log("Please report this information to http://jira.openmetaverse.org/: \n" + body, Helpers.LogLevel.Debug);
+                Logger.Log("Please report this information to http://jira.openmetaverse.co/: \n" + body, Helpers.LogLevel.Debug);
 
                 // try generic decoder next which takes a caps event and tries to match it to an existing packet
                 if (body.Type == OSDType.Map)

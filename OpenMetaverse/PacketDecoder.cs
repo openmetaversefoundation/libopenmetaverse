@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2006-2014, openmetaverse.org
+ * Copyright (c) 2006-2014, openmetaverse.co
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the openmetaverse.org nor the names
+ * - Neither the name of the openmetaverse.co nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -1493,7 +1493,7 @@ namespace OpenMetaverse.Packets
         {
             StringBuilder result = new StringBuilder();
 
-            result.AppendFormat("Packet Type: {0} http://lib.openmetaverse.org/wiki/{0} http://wiki.secondlife.com/wiki/{0}" + Environment.NewLine, packet.Type);
+            result.AppendFormat("Packet Type: {0} http://lib.openmetaverse.co/wiki/{0} http://wiki.secondlife.com/wiki/{0}" + Environment.NewLine, packet.Type);
             result.AppendLine("[Packet Header]");
             // payload
             result.AppendFormat("Sequence: {0}" + Environment.NewLine, packet.Header.Sequence);
@@ -1702,7 +1702,7 @@ namespace OpenMetaverse.Packets
             // common/custom types
             if (recurseLevel <= 0)
             {
-                result.AppendFormat("Message Type: {0} http://lib.openmetaverse.org/wiki/{0}" + Environment.NewLine, message.GetType().Name);
+                result.AppendFormat("Message Type: {0} http://lib.openmetaverse.co/wiki/{0}" + Environment.NewLine, message.GetType().Name);
             }
             else
             {
