@@ -80,7 +80,7 @@ Using mono xbuild:
 
 The library, example applications and tools will be in the bin directory
 
-For more details http://lib.openmetaverse.org/wiki/Getting_Started
+For more details http://lib.openmetaverse.co/wiki/Getting_Started
 
 
 Happy fiddling,
