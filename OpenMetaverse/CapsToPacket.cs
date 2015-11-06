@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2014, openmetaverse.co
+ * Copyright (c) 2006-2016, openmetaverse.co
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without 
