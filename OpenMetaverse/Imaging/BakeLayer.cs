@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006-2016, openmetaverse.co
+ * Copyright (c) 2007-2008, openmetaverse.org
  * All rights reserved.
  *
  * - Redistribution and use in source and binary forms, with or without
@@ -7,7 +7,7 @@
  *
  * - Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
- * - Neither the name of the openmetaverse.co nor the names
+ * - Neither the name of the openmetaverse.org nor the names
  *   of its contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
@@ -25,10 +25,12 @@
  */
 
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.IO;
 using System.Drawing;
 using OpenMetaverse.Assets;
+using log4net;
 
 namespace OpenMetaverse.Imaging
 {
@@ -38,8 +40,7 @@ namespace OpenMetaverse.Imaging
     /// </summary>
     public class Baker
     {
-        public static readonly UUID IMG_INVISIBLE = new UUID("3a367d1c-bef1-6d43-7595-e88c1e3aadb3");
-
+        private static readonly ILog m_log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         #region Properties
         /// <summary>Final baked texture</summary>
         public AssetTexture BakedTexture { get { return bakedTexture; } }
@@ -108,6 +109,11 @@ namespace OpenMetaverse.Imaging
             bakedTexture = new AssetTexture(new ManagedImage(bakeWidth, bakeHeight,
                 ManagedImage.ImageChannels.Color | ManagedImage.ImageChannels.Alpha | ManagedImage.ImageChannels.Bump));
 
+            // These are for head baking, they get special treatment
+            AppearanceManager.TextureData skinTexture = new AppearanceManager.TextureData();
+            List<AppearanceManager.TextureData> tattooTextures = new List<AppearanceManager.TextureData>();
+            List<ManagedImage> alphaWearableTextures = new List<ManagedImage>();
+
             // Base color for eye bake is white, color of layer0 for others
             if (bakeType == BakeType.Eyes)
             {
@@ -118,8 +124,29 @@ namespace OpenMetaverse.Imaging
                 InitBakedLayerColor(textures[0].Color);
             }
 
-            // Do we have skin texture?
-            bool SkinTexture = textures.Count > 0 && textures[0].Texture != null;
+            // Sort out the special layers we need for head baking and alpha
+            foreach (AppearanceManager.TextureData tex in textures)
+            {
+                if (tex.Texture == null)
+                    continue;
+
+                if (tex.TextureIndex == AvatarTextureIndex.HeadBodypaint ||
+                        tex.TextureIndex == AvatarTextureIndex.UpperBodypaint ||
+                        tex.TextureIndex == AvatarTextureIndex.LowerBodypaint)
+                    skinTexture = tex;
+
+                if (tex.TextureIndex == AvatarTextureIndex.HeadTattoo ||
+                        tex.TextureIndex == AvatarTextureIndex.UpperTattoo ||
+                        tex.TextureIndex == AvatarTextureIndex.LowerTattoo)
+                    tattooTextures.Add(tex);
+
+                if (tex.TextureIndex >= AvatarTextureIndex.LowerAlpha &&
+                    tex.TextureIndex <= AvatarTextureIndex.HairAlpha)
+                {
+                    if (tex.Texture.Image.Alpha != null)
+                        alphaWearableTextures.Add(tex.Texture.Image.Clone());
+                }
+            }
 
             if (bakeType == BakeType.Head)
             {
@@ -128,17 +155,18 @@ namespace OpenMetaverse.Imaging
                 MultiplyLayerFromAlpha(bakedTexture.Image, LoadResourceLayer("head_skingrain.tga"));
             }
 
-            if (!SkinTexture && bakeType == BakeType.UpperBody)
+            if (skinTexture.Texture == null)
             {
-                DrawLayer(LoadResourceLayer("upperbody_color.tga"), false);
-            }
+                if (bakeType == BakeType.UpperBody)
+                {
+                    DrawLayer(LoadResourceLayer("upperbody_color.tga"), false);
+                }
 
-            if (!SkinTexture && bakeType == BakeType.LowerBody)
-            {
-                DrawLayer(LoadResourceLayer("lowerbody_color.tga"), false);
+                if (bakeType == BakeType.LowerBody)
+                {
+                    DrawLayer(LoadResourceLayer("lowerbody_color.tga"), false);
+                }
             }
-
-            ManagedImage alphaWearableTexture = null;
 
             // Layer each texture on top of one other, applying alpha masks as we go
             for (int i = 0; i < textures.Count; i++)
@@ -148,25 +176,18 @@ namespace OpenMetaverse.Imaging
 
                 // Is this Alpha wearable and does it have an alpha channel?
                 if (textures[i].TextureIndex >= AvatarTextureIndex.LowerAlpha &&
-                    textures[i].TextureIndex <= AvatarTextureIndex.HairAlpha)
-                {
-                    if (textures[i].Texture.Image.Alpha != null)
-                    {
-                        alphaWearableTexture = textures[i].Texture.Image.Clone();
-                    }
-                    else if (textures[i].TextureID == IMG_INVISIBLE)
-                    {
-                        alphaWearableTexture = new ManagedImage(bakeWidth, bakeHeight, ManagedImage.ImageChannels.Alpha);
-                    }
+                        textures[i].TextureIndex <= AvatarTextureIndex.HairAlpha)
                     continue;
-                }
 
                 // Don't draw skin and tattoo on head bake first
                 // For head bake the skin and texture are drawn last, go figure
-                if (bakeType == BakeType.Head && (i == 0 || i == 1)) continue;
+                if (bakeType == BakeType.Head &&
+                        (textures[i].TextureIndex == AvatarTextureIndex.HeadBodypaint ||
+                        textures[i].TextureIndex == AvatarTextureIndex.HeadTattoo))
+                    continue;
 
                 ManagedImage texture = textures[i].Texture.Image.Clone();
-                //File.WriteAllBytes(bakeType + "-texture-layer-" + i + ".tga", texture.ExportTGA());
+                //File.WriteAllBytes(bakeType + "-texture-layer-" + textures[i].TextureIndex + "-" + i + ".tga", texture.ExportTGA());
 
                 // Resize texture to the size of baked layer
                 // FIXME: if texture is smaller than the layer, don't stretch it, tile it
@@ -179,7 +200,7 @@ namespace OpenMetaverse.Imaging
                 // Special case for hair layer for the head bake
                 // If we don't have skin texture, we discard hair alpha
                 // and apply hair(i==2) pattern over the texture
-                if (!SkinTexture && bakeType == BakeType.Head && i == 2)
+                if (skinTexture.Texture == null && bakeType == BakeType.Head && textures[i].TextureIndex == AvatarTextureIndex.Hair)
                 {
                     if (texture.Alpha != null)
                     {
@@ -188,10 +209,16 @@ namespace OpenMetaverse.Imaging
                     MultiplyLayerFromAlpha(texture, LoadResourceLayer("head_hair.tga"));
                 }
 
+                bool processingSkin = true;
+
                 // Aply tint and alpha masks except for skin that has a texture
                 // on layer 0 which always overrides other skin settings
-                if (!(IsSkin && i == 0))
+                if (!(textures[i].TextureIndex == AvatarTextureIndex.HeadBodypaint ||
+                        textures[i].TextureIndex == AvatarTextureIndex.UpperBodypaint ||
+                        textures[i].TextureIndex == AvatarTextureIndex.LowerBodypaint))
                 {
+                    processingSkin = false;
+
                     ApplyTint(texture, textures[i].Color);
 
                     // For hair bake, we skip all alpha masks
@@ -268,12 +295,11 @@ namespace OpenMetaverse.Imaging
             }
 
             // For head and tattoo, we add skin last
-            if (IsSkin && bakeType == BakeType.Head)
+            if (bakeType == BakeType.Head)
             {
-                ManagedImage texture;
-                if (textures[0].Texture != null)
+                if (skinTexture.Texture != null)
                 {
-                    texture = textures[0].Texture.Image.Clone();
+                    ManagedImage texture = skinTexture.Texture.Image.Clone();
                     if (texture.Width != bakeWidth || texture.Height != bakeHeight)
                     {
                         try { texture.ResizeNearestNeighbor(bakeWidth, bakeHeight); }
@@ -282,24 +308,26 @@ namespace OpenMetaverse.Imaging
                     DrawLayer(texture, false);
                 }
 
-                // Add head tattoo here (if available, order-dependant)
-                if (textures.Count > 1 && textures[1].Texture != null)
+                foreach (AppearanceManager.TextureData tex in tattooTextures)
                 {
-                    texture = textures[1].Texture.Image.Clone();
-                    if (texture.Width != bakeWidth || texture.Height != bakeHeight)
+                    // Add head tattoo here (if available, order-dependant)
+                    if (tex.Texture != null)
                     {
-                        try { texture.ResizeNearestNeighbor(bakeWidth, bakeHeight); }
-                        catch (Exception) { }
+                        ManagedImage texture = tex.Texture.Image.Clone();
+                        if (texture.Width != bakeWidth || texture.Height != bakeHeight)
+                        {
+                            try { texture.ResizeNearestNeighbor(bakeWidth, bakeHeight); }
+                            catch (Exception) { }
+                        }
+                        DrawLayer(texture, false);
                     }
-                    DrawLayer(texture, false);
                 }
             }
 
             // Apply any alpha wearable textures to make parts of the avatar disappear
-            if (alphaWearableTexture != null)
-            {
-                AddAlpha(bakedTexture.Image, alphaWearableTexture);
-            }
+            m_log.DebugFormat("[XBakes]: Number of alpha wearable textures: {0}", alphaWearableTextures.Count);
+            foreach (ManagedImage img in alphaWearableTextures)
+                AddAlpha(bakedTexture.Image, img);
 
             // We are done, encode asset for finalized bake
             bakedTexture.Encode();
@@ -327,9 +355,7 @@ namespace OpenMetaverse.Imaging
                 }
                 else
                 {
-                    ManagedImage image = new ManagedImage(bitmap);
-                    bitmap.Dispose();
-                    return image;
+                    return new ManagedImage(bitmap);
                 }
             }
             catch (Exception e)
@@ -509,9 +535,7 @@ namespace OpenMetaverse.Imaging
             for (int i = 0; i < dest.Alpha.Length; i++)
             {
                 byte alpha = src.Alpha[i] <= ((1 - val) * 255) ? (byte)0 : (byte)255;
-                if (alpha != 255)
-                {
-                }
+
                 if (param.MultiplyBlend)
                 {
                     dest.Alpha[i] = (byte)((dest.Alpha[i] * alpha) >> 8);
@@ -557,9 +581,9 @@ namespace OpenMetaverse.Imaging
 
             for (int i = 0; i < dest.Red.Length; i++)
             {
-                dest.Red[i] = (byte)((dest.Red[i] * ((byte)(src.R * byte.MaxValue))) >> 8);
-                dest.Green[i] = (byte)((dest.Green[i] * ((byte)(src.G * byte.MaxValue))) >> 8);
-                dest.Blue[i] = (byte)((dest.Blue[i] * ((byte)(src.B * byte.MaxValue))) >> 8);
+                dest.Red[i] = (byte)((dest.Red[i] * Utils.FloatToByte(src.R, 0f, 1f)) >> 8);
+                dest.Green[i] = (byte)((dest.Green[i] * Utils.FloatToByte(src.G, 0f, 1f)) >> 8);
+                dest.Blue[i] = (byte)((dest.Blue[i] * Utils.FloatToByte(src.B, 0f, 1f)) >> 8);
             }
         }
 
