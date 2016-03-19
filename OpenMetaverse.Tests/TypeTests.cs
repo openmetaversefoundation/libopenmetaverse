@@ -189,6 +189,32 @@ namespace OpenMetaverse.Tests
             Assert.IsTrue(result == expected, a.ToString() + " * " + b.ToString() + " produced " + result.ToString() +
                 " instead of " + expected.ToString());
         }
+        
+        [Test]
+        public void testMatrix()
+        {
+    	    Matrix4 matrix = new Matrix4(0, 0, 74, 1,
+				                         0, 435, 0, 1,
+				                         345, 0, 34, 1,
+				                         0, 0, 0, 0);
+    	
+    	    /* determinant of singular matrix returns zero */
+    	    Assert.AreEqual(0d, (double)matrix.Determinant(), 0.001d);
+    	
+    	    /* inverse of identity matrix is the identity matrix */
+       	    Assert.IsTrue(Matrix4.Identity == Matrix4.Inverse(Matrix4.Identity));
+  	 
+    	    /* inverse of non-singular matrix returns True And InverseMatrix */
+            matrix = new Matrix4(1, 1, 0, 0,
+    			    		     1, 1, 1, 0,
+    					         0, 1, 1, 0,
+    					         0, 0, 0, 1);
+    	    Matrix4 expectedInverse = new Matrix4(0, 1,-1, 0,
+    						                      1,-1, 1, 0,
+    						                     -1, 1, 0, 0,
+    						                      0, 0, 0, 1);
+    	    Assert.AreEqual(expectedInverse, Matrix4.Inverse(matrix));
+        }
 
         //[Test]
         //public void VectorQuaternionMath()

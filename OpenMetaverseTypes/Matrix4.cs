@@ -161,7 +161,7 @@ namespace OpenMetaverse
             float det = 0f;
 
             float diag1 = M11 * M22 * M33;
-            float diag2 = M12 * M32 * M31;
+            float diag2 = M12 * M23 * M31;
             float diag3 = M13 * M21 * M32;
             float diag4 = M31 * M22 * M13;
             float diag5 = M32 * M23 * M11;
@@ -950,7 +950,7 @@ namespace OpenMetaverse
             for (int i = 0; i < 4; i++)
             {
                 for (int j = 0; j < 4; j++)
-                    adjointMatrix[i,j] = (float)(Math.Pow(-1, i + j) * ((Minor(matrix, i, j)).Determinant()));
+                    adjointMatrix[i,j] = (float)(Math.Pow(-1, i + j) * ((Minor(matrix, i, j)).Determinant3x3()));
             }
 
             adjointMatrix = Transpose(adjointMatrix);
@@ -986,12 +986,15 @@ namespace OpenMetaverse
 
         public override bool Equals(object obj)
         {
-            return (obj is Matrix4) ? this == (Matrix4)obj : false;
+            return (obj is Matrix4) ? this.Equals((Matrix4)obj) : false;
         }
 
         public bool Equals(Matrix4 other)
         {
-            return this == other;
+            return M11 == other.M11 && M12 == other.M12 && M13 == other.M13 && M14 == other.M14 &&
+                   M21 == other.M21 && M22 == other.M22 && M23 == other.M23 && M24 == other.M24 &&
+                   M31 == other.M31 && M32 == other.M32 && M33 == other.M33 && M14 == other.M34 &&
+                   M41 == other.M41 && M42 == other.M42 && M43 == other.M43 && M44 == other.M44;
         }
 
         public override int GetHashCode()
