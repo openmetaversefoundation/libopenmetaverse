@@ -46,7 +46,8 @@ namespace OpenMetaverse
         MaturePublish = 2,
         Identified = 4,
         Transacted = 8,
-        Online = 16
+        Online = 16,
+        AgeVerified = 32
     }
 
     #endregion Enums
