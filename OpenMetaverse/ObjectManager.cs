@@ -308,6 +308,11 @@ namespace OpenMetaverse
             remove { lock (m_ParticleUpdateLock) { m_ParticleUpdate -= value; } }
         }
 
+        public event EventHandler<ParticleUpdateEventArgs> ParticleUpdate {
+            add { lock (m_ParticleUpdateLock) { m_ParticleUpdate += value; } }
+            remove { lock (m_ParticleUpdateLock) { m_ParticleUpdate -= value; } }
+        }
+
         /// <summary>The event subscribers, null of no subscribers</summary>
         private EventHandler<TerseObjectUpdateEventArgs> m_TerseObjectUpdate;
 
