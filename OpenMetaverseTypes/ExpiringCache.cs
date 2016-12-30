@@ -62,7 +62,7 @@ namespace OpenMetaverse
         public void Accessed()
         {
             if (slidingExpiration)
-                expirationDate = DateTime.Now.Add(slidingExpirationWindowSize);
+                expirationDate = DateTime.UtcNow.Add(slidingExpirationWindowSize);
         }
 
         public int CompareTo(TKey other)
