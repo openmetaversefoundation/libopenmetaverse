@@ -1859,7 +1859,7 @@ namespace OpenMetaverse
         /// Start a friends conference
         /// </summary>
         /// <param name="participants"><seealso cref="UUID"/> List of UUIDs to start a conference with</param>
-        /// <param name="tmp_session_id">the temportary session ID returned in the <see cref="OnJoinedGroupChat"/> callback></param>
+        /// <param name="tmp_session_id">the temporary session ID returned in the <see cref="OnJoinedGroupChat"/> callback></param>
         public void StartIMConference(List<UUID> participants, UUID tmp_session_id)
         {
             if (Client.Network.CurrentSim == null || Client.Network.CurrentSim.Caps == null)
