@@ -99,10 +99,10 @@ namespace OpenMetaverse.ImportExport
         {
             foreach (var material in Materials)
             {
-				if (!string.IsNullOrEmpty(material.Texture))
-				{
-					LoadImage(material);
-				}
+                if (!string.IsNullOrEmpty(material.Texture))
+                {
+                    LoadImage(material);
+                }
             }
         }
 
@@ -699,7 +699,11 @@ namespace OpenMetaverse.ImportExport
 
             stride += 1;
 
-            if (posSrc == null) return;
+            if (posSrc == null) 
+                return;
+
+           if (list.vcount == "")
+                return;                     // Zero triangles (or quads). StrToArray produces one 0 entry for this so just quit and don't produce any face.
 
             var vcount = StrToArray(list.vcount);
             var idx = StrToArray(list.p);
