@@ -62,8 +62,8 @@ namespace OpenMetaverse
 	        "simstate",   // 22
             String.Empty, // 23
             "link",       // 24
-            "linkfolder", // 25
-            "marketplacefolder", // 26
+            "link_f", // 25
+            String.Empty, // 26
             String.Empty, // 27
             String.Empty, // 28
             String.Empty, // 29
