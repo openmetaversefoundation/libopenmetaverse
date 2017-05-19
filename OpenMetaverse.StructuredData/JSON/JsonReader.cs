@@ -55,6 +55,7 @@ namespace LitJson
         private bool          read_started;
         private TextReader    reader;
         private bool          reader_is_owned;
+        private bool          skip_non_members;
         private object        token_value;
         private JsonToken     token;
         #endregion
@@ -69,6 +70,11 @@ namespace LitJson
         public bool AllowSingleQuotedStrings {
             get { return lexer.AllowSingleQuotedStrings; }
             set { lexer.AllowSingleQuotedStrings = value; }
+        }
+
+        public bool SkipNonMembers {
+            get { return skip_non_members; }
+            set { skip_non_members = value; }
         }
 
         public bool EndOfInput {
@@ -111,7 +117,7 @@ namespace LitJson
                 throw new ArgumentNullException ("reader");
 
             parser_in_string = false;
-            parser_return = false;
+            parser_return    = false;
 
             read_started = false;
             automaton_stack = new Stack<int> ();
@@ -123,6 +129,8 @@ namespace LitJson
             end_of_input = false;
             end_of_json  = false;
 
+            skip_non_members = true;
+
             this.reader = reader;
             reader_is_owned = owned;
         }
@@ -132,6 +140,7 @@ namespace LitJson
         #region Static Methods
         private static void PopulateParseTable ()
         {
+            // See section A.2. of the manual for details
             parse_table = new Dictionary<int, IDictionary<int, int[]>> ();
 
             TableAddRow (ParserToken.Array);
@@ -277,6 +286,15 @@ namespace LitJson
             if (Int64.TryParse (number, out n_int64)) {
                 token = JsonToken.Long;
                 token_value = n_int64;
+
+                return;
+            }
+
+            ulong n_uint64;
+            if (UInt64.TryParse(number, out n_uint64))
+            {
+                token = JsonToken.Long;
+                token_value = n_uint64;
 
                 return;
             }

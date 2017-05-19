@@ -322,16 +322,12 @@ namespace LitJson
             DoValidation (Condition.Value);
             PutNewline ();
 
-            if (double.IsNaN(number) || double.IsInfinity(number))
-                Put("null");
-            else
-            {
-                string str = Convert.ToString(number, number_format);
-                Put(str);
+            string str = Convert.ToString (number, number_format);
+            Put (str);
 
-                if (str.IndexOf('.') == -1 && str.IndexOf('E') == -1)
-                    writer.Write(".0");
-            }
+            if (str.IndexOf ('.') == -1 &&
+                str.IndexOf ('E') == -1)
+                writer.Write (".0");
 
             context.ExpectingValue = false;
         }
@@ -369,6 +365,7 @@ namespace LitJson
             context.ExpectingValue = false;
         }
 
+        [CLSCompliant(false)]
         public void Write (ulong number)
         {
             DoValidation (Condition.Value);

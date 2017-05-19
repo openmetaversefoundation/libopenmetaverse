@@ -69,6 +69,10 @@ namespace LitJson
         public bool IsString {
             get { return type == JsonType.String; }
         }
+
+        public ICollection<string> Keys {
+            get { EnsureDictionary (); return inst_object.Keys; }
+        }
         #endregion
 
 
@@ -737,6 +741,11 @@ namespace LitJson
 
         private static void WriteJson (IJsonWrapper obj, JsonWriter writer)
         {
+            if (obj == null) {
+                writer.Write (null);
+                return;
+            }
+
             if (obj.IsString) {
                 writer.Write (obj.GetString ());
                 return;
