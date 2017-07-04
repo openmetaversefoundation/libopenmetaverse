@@ -119,6 +119,8 @@ namespace OpenMetaverse.ImportExport
                         faceMap["offsett"] = 0.0f;
                         faceMap["imagerot"] = 0.0f;
                     }
+                    else
+                        faceMap["image"] = 10000;       // Out of range value to get rid of default "0" which erroneously textures all non-textured faces if there is at least one texture.
 
                     faceList.Add(faceMap);
                 }
