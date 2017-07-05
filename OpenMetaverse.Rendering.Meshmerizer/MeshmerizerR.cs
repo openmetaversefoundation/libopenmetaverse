@@ -33,9 +33,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Drawing;
 using System.Text;
 using OMV = OpenMetaverse;
+using OpenMetaverse.StructuredData;
 using OMVR = OpenMetaverse.Rendering;
 
 namespace OpenMetaverse.Rendering
@@ -48,6 +51,7 @@ namespace OpenMetaverse.Rendering
     {
         /// <summary>
         /// Generates a basic mesh structure from a primitive
+        /// A 'SimpleMesh' is just the prim's overall shape with no material information.
         /// </summary>
         /// <param name="prim">Primitive to generate the mesh from</param>
         /// <param name="lod">Level of detail to generate the mesh at</param>
@@ -82,7 +86,8 @@ namespace OpenMetaverse.Rendering
         }
 
         /// <summary>
-        /// Generates a basic mesh structure from a sculpted primitive
+        /// Generates a basic mesh structure from a sculpted primitive.
+        /// 'SimpleMesh's have a single mesh and no faces or material information.
         /// </summary>
         /// <param name="prim">Sculpted primitive to generate the mesh from</param>
         /// <param name="sculptTexture">Sculpt texture</param>
@@ -111,8 +116,11 @@ namespace OpenMetaverse.Rendering
         }
 
         /// <summary>
+        /// Create a faceted mesh from prim shape parameters.
         /// Generates a a series of faces, each face containing a mesh and
-        /// metadata
+        /// material metadata.
+        /// A prim will turn into multiple faces with each being independent
+        /// meshes and each having different material information.
         /// </summary>
         /// <param name="prim">Primitive to generate the mesh from</param>
         /// <param name="lod">Level of detail to generate the mesh at</param>
@@ -322,6 +330,320 @@ namespace OpenMetaverse.Rendering
             return;
         }
 
+        // The mesh reader code is organized so it can be used in several different ways:
+        //
+        // 1. Fetch the highest detail displayable mesh as a FacetedMesh:
+        //      var facetedMesh = GenerateFacetedMeshMesh(prim, meshData);
+        // 2. Get the header, examine the submeshes available, and extract the part
+        //              desired (good if getting a different LOD of mesh):
+        //      OSDMap meshParts = UnpackMesh(meshData);
+        //      if (meshParts.ContainsKey("medium_lod"))
+        //          var facetedMesh = MeshSubMeshAsFacetedMesh(prim, meshParts["medium_lod"]):
+        // 3. Get a simple mesh from one of the submeshes (good if just getting a physics version):
+        //      OSDMap meshParts = UnpackMesh(meshData);
+        //      OMV.Mesh flatMesh = MeshSubMeshAsSimpleMesh(prim, meshParts["physics_mesh"]);
+        //
+        // "physics_convex" is specially formatted so there is another routine to unpack
+        //              that section:
+        //      OSDMap meshParts = UnpackMesh(meshData);
+        //      if (meshParts.ContainsKey("physics_convex"))
+        //          OSMap hullPieces = MeshSubMeshAsConvexHulls(prim, meshParts["physics_convex"]):
+        //
+        // LL mesh format detailed at http://wiki.secondlife.com/wiki/Mesh/Mesh_Asset_Format
+
+        /// <summary>
+        /// Create a mesh faceted mesh from the compressed mesh data.
+        /// This returns the highest LOD renderable version of the mesh.
+        ///
+        /// The actual mesh data is fetched and passed to this
+        /// routine since all the context for finding the data is elsewhere.
+        /// </summary>
+        /// <returns>The faceted mesh or null if can't do it</returns>
+        public OMVR.FacetedMesh GenerateFacetedMeshMesh(OMV.Primitive prim, byte[] meshData)
+        {
+            OMVR.FacetedMesh ret = null;
+            OSDMap meshParts = UnpackMesh(meshData);
+            if (meshParts != null)
+            {
+                byte[] meshBytes = null;
+                foreach (string partName in ["high_lod", "medium_lod", "low_lod", "lowest_lod"]) {
+                    if (meshParts.ContainsKey(partName))
+                    {
+                        meshBytes = meshParts[partName];
+                        break;
+                    }
+                }
+                if (meshBytes != null)
+                {
+                    ret = MeshSubMeshAsFacetedMesh(prim, meshBytes);
+                }
+
+            }
+            return ret;
+        }
+
+        public OMVR.FacetedMesh MeshSubMeshAsFacetedMesh(OMV.Primitive prim, byte[] compressedMeshData)
+        {
+            OMVR.FacetedMesh ret = null;
+            OSD meshOSD = Helpers.ZDecompressOSD(compressedMeshData);
+
+            if (meshOSD == null || !(meshOSD is OSDArray))
+            {
+                return null;
+            }
+            OSDArray meshFaces = (OSDArray)meshOSD;
+           
+            for (int faceNum = 0;
+
+
+                OSDArray decodedMeshOsdArray = (OSDArray)facesOSD;
+
+                for (int faceNr = 0; faceNr < decodedMeshOsdArray.Count; faceNr++)
+
+            return ret;
+        }
+
+        public OMVR.FacetedMesh SomeFunctionHoldingOldCode(OMV.Primitive prim, byte[] meshData)
+        {
+            coords = new List<Coord>();
+            faces = new List<Face>();
+            OSD meshOsd = null;
+
+            mConvexHulls = null;
+            mBoundingHull = null;
+
+            long start = 0;
+            using (MemoryStream data = new MemoryStream(meshData)) {
+                try {
+                    OSD osd = OSDParser.DeserializeLLSDBinary(data);
+                    if (osd is OSDMap)
+                        meshOsd = (OSDMap)osd;
+                    else {
+                        // m_log.Warn("[Mesh}: unable to cast mesh asset to OSDMap");
+                        return null;
+                    }
+                }
+                catch (Exception e) {
+                    // m_log.Error("[MESH]: Exception deserializing mesh asset header:" + e.ToString());
+                    throw (new Exception("Exception deserializing mesh asset header: " + e.ToString()));
+                }
+                start = data.Position;
+            }
+
+            if (meshOsd is OSDMap) {
+                OSDMap meshParams = null;
+                OSDMap map = (OSDMap)meshOsd;
+                if (map.ContainsKey("high_lod")) {
+                    meshParams = (OSDMap)map["high_lod"]; // if all else fails, use highest LOD display mesh and hope it works :)
+                }
+                else if (map.ContainsKey("medium_lod")) {
+                    meshParams = (OSDMap)map["medium_lod"]; // if no physics mesh, try to fall back to medium LOD display mesh
+                }
+                // else if (map.ContainsKey("physics_shape")) {
+                //     physicsParms = (OSDMap)map["physics_shape"]; // old asset format
+                // }
+                // else if (map.ContainsKey("physics_mesh")) {
+                //     physicsParms = (OSDMap)map["physics_mesh"]; // new asset format
+                // }
+
+                /*
+                if (map.ContainsKey("physics_convex")) { // pull this out also in case physics engine can use it
+                    OSD convexBlockOsd = null;
+                    try {
+                        OSDMap convexBlock = (OSDMap)map["physics_convex"];
+                        {
+                            int convexOffset = convexBlock["offset"].AsInteger() + (int)start;
+                            int convexSize = convexBlock["size"].AsInteger();
+
+                            byte[] convexBytes = new byte[convexSize];
+
+                            System.Buffer.BlockCopy(primShape.SculptData, convexOffset, convexBytes, 0, convexSize);
+
+                            try {
+                                convexBlockOsd = DecompressOsd(convexBytes);
+                            }
+                            catch (Exception e) {
+                                m_log.ErrorFormat("{0} prim='{1}': exception decoding convex block: {2}", LogHeader, primName, e);
+                                //return false;
+                            }
+                        }
+
+                        if (convexBlockOsd != null && convexBlockOsd is OSDMap) {
+                            convexBlock = convexBlockOsd as OSDMap;
+
+                            if (debugDetail) {
+                                string keys = LogHeader + " keys found in convexBlock: ";
+                                foreach (KeyValuePair<string, OSD> kvp in convexBlock)
+                                    keys += "'" + kvp.Key + "' ";
+                                m_log.Debug(keys);
+                            }
+
+                            Vector3 min = new Vector3(-0.5f, -0.5f, -0.5f);
+                            if (convexBlock.ContainsKey("Min")) min = convexBlock["Min"].AsVector3();
+                            Vector3 max = new Vector3(0.5f, 0.5f, 0.5f);
+                            if (convexBlock.ContainsKey("Max")) max = convexBlock["Max"].AsVector3();
+
+                            List<Vector3> boundingHull = null;
+
+                            if (convexBlock.ContainsKey("BoundingVerts")) {
+                                byte[] boundingVertsBytes = convexBlock["BoundingVerts"].AsBinary();
+                                boundingHull = new List<Vector3>();
+                                for (int i = 0; i < boundingVertsBytes.Length;) {
+                                    ushort uX = Utils.BytesToUInt16(boundingVertsBytes, i); i += 2;
+                                    ushort uY = Utils.BytesToUInt16(boundingVertsBytes, i); i += 2;
+                                    ushort uZ = Utils.BytesToUInt16(boundingVertsBytes, i); i += 2;
+
+                                    Vector3 pos = new Vector3(
+                                        Utils.UInt16ToFloat(uX, min.X, max.X),
+                                        Utils.UInt16ToFloat(uY, min.Y, max.Y),
+                                        Utils.UInt16ToFloat(uZ, min.Z, max.Z)
+                                    );
+
+                                    boundingHull.Add(pos);
+                                }
+
+                                mBoundingHull = boundingHull;
+                                if (debugDetail) m_log.DebugFormat("{0} prim='{1}': parsed bounding hull. nVerts={2}", LogHeader, primName, mBoundingHull.Count);
+                            }
+
+                            if (convexBlock.ContainsKey("HullList")) {
+                                byte[] hullList = convexBlock["HullList"].AsBinary();
+
+                                byte[] posBytes = convexBlock["Positions"].AsBinary();
+
+                                List<List<Vector3>> hulls = new List<List<Vector3>>();
+                                int posNdx = 0;
+
+                                foreach (byte cnt in hullList) {
+                                    int count = cnt == 0 ? 256 : cnt;
+                                    List<Vector3> hull = new List<Vector3>();
+
+                                    for (int i = 0; i < count; i++) {
+                                        ushort uX = Utils.BytesToUInt16(posBytes, posNdx); posNdx += 2;
+                                        ushort uY = Utils.BytesToUInt16(posBytes, posNdx); posNdx += 2;
+                                        ushort uZ = Utils.BytesToUInt16(posBytes, posNdx); posNdx += 2;
+
+                                        Vector3 pos = new Vector3(
+                                            Utils.UInt16ToFloat(uX, min.X, max.X),
+                                            Utils.UInt16ToFloat(uY, min.Y, max.Y),
+                                            Utils.UInt16ToFloat(uZ, min.Z, max.Z)
+                                        );
+
+                                        hull.Add(pos);
+                                    }
+
+                                    hulls.Add(hull);
+                                }
+
+                                mConvexHulls = hulls;
+                                if (debugDetail) m_log.DebugFormat("{0} prim='{1}': parsed hulls. nHulls={2}", LogHeader, primName, mConvexHulls.Count);
+                            }
+                            else {
+                                if (debugDetail) m_log.DebugFormat("{0} prim='{1}' has physics_convex but no HullList", LogHeader, primName);
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        m_log.WarnFormat("{0} exception decoding convex block: {1}", LogHeader, e);
+                    }
+                }
+                */
+
+                if (meshParams == null) {
+                    // m_log.WarnFormat("[MESH]: No recognized physics mesh found in mesh asset for {0}", primName);
+                    return null;
+                }
+
+                int meshDataOffset = meshParams["offset"].AsInteger() + (int)start;
+                int meshDataSize = meshParams["size"].AsInteger();
+
+                if (meshDataOffset < 0 || meshDataSize == 0)
+                    return null; // no mesh data in asset
+
+                OSD decodedMeshOsd = new OSD();
+                byte[] meshBytes = new byte[meshDataSize];
+                System.Buffer.BlockCopy(meshData, meshDataOffset, meshBytes, 0, meshDataSize);
+                //                        byte[] decompressed = new byte[physSize * 5];
+                try {
+                    decodedMeshOsd = DecompressOsd(meshBytes);
+                }
+                catch (Exception e) {
+                    // m_log.ErrorFormat("{0} prim='{1}': exception decoding physical mesh: {2}", LogHeader, primName, e);
+                    throw (new Exception("Exception decoding physical mesh " + prim.ID + ": " + e));
+                }
+
+                OSDArray decodedMeshOsdArray = null;
+
+                // physics_shape is an array of OSDMaps, one for each submesh
+                if (decodedMeshOsd is OSDArray) {
+                    //                            Console.WriteLine("decodedMeshOsd for {0} - {1}", primName, Util.GetFormattedXml(decodedMeshOsd));
+
+                    decodedMeshOsdArray = (OSDArray)decodedMeshOsd;
+                    foreach (OSD subMeshOsd in decodedMeshOsdArray) {
+                        if (subMeshOsd is OSDMap)
+                            AddSubMesh(subMeshOsd as OSDMap, size, coords, faces);
+                    }
+                    // m_log.DebugFormat("{0} {1}: mesh decoded. offset={2}, size={3}, nCoords={4}, nFaces={5}",
+                    //             LogHeader, primName, meshDataOffset, meshDataSize, coords.Count, faces.Count);
+                }
+            }
+
+            OMVR.FacetedMesh omvrmesh = new OMVR.FacetedMesh();
+
+
+            return omvrmesh;
+        }
+
+        /// <summary>
+        /// Decodes mesh asset.
+        /// <returns>OSDMap of all of the submeshes in the mesh. The value of the submesh name
+        /// is the uncompressed data for that mesh.
+        /// The OSDMap is made up of the asset_header section (which includes a lot of stuff)
+        /// plus each of the submeshes unpacked into compressed byte arrays.
+        /// </returns>
+        public OSDMap UnpackMesh(byte[] assetData)
+        {
+            OSDMap meshData = new OSDMap();
+            try
+            {
+                using (MemoryStream data = new MemoryStream(assetData))
+                {
+                    OSDMap header = (OSDMap)OSDParser.DeserializeLLSDBinary(data);
+                    meshData["asset_header"] = header;
+                    long start = data.Position;
+
+                    foreach(string partName in header.Keys)
+                    {
+                        if (header[partName].Type != OSDType.Map)
+                        {
+                            meshData[partName] = header[partName];
+                            continue;
+                        }
+
+                        OSDMap partInfo = (OSDMap)header[partName];
+                        if (partInfo["offset"] < 0 || partInfo["size"] == 0)
+                        {
+                            meshData[partName] = partInfo;
+                            continue;
+                        }
+
+                        byte[] part = new byte[partInfo["size"]];
+                        Buffer.BlockCopy(assetData, partInfo["offset"] + (int)start, part, 0, part.Length);
+                        meshData[partName] = part;
+                        // meshData[partName] = Helpers.ZDecompressOSD(part);   // Do decompression at unpack time
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log("Failed to decode mesh asset", Helpers.LogLevel.Error, ex);
+                meshData = null;
+            }
+            return meshData;
+        }
+
+        // Local routine to create a mesh from prim parameters.
+        // Collects parameters and calls PrimMesher to create all the faces of the prim.
         private PrimMesher.PrimMesh GeneratePrimMesh(Primitive prim, DetailLevel lod, bool viewerMode)
         {
             OMV.Primitive.ConstructionData primData = prim.PrimData;
