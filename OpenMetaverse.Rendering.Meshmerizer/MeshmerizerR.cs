@@ -384,54 +384,138 @@ namespace OpenMetaverse.Rendering
             return ret;
         }
 
+        // A version of GenerateFacetedMeshMesh that takes LOD spec so it's similar in calling convention of
+        //    the other Generate* methods.
+        public OMVR.FacetedMesh GenerateFacetedMeshMesh(OMV.Primitive prim, byte[] meshData, OMVR.DetailLevel lod) {
+            OMVR.FacetedMesh ret = null;
+            string partName = null;
+            switch (lod)
+            {
+                case OMVR.DetailLevel.Highest:
+                    partName = "high_lod"; break;
+                case OMVR.DetailLevel.High:
+                    partName = "medium_lod"; break;
+                case OMVR.DetailLevel.Medium:
+                    partName = "low_lod"; break;
+                case OMVR.DetailLevel.Low:
+                    partName = "lowest_lod"; break;
+            }
+            if (partName != null)
+            {
+                OSDMap meshParts = UnpackMesh(meshData);
+                if (meshParts != null)
+                {
+                    if (meshParts.ContainsKey(partName))
+                    {
+                        byte[] meshBytes = meshParts[partName];
+                        if (meshBytes != null)
+                        {
+                            ret = MeshSubMeshAsFacetedMesh(prim, meshBytes);
+                        }
+                    }
+                }
+            }
+            return ret;
+        }
+
+        // Convert a compressed submesh buffer into a FacetedMesh.
         public OMVR.FacetedMesh MeshSubMeshAsFacetedMesh(OMV.Primitive prim, byte[] compressedMeshData)
         {
             OMVR.FacetedMesh ret = null;
             OSD meshOSD = Helpers.ZDecompressOSD(compressedMeshData);
 
-            if (meshOSD == null || !(meshOSD is OSDArray))
+            if (meshOSD != null)
             {
-                return null;
+                OSDArray meshFaces = meshOSD as OSDArray;
+                if (meshFaces != null)
+                {
+                    ret = new FacetedMesh();
+                    for (int faceIndex = 0; faceIndex < meshFaces.Count; faceIndex++)
+                    {
+                        AddSubMesh(prim, faceIndex, meshFaces[faceIndex], ref ret);
+                    }
+                }
             }
-            OSDArray meshFaces = (OSDArray)meshOSD;
-
-            int faceIndex = 0;
-            foreach (OSD subMesh in meshFaces)
-            {
-                AddSubMesh(prim, faceIndex, subMesh, ref ret);
-                faceIndex++;
-            }
-
             return ret;
         }
 
+
+        // Convert a compressed submesh buffer into a SimpleMesh.
         public OMVR.SimpleMesh MeshSubMeshAsSimpleMesh(OMV.Primitive prim, byte[] compressedMeshData)
         {
             OMVR.SimpleMesh ret = null;
             OSD meshOSD = Helpers.ZDecompressOSD(compressedMeshData);
 
-            if (meshOSD == null || !(meshOSD is OSDArray))
+            if (meshOSD != null)
             {
-                return null;
+                OSDArray meshFaces = meshOSD as OSDArray;
+                if (meshOSD != null)
+                {
+                    ret = new SimpleMesh();
+                    foreach (OSD subMesh in meshFaces)
+                    {
+                        AddSubMesh(subMesh, ref ret);
+                    }
+                }
             }
-            OSDArray meshFaces = (OSDArray)meshOSD;
-
-            foreach (OSD subMesh in meshFaces)
-            {
-                AddSubMesh(subMesh, ref ret);
-            }
-
             return ret;
         }
 
+        // Add the submesh to the passed SimpleMesh
         private void AddSubMesh(OSD subMeshOsd, ref OMVR.SimpleMesh holdingMesh) {
             if (subMeshOsd != null && subMeshOsd is OSDMap)
             {
                 OSDMap subMap = subMeshOsd as OSDMap;
+                // As per http://wiki.secondlife.com/wiki/Mesh/Mesh_Asset_Format, some Mesh Level
+                // of Detail Blocks (maps) contain just a NoGeometry key to signal there is no
+                // geometry for this submesh.
+                if (subMap.ContainsKey("NoGeometry") && ((OSDBoolean)subMap["NoGeometry"]))
+                    return;
+
+                OpenMetaverse.Vector3 posMax;
+                OpenMetaverse.Vector3 posMin;
+                if (subMap.ContainsKey("PositionDomain"))
+                {
+                    posMax = ((OSDMap)subMap["PositionDomain"])["Max"].AsVector3();
+                    posMin = ((OSDMap)subMap["PositionDomain"])["Min"].AsVector3();
+                }
+                else
+                {
+                    posMax = new Vector3(0.5f, 0.5f, 0.5f);
+                    posMin = new Vector3(-0.5f, -0.5f, -0.5f);
+                }
+
+                ushort faceIndexOffset = (ushort)coords.Count;
+
+                byte[] posBytes = subMeshData["Position"].AsBinary();
+                for (int i = 0; i < posBytes.Length; i += 6)
+                {
+                    ushort uX = Utils.BytesToUInt16(posBytes, i);
+                    ushort uY = Utils.BytesToUInt16(posBytes, i + 2);
+                    ushort uZ = Utils.BytesToUInt16(posBytes, i + 4);
+
+                    Coord c = new Coord(
+                    Utils.UInt16ToFloat(uX, posMin.X, posMax.X),
+                    Utils.UInt16ToFloat(uY, posMin.Y, posMax.Y),
+                    Utils.UInt16ToFloat(uZ, posMin.Z, posMax.Z));
+
+                    coords.Add(c);
+                }
+
+                byte[] triangleBytes = subMap["TriangleList"].AsBinary();
+                for (int i = 0; i < triangleBytes.Length; i += 6)
+                {
+                    ushort v1 = (ushort)(Utils.BytesToUInt16(triangleBytes, i) + faceIndexOffset);
+                    ushort v2 = (ushort)(Utils.BytesToUInt16(triangleBytes, i + 2) + faceIndexOffset);
+                    ushort v3 = (ushort)(Utils.BytesToUInt16(triangleBytes, i + 4) + faceIndexOffset);
+                    Face f = new Face(v1, v2, v3);
+                    faces.Add(f);
+                }
             }
 
         }
 
+        // Add the submesh to the passed FacetedMesh as a new face.
         private void AddSubMesh(OMV.Primitive prim, int faceIndex, OSD subMeshOsd, ref OMVR.FacetedMesh holdingMesh) {
             if (subMeshOsd != null && subMeshOsd is OSDMap)
             {
@@ -543,7 +627,6 @@ namespace OpenMetaverse.Rendering
                 holdingMesh.Faces.Add(oface);
             }
         }
-
 
         /*
         public OMVR.FacetedMesh SomeFunctionHoldingOldCode(OMV.Primitive prim, byte[] meshData)
