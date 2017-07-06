@@ -33,7 +33,7 @@
     </Configuration>
 
     <!-- External Libraries -->
-    
+
     <Project name="CSJ2K" path="CSJ2K" type="Library" frameworkVersion="v4_0">
       <Configuration name="Debug">
         <Options>
@@ -120,7 +120,7 @@
       <Reference name="System.Drawing"/>
       <Reference name="OpenMetaverseTypes"/>
       <Reference name="OpenMetaverse.StructuredData"/>
-      <Reference name="log4net"/>            
+      <Reference name="log4net"/>
       <Reference name="XMLRPC"/>
 	  <Reference name="zlib.net" />
 
@@ -199,7 +199,7 @@
       <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="XMLRPC"/>
       <Reference name="log4net"/>
-      
+
       <Files>
         <Match pattern="*.cs" recurse="true">
           <Exclude name="GridProxyMain.cs"/>
@@ -246,6 +246,7 @@
       <Reference name="System.Drawing"/>
       <Reference name="OpenMetaverse"/>
       <Reference name="OpenMetaverseTypes"/>
+      <Reference name="OpenMetaverse.StructuredData"/>
       <Reference name="PrimMesher"/>
       <Files>
         <Match pattern="*.cs" recurse="true"/>
@@ -622,7 +623,7 @@
       </Files>
     </Project>
     -->
-    
+
     <Project name="VisualParamGenerator" path="Programs/VisualParamGenerator" type="Exe" frameworkVersion="v4_0">
       <Configuration name="Debug">
         <Options>
