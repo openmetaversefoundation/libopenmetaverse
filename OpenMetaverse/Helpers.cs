@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Text;
 using OpenMetaverse.Packets;
 using System.IO;
+using System.IO.Compression;
 using System.Reflection;
 using OpenMetaverse.StructuredData;
 using ComponentAce.Compression.Libs.zlib;
@@ -611,5 +612,41 @@ namespace OpenMetaverse
 
             return ret;
         }
+
+        /// <summary>
+        /// decompresses a gzipped OSD object
+        /// </summary>
+        /// <param name="decodedOsd"></param> the OSD object
+        /// <param name="meshBytes"></param>
+        /// <returns></returns>
+        public static OSD DecompressOSD(byte[] meshBytes) {
+            OSD decodedOsd = null;
+
+            using (MemoryStream inMs = new MemoryStream(meshBytes))
+            {
+                using (MemoryStream outMs = new MemoryStream())
+                {
+                    using (DeflateStream decompressionStream = new DeflateStream(inMs, CompressionMode.Decompress))
+                    {
+                        byte[] readBuffer = new byte[2048];
+                        inMs.Read(readBuffer, 0, 2); // skip first 2 bytes in header
+                        int readLen = 0;
+
+                        while ((readLen = decompressionStream.Read(readBuffer, 0, readBuffer.Length)) > 0)
+                            outMs.Write(readBuffer, 0, readLen);
+
+                        outMs.Flush();
+
+                        outMs.Seek(0, SeekOrigin.Begin);
+
+                        byte[] decompressedBuf = outMs.GetBuffer();
+
+                        decodedOsd = OSDParser.DeserializeLLSDBinary(decompressedBuf);
+                    }
+                }
+            }
+            return decodedOsd;
+        }
+
     }
 }
