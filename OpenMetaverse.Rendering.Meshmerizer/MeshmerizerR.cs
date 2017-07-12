@@ -422,7 +422,7 @@ namespace OpenMetaverse.Rendering
         public OMVR.FacetedMesh MeshSubMeshAsFacetedMesh(OMV.Primitive prim, byte[] compressedMeshData)
         {
             OMVR.FacetedMesh ret = null;
-            OSD meshOSD = Helpers.ZDecompressOSD(compressedMeshData);
+            OSD meshOSD = Helpers.DecompressOSD(compressedMeshData);
 
             if (meshOSD != null)
             {
@@ -430,6 +430,7 @@ namespace OpenMetaverse.Rendering
                 if (meshFaces != null)
                 {
                     ret = new FacetedMesh();
+                    ret.Faces = new List<Face>();
                     for (int faceIndex = 0; faceIndex < meshFaces.Count; faceIndex++)
                     {
                         AddSubMesh(prim, faceIndex, meshFaces[faceIndex], ref ret);
@@ -444,7 +445,7 @@ namespace OpenMetaverse.Rendering
         public OMVR.SimpleMesh MeshSubMeshAsSimpleMesh(OMV.Primitive prim, byte[] compressedMeshData)
         {
             OMVR.SimpleMesh ret = null;
-            OSD meshOSD = Helpers.ZDecompressOSD(compressedMeshData);
+            OSD meshOSD = Helpers.DecompressOSD(compressedMeshData);
 
             if (meshOSD != null)
             {
@@ -461,58 +462,92 @@ namespace OpenMetaverse.Rendering
             return ret;
         }
 
+        public List<List<Vector3>> MeshSubMeshAsConvexHulls(OMV.Primitive prim, byte[] compressedMeshData)
+        {
+            List<List<Vector3>> hulls = new List<List<Vector3>>();
+            try {
+                OSD convexBlockOsd = Helpers.DecompressOSD(compressedMeshData);
+
+                if (convexBlockOsd != null && convexBlockOsd is OSDMap) {
+                    OSDMap convexBlock = convexBlockOsd as OSDMap;
+
+                    Vector3 min = new Vector3(-0.5f, -0.5f, -0.5f);
+                    if (convexBlock.ContainsKey("Min")) min = convexBlock["Min"].AsVector3();
+                    Vector3 max = new Vector3(0.5f, 0.5f, 0.5f);
+                    if (convexBlock.ContainsKey("Max")) max = convexBlock["Max"].AsVector3();
+
+                    List<Vector3> boundingHull = null;
+
+                    if (convexBlock.ContainsKey("BoundingVerts")) {
+                        byte[] boundingVertsBytes = convexBlock["BoundingVerts"].AsBinary();
+                        boundingHull = new List<Vector3>();
+                        for (int i = 0; i < boundingVertsBytes.Length;) {
+                            ushort uX = Utils.BytesToUInt16(boundingVertsBytes, i); i += 2;
+                            ushort uY = Utils.BytesToUInt16(boundingVertsBytes, i); i += 2;
+                            ushort uZ = Utils.BytesToUInt16(boundingVertsBytes, i); i += 2;
+
+                            Vector3 pos = new Vector3(
+                                Utils.UInt16ToFloat(uX, min.X, max.X),
+                                Utils.UInt16ToFloat(uY, min.Y, max.Y),
+                                Utils.UInt16ToFloat(uZ, min.Z, max.Z)
+                            );
+
+                            boundingHull.Add(pos);
+                        }
+
+                        List<Vector3> mBoundingHull = boundingHull;
+                    }
+
+                    if (convexBlock.ContainsKey("HullList")) {
+                        byte[] hullList = convexBlock["HullList"].AsBinary();
+
+                        byte[] posBytes = convexBlock["Positions"].AsBinary();
+
+                        int posNdx = 0;
+
+                        foreach (byte cnt in hullList) {
+                            int count = cnt == 0 ? 256 : cnt;
+                            List<Vector3> hull = new List<Vector3>();
+
+                            for (int i = 0; i < count; i++) {
+                                ushort uX = Utils.BytesToUInt16(posBytes, posNdx); posNdx += 2;
+                                ushort uY = Utils.BytesToUInt16(posBytes, posNdx); posNdx += 2;
+                                ushort uZ = Utils.BytesToUInt16(posBytes, posNdx); posNdx += 2;
+
+                                Vector3 pos = new Vector3(
+                                    Utils.UInt16ToFloat(uX, min.X, max.X),
+                                    Utils.UInt16ToFloat(uY, min.Y, max.Y),
+                                    Utils.UInt16ToFloat(uZ, min.Z, max.Z)
+                                );
+
+                                hull.Add(pos);
+                            }
+
+                            hulls.Add(hull);
+                        }
+                    }
+                }
+            }
+            catch (Exception e) {
+                // Logger.Log.WarnFormat("{0} exception decoding convex block: {1}", LogHeader, e);
+            }
+            return hulls;
+        }
+
         // Add the submesh to the passed SimpleMesh
         private void AddSubMesh(OSD subMeshOsd, ref OMVR.SimpleMesh holdingMesh) {
             if (subMeshOsd != null && subMeshOsd is OSDMap)
             {
-                OSDMap subMap = subMeshOsd as OSDMap;
+                OSDMap subMeshMap = subMeshOsd as OSDMap;
                 // As per http://wiki.secondlife.com/wiki/Mesh/Mesh_Asset_Format, some Mesh Level
                 // of Detail Blocks (maps) contain just a NoGeometry key to signal there is no
                 // geometry for this submesh.
-                if (subMap.ContainsKey("NoGeometry") && ((OSDBoolean)subMap["NoGeometry"]))
+                if (subMeshMap.ContainsKey("NoGeometry") && ((OSDBoolean)subMeshMap["NoGeometry"]))
                     return;
 
-                OpenMetaverse.Vector3 posMax;
-                OpenMetaverse.Vector3 posMin;
-                if (subMap.ContainsKey("PositionDomain"))
-                {
-                    posMax = ((OSDMap)subMap["PositionDomain"])["Max"].AsVector3();
-                    posMin = ((OSDMap)subMap["PositionDomain"])["Min"].AsVector3();
-                }
-                else
-                {
-                    posMax = new Vector3(0.5f, 0.5f, 0.5f);
-                    posMin = new Vector3(-0.5f, -0.5f, -0.5f);
-                }
-
-                ushort faceIndexOffset = (ushort)coords.Count;
-
-                byte[] posBytes = subMeshData["Position"].AsBinary();
-                for (int i = 0; i < posBytes.Length; i += 6)
-                {
-                    ushort uX = Utils.BytesToUInt16(posBytes, i);
-                    ushort uY = Utils.BytesToUInt16(posBytes, i + 2);
-                    ushort uZ = Utils.BytesToUInt16(posBytes, i + 4);
-
-                    Coord c = new Coord(
-                    Utils.UInt16ToFloat(uX, posMin.X, posMax.X),
-                    Utils.UInt16ToFloat(uY, posMin.Y, posMax.Y),
-                    Utils.UInt16ToFloat(uZ, posMin.Z, posMax.Z));
-
-                    coords.Add(c);
-                }
-
-                byte[] triangleBytes = subMap["TriangleList"].AsBinary();
-                for (int i = 0; i < triangleBytes.Length; i += 6)
-                {
-                    ushort v1 = (ushort)(Utils.BytesToUInt16(triangleBytes, i) + faceIndexOffset);
-                    ushort v2 = (ushort)(Utils.BytesToUInt16(triangleBytes, i + 2) + faceIndexOffset);
-                    ushort v3 = (ushort)(Utils.BytesToUInt16(triangleBytes, i + 4) + faceIndexOffset);
-                    Face f = new Face(v1, v2, v3);
-                    faces.Add(f);
-                }
+                holdingMesh.Vertices.AddRange(CollectVertices(subMeshMap));
+                holdingMesh.Indices.AddRange(CollectIndices(subMeshMap));
             }
-
         }
 
         // Add the submesh to the passed FacetedMesh as a new face.
@@ -535,291 +570,113 @@ namespace OpenMetaverse.Rendering
 
                 OSDMap subMeshMap = (OSDMap)subMeshOsd;
 
-                Vector3 posMax;
-                Vector3 posMin;
-
-                // If PositionDomain is not specified, the default is from -0.5 to 0.5
-                if (subMeshMap.ContainsKey("PositionDomain"))
-                {
-                    posMax = ((OSDMap)subMeshMap["PositionDomain"])["Max"];
-                    posMin = ((OSDMap)subMeshMap["PositionDomain"])["Min"];
-                }
-                else
-                {
-                    posMax = new Vector3(0.5f, 0.5f, 0.5f);
-                    posMin = new Vector3(-0.5f, -0.5f, -0.5f);
-                }
-
-                // Vertex positions
-                byte[] posBytes = subMeshMap["Position"];
-
-                // Normals
-                byte[] norBytes = null;
-                if (subMeshMap.ContainsKey("Normal"))
-                {
-                    norBytes = subMeshMap["Normal"];
-                }
-
-                // UV texture map
-                Vector2 texPosMax = Vector2.Zero;
-                Vector2 texPosMin = Vector2.Zero;
-                byte[] texBytes = null;
-                if (subMeshMap.ContainsKey("TexCoord0"))
-                {
-                    texBytes = subMeshMap["TexCoord0"];
-                    texPosMax = ((OSDMap)subMeshMap["TexCoord0Domain"])["Max"];
-                    texPosMin = ((OSDMap)subMeshMap["TexCoord0Domain"])["Min"];
-                }
-
-                // Extract the vertex position data
-                // If present normals and texture coordinates too
-                for (int i = 0; i < posBytes.Length; i += 6)
-                {
-                    ushort uX = Utils.BytesToUInt16(posBytes, i);
-                    ushort uY = Utils.BytesToUInt16(posBytes, i + 2);
-                    ushort uZ = Utils.BytesToUInt16(posBytes, i + 4);
-
-                    Vertex vx = new Vertex();
-
-                    vx.Position = new Vector3(
-                        Utils.UInt16ToFloat(uX, posMin.X, posMax.X),
-                        Utils.UInt16ToFloat(uY, posMin.Y, posMax.Y),
-                        Utils.UInt16ToFloat(uZ, posMin.Z, posMax.Z));
-
-                    if (norBytes != null && norBytes.Length >= i + 4)
-                    {
-                        ushort nX = Utils.BytesToUInt16(norBytes, i);
-                        ushort nY = Utils.BytesToUInt16(norBytes, i + 2);
-                        ushort nZ = Utils.BytesToUInt16(norBytes, i + 4);
-
-                        vx.Normal = new Vector3(
-                            Utils.UInt16ToFloat(nX, posMin.X, posMax.X),
-                            Utils.UInt16ToFloat(nY, posMin.Y, posMax.Y),
-                            Utils.UInt16ToFloat(nZ, posMin.Z, posMax.Z));
-                    }
-
-                    var vertexIndexOffset = oface.Vertices.Count * 4;
-
-                    if (texBytes != null && texBytes.Length >= vertexIndexOffset + 4)
-                    {
-                        ushort tX = Utils.BytesToUInt16(texBytes, vertexIndexOffset);
-                        ushort tY = Utils.BytesToUInt16(texBytes, vertexIndexOffset + 2);
-
-                        vx.TexCoord = new Vector2(
-                            Utils.UInt16ToFloat(tX, texPosMin.X, texPosMax.X),
-                            Utils.UInt16ToFloat(tY, texPosMin.Y, texPosMax.Y));
-                    }
-
-                    oface.Vertices.Add(vx);
-                }
-
-                byte[] triangleBytes = subMeshMap["TriangleList"];
-                for (int i = 0; i < triangleBytes.Length; i += 6)
-                {
-                    ushort v1 = (ushort)(Utils.BytesToUInt16(triangleBytes, i));
-                    oface.Indices.Add(v1);
-                    ushort v2 = (ushort)(Utils.BytesToUInt16(triangleBytes, i + 2));
-                    oface.Indices.Add(v2);
-                    ushort v3 = (ushort)(Utils.BytesToUInt16(triangleBytes, i + 4));
-                    oface.Indices.Add(v3);
-                }
+                oface.Vertices = CollectVertices(subMeshMap);
+                oface.Indices = CollectIndices(subMeshMap);
 
                 holdingMesh.Faces.Add(oface);
             }
         }
 
-        /*
-        public OMVR.FacetedMesh SomeFunctionHoldingOldCode(OMV.Primitive prim, byte[] meshData)
+        private List<Vertex> CollectVertices(OSDMap subMeshMap)
         {
-            coords = new List<Coord>();
-            faces = new List<Face>();
-            OSD meshOsd = null;
+            List<Vertex> vertices = new List<Vertex>();
 
-            mConvexHulls = null;
-            mBoundingHull = null;
+            Vector3 posMax;
+            Vector3 posMin;
 
-            long start = 0;
-            using (MemoryStream data = new MemoryStream(meshData)) {
-                try {
-                    OSD osd = OSDParser.DeserializeLLSDBinary(data);
-                    if (osd is OSDMap)
-                        meshOsd = (OSDMap)osd;
-                    else {
-                        // m_log.Warn("[Mesh}: unable to cast mesh asset to OSDMap");
-                        return null;
-                    }
-                }
-                catch (Exception e) {
-                    // m_log.Error("[MESH]: Exception deserializing mesh asset header:" + e.ToString());
-                    throw (new Exception("Exception deserializing mesh asset header: " + e.ToString()));
-                }
-                start = data.Position;
+            // If PositionDomain is not specified, the default is from -0.5 to 0.5
+            if (subMeshMap.ContainsKey("PositionDomain"))
+            {
+                posMax = ((OSDMap)subMeshMap["PositionDomain"])["Max"];
+                posMin = ((OSDMap)subMeshMap["PositionDomain"])["Min"];
+            }
+            else
+            {
+                posMax = new Vector3(0.5f, 0.5f, 0.5f);
+                posMin = new Vector3(-0.5f, -0.5f, -0.5f);
             }
 
-            if (meshOsd is OSDMap) {
-                OSDMap meshParams = null;
-                OSDMap map = (OSDMap)meshOsd;
-                if (map.ContainsKey("high_lod")) {
-                    meshParams = (OSDMap)map["high_lod"]; // if all else fails, use highest LOD display mesh and hope it works :)
-                }
-                else if (map.ContainsKey("medium_lod")) {
-                    meshParams = (OSDMap)map["medium_lod"]; // if no physics mesh, try to fall back to medium LOD display mesh
-                }
-                // else if (map.ContainsKey("physics_shape")) {
-                //     physicsParms = (OSDMap)map["physics_shape"]; // old asset format
-                // }
-                // else if (map.ContainsKey("physics_mesh")) {
-                //     physicsParms = (OSDMap)map["physics_mesh"]; // new asset format
-                // }
+            // Vertex positions
+            byte[] posBytes = subMeshMap["Position"];
 
-                /*
-                if (map.ContainsKey("physics_convex")) { // pull this out also in case physics engine can use it
-                    OSD convexBlockOsd = null;
-                    try {
-                        OSDMap convexBlock = (OSDMap)map["physics_convex"];
-                        {
-                            int convexOffset = convexBlock["offset"].AsInteger() + (int)start;
-                            int convexSize = convexBlock["size"].AsInteger();
-
-                            byte[] convexBytes = new byte[convexSize];
-
-                            System.Buffer.BlockCopy(primShape.SculptData, convexOffset, convexBytes, 0, convexSize);
-
-                            try {
-                                convexBlockOsd = DecompressOsd(convexBytes);
-                            }
-                            catch (Exception e) {
-                                m_log.ErrorFormat("{0} prim='{1}': exception decoding convex block: {2}", LogHeader, primName, e);
-                                //return false;
-                            }
-                        }
-
-                        if (convexBlockOsd != null && convexBlockOsd is OSDMap) {
-                            convexBlock = convexBlockOsd as OSDMap;
-
-                            if (debugDetail) {
-                                string keys = LogHeader + " keys found in convexBlock: ";
-                                foreach (KeyValuePair<string, OSD> kvp in convexBlock)
-                                    keys += "'" + kvp.Key + "' ";
-                                m_log.Debug(keys);
-                            }
-
-                            Vector3 min = new Vector3(-0.5f, -0.5f, -0.5f);
-                            if (convexBlock.ContainsKey("Min")) min = convexBlock["Min"].AsVector3();
-                            Vector3 max = new Vector3(0.5f, 0.5f, 0.5f);
-                            if (convexBlock.ContainsKey("Max")) max = convexBlock["Max"].AsVector3();
-
-                            List<Vector3> boundingHull = null;
-
-                            if (convexBlock.ContainsKey("BoundingVerts")) {
-                                byte[] boundingVertsBytes = convexBlock["BoundingVerts"].AsBinary();
-                                boundingHull = new List<Vector3>();
-                                for (int i = 0; i < boundingVertsBytes.Length;) {
-                                    ushort uX = Utils.BytesToUInt16(boundingVertsBytes, i); i += 2;
-                                    ushort uY = Utils.BytesToUInt16(boundingVertsBytes, i); i += 2;
-                                    ushort uZ = Utils.BytesToUInt16(boundingVertsBytes, i); i += 2;
-
-                                    Vector3 pos = new Vector3(
-                                        Utils.UInt16ToFloat(uX, min.X, max.X),
-                                        Utils.UInt16ToFloat(uY, min.Y, max.Y),
-                                        Utils.UInt16ToFloat(uZ, min.Z, max.Z)
-                                    );
-
-                                    boundingHull.Add(pos);
-                                }
-
-                                mBoundingHull = boundingHull;
-                                if (debugDetail) m_log.DebugFormat("{0} prim='{1}': parsed bounding hull. nVerts={2}", LogHeader, primName, mBoundingHull.Count);
-                            }
-
-                            if (convexBlock.ContainsKey("HullList")) {
-                                byte[] hullList = convexBlock["HullList"].AsBinary();
-
-                                byte[] posBytes = convexBlock["Positions"].AsBinary();
-
-                                List<List<Vector3>> hulls = new List<List<Vector3>>();
-                                int posNdx = 0;
-
-                                foreach (byte cnt in hullList) {
-                                    int count = cnt == 0 ? 256 : cnt;
-                                    List<Vector3> hull = new List<Vector3>();
-
-                                    for (int i = 0; i < count; i++) {
-                                        ushort uX = Utils.BytesToUInt16(posBytes, posNdx); posNdx += 2;
-                                        ushort uY = Utils.BytesToUInt16(posBytes, posNdx); posNdx += 2;
-                                        ushort uZ = Utils.BytesToUInt16(posBytes, posNdx); posNdx += 2;
-
-                                        Vector3 pos = new Vector3(
-                                            Utils.UInt16ToFloat(uX, min.X, max.X),
-                                            Utils.UInt16ToFloat(uY, min.Y, max.Y),
-                                            Utils.UInt16ToFloat(uZ, min.Z, max.Z)
-                                        );
-
-                                        hull.Add(pos);
-                                    }
-
-                                    hulls.Add(hull);
-                                }
-
-                                mConvexHulls = hulls;
-                                if (debugDetail) m_log.DebugFormat("{0} prim='{1}': parsed hulls. nHulls={2}", LogHeader, primName, mConvexHulls.Count);
-                            }
-                            else {
-                                if (debugDetail) m_log.DebugFormat("{0} prim='{1}' has physics_convex but no HullList", LogHeader, primName);
-                            }
-                        }
-                    }
-                    catch (Exception e) {
-                        m_log.WarnFormat("{0} exception decoding convex block: {1}", LogHeader, e);
-                    }
-                }
-                * /
-
-                if (meshParams == null) {
-                    // m_log.WarnFormat("[MESH]: No recognized physics mesh found in mesh asset for {0}", primName);
-                    return null;
-                }
-
-                int meshDataOffset = meshParams["offset"].AsInteger() + (int)start;
-                int meshDataSize = meshParams["size"].AsInteger();
-
-                if (meshDataOffset < 0 || meshDataSize == 0)
-                    return null; // no mesh data in asset
-
-                OSD decodedMeshOsd = new OSD();
-                byte[] meshBytes = new byte[meshDataSize];
-                System.Buffer.BlockCopy(meshData, meshDataOffset, meshBytes, 0, meshDataSize);
-                //                        byte[] decompressed = new byte[physSize * 5];
-                try {
-                    decodedMeshOsd = DecompressOsd(meshBytes);
-                }
-                catch (Exception e) {
-                    // m_log.ErrorFormat("{0} prim='{1}': exception decoding physical mesh: {2}", LogHeader, primName, e);
-                    throw (new Exception("Exception decoding physical mesh " + prim.ID + ": " + e));
-                }
-
-                OSDArray decodedMeshOsdArray = null;
-
-                // physics_shape is an array of OSDMaps, one for each submesh
-                if (decodedMeshOsd is OSDArray) {
-                    //                            Console.WriteLine("decodedMeshOsd for {0} - {1}", primName, Util.GetFormattedXml(decodedMeshOsd));
-
-                    decodedMeshOsdArray = (OSDArray)decodedMeshOsd;
-                    foreach (OSD subMeshOsd in decodedMeshOsdArray) {
-                        if (subMeshOsd is OSDMap)
-                            AddSubMesh(subMeshOsd as OSDMap, size, coords, faces);
-                    }
-                    // m_log.DebugFormat("{0} {1}: mesh decoded. offset={2}, size={3}, nCoords={4}, nFaces={5}",
-                    //             LogHeader, primName, meshDataOffset, meshDataSize, coords.Count, faces.Count);
-                }
+            // Normals
+            byte[] norBytes = null;
+            if (subMeshMap.ContainsKey("Normal"))
+            {
+                norBytes = subMeshMap["Normal"];
             }
 
-            OMVR.FacetedMesh omvrmesh = new OMVR.FacetedMesh();
+            // UV texture map
+            Vector2 texPosMax = Vector2.Zero;
+            Vector2 texPosMin = Vector2.Zero;
+            byte[] texBytes = null;
+            if (subMeshMap.ContainsKey("TexCoord0"))
+            {
+                texBytes = subMeshMap["TexCoord0"];
+                texPosMax = ((OSDMap)subMeshMap["TexCoord0Domain"])["Max"];
+                texPosMin = ((OSDMap)subMeshMap["TexCoord0Domain"])["Min"];
+            }
 
+            // Extract the vertex position data
+            // If present normals and texture coordinates too
+            for (int i = 0; i < posBytes.Length; i += 6)
+            {
+                ushort uX = Utils.BytesToUInt16(posBytes, i);
+                ushort uY = Utils.BytesToUInt16(posBytes, i + 2);
+                ushort uZ = Utils.BytesToUInt16(posBytes, i + 4);
 
-            return omvrmesh;
+                Vertex vx = new Vertex();
+
+                vx.Position = new Vector3(
+                    Utils.UInt16ToFloat(uX, posMin.X, posMax.X),
+                    Utils.UInt16ToFloat(uY, posMin.Y, posMax.Y),
+                    Utils.UInt16ToFloat(uZ, posMin.Z, posMax.Z));
+
+                if (norBytes != null && norBytes.Length >= i + 4)
+                {
+                    ushort nX = Utils.BytesToUInt16(norBytes, i);
+                    ushort nY = Utils.BytesToUInt16(norBytes, i + 2);
+                    ushort nZ = Utils.BytesToUInt16(norBytes, i + 4);
+
+                    vx.Normal = new Vector3(
+                        Utils.UInt16ToFloat(nX, posMin.X, posMax.X),
+                        Utils.UInt16ToFloat(nY, posMin.Y, posMax.Y),
+                        Utils.UInt16ToFloat(nZ, posMin.Z, posMax.Z));
+                }
+
+                var vertexIndexOffset = vertices.Count * 4;
+
+                if (texBytes != null && texBytes.Length >= vertexIndexOffset + 4)
+                {
+                    ushort tX = Utils.BytesToUInt16(texBytes, vertexIndexOffset);
+                    ushort tY = Utils.BytesToUInt16(texBytes, vertexIndexOffset + 2);
+
+                    vx.TexCoord = new Vector2(
+                        Utils.UInt16ToFloat(tX, texPosMin.X, texPosMax.X),
+                        Utils.UInt16ToFloat(tY, texPosMin.Y, texPosMax.Y));
+                }
+
+                vertices. Add(vx);
+            }
+            return vertices;
         }
-        */
+
+        private List<ushort> CollectIndices(OSDMap subMeshMap)
+        {
+            List<ushort> indices = new List<ushort>();
+
+            byte[] triangleBytes = subMeshMap["TriangleList"];
+            for (int i = 0; i < triangleBytes.Length; i += 6)
+            {
+                ushort v1 = (ushort)(Utils.BytesToUInt16(triangleBytes, i));
+                indices.Add(v1);
+                ushort v2 = (ushort)(Utils.BytesToUInt16(triangleBytes, i + 2));
+                indices.Add(v2);
+                ushort v3 = (ushort)(Utils.BytesToUInt16(triangleBytes, i + 4));
+                indices.Add(v3);
+            }
+            return indices;
+        }
 
         /// <summary>
         /// Decodes mesh asset.
