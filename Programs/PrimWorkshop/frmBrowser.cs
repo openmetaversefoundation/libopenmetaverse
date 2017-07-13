@@ -80,7 +80,7 @@ namespace PrimWorkshop
             // Login server URLs
             cboServer.Items.Add(Settings.AGNI_LOGIN_SERVER);
             cboServer.Items.Add(Settings.ADITI_LOGIN_SERVER);
-            cboServer.Items.Add("http://osgrid.org:8002/");
+            cboServer.Items.Add("http://hg.osgrid.org:80/");
             cboServer.SelectedIndex = 0;
 
             // Context menus

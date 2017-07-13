@@ -75,7 +75,7 @@ namespace OpenMetaverse
         /// help parsing in situations where the grid assumes an en-us 
         /// culture</summary>
         public static readonly System.Globalization.CultureInfo EnUsCulture =
-            new System.Globalization.CultureInfo("en-us");
+            new System.Globalization.CultureInfo("en-us", false);
 
         /// <summary>UNIX epoch in DateTime format</summary>
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1);
