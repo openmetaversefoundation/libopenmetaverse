@@ -303,13 +303,19 @@ namespace OpenMetaverse.Rendering
                     // Decode each individual face
                     if (subMeshOsd is OSDMap)
                     {
+                        OSDMap subMeshMap = (OSDMap)subMeshOsd;
+
+                    // As per http://wiki.secondlife.com/wiki/Mesh/Mesh_Asset_Format, some Mesh Level
+                    // of Detail Blocks (maps) contain just a NoGeometry key to signal there is no
+                    // geometry for this submesh.
+                    if (subMeshMap.ContainsKey("NoGeometry") && ((OSDBoolean)subMeshMap["NoGeometry"]))
+                        continue;
+
                         Face oface = new Face();
                         oface.ID = faceNr;
                         oface.Vertices = new List<Vertex>();
                         oface.Indices = new List<ushort>();
                         oface.TextureFace = prim.Textures.GetFace((uint)faceNr);
-
-                        OSDMap subMeshMap = (OSDMap)subMeshOsd;
 
                         Vector3 posMax;
                         Vector3 posMin;

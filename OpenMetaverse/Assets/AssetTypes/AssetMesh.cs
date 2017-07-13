@@ -93,7 +93,7 @@ namespace OpenMetaverse.Assets
 
                         byte[] part = new byte[partInfo["size"]];
                         Buffer.BlockCopy(AssetData, partInfo["offset"] + (int)start, part, 0, part.Length);
-                        MeshData[partName] = Helpers.ZDecompressOSD(part);
+                        MeshData[partName] = Helpers.DecompressOSD(part);
                     }
                 }
                 return true;
