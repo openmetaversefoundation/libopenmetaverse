@@ -24,7 +24,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-//#define SMARTHREADPOOL_REF
+#define SMARTHREADPOOL_REF
 
 using System;
 using System.IO;
