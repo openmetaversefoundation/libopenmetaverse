@@ -8,4 +8,9 @@ compile.bat
 
 [Oo]bj/
 [Bb]in/
-
+.vs/
+OpenMetaverse.GUI/OpenMetaverse.GUI.XML
+OpenMetaverse.StructuredData/OpenMetaverse.StructuredData.XML
+OpenMetaverse.Utilities/OpenMetaverse.Utilities.XML
+OpenMetaverse/OpenMetaverse.XML
+OpenMetaverseTypes/OpenMetaverseTypes.XML
